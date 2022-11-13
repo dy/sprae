@@ -29,45 +29,7 @@ Evaluate directives within an `element` subtree with passed `data`.
 
 `state` is proxy reflecting used values, changing any of its props updates directives.<br/>
 `update` can be used for bulk-updating multiple props.<br/>
-`data` is the initial state to render the template. It can include reactive values.<br/>
-
-## Reactivity
-
-Directive expressions are naturally reactive, ie. data may contain any async/reactive values, such as:
-
-* _Promise_ / _Thenable_
-* _Observable_ / _Subject_ / _Subscribable_
-* _AsyncIterable_
-* _observ-*_
-* etc., see [sube](https://github.com/dy/sube/blob/main/README.md) for the full list.
-
-This way, for example, _@preact/signals_ or _rxjs_ can be connected directly bypassing subscription or reading value.
-
-Update happens when any value changes:
-
-```html
-<div id="done" :text="loading ? 'loading' : result">...</div>
-
-<script>
-  import spores from 'sporae';
-  import { signals } from '@preact/signals';
-
-  // <div id="done">...</div>
-
-  const loading = signal(false), result = signal(false);
-  spores(done, { loading, result })
-
-  // <div id="done">loading</div>
-
-  setTimeout(() => (loading.value = true, result.value = 'done'), 1000)
-
-  // ... 1s after
-  // <div id="done">done</div>
-</script>
-```
-
-Note: observers don't require disposal, since they're connected in weak fashion. Once element is disposed, observables are disconnected.
-
+`data` is the initial state to render the template. It can include reactive values, see [reactivity](#reactivity).<br/>
 
 ## Directives
 
@@ -130,6 +92,46 @@ directive(':html',
   }
 )
 ```
+
+
+## Reactivity
+
+Directive expressions are naturally reactive, ie. data may contain any async/reactive values, such as:
+
+* _Promise_ / _Thenable_
+* _Observable_ / _Subject_ / _Subscribable_
+* _AsyncIterable_
+* _observ-*_
+* etc., see [sube](https://github.com/dy/sube/blob/main/README.md) for the full list.
+
+This way, for example, _@preact/signals_ or _rxjs_ can be connected directly bypassing subscription or reading value.
+
+Update happens when any value changes:
+
+```html
+<div id="done" :text="loading ? 'loading' : result">...</div>
+
+<script>
+  import spores from 'sporae';
+  import { signals } from '@preact/signals';
+
+  // <div id="done">...</div>
+
+  const loading = signal(false), result = signal(false);
+  spores(done, { loading, result })
+
+  // <div id="done">loading</div>
+
+  setTimeout(() => (loading.value = true, result.value = 'done'), 1000)
+
+  // ... 1s after
+  // <div id="done">done</div>
+</script>
+```
+
+Note: observers don't require disposal, since they're connected in weak fashion. Once element is disposed, observables are disconnected.
+
+
 
 ## Justification
 
