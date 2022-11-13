@@ -39,6 +39,7 @@ A lightweight alternative to [alpine](https://github.com/alpinejs/alpine), [peti
 The more direct case is initializing spores via JS.
 
 ```html
+<div id="element"></div>
 <script type="module">
   import sporae from './sporae.js';
   const [state, update] = sporae(element, data);
