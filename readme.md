@@ -20,7 +20,7 @@ A lightweight alternative to [alpine](https://github.com/alpinejs/alpine), [peti
 
 ## Manual init
 
-The more direct case is initializing spores via JS.
+The more direct case is initializing sporae via JS.
 
 ```html
 <div id="user" :if="user">
@@ -28,17 +28,17 @@ The more direct case is initializing spores via JS.
 </div>
 
 <script type="module">
-  import sporae from 'sporae';
+  import init from 'sporae';
 
   const data = { user: { displayName: 'Dmitry Ivanov' } }
-  const [state, update] = sporae(user, data);
+  const [state, update] = init(user, data);
 
-  // update value
-  state.user.displayName = 'dy'
+  state.user.displayName = 'dy'       // update value
+  update({user: {displayName: 'dy'}}) // alternatively
 </script>
 ```
 
-* `sporae` evaluates directives within an `element` subtree with passed `data`.
+* `init` initializes directives within an `element` subtree with passed `data`.
 * `state` is proxy reflecting used values, changing any of its props updates directives.
 * `update` can be used for bulk-updating multiple props.
 * `data` is the initial state to render the template. It can include reactive values, see [reactivity](#reactivity).
