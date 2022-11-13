@@ -1,7 +1,6 @@
 # ∴ sporae
 
-Reactive directives with expressions for DOM microtemplating.
-
+Reactive directives with expressions for DOM microtemplating.<br/>
 A lightweight alternative to [alpine](https://github.com/alpinejs/alpine), [petite-vue](https://github.com/vuejs/petite-vue) and [templize](https://github.com/dy/templize) with better ergonomics[*](#justification).
 
 
