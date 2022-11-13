@@ -1,7 +1,6 @@
 # ∴ sporæ
 
-Reactive directives with expressions for DOM microtemplating.
-
+Reactive directives with expressions for DOM microtemplating.<br/>
 A lightweight alternative to [alpine](https://github.com/alpinejs/alpine), [petite-vue](https://github.com/vuejs/petite-vue) and [templize](https://github.com/dy/templize) with better ergonomics[*](#justification).
 
 
@@ -21,25 +20,25 @@ A lightweight alternative to [alpine](https://github.com/alpinejs/alpine), [peti
 
 ## Manual init
 
-The more direct case is initializing spores via JS.
+The more direct case is initializing sporae via JS.
 
 ```html
-<div id="user" :if="user">
+<div id="element" :if="user">
   Logged in as <span :text="user.displayName">Guest.</span>
 </div>
 
 <script type="module">
-  import sporae from 'sporae';
+  import init from 'sporae';
 
   const data = { user: { displayName: 'Dmitry Ivanov' } }
-  const [state, update] = sporae(user, data);
+  const [state, update] = init(user, data);
 
-  // update value
-  state.user.displayName = 'dy'
+  state.user.displayName = 'dy'       // update value
+  update({user: {displayName: 'dy'}}) // alternatively
 </script>
 ```
 
-* `sporae` evaluates directives within an `element` subtree with passed `data`.
+* `init` initializes directives within an `element` subtree with passed `data`.
 * `state` is proxy reflecting used values, changing any of its props updates directives.
 * `update` can be used for bulk-updating multiple props.
 * `data` is the initial state to render the template. It can include reactive values, see [reactivity](#reactivity).
@@ -47,7 +46,7 @@ The more direct case is initializing spores via JS.
 
 ## Directives
 
-* `:scope="data"` – sporae subtree data for autoinit.
+* `:scope="data"` – autoinit subtree data.
 * `:if="condition"`, `:else-if="condition"`, `:else` - controls flow of elements.
 * `:each="item, idx? in list"` - map list to instances of an element.
 * `:text="value"` - set text content of an element.
