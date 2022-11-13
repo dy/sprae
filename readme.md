@@ -52,7 +52,7 @@ The more direct case is initializing spores via JS.
 
 ## Directives
 
-* `:scope="data"` – initialize data scope.
+* `:scope="data"` – sporae subtree data for autoinit.
 * `:if="condition"`, `:else-if="condition"`, `:else` - controls flow of elements.
 * `:each="item, idx? in list"` - map list to instances of an element.
 * `:text="value"` - set text content of an element.
