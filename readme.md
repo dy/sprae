@@ -17,6 +17,7 @@ A lightweight alternative to [alpine](https://github.com/alpinejs/alpine), [peti
 
 * `:scope` marks regions on the tree that should be controlled by sporae.
 * `init` attribute tells sporae to automatically initialize all elements that have `:scope`.
+* any attribute starting with `:` is considered a spore directive.
 
 ## Manual init
 
