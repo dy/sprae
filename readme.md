@@ -37,7 +37,7 @@ Evaluate directives within an `element` subtree with passed `data`.
 * `:each="item, idx? in list"` - creates instance of element per item in the list.
 * `:text="value"` - set text content of an element.
 * `:value="value"` – bind value to input or textarea.
-* `:id`, `:name`, `:for`, `:alt`, `:title`, `:type`, `:hidden`, `:href`, `:autocomplete`, `:disabled`, `:src`, `:width`, `:height` – common attributes setters.
+* `:id`, `:name`, `:for`, `:alt`, `:title`, `:type`, `:hidden`, `:disabled`, `:href`, `:src` – common attributes setters.
 * `:class="[ a, 'b', c ]"` – set element class from an array, object or a string.
 * `:style="{ a:1, b:2 }"` – set element style from a string or an object.
 * `:prop="{ foo:1, bar:2 }"` – set any attribute / property.
