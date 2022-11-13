@@ -6,10 +6,10 @@
     "value-ref": "^2.1.0",
     "wait-please": "^3.1.0"
   },
-  "name": "sporae",
+  "name": "sprae",
   "description": "Reactive directives with expressions for DOM microtemplating.",
   "version": "0.0.0",
-  "main": "sporae.js",
+  "main": "sprae.js",
   "dependencies": {
     "sube": "^2.2.1",
     "element-props": "^2.0.4",
@@ -42,7 +42,7 @@
   "author": "Dmitry Ivanov <df.creative@gmail.com>",
   "license": "ISC",
   "bugs": {
-    "url": "https://github.com/dy/sporae/issues"
+    "url": "https://github.com/dy/sprae/issues"
   },
-  "homepage": "https://github.com/dy/sporae#readme"
+  "homepage": "https://github.com/dy/sprae#readme"
 }

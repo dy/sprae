@@ -1,4 +1,4 @@
-# ∴ sporæ
+# ∴ spræ
 
 Reactive directives for DOM microtemplating.<br/>
 A lightweight alternative to [alpine](https://github.com/alpinejs/alpine), [petite-vue](https://github.com/vuejs/petite-vue) and [templize](https://github.com/dy/templize) with better ergonomics[*](#justification).
@@ -7,7 +7,7 @@ A lightweight alternative to [alpine](https://github.com/alpinejs/alpine), [peti
 ## Usage
 
 ```html
-<script src="./sporae.js" defer init></script>
+<script src="./sprae.js" defer init></script>
 
 <div :scope="{ count: 0 }">
   <span :text="count">
@@ -15,13 +15,13 @@ A lightweight alternative to [alpine](https://github.com/alpinejs/alpine), [peti
 </div>
 ```
 
-* `:scope` marks regions on the tree that should be controlled by sporae.
-* `init` attribute tells sporae to automatically initialize all elements that have `:scope`.
-* any attribute starting with `:` is considered a spore directive.
+* `:scope` marks regions on the tree that should be controlled by sprae.
+* `init` attribute tells sprae to automatically initialize all elements that have `:scope`.
+* any attribute starting with `:` is considered a sprae directive.
 
 ## Manual init
 
-The more direct case is initializing sporae via JS.
+The more direct case is initializing sprae via JS.
 
 ```html
 <div id="element" :if="user">
@@ -29,7 +29,7 @@ The more direct case is initializing sporae via JS.
 </div>
 
 <script type="module">
-  import init from 'sporae';
+  import init from 'sprae';
 
   const data = { user: { displayName: 'Dmitry Ivanov' } }
   const [state, update] = init(user, data);
@@ -92,7 +92,7 @@ To optionally display an element, there are `if`, `else-if`, `else` directives.
 Directives can be added by registering them via `directive(name, onCreate, onUpdate)`:
 
 ```js
-import init, { directive } from 'sporae'
+import init, { directive } from 'sprae'
 
 directive(':html',
   (el, expr, state) => {
@@ -123,7 +123,7 @@ Update happens when any value changes:
 <div id="done" :text="loading ? 'loading' : result">...</div>
 
 <script>
-  import spores from 'sporae';
+  import spores from 'sprae';
   import { signals } from '@preact/signals';
 
   // <div id="done">...</div>
@@ -151,7 +151,7 @@ Note: observers don't require disposal, since they're connected in weak fashion.
 * [Alpine](https://github.com/alpinejs/alpine) / [vue](https://github.com/vuejs/petite-vue) / [lit](https://github.com/lit/lit/tree/main/packages/lit-html) escapes native HTML quirks, but the syntax is a bit scattered: `:attr`, `v-*`,`x-*`, `@evt`, `{{}}` can be expressed with single convention. Besides, functionality is too broad and can be reduced to essence.
 * [preact](https://ghub.io/preact) with HTML as JSX is a nice way to wire JS to templates, but it doesn't really support reactive fields (needs render call). Also migrating HTML to JS is an extreme with unwanted side-effects.
 
-_Sporae_ takes elegant syntax convention of _alpine_ and method of _templize_ to connect any reactive values (like [@preact/signals](https://ghub.io/@preact/signals) or observables) to static HTML.
+_Sprae_ takes elegant syntax convention of _alpine_ and method of _templize_ to connect any reactive values (like [@preact/signals](https://ghub.io/@preact/signals) or observables) to static HTML.
 
 * It doesn't break static html markup.
 * It doesn't intrude native syntax space.

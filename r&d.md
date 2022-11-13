@@ -28,6 +28,10 @@
   + similar to algae
   + dots associate with colon prefix
 * spour
+* sprae?
+  + reference to sporae and similar assoication
+  + simpler word
+  + better assoc with hydration
 
 
 ## :attr, :data, :id, :class, :style, :on, :aria - do we enforce JS object or support unscoped expression? -> Use JS convention, too many use-cases.
