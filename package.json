@@ -5,5 +5,44 @@
     "tst": "^7.1.1",
     "value-ref": "^2.1.0",
     "wait-please": "^3.1.0"
-  }
+  },
+  "name": "sporae",
+  "description": "Reactive directives with expressions for DOM microtemplating.",
+  "version": "1.0.0",
+  "main": "sporae.js",
+  "dependencies": {
+    "sube": "^2.2.1",
+    "element-props": "^2.0.4",
+    "htm": "^3.1.1",
+    "swapdom": "^1.1.1",
+    "preact": "^10.11.2"
+  },
+  "scripts": {
+    "test": "node test"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/dy/sporae.git"
+  },
+  "keywords": [
+    "preact",
+    "preact-signals",
+    "signals",
+    "observable",
+    "reactive",
+    "petite-vue",
+    "vue",
+    "template-parts",
+    "templize",
+    "alpine",
+    "alpinejs",
+    "directives",
+    "templating"
+  ],
+  "author": "Dmitry Ivanov <df.creative@gmail.com>",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/dy/sporae/issues"
+  },
+  "homepage": "https://github.com/dy/sporae#readme"
 }
