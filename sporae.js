@@ -5,27 +5,21 @@ if (s && s.hasAttribute('init')) {
 }
 
 // dew element: apply directives
-export default function sporae(el, state) {
-  for (let dir in directives) directives[dir].prepare(el)
-
-  // TODO: what if we simply convert :attr to template parts and evaluate...
-  // nah, since we're stepping into buggy template parts land
+export default function sporae(el, scope) {
+  scope ||= {}
 
   // TODO: parts are not parsed, but detected from directives
-  let parts = parse(el),
-      params,
-      update = diff => proc.processCallback(el, parts, diff)
+  let params,
+      update = diff => { for (let dir in directives) directives[dir].update(el, scope) }
 
-  state ||= {}
-  proc.createCallback?.(el, parts, state)
-  proc.processCallback(el, parts, state)
+  for (let dir in directives) directives[dir].init(el, scope)
 
   // return update via destructuring of result to allow batch-update
-  state[Symbol.iterator] = function*(){ yield params; yield update; yield parts;}
+  scope[Symbol.iterator] = function*(){ yield params; yield update; }
 
-  return params = new Proxy(state,  {
-    set: (s, k, v) => (state[k]=v, update(state), 1),
-    deleteProperty: (s,k) => (delete state[k], update(), 1)
+  return params = new Proxy(scope,  {
+    set: (s, k, v) => (scope[k]=v, update(scope), 1),
+    deleteProperty: (s,k) => (delete scope[k], update(), 1)
   })
 }
 
@@ -33,20 +27,29 @@ export default function sporae(el, state) {
 const directives = {}, store = new WeakMap
 
 // register a directive
-export const directive = (dir, create) => directives[dir] = {
-  prepare(container) {
-    let els = container.querySelectorAll(`[${dir}]`)
+export const directive = (name, init, update) => directives[name] = {
+  init(container, scope) {
+    let els = container.querySelectorAll(`[${name}]`)
 
     // replace all shortcuts with inner templates
     for (el of els) {
-      el.removeAttribute(dir)
-      if (!store.has(el)) store.set(el, {})
-      store.get(el)[dir] ||= {}
+      // FIXME: make sure no leak is introduced here
+      if (!el._sporae) {
+        el._sporae = scope
+        init(el, el.getAttribute(name), scope)
+      }
     }
 
     return els
   },
-  create
+  update(container, scope) {
+    let els = container.querySelectorAll(`[${name}]`)
+
+    // replace all shortcuts with inner templates
+    for (el of els) {
+      if (el._sporae) update(el, el.getAttribute(name), scope)
+    }
+  }
 }
 
 // hidden attribute directive example

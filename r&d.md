@@ -26,6 +26,7 @@
   + sounds russian-ish too
   - a bit unusual from API perspective...
   + similar to algae
+  + dots associate with colon prefix
 * spour
 
 
