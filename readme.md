@@ -1,4 +1,4 @@
-# 🦠 sporae
+# ∴ sporae
 
 > Reactive directives with expressions for DOM microtemplating.
 
