@@ -23,7 +23,7 @@ A lightweight alternative to [alpine](https://github.com/alpinejs/alpine), [peti
 The more direct case is initializing sporae via JS.
 
 ```html
-<div id="user" :if="user">
+<div id="element" :if="user">
   Logged in as <span :text="user.displayName">Guest.</span>
 </div>
 
