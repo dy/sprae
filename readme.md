@@ -152,10 +152,11 @@ Note: observers don't require disposal, since they're connected in weak fashion.
 
 _Sporae_ takes elegant syntax convention of _alpine_ and method of _templize_ to connect any reactive values (like [@preact/signals](https://ghub.io/@preact/signals) or observables) to static HTML.
 
-* It doesn't break nor introduce template values to static html markup.
-* It provides falls back to element content if uninitialized.
+* It doesn't break static html markup.
+* It doesn't intrude native syntax space.
+* It falls back to element content if uninitialized.
 * It provides means for island hydration.
-* It doesn't introduce syntax noise.
+* It doesn'y introduce syntax scatter.
 * It supports simple expressions with exposed reactive data types.
 
 <p align="center"><a href="https://github.com/krsnzd/license/">🕉</a></p>
