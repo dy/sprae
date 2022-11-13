@@ -27,7 +27,7 @@ A lightweight alternative to [templize](https://github.com/dy/templize), [alpine
 
 Evaluate directives within an `element` subtree with passed `data`.
 
-`state` is proxy reflecting template values. Changing any of its props updates directives.<br/>
+`state` is proxy reflecting used values, changing any of its props updates directives.<br/>
 `update` can be used for bulk-updating multiple props.<br/>
 `data` is the initial state to render the template. It can include reactive values.<br/>
 
