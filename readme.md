@@ -1,21 +1,6 @@
 # ∴ sporae
 
-> Reactive directives with expressions for DOM microtemplating.
-
-```html
-<div :if="user">
-  Logged in as <span :text="user.displayName">Guest.</span>
-</div>
-
-<script>
-  import spores from 'sporae';
-
-  const state = spores(document.body, { user: { displayName: 'Dmitry Ivanov' } });
-
-  // update value
-  state.user.displayName = 'dy'
-</script>
-```
+Reactive directives with expressions for DOM microtemplating.
 
 A lightweight alternative to [alpine](https://github.com/alpinejs/alpine), [petite-vue](https://github.com/vuejs/petite-vue) and [templize](https://github.com/dy/templize) with better ergonomics[*](#justification).
 
@@ -39,17 +24,26 @@ A lightweight alternative to [alpine](https://github.com/alpinejs/alpine), [peti
 The more direct case is initializing spores via JS.
 
 ```html
-<div id="element"></div>
+<div id="user" :if="user">
+  Logged in as <span :text="user.displayName">Guest.</span>
+</div>
+
 <script type="module">
-  import sporae from './sporae.js';
-  const [state, update] = sporae(element, data);
+  import sporae from 'sporae';
+
+  const data = { user: { displayName: 'Dmitry Ivanov' } }
+  const [state, update] = sporae(user, data);
+
+  // update value
+  state.user.displayName = 'dy'
 </script>
 ```
 
 * `sporae` evaluates directives within an `element` subtree with passed `data`.
-* `state` is proxy reflecting used values, changing any of its props updates directives.<br/>
-* `update` can be used for bulk-updating multiple props.<br/>
-* `data` is the initial state to render the template. It can include reactive values, see [reactivity](#reactivity).<br/>
+* `state` is proxy reflecting used values, changing any of its props updates directives.
+* `update` can be used for bulk-updating multiple props.
+* `data` is the initial state to render the template. It can include reactive values, see [reactivity](#reactivity).
+
 
 ## Directives
 

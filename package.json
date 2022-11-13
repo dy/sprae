@@ -8,7 +8,7 @@
   },
   "name": "sporae",
   "description": "Reactive directives with expressions for DOM microtemplating.",
-  "version": "1.0.0",
+  "version": "0.0.0",
   "main": "sporae.js",
   "dependencies": {
     "sube": "^2.2.1",
