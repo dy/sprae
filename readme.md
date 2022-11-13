@@ -46,7 +46,7 @@ The more direct case is initializing sporae via JS.
 
 ## Directives
 
-* `:scope="data"` – autoinit subtree data.
+* `:scope="data"` – autoinit subtree.
 * `:if="condition"`, `:else-if="condition"`, `:else` - controls flow of elements.
 * `:each="item, idx? in list"` - map list to instances of an element.
 * `:text="value"` - set text content of an element.
