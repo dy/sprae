@@ -1,0 +1,9 @@
+{
+  "devDependencies": {
+    "@preact/signals": "^1.1.2",
+    "hyperf": "^1.4.0",
+    "tst": "^7.1.1",
+    "value-ref": "^2.1.0",
+    "wait-please": "^3.1.0"
+  }
+}

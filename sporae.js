@@ -1,11 +1,11 @@
 // autoinit
 const s = document.currentScript
 if (s && s.hasAttribute('init')) {
-  init(document.documentElement)
+  sporae(document.documentElement)
 }
 
 // dew element: apply directives
-export default function init(el, state) {
+export default function sporae(el, state) {
   for (let dir in directives) directives[dir].prepare(el)
 
   // TODO: what if we simply convert :attr to template parts and evaluate...

@@ -20,19 +20,39 @@
 A lightweight alternative to [alpine](https://github.com/alpinejs/alpine), [petite-vue](https://github.com/vuejs/petite-vue) and [templize](https://github.com/dy/templize) with better ergonomics[*](#justification).
 
 
-## API
+## Usage
 
-> `state = sporae(element, data)`<br/>
-> `[state, update] = sporae(element, data)`
+```html
+<script src="./sporae.js" defer init></script>
 
-Evaluate directives within an `element` subtree with passed `data`.
+<div :scope="{ count: 0 }">
+  <span :text="count">
+  <button :on="{ click: e => count++ }">inc</button>
+</div>
+```
 
-`state` is proxy reflecting used values, changing any of its props updates directives.<br/>
-`update` can be used for bulk-updating multiple props.<br/>
-`data` is the initial state to render the template. It can include reactive values, see [reactivity](#reactivity).<br/>
+* `:scope` marks regions on the tree that should be controlled by sporae.
+* `init` attribute tells sporae to automatically initialize all elements that have `:scope`.
+
+## Manual init
+
+The more direct case is initializing spores via JS.
+
+```html
+<script type="module">
+  import sporae from './sporae.js';
+  const [state, update] = sporae(element, data);
+</script>
+```
+
+* `sporae` evaluates directives within an `element` subtree with passed `data`.
+* `state` is proxy reflecting used values, changing any of its props updates directives.<br/>
+* `update` can be used for bulk-updating multiple props.<br/>
+* `data` is the initial state to render the template. It can include reactive values, see [reactivity](#reactivity).<br/>
 
 ## Directives
 
+* `:scope="data"` – initialize data scope.
 * `:if="condition"`, `:else-if="condition"`, `:else` - controls flow of elements.
 * `:each="item, idx? in list"` - map list to instances of an element.
 * `:text="value"` - set text content of an element.
