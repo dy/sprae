@@ -22,7 +22,7 @@ A lightweight alternative to [templize](https://github.com/dy/templize), [alpine
 
 ## API
 
-> `state = sporae(element, data)`
+> `state = sporae(element, data)`<br/>
 > `[state, update] = sporae(element, data)`
 
 Evaluate directives within an `element` subtree with passed `data`.
