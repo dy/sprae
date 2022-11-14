@@ -3,7 +3,7 @@
 > Soft organic DOM tree hydration
 
 Sprae provides reactive directives for DOM microtemplating.<br/>
-A lightweight essential alternative to [alpine](https://github.com/alpinejs/alpine), [petite-vue](https://github.com/vuejs/petite-vue) and [templize](https://github.com/dy/templize) with better ergonomics[*](#justification).
+A lightweight essential alternative to [alpine](https://github.com/alpinejs/alpine), [petite-vue](https://github.com/vuejs/petite-vue), [templize](https://github.com/dy/templize) or JSX with better ergonomics[*](#justification).
 
 
 ## Usage
