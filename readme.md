@@ -1,27 +1,11 @@
 # ∴ spræ
 
-Reactive directives for DOM microtemplating.<br/>
-A lightweight alternative to [alpine](https://github.com/alpinejs/alpine), [petite-vue](https://github.com/vuejs/petite-vue) and [templize](https://github.com/dy/templize) with better ergonomics[*](#justification).
+> Reactive directives for DOM microtemplating: moisturize tree without trasplanting to JSX.
+
+A lightweight essential alternative to [alpine](https://github.com/alpinejs/alpine), [petite-vue](https://github.com/vuejs/petite-vue) and [templize](https://github.com/dy/templize) with better ergonomics[*](#justification).
 
 
 ## Usage
-
-```html
-<script src="./sprae.js" defer init></script>
-
-<div :scope="{ count: 0 }">
-  <span :text="count">
-  <button :on="{ click: e => count++ }">inc</button>
-</div>
-```
-
-* `:scope` marks regions on the tree that should be controlled by sprae.
-* `init` attribute tells sprae to automatically initialize all elements that have `:scope`.
-* any attribute starting with `:` is considered a sprae directive.
-
-## Manual init
-
-The more direct case is initializing sprae via JS.
 
 ```html
 <div id="element" :if="user">
@@ -43,6 +27,23 @@ The more direct case is initializing sprae via JS.
 * `state` is proxy reflecting used values, changing any of its props updates directives.
 * `update` can be used for bulk-updating multiple props.
 * `data` is the initial state to render the template. It can include reactive values, see [reactivity](#reactivity).
+
+## Autoinit
+
+Sprae can be used without build step or JS, autoinitializing HTML:
+
+```html
+<script src="./sprae.js" defer init></script>
+
+<div :scope="{ count: 0 }">
+  <span :text="count">
+  <button :on="{ click: e => count++ }">inc</button>
+</div>
+```
+
+* `:scope` marks regions on the tree that should be controlled by sprae.
+* `init` attribute tells sprae to automatically initialize all elements that have `:scope`.
+* any attribute starting with `:` is considered a sprae directive.
 
 
 ## Directives
@@ -89,19 +90,19 @@ To optionally display an element, there are `if`, `else-if`, `else` directives.
 
 ### Adding directives
 
-Directives can be added by registering them via `directive(name, onCreate, onUpdate)`:
+Directives can be added by registering them via `directive(name, initializer)`:
 
 ```js
 import init, { directive } from 'sprae'
 
-directive(':html',
-  (el, expr, state) => {
-    el._eval = parseExpression(expr)
-  },
-  (el, expr, state) => {
-    el.innerHTML = el._eval(state)
+directive(':html', (el, expr) => {
+  // ...initialize here
+  const evaluate = parseExpression(expr)
+  return (state) => {
+    // ...update here
+    el.innerHTML = evaluate(state)
   }
-)
+})
 ```
 
 

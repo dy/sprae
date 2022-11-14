@@ -1,10 +1,26 @@
 import v from 'value-ref'
 import { signal } from '@preact/signals'
-import test, {is, throws} from 'tst'
+import test, {is, any, throws} from 'tst'
 import {tick, time} from 'wait-please'
-import sporae from '../sporae.js'
+import sprae from 'sprae'
 import h from 'hyperf'
 
+test('hidden: core', async () => {
+  let el = h`<div :hidden="hidden"></div>`
+  let params = sprae(el, {hidden:true})
+  is(el.outerHTML, `<div hidden=""></div>`)
+  params.hidden = false
+  is(el.outerHTML, `<div></div>`)
+})
+
+test.only('hidden: reactive', async () => {
+  const hidden = signal(true)
+  let el = h`<div :hidden="hidden"></div>`
+  sprae(el, {hidden})
+  is(el.outerHTML, `<div hidden=""></div>`)
+  hidden.value = false
+  is(el.outerHTML, `<div></div>`)
+})
 
 test('conditions: short', async () => {
   let el = h`<p>
@@ -13,7 +29,7 @@ test('conditions: short', async () => {
     <span :else >c</span>
   </p>`
 
-  const params = sporae(el, { a: 1 })
+  const params = sprae(el, { a: 1 })
 
   is(el.innerHTML, '<span>a</span>')
   params.a = 2
@@ -60,7 +76,7 @@ test('loops: short', async () => {
     <span :each="item in items" :text="item"></span>
   </p>`
 
-  const params = sporae(el, { items: [] })
+  const params = sprae(el, { items: [] })
 
   is(el.innerHTML, '')
   params.items = [1,2]

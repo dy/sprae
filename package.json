@@ -1,28 +1,29 @@
 {
-  "devDependencies": {
-    "@preact/signals": "^1.1.2",
-    "hyperf": "^1.4.0",
-    "tst": "^7.1.1",
-    "value-ref": "^2.1.0",
-    "wait-please": "^3.1.0"
-  },
   "name": "sprae",
   "description": "Reactive directives with expressions for DOM microtemplating.",
   "version": "0.0.0",
   "main": "sprae.js",
   "dependencies": {
-    "sube": "^2.2.1",
     "element-props": "^2.0.4",
     "htm": "^3.1.1",
-    "swapdom": "^1.1.1",
-    "preact": "^10.11.2"
+    "preact": "^10.11.2",
+    "sube": "^2.2.1",
+    "swapdom": "^1.1.1"
+  },
+  "devDependencies": {
+    "@preact/signals": "^1.1.2",
+    "es-module-shims": "^1.6.2",
+    "hyperf": "^1.4.0",
+    "tst": "^7.1.1",
+    "value-ref": "^2.1.0",
+    "wait-please": "^3.1.0"
   },
   "scripts": {
     "test": "node test"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/dy/sporae.git"
+    "url": "git+https://github.com/dy/sprae.git"
   },
   "keywords": [
     "preact",
