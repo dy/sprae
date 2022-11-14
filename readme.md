@@ -31,7 +31,7 @@ Sprae enables directives as attributes starting with `:`.
 * `data` is the initial state to render the template. It can include reactive values, see [reactivity](#reactivity).
 
 <details>
-<summary><h3>Autoinit</h3></summary>
+<summary><strong>Autoinit</strong></summary>
 
 Sprae can be used without build step or JS, autoinitializing HTML:
 
@@ -67,7 +67,7 @@ Sprae can be used without build step or JS, autoinitializing HTML:
 * [ ] `:scope="data"` – autoinit subtree.
 
 <details>
-<summary><h3>Adding directives</h3></summary>
+<summary><strong>Adding directives</strong></summary>
 
 Directives can be added by registering them via `directive(name, initializer)`:
 
