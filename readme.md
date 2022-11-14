@@ -1,7 +1,8 @@
 # ∴ spræ
 
-> Reactive directives for DOM microtemplating: moisturize tree without trasplanting to JSX.
+> Hydrate tree without trasplanting to JSX.
 
+Sprae provides reactive directives for DOM microtemplating.<br/>
 A lightweight essential alternative to [alpine](https://github.com/alpinejs/alpine), [petite-vue](https://github.com/vuejs/petite-vue) and [templize](https://github.com/dy/templize) with better ergonomics[*](#justification).
 
 
