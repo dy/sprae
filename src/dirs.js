@@ -4,10 +4,8 @@ import { parseExpr } from './eval.js'
 // hidden attribute directive example
 directive('hidden', (el, expr) => {
   let evaluate = parseExpr(expr);
-  console.log('init', el, expr);
   return (state) => {
     let value = evaluate(state);
-    console.log('update', state, value);
     if (value || value === '') el.setAttribute('hidden', '')
     else el.removeAttribute('hidden')
   }

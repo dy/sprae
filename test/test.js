@@ -13,7 +13,7 @@ test('hidden: core', async () => {
   is(el.outerHTML, `<div></div>`)
 })
 
-test.only('hidden: reactive', async () => {
+test('hidden: reactive', async () => {
   const hidden = signal(true)
   let el = h`<div :hidden="hidden"></div>`
   sprae(el, {hidden})
@@ -22,7 +22,7 @@ test.only('hidden: reactive', async () => {
   is(el.outerHTML, `<div></div>`)
 })
 
-test('conditions: short', async () => {
+test.todo('conditions: short', async () => {
   let el = h`<p>
     <span :if="a==1">a</span>
     <span :else-if="a==2">b</span>
@@ -40,7 +40,7 @@ test('conditions: short', async () => {
   delete params.a
 })
 
-test('conditions: short with insertions', async () => {
+test.todo('conditions: short with insertions', async () => {
   let el = h`<p>
     <span :if="a==1" :text="['1:',a]"></span>
     <span :else-if="a==2" :text="['2:',a]"></span>
@@ -70,7 +70,7 @@ test.todo('conditions: reactive values', async () => {
 })
 
 
-test('loops: short', async () => {
+test.todo('loops: short', async () => {
   // FIXME: in some conspicuous reason jsdom fails to update text nodes somehow
   let el = h`<p>
     <span :each="item in items" :text="item"></span>
