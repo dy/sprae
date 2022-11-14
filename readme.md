@@ -48,19 +48,19 @@ Sprae can be used without build step or JS, autoinitializing HTML:
 
 ## Directives
 
-* `:if="condition"`, `:else-if="condition"`, `:else` - controls flow of elements.
-* `:each="item, idx? in list"` - create multiple instances of element by mapping list.
-* `:text="value"` - set text content of an element.
-* `:value="value"` – bind value to input or textarea.
-* `:id`, `:name`, `:for`, `:type`, `:hidden`, `:disabled`, `:href`, `:src` – common attributes setters.
-* `:class="[ foo, 'bar' ]"` – set element class from an array, object or a string.
-* `:style="{ top:1, position:'absolute' }"` – set element style from a string or an object.
-* `:prop="{ alt:'foo', title:'bar' }"` – set any attribute / property.
-* `:on="{ click:e=>{}, touch:e=>{} }"` – add event listeners.
-* `:data="{ foo:1, bar:2 }"` – set [data-*](https://developer.mozilla.org/en-US/docs/Web/HTML/Global_attributes/data-*) attributes.
-* `:aria="{ role:'progressbar' }"` – set [aria-role](https://developer.mozilla.org/en-US/docs/Web/Accessibility/ARIA) attributes.
-* `:item="{ id: 1 }"` – set [item*](https://developer.mozilla.org/en-US/docs/Web/HTML/Microdata) microdata attribute.
-* `:scope="data"` – autoinit subtree.
+<details><summary><code>if="condition"</code>, <code>else-if="condition"</code>, <code>else</code> - controls flow of elements.</summary></details>
+<details><summary><code>each="item, idx? in list"</code> - create multiple instances of element by mapping list.</summary></details>
+<details><summary><code>text="value"</code> - set text content of an element.</summary></details>
+<details><summary><code>value="value"</code> – bind value to input or textarea.</summary></details>
+<details><summary><code>id</code>, <code>name</code>, <code>for</code>, <code>type</code>, <code>hidden</code>, <code>disabled</code>, <code>href</code>, <code>src</code> – common attributes setters.</summary></details>
+<details><summary><code>class="[ foo, 'bar' ]"</code> – set element class from an array, object or a string.</summary></details>
+<details><summary><code>style="{ top:1, position:'absolute' }"</code> – set element style from a string or an object.</summary></details>
+<details><summary><code>prop="{ alt:'foo', title:'bar' }"</code> – set any attribute / property.</summary></details>
+<details><summary><code>on="{ click:e=>{}, touch:e=>{} }"</code> – add event listeners.</summary></details>
+<details><summary><code>data="{ foo:1, bar:2 }"</code> – set [data-*](https://developer.mozilla.org/en-US/docs/Web/HTML/Global_attributes/data-*) attributes.</summary></details>
+<details><summary><code>aria="{ role:'progressbar' }"</code> – set [aria-role](https://developer.mozilla.org/en-US/docs/Web/Accessibility/ARIA) attributes.</summary></details>
+<details><summary><code>item="{ id: 1 }"</code> – set [item*](https://developer.mozilla.org/en-US/docs/Web/HTML/Microdata) microdata attribute.</summary></details>
+<details><summary><code>scope="data"</code> – autoinit subtree.</summary></details>
 
 <!--
 ### Loops
