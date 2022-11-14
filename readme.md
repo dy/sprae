@@ -7,6 +7,8 @@ A lightweight essential alternative to [alpine](https://github.com/alpinejs/alpi
 
 ## Usage
 
+Sprae enables directives as attributes starting with `:`.
+
 ```html
 <div id="element" :if="user">
   Logged in as <span :text="user.displayName">Guest.</span>
@@ -44,7 +46,6 @@ Sprae can be used without build step or JS, autoinitializing HTML:
 
 * `:scope` marks regions on the tree that should be controlled by sprae.
 * `init` attribute tells sprae to automatically initialize all elements that have `:scope`.
-* any attribute starting with `:` is considered a sprae directive.
 
 </details>
 
