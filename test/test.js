@@ -8,21 +8,29 @@ import h from 'hyperf'
 test('hidden: core', async () => {
   let el = h`<div :hidden="hidden"></div>`
   let params = sprae(el, {hidden:true})
-  is(el.outerHTML, `<div hidden=""></div>`)
+  is(el.outerHTML, `<div class="∴hidden" hidden=""></div>`)
   params.hidden = false
-  is(el.outerHTML, `<div></div>`)
+  is(el.outerHTML, `<div class="∴hidden"></div>`)
 })
 
 test('hidden: reactive', async () => {
   const hidden = signal(true)
   let el = h`<div :hidden="hidden"></div>`
   sprae(el, {hidden})
-  is(el.outerHTML, `<div hidden=""></div>`)
+  is(el.outerHTML, `<div class="∴hidden" hidden=""></div>`)
   hidden.value = false
-  is(el.outerHTML, `<div></div>`)
+  is(el.outerHTML, `<div class="∴hidden"></div>`)
 })
 
-test.todo('conditions: short', async () => {
+test('text: core', async () => {
+  let el = h`<div :text="text"></div>`
+  let params = sprae(el, {text:'abc'})
+  is(el.outerHTML, `<div class="∴text">abc</div>`)
+  params.text = null
+  is(el.outerHTML, `<div class="∴text"></div>`)
+})
+
+test('conditions: base', async () => {
   let el = h`<p>
     <span :if="a==1">a</span>
     <span :else-if="a==2">b</span>
@@ -31,7 +39,7 @@ test.todo('conditions: short', async () => {
 
   const params = sprae(el, { a: 1 })
 
-  is(el.innerHTML, '<span>a</span>')
+  is(el.innerHTML, '<span class="∴if">a</span>')
   params.a = 2
   is(el.innerHTML, '<span>b</span>')
   params.a = 3
@@ -40,27 +48,27 @@ test.todo('conditions: short', async () => {
   delete params.a
 })
 
-test.todo('conditions: short with insertions', async () => {
+test('conditions: short with insertions', async () => {
   let el = h`<p>
-    <span :if="a==1" :text="['1:',a]"></span>
-    <span :else-if="a==2" :text="['2:',a]"></span>
+    <span :if="a==1" :text="'1:'+a"></span>
+    <span :else-if="a==2" :text="'2:'+a"></span>
     <span :else :text="a"></span>
   </p>`
 
-  const params = templize(el, { a: 1 }, exprProcessor)
+  const params = sprae(el, { a: 1 })
 
-  is(el.innerHTML, '<span>1:1</span>')
+  is(el.innerHTML, '<span class="∴text ∴if">1:1</span>')
   params.a = 2
-  is(el.innerHTML, '<span>2:2</span>')
+  is(el.innerHTML, '<span class="∴text">2:2</span>')
   params.a = 3
-  is(el.innerHTML, '<span>3</span>')
+  is(el.innerHTML, '<span class="∴text">3</span>')
   params.a = 4
-  is(el.innerHTML, '<span>4</span>')
+  is(el.innerHTML, '<span class="∴text">4</span>')
 
   params.a = 1
-  is(el.innerHTML, '<span>1:1</span>')
+  is(el.innerHTML, '<span class="∴text ∴if">1:1</span>')
   params.a = 4
-  is(el.innerHTML, '<span>4</span>')
+  is(el.innerHTML, '<span class="∴text">4</span>')
 
   delete params.a
 })

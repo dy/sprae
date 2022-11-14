@@ -16,7 +16,7 @@ export default function sprae(el, initScope) {
   // prepare directives
   for (let dir in directives) updates[dir] = directives[dir](el);
 
-  const update = (values) => { for (let dir in updates) updates[dir].forEach(update => update(values)) };
+  const update = (values) => { for (let dir in updates) updates[dir].forEach(update => update(values)); };
 
   // hook up observables (deeply, to include item.text etc)
   // that's least evil compared to dlv/dset or proxies
@@ -28,9 +28,9 @@ export default function sprae(el, initScope) {
       if (observable(v = scope[k])) registry.register(v, sube(v, v => (values[k] = v, ready && update(values))));
       // FIXME: add []
       else if (v?.constructor === Object) values[k] = rsube(v);
-      else values[k] = v
+      else values[k] = v;
     }
-    return values
+    return values;
   };
   const values = rsube(initScope);
   update(values);
@@ -41,7 +41,7 @@ export default function sprae(el, initScope) {
 
   const proxy = new Proxy(values,  {
     set: (s, k, v) => (values[k]=v, update(values), 1),
-    deleteProperty: (s, k) => (delete values[k], update(values), 1)
+    deleteProperty: (s, k) => (values[k]=undefined, update(values), 1)
   });
 
   return proxy
@@ -62,13 +62,8 @@ export const directive = (name, initializer) => {
 
     // replace all shortcuts with inner templates
     for (let el of els) {
-      // FIXME: make sure no leak is introduced here
-      if (!store.has(el)) {
-        store.add(el);
-        let expr = el.getAttribute(':'+name);
-        el.removeAttribute(':'+name);
-        updates.push(initializer(el, expr));
-      }
+      if (!el.classList.contains(`∴${name}`))
+        el.classList.add(`∴${name}`), updates.push(initializer(el));
     }
 
     return updates

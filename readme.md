@@ -72,16 +72,16 @@ Sprae can be used without build step or JS, autoinitializing HTML:
 Directives can be added by registering them via `directive(name, initializer)`:
 
 ```js
-import init, { directive } from 'sprae'
+import init, { directive } from 'sprae';
 
-directive(':html', (el, expr) => {
+directive(':html', (el) => {
   // ...initialize here
-  const evaluate = parseExpression(expr)
+  const evaluate = parseExpression(el.getAttribute(':html'));
   return (state) => {
     // ...update here
-    el.innerHTML = evaluate(state)
+    el.innerHTML = evaluate(state);
   }
-})
+});
 ```
 
 </details>
@@ -124,7 +124,6 @@ Update happens when any value changes:
 ```
 
 Note: observers don't require disposal, since they're connected in weak fashion. Once element is disposed, observables are disconnected.
-
 
 
 ## Justification
