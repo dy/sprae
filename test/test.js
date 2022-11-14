@@ -73,8 +73,28 @@ test('conditions: short with insertions', async () => {
   delete params.a
 })
 
-test.todo('conditions: reactive values', async () => {
+test('conditions: reactive values', async () => {
+  let el = h`<p>
+    <span :if="a==1" :text="'1:'+a"></span>
+    <span :else-if="a==2" :text="'2:'+a"></span>
+    <span :else :text="a"></span>
+  </p>`
 
+  const a = signal(1)
+  sprae(el, { a })
+
+  is(el.innerHTML, '<span class="∴text ∴if">1:1</span>')
+  a.value = 2
+  is(el.innerHTML, '<span class="∴text">2:2</span>')
+  a.value = 3
+  is(el.innerHTML, '<span class="∴text">3</span>')
+  a.value = 4
+  is(el.innerHTML, '<span class="∴text">4</span>')
+
+  a.value = 1
+  is(el.innerHTML, '<span class="∴text ∴if">1:1</span>')
+  a.value = 4
+  is(el.innerHTML, '<span class="∴text">4</span>')
 })
 
 
