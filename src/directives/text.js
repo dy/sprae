@@ -1,5 +1,4 @@
-import { directive } from '../core.js'
-import { parseExpr } from '../eval.js'
+import { directive, parseExpr } from '../core.js'
 
 // hidden attribute directive example
 directive('text', (el) => {

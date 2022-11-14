@@ -1,5 +1,4 @@
-import { directive } from '../core.js'
-import { parseExpr } from '../eval.js'
+import { directive, parseExpr } from '../core.js'
 
 directive('if', (el) => {
   let expr = el.getAttribute(':if');
@@ -11,12 +10,14 @@ directive('if', (el) => {
   while (cur = el.nextElementSibling) {
     if (expr = cur.getAttribute(':else-if')) {
       cur.removeAttribute(':else-if');
+      cur.classList.add('∴else-if')
       cur.remove();
       els.push(cur); clauses.push(parseExpr(expr));
       continue
     }
     if (cur.hasAttribute(':else')) {
       cur.removeAttribute(':else');
+      cur.classList.add('∴else')
       cur.remove();
       els.push(cur); clauses.push(() => 1);
     }

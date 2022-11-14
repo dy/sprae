@@ -53,7 +53,7 @@ Sprae can be used without build step or JS, autoinitializing HTML:
 ## Directives
 
 * `:if="condition"`, `:else-if="condition"`, `:else` - controls flow of elements.
-* `:each="item, idx? in list"` - create multiple instances of element by mapping list.
+* `:each="item, i? in list"`,`:each="i in number"` - create multiple instances of element by mapping list or number.
 * `:text="value"` - set text content of an element.
 * `:value="value"` – bind value to input or textarea.
 * `:id`, `:name`, `:for`, `:type`, `:hidden`, `:disabled`, `:href`, `:src` – common attributes setters.
