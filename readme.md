@@ -73,11 +73,11 @@ Sprae can be used without build step or JS, autoinitializing HTML:
 Directives can be added by registering them via `directive(name, initializer)`:
 
 ```js
-import init, { directive } from 'sprae';
+import { directive, parseExpr } from 'sprae';
 
 directive(':html', (el) => {
   // ...initialize here
-  const evaluate = parseExpression(el.getAttribute(':html'));
+  const evaluate = parseExpr(el.getAttribute(':html'));
   return (state) => {
     // ...update here
     el.innerHTML = evaluate(state);

@@ -1,2 +1,2 @@
-export { default, directive } from './core.js';
+export * from './core.js';
 import './directives/index.js';
