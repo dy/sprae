@@ -110,8 +110,8 @@ Update happens when any value changes:
 
   // <div id="done">...</div>
 
-  const loading = signal(true),
-        result = signal(false);
+  const loading = signal(true), result = signal(false);
+
   spores(done, { loading, result })
 
   // <div id="done">loading</div>
