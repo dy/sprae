@@ -48,9 +48,8 @@ Sprae can be used without build step or JS, autoinitializing HTML:
 
 ## Directives
 
-* `:scope="data"` – autoinit subtree.
 * `:if="condition"`, `:else-if="condition"`, `:else` - controls flow of elements.
-* `:each="item, idx? in list"` - map list to instances of an element.
+* `:each="item, idx? in list"` - create multiple instances of element by mapping list.
 * `:text="value"` - set text content of an element.
 * `:value="value"` – bind value to input or textarea.
 * `:id`, `:name`, `:for`, `:type`, `:hidden`, `:disabled`, `:href`, `:src` – common attributes setters.
@@ -61,6 +60,7 @@ Sprae can be used without build step or JS, autoinitializing HTML:
 * `:data="{ foo:1, bar:2 }"` – set [data-*](https://developer.mozilla.org/en-US/docs/Web/HTML/Global_attributes/data-*) attributes.
 * `:aria="{ role:'progressbar' }"` – set [aria-role](https://developer.mozilla.org/en-US/docs/Web/Accessibility/ARIA) attributes.
 * `:item="{ id: 1 }"` – set [item*](https://developer.mozilla.org/en-US/docs/Web/HTML/Microdata) microdata attribute.
+* `:scope="data"` – autoinit subtree.
 
 <!--
 ### Loops
@@ -88,7 +88,8 @@ To optionally display an element, there are `if`, `else-if`, `else` directives.
 ```
 -->
 
-### Adding directives
+<details>
+<summary><h3>Adding directives</h3></summary>
 
 Directives can be added by registering them via `directive(name, initializer)`:
 
@@ -104,6 +105,8 @@ directive(':html', (el, expr) => {
   }
 })
 ```
+
+</details>
 
 
 ## Reactivity
