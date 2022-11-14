@@ -56,7 +56,7 @@ Sprae can be used without build step or JS, autoinitializing HTML:
 * [x] `:each="item, i? in list"`,`:each="i in number"` - create multiple instances of element by mapping list or number.
 * [x] `:text="value"` - set text content of an element.
 * [ ] `:value="value"` – bind value to input or textarea.
-* [ ]`:id`, `:name`, `:for`, `:type`, `:hidden`, `:disabled`, `:href`, `:src` – common attributes setters.
+* [ ] `:id`, `:name`, `:for`, `:type`, `:hidden`, `:disabled`, `:href`, `:src` – common attributes setters.
 * [ ] `:class="[ foo, 'bar' ]"` – set element class from an array, object or a string.
 * [ ] `:style="{ top:1, position:'absolute' }"` – set element style from a string or an object.
 * [ ] `:prop="{ alt:'foo', title:'bar' }"` – set any attribute / property.
