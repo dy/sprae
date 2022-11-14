@@ -52,19 +52,19 @@ Sprae can be used without build step or JS, autoinitializing HTML:
 
 ## Directives
 
-* `:if="condition"`, `:else-if="condition"`, `:else` - controls flow of elements.
-* `:each="item, i? in list"`,`:each="i in number"` - create multiple instances of element by mapping list or number.
-* `:text="value"` - set text content of an element.
-* `:value="value"` – bind value to input or textarea.
-* `:id`, `:name`, `:for`, `:type`, `:hidden`, `:disabled`, `:href`, `:src` – common attributes setters.
-* `:class="[ foo, 'bar' ]"` – set element class from an array, object or a string.
-* `:style="{ top:1, position:'absolute' }"` – set element style from a string or an object.
-* `:prop="{ alt:'foo', title:'bar' }"` – set any attribute / property.
-* `:on="{ click:e=>{}, touch:e=>{} }"` – add event listeners.
-* `:data="{ foo:1, bar:2 }"` – set [data-*](https://developer.mozilla.org/en-US/docs/Web/HTML/Global_attributes/data-*) attributes.
-* `:aria="{ role:'progressbar' }"` – set [aria-role](https://developer.mozilla.org/en-US/docs/Web/Accessibility/ARIA) attributes.
-* `:item="{ id: 1 }"` – set [item*](https://developer.mozilla.org/en-US/docs/Web/HTML/Microdata) microdata attribute.
-* `:scope="data"` – autoinit subtree.
+* [x] `:if="condition"`, `:else-if="condition"`, `:else` - controls flow of elements.
+* [x] `:each="item, i? in list"`,`:each="i in number"` - create multiple instances of element by mapping list or number.
+* [x] `:text="value"` - set text content of an element.
+* [ ] `:value="value"` – bind value to input or textarea.
+* [ ]`:id`, `:name`, `:for`, `:type`, `:hidden`, `:disabled`, `:href`, `:src` – common attributes setters.
+* [ ] `:class="[ foo, 'bar' ]"` – set element class from an array, object or a string.
+* [ ] `:style="{ top:1, position:'absolute' }"` – set element style from a string or an object.
+* [ ] `:prop="{ alt:'foo', title:'bar' }"` – set any attribute / property.
+* [ ] `:on="{ click:e=>{}, touch:e=>{} }"` – add event listeners.
+* [ ] `:data="{ foo:1, bar:2 }"` – set [data-*](https://developer.mozilla.org/en-US/docs/Web/HTML/Global_attributes/data-*) attributes.
+* [ ] `:aria="{ role:'progressbar' }"` – set [aria-role](https://developer.mozilla.org/en-US/docs/Web/Accessibility/ARIA) attributes.
+* [ ] `:item="{ id: 1 }"` – set [item*](https://developer.mozilla.org/en-US/docs/Web/HTML/Microdata) microdata attribute.
+* [ ] `:scope="data"` – autoinit subtree.
 
 <details>
 <summary><h3>Adding directives</h3></summary>
