@@ -28,7 +28,8 @@ A lightweight essential alternative to [alpine](https://github.com/alpinejs/alpi
 * `update` can be used for bulk-updating multiple props.
 * `data` is the initial state to render the template. It can include reactive values, see [reactivity](#reactivity).
 
-## Autoinit
+<details>
+<summary><h3>Autoinit</h3></summary>
 
 Sprae can be used without build step or JS, autoinitializing HTML:
 
@@ -44,6 +45,8 @@ Sprae can be used without build step or JS, autoinitializing HTML:
 * `:scope` marks regions on the tree that should be controlled by sprae.
 * `init` attribute tells sprae to automatically initialize all elements that have `:scope`.
 * any attribute starting with `:` is considered a sprae directive.
+
+</details>
 
 
 ## Directives
