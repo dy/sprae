@@ -105,14 +105,14 @@ Update happens when any value changes:
 <div id="done" :text="loading ? 'loading' : result">...</div>
 
 <script>
-  import spores from 'sprae';
+  import sprae from 'sprae';
   import { signals } from '@preact/signals';
 
   // <div id="done">...</div>
 
   const loading = signal(true), result = signal(false);
 
-  spores(done, { loading, result })
+  sprae(done, { loading, result })
 
   // <div id="done">loading</div>
 
