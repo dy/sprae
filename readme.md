@@ -1,8 +1,8 @@
 # ∴ spræ
 
-> Soft organic DOM tree hydration
+> Soft hydration for DOM tree
 
-Sprae provides reactive directives for DOM microtemplating.<br/>
+Sprae provides reactive directives for DOM templating.<br/>
 A lightweight essential alternative to [alpine](https://github.com/alpinejs/alpine), [petite-vue](https://github.com/vuejs/petite-vue), [templize](https://github.com/dy/templize) or JSX with better ergonomics[*](#justification).
 
 
@@ -16,25 +16,25 @@ Sprae enables directives as attributes starting with `:`.
 </div>
 
 <script type="module">
-  import init from 'sprae';
+  import sprae from 'sprae';
 
-  const data = { user: { displayName: 'Dmitry Ivanov' } }
-  const [state, update] = init(user, data);
+  const init = { user: { displayName: 'Dmitry Ivanov' } }
+  const [values, update] = sprae(user, init);
 
-  state.user.displayName = 'dy'       // update value
+  values.user.displayName = 'dy'       // update value
   update({user: {displayName: 'dy'}}) // alternatively
 </script>
 ```
 
-* `init` initializes directives within an `element` subtree with passed `data`.
-* `state` is proxy reflecting used values, changing any of its props updates directives.
-* `update` can be used for bulk-updating multiple props.
-* `data` is the initial state to render the template. It can include reactive values, see [reactivity](#reactivity).
+* `sprae` initializes directives within an `element` subtree with passed `init` data.
+* `values` is proxy reflecting directives values, changing any of its props updates directives.
+* `update` can be used for bulk-updating multiple values.
+* `init` is the initial state to render the template. It can include reactive values, see [reactivity](#reactivity).
 
 <details>
 <summary><strong>Autoinit</strong></summary>
 
-Sprae can be used without build step or JS, autoinitializing HTML:
+Sprae can be used without build step or JS, autoinitializing document:
 
 ```html
 <script src="./sprae.js" defer init></script>
@@ -45,8 +45,8 @@ Sprae can be used without build step or JS, autoinitializing HTML:
 </div>
 ```
 
-* `:scope` marks regions on the tree that should be controlled by sprae.
-* `init` attribute tells sprae to automatically initialize all elements that have `:scope`.
+* `:scope` defines data for regions of the tree.
+* `init` attribute tells sprae to automatically initialize document.
 
 </details>
 
@@ -54,9 +54,9 @@ Sprae can be used without build step or JS, autoinitializing HTML:
 ## Directives
 
 * [x] `:if="condition"`, `:else-if="condition"`, `:else` - controls flow of elements.
-* [x] `:each="item, i? in list"`,`:each="i in number"` - create multiple instances of element by mapping list or number.
+* [x] `:each="item, i? in list|number"` - create multiple instances of element from list or 1..number range.
 * [x] `:text="value"` - set text content of an element.
-* [ ] `:value="value"` – bind value to input or textarea.
+* [ ] `:value="value"` – bind value to input or textarea (reflected in model).
 * [ ] `:id`, `:name`, `:for`, `:type`, `:hidden`, `:disabled`, `:href`, `:src` – common attributes setters.
 * [ ] `:class="[ foo, 'bar' ]"` – set element class from an array, object or a string.
 * [ ] `:style="{ top:1, position:'absolute' }"` – set element style from a string or an object.
