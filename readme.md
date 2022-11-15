@@ -63,7 +63,7 @@ Sprae can be used without build step or JS, autoinitializing document:
 * [ ] `:on="{ click:e=>{}, touch:e=>{} }"` – add event listeners.
 * [ ] `:data="{ foo:1, bar:2 }"` – set [data-*](https://developer.mozilla.org/en-US/docs/Web/HTML/Global_attributes/data-*) attributes.
 * [ ] `:aria="{ role:'progressbar' }"` – set [aria-role](https://developer.mozilla.org/en-US/docs/Web/Accessibility/ARIA) attributes.
-* [ ] `:scope="data"` – autoinit subtree.
+* [ ] `:scope="data"` – subtree data.
 <!-- * [ ] `:item="{ id: 1 }"` – set [item*](https://developer.mozilla.org/en-US/docs/Web/HTML/Microdata) microdata attribute. -->
 
 <details>
