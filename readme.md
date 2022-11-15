@@ -59,11 +59,11 @@ Sprae can be used without build step or JS, autoinitializing document:
 * [ ] `:id`, `:name`, `:for`, `:type`, `:hidden`, `:disabled`, `:href`, `:src` – common attributes setters.
 * [ ] `:class="[ foo, 'bar' ]"` – set element class from an array, object or a string.
 * [ ] `:style="{ top:1, position:'absolute' }"` – set element style from a string or an object.
-* [ ] `:prop="{ alt:'foo', title:'bar' }"` – set any attribute / property.
+* [ ] `:="{ alt:'foo', title:'bar' }"` – set any other attribute / property.
 * [ ] `:on="{ click:e=>{}, touch:e=>{} }"` – add event listeners.
 * [ ] `:data="{ foo:1, bar:2 }"` – set [data-*](https://developer.mozilla.org/en-US/docs/Web/HTML/Global_attributes/data-*) attributes.
 * [ ] `:aria="{ role:'progressbar' }"` – set [aria-role](https://developer.mozilla.org/en-US/docs/Web/Accessibility/ARIA) attributes.
-* [ ] `:scope="data"` – subtree data.
+* [ ] `:scope="data"` – subtree fragment data.
 <!-- * [ ] `:item="{ id: 1 }"` – set [item*](https://developer.mozilla.org/en-US/docs/Web/HTML/Microdata) microdata attribute. -->
 
 <details>
