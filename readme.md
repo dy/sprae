@@ -21,8 +21,7 @@ Sprae enables directives as attributes starting with `:`.
   const init = { user: { displayName: 'Dmitry Ivanov' } }
   const [values, update] = sprae(user, init);
 
-  values.user.displayName = 'dy'       // update value
-  update({user: {displayName: 'dy'}}) // alternatively
+  values.user.displayName = 'dy' // update value
 </script>
 ```
 
