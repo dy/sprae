@@ -1,8 +1,7 @@
 # ∴ spræ
 
-> Soft hydration for DOM tree
+> Reactive microdirectives for soft DOM hydration.
 
-Sprae provides reactive directives for DOM templating.<br/>
 A lightweight essential alternative to [alpine](https://github.com/alpinejs/alpine), [petite-vue](https://github.com/vuejs/petite-vue), [templize](https://github.com/dy/templize) or JSX with better ergonomics[*](#justification).
 
 
@@ -19,15 +18,14 @@ Sprae enables directives as attributes starting with `:`.
   import sprae from 'sprae';
 
   const init = { user: { displayName: 'Dmitry Ivanov' } }
-  const [values, update] = sprae(user, init);
+  const state = sprae(user, init);
 
-  values.user.displayName = 'dy' // update value
+  state.user.displayName = 'dy' // automatically updates DOM
 </script>
 ```
 
 * `sprae` initializes directives within an `element` subtree with passed `init` data.
-* `values` is proxy reflecting directives values, changing any of its props updates directives.
-* `update` can be used for bulk-updating multiple values.
+* `state` is proxy reflecting directives values, changing any of its props updates directives.
 * `init` is the initial state to render the template. It can include reactive values, see [reactivity](#reactivity).
 
 <details>
@@ -38,17 +36,32 @@ Sprae can be used without build step or JS, autoinitializing document:
 ```html
 <script src="./sprae.js" defer init></script>
 
-<div :scope="{ count: 0 }">
+<div :with="{ count: 0 }">
   <span :text="count">
   <button :on="{ click: e => count++ }">inc</button>
 </div>
 ```
 
-* `:scope` defines data for regions of the tree.
+* `:with` defines data for regions of the tree.
 * `init` attribute tells sprae to automatically initialize document.
 
 </details>
 
+<details><summary><strong>Bulk update</strong></summary>
+
+To update multiple values at once, state can be expanded as:
+
+```js
+let state = sprae(el, init);
+let [values, update] = state;
+
+update({...values, user: {...values.user, displayName: 'dy'}});
+```
+
+* `values` holds actual rendered state values. Changing it doesn't rerender DOM, unlike `state`.
+* `update` useful for bulk-update multiple values at once.
+
+</details>
 
 ## Directives
 
@@ -63,7 +76,7 @@ Sprae can be used without build step or JS, autoinitializing document:
 * [ ] `:on="{ click:e=>{}, touch:e=>{} }"` – add event listeners.
 * [ ] `:data="{ foo:1, bar:2 }"` – set [data-*](https://developer.mozilla.org/en-US/docs/Web/HTML/Global_attributes/data-*) attributes.
 * [ ] `:aria="{ role:'progressbar' }"` – set [aria-role](https://developer.mozilla.org/en-US/docs/Web/Accessibility/ARIA) attributes.
-* [ ] `:scope="data"` – subtree fragment data.
+* [ ] `:with="data"` – provide data for subtree fragment.
 <!-- * [ ] `:item="{ id: 1 }"` – set [item*](https://developer.mozilla.org/en-US/docs/Web/HTML/Microdata) microdata attribute. -->
 
 <details>
@@ -74,9 +87,9 @@ Directives can be added by registering them via `directive(name, initializer)`:
 ```js
 import { directive, parseExpr } from 'sprae';
 
-directive(':html', (el) => {
+directive(':html', (el, expr) => {
   // ...initialize here
-  const evaluate = parseExpr(el.getAttribute(':html'));
+  const evaluate = parseExpr(expr);
   return (state) => {
     // ...update here
     el.innerHTML = evaluate(state);
