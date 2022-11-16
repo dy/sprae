@@ -34,10 +34,22 @@ test('hidden: reactive', async () => {
 
 test('common: reactive', async () => {
   let el = h`<label :for="name" :text="name" ></label><input :id="name" :name="name" :type="name" :disabled="!name"/><a :href="url"></a><img :src="url"/>`
-  let params = sprae(el, {name:'text', url:'//link-to'})
-  is(el.outerHTML, `<label class="∴text ∴for" for="text">text</label><input class="∴id ∴name ∴type ∴disabled" id="text" name="text" type="text"><a class="∴href" href="//link-to"></a><img class="∴src" src="//link-to">`)
+  let params = sprae(el, {name:'text', url:'//google.com'})
+  is(el.outerHTML, `<label class="∴text ∴for" for="text">text</label><input class="∴id ∴name ∴type ∴disabled" id="text" name="text" type="text"><a class="∴href" href="//google.com"></a><img class="∴src" src="//google.com">`)
   params.name = 'email'
-  is(el.outerHTML, `<label class="∴text ∴for" for="email">email</label><input class="∴id ∴name ∴type ∴disabled" id="email" name="email" type="email"><a class="∴href" href="//link-to"></a><img class="∴src" src="//link-to">`)
+  is(el.outerHTML, `<label class="∴text ∴for" for="email">email</label><input class="∴id ∴name ∴type ∴disabled" id="email" name="email" type="email"><a class="∴href" href="//google.com"></a><img class="∴src" src="//google.com">`)
+})
+
+test('common: style', async () => {
+
+})
+
+test('common: class', async () => {
+  let el = h`<x :class="a"></x><y :class="[b, c]"></y><z :class="{b:true, c:d}"></z>`
+  let params = sprae(el, {a:'x', b:'y', c:'z', d:false});
+  is(el.outerHTML, `<x class="x"></x><y class="y z"></y><z class="b"></z>`);
+  params.d = true;
+  is(el.outerHTML, `<x class="x"></x><y class="y z"></y><z class="b c"></z>`);
 })
 
 test('text: core', async () => {

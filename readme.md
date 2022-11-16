@@ -69,7 +69,7 @@ update({...values, user: {...values.user, displayName: 'dy'}});
 * [x] `:each="item, i? in list|number"` - create multiple instances of element from list or 1..number range.
 * [x] `:text="value"` - set text content of an element.
 * [ ] `:value="value"` – bind value to input or textarea (reflected in model).
-* [ ] `:id`, `:name`, `:for`, `:type`, `:hidden`, `:disabled`, `:href`, `:src` – common attributes setters.
+* [x] `:id`, `:name`, `:for`, `:type`, `:hidden`, `:disabled`, `:href`, `:src` – common attributes setters.
 * [ ] `:class="[ foo, 'bar' ]"` – set element class from an array, object or a string.
 * [ ] `:style="{ top:1, position:'absolute' }"` – set element style from a string or an object.
 * [ ] `:prop="{ alt:'foo', title:'bar' }"` – set any other attribute / property.
