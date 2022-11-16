@@ -70,9 +70,9 @@ update({...values, user: {...values.user, displayName: 'dy'}});
 * [x] `:text="value"` - set text content of an element.
 * [ ] `:value="value"` – bind value to input or textarea (reflected in model).
 * [x] `:id`, `:name`, `:for`, `:type`, `:hidden`, `:disabled`, `:href`, `:src` – common attributes setters.
-* [ ] `:class="[ foo, 'bar' ]"` – set element class from an array, object or a string.
-* [ ] `:style="{ top:1, position:'absolute' }"` – set element style from a string or an object.
-* [ ] `:prop="{ alt:'foo', title:'bar' }"` – set any other attribute / property.
+* [x] `:class="[ foo, 'bar' ]"` – set element class from an array, object or a string.
+* [x] `:style="{ top:1, position:'absolute' }"` – set element style from a string or an object.
+* [x] `:prop="{ alt:'foo', title:'bar' }"` – set any other attribute / property.
 * [ ] `:on="{ click:e=>{}, touch:e=>{} }"` – add event listeners.
 * [ ] `:data="{ foo:1, bar:2 }"` – set [data-*](https://developer.mozilla.org/en-US/docs/Web/HTML/Global_attributes/data-*) attributes.
 * [ ] `:aria="{ role:'progressbar' }"` – set [aria-role](https://developer.mozilla.org/en-US/docs/Web/Accessibility/ARIA) attributes.

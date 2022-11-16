@@ -50,10 +50,19 @@ test('common: style', async () => {
 
 test('common: class', async () => {
   let el = h`<x :class="a"></x><y :class="[b, c]"></y><z :class="{b:true, c:d}"></z>`
-  let params = sprae(el, {a:'x', b:'y', c:'z', d:false});
+  const c = signal('z')
+  let params = sprae(el, {a:'x', b:'y', c, d:false});
   is(el.outerHTML, `<x class="x"></x><y class="y z"></y><z class="b"></z>`);
   params.d = true;
   is(el.outerHTML, `<x class="x"></x><y class="y z"></y><z class="b c"></z>`);
+  c.value = 'w'
+  is(el.outerHTML, `<x class="x"></x><y class="y w"></y><z class="b c"></z>`);
+})
+
+test('props: base', async () => {
+  let el = h`<input :prop="{for:1, title:2, form:3, type:4, placeholder: 5}"/>`
+  let params = sprae(el)
+  is(el.outerHTML, `<input class="∴prop" for="1" title="2" form="3" type="4" placeholder="5">`)
 })
 
 test('text: core', async () => {
