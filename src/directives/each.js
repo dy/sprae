@@ -1,9 +1,6 @@
 import sprae, { directive, exprError, parseExpr } from '../core.js'
 
-directive('each', (el) => {
-  let expr = el.getAttribute(':each');
-  el.removeAttribute(':each');
-
+directive(':each', (el, expr) => {
   let each = parseForExpression(expr);
   if (!each) return exprError(new Error, expr, el);
 

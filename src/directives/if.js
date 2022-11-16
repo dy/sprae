@@ -1,9 +1,6 @@
 import { directive, parseExpr } from '../core.js'
 
-directive('if', (el) => {
-  let expr = el.getAttribute(':if');
-  el.removeAttribute(':if');
-
+directive(':if', (el, expr) => {
   let cur = el, els = [el], clauses = [parseExpr(expr)], holder = new Text
 
   // collect clauses

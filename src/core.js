@@ -52,7 +52,7 @@ const directives = {}, store = new WeakSet
 
 // register a directive
 export const directive = (name, initializer) => {
-  const attr = `\\:${name}`, sel = `[${attr}]`
+  const sel = `[${name.replace(':','\\:')}]`, className = name.replace(':','∴')
 
   return directives[name] = (container) => {
     const els = [...container.querySelectorAll(sel)];
@@ -62,8 +62,12 @@ export const directive = (name, initializer) => {
 
     // replace all shortcuts with inner templates
     for (let el of els) {
-      if (!el.classList.contains(`∴${name}`))
-        el.classList.add(`∴${name}`), updates.push(initializer(el));
+      if (!el.classList.contains(className)) {
+        el.classList.add(className)
+        let expr = el.getAttribute(name)
+        el.removeAttribute(name)
+        updates.push(initializer(el, expr));
+      }
     }
 
     return updates
