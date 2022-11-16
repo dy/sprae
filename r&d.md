@@ -54,6 +54,7 @@
 
 + `:=obj` reminds pascal assignment operator, which is cool
 + `:={a:1,b:2}` is natural convention from vue/alpine as - all props in object are assigned as `:{attr}`
+- We can use `:="{data}"` fro sprae autoinit, since scope has confusing name: `:scope={}`, `:sprae={}`, `:with={}`
 
 ## [ ] Scopes mechanism: prototype inheritance chain vs multiple `with` wrappers
 
@@ -68,6 +69,10 @@
 
 ? what if we avoid scope inheritance mechanism (what's the real use for it?) and instead just make reactive store object, so that :with directive subscribes to any input props, but "shadows" subtree?
   ? are there uses for inheritance
+
+? Do we need scopes at all? Only for the purpose of autoinit?
+- it seems scopes can introduce more confusion and mess in templates: indicating full paths is more beneficial
+  + unless we introduce proper ":with="item.x as x""
 
 ## [ ] Should we inherit values from `init` in `sprae(el, init)`, instead of creating a snapshot of reactive values in `init`?
 

@@ -36,13 +36,13 @@ Sprae can be used without build step or JS, autoinitializing document:
 ```html
 <script src="./sprae.js" defer init></script>
 
-<div :with="{ count: 0 }">
+<div :="{ count: 0 }">
   <span :text="count">
   <button :on="{ click: e => count++ }">inc</button>
 </div>
 ```
 
-* `:with` defines data for regions of the tree.
+* `:` defines data for regions of the tree to autoinit sprae on.
 * `init` attribute tells sprae to automatically initialize document.
 
 </details>
@@ -72,11 +72,11 @@ update({...values, user: {...values.user, displayName: 'dy'}});
 * [ ] `:id`, `:name`, `:for`, `:type`, `:hidden`, `:disabled`, `:href`, `:src` – common attributes setters.
 * [ ] `:class="[ foo, 'bar' ]"` – set element class from an array, object or a string.
 * [ ] `:style="{ top:1, position:'absolute' }"` – set element style from a string or an object.
-* [ ] `:="{ alt:'foo', title:'bar' }"` – set any other attribute / property.
+* [ ] `:prop="{ alt:'foo', title:'bar' }"` – set any other attribute / property.
 * [ ] `:on="{ click:e=>{}, touch:e=>{} }"` – add event listeners.
 * [ ] `:data="{ foo:1, bar:2 }"` – set [data-*](https://developer.mozilla.org/en-US/docs/Web/HTML/Global_attributes/data-*) attributes.
 * [ ] `:aria="{ role:'progressbar' }"` – set [aria-role](https://developer.mozilla.org/en-US/docs/Web/Accessibility/ARIA) attributes.
-* [ ] `:with="data"` – provide data for subtree fragment.
+* [ ] `:with="data"`, `:with="foo.bar as bar"` – provide data alias for subtree fragment.
 <!-- * [ ] `:item="{ id: 1 }"` – set [item*](https://developer.mozilla.org/en-US/docs/Web/HTML/Microdata) microdata attribute. -->
 
 <details>
