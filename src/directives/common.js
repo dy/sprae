@@ -13,16 +13,7 @@ export const prop = (el, k, v) => (
   )
 )
 
-common(`id`)
-common(`name`)
-common(`for`)
-common(`type`)
-common(`hidden`)
-common(`disabled`)
-common(`href`)
-common(`src`)
-common(`style`)
-common(`class`)
+common(`id`), common(`name`), common(`for`), common(`type`), common(`hidden`), common(`disabled`), common(`href`), common(`src`), common(`style`), common(`class`)
 
 function common(name) {
   directive(':'+name, (el,expr) => {
@@ -30,9 +21,6 @@ function common(name) {
     return state => {
       let value = evaluate(state);
       prop(el, name, value)
-      // if (value === true || value === '') el.setAttribute(name, '');
-      // else if (value) el.setAttribute(name, value);
-      // else el.removeAttribute(name)
     }
   })
 }

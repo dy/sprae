@@ -41,7 +41,11 @@ test('common: reactive', async () => {
 })
 
 test('common: style', async () => {
-
+  let el = h`<x :style="style"></x>`
+  let params = sprae(el, {style: "top: 1px"})
+  is(el.outerHTML, `<x class="∴style" style="top: 1px"></x>`)
+  params.style = {top: '2px'}
+  is(el.outerHTML, `<x class="∴style" style="top: 2px;"></x>`)
 })
 
 test('common: class', async () => {
