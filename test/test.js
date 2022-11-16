@@ -5,6 +5,16 @@ import {tick, time} from 'wait-please'
 import sprae from 'sprae'
 import h from 'hyperf'
 
+Object.defineProperty(DocumentFragment.prototype, 'outerHTML', {
+  get() {
+    let s = ''
+    this.childNodes.forEach(n => {
+      s += n.nodeType === 3 ? n.textContent : n.outerHTML != null ? n.outerHTML : ''
+    })
+    return s
+  }
+})
+
 test('hidden: core', async () => {
   let el = h`<div :hidden="hidden"></div>`
   let params = sprae(el, {hidden:true})
@@ -20,6 +30,14 @@ test('hidden: reactive', async () => {
   is(el.outerHTML, `<div class="∴hidden" hidden=""></div>`)
   hidden.value = false
   is(el.outerHTML, `<div class="∴hidden"></div>`)
+})
+
+test('common: reactive', async () => {
+  let el = h`<label :for="name" :text="name" ></label><input :id="name" :name="name" :type="name" :disabled="!name"/><a :href="url"></a><img :src="url"/>`
+  let params = sprae(el, {name:'text', url:'//link-to'})
+  is(el.outerHTML, `<label class="∴text ∴for" for="text">text</label><input class="∴id ∴name ∴type ∴disabled" id="text" name="text" type="text"><a class="∴href" href="//link-to"></a><img class="∴src" src="//link-to">`)
+  params.name = 'email'
+  is(el.outerHTML, `<label class="∴text ∴for" for="email">email</label><input class="∴id ∴name ∴type ∴disabled" id="email" name="email" type="email"><a class="∴href" href="//link-to"></a><img class="∴src" src="//link-to">`)
 })
 
 test('text: core', async () => {
@@ -182,7 +200,7 @@ test('each: condition within loop', async () => {
 })
 
 
-test.todo('scope: inline', () => {
+test.todo('with: inline', () => {
   let el = h`<x :with="{foo:'bar', baz}"><y :text="foo + baz"></y></x>`
   let state = sprae(el, {baz: 'qux'})
   // FIXME: this doesn't inherit root scope baz property and instead uses hard-initialized one
@@ -190,21 +208,21 @@ test.todo('scope: inline', () => {
   state.baz = 'quux'
   is(el.innerHTML, `<y>barquux</y>`)
 })
-test.todo('scope: data', () => {
+test.todo('with: data', () => {
   let el = h`<x :with="x"><y :text="foo"></y></x>`
   let [state, update] = sprae(el, {x:{foo:'bar'}})
   is(el.innerHTML, `<y>bar</y>`)
   update({x:{foo:'baz'}})
   is(el.innerHTML, `<y>baz</y>`)
 })
-test.todo('scope: inheritance', () => {
+test.todo('with: inheritance', () => {
   // NOTE: y:text initializes through directive, not through parent
   // therefore by default :text uses parent's state, not defined by element itself
   let el = h`<x :with="{foo:'foo'}"><y :with="b" :text="foo+bar"></y></x>`
   sprae(el, {b:{bar:'bar'}})
   is(el.innerHTML, `<y>foobar</y>`)
 })
-test.todo('scope: reactive inheritance', () => {
+test.todo('with: reactive inheritance', () => {
   let el = h`<x :with="{foo:1}"><y :with="b.c" :text="foo+bar"></y></x>`
   const bar = signal('2')
   sprae(el, {b:{c:{bar}}})

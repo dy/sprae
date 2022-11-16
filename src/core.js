@@ -56,7 +56,7 @@ export const directive = (name, initializer) => {
 
   return directives[name] = (container) => {
     const els = [...container.querySelectorAll(sel)];
-    if (container.matches(sel)) els.unshift(container);
+    if (container.matches?.(sel)) els.unshift(container);
 
     const updates = [];
 
