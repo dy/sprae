@@ -238,6 +238,25 @@ test('each: condition within loop', async () => {
   is(el.innerHTML, '')
 })
 
+test('on: base', () => {
+  let el = h`<div :on="{click(e){log.push('click')},x}"></div>`
+  let log = signal([])
+  let params = sprae(el, {x(){log.value.push('x')}, log})
+
+  is(el.outerHTML, `<div class="∴on"></div>`);
+  el.dispatchEvent(new Event('click'));
+  is(log.value, ['click'])
+  el.dispatchEvent(new Event('x'));
+  is(log.value, ['click','x'])
+
+  params.x = function(){log.value.push('xx')}
+  el.dispatchEvent(new Event('x'));
+  is(log.value, ['click','x','xx']);
+
+  delete params.x;
+  el.dispatchEvent(new Event('x'));
+  is(log.value, ['click','x','xx']);
+})
 
 test.todo('with: inline', () => {
   let el = h`<x :with="{foo:'bar', baz}"><y :text="foo + baz"></y></x>`

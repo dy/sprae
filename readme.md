@@ -73,7 +73,7 @@ update({...values, user: {...values.user, displayName: 'dy'}});
 * [x] `:class="[ foo, 'bar' ]"` – set element class from an array, object or a string.
 * [x] `:style="{ top:1, position:'absolute' }"` – set element style from a string or an object.
 * [x] `:prop="{ alt:'foo', title:'bar' }"` – set any other attribute / property.
-* [ ] `:on="{ click:e=>{}, touch:e=>{} }"` – add event listeners.
+* [x] `:on="{ click:e=>{}, touch:e=>{} }"` – add event listeners.
 * [ ] `:data="{ foo:1, bar:2 }"` – set [data-*](https://developer.mozilla.org/en-US/docs/Web/HTML/Global_attributes/data-*) attributes.
 * [ ] `:aria="{ role:'progressbar' }"` – set [aria-role](https://developer.mozilla.org/en-US/docs/Web/Accessibility/ARIA) attributes.
 * [ ] `:with="data"`, `:with="foo.bar as bar"` – provide data alias for subtree fragment.
