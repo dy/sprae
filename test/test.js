@@ -65,6 +65,20 @@ test('props: base', async () => {
   is(el.outerHTML, `<input class="∴prop" for="1" title="2" form="3" type="4" placeholder="5">`)
 })
 
+test('input: direct', async () => {
+  let el = h`<input :value="a" />`
+  let state = sprae(el, {a:1})
+  is(el.value, '1')
+  is(el.outerHTML, `<input class="∴value" value="1">`)
+  state.a = 2
+  is(el.value, '2')
+  is(el.outerHTML, `<input class="∴value" value="2">`)
+
+  el.value = 3
+  el.dispatchEvent(new Event('change'))
+  is(state.a, '3')
+})
+
 test('text: core', async () => {
   let el = h`<div :text="text"></div>`
   let params = sprae(el, {text:'abc'})

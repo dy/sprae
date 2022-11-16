@@ -68,7 +68,7 @@ update({...values, user: {...values.user, displayName: 'dy'}});
 * [x] `:if="condition"`, `:else-if="condition"`, `:else` - controls flow of elements.
 * [x] `:each="item, i? in list|number"` - create multiple instances of element from list or 1..number range.
 * [x] `:text="value"` - set text content of an element.
-* [ ] `:value="value"` – bind value to input or textarea (reflected in model).
+* [x] `:value="value"` – bind value to input or textarea (reflected in model).
 * [x] `:id`, `:name`, `:for`, `:type`, `:hidden`, `:disabled`, `:href`, `:src` – common attributes setters.
 * [x] `:class="[ foo, 'bar' ]"` – set element class from an array, object or a string.
 * [x] `:style="{ top:1, position:'absolute' }"` – set element style from a string or an object.
