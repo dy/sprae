@@ -66,6 +66,9 @@
   - `prototype` chain is fixed from the time of init.
 - `prototype` chain hails to unidentified root scope and inherits from that. Maybe we should clarify scopes inhertiance and first implement reactive store (see next item).
 
+? what if we avoid scope inheritance mechanism (what's the real use for it?) and instead just make reactive store object, so that :with directive subscribes to any input props, but "shadows" subtree?
+  ? are there uses for inheritance
+
 ## [ ] Should we inherit values from `init` in `sprae(el, init)`, instead of creating a snapshot of reactive values in `init`?
 
 + it allows passing any arbitrary scope to initialize from.
