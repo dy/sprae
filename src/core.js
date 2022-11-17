@@ -6,6 +6,7 @@ if (s && s.hasAttribute('init')) {
   sprae(document.documentElement)
 }
 
+let curEl, curDir;
 // sprae element: apply directives
 export default function sprae(el, initScope) {
   initScope ||= {};
@@ -14,7 +15,7 @@ export default function sprae(el, initScope) {
       ready=false;
 
   // prepare directives
-  for (let dir in directives) updates[dir] = directives[dir](el);
+  for (let dir in directives) curEl = el, curDir = dir, updates[dir] = directives[dir](el);
 
   const update = (values) => { for (let dir in updates) updates[dir].forEach(update => update(values)); };
 
@@ -48,7 +49,7 @@ export default function sprae(el, initScope) {
 }
 
 // dict of directives
-const directives = {}, store = new WeakSet
+const directives = {}
 
 // register a directive
 export const directive = (name, initializer) => {
@@ -81,7 +82,7 @@ let evaluatorMemo = {}
 
 // borrowed from alpine: https://github.com/alpinejs/alpine/blob/main/packages/alpinejs/src/evaluator.js#L61
 // it seems to be more robust than subscript
-export function parseExpr(expression, el) {
+export function parseExpr(expression) {
   if (evaluatorMemo[expression]) return evaluatorMemo[expression]
 
   // Some expressions that are useful in Alpine are not valid as the right side of an expression.
@@ -99,16 +100,16 @@ export function parseExpr(expression, el) {
     try {
       return new Function(['scope'], `let result; with (scope) { result = ${rightSideSafeExpression} }; return result;`)
     } catch ( e ) {
-      return exprError(e, expression, el)
+      return exprError(e, expression)
     }
   }
 
   return evaluatorMemo[expression] = safeFunction()
 }
 
-export function exprError(error, expression, el) {
-  Object.assign( error, { el, expression } )
-  console.warn(`∴ Expression Error: ${error.message}\n\n${ expression ? 'Expression: \"' + expression + '\"\n\n' : '' }`, el)
+export function exprError(error, expression) {
+  Object.assign( error, { expression } )
+  console.warn(`∴ ${error.message}\n\n${curDir}=${ expression ? `"${expression}"\n\n` : '' }`, curEl)
   setTimeout(() => { throw error }, 0)
   return Promise.resolve()
 }

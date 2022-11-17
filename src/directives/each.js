@@ -2,7 +2,7 @@ import sprae, { directive, exprError, parseExpr } from '../core.js'
 
 directive(':each', (el, expr) => {
   let each = parseForExpression(expr);
-  if (!each) return exprError(new Error, expr, el);
+  if (!each) return exprError(new Error, expr);
 
   const getItems = parseExpr(each.items);
 

@@ -71,6 +71,12 @@ test('data: base', async () => {
   is(el.outerHTML, `<input class="∴data" data-a="1" data-foo-bar="2">`)
 })
 
+test('aria: base', async () => {
+  let el = h`<input type="text" id="jokes" role="combobox" :aria="{controls:'joketypes', autocomplete:'list', expanded:false, activeOption:'item1', activedescendant:''}"/>`
+  sprae(el)
+  is(el.outerHTML, `<input type="text" id="jokes" role="combobox" class="∴aria" aria-controls="joketypes" aria-autocomplete="list" aria-expanded="false" aria-active-option="item1" aria-activedescendant="">`)
+})
+
 test('input: direct', async () => {
   let el = h`<input :value="a" />`
   let state = sprae(el, {a:1})

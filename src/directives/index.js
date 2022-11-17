@@ -5,5 +5,6 @@ import './if.js' // if must go last, after other directives are initialized, sin
 import './common.js'
 import './prop.js'
 import './data.js'
+import './aria.js'
 import './value.js'
 import './on.js'

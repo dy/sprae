@@ -74,8 +74,8 @@ update({...values, user: {...values.user, displayName: 'dy'}});
 * [x] `:style="{ top:1, position:'absolute' }"` – set element style from a string or an object.
 * [x] `:prop="{ alt:'foo', title:'bar' }"` – set any other attribute / property.
 * [x] `:on="{ click:e=>{}, touch:e=>{} }"` – add event listeners.
-* [ ] `:data="{ foo:1, bar:2 }"` – set [data-*](https://developer.mozilla.org/en-US/docs/Web/HTML/Global_attributes/data-*) attributes.
-* [ ] `:aria="{ role:'progressbar' }"` – set [aria-role](https://developer.mozilla.org/en-US/docs/Web/Accessibility/ARIA) attributes.
+* [x] `:data="{ foo:1, bar:2 }"` – set [data-*](https://developer.mozilla.org/en-US/docs/Web/HTML/Global_attributes/data-*) attributes.
+* [x] `:aria="{ role:'progressbar' }"` – set [aria-role](https://developer.mozilla.org/en-US/docs/Web/Accessibility/ARIA) attributes.
 * [ ] `:with="data"`, `:with="foo.bar as bar"` – provide data alias for subtree fragment.
 <!-- * [ ] `:item="{ id: 1 }"` – set [item*](https://developer.mozilla.org/en-US/docs/Web/HTML/Microdata) microdata attribute. -->
 
