@@ -63,7 +63,7 @@ Sprae can be used without build step or JS, autoinitializing document:
 
 ## Directives
 
-* `:if="condition"`, `:else-if="condition"`, `:else` - controls flow of elements.
+* `:if="condition"`, `:else` - controls flow of elements (can be combined as `:else :if="condition"`).
 * `:each="item, i? in list|number"` - create multiple instances of element from list or 1..number range.
 * `:text="value"` - set text content of an element.
 * `:value="value"` – bind value to input or textarea (reflected in model).
