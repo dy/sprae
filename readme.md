@@ -28,6 +28,16 @@ Sprae enables directives as attributes starting with `:`.
 * `state` is proxy reflecting directives values, changing any of its props updates directives.
 * `init` is the initial state to render the template. It can include reactive values, see [reactivity](#reactivity).
 
+To update multiple values at once, state can be expanded as:
+
+```js
+let [values, update] = state;
+update({ user: { displayName: 'dy' } });
+```
+
+* `values` holds actual rendered state values. Changing it doesn't rerender DOM, unlike `state`.
+* `update` useful for bulk-updating multiple values at once.
+
 <details>
 <summary><strong>Autoinit</strong></summary>
 
@@ -44,22 +54,6 @@ Sprae can be used without build step or JS, autoinitializing document:
 
 * `:` defines data for regions of the tree to autoinit sprae on.
 * `init` attribute tells sprae to automatically initialize document.
-
-</details>
-
-<details><summary><strong>Bulk update</strong></summary>
-
-To update multiple values at once, state can be expanded as:
-
-```js
-let state = sprae(el, init);
-let [values, update] = state;
-
-update({...values, user: {...values.user, displayName: 'dy'}});
-```
-
-* `values` holds actual rendered state values. Changing it doesn't rerender DOM, unlike `state`.
-* `update` useful for bulk-update multiple values at once.
 
 </details>
 
