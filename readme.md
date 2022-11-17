@@ -28,7 +28,9 @@ Sprae enables directives as attributes starting with `:`.
 * `state` is proxy reflecting directives values, changing any of its props updates directives.
 * `init` is the initial state to render the template. It can include reactive values, see [reactivity](#reactivity).
 
-### Bulk update
+
+<details>
+<summary><strong>Bulk update</strong></summary>
 
 To update multiple values at once, state can be expanded as:
 
@@ -39,6 +41,8 @@ update({ user: { displayName: 'dy' } });
 
 * `values` holds actual rendered state values. Changing it doesn't rerender DOM, unlike `state`.
 * `update` useful for bulk-updating multiple values at once.
+
+</details>
 
 <!--
 <details>
@@ -63,7 +67,7 @@ Sprae can be used without build step or JS, autoinitializing document:
 
 ## Directives
 
-* `:if="condition"`, `:else-if="condition"`, `:else` - controls flow of elements.
+* `:if="condition"`, `:else` - controls flow of elements.
 * `:each="item, i? in list|number"` - create multiple instances of element from list or 1..number range.
 * `:text="value"` - set text content of an element.
 * `:value="value"` – bind value to input or textarea (reflected in model).
@@ -76,6 +80,24 @@ Sprae can be used without build step or JS, autoinitializing document:
 * `:aria="{ role:'progressbar' }"` – set [aria-role](https://developer.mozilla.org/en-US/docs/Web/Accessibility/ARIA) attributes.
 * `:with="data"` – provide data alias for subtree fragment.
 <!-- * [ ] `:item="{ id: 1 }"` – set [item*](https://developer.mozilla.org/en-US/docs/Web/HTML/Microdata) microdata attribute. -->
+
+
+
+<details>
+<summary><strong>Combining directives</strong></summary>
+
+Directives can be naturally combined as:
+
+```html
+<span :if="foo">foo</span>
+<span :else :if="bar">bar</span>
+<span :else>baz</span>
+
+<span :if="items" :each="item in items"></span>
+<span :else>Empty list</span>
+```
+</details>
+
 
 <details>
 <summary><strong>Adding directives</strong></summary>
