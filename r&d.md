@@ -50,13 +50,14 @@
 + Custom expressions are shorter: `:attr="a:1, b:2, c:3"`
 - Custom expressions are confusing for style: `:style="a:1, b:2, c:3"` - very similar to direct style string
 
-## [ ] Attribute directive: `:={a:1}` vs `:attr={a:1}` vs `:prop={a:1}`
+## [x] Attribute directive: `:={a:1}` vs `:attr={a:1}` vs `:prop={a:1}`
 
 + `:=obj` reminds pascal assignment operator, which is cool
 + `:={a:1,b:2}` is natural convention from vue/alpine as - all props in object are assigned as `:{attr}`
 - We can use `:="{data}"` fro sprae autoinit, since scope has confusing name: `:scope={}`, `:sprae={}`, `:with={}`
+-> let's use :prop= for now, since `:={}` can have multiple interpretations
 
-## [ ] Scopes mechanism: prototype inheritance chain vs multiple `with` wrappers
+## [x] Scopes mechanism: prototype inheritance chain vs multiple `with` wrappers
 
 - prototype inheritance chain causes deps update difficulties
 - prototype chain is messy-ish
@@ -78,6 +79,8 @@
   + that makes external API easier
   + that allows handling store via single reactive object
 
+-> possibly we have to just subscribe via mechanism of signals-like deps, and :with just initializes subtree with extended object
+
 ## [ ] Should we inherit values from `init` in `sprae(el, init)`, instead of creating a snapshot of reactive values in `init`?
 
 + it allows passing any arbitrary scope to initialize from.
@@ -86,6 +89,7 @@
 -> can be delegated to a separate functionality - init just gets converted to reactive store
 + it sort-of makes `init` directly a scope (a parent of scope), which is more natural-ish rather than 2 independent entities
 + can pass both observables and direct state anywhere, eg. init child components from it
+-> worthy of a separate library
 
 ## [ ] Per-directive initialize vs per-element initialize
 
@@ -99,3 +103,9 @@
 ? what if we use preact/signals to subscribe only to required props?
 -> parseExpr is going to need to be handled by core.js (not directives), and detect & subscribe to dependencies itself
 -> so that directive updator gets invoked only when any of expr dependencies change
+
+## [ ] Replace :else-if with :else :if
+
++ `:else :if=""` is meaningful expansion of both directives
++ `:else :if` is coming from JS
++ `:else :if` doesn't throw error in JSDOM tests

@@ -1,4 +1,4 @@
-# ∴ spræ
+# ∴ spræ [test](https://github.com/spectjs/sprae/actions/workflows/test.yml/badge.svg)](https://github.com/spectjs/sprae/actions/workflows/test.yml) [![size](https://img.shields.io/bundlephobia/minzip/sprae?label=size)](https://bundlephobia.com/result?p=sprae)
 
 > Reactive microdirectives for soft DOM hydration.
 
@@ -28,6 +28,8 @@ Sprae enables directives as attributes starting with `:`.
 * `state` is proxy reflecting directives values, changing any of its props updates directives.
 * `init` is the initial state to render the template. It can include reactive values, see [reactivity](#reactivity).
 
+### Bulk update
+
 To update multiple values at once, state can be expanded as:
 
 ```js
@@ -38,6 +40,7 @@ update({ user: { displayName: 'dy' } });
 * `values` holds actual rendered state values. Changing it doesn't rerender DOM, unlike `state`.
 * `update` useful for bulk-updating multiple values at once.
 
+<!--
 <details>
 <summary><strong>Autoinit</strong></summary>
 
@@ -56,6 +59,7 @@ Sprae can be used without build step or JS, autoinitializing document:
 * `init` attribute tells sprae to automatically initialize document.
 
 </details>
+-->
 
 ## Directives
 

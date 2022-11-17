@@ -1,8 +1,7 @@
-import v from 'value-ref'
 import { signal } from '@preact/signals'
 import test, {is, any, throws} from 'tst'
 import {tick, time} from 'wait-please'
-import sprae from 'sprae'
+import sprae from '../src/index.js'
 import h from 'hyperf'
 
 Object.defineProperty(DocumentFragment.prototype, 'outerHTML', {
@@ -13,6 +12,10 @@ Object.defineProperty(DocumentFragment.prototype, 'outerHTML', {
     })
     return s
   }
+})
+
+test.skip('autoinit', async () => {
+  is(window.x.innerHTML, '1')
 })
 
 test('hidden: core', async () => {
@@ -87,7 +90,7 @@ test('input: direct', async () => {
   is(el.outerHTML, `<input class="∴value" value="2">`)
 
   el.value = 3
-  el.dispatchEvent(new Event('change'))
+  el.dispatchEvent(new window.Event('change'))
   is(state.a, '3')
 })
 
@@ -256,17 +259,17 @@ test('on: base', () => {
   let params = sprae(el, {x(){log.value.push('x')}, log})
 
   is(el.outerHTML, `<div class="∴on"></div>`);
-  el.dispatchEvent(new Event('click'));
+  el.dispatchEvent(new window.Event('click'));
   is(log.value, ['click'])
-  el.dispatchEvent(new Event('x'));
+  el.dispatchEvent(new window.Event('x'));
   is(log.value, ['click','x'])
 
   params.x = function(){log.value.push('xx')}
-  el.dispatchEvent(new Event('x'));
+  el.dispatchEvent(new window.Event('x'));
   is(log.value, ['click','x','xx']);
 
   delete params.x;
-  el.dispatchEvent(new Event('x'));
+  el.dispatchEvent(new window.Event('x'));
   is(log.value, ['click','x','xx']);
 })
 

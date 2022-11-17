@@ -3,23 +3,26 @@
   "description": "Reactive directives with expressions for DOM microtemplating.",
   "version": "0.1.0",
   "main": "sprae.js",
+  "type": "module",
   "dependencies": {
     "element-props": "^2.3.0",
-    "htm": "^3.1.1",
-    "preact": "^10.11.2",
-    "sube": "^2.2.1",
-    "swapdom": "^1.1.1"
+    "sube": "^2.2.1"
   },
   "devDependencies": {
     "@preact/signals": "^1.1.2",
+    "browser-env": "^3.3.0",
     "es-module-shims": "^1.6.2",
+    "esbuild": "^0.15.14",
     "hyperf": "^1.4.0",
+    "terser": "^5.15.1",
     "tst": "^7.1.1",
     "value-ref": "^2.1.0",
     "wait-please": "^3.1.0"
   },
   "scripts": {
-    "test": "node test"
+    "test": "node -r browser-env/register test/test.js",
+    "build": "esbuild --bundle ./src/index.js --outfile=sprae.js --format=esm",
+    "min": "terser sprae.js -o sprae.min.js --module -c passes=3 -m"
   },
   "repository": {
     "type": "git",

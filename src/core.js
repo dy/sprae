@@ -1,11 +1,5 @@
 import sube, { observable } from 'sube';
 
-// autoinit
-const s = document.currentScript
-if (s && s.hasAttribute('init')) {
-  sprae(document.documentElement)
-}
-
 let curEl, curDir;
 // sprae element: apply directives
 export default function sprae(el, initScope) {
