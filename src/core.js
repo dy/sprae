@@ -14,10 +14,21 @@ export default function sprae(el, initScope) {
   let updates=[], // all spray directive updators
       ready=false;
 
-  // prepare directives
-  for (let dir in directives) curEl = el, curDir = dir, updates[dir] = directives[dir](el);
 
-  const update = (values) => { for (let dir in updates) updates[dir].forEach(update => update(values)); };
+  // prepare directives
+  for (let name in directives) {
+    // updates[dir] = directives[dir](el)
+    const sel = `[${name.replace(':','\\:')}]`,
+          initDirective = directives[name]
+
+    // FIXME: possibly linear init of directives is better, who knows
+    const els = [...el.querySelectorAll(sel)];
+    if (el.matches?.(sel)) els.unshift(el);
+
+    updates.push(...els.map(el => initDirective(el, initScope)))
+  };
+
+  const update = (values) => { updates.forEach(update => update(values)); };
 
   // hook up observables (deeply, to include item.text etc)
   // that's least evil compared to dlv/dset or proxies
@@ -53,30 +64,20 @@ const directives = {}
 
 // register a directive
 export const directive = (name, initializer) => {
-  const sel = `[${name.replace(':','\\:')}]`, className = name.replace(':','∴')
+  const className = name.replace(':','∴')
 
-  return directives[name] = (container) => {
-    const els = [...container.querySelectorAll(sel)];
-    if (container.matches?.(sel)) els.unshift(container);
-
-    const updates = [];
-
-    // replace all shortcuts with inner templates
-    for (let el of els) {
-      if (!el.classList.contains(className)) {
-        el.classList.add(className)
-        let expr = el.getAttribute(name)
-        el.removeAttribute(name)
-        updates.push(initializer(el, expr));
-      }
+  // create initializer of a directive on an element
+  return directives[name] = (el, scope) => {
+    if (!el.classList.contains(className)) {
+      el.classList.add(className)
+      let expr = el.getAttribute(name)
+      el.removeAttribute(name)
+      return initializer(el, expr, scope);
     }
-
-    return updates
   }
 }
 
 const registry = new FinalizationRegistry(unsub => unsub?.call?.())
-
 
 let evaluatorMemo = {}
 
@@ -112,4 +113,10 @@ export function exprError(error, expression) {
   console.warn(`∴ ${error.message}\n\n${curDir}=${ expression ? `"${expression}"\n\n` : '' }`, curEl)
   setTimeout(() => { throw error }, 0)
   return Promise.resolve()
+}
+
+
+// create reactive scope from initializer object with reactive values
+function createScope (init) {
+
 }

@@ -73,6 +73,10 @@
 ? Do we need scopes at all? Only for the purpose of autoinit?
 - it seems scopes can introduce more confusion and mess in templates: indicating full paths is more beneficial
   + unless we introduce proper ":with="item.x as x""
++ prototype chain is a single object:
+  + meaning updators receive one actual-for-element scope instance
+  + that makes external API easier
+  + that allows handling store via single reactive object
 
 ## [ ] Should we inherit values from `init` in `sprae(el, init)`, instead of creating a snapshot of reactive values in `init`?
 
@@ -88,3 +92,4 @@
 + Per-directive is very simple and trivial approach
 - Per-directive doesn't read attributes order and init directives independently
   ~ Practically linear in-order init doesn't make much service either here
+- Per-directive is a bit hard to deal with scopes
