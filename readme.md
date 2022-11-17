@@ -1,4 +1,4 @@
-# ∴ spræ [test](https://github.com/spectjs/sprae/actions/workflows/test.yml/badge.svg)](https://github.com/spectjs/sprae/actions/workflows/test.yml) [![size](https://img.shields.io/bundlephobia/minzip/sprae?label=size)](https://bundlephobia.com/result?p=sprae)
+# ∴ spræ [![size](https://img.shields.io/bundlephobia/minzip/sprae?label=size)](https://bundlephobia.com/result?p=sprae)
 
 > Reactive microdirectives for soft DOM hydration.
 
