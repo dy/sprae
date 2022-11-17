@@ -45,7 +45,7 @@ test('common: style', async () => {
   let params = sprae(el, {style: "top: 1px"})
   is(el.outerHTML, `<x class="∴style" style="top: 1px"></x>`)
   params.style = {top: '2px'}
-  is(el.outerHTML, `<x class="∴style" style="top: 2px;"></x>`)
+  is(el.outerHTML, `<x class="∴style" style="top: 2px"></x>`)
 })
 
 test('common: class', async () => {
@@ -60,9 +60,15 @@ test('common: class', async () => {
 })
 
 test('props: base', async () => {
-  let el = h`<input :prop="{for:1, title:2, form:3, type:4, placeholder: 5}"/>`
+  let el = h`<input :prop="{for:1, title:2, help:3, type:4, placeholder: 5}"/>`
   let params = sprae(el)
-  is(el.outerHTML, `<input class="∴prop" for="1" title="2" form="3" type="4" placeholder="5">`)
+  is(el.outerHTML, `<input class="∴prop" for="1" title="2" help="3" type="4" placeholder="5">`)
+})
+
+test('data: base', async () => {
+  let el = h`<input :data="{a:1, fooBar:2}"/>`
+  let params = sprae(el)
+  is(el.outerHTML, `<input class="∴data" data-a="1" data-foo-bar="2">`)
 })
 
 test('input: direct', async () => {
