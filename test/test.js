@@ -270,31 +270,31 @@ test('on: base', () => {
   is(log.value, ['click','x','xx']);
 })
 
-test.todo('with: inline', () => {
+test('with: inline', () => {
   let el = h`<x :with="{foo:'bar', baz}"><y :text="foo + baz"></y></x>`
   let state = sprae(el, {baz: 'qux'})
   // FIXME: this doesn't inherit root scope baz property and instead uses hard-initialized one
-  is(el.innerHTML, `<y>barqux</y>`)
+  is(el.innerHTML, `<y class="∴text">barqux</y>`)
   state.baz = 'quux'
-  is(el.innerHTML, `<y>barquux</y>`)
+  is(el.innerHTML, `<y class="∴text">barquux</y>`)
 })
-test.todo('with: data', () => {
+test('with: data', () => {
   let el = h`<x :with="x"><y :text="foo"></y></x>`
   let [state, update] = sprae(el, {x:{foo:'bar'}})
-  is(el.innerHTML, `<y>bar</y>`)
+  is(el.innerHTML, `<y class="∴text">bar</y>`)
   update({x:{foo:'baz'}})
-  is(el.innerHTML, `<y>baz</y>`)
+  is(el.innerHTML, `<y class="∴text">baz</y>`)
 })
-test.todo('with: inheritance', () => {
+test('with: inheritance', () => {
   // NOTE: y:text initializes through directive, not through parent
   // therefore by default :text uses parent's state, not defined by element itself
   let el = h`<x :with="{foo:'foo'}"><y :with="b" :text="foo+bar"></y></x>`
   sprae(el, {b:{bar:'bar'}})
-  is(el.innerHTML, `<y>foobar</y>`)
+  is(el.innerHTML, `<y class="∴with ∴text">foobar</y>`)
 })
-test.todo('with: reactive inheritance', () => {
+test('with: reactive inheritance', () => {
   let el = h`<x :with="{foo:1}"><y :with="b.c" :text="foo+bar"></y></x>`
   const bar = signal('2')
   sprae(el, {b:{c:{bar}}})
-  is(el.innerHTML, `<y>12</y>`)
+  is(el.innerHTML, `<y class="∴with ∴text">12</y>`)
 })

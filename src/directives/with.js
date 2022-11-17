@@ -1,17 +1,21 @@
-import { directive, parseExpr } from '../core.js'
+import sprae, { directive, parseExpr } from '../core.js'
 
-directive(':with', (el, expr, scope) => {
+directive(':with', (el, expr, rootValues) => {
   let evaluate = parseExpr(expr);
 
-  // assign scope for an element inherited from parent scope
-  const rootScope = createScope(el, Object.create(scope));
+  // it subsprays with shadowed values
+  // rootValues get updated by parent directives
+  // subscope doesn't contain reactive values
+  let subscope = Object.create(rootValues)
 
-  return (scope) => {
-    let value = evaluate(scope);
+  // FIXME: wonder if we better pass initial state rather than values snapshot, to let subtree subscribe to more complete set
+  // FIXME: likely initial set can be reactive itself then
+  Object.assign(subscope, evaluate(rootValues))
+  let [subvalues, subupdate] = sprae(el, subscope)
 
-    Object.assign(scope, get(scope));
-
-    el.textContent = value == null ? '' : value;
+  return (values) => {
+    let withValues = evaluate(values);
+    subupdate(withValues)
   }
 })
 

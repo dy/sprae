@@ -93,3 +93,9 @@
 - Per-directive doesn't read attributes order and init directives independently
   ~ Practically linear in-order init doesn't make much service either here
 - Per-directive is a bit hard to deal with scopes
+
+## [ ] avoid updating unchanged directives if values don't affect them
+
+? what if we use preact/signals to subscribe only to required props?
+-> parseExpr is going to need to be handled by core.js (not directives), and detect & subscribe to dependencies itself
+-> so that directive updator gets invoked only when any of expr dependencies change

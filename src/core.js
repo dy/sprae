@@ -14,20 +14,6 @@ export default function sprae(el, initScope) {
   let updates=[], // all spray directive updators
       ready=false;
 
-
-  // prepare directives
-  for (let name in directives) {
-    // updates[dir] = directives[dir](el)
-    const sel = `[${name.replace(':','\\:')}]`,
-          initDirective = directives[name]
-
-    // FIXME: possibly linear init of directives is better, who knows
-    const els = [...el.querySelectorAll(sel)];
-    if (el.matches?.(sel)) els.unshift(el);
-
-    updates.push(...els.map(el => initDirective(el, initScope)))
-  };
-
   const update = (values) => { updates.forEach(update => update(values)); };
 
   // hook up observables (deeply, to include item.text etc)
@@ -37,7 +23,7 @@ export default function sprae(el, initScope) {
     let values = {}
     for (let k in scope) {
       let v = scope[k];
-      if (observable(v = scope[k])) registry.register(v, sube(v, v => (values[k] = v, ready && update(values))));
+      if (observable(v = scope[k])) values[k] = null, registry.register(v, sube(v, v => (values[k] = v, ready && update(values))));
       // FIXME: add []
       else if (v?.constructor === Object) values[k] = rsube(v);
       else values[k] = v;
@@ -45,8 +31,23 @@ export default function sprae(el, initScope) {
     return values;
   };
   const values = rsube(initScope);
-  update(values);
   ready = true;
+
+  // prepare directives - need to be after subscribing to values to get init state here
+  for (let name in directives) {
+    // updates[dir] = directives[dir](el)
+    const sel = `[${name.replace(':','\\:')}]`,
+          initDirective = directives[name]
+
+    // FIXME: possibly linear init of directives is better, who knows
+    const els = [...el.querySelectorAll(sel)];
+    if (el.matches?.(sel)) els.unshift(el);
+
+    let update
+    for (let el of els) if (update = initDirective(el, values)) updates.push(update);
+  };
+
+  update(values);
 
   // return update via destructuring of result to allow batch-update
   values[Symbol.iterator] = function*(){ yield proxy; yield (diff) => update(Object.assign(values, diff)); };
@@ -67,13 +68,12 @@ export const directive = (name, initializer) => {
   const className = name.replace(':','∴')
 
   // create initializer of a directive on an element
-  return directives[name] = (el, scope) => {
-    if (!el.classList.contains(className)) {
-      el.classList.add(className)
-      let expr = el.getAttribute(name)
-      el.removeAttribute(name)
-      return initializer(el, expr, scope);
-    }
+  return directives[name] = (el, initValues) => {
+    if (el.classList.contains(className)) return
+    el.classList.add(className)
+    let expr = el.getAttribute(name)
+    el.removeAttribute(name)
+    return initializer(el, expr, initValues);
   }
 }
 
@@ -113,10 +113,4 @@ export function exprError(error, expression) {
   console.warn(`∴ ${error.message}\n\n${curDir}=${ expression ? `"${expression}"\n\n` : '' }`, curEl)
   setTimeout(() => { throw error }, 0)
   return Promise.resolve()
-}
-
-
-// create reactive scope from initializer object with reactive values
-function createScope (init) {
-
 }

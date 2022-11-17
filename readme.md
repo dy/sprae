@@ -46,31 +46,31 @@ Sprae can be used without build step or JS, autoinitializing document:
 ```html
 <script src="./sprae.js" defer init></script>
 
-<div :="{ count: 0 }">
+<div :with="{ count: 0 }">
   <span :text="count">
   <button :on="{ click: e => count++ }">inc</button>
 </div>
 ```
 
-* `:` defines data for regions of the tree to autoinit sprae on.
+* `:with` defines data for regions of the tree to autoinit sprae on.
 * `init` attribute tells sprae to automatically initialize document.
 
 </details>
 
 ## Directives
 
-* [x] `:if="condition"`, `:else-if="condition"`, `:else` - controls flow of elements.
-* [x] `:each="item, i? in list|number"` - create multiple instances of element from list or 1..number range.
-* [x] `:text="value"` - set text content of an element.
-* [x] `:value="value"` – bind value to input or textarea (reflected in model).
-* [x] `:id`, `:name`, `:for`, `:type`, `:hidden`, `:disabled`, `:href`, `:src` – common attributes setters.
-* [x] `:class="[ foo, 'bar' ]"` – set element class from an array, object or a string.
-* [x] `:style="{ top:1, position:'absolute' }"` – set element style from a string or an object.
-* [x] `:prop="{ alt:'foo', title:'bar' }"` – set any other attribute / property.
-* [x] `:on="{ click:e=>{}, touch:e=>{} }"` – add event listeners.
-* [x] `:data="{ foo:1, bar:2 }"` – set [data-*](https://developer.mozilla.org/en-US/docs/Web/HTML/Global_attributes/data-*) attributes.
-* [x] `:aria="{ role:'progressbar' }"` – set [aria-role](https://developer.mozilla.org/en-US/docs/Web/Accessibility/ARIA) attributes.
-* [ ] `:with="data"`, `:with="foo.bar as bar"` – provide data alias for subtree fragment.
+* `:if="condition"`, `:else-if="condition"`, `:else` - controls flow of elements.
+* `:each="item, i? in list|number"` - create multiple instances of element from list or 1..number range.
+* `:text="value"` - set text content of an element.
+* `:value="value"` – bind value to input or textarea (reflected in model).
+* `:id`, `:name`, `:for`, `:type`, `:hidden`, `:disabled`, `:href`, `:src` – common attributes setters.
+* `:class="[ foo, 'bar' ]"` – set element class from an array, object or a string.
+* `:style="{ top:1, position:'absolute' }"` – set element style from a string or an object.
+* `:prop="{ alt:'foo', title:'bar' }"` – set any other attribute / property.
+* `:on="{ click:e=>{}, touch:e=>{} }"` – add event listeners.
+* `:data="{ foo:1, bar:2 }"` – set [data-*](https://developer.mozilla.org/en-US/docs/Web/HTML/Global_attributes/data-*) attributes.
+* `:aria="{ role:'progressbar' }"` – set [aria-role](https://developer.mozilla.org/en-US/docs/Web/Accessibility/ARIA) attributes.
+* `:with="data"` – provide data alias for subtree fragment.
 <!-- * [ ] `:item="{ id: 1 }"` – set [item*](https://developer.mozilla.org/en-US/docs/Web/HTML/Microdata) microdata attribute. -->
 
 <details>
