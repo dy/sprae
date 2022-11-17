@@ -1,7 +1,7 @@
 {
   "name": "sprae",
   "description": "Reactive directives with expressions for DOM microtemplating.",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "main": "sprae.js",
   "type": "module",
   "dependencies": {
