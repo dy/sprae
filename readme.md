@@ -24,25 +24,9 @@ Sprae enables directives as attributes starting with `:`.
 </script>
 ```
 
-* `sprae` initializes directives within an `element` subtree with passed `init` data.
-* `state` is proxy reflecting directives values, changing any of its props updates directives.
+* `sprae` initializes directives within subtree with passed `init` data.
+* `state` is object reflecting directives values, changing any of its props updates corresponding directives (see [reactive-struct](https://github.com/dy/signal-struct)).
 * `init` is the initial state to render the template. It can include reactive values, see [reactivity](#reactivity).
-
-
-<details>
-<summary><strong>Bulk update</strong></summary>
-
-To update multiple values at once, state can be expanded as:
-
-```js
-let [values, update] = state;
-update({ user: { displayName: 'dy' } });
-```
-
-* `values` holds actual rendered state values. Changing it doesn't rerender DOM, unlike `state`.
-* `update` useful for bulk-updating multiple values at once.
-
-</details>
 
 <!--
 <details>
@@ -51,12 +35,10 @@ update({ user: { displayName: 'dy' } });
 Sprae can be used without build step or JS, autoinitializing document:
 
 ```html
-<script src="./sprae.js" defer init></script>
+<script src="./sprae.js" defer init="{ count: 0 }"></script>
 
-<div :with="{ count: 0 }">
-  <span :text="count">
-  <button :on="{ click: e => count++ }">inc</button>
-</div>
+<span :text="count">
+<button :on="{ click: e => count++ }">inc</button>
 ```
 
 * `:with` defines data for regions of the tree to autoinit sprae on.
@@ -78,7 +60,7 @@ Sprae can be used without build step or JS, autoinitializing document:
 * `:on="{ click:e=>{}, touch:e=>{} }"` – add event listeners.
 * `:data="{ foo:1, bar:2 }"` – set [data-*](https://developer.mozilla.org/en-US/docs/Web/HTML/Global_attributes/data-*) attributes.
 * `:aria="{ role:'progressbar' }"` – set [aria-role](https://developer.mozilla.org/en-US/docs/Web/Accessibility/ARIA) attributes.
-* `:with="data"` – provide data alias for subtree fragment.
+* `:with="data"` – data scope for a subtree fragment.
 <!-- * [ ] `:item="{ id: 1 }"` – set [item*](https://developer.mozilla.org/en-US/docs/Web/HTML/Microdata) microdata attribute. -->
 
 

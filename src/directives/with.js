@@ -1,21 +1,12 @@
 import sprae, { directive, parseExpr } from '../core.js'
 
-directive(':with', (el, expr, rootValues) => {
-  let evaluate = parseExpr(expr);
-
+directive(':with', (el, expr, state) => {
   // it subsprays with shadowed values
-  // rootValues get updated by parent directives
-  // subscope doesn't contain reactive values
-  let subscope = Object.create(rootValues)
+  // FIXME: use batch update here
+  let substate = sprae(el, Object.create(state))
 
-  // FIXME: wonder if we better pass initial state rather than values snapshot, to let subtree subscribe to more complete set
-  // FIXME: likely initial set can be reactive itself then
-  Object.assign(subscope, evaluate(rootValues))
-  let [subvalues, subupdate] = sprae(el, subscope)
-
-  return (values) => {
-    let withValues = evaluate(values);
-    subupdate(withValues)
+  return (withValues) => {
+    Object.assign(substate, withValues)
   }
 })
 

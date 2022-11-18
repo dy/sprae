@@ -5,7 +5,9 @@
   "main": "sprae.js",
   "type": "module",
   "dependencies": {
+    "@preact/signals-core": "^1.2.2",
     "element-props": "^2.3.0",
+    "signal-struct": "^1.0.0",
     "sube": "^2.2.1"
   },
   "devDependencies": {

@@ -1,10 +1,9 @@
 import { directive, parseExpr } from '../core.js'
 import { prop } from 'element-props'
 
-directive(':prop', (el, expr) => {
-  let evaluate = parseExpr(expr);
-  return (state) => {
-    let value = evaluate(state);
+directive(':prop', (el) => {
+  return (value) => {
+    if (!value) return
     for (let key in value) prop(el, key, value[key]);
   }
 })

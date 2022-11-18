@@ -1,77 +1,50 @@
-import sube, { observable } from 'sube';
+import signalStruct from 'signal-struct';
+import { signal, effect } from '@preact/signals-core';
+
+signalStruct.signal = signal;
 
 let curEl, curDir;
 // sprae element: apply directives
-export default function sprae(el, initScope) {
-  initScope ||= {};
+export default function sprae(el, init) {
+  init ||= {};
 
-  let updates=[], // all spray directive updators
-      ready=false;
+  // return update via destructuring of result to allow batch-update
+  init[Symbol.iterator] = function*(){ yield state; yield (diff) => Object.assign(state, diff); };
 
-  const update = (values) => { updates.forEach(update => update(values)); };
-
-  // hook up observables (deeply, to include item.text etc)
-  // that's least evil compared to dlv/dset or proxies
-  // returns dynamic values snapshot
-  const rsube = (scope) => {
-    let values = {}
-    for (let k in scope) {
-      let v = scope[k];
-      if (observable(v = scope[k])) values[k] = null, registry.register(v, sube(v, v => (values[k] = v, ready && update(values))));
-      // FIXME: add []
-      else if (v?.constructor === Object) values[k] = rsube(v);
-      else values[k] = v;
-    }
-    return values;
-  };
-  const values = rsube(initScope);
-  ready = true;
+  const state = signalStruct(init);
 
   // prepare directives - need to be after subscribing to values to get init state here
   for (let name in directives) {
-    // updates[dir] = directives[dir](el)
     const sel = `[${name.replace(':','\\:')}]`,
           initDirective = directives[name]
 
-    // FIXME: possibly linear init of directives is better, who knows
-    const els = [...el.querySelectorAll(sel)];
-    if (el.matches?.(sel)) els.unshift(el);
-
-    let update
-    for (let el of els) if (update = initDirective(el, values)) updates.push(update);
+    if (el.matches?.(sel)) initDirective(el, state);
+    el.querySelectorAll?.(sel).forEach(el => initDirective(el, state));
   };
 
-  update(values);
-
-  // return update via destructuring of result to allow batch-update
-  values[Symbol.iterator] = function*(){ yield proxy; yield (diff) => update(Object.assign(values, diff)); };
-
-  const proxy = new Proxy(values,  {
-    set: (s, k, v) => (values[k]=v, update(values), 1),
-    deleteProperty: (s, k) => (values[k]=undefined, update(values), 1)
-  });
-
-  return proxy
+  return state
 }
 
 // dict of directives
 const directives = {}
 
 // register a directive
-export const directive = (name, initializer) => {
+export const directive = (name, initialize, parse=parseExpr) => {
   const className = name.replace(':','∴')
 
   // create initializer of a directive on an element
-  return directives[name] = (el, initValues) => {
+  return directives[name] = (el, state) => {
     if (el.classList.contains(className)) return
     el.classList.add(className)
     let expr = el.getAttribute(name)
     el.removeAttribute(name)
-    return initializer(el, expr, initValues);
+    let evaluate = parse(expr)
+    let update = initialize(el, expr, state)
+    // evaluate autosubscribes to only fraction of dependencies
+    // - whenever they change, update is called with result of evaluator
+    effect(() => update(evaluate(state)))
   }
 }
-
-const registry = new FinalizationRegistry(unsub => unsub?.call?.())
 
 let evaluatorMemo = {}
 

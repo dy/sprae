@@ -2,15 +2,14 @@ import { input, prop } from "element-props";
 import { directive, parseExpr } from '../core.js';
 
 // connect expr to element value
-directive(':value', (el, expr) => {
-  let evaluateGet = parseExpr(expr);
+directive(':value', (el, expr, state) => {
   let [get, set] = input(el);
   let evaluateSet = parseSetter(expr);
-  let curState, onchange = e => evaluateSet(curState, get(el));
+  let onchange = e => evaluateSet(state, get(el));
+  // FIXME: double update can be redundant
   el.addEventListener('input', onchange);
   el.addEventListener('change', onchange);
-  return (state) => {
-    let value = evaluateGet(curState = state);
+  return (value) => {
     prop(el, 'value', value)
     set(value);
   }

@@ -5,3 +5,4 @@
 * [ ] node tests
 * [ ] better deps updating -> cumulative signal
 * [ ] combinations: :else :if, :each :if, :if :each
+* [ ] :with must be able to set state value as well
