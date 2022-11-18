@@ -122,7 +122,7 @@ directive(':html', (el, expr) => {
 
 ## Reactivity
 
-Directive expressions are naturally reactive, ie. data may contain any async/reactive values, such as:
+Directive expressions are natively reactive, ie. data may contain any async/reactive values, such as:
 
 * _Promise_ / _Thenable_
 * _Observable_ / _Subject_ / _Subscribable_
@@ -156,7 +156,7 @@ Update happens when any value changes:
 </script>
 ```
 
-Note: observers don't require disposal, since they're connected in weak fashion. Once element is disposed, observables are disconnected.
+Internally directives trigger updates only for used properties change. They subscribe in weak fashion and get disposed when element is disposed.
 
 
 ## Justification
@@ -173,5 +173,15 @@ _Sprae_ takes elegant syntax convention of _alpine_ and method of _templize_ to 
 * It provides means for island hydration.
 * It doesn'y introduce syntax scatter.
 * It supports simple expressions with exposed reactive data types.
+
+<!--
+
+## Plugins
+
+* @sprae/tailwind: `<x :tw="mt-1 mx-2"></x>` - separate tailwind utility classes from main ones; allow conditional setters.
+* @sprae/item: `<x :item="{type:a, scope:b}"` – provide microdata
+* @sprae/hcodes: `<x :h=""` – provide microformats
+
+-->
 
 <p align="center"><a href="https://github.com/krsnzd/license/">🕉</a></p>
