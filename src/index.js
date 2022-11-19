@@ -1,5 +1,5 @@
 import sprae from './core.js';
-import './directives/index.js';
+import './directives.js';
 
 export default sprae;
 export * from './core.js';

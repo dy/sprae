@@ -38,9 +38,9 @@ test('hidden: reactive', async () => {
 test('common: reactive', async () => {
   let el = h`<label :for="name" :text="name" ></label><input :id="name" :name="name" :type="name" :disabled="!name"/><a :href="url"></a><img :src="url"/>`
   let params = sprae(el, {name:'text', url:'//google.com'})
-  is(el.outerHTML, `<label class="∴text ∴for" for="text">text</label><input class="∴id ∴name ∴type ∴disabled" id="text" name="text" type="text"><a class="∴href" href="//google.com"></a><img class="∴src" src="//google.com">`)
+  is(el.outerHTML, `<label class="∴for ∴text" for="text">text</label><input class="∴id ∴name ∴type ∴disabled" id="text" name="text" type="text"><a class="∴href" href="//google.com"></a><img class="∴src" src="//google.com">`)
   params.name = 'email'
-  is(el.outerHTML, `<label class="∴text ∴for" for="email">email</label><input class="∴id ∴name ∴type ∴disabled" id="email" name="email" type="email"><a class="∴href" href="//google.com"></a><img class="∴src" src="//google.com">`)
+  is(el.outerHTML, `<label class="∴for ∴text" for="email">email</label><input class="∴id ∴name ∴type ∴disabled" id="email" name="email" type="email"><a class="∴href" href="//google.com"></a><img class="∴src" src="//google.com">`)
 })
 
 test('common: style', async () => {
@@ -273,7 +273,7 @@ test('on: base', () => {
   is(log.value, ['click','x','xx']);
 })
 
-test('with: inline', () => {
+test.only('with: inline', () => {
   let el = h`<x :with="{foo:'bar', baz}"><y :text="foo + baz"></y></x>`
   let state = sprae(el, {baz: 'qux'})
   // FIXME: this doesn't inherit root scope baz property and instead uses hard-initialized one
@@ -281,23 +281,36 @@ test('with: inline', () => {
   state.baz = 'quux'
   is(el.innerHTML, `<y class="∴text">barquux</y>`)
 })
-test('with: data', () => {
+test.only('with: inline reactive', () => {
+  let el = h`<x :with="{foo:'bar', baz}"><y :text="foo + baz"></y></x>`
+  let baz = signal('qux')
+  let state = sprae(el, {baz})
+  // FIXME: this doesn't inherit root scope baz property and instead uses hard-initialized one
+  is(el.innerHTML, `<y class="∴text">barqux</y>`)
+  baz.value = 'quux'
+  is(el.innerHTML, `<y class="∴text">barquux</y>`)
+})
+test.only('with: data', () => {
   let el = h`<x :with="x"><y :text="foo"></y></x>`
   let [state, update] = sprae(el, {x:{foo:'bar'}})
   is(el.innerHTML, `<y class="∴text">bar</y>`)
   update({x:{foo:'baz'}})
   is(el.innerHTML, `<y class="∴text">baz</y>`)
 })
-test('with: inheritance', () => {
+test.only('with: inheritance', () => {
   // NOTE: y:text initializes through directive, not through parent
   // therefore by default :text uses parent's state, not defined by element itself
   let el = h`<x :with="{foo:'foo'}"><y :with="b" :text="foo+bar"></y></x>`
-  sprae(el, {b:{bar:'bar'}})
+  let params = sprae(el, {b:{bar:'bar'}})
   is(el.innerHTML, `<y class="∴with ∴text">foobar</y>`)
+  params.b.bar = 'baz'
+  is(el.innerHTML, `<y class="∴with ∴text">foobaz</y>`)
 })
-test('with: reactive inheritance', () => {
+test.only('with: reactive inheritance', () => {
   let el = h`<x :with="{foo:1}"><y :with="b.c" :text="foo+bar"></y></x>`
   const bar = signal('2')
   sprae(el, {b:{c:{bar}}})
   is(el.innerHTML, `<y class="∴with ∴text">12</y>`)
+  bar.value = 3
+  is(el.innerHTML, `<y class="∴with ∴text">13</y>`)
 })
