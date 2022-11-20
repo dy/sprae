@@ -1,6 +1,6 @@
 // directives & parsing
 import sprae, { directive } from './core.js'
-import { prop } from 'element-props'
+import { prop, input } from 'element-props'
 import { effect, computed } from '@preact/signals-core'
 
 directive(':with', (el, expr, rootState) => {
@@ -36,19 +36,23 @@ directive(':aria', (el, expr, state) => {
   value.subscribe(update)
 })
 
-directive(':data', (el) => {
-  return (value) => {
+directive(':data', (el, expr, state) => {
+  let evaluate = parseExpr(expr, 'aria')
+  const value = computed(() => evaluate(state))
+  value.subscribe((value) => {
     for (let key in value) el.dataset[key] = value[key];
-  }
+  })
 })
 
-directive(':on', (el) => {
-  let listeners
-  return (values) => {
-    for (let evt in listeners) el.removeEventListener(evt, listeners[evt]);
-    listeners = values;
-    for (let evt in listeners) el.addEventListener(evt, listeners[evt]);
-  }
+directive(':on', (el, expr, state) => {
+  let evaluate = parseExpr(expr, 'aria')
+  let listeners = computed(() => evaluate(state))
+  let prevListeners
+  listeners.subscribe((values) => {
+    for (let evt in prevListeners) el.removeEventListener(evt, prevListeners[evt]);
+    prevListeners = values;
+    for (let evt in prevListeners) el.addEventListener(evt, prevListeners[evt]);
+  })
 })
 
 directive(':prop', (el, expr, state) => {
@@ -74,16 +78,20 @@ directive(':text', (el, expr, state) => {
 
 // connect expr to element value
 directive(':value', (el, expr, state) => {
+  let evaluate = parseExpr(expr, 'value')
+
   let [get, set] = input(el);
   let evaluateSet = parseSetter(expr);
   let onchange = e => evaluateSet(state, get(el));
   // FIXME: double update can be redundant
   el.addEventListener('input', onchange);
   el.addEventListener('change', onchange);
-  return (value) => {
+
+  const value = computed(() => evaluate(state))
+  value.subscribe((value) => {
     prop(el, 'value', value)
     set(value);
-  }
+  })
 })
 
 const memo = {}
