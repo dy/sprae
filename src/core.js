@@ -2,12 +2,12 @@ import signalStruct from 'signal-struct';
 
 
 // sprae element: apply directives
-export default function sprae(el, init) {
-  init ||= {};
+export default function sprae(el, values) {
+  values ||= {};
+
+  const state = signalStruct(values);
 
   // FIXME: find out if we can move it to signal-directives, opposed to generic-directives (any-reactive-element)
-  const state = signalStruct(init);
-
   // prepare directives - need to be after subscribing to values to get init state here
   for (let name in directives) {
     const sel = `[${name.replace(':','\\:')}]`,

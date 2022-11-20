@@ -3,17 +3,13 @@ import sprae, { directive } from './core.js'
 import { prop } from 'element-props'
 import { effect, computed } from '@preact/signals-core'
 
-
 directive(':with', (el, expr, rootState) => {
   let evaluate = parseExpr(expr, 'with')
-  const withValues = computed(() => evaluate(rootState))
-
-  const subinit = Object.assign(rootState, withValues.value);
+  const [rootSignals] = rootState
 
   // it subsprays with shadowed values
-  let substate = sprae(el, subinit);
-
-  withValues.subscribe(value => Object.assign(substate, value))
+  // sub-structure combines root signals with evaluated signals
+  sprae(el, Object.assign({}, rootSignals, evaluate(rootSignals)));
 })
 
 

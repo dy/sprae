@@ -273,7 +273,7 @@ test('on: base', () => {
   is(log.value, ['click','x','xx']);
 })
 
-test.only('with: inline', () => {
+test('with: inline', () => {
   let el = h`<x :with="{foo:'bar', baz}"><y :text="foo + baz"></y></x>`
   let state = sprae(el, {baz: 'qux'})
   // FIXME: this doesn't inherit root scope baz property and instead uses hard-initialized one
@@ -281,7 +281,7 @@ test.only('with: inline', () => {
   state.baz = 'quux'
   is(el.innerHTML, `<y class="∴text">barquux</y>`)
 })
-test.only('with: inline reactive', () => {
+test('with: inline reactive', () => {
   let el = h`<x :with="{foo:'bar', baz}"><y :text="foo + baz"></y></x>`
   let baz = signal('qux')
   let state = sprae(el, {baz})
@@ -290,14 +290,15 @@ test.only('with: inline reactive', () => {
   baz.value = 'quux'
   is(el.innerHTML, `<y class="∴text">barquux</y>`)
 })
-test.only('with: data', () => {
+test('with: data', () => {
   let el = h`<x :with="x"><y :text="foo"></y></x>`
   let [state, update] = sprae(el, {x:{foo:'bar'}})
   is(el.innerHTML, `<y class="∴text">bar</y>`)
+  console.log('update')
   update({x:{foo:'baz'}})
   is(el.innerHTML, `<y class="∴text">baz</y>`)
 })
-test.only('with: inheritance', () => {
+test('with: transparency', () => {
   // NOTE: y:text initializes through directive, not through parent
   // therefore by default :text uses parent's state, not defined by element itself
   let el = h`<x :with="{foo:'foo'}"><y :with="b" :text="foo+bar"></y></x>`
@@ -306,11 +307,11 @@ test.only('with: inheritance', () => {
   params.b.bar = 'baz'
   is(el.innerHTML, `<y class="∴with ∴text">foobaz</y>`)
 })
-test.only('with: reactive inheritance', () => {
+test('with: reactive transparency', () => {
   let el = h`<x :with="{foo:1}"><y :with="b.c" :text="foo+bar"></y></x>`
   const bar = signal('2')
   sprae(el, {b:{c:{bar}}})
   is(el.innerHTML, `<y class="∴with ∴text">12</y>`)
-  bar.value = 3
+  bar.value = '3'
   is(el.innerHTML, `<y class="∴with ∴text">13</y>`)
 })
