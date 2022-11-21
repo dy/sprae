@@ -102,10 +102,10 @@ test('text: core', async () => {
   is(el.outerHTML, `<div class="∴text"></div>`)
 })
 
-test.todo('conditions: base', async () => {
+test('conditions: base', async () => {
   let el = h`<p>
     <span :if="a==1">a</span>
-    <span :else-if="a==2">b</span>
+    <span :else :if="a==2">b</span>
     <span :else >c</span>
   </p>`
 
@@ -113,60 +113,60 @@ test.todo('conditions: base', async () => {
 
   is(el.innerHTML, '<span class="∴if">a</span>')
   params.a = 2
-  is(el.innerHTML, '<span class="∴else-if">b</span>')
+  is(el.innerHTML, '<span>b</span>')
   params.a = 3
-  is(el.innerHTML, '<span class="∴else">c</span>')
-
-  delete params.a
+  is(el.innerHTML, '<span>c</span>')
+  params.a = null
+  is(el.innerHTML, '<span>c</span>')
 })
 
-test.todo('conditions: short with insertions', async () => {
+test('conditions: short with insertions', async () => {
   let el = h`<p>
     <span :if="a==1" :text="'1:'+a"></span>
-    <span :else-if="a==2" :text="'2:'+a"></span>
+    <span :else :if="a==2" :text="'2:'+a"></span>
     <span :else :text="a"></span>
   </p>`
 
   const params = sprae(el, { a: 1 })
 
-  is(el.innerHTML, '<span class="∴text ∴if">1:1</span>')
+  is(el.innerHTML, '<span class="∴if ∴text">1:1</span>')
   params.a = 2
-  is(el.innerHTML, '<span class="∴text ∴else-if">2:2</span>')
+  is(el.innerHTML, '<span class="∴text">2:2</span>')
   params.a = 3
-  is(el.innerHTML, '<span class="∴text ∴else">3</span>')
+  is(el.innerHTML, '<span class="∴text">3</span>')
   params.a = 4
-  is(el.innerHTML, '<span class="∴text ∴else">4</span>')
+  is(el.innerHTML, '<span class="∴text">4</span>')
 
   params.a = 1
-  is(el.innerHTML, '<span class="∴text ∴if">1:1</span>')
+  is(el.innerHTML, '<span class="∴if ∴text">1:1</span>')
   params.a = 4
-  is(el.innerHTML, '<span class="∴text ∴else">4</span>')
+  is(el.innerHTML, '<span class="∴text">4</span>')
 
-  delete params.a
+  params.a = null
 })
 
-test.todo('conditions: reactive values', async () => {
+test('conditions: reactive values', async () => {
   let el = h`<p>
     <span :if="a==1" :text="'1:'+a"></span>
-    <span :else-if="a==2" :text="'2:'+a"></span>
+    <span :else :if="a==2" :text="'2:'+a"></span>
     <span :else :text="a"></span>
   </p>`
 
   const a = signal(1)
   sprae(el, { a })
 
-  is(el.innerHTML, '<span class="∴text ∴if">1:1</span>')
+  is(el.innerHTML, '<span class="∴if ∴text">1:1</span>')
   a.value = 2
-  is(el.innerHTML, '<span class="∴text ∴else-if">2:2</span>')
+  is(el.innerHTML, '<span class="∴text">2:2</span>')
   a.value = 3
-  is(el.innerHTML, '<span class="∴text ∴else">3</span>')
+  is(el.innerHTML, '<span class="∴text">3</span>')
   a.value = 4
-  is(el.innerHTML, '<span class="∴text ∴else">4</span>')
+  is(el.innerHTML, '<span class="∴text">4</span>')
 
   a.value = 1
-  is(el.innerHTML, '<span class="∴text ∴if">1:1</span>')
+  is(el.innerHTML, '<span class="∴if ∴text">1:1</span>')
   a.value = 4
-  is(el.innerHTML, '<span class="∴text ∴else">4</span>')
+  is(el.innerHTML, '<span class="∴text">4</span>')
 })
 
 

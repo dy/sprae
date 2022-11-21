@@ -94,7 +94,7 @@
 + can pass both observables and direct state anywhere, eg. init child components from it
 -> worthy of a separate library, signal-struct?
 
-## [ ] Per-directive initialize vs per-element initialize
+## [x] Per-directive initialize vs per-element initialize -> directives can immediately initialize rest on elements
 
 + Per-directive is very simple and trivial approach
 - Per-directive doesn't read attributes order and init directives independently
@@ -102,14 +102,14 @@
 - Per-directive is a bit hard to deal with scopes
 -> gotta benchmark, vs just walker.
 
-## [ ] avoid updating unchanged directives if values don't affect them
+## [x] avoid updating unchanged directives if values don't affect them -> signal struct
 
 ? what if we use preact/signals to subscribe only to required props?
 -> parseExpr is going to need to be handled by core.js (not directives), and detect & subscribe to dependencies itself
 -> so that directive updator gets invoked only when any of expr dependencies change
 -> gotta solve via signal-struct
 
-## [ ] Replace :else-if with :else :if
+## [x] Replace :else-if with :else :if -> not ideal technically, but done
 
 + `:else :if=""` is meaningful expansion of both directives
 + `:else :if` is coming from JS

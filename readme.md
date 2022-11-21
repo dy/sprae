@@ -10,23 +10,20 @@ A lightweight essential alternative to [alpine](https://github.com/alpinejs/alpi
 Sprae enables directives as attributes starting with `:`.
 
 ```html
-<div id="element" :if="user">
+<div id="container" :if="user">
   Logged in as <span :text="user.displayName">Guest.</span>
 </div>
 
 <script type="module">
   import sprae from 'sprae';
 
-  const init = { user: { displayName: 'Dmitry Ivanov' } }
-  const state = sprae(user, init);
-
+  const state = sprae(container, { user: { displayName: 'Dmitry Ivanov' } });
   state.user.displayName = 'dy' // automatically updates DOM
 </script>
 ```
 
-* `sprae` initializes directives within subtree with passed `init` data.
-* `state` is object reflecting directives values, changing any of its props updates corresponding directives (see [reactive-struct](https://github.com/dy/signal-struct)).
-* `init` is the initial state to render the template. It can include reactive values, see [reactivity](#reactivity).
+* `sprae` initializes directives within subtree with initial data (can include [signals](https://github.com/preactjs/signals) or [reactive values](https://github.com/dy/sube)).
+* `state` is object reflecting directives values, changing any of its props updates corresponding directives.
 
 <!--
 <details>
@@ -64,11 +61,9 @@ Sprae can be used without build step or JS, autoinitializing document:
 <!-- * [ ] `:item="{ id: 1 }"` – set [item*](https://developer.mozilla.org/en-US/docs/Web/HTML/Microdata) microdata attribute. -->
 
 
+### Combining directives
 
-<details>
-<summary><strong>Combining directives</strong></summary>
-
-Directives can be naturally combined as:
+Directives can be combined as:
 
 ```html
 <span :if="foo">foo</span>
@@ -78,31 +73,9 @@ Directives can be naturally combined as:
 <span :if="items" :each="item in items"></span>
 <span :else>Empty list</span>
 ```
-</details>
 
-
-<details>
-<summary><strong>Adding directives</strong></summary>
-
-Directives can be added by registering them via `directive(name, initializer)`:
-
-```js
-import { directive, parseExpr } from 'sprae';
-
-directive(':html', (el, expr) => {
-  // ...initialize here
-  const evaluate = parseExpr(expr);
-  return (state) => {
-    // ...update here
-    el.innerHTML = evaluate(state);
-  }
-});
-```
-
-</details>
-
-
-## Reactivity
+<!--
+### Reactive values
 
 Directive expressions are natively reactive, ie. data may contain any async/reactive values, such as:
 
@@ -139,6 +112,7 @@ Update happens when any value changes:
 ```
 
 Internally directives trigger updates only for used properties change. They subscribe in weak fashion and get disposed when element is disposed.
+-->
 
 
 ## Justification

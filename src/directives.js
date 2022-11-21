@@ -1,5 +1,5 @@
 // directives & parsing
-import sprae, { directive } from './core.js'
+import sprae, { directive, directives } from './core.js'
 import { prop, input } from 'element-props'
 import { effect, computed } from '@preact/signals-core'
 
@@ -13,6 +13,99 @@ directive(':with', (el, expr, rootState) => {
 })
 
 
+directive(':if', (el, expr, state) => {
+  let holder = new Text,
+      clauses = [parseExpr(expr, 'if')],
+      els = [el], cur = el
+
+  while (cur = el.nextElementSibling) {
+    if (cur.hasAttribute(':else')) {
+      cur.removeAttribute(':else');
+      if (expr = cur.getAttribute(':if')) {
+        cur.removeAttribute(':if'), cur.remove();
+        els.push(cur); clauses.push(parseExpr(expr, 'else-if'));
+      }
+      else {
+        cur.remove(); els.push(cur); clauses.push(() => 1);
+      }
+    }
+    else break;
+  }
+
+  el.replaceWith(cur = holder)
+
+  let idx = computed(() => clauses.findIndex(f => f(state)))
+  // NOTE: it lazily initializes elements on insertion
+  idx.subscribe(i => els[i] != cur && (cur.replaceWith(cur = els[i] || holder), sprae(cur, state)))
+})
+
+
+directive(':each', (tpl, expr, state) => {
+  let each = parseForExpression(expr);
+  if (!each) return exprError(new Error, expr);
+
+  const getItems = parseExpr(each.items);
+
+  // FIXME: make sure no memory leak here
+  const holder = new Text
+  tpl.replaceWith(holder)
+  let els = [];
+
+  const [signals] = state
+  const items = getItems(signals)
+  const itemScopes = computed(() => {
+    let list = items.value
+    if (typeof list === 'number') list = Array.from({length: list}, (_, i)=>i+1)
+    // FIXME: avoid recreating plenty of items every time - cache by `item.id` maybe?
+    // or maybe make each item scope a signal? whenever item changes it just rerenders instance
+    // FIXME: also for signal-struct it might be costly to convert any-array into a signal
+    return (list || []).map(item => {
+      const scope = Object.assign({}, signals);
+      scope[each.item] = item;
+      if (each.index) scope[each.index] = i;
+      return scope
+    })
+  });
+
+  // FIXME: there can DOM swapper be used instead
+  const update = (scopes) => {
+    els.forEach(el => el.remove()); els = [];
+    scopes.value.forEach((scope,i) => {
+      let el = tpl.cloneNode(true);
+      els.push(el);
+      holder.before(el);
+      sprae(el, scope);
+    });
+  }
+  itemScopes.subscribe(update)
+})
+
+// This was taken AlpineJS, former VueJS 2.* core. Thanks Alpine & Vue!
+function parseForExpression(expression) {
+  let forIteratorRE = /,([^,\}\]]*)(?:,([^,\}\]]*))?$/
+  let stripParensRE = /^\s*\(|\)\s*$/g
+  let forAliasRE = /([\s\S]*?)\s+(?:in|of)\s+([\s\S]*)/
+  let inMatch = expression.match(forAliasRE)
+
+  if (!inMatch) return
+
+  let res = {}
+  res.items = inMatch[2].trim()
+  let item = inMatch[1].replace(stripParensRE, '').trim()
+  let iteratorMatch = item.match(forIteratorRE)
+
+  if (iteratorMatch) {
+      res.item = item.replace(forIteratorRE, '').trim()
+      res.index = iteratorMatch[1].trim()
+  } else {
+      res.item = item
+  }
+
+  return res
+}
+
+
+// common-setter directives
 common(`id`), common(`name`), common(`for`), common(`type`), common(`hidden`), common(`disabled`), common(`href`), common(`src`), common(`style`), common(`class`)
 
 function common(name) {
