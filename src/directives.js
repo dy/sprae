@@ -6,8 +6,8 @@ import { effect, computed } from '@preact/signals-core'
 directive(':with', (el, expr, rootState) => {
   let evaluate = parseExpr(expr, 'with')
 
-  // Instead of extending signals (which is a bit hard since internal )
-  //
+  // Instead of extending signals (which is a bit hard since signal-struct internals is not uniform)
+  // we bind updating
   const params = computed(() => Object.assign({}, rootState, evaluate(rootState)))
   let [,update] = sprae(el, params.value)
   params.subscribe(update)
