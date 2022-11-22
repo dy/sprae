@@ -8,3 +8,4 @@
 * [ ] :each :if, :if :each
 * [ ] :with must be able to write state value as well
 * [ ] expand to any subscribables: both as state vars
+* [ ] docs: give example to each directive

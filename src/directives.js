@@ -1,15 +1,16 @@
 // directives & parsing
-import sprae, { directive, directives } from './core.js'
+import sprae, { directive } from './core.js'
 import { prop, input } from 'element-props'
 import { effect, computed } from '@preact/signals-core'
 
 directive(':with', (el, expr, rootState) => {
   let evaluate = parseExpr(expr, 'with')
-  const [rootSignals] = rootState
 
-  // it subsprays with shadowed values
-  // sub-structure combines root signals with evaluated signals
-  sprae(el, Object.assign({}, rootSignals, evaluate(rootSignals)));
+  // Instead of extending signals (which is a bit hard since internal )
+  //
+  const params = computed(() => Object.assign({}, rootState, evaluate(rootState)))
+  let [,update] = sprae(el, params.value)
+  params.subscribe(update)
 })
 
 
