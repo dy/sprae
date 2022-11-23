@@ -6,7 +6,7 @@ import swap from 'swapdom'
 import p from 'primitive-pool'
 
 directive(':with', (el, expr, rootState) => {
-  let evaluate = parseExpr(expr, 'with')
+  let evaluate = parseExpr(expr, 'with', rootState)
 
   // Instead of extending signals (which is a bit hard since signal-struct internals is not uniform)
   // we bind updating
@@ -17,7 +17,7 @@ directive(':with', (el, expr, rootState) => {
 
 directive(':if', (el, expr, state) => {
   let holder = new Text,
-      clauses = [parseExpr(expr, 'if')],
+      clauses = [parseExpr(expr, ':if', state)],
       els = [el], cur = el
 
   while (cur = el.nextElementSibling) {
@@ -25,7 +25,7 @@ directive(':if', (el, expr, state) => {
       cur.removeAttribute(':else');
       if (expr = cur.getAttribute(':if')) {
         cur.removeAttribute(':if'), cur.remove();
-        els.push(cur); clauses.push(parseExpr(expr, 'else-if'));
+        els.push(cur); clauses.push(parseExpr(expr, ':else :if', state));
       }
       else {
         cur.remove(); els.push(cur); clauses.push(() => 1);
@@ -46,7 +46,7 @@ directive(':each', (tpl, expr, state) => {
   let each = parseForExpression(expr);
   if (!each) return exprError(new Error, expr);
 
-  const getItems = parseExpr(each.items);
+  const getItems = parseExpr(each.items, ':each', state);
 
   // FIXME: make sure no memory leak here
   const holder = new Text
@@ -126,7 +126,7 @@ common(`id`), common(`name`), common(`for`), common(`type`), common(`hidden`), c
 
 function common(name) {
   directive(':'+name, (el, expr, state) => {
-    let evaluate = parseExpr(expr, name)
+    let evaluate = parseExpr(expr, ':'+name, state)
     // evaluate autosubscribes to only fraction of dependencies
     // - whenever they change, update is called with result of evaluator
 
@@ -137,7 +137,7 @@ function common(name) {
 }
 
 directive(':aria', (el, expr, state) => {
-  let evaluate = parseExpr(expr, 'aria')
+  let evaluate = parseExpr(expr, ':aria', state)
   const update = (value) => {
     for (let key in value) prop(el, 'aria'+key[0].toUpperCase()+key.slice(1), value[key]);
   }
@@ -146,7 +146,7 @@ directive(':aria', (el, expr, state) => {
 })
 
 directive(':data', (el, expr, state) => {
-  let evaluate = parseExpr(expr, 'aria')
+  let evaluate = parseExpr(expr, ':data', state)
   const value = computed(() => evaluate(state))
   value.subscribe((value) => {
     for (let key in value) el.dataset[key] = value[key];
@@ -154,7 +154,7 @@ directive(':data', (el, expr, state) => {
 })
 
 directive(':on', (el, expr, state) => {
-  let evaluate = parseExpr(expr, 'aria')
+  let evaluate = parseExpr(expr, ':on', state)
   let listeners = computed(() => evaluate(state))
   let prevListeners
   listeners.subscribe((values) => {
@@ -165,7 +165,7 @@ directive(':on', (el, expr, state) => {
 })
 
 directive(':prop', (el, expr, state) => {
-  let evaluate = parseExpr(expr, 'prop')
+  let evaluate = parseExpr(expr, ':prop', state)
   const update = (value) => {
     if (!value) return
     for (let key in value) prop(el, key, value[key]);
@@ -175,7 +175,7 @@ directive(':prop', (el, expr, state) => {
 })
 
 directive(':text', (el, expr, state) => {
-  let evaluate = parseExpr(expr, 'text')
+  let evaluate = parseExpr(expr, ':text', state)
 
   const update = (value) => {
     el.textContent = value == null ? '' : value;
@@ -187,7 +187,7 @@ directive(':text', (el, expr, state) => {
 
 // connect expr to element value
 directive(':value', (el, expr, state) => {
-  let evaluate = parseExpr(expr, 'value')
+  let evaluate = parseExpr(expr, ':value', state)
 
   let [get, set] = input(el);
   let evaluateSet = parseSetter(expr);
@@ -216,7 +216,7 @@ let evaluatorMemo = {}
 
 // borrowed from alpine: https://github.com/alpinejs/alpine/blob/main/packages/alpinejs/src/evaluator.js#L61
 // it seems to be more robust than subscript
-function parseExpr(expression, dir) {
+function parseExpr(expression, dir, scope) {
   if (evaluatorMemo[expression]) return evaluatorMemo[expression]
 
   // Some expressions that are useful in Alpine are not valid as the right side of an expression.
@@ -235,20 +235,20 @@ function parseExpr(expression, dir) {
   try {
     evaluate = new Function(['scope'], `let result; with (scope) { result = ${rightSideSafeExpression} }; return result;`)
   } catch ( e ) {
-    return exprError(e, expression, dir)
+    return exprError(e, expression, dir, scope)
   }
 
   // guard runtime eval errors
   return evaluatorMemo[expression] = (state) => {
     let result
     try { result = evaluate(state) }
-    catch (e) { return exprError(e, expression, dir) }
+    catch (e) { return exprError(e, expression, dir, scope) }
     return result
   }
 }
 
-export function exprError(error, expression, dir) {
+export function exprError(error, expression, dir, scope) {
   Object.assign( error, { expression } )
-  console.warn(`∴ ${error.message}\n\n${dir}=${ expression ? `"${expression}"\n\n` : '' }`)
+  console.warn(`∴ ${error.message}\n\n${dir}=${ expression ? `"${expression}"\n\n` : '' }`, scope)
   setTimeout(() => { throw error }, 0)
 }
