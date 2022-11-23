@@ -1,7 +1,9 @@
 // directives & parsing
 import sprae, { directive } from './core.js'
 import { prop, input } from 'element-props'
-import { effect, computed } from '@preact/signals-core'
+import { effect, computed, batch } from '@preact/signals-core'
+import swap from 'swapdom'
+import p from 'primitive-pool'
 
 directive(':with', (el, expr, rootState) => {
   let evaluate = parseExpr(expr, 'with')
@@ -9,10 +11,9 @@ directive(':with', (el, expr, rootState) => {
   // Instead of extending signals (which is a bit hard since signal-struct internals is not uniform)
   // we bind updating
   const params = computed(() => Object.assign({}, rootState, evaluate(rootState)))
-  let [,update] = sprae(el, params.value)
-  params.subscribe(update)
+  let state = sprae(el, params.value)
+  params.subscribe(values => batch(()=>Object.assign(state, values)))
 })
-
 
 directive(':if', (el, expr, state) => {
   let holder = new Text,
@@ -36,7 +37,7 @@ directive(':if', (el, expr, state) => {
   el.replaceWith(cur = holder)
 
   let idx = computed(() => clauses.findIndex(f => f(state)))
-  // NOTE: it lazily initializes elements on insertion
+  // NOTE: it lazily initializes elements on insertion, it's safe to sprae multiple times
   idx.subscribe(i => els[i] != cur && (cur.replaceWith(cur = els[i] || holder), sprae(cur, state)))
 })
 
@@ -50,35 +51,49 @@ directive(':each', (tpl, expr, state) => {
   // FIXME: make sure no memory leak here
   const holder = new Text
   tpl.replaceWith(holder)
-  let els = [];
 
-  const [signals] = state
-  const items = getItems(signals)
-  const itemScopes = computed(() => {
-    let list = items.value
-    if (typeof list === 'number') list = Array.from({length: list}, (_, i)=>i+1)
-    // FIXME: avoid recreating plenty of items every time - cache by `item.id` maybe?
-    // or maybe make each item scope a signal? whenever item changes it just rerenders instance
-    // FIXME: also for signal-struct it might be costly to convert any-array into a signal
-    return (list || []).map(item => {
-      const scope = Object.assign({}, signals);
-      scope[each.item] = item;
-      if (each.index) scope[each.index] = i;
-      return scope
-    })
-  });
+  const items = computed(()=>{
+    let list = getItems(state)
+    if (typeof list === 'number') return Array.from({length: list}, (_, i)=>i+1)
+    return list
+  })
 
-  // FIXME: there can DOM swapper be used instead
-  const update = (scopes) => {
-    els.forEach(el => el.remove()); els = [];
-    scopes.value.forEach((scope,i) => {
-      let el = tpl.cloneNode(true);
-      els.push(el);
-      holder.before(el);
-      sprae(el, scope);
-    });
-  }
-  itemScopes.subscribe(update)
+  // stores scope per data item
+  const scopes = new WeakMap()
+  // element per data item
+  const itemEls = new WeakMap()
+  let curEls = []
+  items.subscribe(items => {
+    if (!items) items = []
+    // collect elements/scopes for items
+    let newEls = [], elScopes = []
+    for (let item of items) {
+      let key = p(item)
+      let el = itemEls.get(key)
+      if (!el) {
+        el = tpl.cloneNode(true)
+        itemEls.set(key, el)
+      }
+      newEls.push(el)
+
+      if (!scopes.has(key)) {
+        let scope = Object.create(state)
+        scope[each.item] = item
+        if (each.index) scope[each.index] = i;
+        scopes.set(key, scope)
+      }
+      elScopes.push(scopes.get(key))
+    }
+
+    // swap is really fast & tiny
+    swap(holder.parentNode, curEls, newEls, holder)
+    curEls = newEls
+
+    // init new elements
+    for (let i = 0; i < newEls.length; i++) {
+      sprae(newEls[i], elScopes[i])
+    }
+  })
 })
 
 // This was taken AlpineJS, former VueJS 2.* core. Thanks Alpine & Vue!

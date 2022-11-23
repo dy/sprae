@@ -170,7 +170,7 @@ test('conditions: reactive values', async () => {
 })
 
 
-test.todo('each: base', async () => {
+test('each: base', async () => {
   // FIXME: in some conspicuous reason jsdom fails to update text nodes somehow
   let el = h`<p>
     <span :each="a in b" :text="a"></span>
@@ -179,15 +179,16 @@ test.todo('each: base', async () => {
   const params = sprae(el, { b: [] })
 
   is(el.innerHTML, '')
+  console.log('set 1,2')
   params.b = [1,2]
   is(el.innerHTML, '<span class="∴each ∴text">1</span><span class="∴each ∴text">2</span>')
   params.b = []
   is(el.innerHTML, '')
-  delete params.b
+  params.b = null
   is(el.innerHTML, '')
 })
 
-test.todo('each: reactive values', async () => {
+test('each: reactive values', async () => {
   let el = h`<p>
     <span :each="a in b" :text="a"></span>
   </p>`
@@ -200,7 +201,7 @@ test.todo('each: reactive values', async () => {
   is(el.innerHTML, '<span class="∴each ∴text">1</span><span class="∴each ∴text">2</span>')
   b.value = []
   is(el.innerHTML, '')
-  delete params.b
+  params.b = null
   is(el.innerHTML, '')
 })
 
@@ -292,10 +293,10 @@ test('with: inline reactive', () => {
 })
 test('with: data', () => {
   let el = h`<x :with="x"><y :text="foo"></y></x>`
-  let [state, update] = sprae(el, {x:{foo:'bar'}})
+  let state = sprae(el, {x:{foo:'bar'}})
   is(el.innerHTML, `<y class="∴text">bar</y>`)
   console.log('update')
-  update({x:{foo:'baz'}})
+  Object.assign(state, {x:{foo:'baz'}})
   is(el.innerHTML, `<y class="∴text">baz</y>`)
 })
 test('with: transparency', () => {
