@@ -91,7 +91,7 @@ Bind value to input, textarea or select.
 
 #### `:<prop>="value"`, `:="values"`
 
-Any other directive sets prop value. Noname
+Any other directive sets prop value. Noname directive spreads props.
 
 ```html
 <!-- :style can accept objects or strings -->
