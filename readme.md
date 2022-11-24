@@ -1,13 +1,13 @@
 # ∴ spræ [![size](https://img.shields.io/bundlephobia/minzip/sprae?label=size)](https://bundlephobia.com/result?p=sprae)
 
-> Soft DOM hydration with reactive attributes
+> Soft DOM hydration with reactive microdirectives
 
 A lightweight essential alternative to [alpine](https://github.com/alpinejs/alpine), [petite-vue](https://github.com/vuejs/petite-vue), [templize](https://github.com/dy/templize) or JSX with better ergonomics[*](#justification).
 
 
 ## Usage
 
-Spraydrops (directives) are attributes starting with `:`. Once initialized, they immediately evaporate.
+Directives (spraedrops) are attributes starting with `:`. Once initialized, they immediately evaporate.
 
 ```html
 <div id="container" :if="user">
