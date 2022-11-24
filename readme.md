@@ -56,7 +56,9 @@ Controls flow of elements.
 <span :else>baz</span>
 ```
 
-#### `:each="item, index? in list|number"`
+#### `:each="item, index? in list"`
+#### `:each="value, key? in object"`
+#### `:each="index in number"`
 
 Create multiple instances of element from list or number range.
 Index value starts from 1.
@@ -65,11 +67,6 @@ Index value starts from 1.
 <ul>
   <li :each="item, index in items" :id="`item-${index}`" :data="{value:item.value}" :text="item.label">Untitled item</li>
 </ul>
-
-<!-- Cases -->
-<li :each="item, index in array"/>
-<li :each="value, key in object"/>
-<li :each="index in number"/>
 
 <!-- Loop by condition -->
 <span :if="items" :each="item in items">...</span>
@@ -96,13 +93,11 @@ Bind value to input, textarea or select (same as `v-model` in vue or `x-model` i
 
 #### `:<prop>="value"`
 
-Any other directive sets prop value, see [element-props](https://github.com/dy/element-props).
+Any other directive sets prop value.
 
 ```html
 <!-- :style can accept objects or strings -->
-<label :for="name" :text="name" style="{ marginBottom: '1rem' }" />
-
-<!-- :value 2-way binds property -->
+<label :for="name" :text="name" :style="{ marginBottom: '1rem' }" />
 <input :id="name" :name="name" :type="type" :disabled="!name" :value="value" />
 
 <!-- :class can accept objects, arrays or strings -->
