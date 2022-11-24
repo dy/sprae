@@ -124,3 +124,21 @@
 -> No: first, there's :class directive changing the class itself;
 -> Second, there's easier way to just "evaporate" directive = not initialize twice;
 -> Third, there's too much pollution with class markers
+
+## [ ] Plugins
+
+* init/connected/mount, unmount/disconnected?
+  * init and connected are different apparently
+* :html?
+* :effect?
+* @sprae/tailwind: `<x :tw="mt-1 mx-2"></x>` - separate tailwind utility classes from main ones; allow conditional setters.
+* @sprae/item: `<x :item="{type:a, scope:b}"` – provide microdata
+* @sprae/hcodes: `<x :h=""` – provide microformats
+
+## [ ] Write any-attributes via :<prop>?
+
++ Since we support attr walking, maybe instead of :on and :prop just allow any attributes?
+  + that would allow event and attr modifiers...
+  + that would allow somewhat alpine/vue-compatible code
++ makes sense for `:="{}"` spread
++ makes place for other specific directives `:init=""` etc

@@ -81,7 +81,7 @@ test('aria: base', async () => {
   is(el.outerHTML, `<input type="text" id="jokes" role="combobox" aria-controls="joketypes" aria-autocomplete="list" aria-expanded="false" aria-active-option="item1" aria-activedescendant="">`)
 })
 
-test('input: direct', async () => {
+test('value: direct', async () => {
   let el = h`<input :value="a" />`
   let state = sprae(el, {a:1})
   is(el.value, '1')
@@ -357,4 +357,7 @@ test('with: reactive transparency', () => {
   is(el.innerHTML, `<y>12</y>`)
   bar.value = '3'
   is(el.innerHTML, `<y>13</y>`)
+})
+test('with: writes to state', () => {
+  let a = `<x :with="{a:1}"><y :on="{x(){a=2}}"></y></x>`
 })

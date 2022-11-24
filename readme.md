@@ -81,25 +81,43 @@ Index value starts from 1.
 Set text content of an element. Rewrites default text content of an element, so that can be used as fallback value:
 
 ```html
-<span :text="user.name">Guest</span>
+Welcome, <span :text="user.name">Guest</span>.
 ```
 
 #### `:value="data.email"`
 
-Bind value to input or textarea (same as `v-model` in vue or `x-model` in Alpine).
+Bind value to input, textarea or select (same as `v-model` in vue or `x-model` in Alpine).
 
-#### `:id`, `:name`, `:for`, `:type`, `:hidden`, `:disabled`, `:href`, `:src`
+```html
+<div :with="{text:''}">
+  <input :value="text" />
+</div>
+```
 
-Common attributes setters.
+#### `:<prop>="value"`
 
-#### `:class="[ foo, 'bar' ]"`
+Any other directive sets prop value, see [element-props](https://github.com/dy/element-props).
 
-Set element class from an array, object or a string.
+```html
+<!-- :style can accept objects or strings -->
+<label :for="name" :text="name" style="{ marginBottom: '1rem' }" />
 
-#### `:style="{ top: '1px', position: 'absolute' }"`
+<!-- :value 2-way binds property -->
+<input :id="name" :name="name" :type="type" :disabled="!name" :value="value" />
 
-Set element style from a string or an object.
+<!-- :class can accept objects, arrays or strings -->
+<div :class="{help: !!help, error: !!help }" :text="help"></div>
+```
 
+#### `:="{foo: 1, bar: 2}"`
+
+Spread props from data object.
+
+```html
+<input :="{id, type, name}" />
+```
+
+<!--
 #### `:prop="{ alt:'foo', title:'bar' }"`
 
 Set any other attribute / property.
@@ -107,19 +125,36 @@ Set any other attribute / property.
 #### `:on="{ click:e=>{}, touch:e=>{} }"`
 
 Add event listeners.
+-->
 
 #### `:data="{ foo:1, bar:2 }"`
 
 Set [data-*](https://developer.mozilla.org/en-US/docs/Web/HTML/Global_attributes/data-*) attributes.
 
+```html
+<input :data="{foo: 1, bar: true}" />
+```
+
 #### `:aria="{ role:'progressbar' }"`
 
 Set [aria-role](https://developer.mozilla.org/en-US/docs/Web/Accessibility/ARIA) attributes.
+
+```html
+<input type="text" id="jokes" role="combobox" :aria="{
+  controls:'joketypes',
+  autocomplete:'list',
+  expanded:false,
+  activeOption:'item1',
+  activedescendant:''
+}" />
+```
 
 #### `:with="data"`
 
 Data scope for a subtree fragment.
 
+```html
+```
 
 <!--
 ### Reactive values
@@ -177,14 +212,5 @@ _Sprae_ takes elegant syntax convention of _alpine_ and method of _templize_ to 
 * It doesn'y introduce syntax scatter.
 * It supports simple expressions with exposed reactive data types.
 
-<!--
-
-## Plugins
-
-* @sprae/tailwind: `<x :tw="mt-1 mx-2"></x>` - separate tailwind utility classes from main ones; allow conditional setters.
-* @sprae/item: `<x :item="{type:a, scope:b}"` – provide microdata
-* @sprae/hcodes: `<x :h=""` – provide microformats
-
--->
 
 <p align="center"><a href="https://github.com/krsnzd/license/">🕉</a></p>
