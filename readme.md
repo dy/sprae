@@ -17,7 +17,7 @@ Directives (spraedrops) are attributes starting with `:`. Once initialized, they
 <script type="module">
   import sprae from 'sprae';
 
-  const [state, update] = sprae(container, { user: { displayName: 'Dmitry Ivanov' } });
+  const state = sprae(container, { user: { displayName: 'Dmitry Ivanov' } });
   state.user.displayName = 'dy'; // automatically updates DOM
 </script>
 ```
