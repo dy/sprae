@@ -141,6 +141,9 @@ Set [aria-role](https://developer.mozilla.org/en-US/docs/Web/Accessibility/ARIA)
 Data scope for a subtree fragment.
 
 ```html
+<x :with="{ foo: 'bar' }">
+  <y :with="{ baz: 'qux' }" :text="foo + baz"></y>
+</x>
 ```
 
 <!--
