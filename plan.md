@@ -8,7 +8,7 @@
 * [x] combinations: :else :if
 * [x] :each :if, :if :each
 * [x] :each :each
-* [ ] :with must be able to write state value as well
+* [x] :with must be able to write state value as well
 * [ ] expand to any subscribables: both as state vars
 * [ ] docs: give example to each directive
 * [x] initialize per-element: <x :each><y :if></y><x> - tree-dependent (:each comes first).

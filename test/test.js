@@ -359,5 +359,11 @@ test('with: reactive transparency', () => {
   is(el.innerHTML, `<y>13</y>`)
 })
 test('with: writes to state', () => {
-  let a = `<x :with="{a:1}"><y :on="{x(){a=2}}"></y></x>`
+  let a = h`<x :with="{a:1}"><y :on="{x(){a++}}" :text="a"></y></x>`
+  sprae(a)
+  is(a.innerHTML, `<y>1</y>`)
+  a.firstChild.dispatchEvent(new Event('x'))
+  is(a.innerHTML, `<y>2</y>`)
+  a.firstChild.dispatchEvent(new Event('x'))
+  is(a.innerHTML, `<y>3</y>`)
 })
