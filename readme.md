@@ -57,8 +57,6 @@ Controls flow of elements.
 ```
 
 #### `:each="item, index? in list"`
-#### `:each="value, key? in object"`
-#### `:each="index in number"`
 
 Create multiple instances of element from list or number range.
 Index value starts from 1.
@@ -67,6 +65,11 @@ Index value starts from 1.
 <ul>
   <li :each="item, index in items" :id="`item-${index}`" :data="{value:item.value}" :text="item.label">Untitled item</li>
 </ul>
+
+<!-- Cases -->
+<li :each="item, index in array"/>
+<li :each="value, key in object"/>
+<li :each="index in number"/>
 
 <!-- Loop by condition -->
 <span :if="items" :each="item in items">...</span>
