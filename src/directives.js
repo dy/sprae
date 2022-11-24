@@ -1,6 +1,7 @@
 // directives & parsing
 import sprae, { directive } from './core.js'
 import { prop, input } from 'element-props'
+// import { effect, computed, batch } from 'usignal'
 import { effect, computed, batch } from '@preact/signals-core'
 import swap from 'swapdom'
 import p from 'primitive-pool'
@@ -12,7 +13,7 @@ directive(':with', (el, expr, rootState) => {
   // we bind updating
   const params = computed(() => Object.assign({}, rootState, evaluate(rootState)))
   let state = sprae(el, params.value)
-  params.subscribe(values => batch(()=>Object.assign(state, values)))
+  effect((values=params.value) => batch(()=>Object.assign(state, values)))
 })
 
 directive(':if', (el, expr, state) => {
@@ -35,13 +36,14 @@ directive(':if', (el, expr, state) => {
   }
 
   el.replaceWith(cur = holder)
-
   let idx = computed(() => clauses.findIndex(f => f(state)))
   // NOTE: it lazily initializes elements on insertion, it's safe to sprae multiple times
-  idx.subscribe(i => els[i] != cur && (cur.replaceWith(cur = els[i] || holder), sprae(cur, state)))
+  effect((i=idx.value) => (els[i] != cur && ((cur[_eachHolder]||cur).replaceWith(cur = els[i] || holder), sprae(cur, state))))
+
+  return false
 })
 
-
+const _eachHolder = Symbol(':each')
 directive(':each', (tpl, expr, state) => {
   let each = parseForExpression(expr);
   if (!each) return exprError(new Error, expr);
@@ -49,7 +51,8 @@ directive(':each', (tpl, expr, state) => {
   const getItems = parseExpr(each.items, ':each', state);
 
   // FIXME: make sure no memory leak here
-  const holder = new Text
+  // we need holder to be able :if replace it instead of tpl for combined case
+  const holder = tpl[_eachHolder] = new Text
   tpl.replaceWith(holder)
 
   const items = computed(()=>{
@@ -63,11 +66,12 @@ directive(':each', (tpl, expr, state) => {
   // element per data item
   const itemEls = new WeakMap()
   let curEls = []
-  items.subscribe(items => {
-    if (!items) items = []
+  effect((list=items.value) => {
+    if (!list) list = []
     // collect elements/scopes for items
     let newEls = [], elScopes = []
-    for (let item of items) {
+
+    for (let item of list) {
       let key = p(item)
       let el = itemEls.get(key)
       if (!el) {
@@ -94,6 +98,8 @@ directive(':each', (tpl, expr, state) => {
       sprae(newEls[i], elScopes[i])
     }
   })
+
+  return false
 })
 
 // This was taken AlpineJS, former VueJS 2.* core. Thanks Alpine & Vue!
@@ -141,15 +147,14 @@ directive(':aria', (el, expr, state) => {
   const update = (value) => {
     for (let key in value) prop(el, 'aria'+key[0].toUpperCase()+key.slice(1), value[key]);
   }
-  const value = computed(() => evaluate(state))
-  value.subscribe(update)
+  effect(() => update(evaluate(state)))
 })
 
 directive(':data', (el, expr, state) => {
   let evaluate = parseExpr(expr, ':data', state)
   const value = computed(() => evaluate(state))
-  value.subscribe((value) => {
-    for (let key in value) el.dataset[key] = value[key];
+  effect((v=value.value) => {
+    for (let key in v) el.dataset[key] = v[key];
   })
 })
 
@@ -157,7 +162,7 @@ directive(':on', (el, expr, state) => {
   let evaluate = parseExpr(expr, ':on', state)
   let listeners = computed(() => evaluate(state))
   let prevListeners
-  listeners.subscribe((values) => {
+  effect((values=listeners.value) => {
     for (let evt in prevListeners) el.removeEventListener(evt, prevListeners[evt]);
     prevListeners = values;
     for (let evt in prevListeners) el.addEventListener(evt, prevListeners[evt]);
@@ -170,8 +175,7 @@ directive(':prop', (el, expr, state) => {
     if (!value) return
     for (let key in value) prop(el, key, value[key]);
   }
-  const value = computed(() => evaluate(state))
-  value.subscribe(update)
+  effect(()=>update(evaluate(state)))
 })
 
 directive(':text', (el, expr, state) => {
@@ -181,8 +185,7 @@ directive(':text', (el, expr, state) => {
     el.textContent = value == null ? '' : value;
   }
 
-  const value = computed(() => evaluate(state))
-  value.subscribe(update)
+  effect(()=>update(evaluate(state)))
 })
 
 // connect expr to element value
@@ -196,11 +199,11 @@ directive(':value', (el, expr, state) => {
   el.addEventListener('input', onchange);
   el.addEventListener('change', onchange);
 
-  const value = computed(() => evaluate(state))
-  value.subscribe((value) => {
+  const update = (value) => {
     prop(el, 'value', value)
     set(value);
-  })
+  }
+  effect(()=>update(evaluate(state)))
 })
 
 const memo = {}
@@ -249,6 +252,6 @@ function parseExpr(expression, dir, scope) {
 
 export function exprError(error, expression, dir, scope) {
   Object.assign( error, { expression } )
-  console.warn(`∴ ${error.message}\n\n${dir}=${ expression ? `"${expression}"\n\n` : '' }`, scope)
+  console.warn(`∴sprae: ${error.message}\n\n${dir}=${ expression ? `"${expression}"\n\n` : '' }`, scope)
   setTimeout(() => { throw error }, 0)
 }

@@ -1,13 +1,13 @@
 # ∴ spræ [![size](https://img.shields.io/bundlephobia/minzip/sprae?label=size)](https://bundlephobia.com/result?p=sprae)
 
-> Reactive microdirectives for soft DOM hydration.
+> Soft DOM hydration with reactive attributes
 
 A lightweight essential alternative to [alpine](https://github.com/alpinejs/alpine), [petite-vue](https://github.com/vuejs/petite-vue), [templize](https://github.com/dy/templize) or JSX with better ergonomics[*](#justification).
 
 
 ## Usage
 
-Sprae enables directives as attributes starting with `:`.
+Spraydrops (directives) are attributes starting with `:`. Once initialized, they immediately evaporate.
 
 ```html
 <div id="container" :if="user">
@@ -17,12 +17,12 @@ Sprae enables directives as attributes starting with `:`.
 <script type="module">
   import sprae from 'sprae';
 
-  const state = sprae(container, { user: { displayName: 'Dmitry Ivanov' } });
-  state.user.displayName = 'dy' // automatically updates DOM
+  const [state, update] = sprae(container, { user: { displayName: 'Dmitry Ivanov' } });
+  state.user.displayName = 'dy'; // automatically updates DOM
 </script>
 ```
 
-* `sprae` initializes directives within subtree with initial data (can include [signals](https://github.com/preactjs/signals) or [reactive values](https://github.com/dy/sube)).
+* `sprae` initializes directives within subtree with data (can include [signals](https://github.com/preactjs/signals) or [reactive values](https://github.com/dy/sube)).
 * `state` is object reflecting directives values, changing any of its props updates corresponding directives.
 
 <!--
@@ -66,11 +66,13 @@ Sprae can be used without build step or JS, autoinitializing document:
 Directives can be combined as:
 
 ```html
+<!-- chain of conditions -->
 <span :if="foo">foo</span>
 <span :else :if="bar">bar</span>
 <span :else>baz</span>
 
-<span :if="items" :each="item in items"></span>
+<!-- Loop by condition -->
+<span :if="items" :each="item in items">...</span>
 <span :else>Empty list</span>
 ```
 
