@@ -56,14 +56,14 @@ Controls flow of elements.
 <span :else>baz</span>
 ```
 
-#### `:each="item, index? in list"`
+#### `:each="item in list"`
 
 Create multiple instances of element from list or number range.
 Index value starts from 1.
 
 ```html
 <ul>
-  <li :each="item, index in items" :id="`item-${index}`" :data="{value:item.value}" :text="item.label">Untitled item</li>
+  <li :each="item, index in items" :id="`item-${index}`" :data="item" :text="item.label">Untitled item</li>
 </ul>
 
 <!-- Cases -->
