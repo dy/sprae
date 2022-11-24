@@ -56,7 +56,7 @@ Controls flow of elements.
 <span :else>baz</span>
 ```
 
-#### `:each="item in list"`, `:each="val, key in obj"`, `:each="idx in 10"
+#### `:each="item in list"`, `:each="val, key in obj"`, `:each="idx in 10"`
 
 Create multiple instances of element from list or number range.
 Index value starts from 1.
