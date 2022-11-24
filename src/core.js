@@ -1,110 +1,43 @@
-import sube, { observable } from 'sube';
+import signalStruct from 'signal-struct';
 
-let curEl, curDir;
 // sprae element: apply directives
-export default function sprae(el, initScope) {
-  initScope ||= {};
+const memo = new WeakMap
+export default function sprae(container, values) {
+  if (!container.children) return
+  if (memo.has(container)) return memo.get(container)
 
-  let updates=[], // all spray directive updators
-      ready=false;
+  values ||= {};
 
-  const update = (values) => { updates.forEach(update => update(values)); };
+  const state = signalStruct(values);
 
-  // hook up observables (deeply, to include item.text etc)
-  // that's least evil compared to dlv/dset or proxies
-  // returns dynamic values snapshot
-  const rsube = (scope) => {
-    let values = {}
-    for (let k in scope) {
-      let v = scope[k];
-      if (observable(v = scope[k])) values[k] = null, registry.register(v, sube(v, v => (values[k] = v, ready && update(values))));
-      // FIXME: add []
-      else if (v?.constructor === Object) values[k] = rsube(v);
-      else values[k] = v;
+  // init directives on element
+  const init = (el) => {
+    let dir, stop
+    if (el.attributes) {
+      for (let i = 0; i < el.attributes.length;) {
+        let attr = el.attributes[i]
+        if (dir = directives[attr.name]) {
+          el.removeAttribute(attr.name)
+          if (stop = (dir(el, attr.value, state)===false)) break
+        }
+        else i++
+      }
     }
-    return values;
-  };
-  const values = rsube(initScope);
-  ready = true;
+    if (!stop) for (let child of el.children) init(child)
+  }
+  init(container)
 
-  // prepare directives - need to be after subscribing to values to get init state here
-  for (let name in directives) {
-    // updates[dir] = directives[dir](el)
-    const sel = `[${name.replace(':','\\:')}]`,
-          initDirective = directives[name]
+  memo.set(container, state);
 
-    // FIXME: possibly linear init of directives is better, who knows
-    const els = [...el.querySelectorAll(sel)];
-    if (el.matches?.(sel)) els.unshift(el);
-
-    let update
-    for (let el of els) if (update = initDirective(el, values)) updates.push(update);
-  };
-
-  update(values);
-
-  // return update via destructuring of result to allow batch-update
-  values[Symbol.iterator] = function*(){ yield proxy; yield (diff) => update(Object.assign(values, diff)); };
-
-  const proxy = new Proxy(values,  {
-    set: (s, k, v) => (values[k]=v, update(values), 1),
-    deleteProperty: (s, k) => (values[k]=undefined, update(values), 1)
-  });
-
-  return proxy
+  return state;
 }
+
 
 // dict of directives
-const directives = {}
+export const directives = {}
 
 // register a directive
-export const directive = (name, initializer) => {
-  const className = name.replace(':','∴')
-
+export const directive = (name, initialize) => {
   // create initializer of a directive on an element
-  return directives[name] = (el, initValues) => {
-    if (el.classList.contains(className)) return
-    el.classList.add(className)
-    let expr = el.getAttribute(name)
-    el.removeAttribute(name)
-    return initializer(el, expr, initValues);
-  }
-}
-
-const registry = new FinalizationRegistry(unsub => unsub?.call?.())
-
-let evaluatorMemo = {}
-
-// borrowed from alpine: https://github.com/alpinejs/alpine/blob/main/packages/alpinejs/src/evaluator.js#L61
-// it seems to be more robust than subscript
-export function parseExpr(expression) {
-  if (evaluatorMemo[expression]) return evaluatorMemo[expression]
-
-  // Some expressions that are useful in Alpine are not valid as the right side of an expression.
-  // Here we'll detect if the expression isn't valid for an assignement and wrap it in a self-
-  // calling function so that we don't throw an error AND a "return" statement can b e used.
-  let rightSideSafeExpression = 0
-    // Support expressions starting with "if" statements like: "if (...) doSomething()"
-    || /^[\n\s]*if.*\(.*\)/.test(expression)
-    // Support expressions starting with "let/const" like: "let foo = 'bar'"
-    || /^(let|const)\s/.test(expression)
-        ? `(() => { ${expression} })()`
-        : expression
-
-  const safeFunction = () => {
-    try {
-      return new Function(['scope'], `let result; with (scope) { result = ${rightSideSafeExpression} }; return result;`)
-    } catch ( e ) {
-      return exprError(e, expression)
-    }
-  }
-
-  return evaluatorMemo[expression] = safeFunction()
-}
-
-export function exprError(error, expression) {
-  Object.assign( error, { expression } )
-  console.warn(`∴ ${error.message}\n\n${curDir}=${ expression ? `"${expression}"\n\n` : '' }`, curEl)
-  setTimeout(() => { throw error }, 0)
-  return Promise.resolve()
+  return directives[name] = initialize
 }

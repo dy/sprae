@@ -32,10 +32,12 @@
   + reference to sporae and similar assoication
   + simpler word
   + better assoc with hydration
+  + spree
+  + spread
 * sprinkle
   + better meaning
   - stands out less than sprae
-
+* aerosol
 
 ## [x] :attr, :data, :id, :class, :style, :on, :aria - do we enforce JS syntax or support unscoped expression? -> Use JS convention, too many use-cases.
 
@@ -94,24 +96,31 @@
 + can pass both observables and direct state anywhere, eg. init child components from it
 -> worthy of a separate library, signal-struct?
 
-## [ ] Per-directive initialize vs per-element initialize
+## [x] Per-directive initialize vs per-element initialize -> directives can immediately initialize rest on elements
 
 + Per-directive is very simple and trivial approach
 - Per-directive doesn't read attributes order and init directives independently
   ~ Practically linear in-order init doesn't make much service either here
 - Per-directive is a bit hard to deal with scopes
 -> gotta benchmark, vs just walker.
+-> seems unavoidable to combine :if within :each, since :each should remove elements and init on find only
 
-## [ ] avoid updating unchanged directives if values don't affect them
+## [x] avoid updating unchanged directives if values don't affect them -> signal struct
 
 ? what if we use preact/signals to subscribe only to required props?
 -> parseExpr is going to need to be handled by core.js (not directives), and detect & subscribe to dependencies itself
 -> so that directive updator gets invoked only when any of expr dependencies change
 -> gotta solve via signal-struct
 
-## [ ] Replace :else-if with :else :if
+## [x] Replace :else-if with :else :if -> not ideal technically, but done
 
 + `:else :if=""` is meaningful expansion of both directives
 + `:else :if` is coming from JS
 + `:else :if` doesn't throw error in JSDOM tests
 - less resemblance with vue: who cares, we already remotely resemble it
+
+## [x] Keep className marker of directive or not?
+
+-> No: first, there's :class directive changing the class itself;
+-> Second, there's easier way to just "evaporate" directive = not initialize twice;
+-> Third, there's too much pollution with class markers
