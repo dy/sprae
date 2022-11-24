@@ -46,33 +46,78 @@ Sprae can be used without build step or JS, autoinitializing document:
 
 ## Directives
 
-* `:if="condition"`, `:else` - controls flow of elements.
-* `:each="item, i? in list|number"` - create multiple instances of element from list or 1..number range.
-* `:text="value"` - set text content of an element.
-* `:value="value"` – bind value to input or textarea (reflected in model).
-* `:id`, `:name`, `:for`, `:type`, `:hidden`, `:disabled`, `:href`, `:src` – common attributes setters.
-* `:class="[ foo, 'bar' ]"` – set element class from an array, object or a string.
-* `:style="{ top:1, position:'absolute' }"` – set element style from a string or an object.
-* `:prop="{ alt:'foo', title:'bar' }"` – set any other attribute / property.
-* `:on="{ click:e=>{}, touch:e=>{} }"` – add event listeners.
-* `:data="{ foo:1, bar:2 }"` – set [data-*](https://developer.mozilla.org/en-US/docs/Web/HTML/Global_attributes/data-*) attributes.
-* `:aria="{ role:'progressbar' }"` – set [aria-role](https://developer.mozilla.org/en-US/docs/Web/Accessibility/ARIA) attributes.
-* `:with="data"` – data scope for a subtree fragment.
+#### `:if="condition"`, `:else`
 
-### Combining directives
-
-Directives can be combined as:
+Controls flow of elements.
 
 ```html
-<!-- chain of conditions -->
 <span :if="foo">foo</span>
 <span :else :if="bar">bar</span>
 <span :else>baz</span>
+```
+
+#### `:each="item, index? in list|number"`
+
+Create multiple instances of element from list or 1..number range.
+
+```html
+<ul>
+  <li :each="item, index in items" :id="`item-${index}`" :data="{value:item.value}" :text="item.label">Untitled item</li>
+</ul>
+
+<!-- Cases -->
+<li :each="item, index in array"/>
+<li :each="value, key in object"/>
 
 <!-- Loop by condition -->
 <span :if="items" :each="item in items">...</span>
 <span :else>Empty list</span>
 ```
+
+#### `:text="item.title"`
+
+Set text content of an element. Rewrites default text content of an element, so that can be used as fallback value:
+
+```html
+<span :text="user.name">Guest</span>
+```
+
+#### `:value="data.email"`
+
+Bind value to input or textarea (same as `v-model` in vue or `x-model` in Alpine).
+
+#### `:id`, `:name`, `:for`, `:type`, `:hidden`, `:disabled`, `:href`, `:src`
+
+Common attributes setters.
+
+#### `:class="[ foo, 'bar' ]"`
+
+Set element class from an array, object or a string.
+
+#### `:style="{ top: '1px', position: 'absolute' }"`
+
+Set element style from a string or an object.
+
+#### `:prop="{ alt:'foo', title:'bar' }"`
+
+Set any other attribute / property.
+
+#### `:on="{ click:e=>{}, touch:e=>{} }"`
+
+Add event listeners.
+
+#### `:data="{ foo:1, bar:2 }"`
+
+Set [data-*](https://developer.mozilla.org/en-US/docs/Web/HTML/Global_attributes/data-*) attributes.
+
+#### `:aria="{ role:'progressbar' }"`
+
+Set [aria-role](https://developer.mozilla.org/en-US/docs/Web/Accessibility/ARIA) attributes.
+
+#### `:with="data"`
+
+Data scope for a subtree fragment.
+
 
 <!--
 ### Reactive values
