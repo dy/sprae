@@ -17,7 +17,7 @@ directive(':with', (el, expr, rootState) => {
 })
 
 directive(':if', (el, expr, state) => {
-  let holder = new Text,
+  let holder = document.createTextNode(''),
       clauses = [parseExpr(expr, ':if', state)],
       els = [el], cur = el
 
@@ -52,7 +52,7 @@ directive(':each', (tpl, expr, state) => {
 
   // FIXME: make sure no memory leak here
   // we need holder to be able :if replace it instead of tpl for combined case
-  const holder = tpl[_eachHolder] = new Text
+  const holder = tpl[_eachHolder] = document.createTextNode('')
   tpl.replaceWith(holder)
 
   const items = computed(()=>{
