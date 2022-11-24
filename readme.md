@@ -89,25 +89,19 @@ Bind value to input, textarea or select.
 </div>
 ```
 
-#### `:<prop>="value"`
+#### `:<prop>="value"`, `:="values"`
 
-Any other directive sets prop value.
+Any other directive sets prop value. Noname
 
 ```html
 <!-- :style can accept objects or strings -->
 <label :for="name" :text="name" :style="{ marginBottom: '1rem' }" />
-<input :id="name" :name="name" :type="type" :disabled="!name" :value="value" />
+
+<!-- : spreads any props/values -->
+<input :="{id:name, name, type, disabled:!name, value}" />
 
 <!-- :class can accept objects, arrays or strings -->
 <div :class="{help: !!help, error: !!help }" :text="help"></div>
-```
-
-#### `:="{foo: 1, bar: 2}"`
-
-Spread props from data object.
-
-```html
-<input :="{id, type, name}" />
 ```
 
 <!--
