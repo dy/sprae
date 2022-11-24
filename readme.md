@@ -56,20 +56,15 @@ Controls flow of elements.
 <span :else>baz</span>
 ```
 
-#### `:each="item in list"`
+#### `:each="item in list"`, `:each="val, key in obj"`, `:each="idx in 10"
 
 Create multiple instances of element from list or number range.
 Index value starts from 1.
 
 ```html
 <ul>
-  <li :each="item, index in items" :id="`item-${index}`" :data="item" :text="item.label">Untitled item</li>
+  <li :each="item, i in items" :id="`item-${i}`" :data="item" :text="item.label">Untitled</li>
 </ul>
-
-<!-- Cases -->
-<li :each="item, index in array"/>
-<li :each="value, key in object"/>
-<li :each="index in number"/>
 
 <!-- Loop by condition -->
 <span :if="items" :each="item in items">...</span>
@@ -86,7 +81,7 @@ Welcome, <span :text="user.name">Guest</span>.
 
 #### `:value="data.email"`
 
-Bind value to input, textarea or select (same as `v-model` in vue or `x-model` in Alpine).
+Bind value to input, textarea or select.
 
 ```html
 <div :with="{text:''}">
