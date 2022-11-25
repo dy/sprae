@@ -14,3 +14,4 @@
 * [ ] generalize common attributes
 * [ ] expand to any subscribables: both as state vars
 * [ ] optimization: arrays with multiple elements can be slow on creation. Maybe signal-struct must ignore arrays.
+* [ ] replace element-props with direct (better) setters

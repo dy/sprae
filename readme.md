@@ -7,7 +7,7 @@ A lightweight essential alternative to [alpine](https://github.com/alpinejs/alpi
 
 ## Usage
 
-Spraedrops are attributes starting with `:` that contain regular JS expressions:
+Spraedrops (directives) are attributes starting with `:` that contain regular JS expressions:
 
 ```html
 <div id="container" :if="user">
@@ -22,8 +22,8 @@ Spraedrops are attributes starting with `:` that contain regular JS expressions:
 </script>
 ```
 
-* `sprae` initializes drops within subtree with data (can include [signals](https://github.com/preactjs/signals) or [reactive values](https://github.com/dy/sube)). Once initialized, they immediately evaporate.
-* `state` is object reflecting directives values, changing any of its props reevaluates drops.
+* `sprae` initializes directives with data (can include [signals](https://github.com/preactjs/signals) or [reactive values](https://github.com/dy/sube)). Once initialized, they immediately evaporate.
+* `state` is object reflecting values, changing any of its props rerenders directives.
 
 <!--
 <details>
@@ -48,7 +48,7 @@ Sprae can be used without build step or JS, autoinitializing document:
 
 #### `:if="condition"`, `:else`
 
-Controls flow of elements.
+Control flow of elements.
 
 ```html
 <span :if="foo">foo</span>
@@ -58,11 +58,11 @@ Controls flow of elements.
 
 #### `:each="item in items"`
 
-Multiplies element. Index value starts from 1.
+Multiply element. Index value starts from 1.
 
 ```html
 <ul>
-  <li :each="item, idx in items" :id="`item-${idx}`" :data="item" :text="item.label">Untitled</li>
+  <li :each="item, idx in items" :id="`item-${idx}`" :text="item.label">Untitled</li>
 </ul>
 
 <!-- Cases -->
@@ -71,13 +71,13 @@ Multiplies element. Index value starts from 1.
 <li :each="idx in 10" />
 
 <!-- Loop by condition -->
-<span :if="items" :each="item in items">...</span>
-<span :else>Empty list</span>
+<li :if="items" :each="item in items">...</li>
+<li :else>Empty list</li>
 ```
 
 #### `:text="value"`
 
-Sets text content of an element. Default text can be used as fallback:
+Set text content of an element. Default text can be used as fallback:
 
 ```html
 Welcome, <span :text="user.name">Guest</span>.
@@ -85,17 +85,19 @@ Welcome, <span :text="user.name">Guest</span>.
 
 #### `:value="value"`
 
-Binds value to input, textarea or select.
+Bind value to input, textarea or select.
 
 ```html
-<div :with="{text: ''}">
-  <input :value="text" />
-</div>
+<input :with="{text: ''}" :value="text" />
+
+<select :with="{selected: 0}" :value="selected">
+  <option :each="i in 5" :value="i"></option>
+</select>
 ```
 
 #### `:class="value"`
 
-Sets class value from either string, array or object.
+Set class value from either string, array or object.
 
 ```html
 <div :class="`foo ${bar}`"></div>
@@ -105,7 +107,7 @@ Sets class value from either string, array or object.
 
 #### `:style="value"`
 
-Sets style value from object or a string.
+Set style value from object or a string.
 
 ```html
 <div :style="foo: bar"></div>
@@ -114,7 +116,7 @@ Sets style value from object or a string.
 
 #### `:<prop>="value"`, `:="props"`
 
-Sets any other prop or props value.
+Set any other prop or props value.
 
 ```html
 <label :for="name" :text="name" />
@@ -123,7 +125,7 @@ Sets any other prop or props value.
 
 #### `:on="events"`
 
-Adds event listeners.
+Add event listeners.
 
 ```html
 <button :onclick="handler">Submit</button>
@@ -132,7 +134,7 @@ Adds event listeners.
 
 #### `:data="values"`
 
-Sets [data-*](https://developer.mozilla.org/en-US/docs/Web/HTML/Global_attributes/data-*) attributes. CamelCase is converted to dash-case.
+Set [data-*](https://developer.mozilla.org/en-US/docs/Web/HTML/Global_attributes/data-*) attributes. CamelCase is converted to dash-case.
 
 ```html
 <input :data="{foo: 1, barBaz: true}" />
@@ -140,7 +142,7 @@ Sets [data-*](https://developer.mozilla.org/en-US/docs/Web/HTML/Global_attribute
 
 #### `:aria="{ role:'progressbar' }"`
 
-Sets [aria-role](https://developer.mozilla.org/en-US/docs/Web/Accessibility/ARIA) attributes. Boolean values are stringified.
+Set [aria-role](https://developer.mozilla.org/en-US/docs/Web/Accessibility/ARIA) attributes. Boolean values are stringified.
 
 ```html
 <input type="text" id="jokes" role="combobox" :aria="{
@@ -154,7 +156,7 @@ Sets [aria-role](https://developer.mozilla.org/en-US/docs/Web/Accessibility/ARIA
 
 #### `:with="data"`
 
-Sets data scope for a subtree fragment.
+Set data scope for a subtree fragment.
 
 ```html
 <x :with="{ foo: 'bar' }">
