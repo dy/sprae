@@ -56,18 +56,17 @@ Controls flow of elements.
 <span :else>baz</span>
 ```
 
-#### `:each="item, idx? in items"`
+#### `:each="item in items"`
 
-Create multiple instances of element from list or number range.
-Index value starts from 1.
+Multiplies element. Index value starts from 1.
 
 ```html
 <ul>
-  <li :each="item, i in items" :id="`item-${i}`" :data="item" :text="item.label">Untitled</li>
+  <li :each="item, idx in items" :id="`item-${idx}`" :data="item" :text="item.label">Untitled</li>
 </ul>
 
 <!-- Cases -->
-<li :each="item in list" />
+<li :each="item, idx in list" />
 <li :each="val, key in obj" />
 <li :each="idx in 10" />
 
@@ -76,9 +75,9 @@ Index value starts from 1.
 <span :else>Empty list</span>
 ```
 
-#### `:text="any"`
+#### `:text="value"`
 
-Set text content of an element. Rewrites default text content of an element, so that can be used as fallback value:
+Sets text content of an element. Default text can be used as fallback:
 
 ```html
 Welcome, <span :text="user.name">Guest</span>.
@@ -86,7 +85,7 @@ Welcome, <span :text="user.name">Guest</span>.
 
 #### `:value="value"`
 
-Bind value to input, textarea or select.
+Binds value to input, textarea or select.
 
 ```html
 <div :with="{text: ''}">
@@ -94,9 +93,9 @@ Bind value to input, textarea or select.
 </div>
 ```
 
-#### `:class="string|array"`
+#### `:class="value"`
 
-Set class value from either string, array or object.
+Sets class value from either string, array or object.
 
 ```html
 <div :class="`foo ${bar}`"></div>
@@ -104,36 +103,36 @@ Set class value from either string, array or object.
 <div :class="{foo: true, bar: false}"></div>
 ```
 
-#### `:style="string|array|object"`
+#### `:style="value"`
 
-Set style from object or a string.
+Sets style value from object or a string.
 
 ```html
 <div :style="foo: bar"></div>
 <div :style="{foo: 'bar'}"></div>
 ```
 
-#### `:<prop>="any"`, `:="{...props}"`
+#### `:<prop>="value"`, `:="props"`
 
-Any other directive sets prop value. Noname directive spreads props.
+Sets any other prop or props value.
 
 ```html
 <label :for="name" :text="name" />
 <input :="{id:name, name, type, disabled:!name, value}" />
 ```
 
-#### `:on="{ ...events }"`
+#### `:on="events"`
 
-Add event listeners.
+Adds event listeners.
 
 ```html
 <button :onclick="handler">Submit</button>
 <button :on="{ click(e){}, touch(e){} }">Submit</button>
 ```
 
-#### `:data="{ foo:1, barBaz:2 }"`
+#### `:data="values"`
 
-Set [data-*](https://developer.mozilla.org/en-US/docs/Web/HTML/Global_attributes/data-*) attributes. CamelCase is converted to dash-case.
+Sets [data-*](https://developer.mozilla.org/en-US/docs/Web/HTML/Global_attributes/data-*) attributes. CamelCase is converted to dash-case.
 
 ```html
 <input :data="{foo: 1, barBaz: true}" />
@@ -141,21 +140,21 @@ Set [data-*](https://developer.mozilla.org/en-US/docs/Web/HTML/Global_attributes
 
 #### `:aria="{ role:'progressbar' }"`
 
-Set [aria-role](https://developer.mozilla.org/en-US/docs/Web/Accessibility/ARIA) attributes.
+Sets [aria-role](https://developer.mozilla.org/en-US/docs/Web/Accessibility/ARIA) attributes. Boolean values are stringified.
 
 ```html
 <input type="text" id="jokes" role="combobox" :aria="{
-  controls:'joketypes',
-  autocomplete:'list',
-  expanded:false,
-  activeOption:'item1',
-  activedescendant:''
+  controls: 'joketypes',
+  autocomplete: 'list',
+  expanded: false,
+  activeOption: 'item1',
+  activedescendant: ''
 }" />
 ```
 
 #### `:with="data"`
 
-Data scope for a subtree fragment.
+Sets data scope for a subtree fragment.
 
 ```html
 <x :with="{ foo: 'bar' }">

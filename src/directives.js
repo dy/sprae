@@ -145,7 +145,7 @@ function common(name) {
 directive(':aria', (el, expr, state) => {
   let evaluate = parseExpr(expr, ':aria', state)
   const update = (value) => {
-    for (let key in value) prop(el, 'aria'+key[0].toUpperCase()+key.slice(1), value[key] + '');
+    for (let key in value) prop(el, 'aria'+key[0].toUpperCase()+key.slice(1), value[key] == null ? null : value[key] + '');
   }
   effect(() => update(evaluate(state)))
 })
