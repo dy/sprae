@@ -9,7 +9,8 @@
 * [x] :each :if, :if :each
 * [x] :each :each
 * [x] :with must be able to write state value as well
-* [ ] expand to any subscribables: both as state vars
 * [x] docs: give example to each directive
 * [x] initialize per-element: <x :each><y :if></y><x> - tree-dependent (:each comes first).
+* [ ] generalize common attributes
+* [ ] expand to any subscribables: both as state vars
 * [ ] optimization: arrays with multiple elements can be slow on creation. Maybe signal-struct must ignore arrays.

@@ -56,7 +56,7 @@ Controls flow of elements.
 <span :else>baz</span>
 ```
 
-#### `:each="item in list"`, `:each="val, key in obj"`, `:each="idx in 10"`
+#### `:each="item, idx? in items"`
 
 Create multiple instances of element from list or number range.
 Index value starts from 1.
@@ -66,12 +66,17 @@ Index value starts from 1.
   <li :each="item, i in items" :id="`item-${i}`" :data="item" :text="item.label">Untitled</li>
 </ul>
 
+<!-- Cases -->
+<li :each="item in list" />
+<li :each="val, key in obj" />
+<li :each="idx in 10" />
+
 <!-- Loop by condition -->
 <span :if="items" :each="item in items">...</span>
 <span :else>Empty list</span>
 ```
 
-#### `:text="item.title"`
+#### `:text="any"`
 
 Set text content of an element. Rewrites default text content of an element, so that can be used as fallback value:
 
@@ -79,47 +84,59 @@ Set text content of an element. Rewrites default text content of an element, so 
 Welcome, <span :text="user.name">Guest</span>.
 ```
 
-#### `:value="data.email"`
+#### `:value="value"`
 
 Bind value to input, textarea or select.
 
 ```html
-<div :with="{text:''}">
+<div :with="{text: ''}">
   <input :value="text" />
 </div>
 ```
 
-#### `:<prop>="value"`, `:="values"`
+#### `:class="string|array"`
+
+Set class value from either string, array or object.
+
+```html
+<div :class="`foo ${bar}`"></div>
+<div :class="['foo', 'bar']"></div>
+<div :class="{foo: true, bar: false}"></div>
+```
+
+#### `:style="string|array|object"`
+
+Set style from object or a string.
+
+```html
+<div :style="foo: bar"></div>
+<div :style="{foo: 'bar'}"></div>
+```
+
+#### `:<prop>="any"`, `:="{...props}"`
 
 Any other directive sets prop value. Noname directive spreads props.
 
 ```html
-<!-- :style can accept objects or strings -->
-<label :for="name" :text="name" :style="{ marginBottom: '1rem' }" />
-
-<!-- : spreads any props/values -->
+<label :for="name" :text="name" />
 <input :="{id:name, name, type, disabled:!name, value}" />
-
-<!-- :class can accept objects, arrays or strings -->
-<div :class="{help: !!help, error: !!help }" :text="help"></div>
 ```
 
-<!--
-#### `:prop="{ alt:'foo', title:'bar' }"`
-
-Set any other attribute / property.
-
-#### `:on="{ click:e=>{}, touch:e=>{} }"`
+#### `:on="{ ...events }"`
 
 Add event listeners.
--->
-
-#### `:data="{ foo:1, bar:2 }"`
-
-Set [data-*](https://developer.mozilla.org/en-US/docs/Web/HTML/Global_attributes/data-*) attributes.
 
 ```html
-<input :data="{foo: 1, bar: true}" />
+<button :onclick="handler">Submit</button>
+<button :on="{ click(e){}, touch(e){} }">Submit</button>
+```
+
+#### `:data="{ foo:1, barBaz:2 }"`
+
+Set [data-*](https://developer.mozilla.org/en-US/docs/Web/HTML/Global_attributes/data-*) attributes. CamelCase is converted to dash-case.
+
+```html
+<input :data="{foo: 1, barBaz: true}" />
 ```
 
 #### `:aria="{ role:'progressbar' }"`
