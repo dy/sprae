@@ -7,7 +7,7 @@ A lightweight essential alternative to [alpine](https://github.com/alpinejs/alpi
 
 ## Usage
 
-Spraedrops are attributes starting with `:`.
+Spraedrops are attributes starting with `:` that contain regular JS expressions:
 
 ```html
 <div id="container" :if="user">
