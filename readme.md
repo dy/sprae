@@ -7,7 +7,7 @@ A lightweight essential alternative to [alpine](https://github.com/alpinejs/alpi
 
 ## Usage
 
-Directives (spraedrops) are attributes starting with `:`. Once initialized, they immediately evaporate.
+Spraedrops are attributes starting with `:`.
 
 ```html
 <div id="container" :if="user">
@@ -22,8 +22,8 @@ Directives (spraedrops) are attributes starting with `:`. Once initialized, they
 </script>
 ```
 
-* `sprae` initializes directives within subtree with data (can include [signals](https://github.com/preactjs/signals) or [reactive values](https://github.com/dy/sube)).
-* `state` is object reflecting directives values, changing any of its props updates corresponding directives.
+* `sprae` initializes drops within subtree with data (can include [signals](https://github.com/preactjs/signals) or [reactive values](https://github.com/dy/sube)). Once initialized, they immediately evaporate.
+* `state` is object reflecting directives values, changing any of its props reevaluates drops.
 
 <!--
 <details>
