@@ -123,7 +123,7 @@ Set any other prop or props value.
 
 ```html
 <label :for="name" :text="name" />
-<input :="{id:name, name, type, disabled:!name, value}" />
+<input :="{id:name, name, type}" :value="text" :onchange="e => text=e.target.value" />
 ```
 
 #### `:on="events"`
@@ -131,7 +131,6 @@ Set any other prop or props value.
 Add event listeners.
 
 ```html
-<input :value="text" :onclick="e => text = e.target.value" />
 <button :on="{ click: handler, touch: handler }">Submit</button>
 ```
 
