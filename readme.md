@@ -7,7 +7,7 @@ A lightweight essential alternative to [alpine](https://github.com/alpinejs/alpi
 
 ## Usage
 
-Sprae introduces attributes starting with `:` as directives:
+Sprae defines attributes starting with `:` as directives:
 
 ```html
 <div id="container" :if="user">
