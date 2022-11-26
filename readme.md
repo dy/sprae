@@ -1,13 +1,13 @@
 # ∴ spræ [![tests](https://github.com/dy/sprae/actions/workflows/node.js.yml/badge.svg)](https://github.com/dy/sprae/actions/workflows/node.js.yml) [![size](https://img.shields.io/bundlephobia/minzip/sprae?label=size)](https://bundlephobia.com/result?p=sprae) [![npm](https://img.shields.io/npm/v/sprae?color=orange)](https://npmjs.org/sprae)
 
-> Soft DOM hydration with reactive microdirectives
+> DOM microhydration
 
 A lightweight essential alternative to [alpine](https://github.com/alpinejs/alpine), [petite-vue](https://github.com/vuejs/petite-vue), [templize](https://github.com/dy/templize) or JSX with better ergonomics[*](#justification).
 
 
 ## Usage
 
-Spraedrops (directives) are attributes starting with `:` that contain regular JS expressions:
+Sprae defines reactive attributes starting with `:` that contain regular JS expressions:
 
 ```html
 <div id="container" :if="user">
@@ -22,8 +22,8 @@ Spraedrops (directives) are attributes starting with `:` that contain regular JS
 </script>
 ```
 
-* `sprae` initializes directives with data (can include [signals](https://github.com/preactjs/signals) or [reactive values](https://github.com/dy/sube)). Once initialized, they immediately evaporate.
-* `state` is object reflecting values, changing any of its props rerenders directives.
+* `sprae` initializes subtree with data and immediately evaporates reactive attrs.
+* `state` is object reflecting values, changing any of its props rerenders subtree.
 
 <!--
 <details>
@@ -44,7 +44,7 @@ Sprae can be used without build step or JS, autoinitializing document:
 </details>
 -->
 
-## Directives
+## Attributes
 
 #### `:if="condition"`, `:else`
 
@@ -164,6 +164,19 @@ Set data for a subtree fragment scope.
 <x :with="{ foo: 'bar' }">
   <y :with="{ baz: 'qux' }" :text="foo + baz"></y>
 </x>
+```
+
+#### `:ref="id"`
+
+Expose element to a subtree fragment with the `id`.
+
+```html
+<li :ref="item">
+  <input
+    :onfocus="e=> item.classList.add('editing')"
+    :onblur="e => item.classList.remove('editing')"
+  />
+</li>
 ```
 
 <!--

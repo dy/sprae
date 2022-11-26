@@ -18,3 +18,10 @@
 * [x] expand to any subscribables: both as state vars
 * [ ] optimization: replace element-props with direct (better) setters
 * [ ] report usignal problem
+* [ ] :oninit
+* [ ] :onconnect, :ondisconnect
+* [ ] frameworks benchmark
+* [ ] examples
+  * [ ] todomvc
+* [ ] Sandbox expressions
+* [ ] :ref

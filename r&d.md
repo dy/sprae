@@ -125,17 +125,32 @@
 -> Second, there's easier way to just "evaporate" directive = not initialize twice;
 -> Third, there's too much pollution with class markers
 
+## [ ] :html?
+
+  - introduces malign hole of including sprae inside of html
+
+## [ ] :fx?
+
+  * let's wait for use-case
+  - doesn't necessarily useful, since any directive is already an effect
+  + works already out of box, just creates `fx` attribute if value is returned
+
+## [ ] :init?
+
+  * waiting for use-case
+
+## [ ] :key.enter?
+
+  - opens gateway to generic modifiers
+  - introduces a whole mental layer to learn, including combinations of modifiers all around.
+
 ## [ ] Plugins
 
-* init/connected/mount, unmount/disconnected?
-  * init and connected are different apparently
-* :html?
-* :effect?
 * @sprae/tailwind: `<x :tw="mt-1 mx-2"></x>` - separate tailwind utility classes from main ones; allow conditional setters.
 * @sprae/item: `<x :item="{type:a, scope:b}"` – provide microdata
 * @sprae/hcodes: `<x :h=""` – provide microformats
 
-## [x] Write any-attributes via :<prop>?
+## [x] Write any-attributes via :<prop>? -> yep
 
 + Since we support attr walking, maybe instead of :on and :prop just allow any attributes?
   + that would allow event and attr modifiers...
@@ -143,7 +158,7 @@
 + makes sense for `:="{}"` spread
 + makes place for other specific directives `:init=""` etc
 
-## [x] :value is confusing: <option> also uses that.
+## [x] :value is confusing: <option> also uses that. -> let's skip for now: onchange is not a big deal
 
 ? :model="value"
   + v-model, x-model
@@ -154,7 +169,7 @@
   + more accurate logically
   - conflicts with existing naming (bind is used for attrs)
   - conflict if used along with `:value="x" :bind="y"`
-? :value="value" :onchange="e=>value=e.target.value"
+-> :value="value" :onchange="e=>value=e.target.value"
   + more apparent and explicit
   + less mental load, "model" is too heavy term
   + overhead is minimal

@@ -1,0 +1,124 @@
+<!doctype html>
+<html lang="en" data-framework="sprae">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Sprae • TodoMVC</title>
+  <link rel="stylesheet" href="https://unpkg.com/todomvc-common/base.css">
+  <link rel="stylesheet" href="https://unpkg.com/todomvc-app-css/index.css">
+</head>
+
+<body>
+  <section class="todoapp">
+    <header class="header">
+      <h1>todos</h1>
+      <input class="new-todo" placeholder="What needs to be done?" autofocus :onkeypress="e => {
+        if (e.key !== 'Enter') return
+        todos.add(e.target.value)
+        e.target.value = ''
+      }">
+    </header>
+    <section class="main">
+      <input id="toggle-all" class="toggle-all" type="checkbox" :onclick="e => {
+        const all = items.every(item => item.done)
+        items = items.map(item => item.done = !all)
+      }">
+      <label for="toggle-all">Mark all as complete</label>
+      <ul class="todo-list">
+        <!-- <template directive="each" expression="item in todos"> -->
+        <li :ref="li" :each="item in todos"
+          :class="{completed: item.done}"
+          :hidden="item.hidden"
+          :ondblclick="e => {
+            li.querySelector('.edit').focus()
+            li.classList.add('editing')
+          }">
+          <div class="view">
+            <input class="toggle" type="checkbox"
+              :checked="item.done"
+              :onchange="e => item.done = !item.done"
+            />
+            <label :text="item.text"></label>
+            <button class="destroy" :onclick="e => items = items.filter(i => i !== item)"></button>
+          </div>
+          <input class=edit
+            :value="item.text"
+            :onchange="e => item.text = e.target.value"
+            :onblur="e => li.classList.remove('editing')"
+            :onkeypress="e => e.key === 'Enter' ? e.target.blur() : null"
+          />
+        </li>
+      </ul>
+    </section>
+    <footer class="footer">
+      <span class="todo-count" :with="{count: todos.filter(item => !item.done).length}">
+        <strong :text="count"></strong> <span :text="plur('item', count)"></span> left
+      </span>
+      <ul class="filters">
+        <li :each="label, key in {'#/': 'All', '#/active': 'Active', '#/completed': 'Completed'}">
+          <a :class="{selected: hash===key}" :href="key" :text="label"></a>
+        </li>
+      </ul>
+      <button class="clear-completed"
+        :hidden="todos.every(item => !item.done)"
+        :onclick="e => todos = todos.filter(item => !item.done ? true : false)">
+        Clear completed
+      </button>
+    </footer>
+  </section>
+  <footer class="info">
+    <p>Double-click to edit a todo</p>
+    <p>Created by <a href="https://github.com/dy">dy</a></p>
+    <p>Part of <a href="http://todomvc.com">TodoMVC</a></p>
+  </footer>
+  <script src="https://unpkg.com/todomvc-common/base.js"></script>
+  <!-- <script type="importmap"> {
+    "imports": {
+      "templize": "../../node_modules/templize/templize.min.js",
+      "value-ref": "../../node_modules/value-ref/value-ref.min.js",
+      "sprae": "../../sprae.js",
+      "plur": "https://cdn.skypack.dev/plur"
+    }
+  }
+  </script> -->
+  <!-- <script type="importmap"> {
+      "imports": {
+        "templize": "https://unpkg.com/templize/templize.min.js",
+        "value-ref": "https://unpkg.com/value-ref/value-ref.min.js",
+        "spect": "https://unpkg.com/spect/spect.min.js",
+        "plur": "https://cdn.skypack.dev/plur"
+      }
+    }
+  </script> -->
+  <script type="module">
+    import sprae, { signal, batch, effect } from 'sprae'
+    import plur from 'plur'
+
+    // hash source
+    const hash = signal(window.location.hash || '#/')
+    window.addEventListener('hashchange', e => hash.value = window.location.hash)
+
+    const todos = signal([])
+    const state = sprae(document.body, { plur, todos, hash, addItem })
+
+    function addItem(text, done) {
+      let item = {
+        text: signal(text),
+        done: signal(done),
+        hidden: computed(() => {
+          return hash.value === '#/active' ? item.done : hash.value === '#/completed' ? !item.done : false
+        })
+      }
+      todos.value = [ ...todos.value, item ]
+      effect(() => (item.text, item.done, save(todos.peek())))
+    }
+
+    // persistence
+    const save = items => localStorage.setItem('todomvc.items', JSON.stringify(items)),
+          load = list => list?.map(item => addItem(item.text, item.done))
+
+    load(JSON.parse(localStorage.getItem('todomvc.items') || '[]'))
+  </script>
+</body>
+</html>
