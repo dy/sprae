@@ -198,10 +198,10 @@ test('each: loop within loop', async () => {
 
   is(el.innerHTML, '<x><y>1</y><y>2</y></x><x><y>3</y><y>4</y></x>')
   // console.log('set 1,2')
-  // params.c = [[5,6], [3,4]]
-  params.c[0][0] = 5, params.c[0][1] = 6
+  params.c = [[5,6], [3,4]]
   is(el.innerHTML, '<x><y>5</y><y>6</y></x><x><y>3</y><y>4</y></x>')
-  params.c[1] = [7,8]
+  // params.c[1] = [7,8]
+  params.c = [params.c[0], [7,8]]
   is(el.innerHTML, '<x><y>5</y><y>6</y></x><x><y>7</y><y>8</y></x>')
   // is(el.innerHTML, '<span>1</span><span>2</span>')
   params.c = []
@@ -366,4 +366,15 @@ test('with: writes to state', () => {
   is(a.innerHTML, `<y>2</y>`)
   a.firstChild.dispatchEvent(new window.Event('x'))
   is(a.innerHTML, `<y>3</y>`)
+})
+
+test('reactives', async () => {
+  let a = new Promise((ok) => setTimeout(() => ok(2), 10))
+
+  let el = h`<x :text="a">1</x>`
+  sprae(el, {a})
+  is(el.outerHTML, `<x></x>`)
+
+  await time(20)
+  is(el.outerHTML, `<x>2</x>`)
 })

@@ -13,7 +13,8 @@
 * [x] initialize per-element: <x :each><y :if></y><x> - tree-dependent (:each comes first).
 * [x] generalize common attributes :prop="xyz"
 * [x] spread props
-* [ ] expand to any subscribables: both as state vars
-* [ ] optimization: arrays with multiple elements can be slow on creation. Maybe signal-struct must ignore arrays.
+* [x] optimization: arrays with multiple elements can be slow on creation. Maybe signal-struct must ignore arrays.
   -> yep: arrays are rarely changed as `a[i]=newItem` and regularly they're mapped.
+* [x] expand to any subscribables: both as state vars
 * [ ] replace element-props with direct (better) setters
+* [ ] report usignal problem
