@@ -7,7 +7,7 @@ A lightweight essential alternative to [alpine](https://github.com/alpinejs/alpi
 
 ## Usage
 
-Sprae defines reactive attributes starting with `:` that contain regular JS expressions:
+Sprae introduces attributes starting with `:` as directives:
 
 ```html
 <div id="container" :if="user">
@@ -22,8 +22,8 @@ Sprae defines reactive attributes starting with `:` that contain regular JS expr
 </script>
 ```
 
-* `sprae` initializes subtree with data and immediately evaporates reactive attrs.
-* `state` is object reflecting values, changing any of its props rerenders subtree.
+* `sprae` initializes subtree with data and immediately evaporates `:` attrs.
+* `state` is object reflecting current values, changing any of its props rerenders subtree.
 
 <!--
 <details>
