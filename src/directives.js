@@ -1,12 +1,12 @@
 // directives & parsing
-import sprae, { directive } from './core.js'
+import sprae, { directives } from './core.js'
 import { prop, input } from 'element-props'
 // import { effect, computed, batch } from 'usignal'
 import { effect, computed, batch } from '@preact/signals-core'
 import swap from 'swapdom'
 import p from 'primitive-pool'
 
-directive(':with', (el, expr, rootState) => {
+directives[':with'] = (el, expr, rootState) => {
   let evaluate = parseExpr(expr, 'with', rootState)
 
   // Instead of extending signals (which is a bit hard since signal-struct internals is not uniform)
@@ -14,10 +14,10 @@ directive(':with', (el, expr, rootState) => {
   const params = computed(() => Object.assign({}, rootState, evaluate(rootState)))
   let state = sprae(el, params.value)
   effect((values=params.value) => batch(()=>Object.assign(state, values)))
-})
+}
 
-directive(':if', (el, expr, state) => {
-  let holder = new Text,
+directives[':if'] = (el, expr, state) => {
+  let holder = document.createTextNode(''),
       clauses = [parseExpr(expr, ':if', state)],
       els = [el], cur = el
 
@@ -41,10 +41,10 @@ directive(':if', (el, expr, state) => {
   effect((i=idx.value) => (els[i] != cur && ((cur[_eachHolder]||cur).replaceWith(cur = els[i] || holder), sprae(cur, state))))
 
   return false
-})
+}
 
 const _eachHolder = Symbol(':each')
-directive(':each', (tpl, expr, state) => {
+directives[':each'] = (tpl, expr, state) => {
   let each = parseForExpression(expr);
   if (!each) return exprError(new Error, expr);
 
@@ -52,7 +52,7 @@ directive(':each', (tpl, expr, state) => {
 
   // FIXME: make sure no memory leak here
   // we need holder to be able :if replace it instead of tpl for combined case
-  const holder = tpl[_eachHolder] = new Text
+  const holder = tpl[_eachHolder] = document.createTextNode('')
   tpl.replaceWith(holder)
 
   const items = computed(()=>{
@@ -100,7 +100,7 @@ directive(':each', (tpl, expr, state) => {
   })
 
   return false
-})
+}
 
 // This was taken AlpineJS, former VueJS 2.* core. Thanks Alpine & Vue!
 function parseForExpression(expression) {
@@ -128,37 +128,29 @@ function parseForExpression(expression) {
 
 
 // common-setter directives
-common(`id`), common(`name`), common(`for`), common(`type`), common(`hidden`), common(`disabled`), common(`href`), common(`src`), common(`style`), common(`class`)
-
-function common(name) {
-  directive(':'+name, (el, expr, state) => {
-    let evaluate = parseExpr(expr, ':'+name, state)
-    // evaluate autosubscribes to only fraction of dependencies
-    // - whenever they change, update is called with result of evaluator
-
-    const update = value => prop(el, name, value)
-
-    effect(() => update(evaluate(state)))
-  })
+directives['default'] = (el, expr, state, name) => {
+  let evaluate = parseExpr(expr, ':'+name, state)
+  const update = value => prop(el, name, value)
+  effect(() => update(evaluate(state)))
 }
 
-directive(':aria', (el, expr, state) => {
+directives[':aria'] = (el, expr, state) => {
   let evaluate = parseExpr(expr, ':aria', state)
   const update = (value) => {
-    for (let key in value) prop(el, 'aria'+key[0].toUpperCase()+key.slice(1), value[key]);
+    for (let key in value) prop(el, 'aria'+key[0].toUpperCase()+key.slice(1), value[key] == null ? null : value[key] + '');
   }
   effect(() => update(evaluate(state)))
-})
+}
 
-directive(':data', (el, expr, state) => {
+directives[':data'] = (el, expr, state) => {
   let evaluate = parseExpr(expr, ':data', state)
   const value = computed(() => evaluate(state))
   effect((v=value.value) => {
     for (let key in v) el.dataset[key] = v[key];
   })
-})
+}
 
-directive(':on', (el, expr, state) => {
+directives[':on'] = (el, expr, state) => {
   let evaluate = parseExpr(expr, ':on', state)
   let listeners = computed(() => evaluate(state))
   let prevListeners
@@ -167,18 +159,18 @@ directive(':on', (el, expr, state) => {
     prevListeners = values;
     for (let evt in prevListeners) el.addEventListener(evt, prevListeners[evt]);
   })
-})
+}
 
-directive(':prop', (el, expr, state) => {
-  let evaluate = parseExpr(expr, ':prop', state)
+directives[':'] = (el, expr, state) => {
+  let evaluate = parseExpr(expr, ':', state)
   const update = (value) => {
     if (!value) return
     for (let key in value) prop(el, key, value[key]);
   }
   effect(()=>update(evaluate(state)))
-})
+}
 
-directive(':text', (el, expr, state) => {
+directives[':text'] = (el, expr, state) => {
   let evaluate = parseExpr(expr, ':text', state)
 
   const update = (value) => {
@@ -186,33 +178,19 @@ directive(':text', (el, expr, state) => {
   }
 
   effect(()=>update(evaluate(state)))
-})
+}
 
 // connect expr to element value
-directive(':value', (el, expr, state) => {
-  let evaluate = parseExpr(expr, ':value', state)
+directives[':value'] = (el, expr, state) => {
+  let evaluate = parseExpr(expr, ':in', state)
 
   let [get, set] = input(el);
-  let evaluateSet = parseSetter(expr);
-  let onchange = e => evaluateSet(state, get(el));
-  // FIXME: double update can be redundant
-  el.addEventListener('input', onchange);
-  el.addEventListener('change', onchange);
 
   const update = (value) => {
     prop(el, 'value', value)
     set(value);
   }
   effect(()=>update(evaluate(state)))
-})
-
-const memo = {}
-function parseSetter(expr) {
-  if (memo[expr]) return memo[expr]
-  return memo[expr] = new Function(
-    ['scope', 'value'],
-    `with (scope) { ${expr} = value };`
-  )
 }
 
 let evaluatorMemo = {}

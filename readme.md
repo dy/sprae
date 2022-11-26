@@ -1,4 +1,4 @@
-# ∴ spræ [![size](https://img.shields.io/bundlephobia/minzip/sprae?label=size)](https://bundlephobia.com/result?p=sprae)
+# ∴ spræ [![tests](https://github.com/dy/sprae/actions/workflows/node.js.yml/badge.svg)](https://github.com/dy/sprae/actions/workflows/node.js.yml) [![size](https://img.shields.io/bundlephobia/minzip/sprae?label=size)](https://bundlephobia.com/result?p=sprae)
 
 > Soft DOM hydration with reactive microdirectives
 
@@ -7,7 +7,7 @@ A lightweight essential alternative to [alpine](https://github.com/alpinejs/alpi
 
 ## Usage
 
-Directives (spraedrops) are attributes starting with `:`. Once initialized, they immediately evaporate.
+Spraedrops (directives) are attributes starting with `:` that contain regular JS expressions:
 
 ```html
 <div id="container" :if="user">
@@ -22,8 +22,8 @@ Directives (spraedrops) are attributes starting with `:`. Once initialized, they
 </script>
 ```
 
-* `sprae` initializes directives within subtree with data (can include [signals](https://github.com/preactjs/signals) or [reactive values](https://github.com/dy/sube)).
-* `state` is object reflecting directives values, changing any of its props updates corresponding directives.
+* `sprae` initializes directives with data (can include [signals](https://github.com/preactjs/signals) or [reactive values](https://github.com/dy/sube)). Once initialized, they immediately evaporate.
+* `state` is object reflecting values, changing any of its props rerenders directives.
 
 <!--
 <details>
@@ -48,7 +48,7 @@ Sprae can be used without build step or JS, autoinitializing document:
 
 #### `:if="condition"`, `:else`
 
-Controls flow of elements.
+Control flow of elements.
 
 ```html
 <span :if="foo">foo</span>
@@ -56,70 +56,115 @@ Controls flow of elements.
 <span :else>baz</span>
 ```
 
-#### `:each="item, index? in list|number"`
+#### `:each="item, index in items"`
 
-Create multiple instances of element from list or number range.
-Index value starts from 1.
+Multiply element. `index` value starts from 1.
 
 ```html
-<ul>
-  <li :each="item, index in items" :id="`item-${index}`" :data="{value:item.value}" :text="item.label">Untitled item</li>
+<ul :with="{items: ['a','b','c']}">
+  <li :each="item in items" :text="item">Untitled</li>
 </ul>
 
 <!-- Cases -->
-<li :each="item, index in array"/>
-<li :each="value, key in object"/>
-<li :each="index in number"/>
+<li :each="item, idx in list" />
+<li :each="val, key in obj" />
+<li :each="idx in 10" />
 
 <!-- Loop by condition -->
-<span :if="items" :each="item in items">...</span>
-<span :else>Empty list</span>
+<li :if="items" :each="item in items" :text="item" />
+<li :else>Empty list</li>
 ```
 
-#### `:text="item.title"`
+#### `:text="value"`
 
-Set text content of an element. Rewrites default text content of an element, so that can be used as fallback value:
+Set text content of an element. Default text can be used as fallback:
 
 ```html
-<span :text="user.name">Guest</span>
+Welcome, <span :text="user.name">Guest</span>.
 ```
 
-#### `:value="data.email"`
+#### `:class="value"`
 
-Bind value to input or textarea (same as `v-model` in vue or `x-model` in Alpine).
+Set class value from either string, array or object.
 
-#### `:id`, `:name`, `:for`, `:type`, `:hidden`, `:disabled`, `:href`, `:src`
+```html
+<div :class="`foo ${bar}`"></div>
+<div :class="['foo', 'bar']"></div>
+<div :class="{foo: true, bar: false}"></div>
+```
 
-Common attributes setters.
+#### `:style="value"`
 
-#### `:class="[ foo, 'bar' ]"`
+Set style value from object or a string.
 
-Set element class from an array, object or a string.
+```html
+<div :style="foo: bar"></div>
+<div :style="{foo: 'bar'}"></div>
+```
 
-#### `:style="{ top: '1px', position: 'absolute' }"`
+<!--
+#### `:value="value"`
 
-Set element style from a string or an object.
+Bind (2-way) value to input, textarea or select.
 
-#### `:prop="{ alt:'foo', title:'bar' }"`
+```html
+<input :with="{text: ''}" :value="text" />
+<textarea :with="{text: ''}" :value="text" />
 
-Set any other attribute / property.
+<select :with="{selected: 0}" :value="selected">
+  <option :each="i in 5" :value="i" :text="i"></option>
+</select>
+```
+-->
 
-#### `:on="{ click:e=>{}, touch:e=>{} }"`
+#### `:<prop>="value"`, `:="props"`
+
+Set any other prop or props value.
+
+```html
+<label :for="name" :text="name" />
+<input :="{ id: name, name, type, value }" :onchange="e => value=e.target.value" />
+```
+
+#### `:on="events"`
 
 Add event listeners.
 
-#### `:data="{ foo:1, bar:2 }"`
+```html
+<button :on="{ click: handler, touch: handler }">Submit</button>
+```
 
-Set [data-*](https://developer.mozilla.org/en-US/docs/Web/HTML/Global_attributes/data-*) attributes.
+#### `:data="values"`
 
-#### `:aria="{ role:'progressbar' }"`
+Set [data-*](https://developer.mozilla.org/en-US/docs/Web/HTML/Global_attributes/data-*) attributes. CamelCase is converted to dash-case.
 
-Set [aria-role](https://developer.mozilla.org/en-US/docs/Web/Accessibility/ARIA) attributes.
+```html
+<input :data="{foo: 1, barBaz: true}" />
+```
+
+#### `:aria="values"`
+
+Set [aria-role](https://developer.mozilla.org/en-US/docs/Web/Accessibility/ARIA) attributes. Boolean values are stringified.
+
+```html
+<input type="text" id="jokes" role="combobox" :aria="{
+  controls: 'joketypes',
+  autocomplete: 'list',
+  expanded: false,
+  activeOption: 'item1',
+  activedescendant: ''
+}" />
+```
 
 #### `:with="data"`
 
-Data scope for a subtree fragment.
+Set data for a subtree fragment scope.
 
+```html
+<x :with="{ foo: 'bar' }">
+  <y :with="{ baz: 'qux' }" :text="foo + baz"></y>
+</x>
+```
 
 <!--
 ### Reactive values
@@ -177,14 +222,5 @@ _Sprae_ takes elegant syntax convention of _alpine_ and method of _templize_ to 
 * It doesn'y introduce syntax scatter.
 * It supports simple expressions with exposed reactive data types.
 
-<!--
-
-## Plugins
-
-* @sprae/tailwind: `<x :tw="mt-1 mx-2"></x>` - separate tailwind utility classes from main ones; allow conditional setters.
-* @sprae/item: `<x :item="{type:a, scope:b}"` – provide microdata
-* @sprae/hcodes: `<x :h=""` – provide microformats
-
--->
 
 <p align="center"><a href="https://github.com/krsnzd/license/">🕉</a></p>

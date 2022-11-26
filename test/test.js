@@ -63,10 +63,10 @@ test('common: class', async () => {
   is(el.outerHTML, `<x class="x"></x><y class="y w"></y><z class="b c"></z>`);
 })
 
-test('props: base', async () => {
-  let el = h`<input :prop="{for:1, title:2, help:3, type:4, placeholder: 5}"/>`
+test('spread props: base', async () => {
+  let el = h`<input :id="0" :="{for:1, title:2, help:3, type:4, placeholder: 5, value: 6}" :value="7"/>`
   let params = sprae(el)
-  is(el.outerHTML, `<input for="1" title="2" help="3" type="4" placeholder="5">`)
+  is(el.outerHTML, `<input id="0" for="1" title="2" help="3" type="4" placeholder="5" value="7">`)
 })
 
 test('data: base', async () => {
@@ -76,12 +76,12 @@ test('data: base', async () => {
 })
 
 test('aria: base', async () => {
-  let el = h`<input type="text" id="jokes" role="combobox" :aria="{controls:'joketypes', autocomplete:'list', expanded:false, activeOption:'item1', activedescendant:''}"/>`
+  let el = h`<input type="text" id="jokes" role="combobox" :aria="{controls:'joketypes', autocomplete:'list', expanded:false, activeOption:'item1', activedescendant:'', xxx:null}"/>`
   sprae(el)
   is(el.outerHTML, `<input type="text" id="jokes" role="combobox" aria-controls="joketypes" aria-autocomplete="list" aria-expanded="false" aria-active-option="item1" aria-activedescendant="">`)
 })
 
-test('input: direct', async () => {
+test('value: direct', async () => {
   let el = h`<input :value="a" />`
   let state = sprae(el, {a:1})
   is(el.value, '1')
@@ -91,8 +91,8 @@ test('input: direct', async () => {
   is(el.outerHTML, `<input value="2">`)
 
   el.value = 3
-  el.dispatchEvent(new window.Event('change'))
-  is(state.a, '3')
+  // el.dispatchEvent(new window.Event('change'))
+  // is(state.a, '3')
 })
 
 test('text: core', async () => {
@@ -198,10 +198,10 @@ test('each: loop within loop', async () => {
 
   is(el.innerHTML, '<x><y>1</y><y>2</y></x><x><y>3</y><y>4</y></x>')
   // console.log('set 1,2')
-  // params.c = [[5,6], [3,4]]
-  params.c[0][0] = 5, params.c[0][1] = 6
+  params.c = [[5,6], [3,4]]
   is(el.innerHTML, '<x><y>5</y><y>6</y></x><x><y>3</y><y>4</y></x>')
-  params.c[1] = [7,8]
+  // params.c[1] = [7,8]
+  params.c = [params.c[0], [7,8]]
   is(el.innerHTML, '<x><y>5</y><y>6</y></x><x><y>7</y><y>8</y></x>')
   // is(el.innerHTML, '<span>1</span><span>2</span>')
   params.c = []
@@ -357,4 +357,24 @@ test('with: reactive transparency', () => {
   is(el.innerHTML, `<y>12</y>`)
   bar.value = '3'
   is(el.innerHTML, `<y>13</y>`)
+})
+test('with: writes to state', () => {
+  let a = h`<x :with="{a:1}"><y :on="{x(){a++}}" :text="a"></y></x>`
+  sprae(a)
+  is(a.innerHTML, `<y>1</y>`)
+  a.firstChild.dispatchEvent(new window.Event('x'))
+  is(a.innerHTML, `<y>2</y>`)
+  a.firstChild.dispatchEvent(new window.Event('x'))
+  is(a.innerHTML, `<y>3</y>`)
+})
+
+test('reactives', async () => {
+  let a = new Promise((ok) => setTimeout(() => ok(2), 10))
+
+  let el = h`<x :text="a">1</x>`
+  sprae(el, {a})
+  is(el.outerHTML, `<x></x>`)
+
+  await time(20)
+  is(el.outerHTML, `<x>2</x>`)
 })

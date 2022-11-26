@@ -16,9 +16,10 @@ export default function sprae(container, values) {
     if (el.attributes) {
       for (let i = 0; i < el.attributes.length;) {
         let attr = el.attributes[i]
-        if (dir = directives[attr.name]) {
+        if (attr.name[0]===':') {
+          dir = directives[attr.name] || directives.default
           el.removeAttribute(attr.name)
-          if (stop = (dir(el, attr.value, state)===false)) break
+          if (stop = (dir(el, attr.value, state, attr.name.slice(1))===false)) break
         }
         else i++
       }
@@ -35,9 +36,3 @@ export default function sprae(container, values) {
 
 // dict of directives
 export const directives = {}
-
-// register a directive
-export const directive = (name, initialize) => {
-  // create initializer of a directive on an element
-  return directives[name] = initialize
-}
