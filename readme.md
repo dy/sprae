@@ -83,18 +83,6 @@ Set text content of an element. Default text can be used as fallback:
 Welcome, <span :text="user.name">Guest</span>.
 ```
 
-#### `:value="value"`
-
-Bind value to input, textarea or select.
-
-```html
-<input :with="{text: ''}" :value="text" />
-
-<select :with="{selected: 0}" :value="selected">
-  <option :each="i in 5" :value="i"></option>
-</select>
-```
-
 #### `:class="value"`
 
 Set class value from either string, array or object.
@@ -114,6 +102,21 @@ Set style value from object or a string.
 <div :style="{foo: 'bar'}"></div>
 ```
 
+<!--
+#### `:value="value"`
+
+Bind (2-way) value to input, textarea or select.
+
+```html
+<input :with="{text: ''}" :value="text" />
+<textarea :with="{text: ''}" :value="text" />
+
+<select :with="{selected: 0}" :value="selected">
+  <option :each="i in 5" :value="i" :text="i"></option>
+</select>
+```
+-->
+
 #### `:<prop>="value"`, `:="props"`
 
 Set any other prop or props value.
@@ -128,8 +131,8 @@ Set any other prop or props value.
 Add event listeners.
 
 ```html
-<button :onclick="handler">Submit</button>
-<button :on="{ click(e){}, touch(e){} }">Submit</button>
+<input :value="text" :onclick="e => text = e.target.value" />
+<button :on="{ click: handler, touch: handler }">Submit</button>
 ```
 
 #### `:data="values"`
@@ -140,7 +143,7 @@ Set [data-*](https://developer.mozilla.org/en-US/docs/Web/HTML/Global_attributes
 <input :data="{foo: 1, barBaz: true}" />
 ```
 
-#### `:aria="{ role:'progressbar' }"`
+#### `:aria="values"`
 
 Set [aria-role](https://developer.mozilla.org/en-US/docs/Web/Accessibility/ARIA) attributes. Boolean values are stringified.
 
@@ -156,7 +159,7 @@ Set [aria-role](https://developer.mozilla.org/en-US/docs/Web/Accessibility/ARIA)
 
 #### `:with="data"`
 
-Set data scope for a subtree fragment.
+Set data for a subtree fragment scope.
 
 ```html
 <x :with="{ foo: 'bar' }">

@@ -142,3 +142,20 @@
   + that would allow somewhat alpine/vue-compatible code
 + makes sense for `:="{}"` spread
 + makes place for other specific directives `:init=""` etc
+
+## [ ] :value is confusing: <option> also uses that.
+
+? :model="value"
+  + v-model, x-model
+  - confusing
+? :in="text"
+? :input="text"
+? :bind="value"
+  + more accurate logically
+  - conflicts with existing naming (bind is used for attrs)
+  - conflict if used along with `:value="x" :bind="y"`
+? :value="value" :onchange="e=>value=e.target.value"
+  + more apparent and explicit
+  + less mental load, "model" is too heavy term
+  + overhead is minimal
+  + react-like
