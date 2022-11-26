@@ -1,13 +1,13 @@
 # ∴ spræ [![tests](https://github.com/dy/sprae/actions/workflows/node.js.yml/badge.svg)](https://github.com/dy/sprae/actions/workflows/node.js.yml) [![size](https://img.shields.io/bundlephobia/minzip/sprae?label=size)](https://bundlephobia.com/result?p=sprae) [![npm](https://img.shields.io/npm/v/sprae?color=orange)](https://npmjs.org/sprae)
 
-> DOM microhydration
+> DOM microhydration with `:` attributes
 
 A lightweight essential alternative to [alpine](https://github.com/alpinejs/alpine), [petite-vue](https://github.com/vuejs/petite-vue), [templize](https://github.com/dy/templize) or JSX with better ergonomics[*](#justification).
 
 
 ## Usage
 
-Sprae defines reactive attributes starting with `:` that contain regular JS expressions:
+Sprae defines attributes starting with `:` as directives:
 
 ```html
 <div id="container" :if="user">
@@ -22,8 +22,8 @@ Sprae defines reactive attributes starting with `:` that contain regular JS expr
 </script>
 ```
 
-* `sprae` initializes subtree with data and immediately evaporates reactive attrs.
-* `state` is object reflecting values, changing any of its props rerenders subtree.
+* `sprae` initializes subtree with data and immediately evaporates `:` attrs.
+* `state` is object reflecting current values, changing any of its props rerenders subtree.
 
 <!--
 <details>
