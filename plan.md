@@ -16,5 +16,5 @@
 * [x] optimization: arrays with multiple elements can be slow on creation. Maybe signal-struct must ignore arrays.
   -> yep: arrays are rarely changed as `a[i]=newItem` and regularly they're mapped.
 * [x] expand to any subscribables: both as state vars
-* [ ] replace element-props with direct (better) setters
+* [ ] optimization: replace element-props with direct (better) setters
 * [ ] report usignal problem
