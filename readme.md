@@ -123,7 +123,7 @@ Set any other prop or props value.
 
 ```html
 <label :for="name" :text="name" />
-<input :="{id:name, name, type}" :value="text" :onchange="e => text=e.target.value" />
+<input :="{ id: name, name, type, value }" :onchange="e => value=e.target.value" />
 ```
 
 #### `:on="events"`
