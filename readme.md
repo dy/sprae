@@ -179,9 +179,17 @@ Expose element to a subtree fragment with the `id`.
 </li>
 ```
 
-<!--
-### Reactive values
 
+### Reactivity
+
+_Sprae_ is built on top of [_@preact/signals_](https://ghub.io/@preact/signals). That gives:
+
+* Expressions don't require explicit access to `.value` (see [signal-struct](https://github.com/dy/signal-struct))
+* Expressions support any reactive values in data (see [sube](https://github.com/dy/sube))
+* Updates happen minimally only when used values update
+* Subscription is weak and get disposed when element is disposed.
+
+<!--
 Directive expressions are natively reactive, ie. data may contain any async/reactive values, such as:
 
 * _Promise_ / _Thenable_
@@ -193,6 +201,7 @@ Directive expressions are natively reactive, ie. data may contain any async/reac
 This way, for example, _@preact/signals_ or _rxjs_ can be connected directly bypassing subscription or reading value.
 
 Update happens when any value changes:
+-->
 
 ```html
 <div id="done" :text="loading ? 'loading' : result">...</div>
@@ -216,9 +225,6 @@ Update happens when any value changes:
 </script>
 ```
 
-Internally directives trigger updates only for used properties change. They subscribe in weak fashion and get disposed when element is disposed.
--->
-
 
 ## Justification
 
@@ -229,11 +235,11 @@ Internally directives trigger updates only for used properties change. They subs
 _Sprae_ takes elegant syntax convention of _alpine_ and method of _templize_ to connect any reactive values (like [@preact/signals](https://ghub.io/@preact/signals) or observables) to static HTML.
 
 * It doesn't break static html markup.
-* It doesn't intrude native syntax space.
 * It falls back to element content if uninitialized.
-* It provides means for island hydration.
-* It doesn'y introduce syntax scatter.
-* It supports simple expressions with exposed reactive data types.
+* It doesn't enforce SPA neither JSX.
+* It enables island hydration.
+* It introduces minimal syntax space as `:` convention.
+* Expressions are built on preact/signal so naturally reactive and incur minimal updates.
 
 
 <p align="center"><a href="https://github.com/krsnzd/license/">🕉</a></p>
