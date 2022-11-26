@@ -56,13 +56,13 @@ Control flow of elements.
 <span :else>baz</span>
 ```
 
-#### `:each="item in items"`
+#### `:each="item, index in items"`
 
-Multiply element. Index value starts from 1.
+Multiply element. `index` value starts from 1.
 
 ```html
-<ul>
-  <li :each="item, idx in items" :id="`item-${idx}`" :text="item.label">Untitled</li>
+<ul :with="{items: ['a','b','c']}">
+  <li :each="item in items" :text="item">Untitled</li>
 </ul>
 
 <!-- Cases -->
@@ -71,7 +71,7 @@ Multiply element. Index value starts from 1.
 <li :each="idx in 10" />
 
 <!-- Loop by condition -->
-<li :if="items" :each="item in items">...</li>
+<li :if="items" :each="item in items" :text="item" />
 <li :else>Empty list</li>
 ```
 
