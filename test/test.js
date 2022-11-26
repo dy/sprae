@@ -63,10 +63,10 @@ test('common: class', async () => {
   is(el.outerHTML, `<x class="x"></x><y class="y w"></y><z class="b c"></z>`);
 })
 
-test('props: base', async () => {
-  let el = h`<input :prop="{for:1, title:2, help:3, type:4, placeholder: 5}"/>`
+test('spread props: base', async () => {
+  let el = h`<input :id="0" :="{for:1, title:2, help:3, type:4, placeholder: 5, value: 6}" :value="7"/>`
   let params = sprae(el)
-  is(el.outerHTML, `<input for="1" title="2" help="3" type="4" placeholder="5">`)
+  is(el.outerHTML, `<input id="0" for="1" title="2" help="3" type="4" placeholder="5" value="7">`)
 })
 
 test('data: base', async () => {

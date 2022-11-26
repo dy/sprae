@@ -135,7 +135,7 @@
 * @sprae/item: `<x :item="{type:a, scope:b}"` – provide microdata
 * @sprae/hcodes: `<x :h=""` – provide microformats
 
-## [ ] Write any-attributes via :<prop>?
+## [x] Write any-attributes via :<prop>?
 
 + Since we support attr walking, maybe instead of :on and :prop just allow any attributes?
   + that would allow event and attr modifiers...
@@ -143,7 +143,7 @@
 + makes sense for `:="{}"` spread
 + makes place for other specific directives `:init=""` etc
 
-## [ ] :value is confusing: <option> also uses that.
+## [x] :value is confusing: <option> also uses that.
 
 ? :model="value"
   + v-model, x-model
@@ -159,3 +159,4 @@
   + less mental load, "model" is too heavy term
   + overhead is minimal
   + react-like
+  + it has better control over serialization
