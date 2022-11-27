@@ -368,7 +368,16 @@ test('with: writes to state', () => {
   is(a.innerHTML, `<y>3</y>`)
 })
 
-test('reactives', async () => {
+test('ref: base', () => {
+  let a = h`<a :ref="a" :init="log.push(a), null" :text="b"></a>`
+  let state = sprae(a, {log:[], b:1})
+  is(state.log[0], a)
+  is(a.outerHTML, `<a>1</a>`)
+  state.b = 2
+  is(a.outerHTML, `<a>2</a>`)
+})
+
+test('reactive values', async () => {
   let a = new Promise((ok) => setTimeout(() => ok(2), 10))
 
   let el = h`<x :text="a">1</x>`

@@ -13,7 +13,13 @@ directives[':with'] = (el, expr, rootState) => {
   // we bind updating
   const params = computed(() => Object.assign({}, rootState, evaluate(rootState)))
   let state = sprae(el, params.value)
-  effect((values=params.value) => batch(()=>Object.assign(state, values)))
+  effect((values=params.value) => batch(() => Object.assign(state, values)))
+  return false
+}
+
+directives[':ref'] = (el, expr, state) => {
+  sprae(el, Object.assign(Object.create(state), {[expr]: el}))
+  return false
 }
 
 directives[':if'] = (el, expr, state) => {
@@ -214,7 +220,7 @@ function parseExpr(expression, dir, scope) {
   // guard static-time eval errors
   let evaluate
   try {
-    evaluate = new Function(['scope'], `let result; with (scope) { result = ${rightSideSafeExpression} }; return result;`)
+    evaluate = new Function(['scope'], `let result; with (scope) { result = (${rightSideSafeExpression}) }; return result;`)
   } catch ( e ) {
     return exprError(e, expression, dir, scope)
   }
