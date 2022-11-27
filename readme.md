@@ -68,7 +68,7 @@ Multiply element. `index` value starts from 1.
 <!-- Cases -->
 <li :each="item, idx in list" />
 <li :each="val, key in obj" />
-<li :each="idx in 10" />
+<li :each="idx, idx0 in number" />
 
 <!-- Loop by condition -->
 <li :if="items" :each="item in items" :text="item" />

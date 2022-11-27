@@ -2,7 +2,7 @@ import sprae from './core.js';
 import './directives.js';
 
 export default sprae;
-export { computed, batch, effect } from '@preact/signals-core';
+export { signal, computed, batch, effect } from '@preact/signals-core';
 
 // autoinit
 // NOTE: abandoning for now, since requires a separate non-module JS entry, until use-case appears

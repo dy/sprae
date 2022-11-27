@@ -19,7 +19,6 @@
 * [x] :ref
 * [ ] optimization: replace element-props with direct (better) setters
 * [ ] report usignal problem
-* [ ] :oninit
 * [ ] :onconnect, :ondisconnect
 * [ ] frameworks benchmark
 * [ ] examples

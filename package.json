@@ -27,6 +27,7 @@
   "scripts": {
     "test": "node -r browser-env/register test/test.js",
     "build": "esbuild --bundle ./src/index.js --outfile=sprae.js --format=esm",
+    "watch": "esbuild --bundle ./src/index.js --outfile=sprae.js --format=esm --sourcemap --watch",
     "min": "terser sprae.js -o sprae.min.js --module -c passes=3 -m"
   },
   "repository": {

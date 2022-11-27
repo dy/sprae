@@ -18,6 +18,9 @@ directives[':with'] = (el, expr, rootState) => {
 }
 
 directives[':ref'] = (el, expr, state) => {
+  // note: must come after :each
+  if (el.hasAttribute(':each')) { return el.setAttribute(':ref', expr) }
+
   sprae(el, Object.assign(Object.create(state), {[expr]: el}))
   return false
 }
@@ -63,8 +66,11 @@ directives[':each'] = (tpl, expr, state) => {
 
   const items = computed(()=>{
     let list = getItems(state)
-    if (typeof list === 'number') return Array.from({length: list}, (_, i)=>i+1)
-    return list
+    if (!list) return []
+    if (typeof list === 'number') return Array.from({length: list}, (_, i)=>[i, i+1])
+    if (list.constructor === Object) return Object.entries(list)
+    if (Array.isArray(list)) return list.map((item,i) => [i+1, item])
+    exprError(Error('Bad list value'), each.items, ':each', list)
   })
 
   // stores scope per data item
@@ -73,26 +79,25 @@ directives[':each'] = (tpl, expr, state) => {
   const itemEls = new WeakMap()
   let curEls = []
   effect((list=items.value) => {
-    if (!list) list = []
     // collect elements/scopes for items
     let newEls = [], elScopes = []
 
-    for (let item of list) {
-      let key = p(item)
-      let el = itemEls.get(key)
+    for (let [idx, item] of list) {
+      let itemKey = p(item)
+      let el = itemEls.get(itemKey)
       if (!el) {
         el = tpl.cloneNode(true)
-        itemEls.set(key, el)
+        itemEls.set(itemKey, el)
       }
       newEls.push(el)
 
-      if (!scopes.has(key)) {
+      if (!scopes.has(itemKey)) {
         let scope = Object.create(state)
         scope[each.item] = item
-        if (each.index) scope[each.index] = i;
-        scopes.set(key, scope)
+        if (each.index) scope[each.index] = idx;
+        scopes.set(itemKey, scope)
       }
-      elScopes.push(scopes.get(key))
+      elScopes.push(scopes.get(itemKey))
     }
 
     // swap is really fast & tiny

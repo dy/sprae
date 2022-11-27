@@ -129,13 +129,13 @@
 
   - introduces malign hole of including sprae inside of html
 
-## [ ] :fx?
+## [x] :fx? -> nah, already works. Just return `null` in any attr, that's it.
 
   * let's wait for use-case
   - doesn't necessarily useful, since any directive is already an effect
   + works already out of box, just creates `fx` attribute if value is returned
 
-## [ ] :init?
+## [x] :init? -> same as fx.
 
   * waiting for use-case
 
@@ -143,6 +143,8 @@
 
   - opens gateway to generic modifiers
   - introduces a whole mental layer to learn, including combinations of modifiers all around.
+
+## [ ] :onconnected/disconnected?
 
 ## [ ] Plugins
 

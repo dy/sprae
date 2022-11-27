@@ -1,10 +1,10 @@
 // node_modules/@preact/signals-core/dist/signals-core.module.js
-function i2() {
+function i() {
   throw new Error("Cycle detected");
 }
 function t() {
   if (!(n > 1)) {
-    var i3, t2 = false;
+    var i2, t2 = false;
     while (void 0 !== r) {
       var h2 = r;
       r = void 0;
@@ -18,7 +18,7 @@ function t() {
             h2.c();
           } catch (h3) {
             if (!t2) {
-              i3 = h3;
+              i2 = h3;
               t2 = true;
             }
           }
@@ -28,16 +28,16 @@ function t() {
     s = 0;
     n--;
     if (t2)
-      throw i3;
+      throw i2;
   } else
     n--;
 }
-function h(i3) {
+function h(i2) {
   if (n > 0)
-    return i3();
+    return i2();
   n++;
   try {
-    return i3();
+    return i2();
   } finally {
     t();
   }
@@ -47,14 +47,14 @@ var r = void 0;
 var n = 0;
 var s = 0;
 var f = 0;
-function v(i3) {
+function v(i2) {
   if (void 0 !== o) {
-    var t2 = i3.n;
+    var t2 = i2.n;
     if (void 0 === t2 || t2.t !== o) {
-      o.s = t2 = { i: 0, S: i3, p: void 0, n: o.s, t: o, e: void 0, x: void 0, r: t2 };
-      i3.n = t2;
+      o.s = t2 = { i: 0, S: i2, p: void 0, n: o.s, t: o, e: void 0, x: void 0, r: t2 };
+      i2.n = t2;
       if (32 & o.f)
-        i3.S(t2);
+        i2.S(t2);
       return t2;
     } else if (-1 === t2.i) {
       t2.i = 0;
@@ -71,8 +71,8 @@ function v(i3) {
     }
   }
 }
-function e(i3) {
-  this.v = i3;
+function e(i2) {
+  this.v = i2;
   this.i = 0;
   this.n = void 0;
   this.t = void 0;
@@ -80,34 +80,34 @@ function e(i3) {
 e.prototype.h = function() {
   return true;
 };
-e.prototype.S = function(i3) {
-  if (this.t !== i3 && void 0 === i3.e) {
-    i3.x = this.t;
+e.prototype.S = function(i2) {
+  if (this.t !== i2 && void 0 === i2.e) {
+    i2.x = this.t;
     if (void 0 !== this.t)
-      this.t.e = i3;
-    this.t = i3;
+      this.t.e = i2;
+    this.t = i2;
   }
 };
-e.prototype.U = function(i3) {
-  var t2 = i3.e, h2 = i3.x;
+e.prototype.U = function(i2) {
+  var t2 = i2.e, h2 = i2.x;
   if (void 0 !== t2) {
     t2.x = h2;
-    i3.e = void 0;
+    i2.e = void 0;
   }
   if (void 0 !== h2) {
     h2.e = t2;
-    i3.x = void 0;
+    i2.x = void 0;
   }
-  if (i3 === this.t)
+  if (i2 === this.t)
     this.t = h2;
 };
-e.prototype.subscribe = function(i3) {
+e.prototype.subscribe = function(i2) {
   var t2 = this;
   return b(function() {
     var h2 = t2.value, o2 = 32 & this.f;
     this.f &= -33;
     try {
-      i3(h2);
+      i2(h2);
     } finally {
       this.f |= o2;
     }
@@ -123,14 +123,14 @@ e.prototype.peek = function() {
   return this.v;
 };
 Object.defineProperty(e.prototype, "value", { get: function() {
-  var i3 = v(this);
-  if (void 0 !== i3)
-    i3.i = this.i;
+  var i2 = v(this);
+  if (void 0 !== i2)
+    i2.i = this.i;
   return this.v;
 }, set: function(h2) {
   if (h2 !== this.v) {
     if (s > 100)
-      i2();
+      i();
     this.v = h2;
     this.i++;
     f++;
@@ -143,17 +143,17 @@ Object.defineProperty(e.prototype, "value", { get: function() {
     }
   }
 } });
-function u(i3) {
-  return new e(i3);
+function u(i2) {
+  return new e(i2);
 }
-function d(i3) {
-  for (var t2 = i3.s; void 0 !== t2; t2 = t2.n)
+function d(i2) {
+  for (var t2 = i2.s; void 0 !== t2; t2 = t2.n)
     if (t2.S.i !== t2.i || !t2.S.h() || t2.S.i !== t2.i)
       return true;
   return false;
 }
-function c(i3) {
-  for (var t2 = i3.s; void 0 !== t2; t2 = t2.n) {
+function c(i2) {
+  for (var t2 = i2.s; void 0 !== t2; t2 = t2.n) {
     var h2 = t2.S.n;
     if (void 0 !== h2)
       t2.r = h2;
@@ -161,8 +161,8 @@ function c(i3) {
     t2.i = -1;
   }
 }
-function a(i3) {
-  var t2 = i3.s, h2 = void 0;
+function a(i2) {
+  var t2 = i2.s, h2 = void 0;
   while (void 0 !== t2) {
     var o2 = t2.n;
     if (-1 === t2.i) {
@@ -180,11 +180,11 @@ function a(i3) {
       t2.r = void 0;
     t2 = o2;
   }
-  i3.s = h2;
+  i2.s = h2;
 }
-function l(i3) {
+function l(i2) {
   e.call(this, void 0);
-  this.x = i3;
+  this.x = i2;
   this.s = void 0;
   this.g = f - 1;
   this.f = 4;
@@ -204,7 +204,7 @@ function l(i3) {
     this.f &= -2;
     return true;
   }
-  var i3 = o;
+  var i2 = o;
   try {
     c(this);
     o = this;
@@ -214,26 +214,26 @@ function l(i3) {
       this.f &= -17;
       this.i++;
     }
-  } catch (i4) {
-    this.v = i4;
+  } catch (i3) {
+    this.v = i3;
     this.f |= 16;
     this.i++;
   }
-  o = i3;
+  o = i2;
   a(this);
   this.f &= -2;
   return true;
 };
-l.prototype.S = function(i3) {
+l.prototype.S = function(i2) {
   if (void 0 === this.t) {
     this.f |= 36;
     for (var t2 = this.s; void 0 !== t2; t2 = t2.n)
       t2.S.S(t2);
   }
-  e.prototype.S.call(this, i3);
+  e.prototype.S.call(this, i2);
 };
-l.prototype.U = function(i3) {
-  e.prototype.U.call(this, i3);
+l.prototype.U = function(i2) {
+  e.prototype.U.call(this, i2);
   if (void 0 === this.t) {
     this.f &= -33;
     for (var t2 = this.s; void 0 !== t2; t2 = t2.n)
@@ -243,20 +243,20 @@ l.prototype.U = function(i3) {
 l.prototype.N = function() {
   if (!(2 & this.f)) {
     this.f |= 6;
-    for (var i3 = this.t; void 0 !== i3; i3 = i3.x)
-      i3.t.N();
+    for (var i2 = this.t; void 0 !== i2; i2 = i2.x)
+      i2.t.N();
   }
 };
 l.prototype.peek = function() {
   if (!this.h())
-    i2();
+    i();
   if (16 & this.f)
     throw this.v;
   return this.v;
 };
 Object.defineProperty(l.prototype, "value", { get: function() {
   if (1 & this.f)
-    i2();
+    i();
   var t2 = v(this);
   this.h();
   if (void 0 !== t2)
@@ -265,12 +265,12 @@ Object.defineProperty(l.prototype, "value", { get: function() {
     throw this.v;
   return this.v;
 } });
-function w(i3) {
-  return new l(i3);
+function w(i2) {
+  return new l(i2);
 }
-function y(i3) {
-  var h2 = i3.u;
-  i3.u = void 0;
+function y(i2) {
+  var h2 = i2.u;
+  i2.u = void 0;
   if ("function" == typeof h2) {
     n++;
     var r2 = o;
@@ -278,9 +278,9 @@ function y(i3) {
     try {
       h2();
     } catch (t2) {
-      i3.f &= -2;
-      i3.f |= 8;
-      _(i3);
+      i2.f &= -2;
+      i2.f |= 8;
+      _(i2);
       throw t2;
     } finally {
       o = r2;
@@ -288,42 +288,42 @@ function y(i3) {
     }
   }
 }
-function _(i3) {
-  for (var t2 = i3.s; void 0 !== t2; t2 = t2.n)
+function _(i2) {
+  for (var t2 = i2.s; void 0 !== t2; t2 = t2.n)
     t2.S.U(t2);
-  i3.x = void 0;
-  i3.s = void 0;
-  y(i3);
+  i2.x = void 0;
+  i2.s = void 0;
+  y(i2);
 }
-function g(i3) {
+function g(i2) {
   if (o !== this)
     throw new Error("Out-of-order effect");
   a(this);
-  o = i3;
+  o = i2;
   this.f &= -2;
   if (8 & this.f)
     _(this);
   t();
 }
-function p(i3) {
-  this.x = i3;
+function p(i2) {
+  this.x = i2;
   this.u = void 0;
   this.s = void 0;
   this.o = void 0;
   this.f = 32;
 }
 p.prototype.c = function() {
-  var i3 = this.S();
+  var i2 = this.S();
   try {
     if (!(8 & this.f) && void 0 !== this.x)
       this.u = this.x();
   } finally {
-    i3();
+    i2();
   }
 };
 p.prototype.S = function() {
   if (1 & this.f)
-    i2();
+    i();
   this.f |= 1;
   this.f &= -9;
   y(this);
@@ -345,8 +345,8 @@ p.prototype.d = function() {
   if (!(1 & this.f))
     _(this);
 };
-function b(i3) {
-  var t2 = new p(i3);
+function b(i2) {
+  var t2 = new p(i2);
   t2.c();
   return t2.d.bind(t2);
 }
@@ -417,15 +417,15 @@ function sprae(container, values) {
   const init = (el2) => {
     let dir, stop;
     if (el2.attributes) {
-      for (let i3 = 0; i3 < el2.attributes.length; ) {
-        let attr = el2.attributes[i3];
+      for (let i2 = 0; i2 < el2.attributes.length; ) {
+        let attr = el2.attributes[i2];
         if (attr.name[0] === ":") {
           dir = directives[attr.name] || directives.default;
           el2.removeAttribute(attr.name);
           if (stop = dir(el2, attr.value, state, attr.name.slice(1)) === false)
             break;
         } else
-          i3++;
+          i2++;
       }
     }
     if (!stop)
@@ -467,21 +467,21 @@ var dashcase = (str) => {
 
 // node_modules/swapdom/swap-inflate.js
 var swap = (parent, a2, b2, end = null) => {
-  let i3 = 0, cur, next, bi, n2 = b2.length, m = a2.length, { remove, same, insert, replace } = swap;
-  while (i3 < n2 && i3 < m && same(a2[i3], b2[i3]))
-    i3++;
-  while (i3 < n2 && i3 < m && same(b2[n2 - 1], a2[m - 1]))
+  let i2 = 0, cur, next, bi, n2 = b2.length, m = a2.length, { remove, same, insert, replace } = swap;
+  while (i2 < n2 && i2 < m && same(a2[i2], b2[i2]))
+    i2++;
+  while (i2 < n2 && i2 < m && same(b2[n2 - 1], a2[m - 1]))
     end = b2[--m, --n2];
-  if (i3 == m)
-    while (i3 < n2)
-      insert(end, b2[i3++], parent);
+  if (i2 == m)
+    while (i2 < n2)
+      insert(end, b2[i2++], parent);
   else {
-    cur = a2[i3];
-    while (i3 < n2) {
-      bi = b2[i3++], next = cur ? cur.nextSibling : end;
+    cur = a2[i2];
+    while (i2 < n2) {
+      bi = b2[i2++], next = cur ? cur.nextSibling : end;
       if (same(cur, bi))
         cur = next;
-      else if (i3 < n2 && same(b2[i3], next))
+      else if (i2 < n2 && same(b2[i2], next))
         replace(cur, bi, parent), cur = next;
       else
         insert(cur, bi, parent);
@@ -521,6 +521,14 @@ directives[":with"] = (el2, expr, rootState) => {
   const params = w(() => Object.assign({}, rootState, evaluate(rootState)));
   let state = sprae(el2, params.value);
   b((values = params.value) => h(() => Object.assign(state, values)));
+  return false;
+};
+directives[":ref"] = (el2, expr, state) => {
+  if (el2.hasAttribute(":each")) {
+    return el2.setAttribute(":ref", expr);
+  }
+  sprae(el2, Object.assign(Object.create(state), { [expr]: el2 }));
+  return false;
 };
 directives[":if"] = (el2, expr, state) => {
   let holder = document.createTextNode(""), clauses = [parseExpr(expr, ":if", state)], els = [el2], cur = el2;
@@ -541,7 +549,7 @@ directives[":if"] = (el2, expr, state) => {
   }
   el2.replaceWith(cur = holder);
   let idx = w(() => clauses.findIndex((f2) => f2(state)));
-  b((i3 = idx.value) => els[i3] != cur && ((cur[_eachHolder] || cur).replaceWith(cur = els[i3] || holder), sprae(cur, state)));
+  b((i2 = idx.value) => els[i2] != cur && ((cur[_eachHolder] || cur).replaceWith(cur = els[i2] || holder), sprae(cur, state)));
   return false;
 };
 var _eachHolder = Symbol(":each");
@@ -554,38 +562,42 @@ directives[":each"] = (tpl, expr, state) => {
   tpl.replaceWith(holder);
   const items = w(() => {
     let list = getItems(state);
+    if (!list)
+      return [];
     if (typeof list === "number")
-      return Array.from({ length: list }, (_2, i3) => i3 + 1);
-    return list;
+      return Array.from({ length: list }, (_2, i2) => [i2, i2 + 1]);
+    if (list.constructor === Object)
+      return Object.entries(list);
+    if (Array.isArray(list))
+      return list.map((item, i2) => [i2 + 1, item]);
+    exprError(Error("Bad list value"), each.items, ":each", list);
   });
   const scopes = /* @__PURE__ */ new WeakMap();
   const itemEls = /* @__PURE__ */ new WeakMap();
   let curEls = [];
   b((list = items.value) => {
-    if (!list)
-      list = [];
     let newEls = [], elScopes = [];
-    for (let item of list) {
-      let key = primitive_pool_default(item);
-      let el2 = itemEls.get(key);
+    for (let [idx, item] of list) {
+      let itemKey = primitive_pool_default(item);
+      let el2 = itemEls.get(itemKey);
       if (!el2) {
         el2 = tpl.cloneNode(true);
-        itemEls.set(key, el2);
+        itemEls.set(itemKey, el2);
       }
       newEls.push(el2);
-      if (!scopes.has(key)) {
+      if (!scopes.has(itemKey)) {
         let scope = Object.create(state);
         scope[each.item] = item;
         if (each.index)
-          scope[each.index] = i;
-        scopes.set(key, scope);
+          scope[each.index] = idx;
+        scopes.set(itemKey, scope);
       }
-      elScopes.push(scopes.get(key));
+      elScopes.push(scopes.get(itemKey));
     }
     swap_inflate_default(holder.parentNode, curEls, newEls, holder);
     curEls = newEls;
-    for (let i3 = 0; i3 < newEls.length; i3++) {
-      sprae(newEls[i3], elScopes[i3]);
+    for (let i2 = 0; i2 < newEls.length; i2++) {
+      sprae(newEls[i2], elScopes[i2]);
     }
   });
   return false;
@@ -675,7 +687,7 @@ function parseExpr(expression, dir, scope) {
   let rightSideSafeExpression = /^[\n\s]*if.*\(.*\)/.test(expression) || /^(let|const)\s/.test(expression) ? `(() => { ${expression} })()` : expression;
   let evaluate;
   try {
-    evaluate = new Function(["scope"], `let result; with (scope) { result = ${rightSideSafeExpression} }; return result;`);
+    evaluate = new Function(["scope"], `let result; with (scope) { result = (${rightSideSafeExpression}) }; return result;`);
   } catch (e2) {
     return exprError(e2, expression, dir, scope);
   }
@@ -704,6 +716,10 @@ ${dir}=${expression ? `"${expression}"
 // src/index.js
 var src_default = sprae;
 export {
+  h as batch,
+  w as computed,
   src_default as default,
-  directives
+  b as effect,
+  u as signal
 };
+//# sourceMappingURL=sprae.js.map

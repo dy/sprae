@@ -171,7 +171,7 @@ test('conditions: reactive values', async () => {
 })
 
 
-test('each: base', async () => {
+test('each: array', async () => {
   // FIXME: in some conspicuous reason jsdom fails to update text nodes somehow
   let el = h`<p>
     <span :each="a in b" :text="a"></span>
@@ -183,6 +183,24 @@ test('each: base', async () => {
   console.log('set 1,2')
   params.b = [1,2]
   is(el.innerHTML, '<span>1</span><span>2</span>')
+  params.b = []
+  is(el.innerHTML, '')
+  params.b = null
+  is(el.innerHTML, '')
+})
+
+test('each: object', async () => {
+  // FIXME: in some conspicuous reason jsdom fails to update text nodes somehow
+  let el = h`<p>
+    <span :each="x,key in b" :text="[key,x]"></span>
+  </p>`
+
+  const params = sprae(el, { b: null })
+
+  is(el.innerHTML, '')
+  console.log('set 1,2')
+  params.b = { x:1, y:2 }
+  is(el.innerHTML, '<span>x,1</span><span>y,2</span>')
   params.b = []
   is(el.innerHTML, '')
   params.b = null
