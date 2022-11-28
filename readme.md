@@ -73,6 +73,9 @@ Multiply element. `index` value starts from 1.
 <!-- Loop by condition -->
 <li :if="items" :each="item in items" :text="item" />
 <li :else>Empty list</li>
+
+<!-- To avoid FOUC -->
+<style>[:each]{visibility: hidden}</style>
 ```
 
 #### `:text="value"`

@@ -215,7 +215,6 @@ test('each: loop within loop', async () => {
   const params = sprae(el, { c: [[1,2], [3,4]] })
 
   is(el.innerHTML, '<x><y>1</y><y>2</y></x><x><y>3</y><y>4</y></x>')
-  // console.log('set 1,2')
   params.c = [[5,6], [3,4]]
   is(el.innerHTML, '<x><y>5</y><y>6</y></x><x><y>3</y><y>4</y></x>')
   // params.c[1] = [7,8]
@@ -246,6 +245,9 @@ test('each: reactive values', async () => {
 })
 
 test('each: loop with condition', async () => {
+  // NOTE: there doesn't seem to be much value in exactly that
+  // also it creates confusion with :else directive
+  // prohibitin that allows in-order directives init
   let el = h`<p>
   <span :each="a in b" :text="a" :if="c"></span>
   </p>`
@@ -393,6 +395,13 @@ test('ref: base', () => {
   is(a.outerHTML, `<a>1</a>`)
   state.b = 2
   is(a.outerHTML, `<a>2</a>`)
+})
+
+test('ref with each', () => {
+  let a = h`<y><x :ref="x" :each="item in items" :text="log.push(x), item"/></y>`
+  let state = sprae(a, {log: [], items: [1,2]})
+  is(a.innerHTML, `<x>1</x><x>2</x>`)
+  is(state.log, [...a.children])
 })
 
 test('reactive values', async () => {

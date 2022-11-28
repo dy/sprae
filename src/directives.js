@@ -6,6 +6,7 @@ import { effect, computed, batch } from '@preact/signals-core'
 import swap from 'swapdom'
 import p from 'primitive-pool'
 
+
 directives[':with'] = (el, expr, rootState) => {
   let evaluate = parseExpr(expr, 'with', rootState)
 
@@ -17,42 +18,7 @@ directives[':with'] = (el, expr, rootState) => {
   return false
 }
 
-directives[':ref'] = (el, expr, state) => {
-  // note: must come after :each
-  if (el.hasAttribute(':each')) { return el.setAttribute(':ref', expr) }
-
-  sprae(el, Object.assign(Object.create(state), {[expr]: el}))
-  return false
-}
-
-directives[':if'] = (el, expr, state) => {
-  let holder = document.createTextNode(''),
-      clauses = [parseExpr(expr, ':if', state)],
-      els = [el], cur = el
-
-  while (cur = el.nextElementSibling) {
-    if (cur.hasAttribute(':else')) {
-      cur.removeAttribute(':else');
-      if (expr = cur.getAttribute(':if')) {
-        cur.removeAttribute(':if'), cur.remove();
-        els.push(cur); clauses.push(parseExpr(expr, ':else :if', state));
-      }
-      else {
-        cur.remove(); els.push(cur); clauses.push(() => 1);
-      }
-    }
-    else break;
-  }
-
-  el.replaceWith(cur = holder)
-  let idx = computed(() => clauses.findIndex(f => f(state)))
-  // NOTE: it lazily initializes elements on insertion, it's safe to sprae multiple times
-  effect((i=idx.value) => (els[i] != cur && ((cur[_eachHolder]||cur).replaceWith(cur = els[i] || holder), sprae(cur, state))))
-
-  return false
-}
-
-const _eachHolder = Symbol(':each')
+const _each = Symbol(':each'), _ref = Symbol(':ref')
 directives[':each'] = (tpl, expr, state) => {
   let each = parseForExpression(expr);
   if (!each) return exprError(new Error, expr);
@@ -60,8 +26,8 @@ directives[':each'] = (tpl, expr, state) => {
   const getItems = parseExpr(each.items, ':each', state);
 
   // FIXME: make sure no memory leak here
-  // we need holder to be able :if replace it instead of tpl for combined case
-  const holder = tpl[_eachHolder] = document.createTextNode('')
+  // we need :if to be able to replace holder instead of tpl for :if :each case
+  const holder = tpl[_each] = document.createTextNode('')
   tpl.replaceWith(holder)
 
   const items = computed(()=>{
@@ -95,6 +61,8 @@ directives[':each'] = (tpl, expr, state) => {
         let scope = Object.create(state)
         scope[each.item] = item
         if (each.index) scope[each.index] = idx;
+        // provide ref, if indicated
+        if (tpl[_ref]) scope[tpl[_ref]] = el
         scopes.set(itemKey, scope)
       }
       elScopes.push(scopes.get(itemKey))
@@ -137,12 +105,50 @@ function parseForExpression(expression) {
   return res
 }
 
+directives[':ref'] = (el, expr, state) => {
+  // make sure :ref is initialized after :each
+  if (el.hasAttribute(':each')) return el[_ref] = expr;
 
-// common-setter directives
-directives['default'] = (el, expr, state, name) => {
-  let evaluate = parseExpr(expr, ':'+name, state)
-  const update = value => prop(el, name, value)
-  effect(() => update(evaluate(state)))
+  sprae(el, Object.assign(Object.create(state), {[expr]: el}))
+  return false
+}
+
+directives[':with'] = (el, expr, rootState) => {
+  let evaluate = parseExpr(expr, 'with', rootState)
+
+  // Instead of extending signals (which is a bit hard since signal-struct internals is not uniform)
+  // we bind updating
+  const params = computed(() => Object.assign({}, rootState, evaluate(rootState)))
+  let state = sprae(el, params.value)
+  effect((values=params.value) => batch(() => Object.assign(state, values)))
+  return false
+}
+
+directives[':if'] = (el, expr, state) => {
+  let holder = document.createTextNode(''),
+      clauses = [parseExpr(expr, ':if', state)],
+      els = [el], cur = el
+
+  while (cur = el.nextElementSibling) {
+    if (cur.hasAttribute(':else')) {
+      cur.removeAttribute(':else');
+      if (expr = cur.getAttribute(':if')) {
+        cur.removeAttribute(':if'), cur.remove();
+        els.push(cur); clauses.push(parseExpr(expr, ':else :if', state));
+      }
+      else {
+        cur.remove(); els.push(cur); clauses.push(() => 1);
+      }
+    }
+    else break;
+  }
+
+  el.replaceWith(cur = holder)
+  let idx = computed(() => clauses.findIndex(f => f(state)))
+  // NOTE: it lazily initializes elements on insertion, it's safe to sprae multiple times
+  effect((i=idx.value) => (els[i] != cur && ((cur[_each]||cur).replaceWith(cur = els[i] || holder), sprae(cur, state))))
+
+  return false
 }
 
 directives[':aria'] = (el, expr, state) => {
@@ -179,6 +185,13 @@ directives[':'] = (el, expr, state) => {
     for (let key in value) prop(el, key, value[key]);
   }
   effect(()=>update(evaluate(state)))
+}
+
+// common-setter directives
+directives[':*'] = (el, expr, state, name) => {
+  let evaluate = parseExpr(expr, ':'+name, state)
+  const update = value => prop(el, name, value)
+  effect(() => update(evaluate(state)))
 }
 
 directives[':text'] = (el, expr, state) => {

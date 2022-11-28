@@ -17,6 +17,7 @@
   -> yep: arrays are rarely changed as `a[i]=newItem` and regularly they're mapped.
 * [x] expand to any subscribables: both as state vars
 * [x] :ref
+* [ ] :ref + :each
 * [ ] optimization: replace element-props with direct (better) setters
 * [ ] report usignal problem
 * [ ] :onconnect, :ondisconnect
@@ -24,3 +25,4 @@
 * [ ] examples
   * [ ] todomvc
 * [ ] Sandbox expressions
+* [ ] `this` in expressions must refer to current element always

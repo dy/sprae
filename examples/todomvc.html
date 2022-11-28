@@ -7,6 +7,7 @@
   <title>Sprae • TodoMVC</title>
   <link rel="stylesheet" href="https://unpkg.com/todomvc-common/base.css">
   <link rel="stylesheet" href="https://unpkg.com/todomvc-app-css/index.css">
+  <style>[\:each]{display: none;}</style>
 </head>
 
 <body>
@@ -15,7 +16,7 @@
       <h1>todos</h1>
       <input class="new-todo" placeholder="What needs to be done?" autofocus :onkeypress="e => {
         if (e.key !== 'Enter') return
-        todos.add(e.target.value)
+        addItem(e.target.value, )
         e.target.value = ''
       }">
     </header>
@@ -29,6 +30,7 @@
         <li :ref="li" :each="item in todos"
           :class="{completed: item.done}"
           :hidden="item.hidden"
+          :fx="console.log(item)"
           :ondblclick="e => {
             li.querySelector('.edit').focus()
             li.classList.add('editing')
@@ -36,10 +38,10 @@
           <div class="view">
             <input class="toggle" type="checkbox"
               :checked="item.done"
-              :onchange="e => item.done = !item.done"
+              :onchange="e => (item.done = !item.done, save(todos))"
             />
             <label :text="item.text"></label>
-            <button class="destroy" :onclick="e => items = items.filter(i => i !== item)"></button>
+            <button class="destroy" :onclick="e => save(todos = todos.filter(i => i !== item))"></button>
           </div>
           <input class=edit
             :value="item.text"
@@ -91,33 +93,33 @@
     }
   </script> -->
   <script type="module">
-    import sprae, { signal, batch, effect } from 'sprae'
+    import sprae from 'sprae'
     import plur from 'plur'
 
-    // hash source
-    const hash = signal(window.location.hash || '#/')
-    window.addEventListener('hashchange', e => hash.value = window.location.hash)
+    let state = sprae(document.body, {
+      plur,
+      todos: JSON.parse(localStorage.getItem('todomvc.items') || '[]'),
+      hash: window.location.hash || '#/',
+      addItem, save
+    })
 
-    const todos = signal([])
-    const state = sprae(document.body, { plur, todos, hash, addItem })
+    // hash source
+    window.addEventListener('hashchange', e => state.hash = window.location.hash)
 
     function addItem(text, done) {
       let item = {
-        text: signal(text),
-        done: signal(done),
-        hidden: computed(() => {
-          return hash.value === '#/active' ? item.done : hash.value === '#/completed' ? !item.done : false
-        })
+        text, done,
+        get hidden() { return false },
+        // hash.value === '#/active' ? item.done.value : hash.value === '#/completed' ? !item.done.value : false
+        // toJSON() { return {text:this.text.value, done:this.done.value, hidden: this.hidden.value} }
       }
-      todos.value = [ ...todos.value, item ]
-      effect(() => (item.text, item.done, save(todos.peek())))
+      save(state.todos = [ ...state.todos, item ])
     }
 
     // persistence
-    const save = items => localStorage.setItem('todomvc.items', JSON.stringify(items)),
-          load = list => batch(()=>list?.map(item => addItem(item.text, item.done)))
-
-    load(JSON.parse(localStorage.getItem('todomvc.items') || '[]'))
+    function save (items) {
+      localStorage.setItem('todomvc.items', JSON.stringify(items))
+    }
   </script>
 </body>
 </html>

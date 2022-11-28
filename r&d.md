@@ -177,3 +177,22 @@
   + overhead is minimal
   + react-like
   + it has better control over serialization
+
+## [ ] Sandbox?
+
+1. Use subscript?
+  + solves access to any internal signals on syntactic level
+    + can tentatively be faster than signal-struct
+    + could tentatively get rid of struct and just use signals as input
+      ~ Yep, it's a bit weird template converts data into some reactive state. Just expose an update method instead and current state like useState hook. This way you can avoid exposing signal-specific functions.
+  + Provides precisely controlled sandbox
+  - Some limited lang opportunities
+    - need to match many syntax quirks, can be tedious
+  - Somewhat heavy to bundle
+  + Scope is easier to provide: no need for signal proxy essentially
+  + Can detect access errors in advance
+  + Syntax-level access to signals can be inavoidable: external signals still "leak in" (via arrays or etc.).
+  + Updating simple objects should also rerender the template parts, not just signals.
+  + Deps can be analyzed / implemented without signals
+  - Screwed up debugging / stacktrace (unless errored)
+  + that "unlimits" returned struct, so that any property can be added/deleted.

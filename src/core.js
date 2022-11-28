@@ -17,7 +17,7 @@ export default function sprae(container, values) {
       for (let i = 0; i < el.attributes.length;) {
         let attr = el.attributes[i]
         if (attr.name[0]===':') {
-          dir = directives[attr.name] || directives.default
+          dir = directives[attr.name] || directives[':*']
           el.removeAttribute(attr.name)
           if (stop = (dir(el, attr.value, state, attr.name.slice(1))===false)) break
         }
