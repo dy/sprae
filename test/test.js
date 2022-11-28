@@ -414,3 +414,9 @@ test('reactive values', async () => {
   await time(20)
   is(el.outerHTML, `<x>2</x>`)
 })
+
+test('scope directives must come first', async () => {
+  let a = h`<x :text="y" :with="{y:1}" :ref="x"></x>`
+  sprae(a, {})
+  is(a.outerHTML, `<x>1</x>`)
+})

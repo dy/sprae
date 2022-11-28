@@ -1,4 +1,5 @@
 import signalStruct from 'signal-struct';
+import defaultDirective, { directives } from './directives.js';
 
 // sprae element: apply directives
 const memo = new WeakMap
@@ -12,27 +13,34 @@ export default function sprae(container, values) {
 
   // init directives on element
   const init = (el) => {
-    let dir, stop
+    let dir, attr
+
     if (el.attributes) {
+      // directives must be initialized in order
+      for (let name in directives) {
+        if (attr = el.attributes[name]) {
+          dir = directives[name]
+          el.removeAttribute(name)
+          if (dir(el, attr.value, state) === false) return
+        }
+      }
+
       for (let i = 0; i < el.attributes.length;) {
         let attr = el.attributes[i]
         if (attr.name[0]===':') {
-          dir = directives[attr.name] || directives[':*']
           el.removeAttribute(attr.name)
-          if (stop = (dir(el, attr.value, state, attr.name.slice(1))===false)) break
+          if (defaultDirective(el, attr.value, state, attr.name.slice(1)) === false) return
         }
         else i++
       }
     }
-    if (!stop) for (let child of el.children) init(child)
+
+    for (let child of el.children) init(child)
   }
+
   init(container)
 
   memo.set(container, state);
 
   return state;
 }
-
-
-// dict of directives
-export const directives = {}
