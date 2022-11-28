@@ -527,7 +527,7 @@ directives[":if"] = (el2, expr, state) => {
   el2.replaceWith(cur = holder);
   let idx = w(() => clauses.findIndex((f2) => f2(state)));
   b((i2 = idx.value) => els[i2] != cur && ((cur[_each] || cur).replaceWith(cur = els[i2] || holder), sprae(cur, state)));
-  return false;
+  return -els.length;
 };
 directives[":each"] = (tpl, expr, state) => {
   let each = parseForExpression(expr);
@@ -578,7 +578,7 @@ directives[":each"] = (tpl, expr, state) => {
       sprae(newEls[i2], elScopes[i2]);
     }
   });
-  return false;
+  return -1;
 };
 function parseForExpression(expression) {
   let forIteratorRE = /,([^,\}\]]*)(?:,([^,\}\]]*))?$/;
@@ -701,28 +701,30 @@ function sprae(container, values) {
   values ||= {};
   const state = SignalStruct(values);
   const init = (el2) => {
-    let dir, attr;
+    let dir, attr, res;
     if (el2.attributes) {
       for (let name in directives) {
         if (attr = el2.attributes[name]) {
           dir = directives[name];
           el2.removeAttribute(name);
-          if (dir(el2, attr.value, state) === false)
-            return;
+          if ((res = dir(el2, attr.value, state)) <= 0)
+            return res;
         }
       }
       for (let i2 = 0; i2 < el2.attributes.length; ) {
         let attr2 = el2.attributes[i2];
         if (attr2.name[0] === ":") {
           el2.removeAttribute(attr2.name);
-          if (directives_default(el2, attr2.value, state, attr2.name.slice(1)) === false)
-            return;
+          if ((res = directives_default(el2, attr2.value, state, attr2.name.slice(1))) <= 0)
+            return res;
         } else
           i2++;
       }
     }
-    for (let child of el2.children)
-      init(child);
+    for (let i2 = 0, child; child = el2.children[i2]; i2++) {
+      res = init(child) || 0;
+      i2 += res;
+    }
   };
   init(container);
   memo.set(container, state);
