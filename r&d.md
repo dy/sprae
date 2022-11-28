@@ -46,8 +46,9 @@
   + anagram: parse, spare, spear
   + river: https://en.wiktionary.org/wiki/Sprea
   + spring
-  - sprae has nice ae match
+  - sprae has nice ae ligature
   - sprae is closer to spray
+  - sprae is closer to a verb
 
 ## [x] :attr, :data, :id, :class, :style, :on, :aria - do we enforce JS syntax or support unscoped expression? -> Use JS convention, too many use-cases.
 
