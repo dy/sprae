@@ -1,8 +1,8 @@
 {
-  "name": "sprae",
-  "description": "Reactive directives with expressions for DOM microtemplating.",
+  "name": "sprea",
+  "description": "DOM microhydration.",
   "version": "2.1.0",
-  "main": "sprae.js",
+  "main": "sprea.js",
   "type": "module",
   "dependencies": {
     "@preact/signals-core": "^1.2.2",
@@ -26,25 +26,23 @@
   },
   "scripts": {
     "test": "node -r browser-env/register test/test.js",
-    "build": "esbuild --bundle ./src/index.js --outfile=sprae.js --format=esm",
-    "watch": "esbuild --bundle ./src/index.js --outfile=sprae.js --format=esm --sourcemap --watch",
-    "min": "terser sprae.js -o sprae.min.js --module -c passes=3 -m"
+    "build": "esbuild --bundle ./src/index.js --outfile=sprea.js --format=esm",
+    "watch": "esbuild --bundle ./src/index.js --outfile=sprea.js --format=esm --sourcemap --watch",
+    "min": "terser sprea.js -o sprea.min.js --module -c passes=3 -m"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/dy/sprae.git"
+    "url": "git+https://github.com/dy/sprea.git"
   },
   "keywords": [
-    "preact",
+    "hydration",
     "preact-signals",
     "signals",
     "observable",
     "reactive",
     "petite-vue",
-    "vue",
     "template-parts",
     "templize",
-    "alpine",
     "alpinejs",
     "directives",
     "templating"
@@ -52,7 +50,7 @@
   "author": "Dmitry Ivanov <df.creative@gmail.com>",
   "license": "ISC",
   "bugs": {
-    "url": "https://github.com/dy/sprae/issues"
+    "url": "https://github.com/dy/sprea/issues"
   },
-  "homepage": "https://github.com/dy/sprae#readme"
+  "homepage": "https://github.com/dy/sprea#readme"
 }

@@ -1,4 +1,4 @@
-## [x] name -> sprae
+## [x] name -> sprea
 
 * rasa
 * dew
@@ -38,6 +38,14 @@
   + better meaning
   - stands out less than sprae
 * aerosol
+* sprea
+  + inherits sprae
+  + prea(ct)
+  + spree and spread
+  + something priya
+  + anagram: parse, spare, spear
+  + river: https://en.wiktionary.org/wiki/Sprea
+  + spring
 
 ## [x] :attr, :data, :id, :class, :style, :on, :aria - do we enforce JS syntax or support unscoped expression? -> Use JS convention, too many use-cases.
 

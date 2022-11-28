@@ -2,7 +2,7 @@
 import { signal } from '@preact/signals-core'
 import test, {is, any, throws} from 'tst'
 import {tick, time} from 'wait-please'
-import sprae from '../src/index.js'
+import sprea from '../src/index.js'
 import h from 'hyperf'
 
 Object.defineProperty(DocumentFragment.prototype, 'outerHTML', {
@@ -21,7 +21,7 @@ test.skip('autoinit', async () => {
 
 test('hidden: core', async () => {
   let el = h`<div :hidden="hidden"></div>`
-  let params = sprae(el, {hidden:true})
+  let params = sprea(el, {hidden:true})
   is(el.outerHTML, `<div hidden=""></div>`)
   params.hidden = false
   is(el.outerHTML, `<div></div>`)
@@ -30,7 +30,7 @@ test('hidden: core', async () => {
 test('hidden: reactive', async () => {
   const hidden = signal(true)
   let el = h`<div :hidden="hidden"></div>`
-  sprae(el, {hidden})
+  sprea(el, {hidden})
   is(el.outerHTML, `<div hidden=""></div>`)
   hidden.value = false
   is(el.outerHTML, `<div></div>`)
@@ -38,7 +38,7 @@ test('hidden: reactive', async () => {
 
 test('common: reactive', async () => {
   let el = h`<label :for="name" :text="name" ></label><input :id="name" :name="name" :type="name" :disabled="!name"/><a :href="url"></a><img :src="url"/>`
-  let params = sprae(el, {name:'text', url:'//google.com'})
+  let params = sprea(el, {name:'text', url:'//google.com'})
   is(el.outerHTML, `<label for="text">text</label><input id="text" name="text" type="text"><a href="//google.com"></a><img src="//google.com">`)
   params.name = 'email'
   is(el.outerHTML, `<label for="email">email</label><input id="email" name="email" type="email"><a href="//google.com"></a><img src="//google.com">`)
@@ -46,7 +46,7 @@ test('common: reactive', async () => {
 
 test('common: style', async () => {
   let el = h`<x :style="style"></x>`
-  let params = sprae(el, {style: "top: 1px"})
+  let params = sprea(el, {style: "top: 1px"})
   is(el.outerHTML, `<x style="top: 1px"></x>`)
   params.style = {top: '2px'}
   is(el.outerHTML, `<x style="top: 2px"></x>`)
@@ -55,7 +55,7 @@ test('common: style', async () => {
 test('common: class', async () => {
   let el = h`<x :class="a"></x><y :class="[b, c]"></y><z :class="{b:true, c:d}"></z>`
   const c = signal('z')
-  let params = sprae(el, {a:'x', b:'y', c, d:false});
+  let params = sprea(el, {a:'x', b:'y', c, d:false});
   is(el.outerHTML, `<x class="x"></x><y class="y z"></y><z class="b"></z>`);
   params.d = true;
   is(el.outerHTML, `<x class="x"></x><y class="y z"></y><z class="b c"></z>`);
@@ -65,25 +65,25 @@ test('common: class', async () => {
 
 test('spread props: base', async () => {
   let el = h`<input :id="0" :="{for:1, title:2, help:3, type:4, placeholder: 5, value: 6}" :value="7"/>`
-  let params = sprae(el)
+  let params = sprea(el)
   is(el.outerHTML, `<input id="0" for="1" title="2" help="3" type="4" placeholder="5" value="7">`)
 })
 
 test('data: base', async () => {
   let el = h`<input :data="{a:1, fooBar:2}"/>`
-  let params = sprae(el)
+  let params = sprea(el)
   is(el.outerHTML, `<input data-a="1" data-foo-bar="2">`)
 })
 
 test('aria: base', async () => {
   let el = h`<input type="text" id="jokes" role="combobox" :aria="{controls:'joketypes', autocomplete:'list', expanded:false, activeOption:'item1', activedescendant:'', xxx:null}"/>`
-  sprae(el)
+  sprea(el)
   is(el.outerHTML, `<input type="text" id="jokes" role="combobox" aria-controls="joketypes" aria-autocomplete="list" aria-expanded="false" aria-active-option="item1" aria-activedescendant="">`)
 })
 
 test('value: direct', async () => {
   let el = h`<input :value="a" />`
-  let state = sprae(el, {a:1})
+  let state = sprea(el, {a:1})
   is(el.value, '1')
   is(el.outerHTML, `<input value="1">`)
   state.a = 2
@@ -97,7 +97,7 @@ test('value: direct', async () => {
 
 test('text: core', async () => {
   let el = h`<div :text="text"></div>`
-  let params = sprae(el, {text:'abc'})
+  let params = sprea(el, {text:'abc'})
   is(el.outerHTML, `<div>abc</div>`)
   params.text = null
   is(el.outerHTML, `<div></div>`)
@@ -110,7 +110,7 @@ test('conditions: base', async () => {
     <span :else >c</span>
   </p>`
 
-  const params = sprae(el, { a: 1 })
+  const params = sprea(el, { a: 1 })
 
   is(el.innerHTML, '<span>a</span>')
   params.a = 2
@@ -128,7 +128,7 @@ test('conditions: short with insertions', async () => {
     <span :else :text="a"></span>
   </p>`
 
-  const params = sprae(el, { a: 1 })
+  const params = sprea(el, { a: 1 })
 
   is(el.innerHTML, '<span>1:1</span>')
   params.a = 2
@@ -154,7 +154,7 @@ test('conditions: reactive values', async () => {
   </p>`
 
   const a = signal(1)
-  sprae(el, { a })
+  sprea(el, { a })
 
   is(el.innerHTML, '<span>1:1</span>')
   a.value = 2
@@ -177,7 +177,7 @@ test('each: array', async () => {
     <span :each="a in b" :text="a"></span>
   </p>`
 
-  const params = sprae(el, { b: [] })
+  const params = sprea(el, { b: [] })
 
   is(el.innerHTML, '')
   console.log('set 1,2')
@@ -195,7 +195,7 @@ test('each: object', async () => {
     <span :each="x,key in b" :text="[key,x]"></span>
   </p>`
 
-  const params = sprae(el, { b: null })
+  const params = sprea(el, { b: null })
 
   is(el.innerHTML, '')
   console.log('set 1,2')
@@ -212,7 +212,7 @@ test('each: loop within loop', async () => {
     <x :each="b in c"><y :each="a in b" :text="a"></y></x>
   </p>`
 
-  const params = sprae(el, { c: [[1,2], [3,4]] })
+  const params = sprea(el, { c: [[1,2], [3,4]] })
 
   is(el.innerHTML, '<x><y>1</y><y>2</y></x><x><y>3</y><y>4</y></x>')
   params.c = [[5,6], [3,4]]
@@ -233,7 +233,7 @@ test('each: reactive values', async () => {
   </p>`
 
   const b = signal([])
-  const params = sprae(el, { b })
+  const params = sprea(el, { b })
 
   is(el.innerHTML, '')
   b.value = [1,2]
@@ -252,7 +252,7 @@ test('each: loop with condition', async () => {
   <span :each="a in b" :text="a" :if="c"></span>
   </p>`
 
-  const params = sprae(el, { b: [1,2], c: false })
+  const params = sprea(el, { b: [1,2], c: false })
 
   is(el.innerHTML, '')
   params.c = true
@@ -269,7 +269,7 @@ test('each: condition with loop', async () => {
   <span :else :text="c"></span>
   </p>`
 
-  const params = sprae(el, { b: [1,2], c: false })
+  const params = sprea(el, { b: [1,2], c: false })
 
   is(el.innerHTML, '<span>false</span>')
   params.c = true
@@ -289,7 +289,7 @@ test('each: loop within condition', async () => {
     <x :else :if="a==2"><y :each="i in a" :text="-i"></y></x>
   </p>`
 
-  const params = sprae(el, { a: 1 })
+  const params = sprea(el, { a: 1 })
 
   is(el.innerHTML, '<x><y>1</y></x>')
   params.a = 2
@@ -307,7 +307,7 @@ test('each: condition within loop', async () => {
     </x>
   </p>`
 
-  const params = sprae(el, { b: [1,2,3] })
+  const params = sprea(el, { b: [1,2,3] })
 
   is(el.innerHTML, '<x><y>1:1</y></x><x><y>2:2</y></x><x><y>3</y></x>')
   params.b = [2]
@@ -319,7 +319,7 @@ test('each: condition within loop', async () => {
 test('on: base', () => {
   let el = h`<div :on="{click(e){log.push('click')},x}"></div>`
   let log = signal([])
-  let params = sprae(el, {x(){log.value.push('x')}, log})
+  let params = sprea(el, {x(){log.value.push('x')}, log})
 
   is(el.outerHTML, `<div></div>`);
   el.dispatchEvent(new window.Event('click'));
@@ -338,7 +338,7 @@ test('on: base', () => {
 
 test('with: inline', () => {
   let el = h`<x :with="{foo:'bar', baz}"><y :text="foo + baz"></y></x>`
-  let state = sprae(el, {baz: 'qux'})
+  let state = sprea(el, {baz: 'qux'})
   // FIXME: this doesn't inherit root scope baz property and instead uses hard-initialized one
   is(el.innerHTML, `<y>barqux</y>`)
   state.baz = 'quux'
@@ -347,7 +347,7 @@ test('with: inline', () => {
 test('with: inline reactive', () => {
   let el = h`<x :with="{foo:'bar', baz}"><y :text="foo + baz"></y></x>`
   let baz = signal('qux')
-  let state = sprae(el, {baz})
+  let state = sprea(el, {baz})
   // FIXME: this doesn't inherit root scope baz property and instead uses hard-initialized one
   is(el.innerHTML, `<y>barqux</y>`)
   baz.value = 'quux'
@@ -355,7 +355,7 @@ test('with: inline reactive', () => {
 })
 test('with: data', () => {
   let el = h`<x :with="x"><y :text="foo"></y></x>`
-  let state = sprae(el, {x:{foo:'bar'}})
+  let state = sprea(el, {x:{foo:'bar'}})
   is(el.innerHTML, `<y>bar</y>`)
   console.log('update')
   Object.assign(state, {x:{foo:'baz'}})
@@ -365,7 +365,7 @@ test('with: transparency', () => {
   // NOTE: y:text initializes through directive, not through parent
   // therefore by default :text uses parent's state, not defined by element itself
   let el = h`<x :with="{foo:'foo'}"><y :with="b" :text="foo+bar"></y></x>`
-  let params = sprae(el, {b:{bar:'bar'}})
+  let params = sprea(el, {b:{bar:'bar'}})
   is(el.innerHTML, `<y>foobar</y>`)
   params.b.bar = 'baz'
   is(el.innerHTML, `<y>foobaz</y>`)
@@ -373,14 +373,14 @@ test('with: transparency', () => {
 test('with: reactive transparency', () => {
   let el = h`<x :with="{foo:1}"><y :with="b.c" :text="foo+bar"></y></x>`
   const bar = signal('2')
-  sprae(el, {b:{c:{bar}}})
+  sprea(el, {b:{c:{bar}}})
   is(el.innerHTML, `<y>12</y>`)
   bar.value = '3'
   is(el.innerHTML, `<y>13</y>`)
 })
 test('with: writes to state', () => {
   let a = h`<x :with="{a:1}"><y :on="{x(){a++}}" :text="a"></y></x>`
-  sprae(a)
+  sprea(a)
   is(a.innerHTML, `<y>1</y>`)
   a.firstChild.dispatchEvent(new window.Event('x'))
   is(a.innerHTML, `<y>2</y>`)
@@ -390,7 +390,7 @@ test('with: writes to state', () => {
 
 test('ref: base', () => {
   let a = h`<a :ref="a" :init="log.push(a), null" :text="b"></a>`
-  let state = sprae(a, {log:[], b:1})
+  let state = sprea(a, {log:[], b:1})
   is(state.log[0], a)
   is(a.outerHTML, `<a>1</a>`)
   state.b = 2
@@ -399,7 +399,7 @@ test('ref: base', () => {
 
 test('ref with each', () => {
   let a = h`<y><x :ref="x" :each="item in items" :text="log.push(x), item"/></y>`
-  let state = sprae(a, {log: [], items: [1,2]})
+  let state = sprea(a, {log: [], items: [1,2]})
   is(a.innerHTML, `<x>1</x><x>2</x>`)
   is(state.log, [...a.children])
 })
@@ -408,7 +408,7 @@ test('reactive values', async () => {
   let a = new Promise((ok) => setTimeout(() => ok(2), 10))
 
   let el = h`<x :text="a">1</x>`
-  sprae(el, {a})
+  sprea(el, {a})
   is(el.outerHTML, `<x></x>`)
 
   await time(20)
@@ -417,6 +417,6 @@ test('reactive values', async () => {
 
 test('scope directives must come first', async () => {
   let a = h`<x :text="y" :with="{y:1}" :ref="x"></x>`
-  sprae(a, {})
+  sprea(a, {})
   is(a.outerHTML, `<x>1</x>`)
 })

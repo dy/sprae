@@ -1,9 +1,9 @@
 import signalStruct from 'signal-struct';
 import defaultDirective, { directives } from './directives.js';
 
-// sprae element: apply directives
+// sprea element: apply directives
 const memo = new WeakMap
-export default function sprae(container, values) {
+export default function sprea(container, values) {
   if (!container.children) return
   if (memo.has(container)) return memo.get(container)
 

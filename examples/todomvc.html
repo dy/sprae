@@ -1,10 +1,10 @@
 <!doctype html>
-<html lang="en" data-framework="sprae">
+<html lang="en" data-framework="sprea">
 
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Sprae • TodoMVC</title>
+  <title>Sprea • TodoMVC</title>
   <link rel="stylesheet" href="https://unpkg.com/todomvc-common/base.css">
   <link rel="stylesheet" href="https://unpkg.com/todomvc-app-css/index.css">
   <style>[\:each]{display: none;}</style>
@@ -77,16 +77,16 @@
   <script src="https://unpkg.com/todomvc-common/base.js"></script>
   <script type="importmap"> {
     "imports": {
-      "sprae": "../../sprae.js",
+      "sprea": "../../sprea.js",
       "plur": "https://cdn.skypack.dev/plur"
     }
   }
   </script>
   <script type="module">
-    import sprae from 'sprae'
+    import sprea from 'sprea'
     import plur from 'plur'
 
-    let state = sprae(document.body, {
+    let state = sprea(document.body, {
       plur,
       todos: JSON.parse(localStorage.getItem('todomvc.items') || '[]'),
       hash: window.location.hash || '#/',
