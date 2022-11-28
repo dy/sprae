@@ -182,6 +182,7 @@ Expose element to a subtree fragment with the `id`.
 </li>
 ```
 
+<!--
 
 ### Reactivity
 
@@ -191,7 +192,7 @@ _Sprae_ is built on top of [_@preact/signals_](https://ghub.io/@preact/signals).
 * Expressions support any reactive values in data (see [sube](https://github.com/dy/sube))
 * Updates happen minimally only when used values update
 * Subscription is weak and get disposed when element is disposed.
-
+-->
 <!--
 Directive expressions are natively reactive, ie. data may contain any async/reactive values, such as:
 
@@ -205,7 +206,7 @@ This way, for example, _@preact/signals_ or _rxjs_ can be connected directly byp
 
 Update happens when any value changes:
 -->
-
+<!--
 ```html
 <div id="done" :text="loading ? 'loading' : result">...</div>
 
@@ -227,7 +228,7 @@ Update happens when any value changes:
   // <div id="done">done</div>
 </script>
 ```
-
+-->
 
 ## Justification
 
@@ -244,5 +245,9 @@ _Sprae_ takes elegant syntax convention of _alpine_ and method of _templize_ to 
 * It introduces minimal syntax space as `:` convention.
 * Expressions are built on preact/signal so naturally reactive and incur minimal updates.
 
+## Refs
+
+* [_@preact/signals_](https://ghub.io/@preact/signals)
+* [sube](https://ghub.io/sube)
 
 <p align="center"><a href="https://github.com/krsnzd/license/">🕉</a></p>
