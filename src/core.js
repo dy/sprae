@@ -13,7 +13,7 @@ export default function sprae(container, values) {
 
   // init directives on element
   const init = (el) => {
-    let dir, attr
+    let dir, attr, res
 
     if (el.attributes) {
       // directives must be initialized in order
@@ -21,7 +21,7 @@ export default function sprae(container, values) {
         if (attr = el.attributes[name]) {
           dir = directives[name]
           el.removeAttribute(name)
-          if (dir(el, attr.value, state) === false) return
+          if ((res = dir(el, attr.value, state)) <= 0) return res
         }
       }
 
@@ -29,13 +29,16 @@ export default function sprae(container, values) {
         let attr = el.attributes[i]
         if (attr.name[0]===':') {
           el.removeAttribute(attr.name)
-          if (defaultDirective(el, attr.value, state, attr.name.slice(1)) === false) return
+          if ((res = defaultDirective(el, attr.value, state, attr.name.slice(1))) <= 0) return res
         }
         else i++
       }
     }
 
-    for (let child of el.children) init(child)
+    for (let i = 0, child; child = el.children[i]; i++) {
+      res = init(child) || 0 // reduce number of removed elements
+      i += res
+    }
   }
 
   init(container)

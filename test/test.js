@@ -170,6 +170,11 @@ test('conditions: reactive values', async () => {
   is(el.innerHTML, '<span>4</span>')
 })
 
+test('conditions (#3): subsequent content is not abandoned', async () => {
+  let x = h`<x><y :if="!!y"></y><z :text="123"></z></x>`
+  sprae(x, {y: false})
+  is(x.outerHTML, `<x><z>123</z></x>`)
+})
 
 test('each: array', async () => {
   // FIXME: in some conspicuous reason jsdom fails to update text nodes somehow
@@ -419,4 +424,18 @@ test('scope directives must come first', async () => {
   let a = h`<x :text="y" :with="{y:1}" :ref="x"></x>`
   sprae(a, {})
   is(a.outerHTML, `<x>1</x>`)
+})
+
+test.todo('getters', async () => {
+  // let x = h`<x>
+  //   <h2 :if="doubledCount > 10">YAY!</h2>
+  //   <button :text="count" :on="{click:increment}"/>
+  //   <button :text="doubledCount" :on="{click:increment}"/>
+  // </x>`
+  // document.body.appendChild(x)
+  // sprae(x, {
+  //   count:0,
+  //   get doubledCount(){return this.count * 2},
+  //   increment(){ this.count++ }
+  // })
 })

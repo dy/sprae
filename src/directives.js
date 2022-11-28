@@ -27,7 +27,7 @@ directives[':with'] = (el, expr, rootState) => {
   const params = computed(() => Object.assign({}, rootState, evaluate(rootState)))
   let state = sprae(el, params.value)
   effect((values=params.value) => batch(() => Object.assign(state, values)))
-  return false
+  return false // don't continue attrs init
 }
 
 directives[':ref'] = (el, expr, state) => {
@@ -35,7 +35,7 @@ directives[':ref'] = (el, expr, state) => {
   if (el.hasAttribute(':each')) return el[_ref] = expr;
 
   sprae(el, Object.assign(Object.create(state), {[expr]: el}))
-  return false
+  return false // don't continue attrs init
 }
 
 directives[':if'] = (el, expr, state) => {
@@ -62,7 +62,8 @@ directives[':if'] = (el, expr, state) => {
   // NOTE: it lazily initializes elements on insertion, it's safe to sprae multiple times
   effect((i=idx.value) => (els[i] != cur && ((cur[_each]||cur).replaceWith(cur = els[i] || holder), sprae(cur, state))))
 
-  return false
+  // indicate number of removed elements
+  return -els.length
 }
 
 directives[':each'] = (tpl, expr, state) => {
@@ -124,7 +125,7 @@ directives[':each'] = (tpl, expr, state) => {
     }
   })
 
-  return false
+  return -1 // count back for 1
 }
 
 // This was taken AlpineJS, former VueJS 2.* core. Thanks Alpine & Vue!
