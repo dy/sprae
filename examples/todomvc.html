@@ -90,7 +90,7 @@
       plur,
       todos: JSON.parse(localStorage.getItem('todomvc.items') || '[]'),
       hash: window.location.hash || '#/',
-      save: localStorage.setItem('todomvc.items', JSON.stringify(items))
+      save: items => localStorage.setItem('todomvc.items', JSON.stringify(items))
     })
 
     // hash source
