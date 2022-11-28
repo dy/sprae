@@ -236,18 +236,14 @@ Update happens when any value changes:
 * [Alpine](https://github.com/alpinejs/alpine) / [vue](https://github.com/vuejs/petite-vue) / [lit](https://github.com/lit/lit/tree/main/packages/lit-html) escapes native HTML quirks, but the syntax is a bit scattered: `:attr`, `v-*`,`x-*`, `@evt`, `{{}}` can be expressed with single convention. Besides, functionality is too broad and can be reduced to essence. Also they tend to [self-encapsulate](https://github.com/alpinejs/alpine/discussions/3223), making interop hard.
 * [preact](https://ghub.io/preact) with HTML as JSX is a nice way to wire JS to templates, but it doesn't really support reactive fields (needs render call). Also migrating all HTML to JS is an extreme: SPAs are not organic for HTML.
 
-_sprea_ takes elegant syntax convention of _alpine_ and method of _templize_ to connect any reactive values (like [@preact/signals](https://ghub.io/@preact/signals) or observables) to static HTML.
+_Sprea_ takes short syntax convention of _alpine_/_vue_ and method of _templize_ with [@preact/signals](https://ghub.io/@preact/signals) to hydrate static HTML.
 
 * It doesn't break static html markup.
 * It falls back to element content if uninitialized.
-* It doesn't enforce SPA neither JSX.
+* It doesn't enforce SPA nor JSX.
 * It enables island hydration.
 * It introduces minimal syntax space as `:` convention.
-* Expressions are built on preact/signal so naturally reactive and incur minimal updates.
-
-## Refs
-
-* [_@preact/signals_](https://ghub.io/@preact/signals)
-* [sube](https://ghub.io/sube)
+* Expressions are naturally reactive and incur minimal updates.
+* Input data may contain [signals](https://ghub.io/@preact/signals) or [reactive values](https://ghub.io/sube).
 
 <p align="center"><a href="https://github.com/krsnzd/license/">🕉</a></p>
