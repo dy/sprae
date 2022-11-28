@@ -82,15 +82,6 @@
     }
   }
   </script>
-  <!-- <script type="importmap"> {
-      "imports": {
-        "templize": "https://unpkg.com/templize/templize.min.js",
-        "value-ref": "https://unpkg.com/value-ref/value-ref.min.js",
-        "spect": "https://unpkg.com/spect/spect.min.js",
-        "plur": "https://cdn.skypack.dev/plur"
-      }
-    }
-  </script> -->
   <script type="module">
     import sprae from 'sprae'
     import plur from 'plur'
@@ -99,16 +90,11 @@
       plur,
       todos: JSON.parse(localStorage.getItem('todomvc.items') || '[]'),
       hash: window.location.hash || '#/',
-      save
+      save: localStorage.setItem('todomvc.items', JSON.stringify(items))
     })
 
     // hash source
     window.addEventListener('hashchange', e => state.hash = window.location.hash)
-
-    // persistence
-    function save (items) {
-      localStorage.setItem('todomvc.items', JSON.stringify(items))
-    }
   </script>
 </body>
 </html>
