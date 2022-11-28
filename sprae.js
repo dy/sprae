@@ -497,14 +497,14 @@ var _ref = Symbol(":ref");
 directives[":with"] = (el2, expr, rootState) => {
   let evaluate = parseExpr(expr, "with", rootState);
   const params = w(() => Object.assign({}, rootState, evaluate(rootState)));
-  let state = sprea(el2, params.value);
+  let state = sprae(el2, params.value);
   b((values = params.value) => h(() => Object.assign(state, values)));
   return false;
 };
 directives[":ref"] = (el2, expr, state) => {
   if (el2.hasAttribute(":each"))
     return el2[_ref] = expr;
-  sprea(el2, Object.assign(Object.create(state), { [expr]: el2 }));
+  sprae(el2, Object.assign(Object.create(state), { [expr]: el2 }));
   return false;
 };
 directives[":if"] = (el2, expr, state) => {
@@ -526,7 +526,7 @@ directives[":if"] = (el2, expr, state) => {
   }
   el2.replaceWith(cur = holder);
   let idx = w(() => clauses.findIndex((f2) => f2(state)));
-  b((i2 = idx.value) => els[i2] != cur && ((cur[_each] || cur).replaceWith(cur = els[i2] || holder), sprea(cur, state)));
+  b((i2 = idx.value) => els[i2] != cur && ((cur[_each] || cur).replaceWith(cur = els[i2] || holder), sprae(cur, state)));
   return false;
 };
 directives[":each"] = (tpl, expr, state) => {
@@ -575,7 +575,7 @@ directives[":each"] = (tpl, expr, state) => {
     swap_inflate_default(holder.parentNode, curEls, newEls, holder);
     curEls = newEls;
     for (let i2 = 0; i2 < newEls.length; i2++) {
-      sprea(newEls[i2], elScopes[i2]);
+      sprae(newEls[i2], elScopes[i2]);
     }
   });
   return false;
@@ -681,7 +681,7 @@ function parseExpr(expression, dir, scope) {
 }
 function exprError(error, expression, dir, scope) {
   Object.assign(error, { expression });
-  console.warn(`\u2234sprea: ${error.message}
+  console.warn(`\u2234sprae: ${error.message}
 
 ${dir}=${expression ? `"${expression}"
 
@@ -693,7 +693,7 @@ ${dir}=${expression ? `"${expression}"
 
 // src/core.js
 var memo = /* @__PURE__ */ new WeakMap();
-function sprea(container, values) {
+function sprae(container, values) {
   if (!container.children)
     return;
   if (memo.has(container))
@@ -730,7 +730,7 @@ function sprea(container, values) {
 }
 
 // src/index.js
-var src_default = sprea;
+var src_default = sprae;
 export {
   src_default as default
 };

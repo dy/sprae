@@ -1,4 +1,4 @@
-# ∴ sprea [![tests](https://github.com/dy/sprea/actions/workflows/node.js.yml/badge.svg)](https://github.com/dy/sprea/actions/workflows/node.js.yml) [![size](https://img.shields.io/bundlephobia/minzip/sprea?label=size)](https://bundlephobia.com/result?p=sprea) [![npm](https://img.shields.io/npm/v/sprea?color=orange)](https://npmjs.org/sprea)
+# ∴ spræ [![tests](https://github.com/dy/sprae/actions/workflows/node.js.yml/badge.svg)](https://github.com/dy/sprae/actions/workflows/node.js.yml) [![size](https://img.shields.io/bundlephobia/minzip/sprae?label=size)](https://bundlephobia.com/result?p=sprae) [![npm](https://img.shields.io/npm/v/sprae?color=orange)](https://npmjs.org/sprae)
 
 > DOM microhydration with `:` attributes
 
@@ -7,7 +7,7 @@ A lightweight essential alternative to [alpine](https://github.com/alpinejs/alpi
 
 ## Usage
 
-Sprea defines attributes starting with `:` as directives:
+Sprae defines attributes starting with `:` as directives:
 
 ```html
 <div id="container" :if="user">
@@ -15,31 +15,31 @@ Sprea defines attributes starting with `:` as directives:
 </div>
 
 <script type="module">
-  import sprea from 'sprea';
+  import sprae from 'sprae';
 
-  const state = sprea(container, { user: { displayName: 'Dmitry Ivanov' } });
+  const state = sprae(container, { user: { displayName: 'Dmitry Ivanov' } });
   state.user.displayName = 'dy'; // automatically updates DOM
 </script>
 ```
 
-* `sprea` initializes subtree with data and immediately evaporates `:` attrs.
+* `sprae` initializes subtree with data and immediately evaporates `:` attrs.
 * `state` is object reflecting current values, changing any of its props rerenders subtree.
 
 <!--
 <details>
 <summary><strong>Autoinit</strong></summary>
 
-sprea can be used without build step or JS, autoinitializing document:
+sprae can be used without build step or JS, autoinitializing document:
 
 ```html
-<script src="./sprea.js" defer init="{ count: 0 }"></script>
+<script src="./sprae.js" defer init="{ count: 0 }"></script>
 
 <span :text="count">
 <button :on="{ click: e => count++ }">inc</button>
 ```
 
-* `:with` defines data for regions of the tree to autoinit sprea on.
-* `init` attribute tells sprea to automatically initialize document.
+* `:with` defines data for regions of the tree to autoinit sprae on.
+* `init` attribute tells sprae to automatically initialize document.
 
 </details>
 -->
@@ -186,7 +186,7 @@ Expose element to a subtree fragment with the `id`.
 
 ### Reactivity
 
-_Sprea_ is built on top of [_@preact/signals_](https://ghub.io/@preact/signals). That gives:
+_sprae_ is built on top of [_@preact/signals_](https://ghub.io/@preact/signals). That gives:
 
 * Expressions don't require explicit access to `.value` (see [signal-struct](https://github.com/dy/signal-struct))
 * Expressions support any reactive values in data (see [sube](https://github.com/dy/sube))
@@ -211,14 +211,14 @@ Update happens when any value changes:
 <div id="done" :text="loading ? 'loading' : result">...</div>
 
 <script>
-  import sprea from 'sprea';
+  import sprae from 'sprae';
   import { signals } from '@preact/signals';
 
   // <div id="done">...</div>
 
   const loading = signal(true), result = signal(false);
 
-  sprea(done, { loading, result })
+  sprae(done, { loading, result })
 
   // <div id="done">loading</div>
 
@@ -236,7 +236,7 @@ Update happens when any value changes:
 * [Alpine](https://github.com/alpinejs/alpine) / [vue](https://github.com/vuejs/petite-vue) / [lit](https://github.com/lit/lit/tree/main/packages/lit-html) escapes native HTML quirks, but the syntax is a bit scattered: `:attr`, `v-*`,`x-*`, `@evt`, `{{}}` can be expressed with single convention. Besides, functionality is too broad and can be reduced to essence. Also they tend to [self-encapsulate](https://github.com/alpinejs/alpine/discussions/3223), making interop hard.
 * React/[preact](https://ghub.io/preact) does the job wiring up JS to HTML, but with an extreme of migrating HTML to JSX and enforcing SPA, which is not organic for HTML. Also it doesn't support reactive fields (needs render call).
 
-_Sprea_ takes convention of _templize directives_ (_alpine_/_vue_ attrs) and builds upon [_@preact/signals_](https://ghub.io/@preact/signals).
+_sprae_ takes convention of _templize directives_ (_alpine_/_vue_ attrs) and builds upon [_@preact/signals_](https://ghub.io/@preact/signals).
 
 * It doesn't break static html markup.
 * It falls back to element content if uninitialized.

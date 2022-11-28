@@ -1,5 +1,5 @@
 // directives & parsing
-import sprea from './core.js'
+import sprae from './core.js'
 import { prop, input } from 'element-props'
 // import { effect, computed, batch } from 'usignal/sync'
 import { effect, computed, batch } from '@preact/signals-core'
@@ -25,7 +25,7 @@ directives[':with'] = (el, expr, rootState) => {
   // Instead of extending signals (which is a bit hard since signal-struct internals is not uniform)
   // we bind updating
   const params = computed(() => Object.assign({}, rootState, evaluate(rootState)))
-  let state = sprea(el, params.value)
+  let state = sprae(el, params.value)
   effect((values=params.value) => batch(() => Object.assign(state, values)))
   return false
 }
@@ -34,7 +34,7 @@ directives[':ref'] = (el, expr, state) => {
   // make sure :ref is initialized after :each
   if (el.hasAttribute(':each')) return el[_ref] = expr;
 
-  sprea(el, Object.assign(Object.create(state), {[expr]: el}))
+  sprae(el, Object.assign(Object.create(state), {[expr]: el}))
   return false
 }
 
@@ -59,8 +59,8 @@ directives[':if'] = (el, expr, state) => {
 
   el.replaceWith(cur = holder)
   let idx = computed(() => clauses.findIndex(f => f(state)))
-  // NOTE: it lazily initializes elements on insertion, it's safe to sprea multiple times
-  effect((i=idx.value) => (els[i] != cur && ((cur[_each]||cur).replaceWith(cur = els[i] || holder), sprea(cur, state))))
+  // NOTE: it lazily initializes elements on insertion, it's safe to sprae multiple times
+  effect((i=idx.value) => (els[i] != cur && ((cur[_each]||cur).replaceWith(cur = els[i] || holder), sprae(cur, state))))
 
   return false
 }
@@ -120,7 +120,7 @@ directives[':each'] = (tpl, expr, state) => {
 
     // init new elements
     for (let i = 0; i < newEls.length; i++) {
-      sprea(newEls[i], elScopes[i])
+      sprae(newEls[i], elScopes[i])
     }
   })
 
@@ -254,6 +254,6 @@ function parseExpr(expression, dir, scope) {
 
 export function exprError(error, expression, dir, scope) {
   Object.assign( error, { expression } )
-  console.warn(`∴sprea: ${error.message}\n\n${dir}=${ expression ? `"${expression}"\n\n` : '' }`, scope)
+  console.warn(`∴sprae: ${error.message}\n\n${dir}=${ expression ? `"${expression}"\n\n` : '' }`, scope)
   setTimeout(() => { throw error }, 0)
 }
