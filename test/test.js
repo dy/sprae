@@ -1,4 +1,4 @@
-// import { signal } from 'usignal'
+// import { signal } from 'usignal/sync'
 import { signal } from '@preact/signals-core'
 import test, {is, any, throws} from 'tst'
 import {tick, time} from 'wait-please'

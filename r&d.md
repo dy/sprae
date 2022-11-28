@@ -196,3 +196,11 @@
   + Deps can be analyzed / implemented without signals
   - Screwed up debugging / stacktrace (unless errored)
   + that "unlimits" returned struct, so that any property can be added/deleted.
+
+## [ ] :onclick="direct code" ?
+
+  + compatible with direct `onclick=...`
+  + no need for arrow/regular functions syntax in templates
+    - still need that syntax for filters, maps etc
+  + can be made async by default
+  - illicit `event` object

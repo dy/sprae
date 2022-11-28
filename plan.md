@@ -24,5 +24,5 @@
 * [ ] frameworks benchmark
 * [ ] examples
   * [ ] todomvc
-* [ ] Sandbox expressions
+* [ ] Sandbox expressions: no global, no "scope" object name, no "arguments"
 * [ ] `this` in expressions must refer to current element always

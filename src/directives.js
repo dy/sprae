@@ -1,7 +1,7 @@
 // directives & parsing
 import sprae from './core.js'
 import { prop, input } from 'element-props'
-// import { effect, computed, batch } from 'usignal'
+// import { effect, computed, batch } from 'usignal/sync'
 import { effect, computed, batch } from '@preact/signals-core'
 import swap from 'swapdom'
 import p from 'primitive-pool'
@@ -238,7 +238,7 @@ function parseExpr(expression, dir, scope) {
   // guard static-time eval errors
   let evaluate
   try {
-    evaluate = new Function(['scope'], `let result; with (scope) { result = (${rightSideSafeExpression}) }; return result;`)
+    evaluate = new Function( `let result; with (arguments[0]) { result = (${rightSideSafeExpression}) }; return result;`)
   } catch ( e ) {
     return exprError(e, expression, dir, scope)
   }

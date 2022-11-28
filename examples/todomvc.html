@@ -16,21 +16,20 @@
       <h1>todos</h1>
       <input class="new-todo" placeholder="What needs to be done?" autofocus :onkeypress="e => {
         if (e.key !== 'Enter') return
-        addItem(e.target.value, )
+        save(todos = [...todos, { text: e.target.value, done: false}])
         e.target.value = ''
       }">
     </header>
     <section class="main">
       <input id="toggle-all" class="toggle-all" type="checkbox" :onclick="e => {
-        const all = items.every(item => item.done)
-        items = items.map(item => item.done = !all)
+        const all = todos.every(item => item.done)
+        save(todos = todos.map(item => (item.done = !all, item)))
       }">
       <label for="toggle-all">Mark all as complete</label>
       <ul class="todo-list">
         <li :ref="li" :each="item in todos"
           :class="{completed: item.done}"
-          :hidden="item.hidden"
-          :fx="console.log(item)"
+          :hidden="hash === '#/active' ? item.done : hash === '#/completed' ? !item.done : false"
           :ondblclick="e => {
             li.querySelector('.edit').focus()
             li.classList.add('editing')
@@ -46,8 +45,8 @@
           <input class=edit
             :value="item.text"
             :on="{
-              change(e) { item.text = e.target.value },
-              blur(e) { li.classList.remove('editing') },
+              input(e) { item.text = e.target.value; save(todos) },
+              blur(e) { li.classList.remove('editing'); },
               keypress(e) { e.key === 'Enter' ? e.target.blur() : null },
             }"
           />
@@ -65,7 +64,7 @@
       </ul>
       <button class="clear-completed"
         :hidden="todos.every(item => !item.done)"
-        :onclick="e => todos = todos.filter(item => !item.done ? true : false)">
+        :onclick="e => save(todos = todos.filter(item => !item.done ? true : false))">
         Clear completed
       </button>
     </footer>
@@ -100,21 +99,11 @@
       plur,
       todos: JSON.parse(localStorage.getItem('todomvc.items') || '[]'),
       hash: window.location.hash || '#/',
-      addItem, save
+      save
     })
 
     // hash source
     window.addEventListener('hashchange', e => state.hash = window.location.hash)
-
-    function addItem(text, done) {
-      let item = {
-        text, done,
-        get hidden() { return false },
-        // hash.value === '#/active' ? item.done.value : hash.value === '#/completed' ? !item.done.value : false
-        // toJSON() { return {text:this.text.value, done:this.done.value, hidden: this.hidden.value} }
-      }
-      save(state.todos = [ ...state.todos, item ])
-    }
 
     // persistence
     function save (items) {
