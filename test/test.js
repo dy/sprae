@@ -63,10 +63,16 @@ test('common: class', async () => {
   is(el.outerHTML, `<x class="x"></x><y class="y w"></y><z class="b c"></z>`);
 })
 
-test('spraed props: base', async () => {
+test('props: base', async () => {
   let el = h`<input :id="0" :="{for:1, title:2, help:3, type:4, placeholder: 5, value: 6}" :value="7"/>`
   let params = sprae(el)
   is(el.outerHTML, `<input id="0" for="1" title="2" help="3" type="4" placeholder="5" value="7">`)
+})
+
+test('props: multiprop', async () => {
+  let el = h`<input :id:name:for="0" />`
+  let params = sprae(el)
+  is(el.outerHTML, `<input id="0" name="0" for="0">`)
 })
 
 test('data: base', async () => {
@@ -341,6 +347,16 @@ test('on: base', () => {
   is(log.value, ['click','x','xx']);
 })
 
+test(':ona:onb', e => {
+  let el = h`<div :onscroll:onclick="e=>log.push(e.type)"></div>`
+  let state = sprae(el, {log:[]})
+
+  el.dispatchEvent(new window.Event('click'));
+  is(state.log, ['click'])
+  el.dispatchEvent(new window.Event('scroll'));
+  is(state.log, ['click','scroll'])
+})
+
 test('with: inline', () => {
   let el = h`<x :with="{foo:'bar', baz}"><y :text="foo + baz"></y></x>`
   let state = sprae(el, {baz: 'qux'})
@@ -420,13 +436,14 @@ test('reactive values', async () => {
   is(el.outerHTML, `<x>2</x>`)
 })
 
-test('scope directives must come first', async () => {
+test.skip('scope directives must come first', async () => {
+  // NOTE: we init attributes in order of definition
   let a = h`<x :text="y" :with="{y:1}" :ref="x"></x>`
   sprae(a, {})
   is(a.outerHTML, `<x>1</x>`)
 })
 
-test.only('getters', async () => {
+test.todo('getters', async () => {
   let x = h`<x>
     <h2 :if="doubledCount > 10">YAY!</h2>
     <button :text="count" :on="{click:increment}"/>

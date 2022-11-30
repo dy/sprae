@@ -19,7 +19,7 @@ export const directives = {}
 
 const _each = Symbol(':each'), _ref = Symbol(':ref')
 
-directives[':with'] = (el, expr, rootState) => {
+directives['with'] = (el, expr, rootState) => {
   let evaluate = parseExpr(expr, 'with', rootState)
 
   // Instead of extending signals (which is a bit hard since signal-struct internals is not uniform)
@@ -30,7 +30,7 @@ directives[':with'] = (el, expr, rootState) => {
   return false // don't continue attrs init
 }
 
-directives[':ref'] = (el, expr, state) => {
+directives['ref'] = (el, expr, state) => {
   // make sure :ref is initialized after :each
   if (el.hasAttribute(':each')) return el[_ref] = expr;
 
@@ -38,7 +38,7 @@ directives[':ref'] = (el, expr, state) => {
   return false // don't continue attrs init
 }
 
-directives[':if'] = (el, expr, state) => {
+directives['if'] = (el, expr, state) => {
   let holder = document.createTextNode(''),
       clauses = [parseExpr(expr, ':if', state)],
       els = [el], cur = el
@@ -66,7 +66,7 @@ directives[':if'] = (el, expr, state) => {
   return -els.length
 }
 
-directives[':each'] = (tpl, expr, state) => {
+directives['each'] = (tpl, expr, state) => {
   let each = parseForExpression(expr);
   if (!each) return exprError(new Error, expr);
 
@@ -152,13 +152,13 @@ function parseForExpression(expression) {
   return res
 }
 
-directives[':id'] = (el, expr, state) => {
+directives['id'] = (el, expr, state) => {
   let evaluate = parseExpr(expr, ':id', state)
   const update = v => el.id = v || v === 0 ? v : ''
   effect(()=>update(evaluate(state)))
 }
 
-directives[':'] = (el, expr, state) => {
+directives[''] = (el, expr, state) => {
   let evaluate = parseExpr(expr, ':', state)
   const update = (value) => {
     if (!value) return
@@ -167,7 +167,7 @@ directives[':'] = (el, expr, state) => {
   effect(()=>update(evaluate(state)))
 }
 
-directives[':text'] = (el, expr, state) => {
+directives['text'] = (el, expr, state) => {
   let evaluate = parseExpr(expr, ':text', state)
 
   const update = (value) => {
@@ -178,7 +178,7 @@ directives[':text'] = (el, expr, state) => {
 }
 
 // connect expr to element value
-directives[':value'] = (el, expr, state) => {
+directives['value'] = (el, expr, state) => {
   let evaluate = parseExpr(expr, ':in', state)
 
   let [get, set] = input(el);
@@ -190,7 +190,7 @@ directives[':value'] = (el, expr, state) => {
   effect(()=>update(evaluate(state)))
 }
 
-directives[':on'] = (el, expr, state) => {
+directives['on'] = (el, expr, state) => {
   let evaluate = parseExpr(expr, ':on', state)
   let listeners = computed(() => evaluate(state))
   let prevListeners
@@ -201,7 +201,7 @@ directives[':on'] = (el, expr, state) => {
   })
 }
 
-directives[':data'] = (el, expr, state) => {
+directives['data'] = (el, expr, state) => {
   let evaluate = parseExpr(expr, ':data', state)
   const value = computed(() => evaluate(state))
   effect((v=value.value) => {
@@ -209,7 +209,7 @@ directives[':data'] = (el, expr, state) => {
   })
 }
 
-directives[':aria'] = (el, expr, state) => {
+directives['aria'] = (el, expr, state) => {
   let evaluate = parseExpr(expr, ':aria', state)
   const update = (value) => {
     for (let key in value) prop(el, 'aria'+key[0].toUpperCase()+key.slice(1), value[key] == null ? null : value[key] + '');

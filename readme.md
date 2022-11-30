@@ -135,7 +135,7 @@ Set any prop value.
 <input :="{ id: name, name, type:'text', value }" />
 ```
 
-#### `:onevent="handler"`, `:on="events"`
+#### `:on<event>="handler"`, `:on="events"`
 
 Add event listeners.
 
@@ -146,9 +146,6 @@ Add event listeners.
 <!-- Multiple events -->
 <input :value="text" :oninput:onchange="e => text=e.target.value">
 
-<!-- Bulk events -->
-<button :on="{ click: handler, touch: handler }">Submit</button>
-
 <!-- Sequence of events -->
 <button :onfocus-onblur="e => {
   // onfocus
@@ -156,6 +153,9 @@ Add event listeners.
     // onblur
   }
 }">
+
+<!-- Bulk/custom events -->
+<button :on="{ click: handler, touch: handler, special: handler }">Submit</button>
 ```
 
 #### `:with="data"`

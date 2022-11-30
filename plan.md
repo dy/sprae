@@ -19,7 +19,7 @@
 * [x] :ref
 * [x] :ref + :each
 * [ ] event chains :ona-onb
-* [ ] bulk events :ona:onb
+* [x] bulk events :ona:onb
 * [ ] multiprop setter :a:b="c"
 * [ ] make `this` in expression an element
   * [ ] replace :ref with :with="this as x"
