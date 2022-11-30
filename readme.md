@@ -108,7 +108,7 @@ Set style value from object or a string.
 <!--
 #### `:value="value"`
 
-Bind (2-way) value to input, textarea or select.
+Set value of an input, textarea or select.
 
 ```html
 <input :with="{text: ''}" :value="text" />
@@ -122,19 +122,67 @@ Bind (2-way) value to input, textarea or select.
 
 #### `:<prop>="value"`, `:="props"`
 
-Set any other prop or props value.
+Set any prop value.
 
 ```html
+<!-- Single property -->
 <label :for="name" :text="name" />
-<input :="{ id: name, name, type, value }" :onchange="e => value=e.target.value" />
+
+<!-- Multiple properties -->
+<input :id:name="name" />
+
+<!-- Bulk properties -->
+<input :="{ id: name, name, type:'text', value }" />
 ```
 
-#### `:on="events"`
+#### `:onevent="handler"`, `:on="events"`
 
 Add event listeners.
 
 ```html
+<!-- Single event -->
+<input type="checkbox" :onchange="e => isChecked=e.target.value">
+
+<!-- Multiple events -->
+<input :value="text" :oninput:onchange="e => text=e.target.value">
+
+<!-- Bulk events -->
 <button :on="{ click: handler, touch: handler }">Submit</button>
+
+<!-- Sequence of events -->
+<button :onfocus-onblur="e => {
+  // onfocus
+  return e => {
+    // onblur
+  }
+}">
+```
+
+#### `:with="data"`
+
+Set data for a subtree fragment scope.
+
+```html
+<!-- Inline data -->
+<x :with="{ foo: 'bar' }" :text="foo"></x>
+
+<!-- External data -->
+<y :with="data"></y>
+
+<!-- Inheritance -->
+<x :with="{ foo: 'bar' }">
+  <y :with="{ baz: 'qux' }" :text="foo + baz"></y>
+</x>
+
+<!-- Single property -->
+<li :with="this as li">
+  <input
+    :onfocus-onblur="e => (
+      li.classList.add('editing'),
+      e => li.classList.remove('editing')
+    )"
+  />
+</li>
 ```
 
 #### `:data="values"`
@@ -159,28 +207,20 @@ Set [aria-role](https://developer.mozilla.org/en-US/docs/Web/Accessibility/ARIA)
 }" />
 ```
 
-#### `:with="data"`
-
-Set data for a subtree fragment scope.
-
-```html
-<x :with="{ foo: 'bar' }">
-  <y :with="{ baz: 'qux' }" :text="foo + baz"></y>
-</x>
-```
-
+<!--
 #### `:ref="id"`
 
 Expose element to a subtree fragment with the `id`.
 
 ```html
-<li :ref="item">
+<li :with="{ item: this }">
   <input
-    :onfocus="e=> item.classList.add('editing')"
+    :onfocus="e => item.classList.add('editing')"
     :onblur="e => item.classList.remove('editing')"
   />
 </li>
 ```
+-->
 
 <!--
 

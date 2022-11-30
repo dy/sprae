@@ -18,11 +18,17 @@
 * [x] expand to any subscribables: both as state vars
 * [x] :ref
 * [x] :ref + :each
+* [ ] event chains :ona-onb
+* [ ] bulk events :ona:onb
+* [ ] multiprop setter :a:b="c"
+* [ ] make `this` in expression an element
+  * [ ] replace :ref with :with="this as x"
 * [ ] optimization: replace element-props with direct (better) setters
+  * [ ] Make sure `false` gets serialized, not removes attr
 * [ ] report usignal problem
 * [ ] :onconnect, :ondisconnect
 * [ ] frameworks benchmark
 * [ ] examples
-  * [ ] todomvc
+  * [x] todomvc
+  * [ ] wave-edit
 * [ ] Sandbox expressions: no global, no "scope" object name, no "arguments"
-* [ ] `this` in expressions must refer to current element always

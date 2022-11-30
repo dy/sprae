@@ -426,16 +426,16 @@ test('scope directives must come first', async () => {
   is(a.outerHTML, `<x>1</x>`)
 })
 
-test.todo('getters', async () => {
-  // let x = h`<x>
-  //   <h2 :if="doubledCount > 10">YAY!</h2>
-  //   <button :text="count" :on="{click:increment}"/>
-  //   <button :text="doubledCount" :on="{click:increment}"/>
-  // </x>`
-  // document.body.appendChild(x)
-  // sprae(x, {
-  //   count:0,
-  //   get doubledCount(){return this.count * 2},
-  //   increment(){ this.count++ }
-  // })
+test.only('getters', async () => {
+  let x = h`<x>
+    <h2 :if="doubledCount > 10">YAY!</h2>
+    <button :text="count" :on="{click:increment}"/>
+    <button :text="doubledCount" :on="{click:increment}"/>
+  </x>`
+  document.body.appendChild(x)
+  let state = sprae(x, {
+    count:0,
+    get doubledCount(){ console.log(this); return this.count * 2},
+    increment(){ this.count++ }
+  })
 })

@@ -1,4 +1,4 @@
-## [x] name -> sprea
+## [x] name -> sprae
 
 * rasa
 * dew
@@ -130,15 +130,16 @@
 + `:else :if` doesn't throw error in JSDOM tests
 - less resemblance with vue: who cares, we already remotely resemble it
 
-## [x] Keep className marker of directive or not?
+## [x] Keep className marker of directive or not? -> no
 
 -> No: first, there's :class directive changing the class itself;
 -> Second, there's easier way to just "evaporate" directive = not initialize twice;
 -> Third, there's too much pollution with class markers
 
-## [ ] :html?
+## [x] :html? ->  Nope: can be implemented via any prop
 
   - introduces malign hole of including sprae inside of html
+  - nah: can easily be done manually as `:html="this.innerHTML = abc"`. Just need passing context
 
 ## [x] :fx? -> nah, already works. Just return `null` in any attr, that's it.
 
@@ -146,7 +147,7 @@
   - doesn't necessarily useful, since any directive is already an effect
   + works already out of box, just creates `fx` attribute if value is returned
 
-## [x] :init? -> same as fx.
+## [x] :init? -> same as :fx="initCode".
 
   * waiting for use-case
 
@@ -154,13 +155,54 @@
 
   - opens gateway to generic modifiers
   - introduces a whole mental layer to learn, including combinations of modifiers all around.
+  - can be conflicting with event classes.
+  - too adhoc-y
+  - can be easily done as `:onkey="e => e.key === 'Enter'"`
+  -> waiting for use-case
 
-## [ ] :onconnected/disconnected?
+## [ ] `this` in expressions must refer to current element or scope? -> to current element
+
+  1. `this === element`
+  +  Allows this.innerHTML and other customs
+    - Can be done easily via `:ref="xxx"`
+      + External handlers don't have access to refs.
+  2. `this === scope`
+    - scope is not supposed to be extendible
+    - scope is already available
+    + methods provided in `init` may not have access to scope _yet_.
+      ~- not reliable way to obtain scope via `this.x` - better be explicit as `state.x`
+
+## [ ] :onconnected/:ondisconnected?
+
+  -> waiting for use-case
+
+## [ ] Chain of events: often useful to have shared context. -> Try `:onevent-onanotherevent`
+
+  * focus/blur, connected/disconnected, mousedown/mouseup, keydown/keyup, touchstart/touchmove/touchend, dragstart/dragover/dragend, animationstart/animationover/animationend, transitionstart/transitionend
+  ? is there a way to organize handlers for chains of events?
+    1. :onfocus:onblur="e => e => {}"
+      - :onblur looks more like a pseudo
+      + a bit better distinctive visually, less noisy
+      - combining root-level attrs them doesn't seem very intuitive for fn waterfall.
+    2. :onfocus-blur="e => e => {}"
+      - ? is there dash-events? looks like a single event
+      - ? why not :on-focus-blur
+      - ? why not :onfocus-onblur
+      + can be converted from on="{ focusBlur: event }" via dash notation
+      + less :on prefixes
+      + has better "flowy" meaning
+    * 2.1 :onfocus-onblur="e => e => {}"
+      + distinctive visually as 1
+      + flowy nature of 2
+    3. :onfocus.onblur="e => e => {}"
+      - looks like a modifier
+      - . can be used as event class onclick.x
 
 ## [ ] Plugins
 
 * @sprae/tailwind: `<x :tw="mt-1 mx-2"></x>` - separate tailwind utility classes from main ones; allow conditional setters.
 * @sprae/item: `<x :item="{type:a, scope:b}"` – provide microdata
+  - can be solved naturally, unless there's special meaning
 * @sprae/hcodes: `<x :h=""` – provide microformats
 
 ## [x] Write any-attributes via :<prop>? -> yep
@@ -188,6 +230,7 @@
   + overhead is minimal
   + react-like
   + it has better control over serialization
+  + `:onchange:oninput="e=>xyz"` is very good
 
 ## [ ] Sandbox?
 
@@ -208,10 +251,11 @@
   - Screwed up debugging / stacktrace (unless errored)
   + that "unlimits" returned struct, so that any property can be added/deleted.
 
-## [ ] :onclick="direct code" ?
+## [x] :onclick="direct code" ? -> no: immediately invoked.
 
   + compatible with direct `onclick=...`
   + no need for arrow/regular functions syntax in templates
     - still need that syntax for filters, maps etc
   + can be made async by default
   - illicit `event` object
+  - conflicts with regular attrs logic: the code is immediately invoked and can assign a function.
