@@ -151,14 +151,19 @@
 
   * waiting for use-case
 
-## [ ] :key.enter?
+## [x] :key.enter? -> no, can be done manually
 
   - opens gateway to generic modifiers
   - introduces a whole mental layer to learn, including combinations of modifiers all around.
   - can be conflicting with event classes.
   - too adhoc-y
-  - can be easily done as `:onkey="e => e.key === 'Enter'"`
+  - can be easily done as `:onkeypress="e => e.key === 'Enter'"`
   -> waiting for use-case
+
+## [x] :key:boolean="abc" -> nope: can be done manually
+
+  ? do we really need typecast?
+  - it can be done manually as `:key="Boolean(abc)"`
 
 ## [ ] `this` in expressions must refer to current element or scope? -> to current element
 
@@ -176,7 +181,7 @@
 
   -> waiting for use-case
 
-## [ ] Chain of events: often useful to have shared context. -> Try `:onevent-onanotherevent`
+## [x] Chain of events: often useful to have shared context. -> Try `:onevent-onanotherevent`
 
   * focus/blur, connected/disconnected, mousedown/mouseup, keydown/keyup, touchstart/touchmove/touchend, dragstart/dragover/dragend, animationstart/animationover/animationend, transitionstart/transitionend
   ? is there a way to organize handlers for chains of events?
@@ -250,6 +255,7 @@
   + Deps can be analyzed / implemented without signals
   - Screwed up debugging / stacktrace (unless errored)
   + that "unlimits" returned struct, so that any property can be added/deleted.
+  - doesn't really save from `new (()=>{}).constructor` hack: we gotta substitute objects too.
 
 ## [x] :onclick="direct code" ? -> no: immediately invoked.
 

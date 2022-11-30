@@ -358,7 +358,10 @@ test(':ona:onb', e => {
 })
 
 test(':ona-onb', e => {
-  let el = h`<div :onmousedown-onmouseup="e=>(log.push(e.type),e=>log.push(e.type))"></div>`
+  // let el = document.createElement('x');
+  // el.setAttribute(':onmousedown-onmouseup', 'e=>(log.push(e.type),e=>log.push(e.type))')
+  let el = h`<x :onmousedown-onmouseup="e=>(log.push(e.type),e=>log.push(e.type))"></x>`
+
   let state = sprae(el, {log:[]})
 
   el.dispatchEvent(new window.Event('mousedown'));

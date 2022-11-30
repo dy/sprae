@@ -2,11 +2,13 @@
   "name": "sprae",
   "description": "DOM microhydration.",
   "version": "2.1.2",
-  "main": "sprae.js",
+  "main": "src/index.js",
+  "module": "src/index.js",
   "type": "module",
   "dependencies": {
     "@preact/signals-core": "^1.2.2",
-    "element-props": "^2.3.0",
+    "element-props": "^2.4.2",
+    "jsdom": "^20.0.3",
     "primitive-pool": "^2.0.0",
     "signal-struct": "^1.5.1",
     "sube": "^2.2.1",
@@ -14,7 +16,6 @@
   },
   "devDependencies": {
     "@preact/signals": "^1.1.2",
-    "browser-env": "^3.3.0",
     "es-module-shims": "^1.6.2",
     "esbuild": "^0.15.14",
     "hyperf": "^1.4.0",
@@ -25,7 +26,7 @@
     "wait-please": "^3.1.0"
   },
   "scripts": {
-    "test": "node -r browser-env/register test/test.js",
+    "test": "node -r ./test/register.cjs test/test.js",
     "build": "esbuild --bundle ./src/index.js --outfile=sprae.js --format=esm",
     "watch": "esbuild --bundle ./src/index.js --outfile=sprae.js --format=esm --sourcemap --watch",
     "min": "terser sprae.js -o sprae.min.js --module -c passes=3 -m"

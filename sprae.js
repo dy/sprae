@@ -415,7 +415,7 @@ var prop = (el2, k, v2) => {
   if (el2[k] !== v2) {
     el2[k] = v2;
   }
-  if (v2 === false || v2 == null)
+  if (v2 == null || v2 === false)
     el2.removeAttribute(k);
   else if (typeof v2 !== "function")
     el2.setAttribute(
@@ -428,12 +428,9 @@ var input = (el2) => [
   el2.type === "text" || el2.type === "" ? (value) => el2.value = value == null ? "" : value : el2.type === "checkbox" ? (value) => (el2.value = value ? "on" : "", prop(el2, "checked", value)) : el2.type === "select-one" ? (value) => ([...el2.options].map((el3) => el3.removeAttribute("selected")), el2.value = value, el2.selectedOptions[0]?.setAttribute("selected", "")) : (value) => el2.value = value
 ];
 var el = document.createElement("div");
-var dashcase = (str) => {
-  el.dataset[str] = "";
-  let dashStr = el.attributes[0].name.slice(5);
-  delete el.dataset[str];
-  return dashStr;
-};
+function dashcase(str) {
+  return str.replace(/[A-Z\u00C0-\u00D6\u00D8-\u00DE]/g, (match) => "-" + match.toLowerCase());
+}
 
 // node_modules/swapdom/swap-inflate.js
 var swap = (parent, a2, b2, end = null) => {
@@ -487,6 +484,9 @@ var primitive_pool_default = (key) => {
 
 // src/directives.js
 var directives_default = (el2, expr, state, name) => {
+  if (name.startsWith("on")) {
+    return directives.on(el2, `{"${name.split("-").map((n2) => n2.startsWith("on") ? n2.slice(2) : n2).join("-")}": ${expr}}`, state);
+  }
   let evaluate = parseExpr(expr, ":" + name, state);
   const update = (value) => prop(el2, name, value);
   b(() => update(evaluate(state)));
@@ -494,20 +494,20 @@ var directives_default = (el2, expr, state, name) => {
 var directives = {};
 var _each = Symbol(":each");
 var _ref = Symbol(":ref");
-directives[":with"] = (el2, expr, rootState) => {
+directives["with"] = (el2, expr, rootState) => {
   let evaluate = parseExpr(expr, "with", rootState);
   const params = w(() => Object.assign({}, rootState, evaluate(rootState)));
   let state = sprae(el2, params.value);
   b((values = params.value) => h(() => Object.assign(state, values)));
   return false;
 };
-directives[":ref"] = (el2, expr, state) => {
+directives["ref"] = (el2, expr, state) => {
   if (el2.hasAttribute(":each"))
     return el2[_ref] = expr;
   sprae(el2, Object.assign(Object.create(state), { [expr]: el2 }));
   return false;
 };
-directives[":if"] = (el2, expr, state) => {
+directives["if"] = (el2, expr, state) => {
   let holder = document.createTextNode(""), clauses = [parseExpr(expr, ":if", state)], els = [el2], cur = el2;
   while (cur = el2.nextElementSibling) {
     if (cur.hasAttribute(":else")) {
@@ -529,7 +529,7 @@ directives[":if"] = (el2, expr, state) => {
   b((i2 = idx.value) => els[i2] != cur && ((cur[_each] || cur).replaceWith(cur = els[i2] || holder), sprae(cur, state)));
   return -els.length;
 };
-directives[":each"] = (tpl, expr, state) => {
+directives["each"] = (tpl, expr, state) => {
   let each = parseForExpression(expr);
   if (!each)
     return exprError(new Error(), expr);
@@ -599,12 +599,12 @@ function parseForExpression(expression) {
   }
   return res;
 }
-directives[":id"] = (el2, expr, state) => {
+directives["id"] = (el2, expr, state) => {
   let evaluate = parseExpr(expr, ":id", state);
   const update = (v2) => el2.id = v2 || v2 === 0 ? v2 : "";
   b(() => update(evaluate(state)));
 };
-directives[":"] = (el2, expr, state) => {
+directives[""] = (el2, expr, state) => {
   let evaluate = parseExpr(expr, ":", state);
   const update = (value) => {
     if (!value)
@@ -614,14 +614,14 @@ directives[":"] = (el2, expr, state) => {
   };
   b(() => update(evaluate(state)));
 };
-directives[":text"] = (el2, expr, state) => {
+directives["text"] = (el2, expr, state) => {
   let evaluate = parseExpr(expr, ":text", state);
   const update = (value) => {
     el2.textContent = value == null ? "" : value;
   };
   b(() => update(evaluate(state)));
 };
-directives[":value"] = (el2, expr, state) => {
+directives["value"] = (el2, expr, state) => {
   let evaluate = parseExpr(expr, ":in", state);
   let [get, set] = input(el2);
   const update = (value) => {
@@ -630,19 +630,32 @@ directives[":value"] = (el2, expr, state) => {
   };
   b(() => update(evaluate(state)));
 };
-directives[":on"] = (el2, expr, state) => {
+directives["on"] = (el2, expr, state) => {
   let evaluate = parseExpr(expr, ":on", state);
-  let listeners = w(() => evaluate(state));
-  let prevListeners;
-  b((values = listeners.value) => {
-    for (let evt in prevListeners)
-      el2.removeEventListener(evt, prevListeners[evt]);
-    prevListeners = values;
-    for (let evt in prevListeners)
-      el2.addEventListener(evt, prevListeners[evt]);
+  let listeners = {};
+  b(() => {
+    for (let evt in listeners)
+      el2.removeEventListener(evt, listeners[evt]);
+    listeners = evaluate(state);
+    for (let evt in listeners) {
+      const evts = evt.split("-");
+      if (evts.length === 1)
+        el2.addEventListener(evt, listeners[evt]);
+      else {
+        const nextEvt = (fn, cur = 0) => {
+          el2.addEventListener(evts[cur], listeners[evt] = (e2) => {
+            fn = fn(e2);
+            el2.removeEventListener(evts[cur], listeners[evt]);
+            nextEvt(fn, (cur + 1) % evts.length);
+          });
+        };
+        nextEvt(listeners[evt]);
+      }
+    }
+    ;
   });
 };
-directives[":data"] = (el2, expr, state) => {
+directives["data"] = (el2, expr, state) => {
   let evaluate = parseExpr(expr, ":data", state);
   const value = w(() => evaluate(state));
   b((v2 = value.value) => {
@@ -650,7 +663,7 @@ directives[":data"] = (el2, expr, state) => {
       el2.dataset[key] = v2[key];
   });
 };
-directives[":aria"] = (el2, expr, state) => {
+directives["aria"] = (el2, expr, state) => {
   let evaluate = parseExpr(expr, ":aria", state);
   const update = (value) => {
     for (let key in value)
@@ -701,28 +714,25 @@ function sprae(container, values) {
   values ||= {};
   const state = SignalStruct(values);
   const init = (el2) => {
-    let dir, attr, res;
     if (el2.attributes) {
-      for (let name in directives) {
-        if (attr = el2.attributes[name]) {
-          dir = directives[name];
-          el2.removeAttribute(name);
-          if ((res = dir(el2, attr.value, state)) <= 0)
+      for (let i2 = 0; i2 < el2.attributes.length; ) {
+        let attr = el2.attributes[i2];
+        if (attr.name[0] !== ":") {
+          i2++;
+          continue;
+        }
+        el2.removeAttribute(attr.name);
+        let expr = attr.value;
+        let attrNames = attr.name.slice(1).split(":");
+        for (let attrName of attrNames) {
+          let dir = directives[attrName] || directives_default, res;
+          if ((res = dir(el2, expr, state, attrName)) <= 0)
             return res;
         }
       }
-      for (let i2 = 0; i2 < el2.attributes.length; ) {
-        let attr2 = el2.attributes[i2];
-        if (attr2.name[0] === ":") {
-          el2.removeAttribute(attr2.name);
-          if ((res = directives_default(el2, attr2.value, state, attr2.name.slice(1))) <= 0)
-            return res;
-        } else
-          i2++;
-      }
     }
     for (let i2 = 0, child; child = el2.children[i2]; i2++) {
-      res = init(child) || 0;
+      let res = init(child) || 0;
       i2 += res;
     }
   };
