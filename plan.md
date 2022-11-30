@@ -18,9 +18,9 @@
 * [x] expand to any subscribables: both as state vars
 * [x] :ref
 * [x] :ref + :each
-* [ ] event chains :ona-onb
+* [x] event chains :ona-onb
 * [x] bulk events :ona:onb
-* [ ] multiprop setter :a:b="c"
+* [x] multiprop setter :a:b="c"
 * [ ] make `this` in expression an element
   * [ ] replace :ref with :with="this as x"
 * [ ] optimization: replace element-props with direct (better) setters

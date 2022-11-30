@@ -9,6 +9,11 @@ import p from 'primitive-pool'
 
 // any-prop directives
 export default (el, expr, state, name) => {
+  if (name.startsWith('on')) {
+    // :ona:onb=x -> :on={a:x,b:x}
+    // :ona-onb=x -> :on={aB:x}
+    return directives.on(el, `{"${name.split('-').map(n=>n.startsWith('on')?n.slice(2):n).join('-')}": ${expr}}`, state)
+  }
   let evaluate = parseExpr(expr, ':'+name, state)
   const update = value => prop(el, name, value)
   effect(() => update(evaluate(state)))
@@ -192,12 +197,26 @@ directives['value'] = (el, expr, state) => {
 
 directives['on'] = (el, expr, state) => {
   let evaluate = parseExpr(expr, ':on', state)
-  let listeners = computed(() => evaluate(state))
-  let prevListeners
-  effect((values=listeners.value) => {
-    for (let evt in prevListeners) el.removeEventListener(evt, prevListeners[evt]);
-    prevListeners = values;
-    for (let evt in prevListeners) el.addEventListener(evt, prevListeners[evt]);
+  let listeners = {}
+  effect(() => {
+    for (let evt in listeners) el.removeEventListener(evt, listeners[evt]);
+
+    listeners = evaluate(state);
+
+    for (let evt in listeners) {
+      const evts = evt.split('-')
+      if (evts.length===1) el.addEventListener(evt, listeners[evt]);
+      else {
+        const nextEvt = (fn, cur=0) => {
+          el.addEventListener(evts[cur], listeners[evt] = e => {
+            fn = fn(e)
+            el.removeEventListener(evts[cur], listeners[evt])
+            nextEvt(fn, (cur+1)%evts.length)
+          })
+        }
+        nextEvt(listeners[evt])
+      }
+    };
   })
 }
 

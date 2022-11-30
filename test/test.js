@@ -357,6 +357,28 @@ test(':ona:onb', e => {
   is(state.log, ['click','scroll'])
 })
 
+test(':ona-onb', e => {
+  let el = h`<div :onmousedown-onmouseup="e=>(log.push(e.type),e=>log.push(e.type))"></div>`
+  let state = sprae(el, {log:[]})
+
+  el.dispatchEvent(new window.Event('mousedown'));
+  is(state.log, ['mousedown'])
+  el.dispatchEvent(new window.Event('mouseup'));
+  is(state.log, ['mousedown','mouseup'])
+})
+
+test(':ona-onb-onc', e => {
+  let el = h`<div :onmousedown-onmousemove-onmouseup="e=>(log.push(e.type),e=>(log.push(e.type),e=>log.push(e.type)))"></div>`
+  let state = sprae(el, {log:[]})
+
+  el.dispatchEvent(new window.Event('mousedown'));
+  is(state.log, ['mousedown'])
+  el.dispatchEvent(new window.Event('mousemove'));
+  is(state.log, ['mousedown','mousemove'])
+  el.dispatchEvent(new window.Event('mouseup'));
+  is(state.log, ['mousedown','mousemove','mouseup'])
+})
+
 test('with: inline', () => {
   let el = h`<x :with="{foo:'bar', baz}"><y :text="foo + baz"></y></x>`
   let state = sprae(el, {baz: 'qux'})
