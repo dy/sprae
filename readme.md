@@ -266,12 +266,10 @@ This way, for example, _@preact/signals_ or _rxjs_ can be connected directly byp
   // <div id="done">...</div>
 
   const loading = signal(true), result = signal(false);
-
   sprae(done, { loading, result })
+  setTimeout(() => (loading.value = true, result.value = 'done'), 1000)
 
   // <div id="done">loading</div>
-
-  setTimeout(() => (loading.value = true, result.value = 'done'), 1000)
 
   // ... 1s after
   // <div id="done">done</div>
