@@ -168,9 +168,10 @@
 ## [ ] `this` in expressions must refer to current element or scope? -> to current element
 
   1. `this === element`
-  +  Allows this.innerHTML and other customs
-    - Can be done easily via `:ref="xxx"`
-      + External handlers don't have access to refs.
+    + Allows this.innerHTML and other customs
+      - Can be done easily via `:ref="xxx"`
+        + External handlers don't have access to refs.
+    + Existing convention
   2. `this === scope`
     - scope is not supposed to be extendible
     - scope is already available

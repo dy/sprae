@@ -21,7 +21,7 @@
 * [x] event chains :ona-onb
 * [x] bulk events :ona:onb
 * [x] multiprop setter :a:b="c"
-* [ ] make `this` in expression an element
+* [x] make `this` in expression an element
   * [ ] replace :ref with :with="this as x"
 * [ ] optimization: replace element-props with direct (better) setters
   * [ ] Make sure `false` gets serialized, not removes attr

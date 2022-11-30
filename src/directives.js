@@ -14,7 +14,7 @@ export default (el, expr, state, name) => {
     // :ona-onb=x -> :on={aB:x}
     return directives.on(el, `{"${name.split('-').map(n=>n.startsWith('on')?n.slice(2):n).join('-')}": ${expr}}`, state)
   }
-  let evaluate = parseExpr(expr, ':'+name, state)
+  let evaluate = parseExpr(el, expr, ':'+name, state)
   const update = value => prop(el, name, value)
   effect(() => update(evaluate(state)))
 }
@@ -25,7 +25,7 @@ export const directives = {}
 const _each = Symbol(':each'), _ref = Symbol(':ref')
 
 directives['with'] = (el, expr, rootState) => {
-  let evaluate = parseExpr(expr, 'with', rootState)
+  let evaluate = parseExpr(el, expr, 'with', rootState)
 
   // Instead of extending signals (which is a bit hard since signal-struct internals is not uniform)
   // we bind updating
@@ -45,7 +45,7 @@ directives['ref'] = (el, expr, state) => {
 
 directives['if'] = (el, expr, state) => {
   let holder = document.createTextNode(''),
-      clauses = [parseExpr(expr, ':if', state)],
+      clauses = [parseExpr(el, expr, ':if', state)],
       els = [el], cur = el
 
   while (cur = el.nextElementSibling) {
@@ -53,7 +53,7 @@ directives['if'] = (el, expr, state) => {
       cur.removeAttribute(':else');
       if (expr = cur.getAttribute(':if')) {
         cur.removeAttribute(':if'), cur.remove();
-        els.push(cur); clauses.push(parseExpr(expr, ':else :if', state));
+        els.push(cur); clauses.push(parseExpr(el, expr, ':else :if', state));
       }
       else {
         cur.remove(); els.push(cur); clauses.push(() => 1);
@@ -73,9 +73,9 @@ directives['if'] = (el, expr, state) => {
 
 directives['each'] = (tpl, expr, state) => {
   let each = parseForExpression(expr);
-  if (!each) return exprError(new Error, expr);
+  if (!each) return exprError(new Error, tpl, expr);
 
-  const getItems = parseExpr(each.items, ':each', state);
+  const getItems = parseExpr(tpl, each.items, ':each', state);
 
   // FIXME: make sure no memory leak here
   // we need :if to be able to replace holder instead of tpl for :if :each case
@@ -88,7 +88,7 @@ directives['each'] = (tpl, expr, state) => {
     if (typeof list === 'number') return Array.from({length: list}, (_, i)=>[i, i+1])
     if (list.constructor === Object) return Object.entries(list)
     if (Array.isArray(list)) return list.map((item,i) => [i+1, item])
-    exprError(Error('Bad list value'), each.items, ':each', list)
+    exprError(Error('Bad list value'), tpl, each.items, ':each', list)
   })
 
   // stores scope per data item
@@ -158,13 +158,13 @@ function parseForExpression(expression) {
 }
 
 directives['id'] = (el, expr, state) => {
-  let evaluate = parseExpr(expr, ':id', state)
+  let evaluate = parseExpr(el, expr, ':id', state)
   const update = v => el.id = v || v === 0 ? v : ''
   effect(()=>update(evaluate(state)))
 }
 
 directives[''] = (el, expr, state) => {
-  let evaluate = parseExpr(expr, ':', state)
+  let evaluate = parseExpr(el, expr, ':', state)
   const update = (value) => {
     if (!value) return
     for (let key in value) prop(el, key, value[key]);
@@ -173,7 +173,7 @@ directives[''] = (el, expr, state) => {
 }
 
 directives['text'] = (el, expr, state) => {
-  let evaluate = parseExpr(expr, ':text', state)
+  let evaluate = parseExpr(el, expr, ':text', state)
 
   const update = (value) => {
     el.textContent = value == null ? '' : value;
@@ -184,7 +184,7 @@ directives['text'] = (el, expr, state) => {
 
 // connect expr to element value
 directives['value'] = (el, expr, state) => {
-  let evaluate = parseExpr(expr, ':in', state)
+  let evaluate = parseExpr(el, expr, ':in', state)
 
   let [get, set] = input(el);
 
@@ -196,7 +196,7 @@ directives['value'] = (el, expr, state) => {
 }
 
 directives['on'] = (el, expr, state) => {
-  let evaluate = parseExpr(expr, ':on', state)
+  let evaluate = parseExpr(el, expr, ':on', state)
   let listeners = {}
   effect(() => {
     for (let evt in listeners) el.removeEventListener(evt, listeners[evt]);
@@ -221,7 +221,7 @@ directives['on'] = (el, expr, state) => {
 }
 
 directives['data'] = (el, expr, state) => {
-  let evaluate = parseExpr(expr, ':data', state)
+  let evaluate = parseExpr(el, expr, ':data', state)
   const value = computed(() => evaluate(state))
   effect((v=value.value) => {
     for (let key in v) el.dataset[key] = v[key];
@@ -229,7 +229,7 @@ directives['data'] = (el, expr, state) => {
 }
 
 directives['aria'] = (el, expr, state) => {
-  let evaluate = parseExpr(expr, ':aria', state)
+  let evaluate = parseExpr(el, expr, ':aria', state)
   const update = (value) => {
     for (let key in value) prop(el, 'aria'+key[0].toUpperCase()+key.slice(1), value[key] == null ? null : value[key] + '');
   }
@@ -241,7 +241,7 @@ let evaluatorMemo = {}
 
 // borrowed from alpine: https://github.com/alpinejs/alpine/blob/main/packages/alpinejs/src/evaluator.js#L61
 // it seems to be more robust than subscript
-function parseExpr(expression, dir, scope) {
+function parseExpr(el, expression, dir, scope) {
   if (evaluatorMemo[expression]) return evaluatorMemo[expression]
 
   // Some expressions that are useful in Alpine are not valid as the right side of an expression.
@@ -258,22 +258,22 @@ function parseExpr(expression, dir, scope) {
   // guard static-time eval errors
   let evaluate
   try {
-    evaluate = new Function( `let result; with (arguments[0]) { result = (${rightSideSafeExpression}) }; return result;`)
+    evaluate = new Function(`let result; with (arguments[0]) { result = (${rightSideSafeExpression}) }; return result;`).bind(el)
   } catch ( e ) {
-    return exprError(e, expression, dir, scope)
+    return exprError(e, el, expression, dir, scope)
   }
 
   // guard runtime eval errors
   return evaluatorMemo[expression] = (state) => {
     let result
     try { result = evaluate(state) }
-    catch (e) { return exprError(e, expression, dir, scope) }
+    catch (e) { return exprError(e, el, expression, dir, scope) }
     return result
   }
 }
 
-export function exprError(error, expression, dir, scope) {
-  Object.assign( error, { expression } )
-  console.warn(`∴sprae: ${error.message}\n\n${dir}=${ expression ? `"${expression}"\n\n` : '' }`, scope)
+export function exprError(error, element, expression, dir, scope) {
+  Object.assign( error, { element, expression } )
+  console.warn(`∴sprae: ${error.message}\n\n${dir}=${ expression ? `"${expression}"\n\n` : '' }`, element, scope)
   setTimeout(() => { throw error }, 0)
 }
