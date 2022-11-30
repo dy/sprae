@@ -347,7 +347,7 @@ test('on: base', () => {
   is(log.value, ['click','x','xx']);
 })
 
-test(':ona:onb', e => {
+test('on: multiple events', e => {
   let el = h`<div :onscroll:onclick="e=>log.push(e.type)"></div>`
   let state = sprae(el, {log:[]})
 
@@ -357,7 +357,7 @@ test(':ona:onb', e => {
   is(state.log, ['click','scroll'])
 })
 
-test(':ona-onb', e => {
+test('on: in-out events', e => {
   // let el = document.createElement('x');
   // el.setAttribute(':onmousedown-onmouseup', 'e=>(log.push(e.type),e=>log.push(e.type))')
   let el = h`<x :onmousedown-onmouseup="e=>(log.push(e.type),e=>log.push(e.type))"></x>`
@@ -370,7 +370,7 @@ test(':ona-onb', e => {
   is(state.log, ['mousedown','mouseup'])
 })
 
-test(':ona-onb-onc', e => {
+test('on: chain of events', e => {
   let el = h`<div :onmousedown-onmousemove-onmouseup="e=>(log.push(e.type),e=>(log.push(e.type),e=>log.push(e.type)))"></div>`
   let state = sprae(el, {log:[]})
 
@@ -443,14 +443,14 @@ test('ref: base', () => {
   is(a.outerHTML, `<a>2</a>`)
 })
 
-test('ref with each', () => {
+test('ref: :ref with :each', () => {
   let a = h`<y><x :ref="x" :each="item in items" :text="log.push(x), item"/></y>`
   let state = sprae(a, {log: [], items: [1,2]})
   is(a.innerHTML, `<x>1</x><x>2</x>`)
   is(state.log, [...a.children])
 })
 
-test('reactive values', async () => {
+test('any: reactive values', async () => {
   let a = new Promise((ok) => setTimeout(() => ok(2), 10))
 
   let el = h`<x :text="a">1</x>`
@@ -461,7 +461,7 @@ test('reactive values', async () => {
   is(el.outerHTML, `<x>2</x>`)
 })
 
-test.skip('scope directives must come first', async () => {
+test.skip('any: scope directives must come first', async () => {
   // NOTE: we init attributes in order of definition
   let a = h`<x :text="y" :with="{y:1}" :ref="x"></x>`
   sprae(a, {})

@@ -176,12 +176,7 @@ Set data for a subtree fragment scope.
 
 <!-- Single property -->
 <li :with="this as li">
-  <input
-    :onfocus-onblur="e => (
-      li.classList.add('editing'),
-      e => li.classList.remove('editing')
-    )"
-  />
+  <input :onfocus-onblur="e => (li.classList.add('editing'), e => li.classList.remove('editing'))" />
 </li>
 ```
 
@@ -232,8 +227,7 @@ _sprae_ is built on top of [_@preact/signals_](https://ghub.io/@preact/signals).
 * Expressions support any reactive values in data (see [sube](https://github.com/dy/sube))
 * Updates happen minimally only when used values update
 * Subscription is weak and get disposed when element is disposed.
--->
-<!--
+
 Directive expressions are natively reactive, ie. data may contain any async/reactive values, such as:
 
 * _Promise_ / _Thenable_
@@ -243,14 +237,25 @@ Directive expressions are natively reactive, ie. data may contain any async/reac
 * etc., see [sube](https://github.com/dy/sube/blob/main/README.md) for the full list.
 
 This way, for example, _@preact/signals_ or _rxjs_ can be connected directly bypassing subscription or reading value.
-
-Update happens when any value changes:
 -->
-<!--
+
+## Hints
+
+**1.** Attributes are initialized in order, so pay attention providing scope attributes:
+
+```html
+<li :each="item in items" :ref="li"><button :onclick="e => li.classList.add('loading')"></button></li>
+
+<!-- Invalid: li is undefined -->
+<li :ref="li" :each="item in items"><button :onclick="e => li.classList.add('loading')"></button></li>
+```
+
+**2.** Data allows signals values, which can be an alternative way to control template state:
+
 ```html
 <div id="done" :text="loading ? 'loading' : result">...</div>
 
-<script>
+<script type="module">
   import sprae from 'sprae';
   import { signals } from '@preact/signals';
 
@@ -268,7 +273,20 @@ Update happens when any value changes:
   // <div id="done">done</div>
 </script>
 ```
--->
+
+**3.** Data recognizes reactive values as inputs as well: _Promise_ / _Thenable_, _Observable_ / _Subscribable_, _AsyncIterable_ (etc., see [sube](https://github.com/dy/sube/blob/main/README.md)). This way, for example, _rxjs_ can be connected to template directly.
+
+```html
+<div :text="clicks"></div>
+
+<script type="module">
+  import sprae from 'sprae';
+  import { fromEvent, scan } from 'rxjs';
+  sprae(document, {
+    clicks: fromEvent(document, 'click').pipe(scan((count) => count + 1, 0))
+  });
+</script>
+```
 
 ## Examples
 
