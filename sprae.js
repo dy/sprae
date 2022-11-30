@@ -487,7 +487,7 @@ var directives_default = (el2, expr, state, name) => {
   if (name.startsWith("on")) {
     return directives.on(el2, `{"${name.split("-").map((n2) => n2.startsWith("on") ? n2.slice(2) : n2).join("-")}": ${expr}}`, state);
   }
-  let evaluate = parseExpr(expr, ":" + name, state);
+  let evaluate = parseExpr(el2, expr, ":" + name, state);
   const update = (value) => prop(el2, name, value);
   b(() => update(evaluate(state)));
 };
@@ -495,7 +495,7 @@ var directives = {};
 var _each = Symbol(":each");
 var _ref = Symbol(":ref");
 directives["with"] = (el2, expr, rootState) => {
-  let evaluate = parseExpr(expr, "with", rootState);
+  let evaluate = parseExpr(el2, expr, "with", rootState);
   const params = w(() => Object.assign({}, rootState, evaluate(rootState)));
   let state = sprae(el2, params.value);
   b((values = params.value) => h(() => Object.assign(state, values)));
@@ -508,14 +508,14 @@ directives["ref"] = (el2, expr, state) => {
   return false;
 };
 directives["if"] = (el2, expr, state) => {
-  let holder = document.createTextNode(""), clauses = [parseExpr(expr, ":if", state)], els = [el2], cur = el2;
+  let holder = document.createTextNode(""), clauses = [parseExpr(el2, expr, ":if", state)], els = [el2], cur = el2;
   while (cur = el2.nextElementSibling) {
     if (cur.hasAttribute(":else")) {
       cur.removeAttribute(":else");
       if (expr = cur.getAttribute(":if")) {
         cur.removeAttribute(":if"), cur.remove();
         els.push(cur);
-        clauses.push(parseExpr(expr, ":else :if", state));
+        clauses.push(parseExpr(el2, expr, ":else :if", state));
       } else {
         cur.remove();
         els.push(cur);
@@ -532,8 +532,8 @@ directives["if"] = (el2, expr, state) => {
 directives["each"] = (tpl, expr, state) => {
   let each = parseForExpression(expr);
   if (!each)
-    return exprError(new Error(), expr);
-  const getItems = parseExpr(each.items, ":each", state);
+    return exprError(new Error(), tpl, expr);
+  const getItems = parseExpr(tpl, each.items, ":each", state);
   const holder = tpl[_each] = document.createTextNode("");
   tpl.replaceWith(holder);
   const items = w(() => {
@@ -546,7 +546,7 @@ directives["each"] = (tpl, expr, state) => {
       return Object.entries(list);
     if (Array.isArray(list))
       return list.map((item, i2) => [i2 + 1, item]);
-    exprError(Error("Bad list value"), each.items, ":each", list);
+    exprError(Error("Bad list value"), tpl, each.items, ":each", list);
   });
   const scopes = /* @__PURE__ */ new WeakMap();
   const itemEls = /* @__PURE__ */ new WeakMap();
@@ -600,12 +600,12 @@ function parseForExpression(expression) {
   return res;
 }
 directives["id"] = (el2, expr, state) => {
-  let evaluate = parseExpr(expr, ":id", state);
+  let evaluate = parseExpr(el2, expr, ":id", state);
   const update = (v2) => el2.id = v2 || v2 === 0 ? v2 : "";
   b(() => update(evaluate(state)));
 };
 directives[""] = (el2, expr, state) => {
-  let evaluate = parseExpr(expr, ":", state);
+  let evaluate = parseExpr(el2, expr, ":", state);
   const update = (value) => {
     if (!value)
       return;
@@ -615,14 +615,14 @@ directives[""] = (el2, expr, state) => {
   b(() => update(evaluate(state)));
 };
 directives["text"] = (el2, expr, state) => {
-  let evaluate = parseExpr(expr, ":text", state);
+  let evaluate = parseExpr(el2, expr, ":text", state);
   const update = (value) => {
     el2.textContent = value == null ? "" : value;
   };
   b(() => update(evaluate(state)));
 };
 directives["value"] = (el2, expr, state) => {
-  let evaluate = parseExpr(expr, ":in", state);
+  let evaluate = parseExpr(el2, expr, ":in", state);
   let [get, set] = input(el2);
   const update = (value) => {
     prop(el2, "value", value);
@@ -631,7 +631,7 @@ directives["value"] = (el2, expr, state) => {
   b(() => update(evaluate(state)));
 };
 directives["on"] = (el2, expr, state) => {
-  let evaluate = parseExpr(expr, ":on", state);
+  let evaluate = parseExpr(el2, expr, ":on", state);
   let listeners = {};
   b(() => {
     for (let evt in listeners)
@@ -656,7 +656,7 @@ directives["on"] = (el2, expr, state) => {
   });
 };
 directives["data"] = (el2, expr, state) => {
-  let evaluate = parseExpr(expr, ":data", state);
+  let evaluate = parseExpr(el2, expr, ":data", state);
   const value = w(() => evaluate(state));
   b((v2 = value.value) => {
     for (let key in v2)
@@ -664,7 +664,7 @@ directives["data"] = (el2, expr, state) => {
   });
 };
 directives["aria"] = (el2, expr, state) => {
-  let evaluate = parseExpr(expr, ":aria", state);
+  let evaluate = parseExpr(el2, expr, ":aria", state);
   const update = (value) => {
     for (let key in value)
       prop(el2, "aria" + key[0].toUpperCase() + key.slice(1), value[key] == null ? null : value[key] + "");
@@ -672,33 +672,33 @@ directives["aria"] = (el2, expr, state) => {
   b(() => update(evaluate(state)));
 };
 var evaluatorMemo = {};
-function parseExpr(expression, dir, scope) {
+function parseExpr(el2, expression, dir, scope) {
   if (evaluatorMemo[expression])
     return evaluatorMemo[expression];
   let rightSideSafeExpression = /^[\n\s]*if.*\(.*\)/.test(expression) || /^(let|const)\s/.test(expression) ? `(() => { ${expression} })()` : expression;
   let evaluate;
   try {
-    evaluate = new Function(`let result; with (arguments[0]) { result = (${rightSideSafeExpression}) }; return result;`);
+    evaluate = new Function(`let result; with (arguments[0]) { result = (${rightSideSafeExpression}) }; return result;`).bind(el2);
   } catch (e2) {
-    return exprError(e2, expression, dir, scope);
+    return exprError(e2, el2, expression, dir, scope);
   }
   return evaluatorMemo[expression] = (state) => {
     let result;
     try {
       result = evaluate(state);
     } catch (e2) {
-      return exprError(e2, expression, dir, scope);
+      return exprError(e2, el2, expression, dir, scope);
     }
     return result;
   };
 }
-function exprError(error, expression, dir, scope) {
-  Object.assign(error, { expression });
+function exprError(error, element, expression, dir, scope) {
+  Object.assign(error, { element, expression });
   console.warn(`\u2234sprae: ${error.message}
 
 ${dir}=${expression ? `"${expression}"
 
-` : ""}`, scope);
+` : ""}`, element, scope);
   setTimeout(() => {
     throw error;
   }, 0);
