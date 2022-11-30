@@ -279,7 +279,7 @@ This way, for example, _@preact/signals_ or _rxjs_ can be connected directly byp
 **3.** Data recognizes reactive values as inputs as well: _Promise_ / _Thenable_, _Observable_ / _Subscribable_, _AsyncIterable_ (etc., see [sube](https://github.com/dy/sube/blob/main/README.md)). This way, for example, _rxjs_ can be connected to template directly.
 
 ```html
-<div :text="clicks"></div>
+<div :text="clicks">#</div> clicks
 
 <script type="module">
   import sprae from 'sprae';
