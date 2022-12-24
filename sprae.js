@@ -379,8 +379,9 @@ function SignalStruct(values) {
   let state, signals;
   if (isObject(values)) {
     state = {}, signals = {};
-    for (let key in values)
-      signals[key] = defineSignal(state, key, values[key]);
+    let desc = Object.getOwnPropertyDescriptors(values);
+    for (let key in desc)
+      signals[key] = defineSignal(state, key, desc[key].get ? w(desc[key].get.bind(state)) : desc[key].value);
     Object.defineProperty(state, _struct, { configurable: false, enumerable: false, value: true });
     Object.seal(state);
     return state;

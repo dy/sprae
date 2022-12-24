@@ -147,9 +147,10 @@
   - doesn't necessarily useful, since any directive is already an effect
   + works already out of box, just creates `fx` attribute if value is returned
 
-## [x] :init? -> same as :fx="initCode".
+## [x] :init? -> same as :fx="initCode", but let's have :oninit event.
 
   * waiting for use-case
+  -> it's better to init element via js than via inline code. Gotta add `:oninit` event.
 
 ## [x] :key.enter? -> no, can be done manually
 
@@ -165,7 +166,7 @@
   ? do we really need typecast?
   - it can be done manually as `:key="Boolean(abc)"`
 
-## [ ] `this` in expressions must refer to current element or scope? -> to current element
+## [x] `this` in expressions must refer to current element or scope? -> to current element
 
   1. `this === element`
     + Allows this.innerHTML and other customs
@@ -178,7 +179,7 @@
     + methods provided in `init` may not have access to scope _yet_.
       ~- not reliable way to obtain scope via `this.x` - better be explicit as `state.x`
 
-## [ ] :onconnected/:ondisconnected?
+## [ ] :onconnected/:ondisconnected? -> let's add
 
   -> waiting for use-case
 
@@ -206,10 +207,10 @@
 
 ## [ ] Plugins
 
-* @sprae/tailwind: `<x :tw="mt-1 mx-2"></x>` - separate tailwind utility classes from main ones; allow conditional setters.
+* ~~@sprae/tailwind: `<x :tw="mt-1 mx-2"></x>` - separate tailwind utility classes from main ones; allow conditional setters.~~
 * @sprae/item: `<x :item="{type:a, scope:b}"` – provide microdata
   - can be solved naturally, unless there's special meaning
-* @sprae/hcodes: `<x :h=""` – provide microformats
+* @sprae/hcodes: `<x :hcode=""` – provide microformats
 
 ## [x] Write any-attributes via :<prop>? -> yep
 
@@ -266,3 +267,8 @@
   + can be made async by default
   - illicit `event` object
   - conflicts with regular attrs logic: the code is immediately invoked and can assign a function.
+
+## [ ] Should getters convert to computed?
+
+  + shorter and nicer syntax
+  - possibly longer inti

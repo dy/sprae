@@ -9,7 +9,7 @@
     "@preact/signals-core": "^1.2.2",
     "element-props": "^2.4.2",
     "primitive-pool": "^2.0.0",
-    "signal-struct": "^1.5.1",
+    "signal-struct": "^1.6.0",
     "sube": "^2.2.1",
     "swapdom": "^1.1.1"
   },

@@ -159,6 +159,23 @@ Add event listeners.
 <button :on="{ click: handler, touch: handler, special: handler }">Submit</button>
 ```
 
+<!--
+#### `:oninit="fn"`
+
+Create initializer handler - called whenever element is initialized by sprae.
+
+```html
+<div id="foo" :oninit="function(){ this === foo }"></div>
+```
+
+#### `:onconnect="fn"`, `:ondisconnect="fn"`
+
+Invoked when element is connected or disconnected from DOM.
+
+```html
+```
+-->
+
 #### `:with="data"`
 
 Set data for a subtree fragment scope.
@@ -203,20 +220,18 @@ Set [aria-role](https://developer.mozilla.org/en-US/docs/Web/Accessibility/ARIA)
 }" />
 ```
 
-<!--
 #### `:ref="id"`
 
 Expose element to a subtree fragment with the `id`.
 
 ```html
-<li :with="{ item: this }">
+<li :ref="item">
   <input
     :onfocus="e => item.classList.add('editing')"
     :onblur="e => item.classList.remove('editing')"
   />
 </li>
 ```
--->
 
 <!--
 

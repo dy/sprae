@@ -23,6 +23,7 @@
 * [x] multiprop setter :a:b="c"
 * [x] make `this` in expression an element
   * [ ] replace :ref with :with="this as x"
+* [ ] :oninit
 * [ ] optimization: replace element-props with direct (better) setters
   * [ ] Make sure `false` gets serialized, not removes attr
 * [ ] report usignal problem
