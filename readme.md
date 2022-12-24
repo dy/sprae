@@ -257,7 +257,7 @@ This way, for example, _@preact/signals_ or _rxjs_ can be connected directly byp
 
 ## Hints
 
-**1.** Attributes are initialized in order, so pay attention providing scope attributes:
+**1.** Attributes are initialized in order, so pay attention providing `:scope`/`:ref` attributes:
 
 ```html
 <li :each="item in items" :ref="li">
@@ -303,6 +303,21 @@ This way, for example, _@preact/signals_ or _rxjs_ can be connected directly byp
   sprae(document, {
     clicks: fromEvent(document, 'click').pipe(scan((count) => count + 1, 0))
   });
+</script>
+```
+
+**4.** Getters turn into computed values automatically:
+
+```html
+<div id="x-plus-y">
+  <span :text="x">x</span> + <span :text="y">y</span> = <span :text="sum">z</span>
+</div>
+
+<script type="module">
+  import sprae from 'sprae';
+  let state = sprae(document, { x:1, y:1, get z() { return this.x + this.y } })
+
+  state.x = 2, state.y = 2
 </script>
 ```
 
