@@ -30,17 +30,21 @@ directives['with'] = (el, expr, rootState) => {
   // Instead of extending signals (which is a bit hard since signal-struct internals is not uniform)
   // we bind updating
   const params = computed(() => Object.assign({}, rootState, evaluate(rootState)))
+
   let state = sprae(el, params.value)
-  effect((values=params.value) => batch(() => Object.assign(state, values)))
-  return false // don't continue attrs init
+  // NOTE: initialized element doesn't proceed with its children
+
+  effect(() => batch(() => Object.assign(state, params.value)))
+  // return false // don't continue attrs init
 }
 
 directives['ref'] = (el, expr, state) => {
   // make sure :ref is initialized after :each
   if (el.hasAttribute(':each')) return el[_ref] = expr;
 
+  // FIXME: extend state directly
   sprae(el, Object.assign(Object.create(state), {[expr]: el}))
-  return false // don't continue attrs init
+  // return false // don't continue attrs init
 }
 
 directives['if'] = (el, expr, state) => {
@@ -63,9 +67,15 @@ directives['if'] = (el, expr, state) => {
   }
 
   el.replaceWith(cur = holder)
-  let idx = computed(() => clauses.findIndex(f => f(state)))
-  // NOTE: it lazily initializes elements on insertion, it's safe to sprae multiple times
-  effect((i=idx.value) => (els[i] != cur && ((cur[_each]||cur).replaceWith(cur = els[i] || holder), sprae(cur, state))))
+
+  effect(() => {
+    let i = clauses.findIndex(f => f(state))
+    if (els[i] != cur) {
+      (cur[_each] || cur).replaceWith(cur = els[i] || holder);
+      // NOTE: it lazily initializes elements on insertion, it's safe to sprae multiple times
+      sprae(cur, state);
+    }
+  })
 
   // indicate number of removed elements
   return -els.length
@@ -82,6 +92,8 @@ directives['each'] = (tpl, expr, state) => {
   const holder = tpl[_each] = document.createTextNode('')
   tpl.replaceWith(holder)
 
+  // FIXME: same way as we write :ref to state, we can write items as computed signal to item scope
+  // so that subsequent update gets triggered automatically
   const items = computed(()=>{
     let list = getItems(state)
     if (!list) return []
@@ -96,7 +108,10 @@ directives['each'] = (tpl, expr, state) => {
   // element per data item
   const itemEls = new WeakMap()
   let curEls = []
-  effect((list=items.value) => {
+
+  effect(() => {
+    let list=items.value
+
     // collect elements/scopes for items
     let newEls = [], elScopes = []
 
@@ -198,6 +213,7 @@ directives['value'] = (el, expr, state) => {
 directives['on'] = (el, expr, state) => {
   let evaluate = parseExpr(el, expr, ':on', state)
   let listeners = {}
+
   effect(() => {
     for (let evt in listeners) el.removeEventListener(evt, listeners[evt]);
 
@@ -224,9 +240,10 @@ directives['on'] = (el, expr, state) => {
 
 directives['data'] = (el, expr, state) => {
   let evaluate = parseExpr(el, expr, ':data', state)
-  const value = computed(() => evaluate(state))
-  effect((v=value.value) => {
-    for (let key in v) el.dataset[key] = v[key];
+
+  effect(() => {
+    let value = evaluate(state)
+    for (let key in value) el.dataset[key] = value[key];
   })
 }
 

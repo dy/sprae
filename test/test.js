@@ -464,16 +464,17 @@ test('with: writes to state', () => {
   is(a.innerHTML, `<y>3</y>`)
 })
 
-test('ref: base', () => {
-  let a = h`<a :ref="a" :init="log.push(a), null" :text="b"></a>`
+test.todo('ref: base', () => {
+  let a = h`<a :id:ref="a" :init="log.push(a), null" :text="b"></a>`
   let state = sprae(a, {log:[], b:1})
   is(state.log[0], a)
-  is(a.outerHTML, `<a>1</a>`)
+  is(a.outerHTML, `<a id="a">1</a>`)
   state.b = 2
-  is(a.outerHTML, `<a>2</a>`)
+  is(a.outerHTML, `<a id="a">2</a>`)
+  is(state.a, a, 'Exposes to the state');
 })
 
-test('ref: :ref with :each', () => {
+test('ref: with :each', () => {
   let a = h`<y><x :ref="x" :each="item in items" :text="log.push(x), item"/></y>`
   let state = sprae(a, {log: [], items: [1,2]})
   is(a.innerHTML, `<x>1</x><x>2</x>`)

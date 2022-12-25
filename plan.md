@@ -22,11 +22,14 @@
 * [x] bulk events :ona:onb
 * [x] multiprop setter :a:b="c"
 * [x] make `this` in expression an element
-  * [ ] replace :ref with :with="this as x"
+  * ~~[x] replace :ref with :with="this as x"~~
 * [ ] :oninit
+* [ ] :ref creates instance in current state, not creates a new state
+  * [ ] to avoid extending signal-struct, we must collect state data before, and call updates after for extended state
 * [ ] optimization: replace element-props with direct (better) setters
   * [ ] Make sure `false` gets serialized, not removes attr
-* [ ] report usignal problem
+* [ ] protect from writing to window
+* ~~[x] report usignal problem~~ author is not really interested
 * [ ] :onconnect, :ondisconnect
 * [ ] frameworks benchmark
 * [ ] examples

@@ -222,15 +222,29 @@ Set [aria-role](https://developer.mozilla.org/en-US/docs/Web/Accessibility/ARIA)
 
 #### `:ref="id"`
 
-Expose element to a subtree fragment with the `id`.
+Expose element to a subtree fragment with the `id`, as well as to scope:
 
 ```html
-<li :ref="item">
-  <input
-    :onfocus="e => item.classList.add('editing')"
-    :onblur="e => item.classList.remove('editing')"
-  />
-</li>
+<!-- single item -->
+<textarea :id:ref="text" placeholder="Enter text..."></textarea>
+
+<!-- iterable items -->
+<ul>
+  <li :each="item in items" :ref="item">
+    <input
+      :onfocus="e => item.classList.add('editing')"
+      :onblur="e => item.classList.remove('editing')"
+    />
+  </li>
+</ul>
+
+<script type="module">
+  import sprae from 'sprae';
+  let state = sprae(document, {items: ['a','b','c']})
+
+  // exposes element in state
+  state.text // <textarea id="text"></textarea>
+</script>
 ```
 
 <!--
@@ -256,8 +270,9 @@ This way, for example, _@preact/signals_ or _rxjs_ can be connected directly byp
 -->
 
 ## Hints
+<!--
 
-**1.** Attributes are initialized in order, so pay attention providing `:scope`/`:ref` attributes:
+**1.** Attributes are initialized in order, so pay attention providing `:scope`/`:ref`/`:each` attributes:
 
 ```html
 <li :each="item in items" :ref="li">
@@ -265,12 +280,13 @@ This way, for example, _@preact/signals_ or _rxjs_ can be connected directly byp
 </li>
 
 <li :ref="li" :each="item in items">
-  <!-- Invalid: li is undefined -->
+  li is undefined here
   <button :onclick="e => li.classList.add('loading')"></button>
 </li>
 ```
+-->
 
-**2.** Data allows signals values, which can be an alternative way to control template state:
+**1.** Data allows signals values, which can be an alternative way to control template state:
 
 ```html
 <div id="done" :text="loading ? 'loading' : result">...</div>
@@ -292,7 +308,7 @@ This way, for example, _@preact/signals_ or _rxjs_ can be connected directly byp
 </script>
 ```
 
-**3.** Data recognizes reactive values as inputs as well: _Promise_ / _Thenable_, _Observable_ / _Subscribable_, _AsyncIterable_ (etc., see [sube](https://github.com/dy/sube/blob/main/README.md)). This way, for example, _rxjs_ can be connected to template directly.
+**2.** Data recognizes reactive values as inputs as well: _Promise_ / _Thenable_, _Observable_ / _Subscribable_, _AsyncIterable_ (etc., see [sube](https://github.com/dy/sube/blob/main/README.md)). This way, for example, _rxjs_ can be connected to template directly.
 
 ```html
 <div :text="clicks">#</div> clicks
@@ -306,7 +322,7 @@ This way, for example, _@preact/signals_ or _rxjs_ can be connected directly byp
 </script>
 ```
 
-**4.** Getters turn into computed values automatically:
+**3.** Getters turn into computed values automatically:
 
 ```html
 <div id="x-plus-y">

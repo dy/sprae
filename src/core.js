@@ -1,5 +1,6 @@
 import signalStruct from 'signal-struct';
 import defaultDirective, { directives } from './directives.js';
+import { effect, computed, batch } from '@preact/signals-core'
 
 // sprae element: apply directives
 const memo = new WeakMap
@@ -21,8 +22,11 @@ export default function sprae(container, values) {
         let expr = attr.value
         let attrNames = attr.name.slice(1).split(':')
         for (let attrName of attrNames) {
-          let dir = directives[attrName] || defaultDirective, res
-          if ((res = dir(el, expr, state, attrName)) <= 0) return res
+          let dir = directives[attrName] || defaultDirective
+          let res = dir(el, expr, state, attrName)
+          // stop if element was initialized already
+          if (memo.has(el)) return 0
+          if (res <= 0) return res
         }
       }
     }
