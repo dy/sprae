@@ -13,7 +13,7 @@ export default function sprae(container, values) {
   const state = signalStruct(values);
 
   // init directives on element
-  const init = (el) => {
+  const init = (el, parent=el.parentNode) => {
     if (el.attributes) {
       for (let i = 0; i < el.attributes.length;) {
         let attr = el.attributes[i]
@@ -23,17 +23,17 @@ export default function sprae(container, values) {
         let attrNames = attr.name.slice(1).split(':')
         for (let attrName of attrNames) {
           let dir = directives[attrName] || defaultDirective
-          let res = dir(el, expr, state, attrName)
-          // stop if element was initialized already
-          if (memo.has(el)) return 0
-          if (res <= 0) return res
+          let update = dir(el, expr, state, attrName)
+
+          // stop if element was spraed by directive or skipped
+          if (memo.has(el) || el.parentNode !== parent) return false
         }
       }
     }
 
     for (let i = 0, child; child = el.children[i]; i++) {
-      let res = init(child) || 0 // reduce number of removed elements
-      i += res
+      // if element was removed from parent (skipped) - reduce index
+      if (init(child, el) === false) i--
     }
   }
 

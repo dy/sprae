@@ -76,9 +76,6 @@ directives['if'] = (el, expr, state) => {
       sprae(cur, state);
     }
   })
-
-  // indicate number of removed elements
-  return -els.length
 }
 
 directives['each'] = (tpl, expr, state) => {
@@ -144,8 +141,6 @@ directives['each'] = (tpl, expr, state) => {
       sprae(newEls[i], elScopes[i])
     }
   })
-
-  return -1 // count back for 1
 }
 
 // This was taken AlpineJS, former VueJS 2.* core. Thanks Alpine & Vue!
