@@ -370,6 +370,36 @@ test('on: in-out events', e => {
   is(state.log, ['mousedown','mouseup'])
 })
 
+test('on: in-out side-effects', e => {
+  let log = []
+
+  // 1. skip in event and do directly out
+  let el = h`<x :onin-onout="io"></x>`
+  sprae(el, { io(e) {
+    log.push(e.type)
+    return (e) => (log.push(e.type), [1,2,3])
+  } })
+
+  el.dispatchEvent(new window.Event('out'));
+  is(log, [])
+
+  // 2. Some nonsensical return is fine
+  el.dispatchEvent(new window.Event('in'));
+  is(log, ['in'])
+  el.dispatchEvent(new window.Event('out'));
+  is(log, ['in','out'], 'out triggers right')
+  el.dispatchEvent(new window.Event('out'));
+  is(log, ['in','out'])
+  el.dispatchEvent(new window.Event('in'));
+  is(log, ['in','out','in'])
+  el.dispatchEvent(new window.Event('in'));
+  is(log, ['in','out','in'])
+  el.dispatchEvent(new window.Event('out'));
+  is(log, ['in','out','in','out'])
+  el.dispatchEvent(new window.Event('out'));
+  is(log, ['in','out','in','out'])
+})
+
 test('on: chain of events', e => {
   let el = h`<div :onmousedown-onmousemove-onmouseup="e=>(log.push(e.type),e=>(log.push(e.type),e=>log.push(e.type)))"></div>`
   let state = sprae(el, {log:[]})
