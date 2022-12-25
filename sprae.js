@@ -643,14 +643,18 @@ directives["on"] = (el2, expr, state) => {
       if (evts.length === 1)
         el2.addEventListener(evt, listeners[evt]);
       else {
+        const startFn = listeners[evt];
         const nextEvt = (fn, cur = 0) => {
           el2.addEventListener(evts[cur], listeners[evt] = (e2) => {
             fn = fn(e2);
             el2.removeEventListener(evts[cur], listeners[evt]);
-            nextEvt(fn, (cur + 1) % evts.length);
+            if (++cur < evts.length && typeof fn === "function")
+              nextEvt(fn, cur);
+            else
+              nextEvt(startFn);
           });
         };
-        nextEvt(listeners[evt]);
+        nextEvt(startFn);
       }
     }
     ;
