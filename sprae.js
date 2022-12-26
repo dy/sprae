@@ -591,10 +591,13 @@ directives["class"] = (el, expr, values) => {
 };
 directives["style"] = (el, expr, values) => {
   let evaluate = parseExpr(el, expr, ":style");
+  let initStyle = el.getAttribute("style") || "";
+  if (!initStyle.endsWith(";"))
+    initStyle += "; ";
   return (state) => {
     let v2 = evaluate(state);
     if (typeof v2 === "string")
-      el.setAttribute("style", v2);
+      el.setAttribute("style", initStyle + v2);
     else
       for (let k in v2)
         el.style[k] = v2[k];
@@ -608,8 +611,13 @@ directives["text"] = (el, expr, values) => {
   return (state) => update(evaluate(state));
 };
 directives["value"] = (el, expr, values) => {
-  let evaluate = parseExpr(el, expr, ":in");
-  let update = el.type === "text" || el.type === "" ? (value) => el.setAttribute("value", el.value = value == null ? "" : value) : el.type === "checkbox" ? (value) => (el.value = value ? "on" : "", attr(el, "checked", value)) : el.type === "select-one" ? (value) => ([...el.options].map((el2) => el2.removeAttribute("selected")), el.value = value, el.selectedOptions[0]?.setAttribute("selected", "")) : (value) => el.value = value;
+  let evaluate = parseExpr(el, expr, ":value");
+  let update = el.type === "text" || el.type === "" ? (value) => el.setAttribute("value", el.value = value == null ? "" : value) : el.type === "checkbox" ? (value) => (el.value = value ? "on" : "", attr(el, "checked", value)) : el.type === "select-one" ? (value) => {
+    for (let option in el.options)
+      option.removeAttribute("selected");
+    el.value = value;
+    el.selectedOptions[0]?.setAttribute("selected", "");
+  } : (value) => el.value = value;
   return (state) => update(evaluate(state));
 };
 directives["on"] = (el, expr, values) => {

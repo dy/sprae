@@ -175,9 +175,11 @@ directives['class'] = (el, expr, values) => {
 
 directives['style'] = (el, expr, values) => {
   let evaluate = parseExpr(el, expr, ':style')
+  let initStyle = el.getAttribute('style') || ''
+  if (!initStyle.endsWith(';')) initStyle += '; '
   return (state) => {
     let v = evaluate(state)
-    if (typeof v === 'string') el.setAttribute('style', v)
+    if (typeof v === 'string') el.setAttribute('style', initStyle + v)
     else for (let k in v) el.style[k] = v[k]
   }
 }
@@ -194,16 +196,16 @@ directives['text'] = (el, expr, values) => {
 
 // connect expr to element value
 directives['value'] = (el, expr, values) => {
-  let evaluate = parseExpr(el, expr, ':in')
+  let evaluate = parseExpr(el, expr, ':value')
 
   let update = (
     el.type === 'text' || el.type === '' ? value => el.setAttribute('value', el.value = value == null ? '' : value) :
     el.type === 'checkbox' ? value => (el.value = value ? 'on' : '', attr(el, 'checked', value)) :
-    el.type === 'select-one' ? value => (
-      [...el.options].map(el => el.removeAttribute('selected')),
-      el.value = value,
+    el.type === 'select-one' ? value => {
+      for (let option in el.options) option.removeAttribute('selected')
+      el.value = value;
       el.selectedOptions[0]?.setAttribute('selected', '')
-    ) :
+    } :
     value => el.value = value
   )
 

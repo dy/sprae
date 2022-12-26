@@ -44,15 +44,15 @@ test('common: reactive', async () => {
   is(el.outerHTML, `<label for="email">email</label><input id="email" name="email" type="email"><a href="//google.com"></a><img src="//google.com">`)
 })
 
-test('common: style', async () => {
-  let el = h`<x :style="style"></x>`
+test('style', async () => {
+  let el = h`<x style="left: 1px" :style="style"></x>`
   let params = sprae(el, {style: "top: 1px"})
-  is(el.outerHTML, `<x style="top: 1px"></x>`)
+  is(el.outerHTML, `<x style="left: 1px; top: 1px"></x>`)
   params.style = {top: '2px'}
-  is(el.outerHTML, `<x style="top: 2px;"></x>`)
+  is(el.outerHTML, `<x style="left: 1px; top: 2px;"></x>`)
 })
 
-test('common: class', async () => {
+test('class', async () => {
   let el = h`<x :class="a"></x><y :class="[b, c]"></y><z :class="{b:true, c:d}"></z>`
   const c = signal('z')
   let params = sprae(el, {a:'x', b:'y', c, d:false});
