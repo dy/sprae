@@ -304,6 +304,7 @@ This way, for example, _@preact/signals_ or _rxjs_ can be connected directly byp
 ## Examples
 
 * TODO MVC: [demo](https://dy.github.io/sprae/examples/todomvc), [code](https://github.com/dy/sprae/blob/main/examples/todomvc.html)
+* Waveedit: [demo](), [code](https://github.com/dy/waveedit)
 
 ## Justification
 
