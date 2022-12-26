@@ -30,7 +30,6 @@
 * [ ] Sandbox expressions: no global, no "scope" object name, no "arguments"
 * ~~[x] report usignal problem~~ author is not really interested
 * [ ] :oninit
-* [ ] :onconnect, :ondisconnect
 * [ ] frameworks benchmark
 * [ ] examples
   * [x] todomvc

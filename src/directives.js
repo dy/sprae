@@ -38,6 +38,8 @@ directives['ref'] = (el, expr, values) => {
   // make sure :ref is initialized after :each (return to avoid initializing as signal)
   if (el.hasAttribute(':each')) {el[_ref] = expr; return};
 
+  // FIXME: wait for complex ref use-case
+  // parseExpr(el, `__scope[${expr}]=this`, ':ref')(values)
   values[expr] = el;
 }
 
@@ -275,7 +277,7 @@ function parseExpr(el, expression, dir) {
   // guard static-time eval errors
   let evaluate
   try {
-    evaluate = new Function(`let result; with (arguments[0]) { result = (${rightSideSafeExpression}) }; return result;`).bind(el)
+    evaluate = new Function(`__scope`,`with (__scope) { return (${rightSideSafeExpression}) };`).bind(el)
   } catch ( e ) {
     return exprError(e, el, expression, dir)
   }

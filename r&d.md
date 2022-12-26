@@ -191,7 +191,7 @@
     + methods provided in `init` may not have access to scope _yet_.
       ~- not reliable way to obtain scope via `this.x` - better be explicit as `state.x`
 
-## [ ] :onconnected/:ondisconnected? -> let's add
+## [x] :onconnected/:ondisconnected? -> let's move to plugins for now
 
   -> waiting for use-case
 
@@ -223,6 +223,8 @@
 * @sprae/item: `<x :item="{type:a, scope:b}"` – provide microdata
   - can be solved naturally, unless there's special meaning
 * @sprae/hcodes: `<x :hcode=""` – provide microformats
+* @sprae/with
+* @sprae/connected
 
 ## [x] Write any-attributes via :<prop>? -> yep
 
@@ -251,7 +253,7 @@
   + it has better control over serialization
   + `:onchange:oninput="e=>xyz"` is very good
 
-## [ ] Sandbox?
+## [ ] Sandbox? -> too complex for now. Waiting for use-cases
 
 1. Use subscript?
   + solves access to any internal signals on syntactic level
@@ -290,4 +292,9 @@
 ## [x] Should getters convert to computed? -> yes, that's relatively cheap and useful
 
   + shorter and nicer syntax
-  - possibly longer inti
+  - possibly longer init
+
+## [ ] Better :ref
+  + :ref="`a-${1}`"
+  + :id:ref="xyz"
+  ? maybe id should have same signature
