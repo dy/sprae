@@ -148,9 +148,11 @@ Add event listeners.
 <input :value="text" :oninput:onchange="e => text=e.target.value">
 
 <!-- Sequence of events -->
-<button :onfocus-onblur="e => { // onfocus
+<button :onfocus-onblur="e => {
+  // onfocus
   let id = setInterval(track,200)
-  return e => { // onblur
+  return e => {
+    // onblur
     clearInterval(id)
   }
 }">
@@ -182,6 +184,9 @@ Set [data-*](https://developer.mozilla.org/en-US/docs/Web/HTML/Global_attributes
 
 ```html
 <input :data="{foo: 1, barBaz: true}" />
+<!--
+<input data-foo="1" data-bar-baz="true" />
+-->
 ```
 
 #### `:aria="values"`
@@ -189,13 +194,16 @@ Set [data-*](https://developer.mozilla.org/en-US/docs/Web/HTML/Global_attributes
 Set [aria-role](https://developer.mozilla.org/en-US/docs/Web/Accessibility/ARIA) attributes. Boolean values are stringified.
 
 ```html
-<input type="text" id="jokes" role="combobox" :aria="{
+<input role="combobox" :aria="{
   controls: 'joketypes',
   autocomplete: 'list',
   expanded: false,
   activeOption: 'item1',
   activedescendant: ''
 }" />
+<!--
+<input role="combobox" aria-controls="joketypes" aria-autocomplete="list" aria-expanded="false" aria-active-option="item1" aria-activedescendant="">
+-->
 ```
 
 #### `:ref="id"`
@@ -210,8 +218,7 @@ Expose element to data scope with the `id`:
 <ul>
   <li :each="item in items" :ref="item">
     <input
-      :onfocus="e => item.classList.add('editing')"
-      :onblur="e => item.classList.remove('editing')"
+      :onfocus-onblur="e => (item.classList.add('editing'), e => item.classList.remove('editing'))"
     />
   </li>
 </ul>
@@ -309,7 +316,7 @@ This way, for example, _@preact/signals_ or _rxjs_ can be connected directly byp
 ## Justification
 
 * [Template-parts](https://github.com/dy/template-parts) / [templize](https://github.com/dy/templize) is progressive, but is stuck with native HTML quirks ([parsing table](https://github.com/github/template-parts/issues/24), [svg attributes](https://github.com/github/template-parts/issues/25), [liquid syntax](https://shopify.github.io/liquid/tags/template/#raw) conflict etc). Also ergonomics of `attr="{{}}"` is inferior to `:attr=""` since it creates flash of uninitialized values.
-* [Alpine](https://github.com/alpinejs/alpine) / [vue](https://github.com/vuejs/petite-vue) / [lit](https://github.com/lit/lit/tree/main/packages/lit-html) escapes native HTML quirks, but the syntax is a bit scattered: `:attr`, `v-*`,`x-*`, `@evt`, `{{}}` can be expressed with single convention. Besides, functionality is too broad and can be reduced to essence. Also they tend to [self-encapsulate](https://github.com/alpinejs/alpine/discussions/3223), making interop hard.
+* [Alpine](https://github.com/alpinejs/alpine) / [vue](https://github.com/vuejs/petite-vue) / [lit](https://github.com/lit/lit/tree/main/packages/lit-html) escapes native HTML quirks, but the syntax is a bit scattered: `:attr`, `v-*`,`x-*`, `@evt`, `{{}}` can be expressed with single convention. Besides, functionality is too broad and can be reduced to essence: perfection is when there's nothing to take away, not add. Also they tend to [self-encapsulate](https://github.com/alpinejs/alpine/discussions/3223), making interop hard.
 * React/[preact](https://ghub.io/preact) does the job wiring up JS to HTML, but with an extreme of migrating HTML to JSX and enforcing SPA, which is not organic for HTML. Also it doesn't support reactive fields (needs render call).
 
 _sprae_ takes convention of _templize directives_ (_alpine_/_vue_ attrs) and builds upon [_@preact/signals_](https://ghub.io/@preact/signals).
