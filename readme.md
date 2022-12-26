@@ -201,9 +201,9 @@ Set [aria-role](https://developer.mozilla.org/en-US/docs/Web/Accessibility/ARIA)
   activeOption: 'item1',
   activedescendant: ''
 }" />
-<!==
+<!--
 <input role="combobox" aria-controls="joketypes" aria-autocomplete="list" aria-expanded="false" aria-active-option="item1" aria-activedescendant="">
-==>
+-->
 ```
 
 #### `:ref="id"`
