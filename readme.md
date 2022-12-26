@@ -200,11 +200,11 @@ Set [aria-role](https://developer.mozilla.org/en-US/docs/Web/Accessibility/ARIA)
 
 #### `:ref="id"`
 
-Expose element to a subtree fragment with the `id`, as well as to scope:
+Expose element to data scope with the `id`:
 
 ```html
 <!-- single item -->
-<textarea :id:ref="text" placeholder="Enter text..."></textarea>
+<textarea :ref="text" placeholder="Enter text..."></textarea>
 
 <!-- iterable items -->
 <ul>
@@ -220,8 +220,8 @@ Expose element to a subtree fragment with the `id`, as well as to scope:
   import sprae from 'sprae';
   let state = sprae(document, {items: ['a','b','c']})
 
-  // exposes element in state
-  state.text // <textarea id="text"></textarea>
+  // element is in the state
+  state.text // <textarea></textarea>
 </script>
 ```
 
@@ -249,7 +249,7 @@ This way, for example, _@preact/signals_ or _rxjs_ can be connected directly byp
 
 ## Hints
 
-**1.** Data allows signals values, which can be an alternative way to control template state:
+**1.** Data supports signal values, which can be an alternative way to control template state:
 
 ```html
 <div id="done" :text="loading ? 'loading' : result">...</div>
@@ -289,7 +289,7 @@ This way, for example, _@preact/signals_ or _rxjs_ can be connected directly byp
 
 ```html
 <div id="x-plus-y">
-  <span :text="x">x</span> + <span :text="y">y</span> = <span :text="sum">z</span>
+  <span :text="x">x</span> + <span :text="y">y</span> = <span :text="z">z</span>
 </div>
 
 <script type="module">
@@ -297,6 +297,7 @@ This way, for example, _@preact/signals_ or _rxjs_ can be connected directly byp
   let state = sprae(document, { x:1, y:1, get z() { return this.x + this.y } })
 
   state.x = 2, state.y = 2
+  state.z // 4
 </script>
 ```
 
