@@ -399,30 +399,6 @@ function isObject(v2) {
   return v2 && v2.constructor === Object;
 }
 
-// node_modules/element-props/element-props.js
-var prop = (el2, k, v2) => {
-  if (k.startsWith("on"))
-    k = k.toLowerCase();
-  if (el2[k] !== v2) {
-    el2[k] = v2;
-  }
-  if (v2 == null || v2 === false)
-    el2.removeAttribute(k);
-  else if (typeof v2 !== "function")
-    el2.setAttribute(
-      dashcase(k),
-      v2 === true ? "" : typeof v2 === "number" || typeof v2 === "string" ? v2 : k === "class" ? (Array.isArray(v2) ? v2 : Object.entries(v2).map(([k2, v3]) => v3 ? k2 : "")).filter(Boolean).join(" ") : k === "style" ? Object.entries(v2).map(([k2, v3]) => `${k2}: ${v3}`).join(";") : ""
-    );
-};
-var input = (el2) => [
-  el2.type === "checkbox" ? () => el2.checked : () => el2.value,
-  el2.type === "text" || el2.type === "" ? (value) => el2.value = value == null ? "" : value : el2.type === "checkbox" ? (value) => (el2.value = value ? "on" : "", prop(el2, "checked", value)) : el2.type === "select-one" ? (value) => ([...el2.options].map((el3) => el3.removeAttribute("selected")), el2.value = value, el2.selectedOptions[0]?.setAttribute("selected", "")) : (value) => el2.value = value
-];
-var el = document.createElement("div");
-function dashcase(str) {
-  return str.replace(/[A-Z\u00C0-\u00D6\u00D8-\u00DE]/g, (match) => "-" + match.toLowerCase());
-}
-
 // node_modules/swapdom/swap-inflate.js
 var swap = (parent, a2, b2, end = null) => {
   let i2 = 0, cur, next, bi, n2 = b2.length, m = a2.length, { remove, same, insert, replace } = swap;
@@ -474,34 +450,47 @@ var primitive_pool_default = (key) => {
 };
 
 // src/directives.js
-var directives_default = (el2, expr, values, name) => {
-  if (name.startsWith("on")) {
-    return directives.on(el2, `{"${name.split("-").map((n2) => n2.startsWith("on") ? n2.slice(2) : n2).join("-")}": ${expr}}`, values);
-  }
-  let evaluate = parseExpr(el2, expr, ":" + name, values);
-  const update = (value) => prop(el2, name, value);
-  return (state) => update(evaluate(state));
-};
 var directives = {};
+var directives_default = (el, expr, values, name) => {
+  if (name.startsWith("on")) {
+    return directives.on(el, `{"${name.split("-").map((n2) => n2.startsWith("on") ? n2.slice(2) : n2).join("-")}": ${expr}}`, values);
+  }
+  let evaluate = parseExpr(el, expr, ":" + name);
+  return (state) => attr(el, name, evaluate(state));
+};
+var attr = (el, name, v2) => {
+  if (v2 == null || v2 === false)
+    el.removeAttribute(name);
+  else
+    el.setAttribute(name, v2 === true ? "" : typeof v2 === "number" || typeof v2 === "string" ? v2 : "");
+};
+directives[""] = (el, expr, values) => {
+  let evaluate = parseExpr(el, expr, ":");
+  return (state) => {
+    let value = evaluate(state);
+    for (let key in value)
+      attr(el, dashcase(key), value[key]);
+  };
+};
 var _each = Symbol(":each");
 var _ref = Symbol(":ref");
-directives["ref"] = (el2, expr, values) => {
-  if (el2.hasAttribute(":each")) {
-    el2[_ref] = expr;
+directives["ref"] = (el, expr, values) => {
+  if (el.hasAttribute(":each")) {
+    el[_ref] = expr;
     return;
   }
   ;
-  values[expr] = el2;
+  values[expr] = el;
 };
-directives["if"] = (el2, expr, values) => {
-  let holder = document.createTextNode(""), clauses = [parseExpr(el2, expr, ":if", values)], els = [el2], cur = el2;
-  while (cur = el2.nextElementSibling) {
+directives["if"] = (el, expr, values) => {
+  let holder = document.createTextNode(""), clauses = [parseExpr(el, expr, ":if")], els = [el], cur = el;
+  while (cur = el.nextElementSibling) {
     if (cur.hasAttribute(":else")) {
       cur.removeAttribute(":else");
       if (expr = cur.getAttribute(":if")) {
         cur.removeAttribute(":if"), cur.remove();
         els.push(cur);
-        clauses.push(parseExpr(el2, expr, ":else :if", values));
+        clauses.push(parseExpr(el, expr, ":else :if"));
       } else {
         cur.remove();
         els.push(cur);
@@ -510,7 +499,7 @@ directives["if"] = (el2, expr, values) => {
     } else
       break;
   }
-  el2.replaceWith(cur = holder);
+  el.replaceWith(cur = holder);
   return (state) => {
     let i2 = clauses.findIndex((f2) => f2(state));
     if (els[i2] != cur) {
@@ -525,7 +514,7 @@ directives["each"] = (tpl, expr, values) => {
     return exprError(new Error(), tpl, expr);
   const holder = tpl[_each] = document.createTextNode("");
   tpl.replaceWith(holder);
-  const evaluate = parseExpr(tpl, each.items, ":each", values);
+  const evaluate = parseExpr(tpl, each.items, ":each");
   const scopes = /* @__PURE__ */ new WeakMap();
   const itemEls = /* @__PURE__ */ new WeakMap();
   let curEls = [];
@@ -544,19 +533,19 @@ directives["each"] = (tpl, expr, values) => {
     let newEls = [], elScopes = [];
     for (let [idx, item] of list) {
       let itemKey = primitive_pool_default(item);
-      let el2 = itemEls.get(itemKey);
-      if (!el2) {
-        el2 = tpl.cloneNode(true);
-        itemEls.set(itemKey, el2);
+      let el = itemEls.get(itemKey);
+      if (!el) {
+        el = tpl.cloneNode(true);
+        itemEls.set(itemKey, el);
       }
-      newEls.push(el2);
+      newEls.push(el);
       if (!scopes.has(itemKey)) {
         let scope = Object.create(state);
         scope[each.item] = item;
         if (each.index)
           scope[each.index] = idx;
         if (tpl[_ref])
-          scope[tpl[_ref]] = el2;
+          scope[tpl[_ref]] = el;
         scopes.set(itemKey, scope);
       }
       elScopes.push(scopes.get(itemKey));
@@ -587,54 +576,59 @@ function parseForExpression(expression) {
   }
   return res;
 }
-directives["id"] = (el2, expr, values) => {
-  let evaluate = parseExpr(el2, expr, ":id", values);
-  const update = (v2) => el2.id = v2 || v2 === 0 ? v2 : "";
+directives["id"] = (el, expr, values) => {
+  let evaluate = parseExpr(el, expr, ":id");
+  const update = (v2) => el.id = v2 || v2 === 0 ? v2 : "";
   return (state) => update(evaluate(state));
 };
-directives[""] = (el2, expr, values) => {
-  let evaluate = parseExpr(el2, expr, ":", values);
+directives["class"] = (el, expr, values) => {
+  let evaluate = parseExpr(el, expr, ":class");
+  let initClassName = el.className;
+  return (state) => {
+    let v2 = evaluate(state);
+    el.className = initClassName + typeof v2 === "string" ? v2 : (Array.isArray(v2) ? v2 : Object.entries(v2).map(([k, v3]) => v3 ? k : "")).filter(Boolean).join(" ");
+  };
+};
+directives["style"] = (el, expr, values) => {
+  let evaluate = parseExpr(el, expr, ":style");
+  return (state) => {
+    let v2 = evaluate(state);
+    if (typeof v2 === "string")
+      el.setAttribute("style", v2);
+    else
+      for (let k in v2)
+        el.style[k] = v2[k];
+  };
+};
+directives["text"] = (el, expr, values) => {
+  let evaluate = parseExpr(el, expr, ":text");
   const update = (value) => {
-    if (!value)
-      return;
-    for (let key in value)
-      prop(el2, key, value[key]);
+    el.textContent = value == null ? "" : value;
   };
   return (state) => update(evaluate(state));
 };
-directives["text"] = (el2, expr, values) => {
-  let evaluate = parseExpr(el2, expr, ":text", values);
-  const update = (value) => {
-    el2.textContent = value == null ? "" : value;
-  };
+directives["value"] = (el, expr, values) => {
+  let evaluate = parseExpr(el, expr, ":in");
+  let update = el.type === "text" || el.type === "" ? (value) => el.setAttribute("value", el.value = value == null ? "" : value) : el.type === "checkbox" ? (value) => (el.value = value ? "on" : "", attr(el, "checked", value)) : el.type === "select-one" ? (value) => ([...el.options].map((el2) => el2.removeAttribute("selected")), el.value = value, el.selectedOptions[0]?.setAttribute("selected", "")) : (value) => el.value = value;
   return (state) => update(evaluate(state));
 };
-directives["value"] = (el2, expr, values) => {
-  let evaluate = parseExpr(el2, expr, ":in", values);
-  let [get, set] = input(el2);
-  const update = (value) => {
-    prop(el2, "value", value);
-    set(value);
-  };
-  return (state) => update(evaluate(state));
-};
-directives["on"] = (el2, expr, values) => {
-  let evaluate = parseExpr(el2, expr, ":on", values);
+directives["on"] = (el, expr, values) => {
+  let evaluate = parseExpr(el, expr, ":on");
   let listeners = {};
   return (state) => {
     for (let evt in listeners)
-      el2.removeEventListener(evt, listeners[evt]);
+      el.removeEventListener(evt, listeners[evt]);
     listeners = evaluate(state);
     for (let evt in listeners) {
       const evts = evt.split("-");
       if (evts.length === 1)
-        el2.addEventListener(evt, listeners[evt]);
+        el.addEventListener(evt, listeners[evt]);
       else {
         const startFn = listeners[evt];
         const nextEvt = (fn, cur = 0) => {
-          el2.addEventListener(evts[cur], listeners[evt] = (e2) => {
+          el.addEventListener(evts[cur], listeners[evt] = (e2) => {
             fn = fn(e2);
-            el2.removeEventListener(evts[cur], listeners[evt]);
+            el.removeEventListener(evts[cur], listeners[evt]);
             if (++cur < evts.length && typeof fn === "function")
               nextEvt(fn, cur);
             else
@@ -647,53 +641,56 @@ directives["on"] = (el2, expr, values) => {
     ;
   };
 };
-directives["data"] = (el2, expr, values) => {
-  let evaluate = parseExpr(el2, expr, ":data", values);
+directives["data"] = (el, expr, values) => {
+  let evaluate = parseExpr(el, expr, ":data");
   return (state) => {
     let value = evaluate(state);
     for (let key in value)
-      el2.dataset[key] = value[key];
+      el.dataset[key] = value[key];
   };
 };
-directives["aria"] = (el2, expr, values) => {
-  let evaluate = parseExpr(el2, expr, ":aria", values);
+directives["aria"] = (el, expr, values) => {
+  let evaluate = parseExpr(el, expr, ":aria");
   const update = (value) => {
     for (let key in value)
-      prop(el2, "aria" + key[0].toUpperCase() + key.slice(1), value[key] == null ? null : value[key] + "");
+      attr(el, "aria-" + dashcase(key), value[key] == null ? null : value[key] + "");
   };
   return (state) => update(evaluate(state));
 };
 var evaluatorMemo = {};
-function parseExpr(el2, expression, dir, scope) {
+function parseExpr(el, expression, dir) {
   if (evaluatorMemo[expression])
     return evaluatorMemo[expression];
   let rightSideSafeExpression = /^[\n\s]*if.*\(.*\)/.test(expression) || /^(let|const)\s/.test(expression) ? `(() => { ${expression} })()` : expression;
   let evaluate;
   try {
-    evaluate = new Function(`let result; with (arguments[0]) { result = (${rightSideSafeExpression}) }; return result;`).bind(el2);
+    evaluate = new Function(`let result; with (arguments[0]) { result = (${rightSideSafeExpression}) }; return result;`).bind(el);
   } catch (e2) {
-    return exprError(e2, el2, expression, dir, scope);
+    return exprError(e2, el, expression, dir);
   }
   return evaluatorMemo[expression] = (state) => {
     let result;
     try {
       result = evaluate(state);
     } catch (e2) {
-      return exprError(e2, el2, expression, dir, scope);
+      return exprError(e2, el, expression, dir);
     }
     return result;
   };
 }
-function exprError(error, element, expression, dir, scope) {
+function exprError(error, element, expression, dir) {
   Object.assign(error, { element, expression });
   console.warn(`\u2234 ${error.message}
 
 ${dir}=${expression ? `"${expression}"
 
-` : ""}`, element, scope);
+` : ""}`, element);
   setTimeout(() => {
     throw error;
   }, 0);
+}
+function dashcase(str) {
+  return str.replace(/[A-Z\u00C0-\u00D6\u00D8-\u00DE]/g, (match) => "-" + match.toLowerCase());
 }
 
 // src/core.js
@@ -705,28 +702,28 @@ function sprae(container, values) {
     return memo.get(container);
   values ||= {};
   const updates = [];
-  const init = (el2, parent = el2.parentNode) => {
-    if (el2.attributes) {
-      for (let i2 = 0; i2 < el2.attributes.length; ) {
-        let attr = el2.attributes[i2];
-        if (attr.name[0] !== ":") {
+  const init = (el, parent = el.parentNode) => {
+    if (el.attributes) {
+      for (let i2 = 0; i2 < el.attributes.length; ) {
+        let attr2 = el.attributes[i2];
+        if (attr2.name[0] !== ":") {
           i2++;
           continue;
         }
-        el2.removeAttribute(attr.name);
-        let expr = attr.value;
-        let attrNames = attr.name.slice(1).split(":");
+        el.removeAttribute(attr2.name);
+        let expr = attr2.value;
+        let attrNames = attr2.name.slice(1).split(":");
         for (let attrName of attrNames) {
           let dir = directives[attrName] || directives_default;
-          updates.push(dir(el2, expr, values, attrName) || (() => {
+          updates.push(dir(el, expr, values, attrName) || (() => {
           }));
-          if (memo.has(el2) || el2.parentNode !== parent)
+          if (memo.has(el) || el.parentNode !== parent)
             return false;
         }
       }
     }
-    for (let i2 = 0, child; child = el2.children[i2]; i2++) {
-      if (init(child, el2) === false)
+    for (let i2 = 0, child; child = el.children[i2]; i2++) {
+      if (init(child, el) === false)
         i2--;
     }
   };

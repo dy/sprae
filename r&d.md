@@ -271,6 +271,13 @@
   + that "unlimits" returned struct, so that any property can be added/deleted.
   - doesn't really save from `new (()=>{}).constructor` hack: we gotta substitute objects too.
 
+2. Use sandboxed proxy
+  - tough evaluation
+  - tough implementation
+  - screwed up data
+  - no full protection
+  + does minimal catch
+
 ## [x] :onclick="direct code" ? -> no: immediately invoked.
 
   + compatible with direct `onclick=...`
