@@ -481,7 +481,7 @@ test('ref: with :each', () => {
   is(state.log, [...a.children])
 })
 
-test('any: reactive values', async () => {
+test(':: reactive values', async () => {
   let a = new Promise((ok) => setTimeout(() => ok(2), 10))
 
   let el = h`<x :text="a">1</x>`
@@ -492,13 +492,13 @@ test('any: reactive values', async () => {
   is(el.outerHTML, `<x>2</x>`)
 })
 
-test('any: scope refers to current element', async () => {
+test(':: scope refers to current element', async () => {
   let el = h`<x :text="log.push(this)"></x>`
   let state = sprae(el, {log:[]})
   is(state.log, [el])
 })
 
-test.skip('any: scope directives must come first', async () => {
+test.skip(':: scope directives must come first', async () => {
   // NOTE: we init attributes in order of definition
   let a = h`<x :text="y" :with="{y:1}" :ref="x"></x>`
   sprae(a, {})

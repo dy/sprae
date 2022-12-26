@@ -23,12 +23,10 @@ export const directives = {}
 const _each = Symbol(':each'), _ref = Symbol(':ref')
 
 directives['ref'] = (el, expr, values) => {
-  // make sure :ref is initialized after :each
-  if (el.hasAttribute(':each')) return (el[_ref] = expr, ()=>{});
+  // make sure :ref is initialized after :each (return to avoid initializing as signal)
+  if (el.hasAttribute(':each')) {el[_ref] = expr; return};
 
   values[expr] = el;
-
-  return () => {}
 }
 
 directives['if'] = (el, expr, values) => {
@@ -267,6 +265,6 @@ function parseExpr(el, expression, dir, scope) {
 
 export function exprError(error, element, expression, dir, scope) {
   Object.assign( error, { element, expression } )
-  console.warn(`∴sprae: ${error.message}\n\n${dir}=${ expression ? `"${expression}"\n\n` : '' }`, element, scope)
+  console.warn(`∴ ${error.message}\n\n${dir}=${ expression ? `"${expression}"\n\n` : '' }`, element, scope)
   setTimeout(() => { throw error }, 0)
 }

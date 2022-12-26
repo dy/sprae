@@ -248,21 +248,6 @@ This way, for example, _@preact/signals_ or _rxjs_ can be connected directly byp
 -->
 
 ## Hints
-<!--
-
-**1.** Attributes are initialized in order, so pay attention providing `:scope`/`:ref`/`:each` attributes:
-
-```html
-<li :each="item in items" :ref="li">
-  <button :onclick="e => li.classList.add('loading')"></button>
-</li>
-
-<li :ref="li" :each="item in items">
-  li is undefined here
-  <button :onclick="e => li.classList.add('loading')"></button>
-</li>
-```
--->
 
 **1.** Data allows signals values, which can be an alternative way to control template state:
 
