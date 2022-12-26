@@ -664,7 +664,7 @@ function parseExpr(el, expression, dir) {
   let rightSideSafeExpression = /^[\n\s]*if.*\(.*\)/.test(expression) || /^(let|const)\s/.test(expression) ? `(() => { ${expression} })()` : expression;
   let evaluate;
   try {
-    evaluate = new Function(`let result; with (arguments[0]) { result = (${rightSideSafeExpression}) }; return result;`).bind(el);
+    evaluate = new Function(`__scope`, `with (__scope) { return (${rightSideSafeExpression}) };`).bind(el);
   } catch (e2) {
     return exprError(e2, el, expression, dir);
   }
