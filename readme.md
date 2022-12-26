@@ -328,5 +328,6 @@ _sprae_ takes convention of _templize directives_ (_alpine_/_vue_ attrs) and bui
 * It reserves minimal syntax space as `:` convention (keeping tree neatly decorated, not scattered).
 * Expressions are naturally reactive and incur minimal updates.
 * Input data may contain [signals](https://ghub.io/@preact/signals) or [reactive values](https://ghub.io/sube).
+* Elements / data API is open and enable easy interop.
 
 <p align="center"><a href="https://github.com/krsnzd/license/">🕉</a></p>
