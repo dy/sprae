@@ -54,7 +54,7 @@
       </ul>
     </section>
     <footer class="footer">
-      <span class="todo-count" :with="{count: todos.filter(item => !item.done).length}">
+      <span class="todo-count">
         <strong :text="count">#</strong> <span :text="plur('item', count)">items</span> left
       </span>
       <ul class="filters">
@@ -89,6 +89,7 @@
     let state = sprae(document.body, {
       plur,
       todos: JSON.parse(localStorage.getItem('todomvc.items') || '[]'),
+      get count() { return this.todos.filter(item => !item.done).length },
       hash: window.location.hash || '#/',
       save: items => localStorage.setItem('todomvc.items', JSON.stringify(items))
     })

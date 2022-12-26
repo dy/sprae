@@ -10,9 +10,6 @@ export default function sprae(container, values) {
 
   values ||= {};
 
-  // FIXME: make state init after collecting updates
-  // because updates can extend initial values
-  const state = signalStruct(values);
   const updates = []
 
   // init directives on element
@@ -26,7 +23,7 @@ export default function sprae(container, values) {
         let attrNames = attr.name.slice(1).split(':')
         for (let attrName of attrNames) {
           let dir = directives[attrName] || defaultDirective;
-          updates.push(dir(el, expr, state, attrName));
+          updates.push(dir(el, expr, values, attrName));
 
           // stop if element was spraed by directive or skipped
           if (memo.has(el) || el.parentNode !== parent) return false
@@ -43,6 +40,8 @@ export default function sprae(container, values) {
   init(container);
 
   // call updates: subscribes directives to state;
+  // state is created after inits because directives can extend init values (expose refs etc)
+  const state = signalStruct(values);
   for (let update of updates) effect(() => update(state));
 
   memo.set(container, state);

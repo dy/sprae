@@ -412,7 +412,7 @@ test('on: chain of events', e => {
   is(state.log, ['mousedown','mousemove','mouseup'])
 })
 
-test('with: inline', () => {
+test.skip('with: inline', () => {
   let el = h`<x :with="{foo:'bar', baz}"><y :text="foo + baz"></y></x>`
   let state = sprae(el, {baz: 'qux'})
   // FIXME: this doesn't inherit root scope baz property and instead uses hard-initialized one
@@ -420,7 +420,7 @@ test('with: inline', () => {
   state.baz = 'quux'
   is(el.innerHTML, `<y>barquux</y>`)
 })
-test('with: inline reactive', () => {
+test.skip('with: inline reactive', () => {
   let el = h`<x :with="{foo:'bar', baz}"><y :text="foo + baz"></y></x>`
   let baz = signal('qux')
   let state = sprae(el, {baz})
@@ -429,7 +429,7 @@ test('with: inline reactive', () => {
   baz.value = 'quux'
   is(el.innerHTML, `<y>barquux</y>`)
 })
-test('with: data', () => {
+test.skip('with: data', () => {
   let el = h`<x :with="x"><y :text="foo"></y></x>`
   let state = sprae(el, {x:{foo:'bar'}})
   is(el.innerHTML, `<y>bar</y>`)
@@ -437,7 +437,7 @@ test('with: data', () => {
   Object.assign(state, {x:{foo:'baz'}})
   is(el.innerHTML, `<y>baz</y>`)
 })
-test('with: transparency', () => {
+test.skip('with: transparency', () => {
   // NOTE: y:text initializes through directive, not through parent
   // therefore by default :text uses parent's state, not defined by element itself
   let el = h`<x :with="{foo:'foo'}"><y :with="b" :text="foo+bar"></y></x>`
@@ -446,7 +446,7 @@ test('with: transparency', () => {
   params.b.bar = 'baz'
   is(el.innerHTML, `<y>foobaz</y>`)
 })
-test('with: reactive transparency', () => {
+test.skip('with: reactive transparency', () => {
   let el = h`<x :with="{foo:1}"><y :with="b.c" :text="foo+bar"></y></x>`
   const bar = signal('2')
   sprae(el, {b:{c:{bar}}})
@@ -454,7 +454,7 @@ test('with: reactive transparency', () => {
   bar.value = '3'
   is(el.innerHTML, `<y>13</y>`)
 })
-test('with: writes to state', () => {
+test.skip('with: writes to state', () => {
   let a = h`<x :with="{a:1}"><y :on="{x(){a++}}" :text="a"></y></x>`
   sprae(a)
   is(a.innerHTML, `<y>1</y>`)
@@ -464,13 +464,13 @@ test('with: writes to state', () => {
   is(a.innerHTML, `<y>3</y>`)
 })
 
-test.todo('ref: base', () => {
-  let a = h`<a :id:ref="a" :init="log.push(a), null" :text="b"></a>`
+test('ref: base', () => {
+  let a = h`<a :ref="a" :init="log.push(a), null" :text="b"></a>`
   let state = sprae(a, {log:[], b:1})
   is(state.log[0], a)
-  is(a.outerHTML, `<a id="a">1</a>`)
+  is(a.outerHTML, `<a>1</a>`)
   state.b = 2
-  is(a.outerHTML, `<a id="a">2</a>`)
+  is(a.outerHTML, `<a>2</a>`)
   is(state.a, a, 'Exposes to the state');
 })
 

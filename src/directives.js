@@ -1,20 +1,17 @@
 // directives & parsing
 import sprae from './core.js'
 import { prop, input } from 'element-props'
-// import { effect, computed, batch } from 'usignal/sync'
-import { effect, computed, batch } from '@preact/signals-core'
 import swap from 'swapdom'
 import p from 'primitive-pool'
 
-
 // any-prop directives
-export default (el, expr, state, name) => {
+export default (el, expr, values, name) => {
   if (name.startsWith('on')) {
     // :ona:onb=x -> :on={a:x,b:x}
     // :ona-onb=x -> :on={aB:x}
-    return directives.on(el, `{"${name.split('-').map(n=>n.startsWith('on')?n.slice(2):n).join('-')}": ${expr}}`, state)
+    return directives.on(el, `{"${name.split('-').map(n=>n.startsWith('on')?n.slice(2):n).join('-')}": ${expr}}`, values)
   }
-  let evaluate = parseExpr(el, expr, ':'+name, state)
+  let evaluate = parseExpr(el, expr, ':'+name, values)
   const update = value => prop(el, name, value)
 
   return (state) => update(evaluate(state))
@@ -25,33 +22,18 @@ export const directives = {}
 
 const _each = Symbol(':each'), _ref = Symbol(':ref')
 
-directives['with'] = (el, expr, rootState) => {
-  let evaluate = parseExpr(el, expr, 'with', rootState)
-
-  // Instead of extending signals (which is a bit hard since signal-struct internals is not uniform)
-  // we bind updating
-  const params = computed(() => Object.assign({}, rootState, evaluate(rootState)))
-
-  // NOTE: initialized element doesn't proceed with its children
-  let state = sprae(el, params.value)
-
-  // but update is still called with parent state
-  return (rootState) => batch(() => Object.assign(state, params.value))
-}
-
-directives['ref'] = (el, expr, state) => {
+directives['ref'] = (el, expr, values) => {
   // make sure :ref is initialized after :each
   if (el.hasAttribute(':each')) return (el[_ref] = expr, ()=>{});
 
-  // FIXME: extend state directly
-  sprae(el, Object.assign(Object.create(state), {[expr]: el}))
+  values[expr] = el;
 
   return () => {}
 }
 
-directives['if'] = (el, expr, state) => {
+directives['if'] = (el, expr, values) => {
   let holder = document.createTextNode(''),
-      clauses = [parseExpr(el, expr, ':if', state)],
+      clauses = [parseExpr(el, expr, ':if', values)],
       els = [el], cur = el
 
   while (cur = el.nextElementSibling) {
@@ -59,7 +41,7 @@ directives['if'] = (el, expr, state) => {
       cur.removeAttribute(':else');
       if (expr = cur.getAttribute(':if')) {
         cur.removeAttribute(':if'), cur.remove();
-        els.push(cur); clauses.push(parseExpr(el, expr, ':else :if', state));
+        els.push(cur); clauses.push(parseExpr(el, expr, ':else :if', values));
       }
       else {
         cur.remove(); els.push(cur); clauses.push(() => 1);
@@ -80,7 +62,7 @@ directives['if'] = (el, expr, state) => {
   }
 }
 
-directives['each'] = (tpl, expr, state) => {
+directives['each'] = (tpl, expr, values) => {
   let each = parseForExpression(expr);
   if (!each) return exprError(new Error, tpl, expr);
 
@@ -89,15 +71,7 @@ directives['each'] = (tpl, expr, state) => {
   const holder = tpl[_each] = document.createTextNode('')
   tpl.replaceWith(holder)
 
-  const evaluate = parseExpr(tpl, each.items, ':each', state);
-  const getItems = (state) => {
-    let list = evaluate(state)
-    if (!list) return []
-    if (typeof list === 'number') return Array.from({length: list}, (_, i)=>[i, i+1])
-    if (list.constructor === Object) return Object.entries(list)
-    if (Array.isArray(list)) return list.map((item,i) => [i+1, item])
-    exprError(Error('Bad list value'), tpl, each.items, ':each', list)
-  }
+  const evaluate = parseExpr(tpl, each.items, ':each', values);
 
   // stores scope per data item
   const scopes = new WeakMap()
@@ -106,7 +80,13 @@ directives['each'] = (tpl, expr, state) => {
   let curEls = []
 
   return (state) => {
-    let list = getItems(state)
+    // get items
+    let list = evaluate(state)
+    if (!list) list = []
+    else if (typeof list === 'number') list = Array.from({length: list}, (_, i)=>[i, i+1])
+    else if (list.constructor === Object) list = Object.entries(list)
+    else if (Array.isArray(list)) list = list.map((item,i) => [i+1, item])
+    else exprError(Error('Bad list value'), tpl, each.items, ':each', list)
 
     // collect elements/scopes for items
     let newEls = [], elScopes = []
@@ -166,14 +146,14 @@ function parseForExpression(expression) {
   return res
 }
 
-directives['id'] = (el, expr, state) => {
-  let evaluate = parseExpr(el, expr, ':id', state)
+directives['id'] = (el, expr, values) => {
+  let evaluate = parseExpr(el, expr, ':id', values)
   const update = v => el.id = v || v === 0 ? v : ''
   return (state) => update(evaluate(state))
 }
 
-directives[''] = (el, expr, state) => {
-  let evaluate = parseExpr(el, expr, ':', state)
+directives[''] = (el, expr, values) => {
+  let evaluate = parseExpr(el, expr, ':', values)
   const update = (value) => {
     if (!value) return
     for (let key in value) prop(el, key, value[key]);
@@ -181,8 +161,8 @@ directives[''] = (el, expr, state) => {
   return (state) => update(evaluate(state))
 }
 
-directives['text'] = (el, expr, state) => {
-  let evaluate = parseExpr(el, expr, ':text', state)
+directives['text'] = (el, expr, values) => {
+  let evaluate = parseExpr(el, expr, ':text', values)
 
   const update = (value) => {
     el.textContent = value == null ? '' : value;
@@ -192,8 +172,8 @@ directives['text'] = (el, expr, state) => {
 }
 
 // connect expr to element value
-directives['value'] = (el, expr, state) => {
-  let evaluate = parseExpr(el, expr, ':in', state)
+directives['value'] = (el, expr, values) => {
+  let evaluate = parseExpr(el, expr, ':in', values)
 
   let [get, set] = input(el);
 
@@ -204,8 +184,8 @@ directives['value'] = (el, expr, state) => {
   return (state) => update(evaluate(state))
 }
 
-directives['on'] = (el, expr, state) => {
-  let evaluate = parseExpr(el, expr, ':on', state)
+directives['on'] = (el, expr, values) => {
+  let evaluate = parseExpr(el, expr, ':on', values)
   let listeners = {}
 
   return (state) => {
@@ -232,8 +212,8 @@ directives['on'] = (el, expr, state) => {
   }
 }
 
-directives['data'] = (el, expr, state) => {
-  let evaluate = parseExpr(el, expr, ':data', state)
+directives['data'] = (el, expr, values) => {
+  let evaluate = parseExpr(el, expr, ':data', values)
 
   return ((state) => {
     let value = evaluate(state)
@@ -241,8 +221,8 @@ directives['data'] = (el, expr, state) => {
   })
 }
 
-directives['aria'] = (el, expr, state) => {
-  let evaluate = parseExpr(el, expr, ':aria', state)
+directives['aria'] = (el, expr, values) => {
+  let evaluate = parseExpr(el, expr, ':aria', values)
   const update = (value) => {
     for (let key in value) prop(el, 'aria'+key[0].toUpperCase()+key.slice(1), value[key] == null ? null : value[key] + '');
   }

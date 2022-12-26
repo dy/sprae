@@ -97,6 +97,18 @@
 
 -> possibly we have to just subscribe via mechanism of signals-like deps, and :with just initializes subtree with extended object
 
+## [x] Get rid of :with? -> let's get rid of until really necessary
+
++ with is bad JS practice/association
++? is there a bona-fide use case?
++ the implementation is heavy/unoptimal: two assign-updates happen: for root, for children
++ it is exception blocking streamline implementation of refs
++ it shadows data which creates all sorts of nasty debugging effects / states. Isn't it better to keep data/state transparent?
+  + it even enables transparency of :each scopes, since they inherit root scope
++ it's easier to look out for data in one single place (state init), rather than in a bunch of markup locations
++?! can be replaced with sort of `<x :xyz="xyz=...calc"></x>`, no?
+  -> would need wrapping noname scope access
+
 ## [x] Should we inherit values from `init` in `sprae(el, init)`, instead of creating a snapshot of reactive values in `init`? -> nah, nice idea but too little use. Better create signals struct.
 
 + it allows passing any arbitrary scope to initialize from.
@@ -268,7 +280,7 @@
   - illicit `event` object
   - conflicts with regular attrs logic: the code is immediately invoked and can assign a function.
 
-## [ ] Should getters convert to computed?
+## [x] Should getters convert to computed? -> yes, that's relatively cheap and useful
 
   + shorter and nicer syntax
   - possibly longer inti
