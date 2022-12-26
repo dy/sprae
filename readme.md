@@ -184,6 +184,9 @@ Set [data-*](https://developer.mozilla.org/en-US/docs/Web/HTML/Global_attributes
 
 ```html
 <input :data="{foo: 1, barBaz: true}" />
+<!--
+<input data-foo="1" data-bar-baz="true" />
+-->
 ```
 
 #### `:aria="values"`
@@ -191,13 +194,16 @@ Set [data-*](https://developer.mozilla.org/en-US/docs/Web/HTML/Global_attributes
 Set [aria-role](https://developer.mozilla.org/en-US/docs/Web/Accessibility/ARIA) attributes. Boolean values are stringified.
 
 ```html
-<input type="text" id="jokes" role="combobox" :aria="{
+<input role="combobox" :aria="{
   controls: 'joketypes',
   autocomplete: 'list',
   expanded: false,
   activeOption: 'item1',
   activedescendant: ''
 }" />
+<!==
+<input role="combobox" aria-controls="joketypes" aria-autocomplete="list" aria-expanded="false" aria-active-option="item1" aria-activedescendant="">
+==>
 ```
 
 #### `:ref="id"`
@@ -212,8 +218,7 @@ Expose element to data scope with the `id`:
 <ul>
   <li :each="item in items" :ref="item">
     <input
-      :onfocus="e => item.classList.add('editing')"
-      :onblur="e => item.classList.remove('editing')"
+      :onfocus-onblur="e => (item.classList.add('editing'), e => item.classList.remove('editing'))"
     />
   </li>
 </ul>
