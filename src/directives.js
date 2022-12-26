@@ -84,23 +84,20 @@ directives['each'] = (tpl, expr, state) => {
   let each = parseForExpression(expr);
   if (!each) return exprError(new Error, tpl, expr);
 
-  const getItems = parseExpr(tpl, each.items, ':each', state);
-
   // FIXME: make sure no memory leak here
   // we need :if to be able to replace holder instead of tpl for :if :each case
   const holder = tpl[_each] = document.createTextNode('')
   tpl.replaceWith(holder)
 
-  // FIXME: same way as we write :ref to state, we can write items as computed signal to item scope
-  // so that subsequent update gets triggered automatically
-  const items = computed(()=>{
-    let list = getItems(state)
+  const evaluate = parseExpr(tpl, each.items, ':each', state);
+  const getItems = (state) => {
+    let list = evaluate(state)
     if (!list) return []
     if (typeof list === 'number') return Array.from({length: list}, (_, i)=>[i, i+1])
     if (list.constructor === Object) return Object.entries(list)
     if (Array.isArray(list)) return list.map((item,i) => [i+1, item])
     exprError(Error('Bad list value'), tpl, each.items, ':each', list)
-  })
+  }
 
   // stores scope per data item
   const scopes = new WeakMap()
@@ -109,7 +106,7 @@ directives['each'] = (tpl, expr, state) => {
   let curEls = []
 
   return (state) => {
-    let list=items.value
+    let list = getItems(state)
 
     // collect elements/scopes for items
     let newEls = [], elScopes = []
