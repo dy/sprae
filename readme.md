@@ -325,7 +325,7 @@ _sprae_ takes convention of _templize directives_ (_alpine_/_vue_ attrs) and bui
 * It falls back to element content if uninitialized.
 * It doesn't enforce SPA nor JSX.
 * It enables island hydration.
-* It introduces minimal syntax space as `:` convention.
+* It reserves minimal syntax space as `:` convention (keeping tree decorated, not messy).
 * Expressions are naturally reactive and incur minimal updates.
 * Input data may contain [signals](https://ghub.io/@preact/signals) or [reactive values](https://ghub.io/sube).
 
