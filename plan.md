@@ -23,16 +23,15 @@
 * [x] multiprop setter :a:b="c"
 * [x] make `this` in expression an element
   * ~~[x] replace :ref with :with="this as x"~~
-* [ ] :oninit
-* [ ] :ref creates instance in current state, not creates a new state
-  * [ ] to avoid extending signal-struct, we must collect state data before, and call updates after for extended state
-* [ ] optimization: replace element-props with direct (better) setters
-  * [ ] Make sure `false` gets serialized, not removes attr
-* [ ] protect from writing to window
+* [x] :ref creates instance in current state, not creates a new state
+  * [x] to avoid extending signal-struct, we must collect state data before, and call updates after for extended state
+* [x] optimization: replace element-props with direct (better) setters
+  * [x] Make sure `false` gets serialized, not removes attr
+* [ ] Sandbox expressions: no global, no "scope" object name, no "arguments"
 * ~~[x] report usignal problem~~ author is not really interested
+* [ ] :oninit
 * [ ] :onconnect, :ondisconnect
 * [ ] frameworks benchmark
 * [ ] examples
   * [x] todomvc
   * [ ] wave-edit
-* [ ] Sandbox expressions: no global, no "scope" object name, no "arguments"

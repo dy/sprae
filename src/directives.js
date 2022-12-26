@@ -1,8 +1,10 @@
 // directives & parsing
 import sprae from './core.js'
-import { prop, input } from 'element-props'
 import swap from 'swapdom'
 import p from 'primitive-pool'
+
+// reserved directives - order matters!
+export const directives = {}
 
 // any-prop directives
 export default (el, expr, values, name) => {
@@ -11,14 +13,24 @@ export default (el, expr, values, name) => {
     // :ona-onb=x -> :on={aB:x}
     return directives.on(el, `{"${name.split('-').map(n=>n.startsWith('on')?n.slice(2):n).join('-')}": ${expr}}`, values)
   }
-  let evaluate = parseExpr(el, expr, ':'+name, values)
-  const update = value => prop(el, name, value)
+  let evaluate = parseExpr(el, expr, ':'+name)
 
-  return (state) => update(evaluate(state))
+  return (state) => attr(el, name, evaluate(state))
 }
 
-// reserved directives - order matters!
-export const directives = {}
+// set attr
+const attr = (el, name, v) => {
+  if (v == null || v === false) el.removeAttribute(name)
+  else el.setAttribute(name, v === true ? '' : (typeof v === 'number' || typeof v === 'string') ? v : '')
+}
+
+directives[''] = (el, expr, values) => {
+  let evaluate = parseExpr(el, expr, ':')
+  return (state) => {
+    let value = evaluate(state)
+    for (let key in value) attr(el, dashcase(key), value[key]);
+  }
+}
 
 const _each = Symbol(':each'), _ref = Symbol(':ref')
 
@@ -31,7 +43,7 @@ directives['ref'] = (el, expr, values) => {
 
 directives['if'] = (el, expr, values) => {
   let holder = document.createTextNode(''),
-      clauses = [parseExpr(el, expr, ':if', values)],
+      clauses = [parseExpr(el, expr, ':if')],
       els = [el], cur = el
 
   while (cur = el.nextElementSibling) {
@@ -39,7 +51,7 @@ directives['if'] = (el, expr, values) => {
       cur.removeAttribute(':else');
       if (expr = cur.getAttribute(':if')) {
         cur.removeAttribute(':if'), cur.remove();
-        els.push(cur); clauses.push(parseExpr(el, expr, ':else :if', values));
+        els.push(cur); clauses.push(parseExpr(el, expr, ':else :if'));
       }
       else {
         cur.remove(); els.push(cur); clauses.push(() => 1);
@@ -69,7 +81,7 @@ directives['each'] = (tpl, expr, values) => {
   const holder = tpl[_each] = document.createTextNode('')
   tpl.replaceWith(holder)
 
-  const evaluate = parseExpr(tpl, each.items, ':each', values);
+  const evaluate = parseExpr(tpl, each.items, ':each');
 
   // stores scope per data item
   const scopes = new WeakMap()
@@ -145,22 +157,31 @@ function parseForExpression(expression) {
 }
 
 directives['id'] = (el, expr, values) => {
-  let evaluate = parseExpr(el, expr, ':id', values)
+  let evaluate = parseExpr(el, expr, ':id')
   const update = v => el.id = v || v === 0 ? v : ''
   return (state) => update(evaluate(state))
 }
 
-directives[''] = (el, expr, values) => {
-  let evaluate = parseExpr(el, expr, ':', values)
-  const update = (value) => {
-    if (!value) return
-    for (let key in value) prop(el, key, value[key]);
+directives['class'] = (el, expr, values) => {
+  let evaluate = parseExpr(el, expr, ':class')
+  let initClassName = el.className
+  return (state) => {
+    let v = evaluate(state)
+    el.className = initClassName + typeof v === 'string' ? v : (Array.isArray(v) ? v : Object.entries(v).map(([k,v])=>v?k:'')).filter(Boolean).join(' ')
   }
-  return (state) => update(evaluate(state))
+}
+
+directives['style'] = (el, expr, values) => {
+  let evaluate = parseExpr(el, expr, ':style')
+  return (state) => {
+    let v = evaluate(state)
+    if (typeof v === 'string') el.setAttribute('style', v)
+    else for (let k in v) el.style[k] = v[k]
+  }
 }
 
 directives['text'] = (el, expr, values) => {
-  let evaluate = parseExpr(el, expr, ':text', values)
+  let evaluate = parseExpr(el, expr, ':text')
 
   const update = (value) => {
     el.textContent = value == null ? '' : value;
@@ -171,19 +192,24 @@ directives['text'] = (el, expr, values) => {
 
 // connect expr to element value
 directives['value'] = (el, expr, values) => {
-  let evaluate = parseExpr(el, expr, ':in', values)
+  let evaluate = parseExpr(el, expr, ':in')
 
-  let [get, set] = input(el);
+  let update = (
+    el.type === 'text' || el.type === '' ? value => el.setAttribute('value', el.value = value == null ? '' : value) :
+    el.type === 'checkbox' ? value => (el.value = value ? 'on' : '', attr(el, 'checked', value)) :
+    el.type === 'select-one' ? value => (
+      [...el.options].map(el => el.removeAttribute('selected')),
+      el.value = value,
+      el.selectedOptions[0]?.setAttribute('selected', '')
+    ) :
+    value => el.value = value
+  )
 
-  const update = (value) => {
-    prop(el, 'value', value)
-    set(value);
-  }
   return (state) => update(evaluate(state))
 }
 
 directives['on'] = (el, expr, values) => {
-  let evaluate = parseExpr(el, expr, ':on', values)
+  let evaluate = parseExpr(el, expr, ':on')
   let listeners = {}
 
   return (state) => {
@@ -211,7 +237,7 @@ directives['on'] = (el, expr, values) => {
 }
 
 directives['data'] = (el, expr, values) => {
-  let evaluate = parseExpr(el, expr, ':data', values)
+  let evaluate = parseExpr(el, expr, ':data')
 
   return ((state) => {
     let value = evaluate(state)
@@ -220,9 +246,9 @@ directives['data'] = (el, expr, values) => {
 }
 
 directives['aria'] = (el, expr, values) => {
-  let evaluate = parseExpr(el, expr, ':aria', values)
+  let evaluate = parseExpr(el, expr, ':aria')
   const update = (value) => {
-    for (let key in value) prop(el, 'aria'+key[0].toUpperCase()+key.slice(1), value[key] == null ? null : value[key] + '');
+    for (let key in value) attr(el, 'aria-' + dashcase(key), value[key] == null ? null : value[key] + '');
   }
   return ((state) => update(evaluate(state)))
 }
@@ -232,7 +258,7 @@ let evaluatorMemo = {}
 
 // borrowed from alpine: https://github.com/alpinejs/alpine/blob/main/packages/alpinejs/src/evaluator.js#L61
 // it seems to be more robust than subscript
-function parseExpr(el, expression, dir, scope) {
+function parseExpr(el, expression, dir) {
   if (evaluatorMemo[expression]) return evaluatorMemo[expression]
 
   // Some expressions that are useful in Alpine are not valid as the right side of an expression.
@@ -251,20 +277,24 @@ function parseExpr(el, expression, dir, scope) {
   try {
     evaluate = new Function(`let result; with (arguments[0]) { result = (${rightSideSafeExpression}) }; return result;`).bind(el)
   } catch ( e ) {
-    return exprError(e, el, expression, dir, scope)
+    return exprError(e, el, expression, dir)
   }
 
   // guard runtime eval errors
   return evaluatorMemo[expression] = (state) => {
     let result
     try { result = evaluate(state) }
-    catch (e) { return exprError(e, el, expression, dir, scope) }
+    catch (e) { return exprError(e, el, expression, dir) }
     return result
   }
 }
 
-export function exprError(error, element, expression, dir, scope) {
+export function exprError(error, element, expression, dir) {
   Object.assign( error, { element, expression } )
-  console.warn(`∴ ${error.message}\n\n${dir}=${ expression ? `"${expression}"\n\n` : '' }`, element, scope)
+  console.warn(`∴ ${error.message}\n\n${dir}=${ expression ? `"${expression}"\n\n` : '' }`, element)
   setTimeout(() => { throw error }, 0)
 }
+
+function dashcase(str) {
+	return str.replace(/[A-Z\u00C0-\u00D6\u00D8-\u00DE]/g, (match) => '-' + match.toLowerCase());
+};

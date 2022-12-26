@@ -49,7 +49,7 @@ test('common: style', async () => {
   let params = sprae(el, {style: "top: 1px"})
   is(el.outerHTML, `<x style="top: 1px"></x>`)
   params.style = {top: '2px'}
-  is(el.outerHTML, `<x style="top: 2px"></x>`)
+  is(el.outerHTML, `<x style="top: 2px;"></x>`)
 })
 
 test('common: class', async () => {
@@ -64,9 +64,9 @@ test('common: class', async () => {
 })
 
 test('props: base', async () => {
-  let el = h`<input :id="0" :="{for:1, title:2, help:3, type:4, placeholder: 5, value: 6}" :value="7"/>`
+  let el = h`<input :id="0" :="{for:1, title:2, help:3, type:4, placeholder: 5, value: 6, aB: 8}" :value="7"/>`
   let params = sprae(el)
-  is(el.outerHTML, `<input id="0" for="1" title="2" help="3" type="4" placeholder="5" value="7">`)
+  is(el.outerHTML, `<input id="0" for="1" title="2" help="3" type="4" placeholder="5" value="7" a-b="8">`)
 })
 
 test('props: multiprop', async () => {
