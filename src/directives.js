@@ -16,7 +16,8 @@ export default (el, expr, state, name) => {
   }
   let evaluate = parseExpr(el, expr, ':'+name, state)
   const update = value => prop(el, name, value)
-  effect(() => update(evaluate(state)))
+
+  return (state) => update(evaluate(state))
 }
 
 // reserved directives - order matters!
@@ -31,20 +32,21 @@ directives['with'] = (el, expr, rootState) => {
   // we bind updating
   const params = computed(() => Object.assign({}, rootState, evaluate(rootState)))
 
-  let state = sprae(el, params.value)
   // NOTE: initialized element doesn't proceed with its children
+  let state = sprae(el, params.value)
 
-  effect(() => batch(() => Object.assign(state, params.value)))
-  // return false // don't continue attrs init
+  // but update is still called with parent state
+  return (rootState) => batch(() => Object.assign(state, params.value))
 }
 
 directives['ref'] = (el, expr, state) => {
   // make sure :ref is initialized after :each
-  if (el.hasAttribute(':each')) return el[_ref] = expr;
+  if (el.hasAttribute(':each')) return (el[_ref] = expr, ()=>{});
 
   // FIXME: extend state directly
   sprae(el, Object.assign(Object.create(state), {[expr]: el}))
-  // return false // don't continue attrs init
+
+  return () => {}
 }
 
 directives['if'] = (el, expr, state) => {
@@ -68,14 +70,14 @@ directives['if'] = (el, expr, state) => {
 
   el.replaceWith(cur = holder)
 
-  effect(() => {
+  return (state) => {
     let i = clauses.findIndex(f => f(state))
     if (els[i] != cur) {
       (cur[_each] || cur).replaceWith(cur = els[i] || holder);
       // NOTE: it lazily initializes elements on insertion, it's safe to sprae multiple times
       sprae(cur, state);
     }
-  })
+  }
 }
 
 directives['each'] = (tpl, expr, state) => {
@@ -106,7 +108,7 @@ directives['each'] = (tpl, expr, state) => {
   const itemEls = new WeakMap()
   let curEls = []
 
-  effect(() => {
+  return (state) => {
     let list=items.value
 
     // collect elements/scopes for items
@@ -140,7 +142,7 @@ directives['each'] = (tpl, expr, state) => {
     for (let i = 0; i < newEls.length; i++) {
       sprae(newEls[i], elScopes[i])
     }
-  })
+  }
 }
 
 // This was taken AlpineJS, former VueJS 2.* core. Thanks Alpine & Vue!
@@ -170,7 +172,7 @@ function parseForExpression(expression) {
 directives['id'] = (el, expr, state) => {
   let evaluate = parseExpr(el, expr, ':id', state)
   const update = v => el.id = v || v === 0 ? v : ''
-  effect(()=>update(evaluate(state)))
+  return (state) => update(evaluate(state))
 }
 
 directives[''] = (el, expr, state) => {
@@ -179,7 +181,7 @@ directives[''] = (el, expr, state) => {
     if (!value) return
     for (let key in value) prop(el, key, value[key]);
   }
-  effect(()=>update(evaluate(state)))
+  return (state) => update(evaluate(state))
 }
 
 directives['text'] = (el, expr, state) => {
@@ -189,7 +191,7 @@ directives['text'] = (el, expr, state) => {
     el.textContent = value == null ? '' : value;
   }
 
-  effect(()=>update(evaluate(state)))
+  return (state) => update(evaluate(state))
 }
 
 // connect expr to element value
@@ -202,14 +204,14 @@ directives['value'] = (el, expr, state) => {
     prop(el, 'value', value)
     set(value);
   }
-  effect(()=>update(evaluate(state)))
+  return (state) => update(evaluate(state))
 }
 
 directives['on'] = (el, expr, state) => {
   let evaluate = parseExpr(el, expr, ':on', state)
   let listeners = {}
 
-  effect(() => {
+  return (state) => {
     for (let evt in listeners) el.removeEventListener(evt, listeners[evt]);
 
     listeners = evaluate(state);
@@ -230,13 +232,13 @@ directives['on'] = (el, expr, state) => {
         nextEvt(startFn)
       }
     };
-  })
+  }
 }
 
 directives['data'] = (el, expr, state) => {
   let evaluate = parseExpr(el, expr, ':data', state)
 
-  effect(() => {
+  return ((state) => {
     let value = evaluate(state)
     for (let key in value) el.dataset[key] = value[key];
   })
@@ -247,7 +249,7 @@ directives['aria'] = (el, expr, state) => {
   const update = (value) => {
     for (let key in value) prop(el, 'aria'+key[0].toUpperCase()+key.slice(1), value[key] == null ? null : value[key] + '');
   }
-  effect(() => update(evaluate(state)))
+  return ((state) => update(evaluate(state)))
 }
 
 
