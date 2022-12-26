@@ -89,37 +89,40 @@ Welcome, <span :text="user.name">Guest</span>.
 
 #### `:class="value"`
 
-Set class value from either string, array or object.
+Set class value from either string, array or object. Extends direct class, rather than replaces.
 
 ```html
 <div :class="`foo ${bar}`"></div>
 <div :class="['foo', 'bar']"></div>
 <div :class="{foo: true, bar: false}"></div>
+
+<div class="a" :class="['b', 'c']"></div>
+<!--
+<div class="a b c"></div>
+-->
 ```
 
 #### `:style="value"`
 
-Set style value from object or a string.
+Set style value from object or a string. Extends style.
 
 ```html
 <div :style="foo: bar"></div>
 <div :style="{foo: 'bar'}"></div>
 ```
 
-<!--
 #### `:value="value"`
 
-Set value of an input, textarea or select.
+Set value of an input, textarea or select. Takes handle of `checked` and `selected` attributes.
 
 ```html
-<input :with="{text: ''}" :value="text" />
-<textarea :with="{text: ''}" :value="text" />
+<input :value="text" />
+<textarea :value="text" />
 
-<select :with="{selected: 0}" :value="selected">
+<select :value="selected">
   <option :each="i in 5" :value="i" :text="i"></option>
 </select>
 ```
--->
 
 #### `:<prop>="value"`, `:="props"`
 
