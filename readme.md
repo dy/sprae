@@ -139,7 +139,7 @@ Set any prop value.
 <input :="{ id: name, name, type:'text', value }" />
 ```
 
-#### `:on<event>="handler"`, `:on="events"`, `:on<in>--<out>="handler"`
+#### `:on<event>="handler"`, `:on="events"`, `:on<in>..<out>="handler"`
 
 Add event listeners.
 
@@ -151,7 +151,7 @@ Add event listeners.
 <input :value="text" :oninput:onchange="e => text=e.target.value">
 
 <!-- Sequence of events -->
-<button :onfocus--blur="e => {
+<button :onfocus..onblur="e => {
   // onfocus
   let id = setInterval(track,200)
   return e => {
@@ -220,7 +220,7 @@ Expose element to data scope with the `id`:
 <!-- iterable items -->
 <ul>
   <li :each="item in items" :ref="item">
-    <input :onfocus--blur="e => (item.classList.add('editing'), e => item.classList.remove('editing'))"/>
+    <input :onfocus..blur="e => (item.classList.add('editing'), e => item.classList.remove('editing'))"/>
   </li>
 </ul>
 
