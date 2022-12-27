@@ -139,7 +139,7 @@ Set any prop value.
 <input :="{ id: name, name, type:'text', value }" />
 ```
 
-#### `:on<event>="handler"`, `:on="events"`
+#### `:on<event>="handler"`, `:on="events"`, `:on<in>--<out>="handler"`
 
 Add event listeners.
 
@@ -220,9 +220,7 @@ Expose element to data scope with the `id`:
 <!-- iterable items -->
 <ul>
   <li :each="item in items" :ref="item">
-    <input
-      :onfocus-onblur="e => (item.classList.add('editing'), e => item.classList.remove('editing'))"
-    />
+    <input :onfocus--blur="e => (item.classList.add('editing'), e => item.classList.remove('editing'))"/>
   </li>
 </ul>
 
