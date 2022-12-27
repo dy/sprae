@@ -213,9 +213,18 @@
     * 2.1 :onfocus-onblur="e => e => {}"
       + distinctive visually as 1
       + flowy nature of 2
+      - blocks `:onfile-attached` and other dashed events
+        - `ona-onb` vs `ona-b-onc` is hard to parse mentally 
     3. :onfocus.onblur="e => e => {}"
       - looks like a modifier
       - . can be used as event class onclick.x
+    4. `:onfocus--blur="e => e => {}"`
+      + reminds BEM
+      - reminds BEM
+    5. `:onfocus..blur="e => e => {}"`
+      + reminds range
+      + literally means start..end
+      + all pros of 2.
 
 ## [ ] Plugins
 
