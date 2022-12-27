@@ -151,7 +151,7 @@ Add event listeners.
 <input :value="text" :oninput:onchange="e => text=e.target.value">
 
 <!-- Sequence of events -->
-<button :onfocus-onblur="e => {
+<button :onfocus--blur="e => {
   // onfocus
   let id = setInterval(track,200)
   return e => {
