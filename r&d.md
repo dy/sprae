@@ -195,7 +195,7 @@
 
   -> waiting for use-case
 
-## [x] Chain of events: often useful to have shared context. -> Try `:onevent-onanotherevent`
+## [x] Chain of events: often useful to have shared context. -> Try `:onstart..end`
 
   * focus/blur, connected/disconnected, mousedown/mouseup, keydown/keyup, touchstart/touchmove/touchend, dragstart/dragover/dragend, animationstart/animationover/animationend, transitionstart/transitionend
   ? is there a way to organize handlers for chains of events?
@@ -225,6 +225,11 @@
       + reminds range
       + literally means start..end
       + all pros of 2.
+      + reminds spray via dots
+      - can be confusing if `blur` is event or just property (can that be a property?)
+    6. `:onfocus..onblur="e => e => {}"`
+      + all props of 5.
+      + more obvious that blur is event.
 
 ## [ ] Plugins
 
@@ -235,7 +240,7 @@
 * @sprae/with
 * @sprae/connected
 
-## [x] Write any-attributes via :<prop>? -> yep
+## [x] Write any-attributes via `:<prop>? -> yep`
 
 + Since we support attr walking, maybe instead of :on and :prop just allow any attributes?
   + that would allow event and attr modifiers...
