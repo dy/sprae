@@ -9,9 +9,9 @@ export const directives = {}
 // any-prop directives
 export default (el, expr, values, name) => {
   if (name.startsWith('on')) {
-    // :ona:onb=x -> :on={a:x,b:x}
-    // :ona-onb=x -> :on={aB:x}
-    return directives.on(el, `{"${name.split('-').map(n=>n.startsWith('on')?n.slice(2):n).join('-')}": ${expr}}`, values)
+    // FIXME :ona:onb=x -> :on={a:x,b:x}
+    // FIXME :ona--onb=x -> :on={a--b:x}
+    return directives.on(el, `{"${name.slice(2)}": ${expr}}`, values)
   }
   let evaluate = parseExpr(el, expr, ':'+name)
 
@@ -222,7 +222,7 @@ directives['on'] = (el, expr, values) => {
     listeners = evaluate(state);
 
     for (let evt in listeners) {
-      const evts = evt.split('-')
+      const evts = evt.split('--')
       if (evts.length===1) el.addEventListener(evt, listeners[evt]);
       else {
         const startFn = listeners[evt]
