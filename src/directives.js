@@ -8,14 +8,16 @@ export const directives = {}
 
 // any-prop directives
 export default (el, expr, values, name) => {
-  if (name.startsWith('on')) {
-    // FIXME :ona:onb=x -> :on={a:x,b:x}
-    // FIXME :ona..onb=x -> :on={a..b:x}
-    return directives.on(el, `{"${name.slice(2)}": ${expr}}`, values)
-  }
+  let evt = name.startsWith('on') && name.slice(2)
   let evaluate = parseExpr(el, expr, ':'+name)
 
-  return (state) => attr(el, name, evaluate(state))
+  let value
+  return evt ? state => {
+    value && removeListener(el, evt, value)
+    value = evaluate(state)
+    value && addListener(el, evt, value)
+  }
+  : state => attr(el, name, evaluate(state))
 }
 
 // set attr

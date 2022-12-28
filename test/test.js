@@ -348,13 +348,15 @@ test('on: base', () => {
 })
 
 test('on: multiple events', e => {
-  let el = h`<div :onscroll:onclick="e=>log.push(e.type)"></div>`
+  let el = h`<div :onscroll:onclick:onx="e=>log.push(e.type)"></div>`
   let state = sprae(el, {log:[]})
 
   el.dispatchEvent(new window.Event('click'));
   is(state.log, ['click'])
   el.dispatchEvent(new window.Event('scroll'));
   is(state.log, ['click','scroll'])
+  el.dispatchEvent(new window.Event('x'));
+  is(state.log, ['click','scroll','x'])
 })
 
 test('on: in-out events', e => {
