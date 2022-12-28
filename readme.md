@@ -167,23 +167,6 @@ Add event listeners.
 <button :on="{ click: handler, touch: handler, special: handler }">Submit</button>
 ```
 
-<!--
-#### `:oninit="fn"`
-
-Create initializer handler - called whenever element is initialized by sprae.
-
-```html
-<div id="foo" :oninit="function(){ this === foo }"></div>
-```
-
-#### `:onmount="fn"`, `:onunmount="fn"`
-
-Invoked when element is connected or disconnected from DOM.
-
-```html
-```
--->
-
 #### `:data="values"`
 
 Set [data-*](https://developer.mozilla.org/en-US/docs/Web/HTML/Global_attributes/data-*) attributes. CamelCase is converted to dash-case.

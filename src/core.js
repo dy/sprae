@@ -9,6 +9,7 @@ export default function sprae(container, values) {
   if (memo.has(container)) return memo.get(container)
 
   values ||= {};
+  // FIXME: init values must read "snapshot" of signals to avoid leaking actual signals to directives
 
   const updates = []
 

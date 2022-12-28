@@ -97,17 +97,40 @@
 
 -> possibly we have to just subscribe via mechanism of signals-like deps, and :with just initializes subtree with extended object
 
-## [x] Get rid of :with? -> let's get rid of until really necessary
+## [ ] :with? ->
 
-+ with is bad JS practice/association
-+? is there a bona-fide use case?
-+ the implementation is heavy/unoptimal: two assign-updates happen: for root, for children
-+ it is exception blocking streamline implementation of refs
-+ it shadows data which creates all sorts of nasty debugging effects / states. Isn't it better to keep data/state transparent?
-  + it even enables transparency of :each scopes, since they inherit root scope
-+ it's easier to look out for data in one single place (state init), rather than in a bunch of markup locations
-+?! can be replaced with sort of `<x :xyz="xyz=...calc"></x>`, no?
-  -> would need wrapping noname scope access
+  1. Get rid of :with
+    + with is bad JS practice/association
+    +? is there a bona-fide use case?
+    + the implementation is heavy/unoptimal: two assign-updates happen: for root, for children
+    + it is exception blocking streamline implementation of refs
+    + it shadows data which creates all sorts of nasty debugging effects / states. Isn't it better to keep data/state transparent?
+      + it even enables transparency of :each scopes, since they inherit root scope
+    + it's easier to look out for data in one single place (state init), rather than in a bunch of markup locations
+    +?! can be replaced with sort of `<x :xyz="xyz=...calc"></x>`, no?
+      -> would need wrapping noname scope access
+    + `:with` defines too many concerns:
+      * binds root updates -> child updates;
+      * binds child updates to root updates (writes);
+      * defines local variables
+      * aliases root variables
+      ? is there value in all of these concerns? It seems we need only local variables, isn't it? Is there a chance partial extension can be required?
+    - `:with` can provide situational variables that are useful for props precalculation (since these variables can be reactive.)
+      * eg. `<span class="preloader" :with="{str: ''}" :init="setTimeout(() => str+='.', 500)" :text="str" />`
+      * that plays role of watch that doesn't require to be outside of local component state.
+    - `:with` allows local component state not cluttering global state. There's really no way to define local state that doesn't affect global state.
+  1.1 Slim `:with="{a,b,c}"` - just initializes vars
+    - Doesn't enable easy init syntax
+  2. Use `:let="x, y=2"`?
+    + Doesn't pollute scope but instead cleanly declares local variables
+    + Indicates only local initializer, not subscription
+    + Liquid has `assign` tag `{% assign myVar = false %}` - it only initializes variable
+    + Django `with` performs only alias / complex calc access https://docs.djangoproject.com/en/4.1/ref/templates/builtins/#with - it doesn't sync up global state.
+    ? call it `:define="x, y, z"`?
+      -> it seems `:with="x=1, y=2"` works well. `:let` has dissonance with js'y let.
+    ? how to extend state
+  3. `:with.x="1", :with.y="2"`
+    + easier to parse, since init code can be _messy_
 
 ## [x] Should we inherit values from `init` in `sprae(el, init)`, instead of creating a snapshot of reactive values in `init`? -> nah, nice idea but too little use. Better create signals struct.
 
@@ -191,11 +214,24 @@
     + methods provided in `init` may not have access to scope _yet_.
       ~- not reliable way to obtain scope via `this.x` - better be explicit as `state.x`
 
-## [x] :onconnected/:ondisconnected? -> let's move to plugins for now
+## [x] :onconnected/:ondisconnected? -> nah, just use noname effect or external functionality eg fast-on-load
 
-  -> waiting for use-case
+  + can be useful for :if, :each handlers, eg to start animation when element appears in DOM.
+  - it is not connected-disconnected: it has nothing to do with document: it attaches/detaches from parent.
+  - connected-disconnected is too long name
+  ? attach-detach?
+  ? onmount-onunmount?
+    - slows down domdiff
+    - can be solved as `<x :if="xxx" :="xxx ? (...) : '">` automatically
 
-## [x] Chain of events: often useful to have shared context. -> Try `:onstart..end`
+## [x] :focus="direct code", :evt="direct code" -> nah, too messy.
+
+  + makes proper use-case for direct code events
+  - doesn't make sense for rective properties inside
+  + better fit for special props like `:mount`
+  - tons of new special-meaning namespace props
+
+## [x] Chain of events: often useful to have shared context. -> Try `:onstart..onend`
 
   * focus/blur, connected/disconnected, mousedown/mouseup, keydown/keyup, touchstart/touchmove/touchend, dragstart/dragover/dragend, animationstart/animationover/animationend, transitionstart/transitionend
   ? is there a way to organize handlers for chains of events?
@@ -208,13 +244,14 @@
       - ? why not :on-focus-blur
       - ? why not :onfocus-onblur
       + can be converted from on="{ focusBlur: event }" via dash notation
+        - messy error messages
       + less :on prefixes
       + has better "flowy" meaning
     * 2.1 :onfocus-onblur="e => e => {}"
       + distinctive visually as 1
       + flowy nature of 2
       - blocks `:onfile-attached` and other dashed events
-        - `ona-onb` vs `ona-b-onc` is hard to parse mentally 
+        - `ona-onb` vs `ona-b-onc` is hard to parse mentally
     3. :onfocus.onblur="e => e => {}"
       - looks like a modifier
       - . can be used as event class onclick.x
@@ -231,6 +268,12 @@
       + all props of 5.
       + more obvious that blur is event.
 
+    4. `:onfocus="e => e => {}"` Keep registered pairs of events: just expect focus return blur, etc.
+      + Shorter syntax
+      + Avoids :onfile-attachment-accepted problem
+      - Less verbose and explicit
+      - No way to customize sequences, eg.  custom events
+
 ## [ ] Plugins
 
 * ~~@sprae/tailwind: `<x :tw="mt-1 mx-2"></x>` - separate tailwind utility classes from main ones; allow conditional setters.~~
@@ -238,7 +281,8 @@
   - can be solved naturally, unless there's special meaning
 * @sprae/hcodes: `<x :hcode=""` – provide microformats
 * @sprae/with
-* @sprae/connected
+* @sprae/onconnected
+* @sprae/onvisible?
 
 ## [x] Write any-attributes via `:<prop>? -> yep`
 
@@ -277,8 +321,10 @@
   + Provides precisely controlled sandbox
   - Some limited lang opportunities
     - need to match many syntax quirks, can be tedious
+      ~ can be fine to limit expressions to meaningful default: why Proxy, generators, awaits, global access etc.
   - Somewhat heavy to bundle
-  + Scope is easier to provide: no need for signal proxy essentially
+    ~ 1-2kb is not super-heavy, besides signal-struct kicks out
+  + Scope is easier to provide: no need for signal proxy
   + Can detect access errors in advance
   + Syntax-level access to signals can be inavoidable: external signals still "leak in" (via arrays or etc.).
   + Updating simple objects should also rerender the template parts, not just signals.
@@ -286,6 +332,9 @@
   - Screwed up debugging / stacktrace (unless errored)
   + that "unlimits" returned struct, so that any property can be added/deleted.
   - doesn't really save from `new (()=>{}).constructor` hack: we gotta substitute objects too.
+  + allows easier handle of `:with="a=1,b=2,c=3"` - we just naturally get local variables without messup with global
+    + we can even define locals without `let`...
+  - not having "comfy" compatible JS at hand: cognitive load of whole language "layer" in-between
 
 2. Use sandboxed proxy
   - tough evaluation
@@ -312,3 +361,32 @@
   + :ref="`a-${1}`"
   + :id:ref="xyz"
   ? maybe id should have same signature
+  ? should it be very similar mechanism to `:with="a=1,b=2"`
+
+## [ ] Event modifiers :ona.once, `:ona`
+
+  - .prevent,.stop - not needed since expects a function
+    ? or should we just trigger it for user?
+  ? :onclick.outside
+  ? :onclick.window, :onclick.document
+  ? :onclick.once
+  ? :onclick.debounce
+  ? :onclick.throttle.750ms
+  ? :onclick.self
+  ? :onspecial-event.camel, :onx-y.dot
+  ? :onclick.passive
+  ? :onkeypress.shift.enter
+    .shift	Shift
+    .enter	Enter
+    .space	Space
+    .ctrl	Ctrl
+    .cmd	Cmd
+    .meta	Cmd on Mac, Windows key on Windows
+    .alt	Alt
+    .up .down .left .right	Up/Down/Left/Right arrows
+    .escape	Escape
+    .tab	Tab
+    .caps-lock	Caps Lock
+    .equal	Equal, =
+    .period	Period, .
+    .slash	Foward Slash, /

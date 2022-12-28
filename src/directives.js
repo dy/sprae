@@ -45,6 +45,30 @@ directives['ref'] = (el, expr, values) => {
   values[expr] = el;
 }
 
+directives['with'] = (el, expr, rootState) => {
+  let evaluate = parseExpr(el, expr, 'with')
+
+  throw 'Unimplemented';
+
+  // prev iteration
+  // // Instead of extending signals (which is a bit hard since signal-struct internals is not uniform)
+  // // we bind updating
+  // const params = computed(() => Object.assign({}, rootState, evaluate(rootState)))
+
+  // // NOTE: initialized element doesn't proceed with its children
+  // let state = sprae(el, params.value)
+
+  // // but update is still called with parent state
+  // return (rootState) => batch(() => Object.assign(state, params.value))
+
+
+  // must be as simple as
+  // don't care if root state updates - we're subscribed to it via inheritance _or_ shadowing it
+  let withValues = evaluate(rootState);
+  let newState = Object.assign(Object.create(rootState), withValues)
+  sprae(el, newState)
+}
+
 directives['if'] = (el, expr, values) => {
   let holder = document.createTextNode(''),
       clauses = [parseExpr(el, expr, ':if')],
