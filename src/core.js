@@ -20,6 +20,7 @@ export default function sprae(container, values) {
         if (attr.name[0] !== ':') {i++; continue}
         el.removeAttribute(attr.name)
         let expr = attr.value
+        if (!expr) continue
         let attrNames = attr.name.slice(1).split(':')
         for (let attrName of attrNames) {
           let dir = directives[attrName] || defaultDirective;

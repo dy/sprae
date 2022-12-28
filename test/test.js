@@ -44,6 +44,12 @@ test('common: reactive', async () => {
   is(el.outerHTML, `<label for="email">email</label><input id="email" name="email" type="email"><a href="//google.com"></a><img src="//google.com">`)
 })
 
+test('common: empty strings', async () => {
+  let el = h`<x :="" :x=""></x>`
+  sprae(el)
+  is(el.outerHTML, `<x></x>`)
+})
+
 test('style', async () => {
   let el = h`<x style="left: 1px" :style="style"></x>`
   let params = sprae(el, {style: "top: 1px"})
@@ -443,7 +449,7 @@ test('on: state changes between chain of events', e => {
   is(log, [1, 1.1, 2])
 })
 
-test.skip('with: inline', () => {
+test.todo('with: inline', () => {
   let el = h`<x :with="{foo:'bar', baz}"><y :text="foo + baz"></y></x>`
   let state = sprae(el, {baz: 'qux'})
   // FIXME: this doesn't inherit root scope baz property and instead uses hard-initialized one
@@ -451,7 +457,7 @@ test.skip('with: inline', () => {
   state.baz = 'quux'
   is(el.innerHTML, `<y>barquux</y>`)
 })
-test.skip('with: inline reactive', () => {
+test.todo('with: inline reactive', () => {
   let el = h`<x :with="{foo:'bar', baz}"><y :text="foo + baz"></y></x>`
   let baz = signal('qux')
   let state = sprae(el, {baz})
@@ -460,7 +466,7 @@ test.skip('with: inline reactive', () => {
   baz.value = 'quux'
   is(el.innerHTML, `<y>barquux</y>`)
 })
-test.skip('with: data', () => {
+test.todo('with: data', () => {
   let el = h`<x :with="x"><y :text="foo"></y></x>`
   let state = sprae(el, {x:{foo:'bar'}})
   is(el.innerHTML, `<y>bar</y>`)
@@ -468,7 +474,7 @@ test.skip('with: data', () => {
   Object.assign(state, {x:{foo:'baz'}})
   is(el.innerHTML, `<y>baz</y>`)
 })
-test.skip('with: transparency', () => {
+test.todo('with: transparency', () => {
   // NOTE: y:text initializes through directive, not through parent
   // therefore by default :text uses parent's state, not defined by element itself
   let el = h`<x :with="{foo:'foo'}"><y :with="b" :text="foo+bar"></y></x>`
@@ -477,7 +483,7 @@ test.skip('with: transparency', () => {
   params.b.bar = 'baz'
   is(el.innerHTML, `<y>foobaz</y>`)
 })
-test.skip('with: reactive transparency', () => {
+test.todo('with: reactive transparency', () => {
   let el = h`<x :with="{foo:1}"><y :with="b.c" :text="foo+bar"></y></x>`
   const bar = signal('2')
   sprae(el, {b:{c:{bar}}})
@@ -485,7 +491,7 @@ test.skip('with: reactive transparency', () => {
   bar.value = '3'
   is(el.innerHTML, `<y>13</y>`)
 })
-test.skip('with: writes to state', () => {
+test.todo('with: writes to state', () => {
   let a = h`<x :with="{a:1}"><y :on="{x(){a++}}" :text="a"></y></x>`
   sprae(a)
   is(a.innerHTML, `<y>1</y>`)
@@ -523,13 +529,19 @@ test(':: reactive values', async () => {
   is(el.outerHTML, `<x>2</x>`)
 })
 
+test(':: null result does nothing', async () => {
+  let a = h`<x :="undefined"></x>`
+  sprae(a)
+  is(a.outerHTML, `<x></x>`)
+})
+
 test(':: scope refers to current element', async () => {
   let el = h`<x :text="log.push(this)"></x>`
   let state = sprae(el, {log:[]})
   is(state.log, [el])
 })
 
-test.skip(':: scope directives must come first', async () => {
+test.todo(':: scope directives must come first', async () => {
   // NOTE: we init attributes in order of definition
   let a = h`<x :text="y" :with="{y:1}" :ref="x"></x>`
   sprae(a, {})
