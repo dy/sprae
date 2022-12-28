@@ -195,30 +195,6 @@ Set [aria-role](https://developer.mozilla.org/en-US/docs/Web/Accessibility/ARIA)
 -->
 ```
 
-<!--
-#### `:with="data"`
-
-Set data for a subtree fragment scope.
-
-```html
-<!-- Inline data --!>
-<x :with="{ foo: 'bar' }" :text="foo"></x>
-
-<!-- External data --!>
-<y :with="data"></y>
-
-<!-- Inheritance --!>
-<x :with="{ foo: 'bar' }">
-  <y :with="{ baz: 'qux' }" :text="foo + baz"></y>
-</x>
-
-<!-- Single property --!>
-<li :with="this as li">
-  <input :onfocus-onblur="e => (li.classList.add('editing'), e => li.classList.remove('editing'))" />
-</li>
-```
--->
-
 #### `:ref="id"`
 
 Expose element to data scope with the `id`:
