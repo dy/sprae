@@ -221,9 +221,7 @@ directives['on'] = (el, expr, values) => {
 
   return (state) => {
     for (let evt in listeners) removeListener(el, evt, listeners[evt])
-
     listeners = evaluate(state);
-
     for (let evt in listeners) addListener(el, evt, listeners[evt])
   }
 }
@@ -237,7 +235,7 @@ const addListener = (el, evt, startFn) => {
     const nextEvt = (fn, cur=0) => {
       let curListener = e => {
         el.removeEventListener(evts[cur], curListener)
-        if (typeof (fn = fn(e)) !== 'function') fn = ()=>{}
+        if (typeof (fn = fn.call(el,e)) !== 'function') fn = ()=>{}
         if (++cur < evts.length) nextEvt(fn, cur);
         else if (!startFn[_stop]) console.log('reset'), nextEvt(startFn); // update only if chain isn't stopped
       }

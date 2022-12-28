@@ -29,8 +29,10 @@
   * [x] Make sure `false` gets serialized, not removes attr
 * [ ] Sandbox expressions: no global, no "scope" object name, no "arguments"
 * ~~[x] report usignal problem~~ author is not really interested
-* [ ] :oninit
+* [x] `this` doesn't refer to element/scope in event handlers
+* [x] :text="" empty values shouldn't throw
 * [ ] frameworks benchmark
 * [ ] examples
   * [x] todomvc
   * [ ] wave-edit
+* [ ] `sprae(el, newState)` can update element's state directly (as batch!?) -> must be tested against repeats in directives

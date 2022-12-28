@@ -353,6 +353,20 @@ test('on: base', () => {
   is(log.value, ['click','x','xx']);
 })
 
+test('onevt: this context', e => {
+  let el = h`<div :onx="function(){log.push(this)}"></div>`
+  let state = sprae(el, {log: []})
+  el.dispatchEvent(new window.Event('x'));
+  is(state.log, [el])
+})
+
+test('on: this in chains refers to el', () => {
+  let el = h`<div :ona..onb="function(e){x=this; log.push(1); return () => log.push(2)}"></div>`
+  let state = sprae(el, {log:[], x:null})
+  el.dispatchEvent(new window.Event('a'));
+  is(state.log, [1])
+})
+
 test('on: multiple events', e => {
   let el = h`<div :onscroll:onclick:onx="e=>log.push(e.type)"></div>`
   let state = sprae(el, {log:[]})
@@ -368,11 +382,11 @@ test('on: multiple events', e => {
 test('on: in-out events', e => {
   // let el = document.createElement('x');
   // el.setAttribute(':onmousedown..onmouseup', 'e=>(log.push(e.type),e=>log.push(e.type))')
-  let el = h`<x :onmousedown..onmouseup="e=>(log.push(e.type),e=>log.push(e.type))"></x>`
+  let el = h`<x :onmousedown..onmouseup="(e) => { x=this; log.push(e.type); return e=>log.push(e.type); }"></x>`
 
-  let state = sprae(el, {log:[]})
-
+  let state = sprae(el, {log:[],x:null})
   el.dispatchEvent(new window.Event('mousedown'));
+  is(state.x, el);
   is(state.log, ['mousedown'])
   el.dispatchEvent(new window.Event('mouseup'));
   is(state.log, ['mousedown','mouseup'])
