@@ -452,11 +452,14 @@ var primitive_pool_default = (key) => {
 // src/directives.js
 var directives = {};
 var directives_default = (el, expr, values, name) => {
-  if (name.startsWith("on")) {
-    return directives.on(el, `{"${name.split("-").map((n2) => n2.startsWith("on") ? n2.slice(2) : n2).join("-")}": ${expr}}`, values);
-  }
+  let evt = name.startsWith("on") && name.slice(2);
   let evaluate = parseExpr(el, expr, ":" + name);
-  return (state) => attr(el, name, evaluate(state));
+  let value;
+  return evt ? (state) => {
+    value && removeListener(el, evt, value);
+    value = evaluate(state);
+    value && addListener(el, evt, value);
+  } : (state) => attr(el, name, evaluate(state));
 };
 var attr = (el, name, v2) => {
   if (v2 == null || v2 === false)
@@ -481,6 +484,13 @@ directives["ref"] = (el, expr, values) => {
   }
   ;
   values[expr] = el;
+};
+directives["with"] = (el, expr, rootState) => {
+  let evaluate = parseExpr(el, expr, "with");
+  throw "Unimplemented";
+  let withValues = evaluate(rootState);
+  let newState = Object.assign(Object.create(rootState), withValues);
+  sprae(el, newState);
 };
 directives["if"] = (el, expr, values) => {
   let holder = document.createTextNode(""), clauses = [parseExpr(el, expr, ":if")], els = [el], cur = el;
@@ -620,34 +630,43 @@ directives["value"] = (el, expr, values) => {
   } : (value) => el.value = value;
   return (state) => update(evaluate(state));
 };
+var _stop = Symbol("stop");
 directives["on"] = (el, expr, values) => {
   let evaluate = parseExpr(el, expr, ":on");
   let listeners = {};
   return (state) => {
     for (let evt in listeners)
-      el.removeEventListener(evt, listeners[evt]);
+      removeListener(el, evt, listeners[evt]);
     listeners = evaluate(state);
-    for (let evt in listeners) {
-      const evts = evt.split("-");
-      if (evts.length === 1)
-        el.addEventListener(evt, listeners[evt]);
-      else {
-        const startFn = listeners[evt];
-        const nextEvt = (fn, cur = 0) => {
-          el.addEventListener(evts[cur], listeners[evt] = (e2) => {
-            fn = fn(e2);
-            el.removeEventListener(evts[cur], listeners[evt]);
-            if (++cur < evts.length && typeof fn === "function")
-              nextEvt(fn, cur);
-            else
-              nextEvt(startFn);
-          });
-        };
-        nextEvt(startFn);
-      }
-    }
-    ;
+    for (let evt in listeners)
+      addListener(el, evt, listeners[evt]);
   };
+};
+var addListener = (el, evt, startFn) => {
+  if (evt.indexOf("..") < 0)
+    el.addEventListener(evt, startFn);
+  else {
+    const evts = evt.split("..").map((e2) => e2.startsWith("on") ? e2.slice(2) : e2);
+    const nextEvt = (fn, cur = 0) => {
+      let curListener = (e2) => {
+        el.removeEventListener(evts[cur], curListener);
+        if (typeof (fn = fn.call(el, e2)) !== "function")
+          fn = () => {
+          };
+        if (++cur < evts.length)
+          nextEvt(fn, cur);
+        else if (!startFn[_stop])
+          console.log("reset"), nextEvt(startFn);
+      };
+      el.addEventListener(evts[cur], curListener);
+    };
+    nextEvt(startFn);
+  }
+};
+var removeListener = (el, evt, fn) => {
+  if (evt.indexOf("..") >= 0)
+    console.log("rewire"), fn[_stop] = true;
+  el.removeEventListener(evt, fn);
 };
 directives["data"] = (el, expr, values) => {
   let evaluate = parseExpr(el, expr, ":data");
@@ -720,6 +739,8 @@ function sprae(container, values) {
         }
         el.removeAttribute(attr2.name);
         let expr = attr2.value;
+        if (!expr)
+          continue;
         let attrNames = attr2.name.slice(1).split(":");
         for (let attrName of attrNames) {
           let dir = directives[attrName] || directives_default;
