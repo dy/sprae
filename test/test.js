@@ -359,8 +359,8 @@ test('on: multiple events', e => {
 
 test('on: in-out events', e => {
   // let el = document.createElement('x');
-  // el.setAttribute(':onmousedown-onmouseup', 'e=>(log.push(e.type),e=>log.push(e.type))')
-  let el = h`<x :onmousedown-onmouseup="e=>(log.push(e.type),e=>log.push(e.type))"></x>`
+  // el.setAttribute(':onmousedown..onmouseup', 'e=>(log.push(e.type),e=>log.push(e.type))')
+  let el = h`<x :onmousedown..onmouseup="e=>(log.push(e.type),e=>log.push(e.type))"></x>`
 
   let state = sprae(el, {log:[]})
 
@@ -374,7 +374,7 @@ test('on: in-out side-effects', e => {
   let log = []
 
   // 1. skip in event and do directly out
-  let el = h`<x :onin-onout="io"></x>`
+  let el = h`<x :onin..onout="io"></x>`
   sprae(el, { io(e) {
     log.push(e.type)
     return (e) => (log.push(e.type), [1,2,3])
@@ -401,7 +401,7 @@ test('on: in-out side-effects', e => {
 })
 
 test('on: chain of events', e => {
-  let el = h`<div :onmousedown-onmousemove-onmouseup="e=>(log.push(e.type),e=>(log.push(e.type),e=>log.push(e.type)))"></div>`
+  let el = h`<div :onmousedown..onmousemove..onmouseup="e=>(log.push(e.type),e=>(log.push(e.type),e=>log.push(e.type)))"></div>`
   let state = sprae(el, {log:[]})
 
   el.dispatchEvent(new window.Event('mousedown'));
@@ -410,6 +410,35 @@ test('on: chain of events', e => {
   is(state.log, ['mousedown','mousemove'])
   el.dispatchEvent(new window.Event('mouseup'));
   is(state.log, ['mousedown','mousemove','mouseup'])
+})
+
+test('on: state changes between chain of events', e => {
+  let el = h`<x :on="{'x..y':fn}"></x>`
+  let log = []
+  let state = sprae(el, {log, fn: () => console.log('log1')||log.push(1)})
+  console.log('xx')
+  el.dispatchEvent(new window.Event('x'));
+  el.dispatchEvent(new window.Event('x'));
+  is(log, [1])
+  state.fn = () => (console.log('log1.1')||log.push(1.1), () => log.push(2))
+  is(log, [1])
+  // console.log('xx')
+  // NOTE: state update registers new chain listener before finishing prev chain
+  // el.dispatchEvent(new window.Event('x'));
+  // el.dispatchEvent(new window.Event('x'));
+  // is(log, [1])
+  console.log('yy')
+  el.dispatchEvent(new window.Event('y'));
+  el.dispatchEvent(new window.Event('y'));
+  is(log, [1])
+  console.log('xx')
+  el.dispatchEvent(new window.Event('x'));
+  el.dispatchEvent(new window.Event('x'));
+  is(log, [1, 1.1])
+  console.log('yy')
+  el.dispatchEvent(new window.Event('y'));
+  el.dispatchEvent(new window.Event('y'));
+  is(log, [1, 1.1, 2])
 })
 
 test.skip('with: inline', () => {

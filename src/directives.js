@@ -10,7 +10,7 @@ export const directives = {}
 export default (el, expr, values, name) => {
   if (name.startsWith('on')) {
     // FIXME :ona:onb=x -> :on={a:x,b:x}
-    // FIXME :ona--onb=x -> :on={a--b:x}
+    // FIXME :ona..onb=x -> :on={a..b:x}
     return directives.on(el, `{"${name.slice(2)}": ${expr}}`, values)
   }
   let evaluate = parseExpr(el, expr, ':'+name)
@@ -212,32 +212,42 @@ directives['value'] = (el, expr, values) => {
   return (state) => update(evaluate(state))
 }
 
+const _stop = Symbol('stop')
 directives['on'] = (el, expr, values) => {
   let evaluate = parseExpr(el, expr, ':on')
   let listeners = {}
 
   return (state) => {
-    for (let evt in listeners) el.removeEventListener(evt, listeners[evt]);
+    for (let evt in listeners) removeListener(el, evt, listeners[evt])
 
     listeners = evaluate(state);
 
-    for (let evt in listeners) {
-      const evts = evt.split('--')
-      if (evts.length===1) el.addEventListener(evt, listeners[evt]);
-      else {
-        const startFn = listeners[evt]
-        const nextEvt = (fn, cur=0) => {
-          el.addEventListener(evts[cur], listeners[evt] = e => {
-            fn = fn(e)
-            el.removeEventListener(evts[cur], listeners[evt])
-            if (++cur < evts.length && typeof fn === 'function') nextEvt(fn, cur)
-            else nextEvt(startFn)
-          })
-        }
-        nextEvt(startFn)
-      }
-    };
+    for (let evt in listeners) addListener(el, evt, listeners[evt])
   }
+}
+
+const addListener = (el, evt, startFn) => {
+  if (evt.indexOf('..')<0) el.addEventListener(evt, startFn);
+
+  // sequences like `a..b`: fn
+  else {
+    const evts = evt.split('..').map(e => e.startsWith('on') ? e.slice(2) : e)
+    const nextEvt = (fn, cur=0) => {
+      let curListener = e => {
+        el.removeEventListener(evts[cur], curListener)
+        if (typeof (fn = fn(e)) !== 'function') fn = ()=>{}
+        if (++cur < evts.length) nextEvt(fn, cur);
+        else if (!startFn[_stop]) console.log('reset'), nextEvt(startFn); // update only if chain isn't stopped
+      }
+      el.addEventListener(evts[cur],curListener)
+    }
+    nextEvt(startFn)
+  }
+}
+
+const removeListener = (el, evt, fn) => {
+  if (evt.indexOf('..')>=0) console.log('rewire'), fn[_stop] = true
+  el.removeEventListener(evt, fn);
 }
 
 directives['data'] = (el, expr, values) => {

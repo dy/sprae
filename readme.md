@@ -173,7 +173,7 @@ Create initializer handler - called whenever element is initialized by sprae.
 <div id="foo" :oninit="function(){ this === foo }"></div>
 ```
 
-#### `:onconnect="fn"`, `:ondisconnect="fn"`
+#### `:onmount="fn"`, `:onunmount="fn"`
 
 Invoked when element is connected or disconnected from DOM.
 
