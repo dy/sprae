@@ -124,9 +124,9 @@ Set value of an input, textarea or select. Takes handle of `checked` and `select
 </select>
 ```
 
-#### `:<prop>="value"`, `:="props?"`
+#### `:<prop>="value?"`, `:="props?"`
 
-Set any prop value or just run effect.
+Set any prop value or just run effect (returns nullish value).
 
 ```html
 <!-- Single property -->
@@ -138,8 +138,8 @@ Set any prop value or just run effect.
 <!-- Bulk properties -->
 <input :="{ id: name, name, type:'text', value }" />
 
-<!-- Effect (triggers any time foo or bar changes) -->
-<div :="if (foo) bar;"></div>
+<!-- Effects (trigger any time foo or bar changes) -->
+<div :="if (foo) bar()" :fx="void bar()" ></div>
 ```
 
 #### `:on<event>="handler"`, `:on="events"`, `:<in>..<out>="handler"`
