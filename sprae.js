@@ -363,33 +363,37 @@ var sube_default = (target, next, error, complete, stop, unsub) => target && (un
 var isSignal = (v2) => v2 && v2.peek;
 var isStruct = (v2) => v2 && v2[_struct];
 var _struct = Symbol("signal-struct");
-function SignalStruct(values) {
-  if (isStruct(values))
+signalStruct.isStruct = isStruct;
+function signalStruct(values, proto) {
+  if (isStruct(values) && !proto)
     return values;
   let state, signals;
   if (isObject(values)) {
-    state = {}, signals = {};
+    state = Object.create(proto || Object.getPrototypeOf(values)), signals = {};
     let desc = Object.getOwnPropertyDescriptors(values);
-    for (let key in desc)
-      signals[key] = defineSignal(state, key, desc[key].get ? w(desc[key].get.bind(state)) : desc[key].value);
+    if (isStruct(values))
+      for (let key in desc)
+        Object.defineProperty(state, key, desc[key]);
+    else
+      for (let key in desc)
+        signals[key] = defineSignal(state, key, desc[key].get ? w(desc[key].get.bind(state)) : desc[key].value);
     Object.defineProperty(state, _struct, { configurable: false, enumerable: false, value: true });
-    Object.seal(state);
     return state;
   }
   if (Array.isArray(values)) {
-    return values.map((v2) => SignalStruct(v2));
+    return values.map((v2) => signalStruct(v2));
   }
   return values;
 }
 function defineSignal(state, key, value) {
-  let isObservable, s2 = isSignal(value) ? value : isObject(value) || Array.isArray(value) ? u(SignalStruct(value)) : u((isObservable = observable(value)) ? void 0 : value);
+  let isObservable, s2 = isSignal(value) ? value : isObject(value) || Array.isArray(value) ? u(signalStruct(value)) : u((isObservable = observable(value)) ? void 0 : value);
   if (isObservable)
     sube_default(value, (v2) => s2.value = v2);
   Object.defineProperty(state, key, {
     get() {
       return s2.value;
     },
-    set: !isSignal(value) && isObject(value) ? (v2) => v2 ? Object.assign(s2.value, v2) : s2.value = SignalStruct(v2) : (v2) => s2.value = SignalStruct(v2),
+    set: !isSignal(value) && isObject(value) ? (v2) => v2 ? Object.assign(s2.value, v2) : s2.value = signalStruct(v2) : (v2) => s2.value = signalStruct(v2),
     enumerable: true,
     configurable: false
   });
@@ -467,7 +471,7 @@ var attr = (el, name, v2) => {
   else
     el.setAttribute(name, v2 === true ? "" : typeof v2 === "number" || typeof v2 === "string" ? v2 : "");
 };
-directives[""] = (el, expr, values) => {
+directives[""] = (el, expr) => {
   let evaluate = parseExpr(el, expr, ":");
   return (state) => {
     let value = evaluate(state);
@@ -477,22 +481,19 @@ directives[""] = (el, expr, values) => {
 };
 var _each = Symbol(":each");
 var _ref = Symbol(":ref");
-directives["ref"] = (el, expr, values) => {
+directives["ref"] = (el, expr, state) => {
   if (el.hasAttribute(":each")) {
     el[_ref] = expr;
     return;
   }
   ;
-  values[expr] = el;
+  state[expr] = el;
 };
 directives["with"] = (el, expr, rootState) => {
   let evaluate = parseExpr(el, expr, "with");
-  throw "Unimplemented";
-  let withValues = evaluate(rootState);
-  let newState = Object.assign(Object.create(rootState), withValues);
-  sprae(el, newState);
+  sprae(el, signalStruct(evaluate(rootState), rootState));
 };
-directives["if"] = (el, expr, values) => {
+directives["if"] = (el, expr) => {
   let holder = document.createTextNode(""), clauses = [parseExpr(el, expr, ":if")], els = [el], cur = el;
   while (cur = el.nextElementSibling) {
     if (cur.hasAttribute(":else")) {
@@ -518,7 +519,7 @@ directives["if"] = (el, expr, values) => {
     }
   };
 };
-directives["each"] = (tpl, expr, values) => {
+directives["each"] = (tpl, expr) => {
   let each = parseForExpression(expr);
   if (!each)
     return exprError(new Error(), tpl, expr);
@@ -534,12 +535,12 @@ directives["each"] = (tpl, expr, values) => {
       list = [];
     else if (typeof list === "number")
       list = Array.from({ length: list }, (_2, i2) => [i2, i2 + 1]);
-    else if (list.constructor === Object)
-      list = Object.entries(list);
     else if (Array.isArray(list))
       list = list.map((item, i2) => [i2 + 1, item]);
+    else if (typeof list === "object")
+      list = Object.entries(list);
     else
-      exprError(Error("Bad list value"), tpl, each.items, ":each", list);
+      exprError(Error("Bad list value"), tpl, expr, ":each", list);
     let newEls = [], elScopes = [];
     for (let [idx, item] of list) {
       let itemKey = primitive_pool_default(item);
@@ -586,12 +587,12 @@ function parseForExpression(expression) {
   }
   return res;
 }
-directives["id"] = (el, expr, values) => {
+directives["id"] = (el, expr) => {
   let evaluate = parseExpr(el, expr, ":id");
   const update = (v2) => el.id = v2 || v2 === 0 ? v2 : "";
   return (state) => update(evaluate(state));
 };
-directives["class"] = (el, expr, values) => {
+directives["class"] = (el, expr) => {
   let evaluate = parseExpr(el, expr, ":class");
   let initClassName = el.className;
   return (state) => {
@@ -599,7 +600,7 @@ directives["class"] = (el, expr, values) => {
     el.className = initClassName + typeof v2 === "string" ? v2 : (Array.isArray(v2) ? v2 : Object.entries(v2).map(([k, v3]) => v3 ? k : "")).filter(Boolean).join(" ");
   };
 };
-directives["style"] = (el, expr, values) => {
+directives["style"] = (el, expr) => {
   let evaluate = parseExpr(el, expr, ":style");
   let initStyle = el.getAttribute("style") || "";
   if (!initStyle.endsWith(";"))
@@ -613,14 +614,14 @@ directives["style"] = (el, expr, values) => {
         el.style[k] = v2[k];
   };
 };
-directives["text"] = (el, expr, values) => {
+directives["text"] = (el, expr) => {
   let evaluate = parseExpr(el, expr, ":text");
-  const update = (value) => {
+  return (state) => {
+    let value = evaluate(state);
     el.textContent = value == null ? "" : value;
   };
-  return (state) => update(evaluate(state));
 };
-directives["value"] = (el, expr, values) => {
+directives["value"] = (el, expr) => {
   let evaluate = parseExpr(el, expr, ":value");
   let update = el.type === "text" || el.type === "" ? (value) => el.setAttribute("value", el.value = value == null ? "" : value) : el.type === "checkbox" ? (value) => (el.value = value ? "on" : "", attr(el, "checked", value)) : el.type === "select-one" ? (value) => {
     for (let option in el.options)
@@ -631,7 +632,7 @@ directives["value"] = (el, expr, values) => {
   return (state) => update(evaluate(state));
 };
 var _stop = Symbol("stop");
-directives["on"] = (el, expr, values) => {
+directives["on"] = (el, expr) => {
   let evaluate = parseExpr(el, expr, ":on");
   let listeners = {};
   return (state) => {
@@ -668,7 +669,7 @@ var removeListener = (el, evt, fn) => {
     console.log("rewire"), fn[_stop] = true;
   el.removeEventListener(evt, fn);
 };
-directives["data"] = (el, expr, values) => {
+directives["data"] = (el, expr) => {
   let evaluate = parseExpr(el, expr, ":data");
   return (state) => {
     let value = evaluate(state);
@@ -676,7 +677,7 @@ directives["data"] = (el, expr, values) => {
       el.dataset[key] = value[key];
   };
 };
-directives["aria"] = (el, expr, values) => {
+directives["aria"] = (el, expr) => {
   let evaluate = parseExpr(el, expr, ":aria");
   const update = (value) => {
     for (let key in value)
@@ -727,7 +728,7 @@ function sprae(container, values) {
     return;
   if (memo.has(container))
     return memo.get(container);
-  values ||= {};
+  const state = signalStruct(values || {});
   const updates = [];
   const init = (el, parent = el.parentNode) => {
     if (el.attributes) {
@@ -744,7 +745,7 @@ function sprae(container, values) {
         let attrNames = attr2.name.slice(1).split(":");
         for (let attrName of attrNames) {
           let dir = directives[attrName] || directives_default;
-          updates.push(dir(el, expr, values, attrName) || (() => {
+          updates.push(dir(el, expr, state, attrName) || (() => {
           }));
           if (memo.has(el) || el.parentNode !== parent)
             return false;
@@ -757,9 +758,9 @@ function sprae(container, values) {
     }
   };
   init(container);
-  const state = SignalStruct(values);
   for (let update of updates)
     b(() => update(state));
+  Object.seal(state);
   memo.set(container, state);
   return state;
 }

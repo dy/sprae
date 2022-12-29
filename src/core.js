@@ -8,9 +8,8 @@ export default function sprae(container, values) {
   if (!container.children) return
   if (memo.has(container)) return memo.get(container)
 
-  values ||= {};
-  // FIXME: init values must read "snapshot" of signals to avoid leaking actual signals to directives
-
+  // signalStruct returns values if it's signalStruct already
+  const state = signalStruct(values || {});
   const updates = []
 
   // init directives on element
@@ -25,7 +24,7 @@ export default function sprae(container, values) {
         let attrNames = attr.name.slice(1).split(':')
         for (let attrName of attrNames) {
           let dir = directives[attrName] || defaultDirective;
-          updates.push(dir(el, expr, values, attrName) || (()=>{}));
+          updates.push(dir(el, expr, state, attrName) || (()=>{}));
 
           // stop if element was spraed by directive or skipped
           if (memo.has(el) || el.parentNode !== parent) return false
@@ -43,9 +42,9 @@ export default function sprae(container, values) {
 
   // call updates: subscribes directives to state;
   // state is created after inits because directives can extend init values (expose refs etc)
-  const state = signalStruct(values);
   for (let update of updates) effect(() => update(state));
 
+  Object.seal(state);
   memo.set(container, state);
 
   return state;

@@ -463,32 +463,33 @@ test('on: state changes between chain of events', e => {
   is(log, [1, 1.1, 2])
 })
 
-test.todo('with: inline', () => {
-  let el = h`<x :with="{foo:'bar', baz}"><y :text="foo + baz"></y></x>`
+test('with: inline', () => {
+  let el = h`<x :with="{foo:'bar'}"><y :text="foo + baz"></y></x>`
   let state = sprae(el, {baz: 'qux'})
   // FIXME: this doesn't inherit root scope baz property and instead uses hard-initialized one
   is(el.innerHTML, `<y>barqux</y>`)
   state.baz = 'quux'
   is(el.innerHTML, `<y>barquux</y>`)
 })
-test.todo('with: inline reactive', () => {
-  let el = h`<x :with="{foo:'bar', baz}"><y :text="foo + baz"></y></x>`
+test('with: inline reactive', () => {
+  let el = h`<x :with="{foo:'bar'}"><y :text="foo + baz"></y></x>`
   let baz = signal('qux')
-  let state = sprae(el, {baz})
+  sprae(el, {baz})
   // FIXME: this doesn't inherit root scope baz property and instead uses hard-initialized one
   is(el.innerHTML, `<y>barqux</y>`)
   baz.value = 'quux'
   is(el.innerHTML, `<y>barquux</y>`)
 })
-test.todo('with: data', () => {
+test('with: data', () => {
   let el = h`<x :with="x"><y :text="foo"></y></x>`
   let state = sprae(el, {x:{foo:'bar'}})
   is(el.innerHTML, `<y>bar</y>`)
   console.log('update')
-  Object.assign(state, {x:{foo:'baz'}})
+  state.x.foo = 'baz'
+  // Object.assign(state, {x:{foo:'baz'}})
   is(el.innerHTML, `<y>baz</y>`)
 })
-test.todo('with: transparency', () => {
+test('with: transparency', () => {
   // NOTE: y:text initializes through directive, not through parent
   // therefore by default :text uses parent's state, not defined by element itself
   let el = h`<x :with="{foo:'foo'}"><y :with="b" :text="foo+bar"></y></x>`
@@ -497,7 +498,7 @@ test.todo('with: transparency', () => {
   params.b.bar = 'baz'
   is(el.innerHTML, `<y>foobaz</y>`)
 })
-test.todo('with: reactive transparency', () => {
+test('with: reactive transparency', () => {
   let el = h`<x :with="{foo:1}"><y :with="b.c" :text="foo+bar"></y></x>`
   const bar = signal('2')
   sprae(el, {b:{c:{bar}}})
@@ -505,7 +506,7 @@ test.todo('with: reactive transparency', () => {
   bar.value = '3'
   is(el.innerHTML, `<y>13</y>`)
 })
-test.todo('with: writes to state', () => {
+test('with: writes to state', () => {
   let a = h`<x :with="{a:1}"><y :on="{x(){a++}}" :text="a"></y></x>`
   sprae(a)
   is(a.innerHTML, `<y>1</y>`)
