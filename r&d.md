@@ -97,7 +97,7 @@
 
 -> possibly we have to just subscribe via mechanism of signals-like deps, and :with just initializes subtree with extended object
 
-## [ ] :with? ->
+## [ ] :with? -> let's use `:with="{x:1,y:2,z:3}"` for now
 
   1. Get rid of :with
     + with is bad JS practice/association
@@ -120,7 +120,8 @@
       * that plays role of watch that doesn't require to be outside of local component state.
     - `:with` allows local component state not cluttering global state. There's really no way to define local state that doesn't affect global state.
   1.1 Slim `:with="{a,b,c}"` - just initializes vars
-    - Doesn't enable easy init syntax
+    - Doesn't give easy init syntax
+    + Convevtional and not hard to implement
   2. Use `:let="x, y=2"`?
     + Doesn't pollute scope but instead cleanly declares local variables
     + Indicates only local initializer, not subscription
