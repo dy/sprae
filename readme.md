@@ -195,6 +195,23 @@ Set [aria-role](https://developer.mozilla.org/en-US/docs/Web/Accessibility/ARIA)
 -->
 ```
 
+#### `:with="data"`
+
+Define variables for a subtree fragment scope.
+
+```html
+<!-- Inline data -->
+<x :with="{ foo: 'bar' }" :text="foo"></x>
+
+<!-- External data -->
+<y :with="data"></y>
+
+<!-- Transparency -->
+<x :with="{ foo: 'bar' }">
+  <y :with="{ baz: 'qux' }" :text="foo + baz"></y>
+</x>
+```
+
 #### `:ref="id"`
 
 Expose element to data scope with the `id`:
@@ -218,6 +235,7 @@ Expose element to data scope with the `id`:
   state.text // <textarea></textarea>
 </script>
 ```
+
 
 <!--
 
