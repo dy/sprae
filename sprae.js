@@ -657,7 +657,7 @@ var addListener = (el, evt, startFn) => {
         if (++cur < evts.length)
           nextEvt(fn, cur);
         else if (!startFn[_stop])
-          console.log("reset"), nextEvt(startFn);
+          nextEvt(startFn);
       };
       el.addEventListener(evts[cur], curListener);
     };
@@ -666,7 +666,7 @@ var addListener = (el, evt, startFn) => {
 };
 var removeListener = (el, evt, fn) => {
   if (evt.indexOf("..") >= 0)
-    console.log("rewire"), fn[_stop] = true;
+    fn[_stop] = true;
   el.removeEventListener(evt, fn);
 };
 directives["data"] = (el, expr) => {

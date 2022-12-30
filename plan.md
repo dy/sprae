@@ -31,7 +31,8 @@
 * ~~[x] report usignal problem~~ author is not really interested
 * [x] `this` doesn't refer to element/scope in event handlers
 * [x] :text="" empty values shouldn't throw
-* [ ] implement :with
+* [x] implement :with
+* [ ] :if :ref, :if :with -> context setters must come first always
 * [ ] frameworks benchmark
 * [ ] examples
   * [x] todomvc

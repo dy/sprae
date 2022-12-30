@@ -242,7 +242,7 @@ const addListener = (el, evt, startFn) => {
         el.removeEventListener(evts[cur], curListener)
         if (typeof (fn = fn.call(el,e)) !== 'function') fn = ()=>{}
         if (++cur < evts.length) nextEvt(fn, cur);
-        else if (!startFn[_stop]) console.log('reset'), nextEvt(startFn); // update only if chain isn't stopped
+        else if (!startFn[_stop]) nextEvt(startFn); // update only if chain isn't stopped
       }
       el.addEventListener(evts[cur],curListener)
     }
@@ -251,7 +251,7 @@ const addListener = (el, evt, startFn) => {
 }
 
 const removeListener = (el, evt, fn) => {
-  if (evt.indexOf('..')>=0) console.log('rewire'), fn[_stop] = true
+  if (evt.indexOf('..')>=0) fn[_stop] = true
   el.removeEventListener(evt, fn);
 }
 
