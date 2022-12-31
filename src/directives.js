@@ -13,7 +13,7 @@ export default (el, expr, values, name) => {
   let evaluate = parseExpr(el, expr, ':'+name)
 
   let value
-  return evt ? state => {
+  if (evaluate) return evt ? state => {
     value && removeListener(el, evt, value)
     value = evaluate(state)
     value && addListener(el, evt, value)
@@ -29,7 +29,7 @@ const attr = (el, name, v) => {
 
 directives[''] = (el, expr) => {
   let evaluate = parseExpr(el, expr, ':')
-  return (state) => {
+  if (evaluate) return (state) => {
     let value = evaluate(state)
     for (let key in value) attr(el, dashcase(key), value[key]);
   }
@@ -294,7 +294,7 @@ function parseExpr(el, expression, dir) {
   // guard static-time eval errors
   let evaluate
   try {
-    evaluate = new Function(`__scope`,`with (__scope) { return (${rightSideSafeExpression}) };`).bind(el)
+    evaluate = new Function(`__scope`,`with (__scope) { return ${rightSideSafeExpression} };`).bind(el)
   } catch ( e ) {
     return exprError(e, el, expression, dir)
   }

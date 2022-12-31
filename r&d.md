@@ -391,3 +391,4 @@
     .equal	Equal, =
     .period	Period, .
     .slash	Foward Slash, /
+  - conflict with dot-separated events

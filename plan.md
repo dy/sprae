@@ -32,6 +32,14 @@
 * [x] `this` doesn't refer to element/scope in event handlers
 * [x] :text="" empty values shouldn't throw
 * [x] implement :with
+* [ ] :with breaks rendering:
+```
+<textarea :ref="wavearea" :with="{id:null}" :if="wavURL"
+  class="we-wavearea wavefont" spellcheck="false" cols="540"
+  :onfocus..onblur="trackCaret"
+  :value="waveform"
+></textarea>
+```
 * [ ] :if :ref, :if :with -> context setters must come first always
 * [ ] frameworks benchmark
 * [ ] examples

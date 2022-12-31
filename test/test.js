@@ -50,6 +50,12 @@ test('common: empty strings', async () => {
   is(el.outerHTML, `<x></x>`)
 })
 
+test('common: comments', async () => {
+  let el = h`<x :="/* */" :x="/* */"></x>`
+  sprae(el)
+  is(el.outerHTML, `<x></x>`)
+})
+
 test('style', async () => {
   let el = h`<x style="left: 1px" :style="style"></x>`
   let params = sprae(el, {style: "top: 1px"})
