@@ -459,11 +459,12 @@ var directives_default = (el, expr, values, name) => {
   let evt = name.startsWith("on") && name.slice(2);
   let evaluate = parseExpr(el, expr, ":" + name);
   let value;
-  return evt ? (state) => {
-    value && removeListener(el, evt, value);
-    value = evaluate(state);
-    value && addListener(el, evt, value);
-  } : (state) => attr(el, name, evaluate(state));
+  if (evaluate)
+    return evt ? (state) => {
+      value && removeListener(el, evt, value);
+      value = evaluate(state);
+      value && addListener(el, evt, value);
+    } : (state) => attr(el, name, evaluate(state));
 };
 var attr = (el, name, v2) => {
   if (v2 == null || v2 === false)
@@ -473,11 +474,12 @@ var attr = (el, name, v2) => {
 };
 directives[""] = (el, expr) => {
   let evaluate = parseExpr(el, expr, ":");
-  return (state) => {
-    let value = evaluate(state);
-    for (let key in value)
-      attr(el, dashcase(key), value[key]);
-  };
+  if (evaluate)
+    return (state) => {
+      let value = evaluate(state);
+      for (let key in value)
+        attr(el, dashcase(key), value[key]);
+    };
 };
 var _each = Symbol(":each");
 var _ref = Symbol(":ref");
@@ -692,7 +694,7 @@ function parseExpr(el, expression, dir) {
   let rightSideSafeExpression = /^[\n\s]*if.*\(.*\)/.test(expression) || /^(let|const)\s/.test(expression) ? `(() => { ${expression} })()` : expression;
   let evaluate;
   try {
-    evaluate = new Function(`__scope`, `with (__scope) { return (${rightSideSafeExpression}) };`).bind(el);
+    evaluate = new Function(`__scope`, `with (__scope) { return ${rightSideSafeExpression} };`).bind(el);
   } catch (e2) {
     return exprError(e2, el, expression, dir);
   }
