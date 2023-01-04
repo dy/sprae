@@ -205,8 +205,15 @@ directives['text'] = (el, expr) => {
 directives['value'] = (el, expr) => {
   let evaluate = parseExpr(el, expr, ':value')
 
+  let from, to
   let update = (
     el.type === 'text' || el.type === '' ? value => el.setAttribute('value', el.value = value == null ? '' : value) :
+    // FIXME: figure out why in preact it works without selections
+    el.tagName === 'TEXTAREA' || el.type === 'text' || el.type === '' ? value => (
+      from = el.selectionStart, to = el.selectionEnd,
+      el.setAttribute('value', el.value = value == null ? '' : value),
+      from && el.setSelectionRange(from, to)
+    ) :
     el.type === 'checkbox' ? value => (el.value = value ? 'on' : '', attr(el, 'checked', value)) :
     el.type === 'select-one' ? value => {
       for (let option in el.options) option.removeAttribute('selected')
