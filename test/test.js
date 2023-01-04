@@ -113,6 +113,19 @@ test('value: direct', async () => {
   // is(state.a, '3')
 })
 
+test('value: textarea', async () => {
+  let el = h`<textarea :value="a"></textarea>`
+  let state = sprae(el, {a: 'abcdefgh'})
+  is(el.selectionStart, 8)
+  is(el.selectionEnd, 8)
+  el.setSelectionRange(1, 4)
+  is(el.selectionStart, 1)
+  is(el.selectionEnd, 4)
+  state.a = 'xyzyvw'
+  is(el.selectionStart, 1)
+  is(el.selectionEnd, 4)
+})
+
 test('text: core', async () => {
   let el = h`<div :text="text"></div>`
   let params = sprae(el, {text:'abc'})
