@@ -32,7 +32,7 @@
 * [x] `this` doesn't refer to element/scope in event handlers
 * [x] :text="" empty values shouldn't throw
 * [x] implement :with
-* [ ] update :value without losing focus / position
+* [x] update :value without losing focus / position
 * [ ] :if :ref, :if :with -> context setters must come first always
 * [ ] frameworks benchmark
 * [ ] examples
