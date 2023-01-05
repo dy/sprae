@@ -208,8 +208,8 @@ directives['value'] = (el, expr) => {
   let from, to
   let update = (
     el.type === 'text' || el.type === '' ? value => el.setAttribute('value', el.value = value == null ? '' : value) :
-    // FIXME: figure out why in preact it works without selections
     el.tagName === 'TEXTAREA' || el.type === 'text' || el.type === '' ? value => (
+      // we retain selection in input
       from = el.selectionStart, to = el.selectionEnd,
       el.setAttribute('value', el.value = value == null ? '' : value),
       from && el.setSelectionRange(from, to)
