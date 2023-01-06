@@ -392,3 +392,29 @@
     .period	Period, .
     .slash	Foward Slash, /
   - conflict with dot-separated events
+
+## [x] Writing props on elements (like ones in :each) -> nah, just use `:x="this.x=abc"`
+
+  1. `:x="abc"` creates property + attribute
+    - can be excessive pollution
+
+  2. `.x="abc"`
+    ~ `:x.x=""` writes both property and attribute...
+    - conflicts with class selector
+    - blocks dot-separated values
+    - breaks convention of reserved namespace via `:`
+
+  2.1 `_x="abc"`
+    - conflicts with `_target="blank"`
+
+  3. `:.x="abc"`
+    + keeps convention
+    + compatible with `:on*`
+    - can be a bit too noisy syntax
+
+  4. `:_x`
+    + reference to "private"
+    - conflicts with `:_target="blank"`
+
+  5. `:x="this.x=value"`
+    + yepyepyep

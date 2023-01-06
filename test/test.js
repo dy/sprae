@@ -81,6 +81,13 @@ test('props: base', async () => {
   is(el.outerHTML, `<input id="0" for="1" title="2" help="3" type="4" placeholder="5" value="7" a-b="8">`)
 })
 
+test('props: sets prop', async () => {
+  let el = h`<x :x="this.x=1" :y="this.y='abc'"></x>`
+  sprae(el)
+  is(el.x, 1)
+  is(el.y, 'abc')
+})
+
 test('props: multiprop', async () => {
   let el = h`<input :id:name:for="0" />`
   let params = sprae(el)

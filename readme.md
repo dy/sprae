@@ -126,7 +126,7 @@ Set value of an input, textarea or select. Takes handle of `checked` and `select
 
 #### `:<prop>="value?"`, `:="props?"`
 
-Set any prop value or run effect.
+Set any attribute value or run effect.
 
 ```html
 <!-- Single property -->
