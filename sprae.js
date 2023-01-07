@@ -367,37 +367,57 @@ signalStruct.isStruct = isStruct;
 function signalStruct(values, proto) {
   if (isStruct(values) && !proto)
     return values;
-  let state, signals;
   if (isObject(values)) {
-    state = Object.create(proto || Object.getPrototypeOf(values)), signals = {};
-    let desc = Object.getOwnPropertyDescriptors(values);
-    if (isStruct(values))
-      for (let key in desc)
-        Object.defineProperty(state, key, desc[key]);
-    else
-      for (let key in desc)
-        signals[key] = defineSignal(state, key, desc[key].get ? w(desc[key].get.bind(state)) : desc[key].value);
+    const state = Object.create(proto || Object.getPrototypeOf(values)), signals = {}, descs = Object.getOwnPropertyDescriptors(values);
+    for (let key in descs) {
+      let desc = descs[key];
+      if (desc.get) {
+        let s2 = signals[key] = w(desc.get.bind(state));
+        Object.defineProperty(state, key, {
+          get() {
+            return s2.value;
+          },
+          set: desc.set?.bind(state),
+          configurable: false,
+          enumerable: true
+        });
+      } else {
+        let value = desc.value;
+        let isObservable = observable(value), s2 = signals[key] = isSignal(value) ? value : u(
+          isObservable ? void 0 : isObject(value) ? Object.seal(signalStruct(value)) : Array.isArray(value) ? signalStruct(value) : value
+        );
+        if (isObservable)
+          sube_default(value, (v2) => s2.value = v2);
+        Object.defineProperty(state, key, {
+          get() {
+            return s2.value;
+          },
+          set(v2) {
+            if (isObject(v2)) {
+              if (isObject(s2.value))
+                try {
+                  Object.assign(s2.value, v2);
+                  return;
+                } catch (e2) {
+                }
+              s2.value = Object.seal(signalStruct(v2));
+            } else if (Array.isArray(v2))
+              s2.value = signalStruct(v2);
+            else
+              s2.value = v2;
+          },
+          enumerable: true,
+          configurable: false
+        });
+      }
+    }
     Object.defineProperty(state, _struct, { configurable: false, enumerable: false, value: true });
     return state;
   }
-  if (Array.isArray(values)) {
+  if (Array.isArray(values) && !isStruct(values[0])) {
     return values.map((v2) => signalStruct(v2));
   }
   return values;
-}
-function defineSignal(state, key, value) {
-  let isObservable, s2 = isSignal(value) ? value : isObject(value) || Array.isArray(value) ? u(signalStruct(value)) : u((isObservable = observable(value)) ? void 0 : value);
-  if (isObservable)
-    sube_default(value, (v2) => s2.value = v2);
-  Object.defineProperty(state, key, {
-    get() {
-      return s2.value;
-    },
-    set: !isSignal(value) && isObject(value) ? (v2) => v2 ? Object.assign(s2.value, v2) : s2.value = signalStruct(v2) : (v2) => s2.value = signalStruct(v2),
-    enumerable: true,
-    configurable: false
-  });
-  return s2;
 }
 function isObject(v2) {
   return v2 && v2.constructor === Object;
