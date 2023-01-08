@@ -710,19 +710,19 @@ directives["aria"] = (el, expr) => {
 };
 var evaluatorMemo = {};
 function parseExpr(el, expression, dir) {
-  if (evaluatorMemo[expression])
-    return evaluatorMemo[expression];
-  let rightSideSafeExpression = /^[\n\s]*if.*\(.*\)/.test(expression) || /^(let|const)\s/.test(expression) ? `(() => { ${expression} })()` : expression;
-  let evaluate;
-  try {
-    evaluate = new Function(`__scope`, `with (__scope) { return ${rightSideSafeExpression} };`).bind(el);
-  } catch (e2) {
-    return exprError(e2, el, expression, dir);
+  let evaluate = evaluatorMemo[expression];
+  if (!evaluate) {
+    let rightSideSafeExpression = /^[\n\s]*if.*\(.*\)/.test(expression) || /^(let|const)\s/.test(expression) ? `(() => { ${expression} })()` : expression;
+    try {
+      evaluate = evaluatorMemo[expression] = new Function(`__scope`, `with (__scope) { return ${rightSideSafeExpression} };`);
+    } catch (e2) {
+      return exprError(e2, el, expression, dir);
+    }
   }
-  return evaluatorMemo[expression] = (state) => {
+  return (state) => {
     let result;
     try {
-      result = evaluate(state);
+      result = evaluate.call(el, state);
     } catch (e2) {
       return exprError(e2, el, expression, dir);
     }

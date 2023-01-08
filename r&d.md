@@ -324,18 +324,20 @@
     - need to match many syntax quirks, can be tedious
       ~ can be fine to limit expressions to meaningful default: why Proxy, generators, awaits, global access etc.
   - Somewhat heavy to bundle
-    ~ 1-2kb is not super-heavy, besides signal-struct kicks out
+    ~ 1-2kb is not super-heavy, besides kicks out signal-struct (with preact signals?)
   + Scope is easier to provide: no need for signal proxy
   + Can detect access errors in advance
   + Syntax-level access to signals can be inavoidable: external signals still "leak in" (via arrays or etc.).
   + Updating simple objects should also rerender the template parts, not just signals.
   + Deps can be analyzed / implemented without signals
-  - Screwed up debugging / stacktrace (unless errored)
+  - Screwed up debugging / stacktrace (unless errored properly)
+    ~+ can actually provide better trace since no internal framework stuff is shown
   + that "unlimits" returned struct, so that any property can be added/deleted.
   - doesn't really save from `new (()=>{}).constructor` hack: we gotta substitute objects too.
   + allows easier handle of `:with="a=1,b=2,c=3"` - we just naturally get local variables without messup with global
     + we can even define locals without `let`...
   - not having "comfy" compatible JS at hand: cognitive load of whole language "layer" in-between
+  + allows `let a = 1; a;` case instead of `let a = 1; return a;`
 
 2. Use sandboxed proxy
   - tough evaluation

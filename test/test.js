@@ -94,6 +94,13 @@ test('props: multiprop', async () => {
   is(el.outerHTML, `<input id="0" name="0" for="0">`)
 })
 
+// FIXME: this must work without return
+test.todo('props: calculation', async () => {
+  let el = h`<x :x="let a = 5; return Array.from({length:a}, (_,i)=>i).join(' ')"></x>`
+  sprae(el);
+  is(el.outerHTML, `<x x="01234"></x>`)
+})
+
 test('data: base', async () => {
   let el = h`<input :data="{a:1, fooBar:2}"/>`
   let params = sprae(el)
@@ -357,6 +364,14 @@ test('each: condition within loop', async () => {
   is(el.innerHTML, '<x><y>2:2</y></x>')
   params.b = null
   is(el.innerHTML, '')
+})
+
+test('each: next items have own "this", not single one', async () => {
+  // FIXME: let el = h`<x :each="x in 3"></x>`
+  let el = h`<div><x :each="x in 3" :data="{x}" :x="log.push(x, this.dataset.x)"></x></div>`
+  let log = []
+  let state = sprae(el, {log})
+  is(state.log, [1,'1',2,'2',3,'3'])
 })
 
 test('on: base', () => {

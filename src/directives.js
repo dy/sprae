@@ -11,7 +11,6 @@ export const directives = {}
 export default (el, expr, values, name) => {
   let evt = name.startsWith('on') && name.slice(2)
   let evaluate = parseExpr(el, expr, ':'+name)
-
   let value
   if (evaluate) return evt ? state => {
     value && removeListener(el, evt, value)
@@ -285,31 +284,32 @@ let evaluatorMemo = {}
 // borrowed from alpine: https://github.com/alpinejs/alpine/blob/main/packages/alpinejs/src/evaluator.js#L61
 // it seems to be more robust than subscript
 function parseExpr(el, expression, dir) {
-  if (evaluatorMemo[expression]) return evaluatorMemo[expression]
-
-  // Some expressions that are useful in Alpine are not valid as the right side of an expression.
-  // Here we'll detect if the expression isn't valid for an assignement and wrap it in a self-
-  // calling function so that we don't throw an error AND a "return" statement can b e used.
-  let rightSideSafeExpression = 0
-    // Support expressions starting with "if" statements like: "if (...) doSomething()"
-    || /^[\n\s]*if.*\(.*\)/.test(expression)
-    // Support expressions starting with "let/const" like: "let foo = 'bar'"
-    || /^(let|const)\s/.test(expression)
-        ? `(() => { ${expression} })()`
-        : expression;
-
   // guard static-time eval errors
-  let evaluate
-  try {
-    evaluate = new Function(`__scope`,`with (__scope) { return ${rightSideSafeExpression} };`).bind(el)
-  } catch ( e ) {
-    return exprError(e, el, expression, dir)
+  let evaluate = evaluatorMemo[expression]
+
+  if (!evaluate) {
+    // Some expressions that are useful in Alpine are not valid as the right side of an expression.
+    // Here we'll detect if the expression isn't valid for an assignement and wrap it in a self-
+    // calling function so that we don't throw an error AND a "return" statement can b e used.
+    let rightSideSafeExpression = 0
+      // Support expressions starting with "if" statements like: "if (...) doSomething()"
+      || /^[\n\s]*if.*\(.*\)/.test(expression)
+      // Support expressions starting with "let/const" like: "let foo = 'bar'"
+      || /^(let|const)\s/.test(expression)
+          ? `(() => { ${expression} })()`
+          : expression;
+
+    try {
+      evaluate = evaluatorMemo[expression] = new Function(`__scope`,`with (__scope) { return ${rightSideSafeExpression} };`)
+    } catch ( e ) {
+      return exprError(e, el, expression, dir)
+    }
   }
 
   // guard runtime eval errors
-  return evaluatorMemo[expression] = (state) => {
+  return (state) => {
     let result
-    try { result = evaluate(state) }
+    try { result = evaluate.call(el, state) }
     catch (e) { return exprError(e, el, expression, dir) }
     return result
   }
