@@ -289,9 +289,9 @@
 * @sprae/item: `<x :item="{type:a, scope:b}"` – provide microdata
   - can be solved naturally, unless there's special meaning
 * @sprae/hcodes: `<x :hcode=""` – provide microformats
-* @sprae/with
-* @sprae/onconnected
 * @sprae/onvisible?
+  - can be solved externally
+* @sprae/onintersects
 
 ## [x] Write any-attributes via `:<prop>? -> yep`
 
@@ -330,7 +330,7 @@
   + Provides precisely controlled sandbox
   - Some limited lang opportunities
     - need to match many syntax quirks, can be tedious
-      ~ can be fine to limit expressions to meaningful default: why Proxy, generators, awaits, global access etc.
+      ~ can be fine to limit expressions to meaningful default: no Proxy, generators, awaits, global access etc.
   - Somewhat heavy to bundle
     ~ 1-2kb is not super-heavy, besides kicks out signal-struct (with preact signals?)
   + Scope is easier to provide: no need for signal proxy
@@ -340,6 +340,7 @@
   + Deps can be analyzed / implemented without signals
   - Screwed up debugging / stacktrace (unless errored properly)
     ~+ can actually provide better trace since no internal framework stuff is shown
+    + can let means to enhance subscript's logs
   + that "unlimits" returned struct, so that any property can be added/deleted.
   - doesn't really save from `new (()=>{}).constructor` hack: we gotta substitute objects too.
   + allows easier handle of `:with="a=1,b=2,c=3"` - we just naturally get local variables without messup with global
@@ -349,9 +350,10 @@
 
 2. Use sandboxed proxy
   - tough evaluation
-  - tough implementation
+  - implementation hiccups
   - screwed up data
   - no full protection
+  - relatively slow
   + does minimal catch
 
 ## [x] :onclick="direct code" ? -> no: immediately invoked.
@@ -380,13 +382,17 @@
     ? or should we just trigger it for user?
   ? :onclick.outside
   ? :onclick.window, :onclick.document
-  ? :onclick.once
-  ? :onclick.debounce
-  ? :onclick.throttle.750ms
+    + can be needed, eg. mousedown..up can happen outside of current element (stop caret tracking in waveplay)
+  ? :onclick.once, :onclick.passive, :onclick.capture
+    + can pass props to event listener: there's no other way to do that
+  ? :onclick.debounce-330
+  ? :onclick.throttle-750
+    + ...just handy everydayers and saves tons of noise
   ? :onclick.self
+    ~ clicked on self, not the child
   ? :onspecial-event.camel, :onx-y.dot
-  ? :onclick.passive
-  ? :onkeypress.shift.enter
+    ~
+  ? :onkeypress.shift.enter, :onmousemove.shift, :onmousemove.alt
     .shift	Shift
     .enter	Enter
     .space	Space
@@ -394,15 +400,20 @@
     .cmd	Cmd
     .meta	Cmd on Mac, Windows key on Windows
     .alt	Alt
-    .up .down .left .right	Up/Down/Left/Right arrows
+    .up .down .left .right
     .escape	Escape
     .tab	Tab
     .caps-lock	Caps Lock
-    .equal	Equal, =
-    .period	Period, .
-    .slash	Foward Slash, /
+    .equal	Equal
+    .period	Period
+    .slash	Foward Slash
+    + allows separating various key handlers: atm waveplay handles separate keys in the same method `handleKey`
+    + allows tracking mouse interactions with shift hold
   - conflict with dot-separated events
+    ~not so popular nor encouraged
   - lots of ad-hoc non-standard rules, can be handled in code
+  + allow multiple setters for same props or multiple listeners for same events
+  + oldschool jquery-compatible events
 
 ## [x] Writing props on elements (like ones in :each) -> nah, just use `:x="this.x=abc"`
 
