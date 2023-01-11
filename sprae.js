@@ -577,7 +577,7 @@ directives["each"] = (tpl, expr) => {
       exprError(Error("Bad list value"), tpl, expr, ":each", list);
     let newEls = [], elScopes = [];
     for (let [idx, item] of list) {
-      let el, scope, key = itemKey?.({ [each.item]: item });
+      let el, scope, key = itemKey?.({ [each.item]: item, [each.index || ""]: idx });
       if (isPrimitive(key))
         key = primitive_pool_default(key);
       if (key == null)

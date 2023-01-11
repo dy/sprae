@@ -121,7 +121,7 @@ directives['each'] = (tpl, expr) => {
     let newEls = [], elScopes = []
 
     for (let [idx, item] of list) {
-      let el, scope, key = itemKey?.({[each.item]: item})
+      let el, scope, key = itemKey?.({[each.item]: item, [each.index || '']: idx})
       if (isPrimitive(key)) key = p(key); // singletonize key
 
       // we consider if data items are primitive, then nodes needn't be cached
