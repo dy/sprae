@@ -6,23 +6,23 @@ function t() {
   if (!(n > 1)) {
     var i2, t2 = false;
     while (void 0 !== r) {
-      var h2 = r;
+      var h = r;
       r = void 0;
       s++;
-      while (void 0 !== h2) {
-        var o2 = h2.o;
-        h2.o = void 0;
-        h2.f &= -3;
-        if (!(8 & h2.f) && d(h2))
+      while (void 0 !== h) {
+        var o2 = h.o;
+        h.o = void 0;
+        h.f &= -3;
+        if (!(8 & h.f) && d(h))
           try {
-            h2.c();
-          } catch (h3) {
+            h.c();
+          } catch (h2) {
             if (!t2) {
-              i2 = h3;
+              i2 = h2;
               t2 = true;
             }
           }
-        h2 = o2;
+        h = o2;
       }
     }
     s = 0;
@@ -79,25 +79,25 @@ e.prototype.S = function(i2) {
   }
 };
 e.prototype.U = function(i2) {
-  var t2 = i2.e, h2 = i2.x;
+  var t2 = i2.e, h = i2.x;
   if (void 0 !== t2) {
-    t2.x = h2;
+    t2.x = h;
     i2.e = void 0;
   }
-  if (void 0 !== h2) {
-    h2.e = t2;
+  if (void 0 !== h) {
+    h.e = t2;
     i2.x = void 0;
   }
   if (i2 === this.t)
-    this.t = h2;
+    this.t = h;
 };
 e.prototype.subscribe = function(i2) {
   var t2 = this;
   return b(function() {
-    var h2 = t2.value, o2 = 32 & this.f;
+    var h = t2.value, o2 = 32 & this.f;
     this.f &= -33;
     try {
-      i2(h2);
+      i2(h);
     } finally {
       this.f |= o2;
     }
@@ -117,11 +117,11 @@ Object.defineProperty(e.prototype, "value", { get: function() {
   if (void 0 !== i2)
     i2.i = this.i;
   return this.v;
-}, set: function(h2) {
-  if (h2 !== this.v) {
+}, set: function(h) {
+  if (h !== this.v) {
     if (s > 100)
       i();
-    this.v = h2;
+    this.v = h;
     this.i++;
     f++;
     n++;
@@ -144,33 +144,33 @@ function d(i2) {
 }
 function c(i2) {
   for (var t2 = i2.s; void 0 !== t2; t2 = t2.n) {
-    var h2 = t2.S.n;
-    if (void 0 !== h2)
-      t2.r = h2;
+    var h = t2.S.n;
+    if (void 0 !== h)
+      t2.r = h;
     t2.S.n = t2;
     t2.i = -1;
   }
 }
 function a(i2) {
-  var t2 = i2.s, h2 = void 0;
+  var t2 = i2.s, h = void 0;
   while (void 0 !== t2) {
     var o2 = t2.n;
     if (-1 === t2.i) {
       t2.S.U(t2);
       t2.n = void 0;
     } else {
-      if (void 0 !== h2)
-        h2.p = t2;
+      if (void 0 !== h)
+        h.p = t2;
       t2.p = void 0;
-      t2.n = h2;
-      h2 = t2;
+      t2.n = h;
+      h = t2;
     }
     t2.S.n = t2.r;
     if (void 0 !== t2.r)
       t2.r = void 0;
     t2 = o2;
   }
-  i2.s = h2;
+  i2.s = h;
 }
 function l(i2) {
   e.call(this, void 0);
@@ -259,14 +259,14 @@ function w(i2) {
   return new l(i2);
 }
 function y(i2) {
-  var h2 = i2.u;
+  var h = i2.u;
   i2.u = void 0;
-  if ("function" == typeof h2) {
+  if ("function" == typeof h) {
     n++;
     var r2 = o;
     o = void 0;
     try {
-      h2();
+      h();
     } catch (t2) {
       i2.f &= -2;
       i2.f |= 8;
@@ -478,12 +478,13 @@ var directives = {};
 var directives_default = (el, expr, values, name) => {
   let evt = name.startsWith("on") && name.slice(2);
   let evaluate = parseExpr(el, expr, ":" + name);
-  let value;
   if (evaluate)
     return evt ? (state) => {
-      value && removeListener(el, evt, value);
-      value = evaluate(state);
-      value && addListener(el, evt, value);
+      let value = evaluate(state);
+      if (value) {
+        addListener(el, evt, value);
+        return () => removeListener(el, evt, value);
+      }
     } : (state) => attr(el, name, evaluate(state));
 };
 var attr = (el, name, v2) => {
@@ -500,16 +501,6 @@ directives[""] = (el, expr) => {
       for (let key in value)
         attr(el, dashcase(key), value[key]);
     };
-};
-var _each = Symbol(":each");
-var _ref = Symbol(":ref");
-directives["ref"] = (el, expr, state) => {
-  if (el.hasAttribute(":each")) {
-    el[_ref] = expr;
-    return;
-  }
-  ;
-  state[expr] = el;
 };
 directives["with"] = (el, expr, rootState) => {
   let evaluate = parseExpr(el, expr, "with");
@@ -541,6 +532,24 @@ directives["if"] = (el, expr) => {
     }
   };
 };
+var _each = Symbol(":each");
+var _ref = Symbol(":ref");
+var _key = Symbol(":key");
+directives["ref"] = (el, expr, state) => {
+  if (el.hasAttribute(":each")) {
+    el[_ref] = expr;
+    return;
+  }
+  ;
+  state[expr] = el;
+};
+directives["key"] = (el, expr, state) => {
+  if (el.hasAttribute(":each")) {
+    el[_key] = expr;
+    return;
+  }
+  ;
+};
 directives["each"] = (tpl, expr) => {
   let each = parseForExpression(expr);
   if (!each)
@@ -548,6 +557,9 @@ directives["each"] = (tpl, expr) => {
   const holder = tpl[_each] = document.createTextNode("");
   tpl.replaceWith(holder);
   const evaluate = parseExpr(tpl, each.items, ":each");
+  const keyExpr = tpl[_key] || tpl.getAttribute(":key");
+  const itemKey = keyExpr ? parseExpr(null, keyExpr) : null;
+  tpl.removeAttribute(":key");
   const scopes = /* @__PURE__ */ new WeakMap();
   const itemEls = /* @__PURE__ */ new WeakMap();
   let curEls = [];
@@ -565,23 +577,25 @@ directives["each"] = (tpl, expr) => {
       exprError(Error("Bad list value"), tpl, expr, ":each", list);
     let newEls = [], elScopes = [];
     for (let [idx, item] of list) {
-      let itemKey = primitive_pool_default(item);
-      let el = itemEls.get(itemKey);
-      if (!el) {
+      let el, scope, key = itemKey?.({ [each.item]: item });
+      if (isPrimitive(key))
+        key = primitive_pool_default(key);
+      if (key == null)
         el = tpl.cloneNode(true);
-        itemEls.set(itemKey, el);
-      }
+      else
+        (el = itemEls.get(key)) || itemEls.set(key, el = tpl.cloneNode(true));
       newEls.push(el);
-      if (!scopes.has(itemKey)) {
-        let scope = Object.create(state);
+      if (key == null || !(scope = scopes.get(key))) {
+        scope = Object.create(state);
         scope[each.item] = item;
         if (each.index)
           scope[each.index] = idx;
         if (tpl[_ref])
           scope[tpl[_ref]] = el;
-        scopes.set(itemKey, scope);
+        if (key != null)
+          scopes.set(key, scope);
       }
-      elScopes.push(scopes.get(itemKey));
+      elScopes.push(scope);
     }
     swap_inflate_default(holder.parentNode, curEls, newEls, holder);
     curEls = newEls;
@@ -654,18 +668,19 @@ directives["value"] = (el, expr) => {
   } : (value) => el.value = value;
   return (state) => update(evaluate(state));
 };
-var _stop = Symbol("stop");
 directives["on"] = (el, expr) => {
   let evaluate = parseExpr(el, expr, ":on");
-  let listeners = {};
   return (state) => {
-    for (let evt in listeners)
-      removeListener(el, evt, listeners[evt]);
-    listeners = evaluate(state);
+    let listeners = evaluate(state);
     for (let evt in listeners)
       addListener(el, evt, listeners[evt]);
+    return () => {
+      for (let evt in listeners)
+        removeListener(el, evt, listeners[evt]);
+    };
   };
 };
+var _stop = Symbol("stop");
 var addListener = (el, evt, startFn) => {
   if (evt.indexOf("..") < 0)
     el.addEventListener(evt, startFn);
@@ -743,6 +758,9 @@ ${dir}=${expression ? `"${expression}"
 function dashcase(str) {
   return str.replace(/[A-Z\u00C0-\u00D6\u00D8-\u00DE]/g, (match) => "-" + match.toLowerCase());
 }
+function isPrimitive(obj) {
+  return typeof obj === "string" || typeof obj === "boolean" || typeof obj === "number";
+}
 
 // src/core.js
 var memo = /* @__PURE__ */ new WeakMap();
@@ -781,8 +799,14 @@ function sprae(container, values) {
     }
   };
   init(container);
-  for (let update of updates)
-    b(() => update(state));
+  for (let update of updates) {
+    let teardown;
+    b(() => {
+      if (typeof teardown === "function")
+        teardown();
+      teardown = update(state);
+    });
+  }
   Object.seal(state);
   memo.set(container, state);
   return state;
