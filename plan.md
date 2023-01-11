@@ -33,6 +33,7 @@
 * [x] :text="" empty values shouldn't throw
 * [x] implement :with
 * [x] update :value without losing focus / position
+* [ ] run tiredown if element got removed from condition or loop (free memory)
 * [ ] :if :ref, :if :with -> context setters must come first always
 * [ ] frameworks benchmark
 * [ ] examples

@@ -1,8 +1,8 @@
 // directives & parsing
 import sprae from './core.js'
 import swap from 'swapdom'
-import p from 'primitive-pool'
 import signalStruct from 'signal-struct'
+import p from 'primitive-pool'
 
 // reserved directives - order matters!
 export const directives = {}
@@ -32,17 +32,6 @@ directives[''] = (el, expr) => {
     let value = evaluate(state)
     for (let key in value) attr(el, dashcase(key), value[key]);
   }
-}
-
-const _each = Symbol(':each'), _ref = Symbol(':ref')
-
-directives['ref'] = (el, expr, state) => {
-  // make sure :ref is initialized after :each (return to avoid initializing as signal)
-  if (el.hasAttribute(':each')) {el[_ref] = expr; return};
-
-  // FIXME: wait for complex ref use-case
-  // parseExpr(el, `__scope[${expr}]=this`, ':ref')(values)
-  state[expr] = el;
 }
 
 directives['with'] = (el, expr, rootState) => {
@@ -81,6 +70,22 @@ directives['if'] = (el, expr) => {
   }
 }
 
+const _each = Symbol(':each'), _ref = Symbol(':ref'), _key = Symbol(':key')
+
+directives['ref'] = (el, expr, state) => {
+  // make sure :ref is initialized after :each (return to avoid initializing as signal)
+  if (el.hasAttribute(':each')) {el[_ref] = expr; return};
+
+  // FIXME: wait for complex ref use-case
+  // parseExpr(el, `__scope[${expr}]=this`, ':ref')(values)
+  state[expr] = el;
+}
+
+directives['key'] = (el, expr, state) => {
+  // make sure :ref is initialized after :each (return to avoid initializing as signal)
+  if (el.hasAttribute(':each')) {el[_key] = expr; return};
+}
+
 directives['each'] = (tpl, expr) => {
   let each = parseForExpression(expr);
   if (!each) return exprError(new Error, tpl, expr);
@@ -92,15 +97,19 @@ directives['each'] = (tpl, expr) => {
 
   const evaluate = parseExpr(tpl, each.items, ':each');
 
-  // stores scope per data item
-  const scopes = new WeakMap()
-  // element per data item
-  const itemEls = new WeakMap()
+  const keyExpr = tpl[_key] || tpl.getAttribute(':key');
+  const itemKey = keyExpr ? parseExpr(null, keyExpr) : null;
+  tpl.removeAttribute(':key')
+
+
+  const scopes = new WeakMap() // stores scope per data item
+  const itemEls = new WeakMap() // element per data item
   let curEls = []
 
   return (state) => {
     // get items
     let list = evaluate(state)
+
     if (!list) list = []
     else if (typeof list === 'number') list = Array.from({length: list}, (_, i)=>[i, i+1])
     else if (Array.isArray(list)) list = list.map((item,i) => [i+1, item])
@@ -111,23 +120,25 @@ directives['each'] = (tpl, expr) => {
     let newEls = [], elScopes = []
 
     for (let [idx, item] of list) {
-      let itemKey = p(item)
-      let el = itemEls.get(itemKey)
-      if (!el) {
-        el = tpl.cloneNode(true)
-        itemEls.set(itemKey, el)
-      }
+      let el, scope, key = itemKey?.({[each.item]: item})
+      if (isPrimitive(key)) key = p(key); // singletonize key
+
+      // we consider if data items are primitive, then nodes needn't be cached
+      // since likely they're very simple to create
+      if (key == null) el = tpl.cloneNode(true);
+      else (el = itemEls.get(key)) || itemEls.set(key, el = tpl.cloneNode(true));
+
       newEls.push(el)
 
-      if (!scopes.has(itemKey)) {
-        let scope = Object.create(state)
+      if (key == null || !(scope = scopes.get(key))) {
+        scope = Object.create(state)
         scope[each.item] = item
         if (each.index) scope[each.index] = idx;
         // provide ref, if indicated
         if (tpl[_ref]) scope[tpl[_ref]] = el
-        scopes.set(itemKey, scope)
+        if (key != null) scopes.set(key, scope)
       }
-      elScopes.push(scopes.get(itemKey))
+      elScopes.push(scope)
     }
 
     // swap is really fast & tiny
@@ -225,10 +236,10 @@ directives['value'] = (el, expr) => {
   return (state) => update(evaluate(state))
 }
 
-const _stop = Symbol('stop')
+const _listeners = Symbol('listeners')
 directives['on'] = (el, expr) => {
   let evaluate = parseExpr(el, expr, ':on')
-  let listeners = {}
+  let listeners = el[_listeners] = {}
 
   return (state) => {
     for (let evt in listeners) removeListener(el, evt, listeners[evt])
@@ -237,6 +248,7 @@ directives['on'] = (el, expr) => {
   }
 }
 
+const _stop = Symbol('stop')
 const addListener = (el, evt, startFn) => {
   if (evt.indexOf('..')<0) el.addEventListener(evt, startFn);
 
@@ -255,7 +267,6 @@ const addListener = (el, evt, startFn) => {
     nextEvt(startFn)
   }
 }
-
 const removeListener = (el, evt, fn) => {
   if (evt.indexOf('..')>=0) fn[_stop] = true
   el.removeEventListener(evt, fn);
@@ -309,7 +320,7 @@ function parseExpr(el, expression, dir) {
   // guard runtime eval errors
   return (state) => {
     let result
-    try { result = evaluate.call(el, state) }
+    try { result = evaluate.call(el, state); }
     catch (e) { return exprError(e, el, expression, dir) }
     return result
   }
@@ -324,3 +335,7 @@ export function exprError(error, element, expression, dir) {
 function dashcase(str) {
 	return str.replace(/[A-Z\u00C0-\u00D6\u00D8-\u00DE]/g, (match) => '-' + match.toLowerCase());
 };
+
+function isPrimitive(obj) {
+  return typeof obj === 'string' || typeof obj === 'boolean' || typeof obj === 'number'
+}

@@ -59,7 +59,7 @@ Control flow of elements.
 
 #### `:each="item, index in items"`
 
-Multiply element. `index` value starts from 1.
+Multiply element. `index` value starts from 1. Use `:key` as caching key to avoid rerendering.
 
 ```html
 <ul>

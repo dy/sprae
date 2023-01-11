@@ -374,6 +374,35 @@ test('each: next items have own "this", not single one', async () => {
   is(state.log, [1,'1',2,'2',3,'3'])
 })
 
+test('each: unkeyed', async () => {
+  let el = h`<div><x :each="x in xs" :text="x"></x></div>`
+  let state = sprae(el, {xs:[1,2,3]})
+  is(el.children.length, 3)
+  is(el.textContent, '123')
+  // let first = el.firstChild
+  state.xs = [1,3,2]
+  // is(el.firstChild, first)
+  is(el.textContent, '132')
+  state.xs = [3,3,3]
+  is(el.textContent, '333')
+  // is(el.firstChild, first)
+})
+
+test('each: keyed', async () => {
+  // keyed
+  let el = h`<div><x :each="x in xs" :text="x" :key="x"></x></div>`
+  let state = sprae(el, {xs:[1,2,3]})
+  is(el.children.length, 3)
+  is(el.textContent, '123')
+  let first = el.firstChild
+  state.xs = [1,3,2]
+  is(el.firstChild, first)
+  is(el.textContent, '132')
+  state.xs = [3,3,3]
+  is(el.textContent, '3')
+  // is(el.firstChild, first)
+})
+
 test('on: base', () => {
   let el = h`<div :on="{click(e){log.push('click')},x}"></div>`
   let log = signal([])
