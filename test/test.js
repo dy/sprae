@@ -148,7 +148,7 @@ test('text: core', async () => {
   is(el.outerHTML, `<div></div>`)
 })
 
-test('conditions: base', async () => {
+test('if: base', async () => {
   let el = h`<p>
     <span :if="a==1">a</span>
     <span :else :if="a==2">b</span>
@@ -166,7 +166,7 @@ test('conditions: base', async () => {
   is(el.innerHTML, '<span>c</span>')
 })
 
-test('conditions: short with insertions', async () => {
+test('if: short with insertions', async () => {
   let el = h`<p>
     <span :if="a==1" :text="'1:'+a"></span>
     <span :else :if="a==2" :text="'2:'+a"></span>
@@ -191,7 +191,7 @@ test('conditions: short with insertions', async () => {
   params.a = null
 })
 
-test('conditions: reactive values', async () => {
+test('if: reactive values', async () => {
   let el = h`<p>
     <span :if="a==1" :text="'1:'+a"></span>
     <span :else :if="a==2" :text="'2:'+a"></span>
@@ -215,10 +215,25 @@ test('conditions: reactive values', async () => {
   is(el.innerHTML, '<span>4</span>')
 })
 
-test('conditions (#3): subsequent content is not abandoned', async () => {
+test('if: (#3) subsequent content is not abandoned', async () => {
   let x = h`<x><y :if="!!y"></y><z :text="123"></z></x>`
   sprae(x, {y: false})
   is(x.outerHTML, `<x><z>123</z></x>`)
+})
+
+test('if: + :with doesnt prevent secondary effects from happening', () => {
+  let el = h`<div><x :if="x" :with="{}" :text="x"></x></div>`
+  let state = sprae(el, {x:''})
+  is(el.innerHTML, ``)
+  state.x = '123'
+  is(el.innerHTML, `<x>123</x>`)
+
+  // NOTE: we ignore this case
+  // let el2 = h`<div><x :if="x" :with="{x:cond}" :text="x"></x></div>`
+  // let state2 = sprae(el, {cond:''})
+  // is(el2.innerHTML, ``)
+  // state2.cond = '123'
+  // is(el2.innerHTML, `<x>123</x>`)
 })
 
 test('each: array', async () => {

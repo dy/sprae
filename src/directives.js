@@ -9,13 +9,9 @@ import p from 'primitive-pool'
 export const primary = {}, secondary = {}
 
 
-// :with must come before :if or :each or anyone else
-primary['with'] = (el, expr, rootState) => {
-  let evaluate = parseExpr(el, expr, 'with')
-  sprae(el, signalStruct(evaluate(rootState), rootState));
-}
-
 // :if is interchangeable with :each depending on order, :if :each or :each :if have different meanings
+// as for :if :with - :if must init first, since it is lazy, to avoid initializing component ahead of time by :with
+// we consider :with={x} :if={x} case insignificant
 primary['if'] = (el, expr) => {
   let holder = document.createTextNode(''),
       clauses = [parseExpr(el, expr, ':if')],
@@ -40,11 +36,18 @@ primary['if'] = (el, expr) => {
   return (state) => {
     let i = clauses.findIndex(f => f(state))
     if (els[i] != cur) {
-      (cur[_each] || cur).replaceWith(cur = els[i] || holder);
+      ;(cur[_each] || cur).replaceWith(cur = els[i] || holder);
       // NOTE: it lazily initializes elements on insertion, it's safe to sprae multiple times
+      // but :if must come first to avoid preliminary caching
       sprae(cur, state);
     }
   }
+}
+
+// :with must come before :each, but :if has primary importance
+primary['with'] = (el, expr, rootState) => {
+  let evaluate = parseExpr(el, expr, 'with')
+  sprae(el, signalStruct(evaluate(rootState), rootState));
 }
 
 const _each = Symbol(':each')
