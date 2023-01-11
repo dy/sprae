@@ -403,6 +403,10 @@ test('each: keyed', async () => {
   // is(el.firstChild, first)
 })
 
+test.todo('each: unmounted elements remove listeners', async () => {
+
+})
+
 test('on: base', () => {
   let el = h`<div :on="{click(e){log.push('click')},x}"></div>`
   let log = signal([])

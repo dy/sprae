@@ -11,11 +11,12 @@ export const directives = {}
 export default (el, expr, values, name) => {
   let evt = name.startsWith('on') && name.slice(2)
   let evaluate = parseExpr(el, expr, ':'+name)
-  let value
   if (evaluate) return evt ? state => {
-    value && removeListener(el, evt, value)
-    value = evaluate(state)
-    value && addListener(el, evt, value)
+    let value = evaluate(state)
+    if (value) {
+      addListener(el, evt, value)
+      return () => removeListener(el, evt, value)
+    }
   }
   : state => attr(el, name, evaluate(state))
 }
@@ -236,15 +237,15 @@ directives['value'] = (el, expr) => {
   return (state) => update(evaluate(state))
 }
 
-const _listeners = Symbol('listeners')
 directives['on'] = (el, expr) => {
   let evaluate = parseExpr(el, expr, ':on')
-  let listeners = el[_listeners] = {}
 
   return (state) => {
-    for (let evt in listeners) removeListener(el, evt, listeners[evt])
-    listeners = evaluate(state);
+    let listeners = evaluate(state);
     for (let evt in listeners) addListener(el, evt, listeners[evt])
+    return () => {
+      for (let evt in listeners) removeListener(el, evt, listeners[evt])
+    }
   }
 }
 

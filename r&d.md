@@ -97,7 +97,7 @@
 
 -> possibly we have to just subscribe via mechanism of signals-like deps, and :with just initializes subtree with extended object
 
-## [ ] :with? -> let's use `:with="{x:1,y:2,z:3}"` for now
+## [x] :with? -> let's use `:with="{x:1,y:2,z:3}"` for now
 
   1. Get rid of :with
     + with is bad JS practice/association
@@ -223,7 +223,15 @@
   ? attach-detach?
   ? onmount-onunmount?
     - slows down domdiff
-    - can be solved as `<x :if="xxx" :="xxx ? (...) : '">` automatically
+    - can be solved as `<x :if="xxx" :="xxx && (...)'">` automatically
+
+## [x] :onmount/onunmount? -> for now no reasons
+
+  + useful for :if, :each
+  + useful to dispose listeners via :onunmount (opposed to hidden symbols)
+  - doesn't really solve disposal: if element is attached again, it would need to reattach removed listeners
+    -> can be dolved via teardowns returned from updators
+    -> nah, event listeners don't need collection, just make sure no refs to element remain
 
 ## [x] :focus="direct code", :evt="direct code" -> nah, too messy.
 
@@ -394,6 +402,7 @@
     .period	Period, .
     .slash	Foward Slash, /
   - conflict with dot-separated events
+  - lots of ad-hoc non-standard rules, can be handled in code
 
 ## [x] Writing props on elements (like ones in :each) -> nah, just use `:x="this.x=abc"`
 

@@ -33,10 +33,10 @@
 * [x] :text="" empty values shouldn't throw
 * [x] implement :with
 * [x] update :value without losing focus / position
-* [ ] run tiredown if element got removed from condition or loop (free memory)
+* ~~[x] run tiredown if element got removed from condition or loop (free memory)~~ no need just make sure no refs to elements stored
+* [ ] `sprae(el, newState)` can update element's state directly (as batch!?) -> must be tested against repeats in directives
 * [ ] :if :ref, :if :with -> context setters must come first always
 * [ ] frameworks benchmark
 * [ ] examples
   * [x] todomvc
-  * [ ] wave-edit
-* [ ] `sprae(el, newState)` can update element's state directly (as batch!?) -> must be tested against repeats in directives
+  * [x] waveplay
