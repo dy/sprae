@@ -5,42 +5,18 @@ import signalStruct from 'signal-struct'
 import p from 'primitive-pool'
 
 // reserved directives - order matters!
-export const directives = {}
+// primary initialized first by selector, secondary initialized by iterating attributes
+export const primary = {}, secondary = {}
 
-// any-prop directives
-export default (el, expr, values, name) => {
-  let evt = name.startsWith('on') && name.slice(2)
-  let evaluate = parseExpr(el, expr, ':'+name)
-  if (evaluate) return evt ? state => {
-    let value = evaluate(state)
-    if (value) {
-      addListener(el, evt, value)
-      return () => removeListener(el, evt, value)
-    }
-  }
-  : state => attr(el, name, evaluate(state))
-}
 
-// set attr
-const attr = (el, name, v) => {
-  if (v == null || v === false) el.removeAttribute(name)
-  else el.setAttribute(name, v === true ? '' : (typeof v === 'number' || typeof v === 'string') ? v : '')
-}
-
-directives[''] = (el, expr) => {
-  let evaluate = parseExpr(el, expr, ':')
-  if (evaluate) return (state) => {
-    let value = evaluate(state)
-    for (let key in value) attr(el, dashcase(key), value[key]);
-  }
-}
-
-directives['with'] = (el, expr, rootState) => {
+// :with must come before :if or :each or anyone else
+primary['with'] = (el, expr, rootState) => {
   let evaluate = parseExpr(el, expr, 'with')
   sprae(el, signalStruct(evaluate(rootState), rootState));
 }
 
-directives['if'] = (el, expr) => {
+// :if is interchangeable with :each depending on order, :if :each or :each :if have different meanings
+primary['if'] = (el, expr) => {
   let holder = document.createTextNode(''),
       clauses = [parseExpr(el, expr, ':if')],
       els = [el], cur = el
@@ -71,23 +47,10 @@ directives['if'] = (el, expr) => {
   }
 }
 
-const _each = Symbol(':each'), _ref = Symbol(':ref'), _key = Symbol(':key')
+const _each = Symbol(':each')
 
-directives['ref'] = (el, expr, state) => {
-  // make sure :ref is initialized after :each (return to avoid initializing as signal)
-  if (el.hasAttribute(':each')) {el[_ref] = expr; return};
-
-  // FIXME: wait for complex ref use-case
-  // parseExpr(el, `__scope[${expr}]=this`, ':ref')(values)
-  state[expr] = el;
-}
-
-directives['key'] = (el, expr, state) => {
-  // make sure :ref is initialized after :each (return to avoid initializing as signal)
-  if (el.hasAttribute(':each')) {el[_key] = expr; return};
-}
-
-directives['each'] = (tpl, expr) => {
+// :each must init before :ref, :id or any others, since it defines scope
+primary['each'] = (tpl, expr) => {
   let each = parseForExpression(expr);
   if (!each) return exprError(new Error, tpl, expr);
 
@@ -98,7 +61,7 @@ directives['each'] = (tpl, expr) => {
 
   const evaluate = parseExpr(tpl, each[2], ':each');
 
-  const keyExpr = tpl[_key] || tpl.getAttribute(':key');
+  const keyExpr = tpl.getAttribute(':key');
   const itemKey = keyExpr ? parseExpr(null, keyExpr) : null;
   tpl.removeAttribute(':key')
 
@@ -133,8 +96,6 @@ directives['each'] = (tpl, expr) => {
 
       if (key == null || !(scope = scopes.get(key))) {
         scope = signalStruct({[each[0]]: item, [each[1]]:idx}, state)
-        // provide ref, if indicated
-        if (tpl[_ref]) scope[tpl[_ref]] = el
         if (key != null) scopes.set(key, scope)
       }
       // need to explicitly set item to update existing children's values
@@ -176,13 +137,20 @@ function parseForExpression(expression) {
   return [item, '', items]
 }
 
-directives['id'] = (el, expr) => {
+
+secondary['ref'] = (el, expr, state) => {
+  // FIXME: wait for complex ref use-case
+  // parseExpr(el, `__scope[${expr}]=this`, ':ref')(values)
+  state[expr] = el;
+}
+
+secondary['id'] = (el, expr) => {
   let evaluate = parseExpr(el, expr, ':id')
   const update = v => el.id = v || v === 0 ? v : ''
   return (state) => update(evaluate(state))
 }
 
-directives['class'] = (el, expr) => {
+secondary['class'] = (el, expr) => {
   let evaluate = parseExpr(el, expr, ':class')
   let initClassName = el.className
   return (state) => {
@@ -191,7 +159,7 @@ directives['class'] = (el, expr) => {
   }
 }
 
-directives['style'] = (el, expr) => {
+secondary['style'] = (el, expr) => {
   let evaluate = parseExpr(el, expr, ':style')
   let initStyle = el.getAttribute('style') || ''
   if (!initStyle.endsWith(';')) initStyle += '; '
@@ -202,7 +170,7 @@ directives['style'] = (el, expr) => {
   }
 }
 
-directives['text'] = (el, expr) => {
+secondary['text'] = (el, expr) => {
   let evaluate = parseExpr(el, expr, ':text')
 
   return (state) => {
@@ -212,7 +180,7 @@ directives['text'] = (el, expr) => {
 }
 
 // connect expr to element value
-directives['value'] = (el, expr) => {
+secondary['value'] = (el, expr) => {
   let evaluate = parseExpr(el, expr, ':value')
 
   let from, to
@@ -236,7 +204,7 @@ directives['value'] = (el, expr) => {
   return (state) => update(evaluate(state))
 }
 
-directives['on'] = (el, expr) => {
+secondary['on'] = (el, expr) => {
   let evaluate = parseExpr(el, expr, ':on')
 
   return (state) => {
@@ -272,7 +240,7 @@ const removeListener = (el, evt, fn) => {
   el.removeEventListener(evt, fn);
 }
 
-directives['data'] = (el, expr) => {
+secondary['data'] = (el, expr) => {
   let evaluate = parseExpr(el, expr, ':data')
 
   return ((state) => {
@@ -281,12 +249,41 @@ directives['data'] = (el, expr) => {
   })
 }
 
-directives['aria'] = (el, expr) => {
+secondary['aria'] = (el, expr) => {
   let evaluate = parseExpr(el, expr, ':aria')
   const update = (value) => {
     for (let key in value) attr(el, 'aria-' + dashcase(key), value[key] == null ? null : value[key] + '');
   }
   return ((state) => update(evaluate(state)))
+}
+
+// set props in-bulk or run effect
+secondary[''] = (el, expr) => {
+  let evaluate = parseExpr(el, expr, ':')
+  if (evaluate) return (state) => {
+    let value = evaluate(state)
+    for (let key in value) attr(el, dashcase(key), value[key]);
+  }
+}
+
+// any other prop directive
+export default (el, expr, values, name) => {
+  let evt = name.startsWith('on') && name.slice(2)
+  let evaluate = parseExpr(el, expr, ':'+name)
+  if (evaluate) return evt ? state => {
+    let value = evaluate(state)
+    if (value) {
+      addListener(el, evt, value)
+      return () => removeListener(el, evt, value)
+    }
+  }
+  : state => attr(el, name, evaluate(state))
+}
+
+// set attr
+const attr = (el, name, v) => {
+  if (v == null || v === false) el.removeAttribute(name)
+  else el.setAttribute(name, v === true ? '' : (typeof v === 'number' || typeof v === 'string') ? v : '')
 }
 
 

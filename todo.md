@@ -35,7 +35,7 @@
 * [x] update :value without losing focus / position
 * ~~[x] run tiredown if element got removed from condition or loop (free memory)~~ no need just make sure no refs to elements stored
 * [x] `sprae(el, newState)` can update element's state directly (as batch!?) -> must be tested against repeats in directives
-* [ ] :if :ref, :if :with -> context setters must come first always
+* [x] :if :ref, :if :with -> context setters must come first always
 * [ ] frameworks benchmark
 * [ ] examples
   * [x] todomvc

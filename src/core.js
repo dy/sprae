@@ -1,5 +1,5 @@
 import signalStruct from 'signal-struct';
-import defaultDirective, { directives } from './directives.js';
+import defaultDirective, { primary, secondary } from './directives.js';
 import { effect, batch } from '@preact/signals-core'
 
 // sprae element: apply directives
@@ -18,6 +18,21 @@ export default function sprae(container, values) {
 
   // init directives on element
   const init = (el, parent=el.parentNode) => {
+    // init primary attributes first
+    for (let name in primary) {
+      let attrName = ':' + name
+      if (el.hasAttribute?.(attrName)) {
+        let expr = el.getAttribute(attrName)
+        el.removeAttribute(attrName)
+        if (!expr) continue
+        updates.push(primary[name](el, expr, state, name))
+
+        // stop if element was spraed by directive or skipped (detached)
+        if (memo.has(el) || el.parentNode !== parent) return false
+      }
+    }
+
+    // catch other attributes as secondary
     if (el.attributes) {
       for (let i = 0; i < el.attributes.length;) {
         let attr = el.attributes[i]
@@ -25,12 +40,13 @@ export default function sprae(container, values) {
         el.removeAttribute(attr.name)
         let expr = attr.value
         if (!expr) continue
+        // multiple attributes like :id:for=""
         let attrNames = attr.name.slice(1).split(':')
         for (let attrName of attrNames) {
-          let dir = directives[attrName] || defaultDirective;
-          updates.push(dir(el, expr, state, attrName) || (()=>{}));
+          let dir = secondary[attrName] || defaultDirective;
+          updates.push(dir(el, expr, state, attrName));
 
-          // stop if element was spraed by directive or skipped
+          // stop if element was spraed by directive or skipped (detached)
           if (memo.has(el) || el.parentNode !== parent) return false
         }
       }
@@ -46,7 +62,7 @@ export default function sprae(container, values) {
 
   // call updates: subscribes directives to state;
   // state is created after inits because directives can extend init values (expose refs etc)
-  for (let update of updates) {
+  for (let update of updates) if (update) {
     let teardown
     effect(() => {
       if (typeof teardown === 'function') teardown()

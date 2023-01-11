@@ -418,7 +418,7 @@ test('each: internal children get updated by state update, also: update by runni
   is(el.textContent, '123')
 })
 
-test.todo('each: :id and others must receive value from context', () => {
+test('each: :id and others must receive value from context', () => {
   let el = h`<div><x :id="idx" :each="item, idx in items"></x></div>`
   sprae(el, {items:[1,2,3]})
   is(el.innerHTML,`<x id="1"></x><x id="2"></x><x id="3"></x>`)
