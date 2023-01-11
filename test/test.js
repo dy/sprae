@@ -404,7 +404,24 @@ test('each: keyed', async () => {
 })
 
 test.todo('each: unmounted elements remove listeners', async () => {
+  // let's hope they get removed without memory leaks :')
+})
 
+test('each: internal children get updated by state update, also: update by running again', () => {
+  let el = h`<><x :each="item, idx in items" :text="item" :key="idx"></x></>`
+  sprae(el, { items: [1,2,3] })
+  is(el.textContent, '123')
+  let state = sprae(el, { items: [0,2,3] })
+  is(el.textContent, '023')
+  state.items[0] = 1
+  state.items = state.items
+  is(el.textContent, '123')
+})
+
+test.todo('each: :id and others must receive value from context', () => {
+  let el = h`<div><x :id="idx" :each="item, idx in items"></x></div>`
+  sprae(el, {items:[1,2,3]})
+  is(el.innerHTML,`<x id="1"></x><x id="2"></x><x id="3"></x>`)
 })
 
 test('on: base', () => {

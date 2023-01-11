@@ -1,12 +1,16 @@
 import signalStruct from 'signal-struct';
 import defaultDirective, { directives } from './directives.js';
-import { effect } from '@preact/signals-core'
+import { effect, batch } from '@preact/signals-core'
 
 // sprae element: apply directives
 const memo = new WeakMap
 export default function sprae(container, values) {
   if (!container.children) return
-  if (memo.has(container)) return memo.get(container)
+  if (memo.has(container)) {
+    let state = memo.get(container)
+    batch(() => Object.assign(state, values))
+    return state
+  }
 
   // signalStruct returns values if it's signalStruct already
   const state = signalStruct(values || {});

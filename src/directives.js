@@ -96,7 +96,7 @@ directives['each'] = (tpl, expr) => {
   const holder = tpl[_each] = document.createTextNode('')
   tpl.replaceWith(holder)
 
-  const evaluate = parseExpr(tpl, each.items, ':each');
+  const evaluate = parseExpr(tpl, each[2], ':each');
 
   const keyExpr = tpl[_key] || tpl.getAttribute(':key');
   const itemKey = keyExpr ? parseExpr(null, keyExpr) : null;
@@ -121,7 +121,7 @@ directives['each'] = (tpl, expr) => {
     let newEls = [], elScopes = []
 
     for (let [idx, item] of list) {
-      let el, scope, key = itemKey?.({[each.item]: item, [each.index || '']: idx})
+      let el, scope, key = itemKey?.({[each[0]]: item, [each[1]]: idx})
       if (isPrimitive(key)) key = p(key); // singletonize key
 
       // we consider if data items are primitive, then nodes needn't be cached
@@ -132,13 +132,14 @@ directives['each'] = (tpl, expr) => {
       newEls.push(el)
 
       if (key == null || !(scope = scopes.get(key))) {
-        scope = Object.create(state)
-        scope[each.item] = item
-        if (each.index) scope[each.index] = idx;
+        scope = signalStruct({[each[0]]: item, [each[1]]:idx}, state)
         // provide ref, if indicated
         if (tpl[_ref]) scope[tpl[_ref]] = el
         if (key != null) scopes.set(key, scope)
       }
+      // need to explicitly set item to update existing children's values
+      else scope[each[0]] = item
+
       elScopes.push(scope)
     }
 
@@ -162,19 +163,17 @@ function parseForExpression(expression) {
 
   if (!inMatch) return
 
-  let res = {}
-  res.items = inMatch[2].trim()
+  let items = inMatch[2].trim()
   let item = inMatch[1].replace(stripParensRE, '').trim()
   let iteratorMatch = item.match(forIteratorRE)
 
-  if (iteratorMatch) {
-      res.item = item.replace(forIteratorRE, '').trim()
-      res.index = iteratorMatch[1].trim()
-  } else {
-      res.item = item
-  }
+  if (iteratorMatch) return [
+    item.replace(forIteratorRE, '').trim(),
+    iteratorMatch[1].trim(),
+    items
+  ]
 
-  return res
+  return [item, '', items]
 }
 
 directives['id'] = (el, expr) => {

@@ -261,7 +261,21 @@ This way, for example, _@preact/signals_ or _rxjs_ can be connected directly byp
 
 ## Hints
 
-**1.** Data supports signal values, which can be an alternative way to control template state:
+**1.** To batch-update state (avoid multiple DOM changes), rerun sprae with new state:
+
+```html
+<li :each="item, id in items" :key="id" :text="item"></li>
+
+<script type="module">
+  sprae(el, {items: ['foo', 'bar', 'baz']})
+  // <li>foo</li><li>bar</li><li>baz</li>
+
+  sprae(el, {items: ['foo', 'qux']})
+  // <li>foo</li><li>qux</li>
+</script>
+```
+
+**2.** Data supports signal values, which can be an alternative way to control template state:
 
 ```html
 <div id="done" :text="loading ? 'loading' : result">...</div>
@@ -283,7 +297,7 @@ This way, for example, _@preact/signals_ or _rxjs_ can be connected directly byp
 </script>
 ```
 
-**2.** Data recognizes reactive values as inputs as well: _Promise_ / _Thenable_, _Observable_ / _Subscribable_, _AsyncIterable_ (etc., see [sube](https://github.com/dy/sube/blob/main/README.md)). This way, for example, _rxjs_ can be connected to template directly.
+**3.** Data recognizes reactive values as inputs as well: _Promise_ / _Thenable_, _Observable_ / _Subscribable_, _AsyncIterable_ (etc., see [sube](https://github.com/dy/sube/blob/main/README.md)). This way, for example, _rxjs_ can be connected to template directly.
 
 ```html
 <div :text="clicks">#</div> clicks
@@ -297,7 +311,7 @@ This way, for example, _@preact/signals_ or _rxjs_ can be connected directly byp
 </script>
 ```
 
-**3.** Getters turn into computed values automatically:
+**4.** Getters turn into computed values automatically (setters remain as is):
 
 ```html
 <div id="x-plus-y">
