@@ -6,23 +6,23 @@ function t() {
   if (!(n > 1)) {
     var i2, t2 = false;
     while (void 0 !== r) {
-      var h = r;
+      var h2 = r;
       r = void 0;
       s++;
-      while (void 0 !== h) {
-        var o2 = h.o;
-        h.o = void 0;
-        h.f &= -3;
-        if (!(8 & h.f) && d(h))
+      while (void 0 !== h2) {
+        var o2 = h2.o;
+        h2.o = void 0;
+        h2.f &= -3;
+        if (!(8 & h2.f) && d(h2))
           try {
-            h.c();
-          } catch (h2) {
+            h2.c();
+          } catch (h3) {
             if (!t2) {
-              i2 = h2;
+              i2 = h3;
               t2 = true;
             }
           }
-        h = o2;
+        h2 = o2;
       }
     }
     s = 0;
@@ -31,6 +31,16 @@ function t() {
       throw i2;
   } else
     n--;
+}
+function h(i2) {
+  if (n > 0)
+    return i2();
+  n++;
+  try {
+    return i2();
+  } finally {
+    t();
+  }
 }
 var o = void 0;
 var r = void 0;
@@ -79,25 +89,25 @@ e.prototype.S = function(i2) {
   }
 };
 e.prototype.U = function(i2) {
-  var t2 = i2.e, h = i2.x;
+  var t2 = i2.e, h2 = i2.x;
   if (void 0 !== t2) {
-    t2.x = h;
+    t2.x = h2;
     i2.e = void 0;
   }
-  if (void 0 !== h) {
-    h.e = t2;
+  if (void 0 !== h2) {
+    h2.e = t2;
     i2.x = void 0;
   }
   if (i2 === this.t)
-    this.t = h;
+    this.t = h2;
 };
 e.prototype.subscribe = function(i2) {
   var t2 = this;
   return b(function() {
-    var h = t2.value, o2 = 32 & this.f;
+    var h2 = t2.value, o2 = 32 & this.f;
     this.f &= -33;
     try {
-      i2(h);
+      i2(h2);
     } finally {
       this.f |= o2;
     }
@@ -117,11 +127,11 @@ Object.defineProperty(e.prototype, "value", { get: function() {
   if (void 0 !== i2)
     i2.i = this.i;
   return this.v;
-}, set: function(h) {
-  if (h !== this.v) {
+}, set: function(h2) {
+  if (h2 !== this.v) {
     if (s > 100)
       i();
-    this.v = h;
+    this.v = h2;
     this.i++;
     f++;
     n++;
@@ -144,33 +154,33 @@ function d(i2) {
 }
 function c(i2) {
   for (var t2 = i2.s; void 0 !== t2; t2 = t2.n) {
-    var h = t2.S.n;
-    if (void 0 !== h)
-      t2.r = h;
+    var h2 = t2.S.n;
+    if (void 0 !== h2)
+      t2.r = h2;
     t2.S.n = t2;
     t2.i = -1;
   }
 }
 function a(i2) {
-  var t2 = i2.s, h = void 0;
+  var t2 = i2.s, h2 = void 0;
   while (void 0 !== t2) {
     var o2 = t2.n;
     if (-1 === t2.i) {
       t2.S.U(t2);
       t2.n = void 0;
     } else {
-      if (void 0 !== h)
-        h.p = t2;
+      if (void 0 !== h2)
+        h2.p = t2;
       t2.p = void 0;
-      t2.n = h;
-      h = t2;
+      t2.n = h2;
+      h2 = t2;
     }
     t2.S.n = t2.r;
     if (void 0 !== t2.r)
       t2.r = void 0;
     t2 = o2;
   }
-  i2.s = h;
+  i2.s = h2;
 }
 function l(i2) {
   e.call(this, void 0);
@@ -259,14 +269,14 @@ function w(i2) {
   return new l(i2);
 }
 function y(i2) {
-  var h = i2.u;
+  var h2 = i2.u;
   i2.u = void 0;
-  if ("function" == typeof h) {
+  if ("function" == typeof h2) {
     n++;
     var r2 = o;
     o = void 0;
     try {
-      h();
+      h2();
     } catch (t2) {
       i2.f &= -2;
       i2.f |= 8;
@@ -474,39 +484,13 @@ var primitive_pool_default = (key) => {
 };
 
 // src/directives.js
-var directives = {};
-var directives_default = (el, expr, values, name) => {
-  let evt = name.startsWith("on") && name.slice(2);
-  let evaluate = parseExpr(el, expr, ":" + name);
-  if (evaluate)
-    return evt ? (state) => {
-      let value = evaluate(state);
-      if (value) {
-        addListener(el, evt, value);
-        return () => removeListener(el, evt, value);
-      }
-    } : (state) => attr(el, name, evaluate(state));
-};
-var attr = (el, name, v2) => {
-  if (v2 == null || v2 === false)
-    el.removeAttribute(name);
-  else
-    el.setAttribute(name, v2 === true ? "" : typeof v2 === "number" || typeof v2 === "string" ? v2 : "");
-};
-directives[""] = (el, expr) => {
-  let evaluate = parseExpr(el, expr, ":");
-  if (evaluate)
-    return (state) => {
-      let value = evaluate(state);
-      for (let key in value)
-        attr(el, dashcase(key), value[key]);
-    };
-};
-directives["with"] = (el, expr, rootState) => {
+var primary = {};
+var secondary = {};
+primary["with"] = (el, expr, rootState) => {
   let evaluate = parseExpr(el, expr, "with");
   sprae(el, signalStruct(evaluate(rootState), rootState));
 };
-directives["if"] = (el, expr) => {
+primary["if"] = (el, expr) => {
   let holder = document.createTextNode(""), clauses = [parseExpr(el, expr, ":if")], els = [el], cur = el;
   while (cur = el.nextElementSibling) {
     if (cur.hasAttribute(":else")) {
@@ -533,31 +517,14 @@ directives["if"] = (el, expr) => {
   };
 };
 var _each = Symbol(":each");
-var _ref = Symbol(":ref");
-var _key = Symbol(":key");
-directives["ref"] = (el, expr, state) => {
-  if (el.hasAttribute(":each")) {
-    el[_ref] = expr;
-    return;
-  }
-  ;
-  state[expr] = el;
-};
-directives["key"] = (el, expr, state) => {
-  if (el.hasAttribute(":each")) {
-    el[_key] = expr;
-    return;
-  }
-  ;
-};
-directives["each"] = (tpl, expr) => {
+primary["each"] = (tpl, expr) => {
   let each = parseForExpression(expr);
   if (!each)
     return exprError(new Error(), tpl, expr);
   const holder = tpl[_each] = document.createTextNode("");
   tpl.replaceWith(holder);
-  const evaluate = parseExpr(tpl, each.items, ":each");
-  const keyExpr = tpl[_key] || tpl.getAttribute(":key");
+  const evaluate = parseExpr(tpl, each[2], ":each");
+  const keyExpr = tpl.getAttribute(":key");
   const itemKey = keyExpr ? parseExpr(null, keyExpr) : null;
   tpl.removeAttribute(":key");
   const scopes = /* @__PURE__ */ new WeakMap();
@@ -577,7 +544,7 @@ directives["each"] = (tpl, expr) => {
       exprError(Error("Bad list value"), tpl, expr, ":each", list);
     let newEls = [], elScopes = [];
     for (let [idx, item] of list) {
-      let el, scope, key = itemKey?.({ [each.item]: item, [each.index || ""]: idx });
+      let el, scope, key = itemKey?.({ [each[0]]: item, [each[1]]: idx });
       if (isPrimitive(key))
         key = primitive_pool_default(key);
       if (key == null)
@@ -586,15 +553,11 @@ directives["each"] = (tpl, expr) => {
         (el = itemEls.get(key)) || itemEls.set(key, el = tpl.cloneNode(true));
       newEls.push(el);
       if (key == null || !(scope = scopes.get(key))) {
-        scope = Object.create(state);
-        scope[each.item] = item;
-        if (each.index)
-          scope[each.index] = idx;
-        if (tpl[_ref])
-          scope[tpl[_ref]] = el;
+        scope = signalStruct({ [each[0]]: item, [each[1]]: idx }, state);
         if (key != null)
           scopes.set(key, scope);
-      }
+      } else
+        scope[each[0]] = item;
       elScopes.push(scope);
     }
     swap_inflate_default(holder.parentNode, curEls, newEls, holder);
@@ -611,24 +574,26 @@ function parseForExpression(expression) {
   let inMatch = expression.match(forAliasRE);
   if (!inMatch)
     return;
-  let res = {};
-  res.items = inMatch[2].trim();
+  let items = inMatch[2].trim();
   let item = inMatch[1].replace(stripParensRE, "").trim();
   let iteratorMatch = item.match(forIteratorRE);
-  if (iteratorMatch) {
-    res.item = item.replace(forIteratorRE, "").trim();
-    res.index = iteratorMatch[1].trim();
-  } else {
-    res.item = item;
-  }
-  return res;
+  if (iteratorMatch)
+    return [
+      item.replace(forIteratorRE, "").trim(),
+      iteratorMatch[1].trim(),
+      items
+    ];
+  return [item, "", items];
 }
-directives["id"] = (el, expr) => {
+secondary["ref"] = (el, expr, state) => {
+  state[expr] = el;
+};
+secondary["id"] = (el, expr) => {
   let evaluate = parseExpr(el, expr, ":id");
   const update = (v2) => el.id = v2 || v2 === 0 ? v2 : "";
   return (state) => update(evaluate(state));
 };
-directives["class"] = (el, expr) => {
+secondary["class"] = (el, expr) => {
   let evaluate = parseExpr(el, expr, ":class");
   let initClassName = el.className;
   return (state) => {
@@ -636,7 +601,7 @@ directives["class"] = (el, expr) => {
     el.className = initClassName + typeof v2 === "string" ? v2 : (Array.isArray(v2) ? v2 : Object.entries(v2).map(([k, v3]) => v3 ? k : "")).filter(Boolean).join(" ");
   };
 };
-directives["style"] = (el, expr) => {
+secondary["style"] = (el, expr) => {
   let evaluate = parseExpr(el, expr, ":style");
   let initStyle = el.getAttribute("style") || "";
   if (!initStyle.endsWith(";"))
@@ -650,14 +615,14 @@ directives["style"] = (el, expr) => {
         el.style[k] = v2[k];
   };
 };
-directives["text"] = (el, expr) => {
+secondary["text"] = (el, expr) => {
   let evaluate = parseExpr(el, expr, ":text");
   return (state) => {
     let value = evaluate(state);
     el.textContent = value == null ? "" : value;
   };
 };
-directives["value"] = (el, expr) => {
+secondary["value"] = (el, expr) => {
   let evaluate = parseExpr(el, expr, ":value");
   let from, to;
   let update = el.type === "text" || el.type === "" ? (value) => el.setAttribute("value", el.value = value == null ? "" : value) : el.tagName === "TEXTAREA" || el.type === "text" || el.type === "" ? (value) => (from = el.selectionStart, to = el.selectionEnd, el.setAttribute("value", el.value = value == null ? "" : value), from && el.setSelectionRange(from, to)) : el.type === "checkbox" ? (value) => (el.value = value ? "on" : "", attr(el, "checked", value)) : el.type === "select-one" ? (value) => {
@@ -668,7 +633,7 @@ directives["value"] = (el, expr) => {
   } : (value) => el.value = value;
   return (state) => update(evaluate(state));
 };
-directives["on"] = (el, expr) => {
+secondary["on"] = (el, expr) => {
   let evaluate = parseExpr(el, expr, ":on");
   return (state) => {
     let listeners = evaluate(state);
@@ -707,7 +672,7 @@ var removeListener = (el, evt, fn) => {
     fn[_stop] = true;
   el.removeEventListener(evt, fn);
 };
-directives["data"] = (el, expr) => {
+secondary["data"] = (el, expr) => {
   let evaluate = parseExpr(el, expr, ":data");
   return (state) => {
     let value = evaluate(state);
@@ -715,13 +680,40 @@ directives["data"] = (el, expr) => {
       el.dataset[key] = value[key];
   };
 };
-directives["aria"] = (el, expr) => {
+secondary["aria"] = (el, expr) => {
   let evaluate = parseExpr(el, expr, ":aria");
   const update = (value) => {
     for (let key in value)
       attr(el, "aria-" + dashcase(key), value[key] == null ? null : value[key] + "");
   };
   return (state) => update(evaluate(state));
+};
+secondary[""] = (el, expr) => {
+  let evaluate = parseExpr(el, expr, ":");
+  if (evaluate)
+    return (state) => {
+      let value = evaluate(state);
+      for (let key in value)
+        attr(el, dashcase(key), value[key]);
+    };
+};
+var directives_default = (el, expr, values, name) => {
+  let evt = name.startsWith("on") && name.slice(2);
+  let evaluate = parseExpr(el, expr, ":" + name);
+  if (evaluate)
+    return evt ? (state) => {
+      let value = evaluate(state);
+      if (value) {
+        addListener(el, evt, value);
+        return () => removeListener(el, evt, value);
+      }
+    } : (state) => attr(el, name, evaluate(state));
+};
+var attr = (el, name, v2) => {
+  if (v2 == null || v2 === false)
+    el.removeAttribute(name);
+  else
+    el.setAttribute(name, v2 === true ? "" : typeof v2 === "number" || typeof v2 === "string" ? v2 : "");
 };
 var evaluatorMemo = {};
 function parseExpr(el, expression, dir) {
@@ -767,11 +759,26 @@ var memo = /* @__PURE__ */ new WeakMap();
 function sprae(container, values) {
   if (!container.children)
     return;
-  if (memo.has(container))
-    return memo.get(container);
+  if (memo.has(container)) {
+    let state2 = memo.get(container);
+    h(() => Object.assign(state2, values));
+    return state2;
+  }
   const state = signalStruct(values || {});
   const updates = [];
   const init = (el, parent = el.parentNode) => {
+    for (let name in primary) {
+      let attrName = ":" + name;
+      if (el.hasAttribute?.(attrName)) {
+        let expr = el.getAttribute(attrName);
+        el.removeAttribute(attrName);
+        if (!expr)
+          continue;
+        updates.push(primary[name](el, expr, state, name));
+        if (memo.has(el) || el.parentNode !== parent)
+          return false;
+      }
+    }
     if (el.attributes) {
       for (let i2 = 0; i2 < el.attributes.length; ) {
         let attr2 = el.attributes[i2];
@@ -785,9 +792,8 @@ function sprae(container, values) {
           continue;
         let attrNames = attr2.name.slice(1).split(":");
         for (let attrName of attrNames) {
-          let dir = directives[attrName] || directives_default;
-          updates.push(dir(el, expr, state, attrName) || (() => {
-          }));
+          let dir = secondary[attrName] || directives_default;
+          updates.push(dir(el, expr, state, attrName));
           if (memo.has(el) || el.parentNode !== parent)
             return false;
         }
@@ -799,14 +805,15 @@ function sprae(container, values) {
     }
   };
   init(container);
-  for (let update of updates) {
-    let teardown;
-    b(() => {
-      if (typeof teardown === "function")
-        teardown();
-      teardown = update(state);
-    });
-  }
+  for (let update of updates)
+    if (update) {
+      let teardown;
+      b(() => {
+        if (typeof teardown === "function")
+          teardown();
+        teardown = update(state);
+      });
+    }
   Object.seal(state);
   memo.set(container, state);
   return state;
