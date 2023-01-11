@@ -486,10 +486,6 @@ var primitive_pool_default = (key) => {
 // src/directives.js
 var primary = {};
 var secondary = {};
-primary["with"] = (el, expr, rootState) => {
-  let evaluate = parseExpr(el, expr, "with");
-  sprae(el, signalStruct(evaluate(rootState), rootState));
-};
 primary["if"] = (el, expr) => {
   let holder = document.createTextNode(""), clauses = [parseExpr(el, expr, ":if")], els = [el], cur = el;
   while (cur = el.nextElementSibling) {
@@ -511,10 +507,15 @@ primary["if"] = (el, expr) => {
   return (state) => {
     let i2 = clauses.findIndex((f2) => f2(state));
     if (els[i2] != cur) {
+      ;
       (cur[_each] || cur).replaceWith(cur = els[i2] || holder);
       sprae(cur, state);
     }
   };
+};
+primary["with"] = (el, expr, rootState) => {
+  let evaluate = parseExpr(el, expr, "with");
+  sprae(el, signalStruct(evaluate(rootState), rootState));
 };
 var _each = Symbol(":each");
 primary["each"] = (tpl, expr) => {
