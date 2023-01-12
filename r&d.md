@@ -376,7 +376,7 @@
   ? maybe id should have same signature
   ? should it be very similar mechanism to `:with="a=1,b=2"`
 
-## [ ] Event modifiers :ona.once, `:ona`
+## [x] Event modifiers :ona.once, `:ona` -> let's try, there's a lot of use for both props and event
 
   - .prevent,.stop - not needed since expects a function
     ? or should we just trigger it for user?
