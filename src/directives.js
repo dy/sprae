@@ -271,7 +271,7 @@ const addListener = (el, evt, startFn) => {
 
   // onevt.debounce-108
   evts[0] = evts[0].replace(
-    /\.(\w+)-?(\d+)?/g,
+    /\.(\w+)?-?([\w]+)?/g,
     (match, mod, param) => (mod=mods[mod]) ? ([el, startFn] = mod(el, startFn, opts, param), '') : ''
   );
 
@@ -338,7 +338,12 @@ const mods = {
   passive(el, cb, opts) { opts.passive = true; return [el, cb] },
   capture(el, cb, opts) { opts.capture = true; return [el, cb] },
 };
-['ctrl','shift','meta','cmd','alt','enter','slash','space','esc','escape','up','down','left','right','period','equal','minus','underscore']
+['ctrl','shift','meta','cmd','alt','enter','slash','space','esc','escape','up','down','left','right','period','equal','minus','underscore'].forEach(key => {
+  mods[key] = (el, cb, opts, extraKey) => [el, e => {
+    // if (e.key)
+    cb(e)
+  }]
+})
 
 // set attr
 const attr = (el, name, v) => {

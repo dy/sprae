@@ -611,8 +611,11 @@ test('on: window, self', e => {
   is(state.log, [1,2])
 })
 
-test('on: key', e => {
-
+test.only('on: keys', e => {
+  let el = h`<x :onkeypress.shift-enter="e=>log.push(1)"></x>`
+  let log = []
+  sprae(el, {log})
+  // is(log,[1])
 })
 
 test('with: inline', () => {
