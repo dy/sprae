@@ -344,7 +344,6 @@ let keys = {
   alt:'Alt',
   meta:'Meta',cmd:'Meta',
   down:'ArrowDown',up:'ArrowUp',left:'ArrowLeft',right:'ArrowRight',
-  arrowdown:'ArrowDown',arrowup:'ArrowUp',arrowleft:'ArrowLeft',arrowright:'ArrowRight',
   end:'End',home:'Home',pagedown:'PageDown',pageup:'PageUp',
   enter:'Enter',plus:'+',minus:'-',star:'*',slash:'/',period:'.',equal:'=',underscore:'_',
   esc:'Escape',escape:'Escape',tab:'Tab',space:' ',
