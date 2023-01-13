@@ -691,7 +691,7 @@ var _stop = Symbol("stop");
 var addListener = (el, evt, startFn) => {
   let evts = evt.split("..").map((e3) => e3.startsWith("on") ? e3.slice(2) : e3), opts = {};
   evts[0] = evts[0].replace(
-    /\.(\w+)-?(\d+)?/g,
+    /\.(\w+)?-?([\w]+)?/g,
     (match, mod, param) => (mod = mods[mod]) ? ([el, startFn] = mod(el, startFn, opts, param), "") : ""
   );
   if (evts.length == 1)
@@ -720,7 +720,7 @@ var removeListener = (el, evt, fn) => {
 };
 var mods = {
   throttle(el, cb, opts, limit) {
-    limit = Number(limit);
+    limit = Number(limit) || 108;
     let pause, planned, block = () => {
       pause = true;
       setTimeout(() => {
@@ -737,7 +737,7 @@ var mods = {
     }];
   },
   debounce(el, cb, opts, wait) {
-    wait = Number(wait);
+    wait = Number(wait) || 108;
     let timeout, later = () => {
       timeout = null;
       cb(e);
@@ -792,15 +792,49 @@ var mods = {
   capture(el, cb, opts) {
     opts.capture = true;
     return [el, cb];
-  },
-  key(el, cb, opts, key) {
-    return [el, (e3) => {
-      if (e3.key.toLowerCase() !== key)
-        return;
-      cb(e3);
-    }];
   }
 };
+var keys = {
+  ctrl: "Control Ctrl",
+  shift: "Shift",
+  alt: "Alt",
+  meta: "Meta",
+  cmd: "Meta",
+  down: "ArrowDown",
+  up: "ArrowUp",
+  left: "ArrowLeft",
+  right: "ArrowRight",
+  arrowdown: "ArrowDown",
+  arrowup: "ArrowUp",
+  arrowleft: "ArrowLeft",
+  arrowright: "ArrowRight",
+  end: "End",
+  home: "Home",
+  pagedown: "PageDown",
+  pageup: "PageUp",
+  enter: "Enter",
+  plus: "+",
+  minus: "-",
+  star: "*",
+  slash: "/",
+  period: ".",
+  equal: "=",
+  underscore: "_",
+  esc: "Escape",
+  escape: "Escape",
+  tab: "Tab",
+  space: " ",
+  backspace: "Backspace",
+  delete: "Delete"
+};
+for (let keyAttr in keys) {
+  let keyName = keys[keyAttr];
+  mods[keyAttr] = (el, cb, opts, extraKey) => [el, (e3) => {
+    if (!e3.key || !keyName.includes(e3.key))
+      return;
+    cb(e3);
+  }];
+}
 var attr = (el, name, v2) => {
   if (v2 == null || v2 === false)
     el.removeAttribute(name);
