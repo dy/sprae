@@ -141,6 +141,24 @@ function parseForExpression(expression) {
 }
 
 
+// any unknown directive
+export default (el, expr, state, name) => {
+  let evt = name.startsWith('on') && name.slice(2)
+  let evaluate = parseExpr(el, expr, ':'+name)
+
+  if (!evaluate) return
+
+  if (evt) return state => {
+    let value = evaluate(state)
+    if (value) {
+      addListener(el, evt, value)
+      return () => removeListener(el, evt, value)
+    }
+  }
+
+  return state => attr(el, name, evaluate(state))
+}
+
 secondary['ref'] = (el, expr, state) => {
   // FIXME: wait for complex ref use-case
   // parseExpr(el, `__scope[${expr}]=this`, ':ref')(values)
@@ -179,6 +197,32 @@ secondary['text'] = (el, expr) => {
   return (state) => {
     let value = evaluate(state)
     el.textContent = value == null ? '' : value;
+  }
+}
+
+secondary['data'] = (el, expr) => {
+  let evaluate = parseExpr(el, expr, ':data')
+
+  return ((state) => {
+    let value = evaluate(state)
+    for (let key in value) el.dataset[key] = value[key];
+  })
+}
+
+secondary['aria'] = (el, expr) => {
+  let evaluate = parseExpr(el, expr, ':aria')
+  const update = (value) => {
+    for (let key in value) attr(el, 'aria-' + dashcase(key), value[key] == null ? null : value[key] + '');
+  }
+  return ((state) => update(evaluate(state)))
+}
+
+// set props in-bulk or run effect
+secondary[''] = (el, expr) => {
+  let evaluate = parseExpr(el, expr, ':')
+  if (evaluate) return (state) => {
+    let value = evaluate(state)
+    for (let key in value) attr(el, dashcase(key), value[key]);
   }
 }
 
@@ -221,9 +265,17 @@ secondary['on'] = (el, expr) => {
 
 const _stop = Symbol('stop')
 const addListener = (el, evt, startFn) => {
-  if (evt.indexOf('..')<0) el.addEventListener(evt, startFn);
+  // ona..onb
+  let [start, end] = evt.split('..')
 
-  // sequences like `a..b`: fn
+  // onevt.debounce-108
+  start = start.replace(
+    /\.(\w+)-?(\d+)?/g,
+    (match, mod, param) => (mod=mods[mod]) ? (startFn = mod(startFn, param), '') : ''
+  );
+
+  if (!end) el.addEventListener(start, startFn);
+
   else {
     const evts = evt.split('..').map(e => e.startsWith('on') ? e.slice(2) : e)
     const nextEvt = (fn, cur=0) => {
@@ -243,44 +295,31 @@ const removeListener = (el, evt, fn) => {
   el.removeEventListener(evt, fn);
 }
 
-secondary['data'] = (el, expr) => {
-  let evaluate = parseExpr(el, expr, ':data')
+// event modifiers
+const mods = {
+  throttle(cb, timeout) {
+    return cb
+  },
 
-  return ((state) => {
-    let value = evaluate(state)
-    for (let key in value) el.dataset[key] = value[key];
-  })
-}
+  debounce(cb, timeout) {
 
-secondary['aria'] = (el, expr) => {
-  let evaluate = parseExpr(el, expr, ':aria')
-  const update = (value) => {
-    for (let key in value) attr(el, 'aria-' + dashcase(key), value[key] == null ? null : value[key] + '');
+  },
+
+  once(cb) {
+
+  },
+
+  passive(cb) {
+
+  },
+
+  capture(cb) {
+
+  },
+
+  key(cb, key) {
+
   }
-  return ((state) => update(evaluate(state)))
-}
-
-// set props in-bulk or run effect
-secondary[''] = (el, expr) => {
-  let evaluate = parseExpr(el, expr, ':')
-  if (evaluate) return (state) => {
-    let value = evaluate(state)
-    for (let key in value) attr(el, dashcase(key), value[key]);
-  }
-}
-
-// any other prop directive
-export default (el, expr, values, name) => {
-  let evt = name.startsWith('on') && name.slice(2)
-  let evaluate = parseExpr(el, expr, ':'+name)
-  if (evaluate) return evt ? state => {
-    let value = evaluate(state)
-    if (value) {
-      addListener(el, evt, value)
-      return () => removeListener(el, evt, value)
-    }
-  }
-  : state => attr(el, name, evaluate(state))
 }
 
 // set attr
@@ -288,7 +327,6 @@ const attr = (el, name, v) => {
   if (v == null || v === false) el.removeAttribute(name)
   else el.setAttribute(name, v === true ? '' : (typeof v === 'number' || typeof v === 'string') ? v : '')
 }
-
 
 let evaluatorMemo = {}
 
@@ -326,7 +364,7 @@ function parseExpr(el, expression, dir) {
   }
 }
 
-export function exprError(error, element, expression, dir) {
+function exprError(error, element, expression, dir) {
   Object.assign( error, { element, expression } )
   console.warn(`∴ ${error.message}\n\n${dir}=${ expression ? `"${expression}"\n\n` : '' }`, element)
   setTimeout(() => { throw error }, 0)

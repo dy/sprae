@@ -415,6 +415,43 @@
   + allow multiple setters for same props or multiple listeners for same events
   + oldschool jquery-compatible events
 
+## [ ] Mods design
+
+  * [ ] Prop modifiers
+    - overall seems code complication without much benefit
+    * [ ] value.bind? value.watch?
+      - let's wait for use-case: value can be too big to set it every time
+    * [ ] prop.reflect, prop.observe
+      - let's wait for use-case
+    * [ ] prop.boolean, .number, .string, .array, .object
+      - let's wait for use-case
+    * [ ] prop.once, prop.fx ? prop.init?
+      - doesn't seem required, let's wait for use case
+    * [ ] prop.change - run only if value changes
+      - seems like unnecessary manual optimization that must be done always automatically
+      ? are there cases where force-update is necessary?
+    * [ ] prop.throttle-xxx, prop.debounce-xxx
+      - let's wait until that's really a problem
+    * [ ] prop.class
+      ? what's the use-case
+
+  * [ ] Event modifiers
+    * [ ] onevt.x, onevt.y
+      + jquery-like
+      + multiple same events
+    * [ ] onevt.once, onevt.passive, onevt.capture
+      + standard props passing
+    * [ ] onevt.prevent, onevt.stop
+      + conventional mods
+    * [ ] onevt.outside onevt.window, onevt.document, onevt.self
+      + useful handlers, conventional mods
+    * [ ] onevt.throttle-xxx, onevt.debounce-xxx
+      + conventional
+    * [ ] onevt.shift, onevt.cmd.shift, onevt.meta
+      + conventional
+    * [ ] onkey.enter, .space, .up|.down|.left|.right, .escape, .tab, .period, .slash, .caps-lock
+      + conventional
+
 ## [x] Writing props on elements (like ones in :each) -> nah, just use `:x="this.x=abc"`
 
   1. `:x="abc"` creates property + attribute

@@ -41,18 +41,3 @@
   * [x] todomvc
   * [x] waveplay
 * [ ] modifiers
-  * [ ] value.bind
-  * [ ] prop.boolean, .number, .string, .array, .object
-  * [ ] prop.reflect, prop.observe
-  * [ ] prop.once, prop.fx ?
-  * [ ] prop.change - run only if value changes
-  * [ ] prop.throttle-xxx, prop.debounce-xxx
-  * [ ] prop.class
-  * [ ] onevt.x, onevt.y
-  * [ ] onevt.once
-  * [ ] onevt.passive, onevt.capture
-  * [ ] onevt.prevent, onevt.stop
-  * [ ] onevt.outside onevt.window, onevt.document, onevt.self
-  * [ ] onevt.throttle-xxx, onevt.debounce-xxx
-  * [ ] onevt.shift, onevt.cmd.shift, onevt.meta
-  * [ ] onkey.enter, .space, .up|.down|.left|.right, .escape, .tab, .period, .slash, .caps-lock
