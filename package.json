@@ -8,7 +8,7 @@
   "dependencies": {
     "@preact/signals-core": "^1.2.2",
     "primitive-pool": "^2.0.0",
-    "signal-struct": "^1.9.0",
+    "signal-struct": "^1.10.0",
     "swapdom": "^1.1.1"
   },
   "devDependencies": {

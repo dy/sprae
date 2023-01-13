@@ -41,3 +41,4 @@
   * [x] todomvc
   * [x] waveplay
 * [ ] modifiers
+  * [x] once

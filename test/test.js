@@ -424,12 +424,16 @@ test.todo('each: unmounted elements remove listeners', async () => {
 
 test('each: internal children get updated by state update, also: update by running again', () => {
   let el = h`<><x :each="item, idx in items" :text="item" :key="idx"></x></>`
-  sprae(el, { items: [1,2,3] })
+  let state = sprae(el, { items: [1,2,3] })
   is(el.textContent, '123')
-  let state = sprae(el, { items: [0,2,3] })
+  state.items = [2, 2, 3]
+  is(el.textContent, '223')
+  state = sprae(el, { items: [0,2,3] })
   is(el.textContent, '023')
+  // NOTE: this doesn't update items, since they're new array
+  console.log('set items')
   state.items[0] = 1
-  state.items = state.items
+  state.items = [...state.items]
   is(el.textContent, '123')
 })
 
@@ -567,6 +571,21 @@ test('on: state changes between chain of events', e => {
   el.dispatchEvent(new window.Event('y'));
   el.dispatchEvent(new window.Event('y'));
   is(log, [1, 1.1, 2])
+})
+
+test('on: once', e => {
+  // NOTE: if callback updates it's still rebound
+  let el = h`<x :onx.once="(e=>x&&log.push(this))" ></x>`
+  let log = []
+  let state = sprae(el, {log, x:1})
+  el.dispatchEvent(new window.Event('x'));
+  is(log, [el])
+  el.dispatchEvent(new window.Event('x'));
+  is(log, [el])
+  state.x = 2
+  el.dispatchEvent(new window.Event('x'));
+  el.dispatchEvent(new window.Event('x'));
+  is(log, [el])
 })
 
 test('with: inline', () => {

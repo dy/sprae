@@ -141,24 +141,6 @@ function parseForExpression(expression) {
 }
 
 
-// any unknown directive
-export default (el, expr, state, name) => {
-  let evt = name.startsWith('on') && name.slice(2)
-  let evaluate = parseExpr(el, expr, ':'+name)
-
-  if (!evaluate) return
-
-  if (evt) return state => {
-    let value = evaluate(state)
-    if (value) {
-      addListener(el, evt, value)
-      return () => removeListener(el, evt, value)
-    }
-  }
-
-  return state => attr(el, name, evaluate(state))
-}
-
 secondary['ref'] = (el, expr, state) => {
   // FIXME: wait for complex ref use-case
   // parseExpr(el, `__scope[${expr}]=this`, ':ref')(values)
@@ -263,21 +245,38 @@ secondary['on'] = (el, expr) => {
   }
 }
 
+// any unknown directive
+export default (el, expr, state, name) => {
+  let evt = name.startsWith('on') && name.slice(2)
+  let evaluate = parseExpr(el, expr, ':'+name)
+
+  if (!evaluate) return
+
+  if (evt) return state => {
+    let value = evaluate(state)
+    if (value) {
+      addListener(el, evt, value)
+      return () => removeListener(el, evt, value)
+    }
+  }
+
+  return state => attr(el, name, evaluate(state))
+}
+
 const _stop = Symbol('stop')
 const addListener = (el, evt, startFn) => {
   // ona..onb
-  let [start, end] = evt.split('..')
+  let evts = evt.split('..').map(e => e.startsWith('on') ? e.slice(2) : e),
+      opts = {}
 
   // onevt.debounce-108
-  start = start.replace(
+  evts[0] = evts[0].replace(
     /\.(\w+)-?(\d+)?/g,
-    (match, mod, param) => (mod=mods[mod]) ? (startFn = mod(startFn, param), '') : ''
+    (match, mod, param) => (mod=mods[mod]) ? ([el, startFn] = mod(el, startFn, opts, param), '') : ''
   );
 
-  if (!end) el.addEventListener(start, startFn);
-
+  if (evts.length == 1) el.addEventListener(evts[0], startFn, opts);
   else {
-    const evts = evt.split('..').map(e => e.startsWith('on') ? e.slice(2) : e)
     const nextEvt = (fn, cur=0) => {
       let curListener = e => {
         el.removeEventListener(evts[cur], curListener)
@@ -285,7 +284,7 @@ const addListener = (el, evt, startFn) => {
         if (++cur < evts.length) nextEvt(fn, cur);
         else if (!startFn[_stop]) nextEvt(startFn); // update only if chain isn't stopped
       }
-      el.addEventListener(evts[cur],curListener)
+      el.addEventListener(evts[cur], curListener, opts)
     }
     nextEvt(startFn)
   }
@@ -297,28 +296,52 @@ const removeListener = (el, evt, fn) => {
 
 // event modifiers
 const mods = {
-  throttle(cb, timeout) {
-    return cb
+  throttle(el, cb, opts, limit) {
+    limit = Number(limit)
+    let pause, planned, block = () => {
+      pause = true
+      setTimeout(() => {
+        pause = false
+        // if event happened during blocked time, it schedules call by the end
+        if (planned) cb(e), planned = false, block();
+      })
+    }
+    return [el, e => {
+      if (pause) return planned = true
+      cb(e); block();
+    }]
   },
 
-  debounce(cb, timeout) {
-
+  debounce(el, cb, opts, wait) {
+    wait = Number(wait);
+    let timeout, later = () => { timeout = null; cb(e) }
+    return [el, (e) => {
+      clearTimeout(timeout)
+      timeout = setTimeout(later, wait)
+    }]
   },
 
-  once(cb) {
-
+  window(el, cb) { return [window, cb] },
+  document(el, cb) { return [document, cb] },
+  outside(el, cb) {
+    return [el, (e) => {
+      if (el.contains(e.target)) return
+      if (e.target.isConnected === false) return
+      if (el.offsetWidth < 1 && el.offsetHeight < 1) return
+      cb(e)
+    }]
   },
-
-  passive(cb) {
-
-  },
-
-  capture(cb) {
-
-  },
-
-  key(cb, key) {
-
+  prevent(el, cb) { return [el, e => { e.preventDefault(); cb(e) } ]},
+  stop(el, cb) { return [el, e => { e.stopPropagation(); cb(e) } ]},
+  self(el, cb) { return [el, e => { e.target === el && cb(e) } ]},
+  once(el, cb, opts) { opts.once = true; return [el, cb] },
+  passive(el, cb, opts) { opts.passive = true; return [el, cb] },
+  capture(el, cb, opts) { opts.capture = true; return [el, cb] },
+  key(el, cb, opts, key) {
+    return [el, e => {
+      if (e.key.toLowerCase() !== key) return
+      cb(e)
+    }]
   }
 }
 
