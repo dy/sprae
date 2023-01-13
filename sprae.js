@@ -71,16 +71,16 @@ function v(i2) {
     }
   }
 }
-function e(i2) {
+function e2(i2) {
   this.v = i2;
   this.i = 0;
   this.n = void 0;
   this.t = void 0;
 }
-e.prototype.h = function() {
+e2.prototype.h = function() {
   return true;
 };
-e.prototype.S = function(i2) {
+e2.prototype.S = function(i2) {
   if (this.t !== i2 && void 0 === i2.e) {
     i2.x = this.t;
     if (void 0 !== this.t)
@@ -88,7 +88,7 @@ e.prototype.S = function(i2) {
     this.t = i2;
   }
 };
-e.prototype.U = function(i2) {
+e2.prototype.U = function(i2) {
   var t2 = i2.e, h2 = i2.x;
   if (void 0 !== t2) {
     t2.x = h2;
@@ -101,7 +101,7 @@ e.prototype.U = function(i2) {
   if (i2 === this.t)
     this.t = h2;
 };
-e.prototype.subscribe = function(i2) {
+e2.prototype.subscribe = function(i2) {
   var t2 = this;
   return b(function() {
     var h2 = t2.value, o2 = 32 & this.f;
@@ -113,16 +113,16 @@ e.prototype.subscribe = function(i2) {
     }
   });
 };
-e.prototype.valueOf = function() {
+e2.prototype.valueOf = function() {
   return this.value;
 };
-e.prototype.toString = function() {
+e2.prototype.toString = function() {
   return this.value + "";
 };
-e.prototype.peek = function() {
+e2.prototype.peek = function() {
   return this.v;
 };
-Object.defineProperty(e.prototype, "value", { get: function() {
+Object.defineProperty(e2.prototype, "value", { get: function() {
   var i2 = v(this);
   if (void 0 !== i2)
     i2.i = this.i;
@@ -144,7 +144,7 @@ Object.defineProperty(e.prototype, "value", { get: function() {
   }
 } });
 function u(i2) {
-  return new e(i2);
+  return new e2(i2);
 }
 function d(i2) {
   for (var t2 = i2.s; void 0 !== t2; t2 = t2.n)
@@ -183,13 +183,13 @@ function a(i2) {
   i2.s = h2;
 }
 function l(i2) {
-  e.call(this, void 0);
+  e2.call(this, void 0);
   this.x = i2;
   this.s = void 0;
   this.g = f - 1;
   this.f = 4;
 }
-(l.prototype = new e()).h = function() {
+(l.prototype = new e2()).h = function() {
   this.f &= -3;
   if (1 & this.f)
     return false;
@@ -230,10 +230,10 @@ l.prototype.S = function(i2) {
     for (var t2 = this.s; void 0 !== t2; t2 = t2.n)
       t2.S.S(t2);
   }
-  e.prototype.S.call(this, i2);
+  e2.prototype.S.call(this, i2);
 };
 l.prototype.U = function(i2) {
-  e.prototype.U.call(this, i2);
+  e2.prototype.U.call(this, i2);
   if (void 0 === this.t) {
     this.f &= -33;
     for (var t2 = this.s; void 0 !== t2; t2 = t2.n)
@@ -408,7 +408,7 @@ function signalStruct(values, proto) {
                 try {
                   Object.assign(s2.value, v2);
                   return;
-                } catch (e2) {
+                } catch (e3) {
                 }
               s2.value = Object.seal(signalStruct(v2));
             } else if (Array.isArray(v2))
@@ -425,7 +425,8 @@ function signalStruct(values, proto) {
     return state;
   }
   if (Array.isArray(values) && !isStruct(values[0])) {
-    return values.map((v2) => signalStruct(v2));
+    for (let i2 = 0; i2 < values.length; i2++)
+      values[i2] = signalStruct(values[i2]);
   }
   return values;
 }
@@ -623,56 +624,6 @@ secondary["text"] = (el, expr) => {
     el.textContent = value == null ? "" : value;
   };
 };
-secondary["value"] = (el, expr) => {
-  let evaluate = parseExpr(el, expr, ":value");
-  let from, to;
-  let update = el.type === "text" || el.type === "" ? (value) => el.setAttribute("value", el.value = value == null ? "" : value) : el.tagName === "TEXTAREA" || el.type === "text" || el.type === "" ? (value) => (from = el.selectionStart, to = el.selectionEnd, el.setAttribute("value", el.value = value == null ? "" : value), from && el.setSelectionRange(from, to)) : el.type === "checkbox" ? (value) => (el.value = value ? "on" : "", attr(el, "checked", value)) : el.type === "select-one" ? (value) => {
-    for (let option in el.options)
-      option.removeAttribute("selected");
-    el.value = value;
-    el.selectedOptions[0]?.setAttribute("selected", "");
-  } : (value) => el.value = value;
-  return (state) => update(evaluate(state));
-};
-secondary["on"] = (el, expr) => {
-  let evaluate = parseExpr(el, expr, ":on");
-  return (state) => {
-    let listeners = evaluate(state);
-    for (let evt in listeners)
-      addListener(el, evt, listeners[evt]);
-    return () => {
-      for (let evt in listeners)
-        removeListener(el, evt, listeners[evt]);
-    };
-  };
-};
-var _stop = Symbol("stop");
-var addListener = (el, evt, startFn) => {
-  if (evt.indexOf("..") < 0)
-    el.addEventListener(evt, startFn);
-  else {
-    const evts = evt.split("..").map((e2) => e2.startsWith("on") ? e2.slice(2) : e2);
-    const nextEvt = (fn, cur = 0) => {
-      let curListener = (e2) => {
-        el.removeEventListener(evts[cur], curListener);
-        if (typeof (fn = fn.call(el, e2)) !== "function")
-          fn = () => {
-          };
-        if (++cur < evts.length)
-          nextEvt(fn, cur);
-        else if (!startFn[_stop])
-          nextEvt(startFn);
-      };
-      el.addEventListener(evts[cur], curListener);
-    };
-    nextEvt(startFn);
-  }
-};
-var removeListener = (el, evt, fn) => {
-  if (evt.indexOf("..") >= 0)
-    fn[_stop] = true;
-  el.removeEventListener(evt, fn);
-};
 secondary["data"] = (el, expr) => {
   let evaluate = parseExpr(el, expr, ":data");
   return (state) => {
@@ -698,17 +649,157 @@ secondary[""] = (el, expr) => {
         attr(el, dashcase(key), value[key]);
     };
 };
-var directives_default = (el, expr, values, name) => {
+secondary["value"] = (el, expr) => {
+  let evaluate = parseExpr(el, expr, ":value");
+  let from, to;
+  let update = el.type === "text" || el.type === "" ? (value) => el.setAttribute("value", el.value = value == null ? "" : value) : el.tagName === "TEXTAREA" || el.type === "text" || el.type === "" ? (value) => (from = el.selectionStart, to = el.selectionEnd, el.setAttribute("value", el.value = value == null ? "" : value), from && el.setSelectionRange(from, to)) : el.type === "checkbox" ? (value) => (el.value = value ? "on" : "", attr(el, "checked", value)) : el.type === "select-one" ? (value) => {
+    for (let option in el.options)
+      option.removeAttribute("selected");
+    el.value = value;
+    el.selectedOptions[0]?.setAttribute("selected", "");
+  } : (value) => el.value = value;
+  return (state) => update(evaluate(state));
+};
+secondary["on"] = (el, expr) => {
+  let evaluate = parseExpr(el, expr, ":on");
+  return (state) => {
+    let listeners = evaluate(state);
+    for (let evt in listeners)
+      addListener(el, evt, listeners[evt]);
+    return () => {
+      for (let evt in listeners)
+        removeListener(el, evt, listeners[evt]);
+    };
+  };
+};
+var directives_default = (el, expr, state, name) => {
   let evt = name.startsWith("on") && name.slice(2);
   let evaluate = parseExpr(el, expr, ":" + name);
-  if (evaluate)
-    return evt ? (state) => {
-      let value = evaluate(state);
+  if (!evaluate)
+    return;
+  if (evt)
+    return (state2) => {
+      let value = evaluate(state2);
       if (value) {
         addListener(el, evt, value);
         return () => removeListener(el, evt, value);
       }
-    } : (state) => attr(el, name, evaluate(state));
+    };
+  return (state2) => attr(el, name, evaluate(state2));
+};
+var _stop = Symbol("stop");
+var addListener = (el, evt, startFn) => {
+  let evts = evt.split("..").map((e3) => e3.startsWith("on") ? e3.slice(2) : e3), opts = {};
+  evts[0] = evts[0].replace(
+    /\.(\w+)-?(\d+)?/g,
+    (match, mod, param) => (mod = mods[mod]) ? ([el, startFn] = mod(el, startFn, opts, param), "") : ""
+  );
+  if (evts.length == 1)
+    el.addEventListener(evts[0], startFn, opts);
+  else {
+    const nextEvt = (fn, cur = 0) => {
+      let curListener = (e3) => {
+        el.removeEventListener(evts[cur], curListener);
+        if (typeof (fn = fn.call(el, e3)) !== "function")
+          fn = () => {
+          };
+        if (++cur < evts.length)
+          nextEvt(fn, cur);
+        else if (!startFn[_stop])
+          nextEvt(startFn);
+      };
+      el.addEventListener(evts[cur], curListener, opts);
+    };
+    nextEvt(startFn);
+  }
+};
+var removeListener = (el, evt, fn) => {
+  if (evt.indexOf("..") >= 0)
+    fn[_stop] = true;
+  el.removeEventListener(evt, fn);
+};
+var mods = {
+  throttle(el, cb, opts, limit) {
+    limit = Number(limit);
+    let pause, planned, block = () => {
+      pause = true;
+      setTimeout(() => {
+        pause = false;
+        if (planned)
+          cb(e), planned = false, block();
+      });
+    };
+    return [el, (e3) => {
+      if (pause)
+        return planned = true;
+      cb(e3);
+      block();
+    }];
+  },
+  debounce(el, cb, opts, wait) {
+    wait = Number(wait);
+    let timeout, later = () => {
+      timeout = null;
+      cb(e);
+    };
+    return [el, (e3) => {
+      clearTimeout(timeout);
+      timeout = setTimeout(later, wait);
+    }];
+  },
+  window(el, cb) {
+    return [window, cb];
+  },
+  document(el, cb) {
+    return [document, cb];
+  },
+  outside(el, cb) {
+    return [el, (e3) => {
+      if (el.contains(e3.target))
+        return;
+      if (e3.target.isConnected === false)
+        return;
+      if (el.offsetWidth < 1 && el.offsetHeight < 1)
+        return;
+      cb(e3);
+    }];
+  },
+  prevent(el, cb) {
+    return [el, (e3) => {
+      e3.preventDefault();
+      cb(e3);
+    }];
+  },
+  stop(el, cb) {
+    return [el, (e3) => {
+      e3.stopPropagation();
+      cb(e3);
+    }];
+  },
+  self(el, cb) {
+    return [el, (e3) => {
+      e3.target === el && cb(e3);
+    }];
+  },
+  once(el, cb, opts) {
+    opts.once = true;
+    return [el, cb];
+  },
+  passive(el, cb, opts) {
+    opts.passive = true;
+    return [el, cb];
+  },
+  capture(el, cb, opts) {
+    opts.capture = true;
+    return [el, cb];
+  },
+  key(el, cb, opts, key) {
+    return [el, (e3) => {
+      if (e3.key.toLowerCase() !== key)
+        return;
+      cb(e3);
+    }];
+  }
 };
 var attr = (el, name, v2) => {
   if (v2 == null || v2 === false)
@@ -723,16 +814,16 @@ function parseExpr(el, expression, dir) {
     let rightSideSafeExpression = /^[\n\s]*if.*\(.*\)/.test(expression) || /^(let|const)\s/.test(expression) ? `(() => { ${expression} })()` : expression;
     try {
       evaluate = evaluatorMemo[expression] = new Function(`__scope`, `with (__scope) { return ${rightSideSafeExpression} };`);
-    } catch (e2) {
-      return exprError(e2, el, expression, dir);
+    } catch (e3) {
+      return exprError(e3, el, expression, dir);
     }
   }
   return (state) => {
     let result;
     try {
       result = evaluate.call(el, state);
-    } catch (e2) {
-      return exprError(e2, el, expression, dir);
+    } catch (e3) {
+      return exprError(e3, el, expression, dir);
     }
     return result;
   };
