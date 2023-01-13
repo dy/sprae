@@ -297,7 +297,7 @@ const removeListener = (el, evt, fn) => {
 // event modifiers
 const mods = {
   throttle(el, cb, opts, limit) {
-    limit = Number(limit)
+    limit = Number(limit) || 108
     let pause, planned, block = () => {
       pause = true
       setTimeout(() => {
@@ -313,7 +313,7 @@ const mods = {
   },
 
   debounce(el, cb, opts, wait) {
-    wait = Number(wait);
+    wait = Number(wait) || 108;
     let timeout, later = () => { timeout = null; cb(e) }
     return [el, (e) => {
       clearTimeout(timeout)
@@ -338,12 +338,25 @@ const mods = {
   passive(el, cb, opts) { opts.passive = true; return [el, cb] },
   capture(el, cb, opts) { opts.capture = true; return [el, cb] },
 };
-['ctrl','shift','meta','cmd','alt','enter','slash','space','esc','escape','up','down','left','right','period','equal','minus','underscore'].forEach(key => {
-  mods[key] = (el, cb, opts, extraKey) => [el, e => {
-    // if (e.key)
+let keys = {
+  ctrl:'Control Ctrl',
+  shift:'Shift',
+  alt:'Alt',
+  meta:'Meta',cmd:'Meta',
+  down:'ArrowDown',up:'ArrowUp',left:'ArrowLeft',right:'ArrowRight',
+  arrowdown:'ArrowDown',arrowup:'ArrowUp',arrowleft:'ArrowLeft',arrowright:'ArrowRight',
+  end:'End',home:'Home',pagedown:'PageDown',pageup:'PageUp',
+  enter:'Enter',plus:'+',minus:'-',star:'*',slash:'/',period:'.',equal:'=',underscore:'_',
+  esc:'Escape',escape:'Escape',tab:'Tab',space:' ',
+  backspace:'Backspace', delete:'Delete'
+}
+for (let keyAttr in keys) {
+  let keyName = keys[keyAttr]
+  mods[keyAttr] = (el, cb, opts, extraKey) => [el, e => {
+    if (!e.key || !keyName.includes(e.key)) return
     cb(e)
   }]
-})
+}
 
 // set attr
 const attr = (el, name, v) => {

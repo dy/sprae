@@ -163,9 +163,23 @@ Add event listeners.
   }
 }">
 
+<!-- Event modifiers -->
+<button :onclick.throttle-500="handler">Not too often</button>
+
 <!-- Bulk/custom events -->
 <button :on="{ click: handler, touch: handler, special: handler }">Submit</button>
 ```
+
+##### Event modifiers
+
+Events support following modifiers:
+
+* `.once`, `.passive`, `.capture` – listener [options](https://developer.mozilla.org/en-US/docs/Web/API/EventTarget/addEventListener#options).
+* `.prevent`, `.stop` – prevent default or stop propagation.
+* `.window`, `.document`, `.outside`, `.self` – specify event target.
+* `.throttle-108`, `.debounce-108` – define throttling or postponing callback with (optional) timeout in ms.
+* `.ctrl`, `.shift`, `.alt`, `.meta`, `.cmd`, `.down`, `.up`, `.left`, `.right`, `.arrowdown`, `.arrowup`, `.arrowleft`, `.arrowright`, `.end`, `.home`, `.pagedown`, `.pageup`, `.enter`, `.plus`, `.minus`, `.star`, `.slash`, `.period`, `.equal`, `.underscore`, `.esc`, `.escape`, `.tab`, `.space`, `.backspace`, `.delete` – filter by [`event.key`](https://developer.mozilla.org/en-US/docs/Web/API/UI_Events/Keyboard_event_key_values).
+* `.*` – any other modifier has no effect, but allows binding multiple handlers to same event (like jQuery event classes).
 
 #### `:data="values"`
 

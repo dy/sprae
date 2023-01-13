@@ -40,6 +40,6 @@
 * [ ] examples
   * [x] todomvc
   * [x] waveplay
-* [ ] modifiers
+* [x] evt modifiers
   * [x] once, capture, passive
-  * [ ]
+  * [x] ...rest

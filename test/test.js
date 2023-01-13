@@ -611,11 +611,17 @@ test('on: window, self', e => {
   is(state.log, [1,2])
 })
 
-test.only('on: keys', e => {
-  let el = h`<x :onkeypress.shift-enter="e=>log.push(1)"></x>`
-  let log = []
-  sprae(el, {log})
-  // is(log,[1])
+test('on: keys', e => {
+  let el = h`<x :onkeydown.enter="e=>log.push(1)"></x>`
+  let state = {log:[]}
+  sprae(el, state)
+  el.dispatchEvent(new window.KeyboardEvent('keydown', { key: '' }));
+  is(state.log,[])
+  el.dispatchEvent(new window.KeyboardEvent('keydown', { key: 'Enter' }));
+  el.dispatchEvent(new window.KeyboardEvent('keydown', { key: '' }));
+  is(state.log,[1])
+  el.dispatchEvent(new window.KeyboardEvent('keydown', { key: 'Enter' }));
+  is(state.log,[1,1])
 })
 
 test('with: inline', () => {

@@ -415,9 +415,9 @@
   + allow multiple setters for same props or multiple listeners for same events
   + oldschool jquery-compatible events
 
-## [ ] Mods design
+## [x] Mods design -> use event modifiers, not props modifiers
 
-  * [ ] Prop modifiers
+  * [ ] ~~Prop modifiers~~
     - overall seems code complication without much benefit
     * [ ] value.bind? value.watch?
       - let's wait for use-case: value can be too big to set it every time
@@ -435,21 +435,21 @@
     * [ ] prop.class
       ? what's the use-case
 
-  * [ ] Event modifiers
-    * [ ] onevt.x, onevt.y
+  * [x] Event modifiers
+    * [x] onevt.x, onevt.y
       + jquery-like
       + multiple same events
-    * [ ] onevt.once, onevt.passive, onevt.capture
+    * [x] onevt.once, onevt.passive, onevt.capture
       + standard props passing
-    * [ ] onevt.prevent, onevt.stop
+    * [x] onevt.prevent, onevt.stop
       + conventional mods
-    * [ ] onevt.outside onevt.window, onevt.document, onevt.self
+    * [x] onevt.outside onevt.window, onevt.document, onevt.self
       + useful handlers, conventional mods
-    * [ ] onevt.throttle-xxx, onevt.debounce-xxx
+    * [x] onevt.throttle-xxx, onevt.debounce-xxx
       + conventional
-    * [ ] onevt.shift, onevt.cmd.shift, onevt.meta
+    * [x] onevt.shift, onevt.cmd.shift, onevt.meta
       + conventional
-    * [ ] onkey.enter, .space, .up|.down|.left|.right, .escape, .tab, .period, .slash, .caps-lock
+    * [x] onkey.enter, .space, .up|.down|.left|.right, .escape, .tab, .period, .slash, .caps-lock
       + conventional
 
 ## [x] Writing props on elements (like ones in :each) -> nah, just use `:x="this.x=abc"`
