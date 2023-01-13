@@ -588,6 +588,33 @@ test('on: once', e => {
   is(log, [el])
 })
 
+test('on: capture, stop, prevent', e => {
+  let el = h`<x :onx.capture="e=>log.push(1)"><y :onx="e=>log.push(2)"></y></x>`
+  let state = sprae(el, {log:[]})
+  el.firstChild.dispatchEvent(new window.Event('x', {bubbles:true}));
+  is(state.log, [1,2])
+
+  let el2 = h`<x :onx="e=>log.push(1)"><y :onx.stop="e=>log.push(2)"></y></x>`
+  let state2 = sprae(el2, {log:[]})
+  el2.firstChild.dispatchEvent(new window.Event('x', {bubbles:true}));
+  is(state2.log, [2])
+})
+
+test('on: window, self', e => {
+  let el = h`<x :onx.self="e=>log.push(1)"><y :onx.window="e=>log.push(2)"></y></x>`
+  let state = sprae(el, {log:[]})
+  el.firstChild.dispatchEvent(new window.Event('x', {bubbles:true}));
+  is(state.log, [])
+  el.dispatchEvent(new window.Event('x', {bubbles:true}));
+  is(state.log, [1])
+  window.dispatchEvent(new window.Event('x', {bubbles:true}));
+  is(state.log, [1,2])
+})
+
+test('on: key', e => {
+
+})
+
 test('with: inline', () => {
   let el = h`<x :with="{foo:'bar'}"><y :text="foo + baz"></y></x>`
   let state = sprae(el, {baz: 'qux'})

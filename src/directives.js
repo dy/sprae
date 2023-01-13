@@ -337,13 +337,8 @@ const mods = {
   once(el, cb, opts) { opts.once = true; return [el, cb] },
   passive(el, cb, opts) { opts.passive = true; return [el, cb] },
   capture(el, cb, opts) { opts.capture = true; return [el, cb] },
-  key(el, cb, opts, key) {
-    return [el, e => {
-      if (e.key.toLowerCase() !== key) return
-      cb(e)
-    }]
-  }
-}
+};
+['ctrl','shift','meta','cmd','alt','enter','slash','space','esc','escape','up','down','left','right','period','equal','minus','underscore']
 
 // set attr
 const attr = (el, name, v) => {
