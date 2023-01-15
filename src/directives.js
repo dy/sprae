@@ -272,7 +272,10 @@ const addListener = (el, evt, startFn) => {
   // onevt.debounce-108
   evts[0] = evts[0].replace(
     /\.(\w+)?-?([\w]+)?/g,
-    (match, mod, param) => (mod=mods[mod]) ? ([el, startFn] = mod(el, startFn, opts, param), '') : ''
+    (match, mod, param) => {
+      (mod=mods[mod]) ? ([el, startFn] = mod(el, startFn, opts, param), '') : ''
+      return ''
+    }
   );
 
   if (evts.length == 1) el.addEventListener(evts[0], startFn, opts);
@@ -307,7 +310,7 @@ const mods = {
       })
     }
     return [el, e => {
-      if (pause) return planned = true
+      if (pause) return (planned = true, _stop)
       cb(e); block();
     }]
   },
@@ -325,14 +328,14 @@ const mods = {
   document(el, cb) { return [document, cb] },
   outside(el, cb) {
     return [el, (e) => {
-      if (el.contains(e.target)) return
-      if (e.target.isConnected === false) return
-      if (el.offsetWidth < 1 && el.offsetHeight < 1) return
+      if (el.contains(e.target)) return _stop
+      if (e.target.isConnected === false) return _stop
+      if (el.offsetWidth < 1 && el.offsetHeight < 1) return _stop
       cb(e)
     }]
   },
-  prevent(el, cb) { return [el, e => { e.preventDefault(); cb(e) } ]},
-  stop(el, cb) { return [el, e => { e.stopPropagation(); cb(e) } ]},
+  prevent(el, cb) { return [el, e => { if (cb(e) !== _stop) e.preventDefault(); } ]},
+  stop(el, cb) { return [el, e => { if (cb(e) !== _stop) e.stopPropagation(); } ]},
   self(el, cb) { return [el, e => { e.target === el && cb(e) } ]},
   once(el, cb, opts) { opts.once = true; return [el, cb] },
   passive(el, cb, opts) { opts.passive = true; return [el, cb] },
@@ -352,7 +355,8 @@ let keys = {
 for (let keyAttr in keys) {
   let keyName = keys[keyAttr]
   mods[keyAttr] = (el, cb, opts, extraKey) => [el, e => {
-    if (!e.key || !keyName.includes(e.key)) return
+    // _stop indicates skip subsequent modifiers
+    if (!e.key || !keyName.includes(e.key)) return _stop
     cb(e)
   }]
 }

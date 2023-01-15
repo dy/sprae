@@ -624,6 +624,14 @@ test('on: keys', e => {
   is(state.log,[1,1])
 })
 
+test('on: keys with prevent', e => {
+  let el = h`<y :onkeydown="e=>log.push(e.key)"><x :ref="x" :onkeydown.enter.stop="e=>1"></x></y>`
+  let state = sprae(el, {log:[]})
+  state.x.dispatchEvent(new window.KeyboardEvent('keydown', { key: 'x', bubbles: true }));
+  state.x.dispatchEvent(new window.KeyboardEvent('keydown', { key: 'Enter', bubbles: true }));
+  is(state.log,['x'])
+})
+
 test('with: inline', () => {
   let el = h`<x :with="{foo:'bar'}"><y :text="foo + baz"></y></x>`
   let state = sprae(el, {baz: 'qux'})
