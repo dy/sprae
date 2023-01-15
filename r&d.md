@@ -348,6 +348,12 @@
   - not having "comfy" compatible JS at hand: cognitive load of whole language "layer" in-between
   + allows `let a = 1; a;` case instead of `let a = 1; return a;`
 
+-> We can benchmark if updating set of known dependencies is faster than using preact subscriptions.
+  + it seems more logical min-ground to know in advance what we depend on, rather than detect by-call as signals do.
+  + it's safer not to depend on external tech, considering there's so much competition and changes in reactive land
+  ~ it indeed takes some reactive-struct, capable of notifying which paths have been changed
+    ? maybe define setters such that when they're set
+
 2. Use sandboxed proxy
   - tough evaluation
   - implementation hiccups
