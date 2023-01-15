@@ -89,7 +89,7 @@ Welcome, <span :text="user.name">Guest</span>.
 
 #### `:class="value"`
 
-Set class value from either string, array or object. Extends direct class, rather than replaces.
+Set class value from either string, array or object. Appends existing `class` attribute, if any.
 
 ```html
 <div :class="`foo ${bar}`"></div>
@@ -104,7 +104,7 @@ Set class value from either string, array or object. Extends direct class, rathe
 
 #### `:style="value"`
 
-Set style value from object or a string. Extends style.
+Set style value from object or a string. Extends existing `style` attribute, if any.
 
 ```html
 <div :style="foo: bar"></div>
