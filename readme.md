@@ -56,7 +56,7 @@ Control flow of elements.
 
 #### `:each="item, index in items"`
 
-Multiply element. `index` value starts from 1. Use `:key` as caching key to avoid rerendering.
+Multiply element. `index` value starts from 1.
 
 ```html
 <ul>
@@ -71,6 +71,9 @@ Multiply element. `index` value starts from 1. Use `:key` as caching key to avoi
 <!-- Loop by condition -->
 <li :if="items" :each="item in items" :text="item" />
 <li :else>Empty list</li>
+
+<!-- Key items to reuse elements -->
+<li :each="item in items" :key="item.id" :text="item.value" />
 
 <!-- To avoid FOUC -->
 <style>[:each]{visibility: hidden}</style>
