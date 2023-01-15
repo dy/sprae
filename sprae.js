@@ -692,7 +692,10 @@ var addListener = (el, evt, startFn) => {
   let evts = evt.split("..").map((e3) => e3.startsWith("on") ? e3.slice(2) : e3), opts = {};
   evts[0] = evts[0].replace(
     /\.(\w+)?-?([\w]+)?/g,
-    (match, mod, param) => (mod = mods[mod]) ? ([el, startFn] = mod(el, startFn, opts, param), "") : ""
+    (match, mod, param) => {
+      (mod = mods[mod]) ? ([el, startFn] = mod(el, startFn, opts, param), "") : "";
+      return "";
+    }
   );
   if (evts.length == 1)
     el.addEventListener(evts[0], startFn, opts);
@@ -731,7 +734,7 @@ var mods = {
     };
     return [el, (e3) => {
       if (pause)
-        return planned = true;
+        return planned = true, _stop;
       cb(e3);
       block();
     }];
@@ -756,24 +759,24 @@ var mods = {
   outside(el, cb) {
     return [el, (e3) => {
       if (el.contains(e3.target))
-        return;
+        return _stop;
       if (e3.target.isConnected === false)
-        return;
+        return _stop;
       if (el.offsetWidth < 1 && el.offsetHeight < 1)
-        return;
+        return _stop;
       cb(e3);
     }];
   },
   prevent(el, cb) {
     return [el, (e3) => {
-      e3.preventDefault();
-      cb(e3);
+      if (cb(e3) !== _stop)
+        e3.preventDefault();
     }];
   },
   stop(el, cb) {
     return [el, (e3) => {
-      e3.stopPropagation();
-      cb(e3);
+      if (cb(e3) !== _stop)
+        e3.stopPropagation();
     }];
   },
   self(el, cb) {
@@ -804,10 +807,6 @@ var keys = {
   up: "ArrowUp",
   left: "ArrowLeft",
   right: "ArrowRight",
-  arrowdown: "ArrowDown",
-  arrowup: "ArrowUp",
-  arrowleft: "ArrowLeft",
-  arrowright: "ArrowRight",
   end: "End",
   home: "Home",
   pagedown: "PageDown",
@@ -831,7 +830,7 @@ for (let keyAttr in keys) {
   let keyName = keys[keyAttr];
   mods[keyAttr] = (el, cb, opts, extraKey) => [el, (e3) => {
     if (!e3.key || !keyName.includes(e3.key))
-      return;
+      return _stop;
     cb(e3);
   }];
 }
