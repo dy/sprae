@@ -347,15 +347,21 @@ let keys = {
   meta:'Meta',cmd:'Meta',
   down:'ArrowDown',up:'ArrowUp',left:'ArrowLeft',right:'ArrowRight',
   end:'End',home:'Home',pagedown:'PageDown',pageup:'PageUp',
-  enter:'Enter',plus:'+',minus:'-',star:'*',slash:'/',period:'.',equal:'=',underscore:'_',
-  esc:'Escape',escape:'Escape',tab:'Tab',space:' ',
-  backspace:'Backspace', delete:'Delete'
+  enter:'Enter',
+  esc:'Escape',escape:'Escape',tab:'Tab',
+  backspace:'Backspace', delete:'Delete',
+  space:/ /,
+  plus:/\+/,minus:/\-/,star:/\*/,slash:/\//,period:/\./,equal:/\=/,underscore:/\_/,
+  alnum: /\w/,
+  letter: /[a-zA-Z]/,
+  digit: /\d/
 }
+keys.arrow = keys.down + keys.up + keys.left + keys.right
 for (let keyAttr in keys) {
   let keyName = keys[keyAttr]
   mods[keyAttr] = (el, cb, opts, extraKey) => [el, e => {
     // _stop indicates skip subsequent modifiers
-    if (!e.key || !keyName.includes(e.key)) return _stop
+    if (!e.key || (e.key.length > 2 ? !keyName.includes?.(e.key) : !keyName.test?.(e.key))) return _stop
     cb(e)
   }]
 }

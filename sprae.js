@@ -679,11 +679,10 @@ var directives_default = (el, expr, state, name) => {
     return;
   if (evt)
     return (state2) => {
-      let value = evaluate(state2);
-      if (value) {
-        addListener(el, evt, value);
-        return () => removeListener(el, evt, value);
-      }
+      let value = evaluate(state2) || (() => {
+      });
+      addListener(el, evt, value);
+      return () => removeListener(el, evt, value);
     };
   return (state2) => attr(el, name, evaluate(state2));
 };
@@ -812,24 +811,28 @@ var keys = {
   pagedown: "PageDown",
   pageup: "PageUp",
   enter: "Enter",
-  plus: "+",
-  minus: "-",
-  star: "*",
-  slash: "/",
-  period: ".",
-  equal: "=",
-  underscore: "_",
   esc: "Escape",
   escape: "Escape",
   tab: "Tab",
-  space: " ",
   backspace: "Backspace",
-  delete: "Delete"
+  delete: "Delete",
+  space: / /,
+  plus: /\+/,
+  minus: /\-/,
+  star: /\*/,
+  slash: /\//,
+  period: /\./,
+  equal: /\=/,
+  underscore: /\_/,
+  alnum: /\w/,
+  letter: /[a-zA-Z]/,
+  digit: /\d/
 };
+keys.arrow = keys.down + keys.up + keys.left + keys.right;
 for (let keyAttr in keys) {
   let keyName = keys[keyAttr];
   mods[keyAttr] = (el, cb, opts, extraKey) => [el, (e3) => {
-    if (!e3.key || !keyName.includes(e3.key))
+    if (!e3.key || (e3.key.length > 2 ? !keyName.includes?.(e3.key) : !keyName.test?.(e3.key)))
       return _stop;
     cb(e3);
   }];
@@ -897,8 +900,6 @@ function sprae(container, values) {
       if (el.hasAttribute?.(attrName)) {
         let expr = el.getAttribute(attrName);
         el.removeAttribute(attrName);
-        if (!expr)
-          continue;
         updates.push(primary[name](el, expr, state, name));
         if (memo.has(el) || el.parentNode !== parent)
           return false;
@@ -913,8 +914,6 @@ function sprae(container, values) {
         }
         el.removeAttribute(attr2.name);
         let expr = attr2.value;
-        if (!expr)
-          continue;
         let attrNames = attr2.name.slice(1).split(":");
         for (let attrName of attrNames) {
           let dir = secondary[attrName] || directives_default;
