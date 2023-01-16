@@ -24,7 +24,7 @@ export default function sprae(container, values) {
       if (el.hasAttribute?.(attrName)) {
         let expr = el.getAttribute(attrName)
         el.removeAttribute(attrName)
-        if (!expr) continue
+
         updates.push(primary[name](el, expr, state, name))
 
         // stop if element was spraed by directive or skipped (detached)
@@ -39,7 +39,7 @@ export default function sprae(container, values) {
         if (attr.name[0] !== ':') {i++; continue}
         el.removeAttribute(attr.name)
         let expr = attr.value
-        if (!expr) continue
+
         // multiple attributes like :id:for=""
         let attrNames = attr.name.slice(1).split(':')
         for (let attrName of attrNames) {

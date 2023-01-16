@@ -252,13 +252,12 @@ export default (el, expr, state, name) => {
 
   if (!evaluate) return
 
-  if (evt) return state => {
-    let value = evaluate(state)
-    if (value) {
-      addListener(el, evt, value)
-      return () => removeListener(el, evt, value)
-    }
-  }
+  if (evt) return (state => {
+    // we need anonymous callback to enable modifiers like prevent
+    let value = evaluate(state) || (()=>{})
+    addListener(el, evt, value)
+    return () => removeListener(el, evt, value)
+  })
 
   return state => attr(el, name, evaluate(state))
 }

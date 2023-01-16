@@ -625,7 +625,7 @@ test('on: keys', e => {
 })
 
 test('on: keys with prevent', e => {
-  let el = h`<y :onkeydown="e=>log.push(e.key)"><x :ref="x" :onkeydown.enter.stop="e=>1"></x></y>`
+  let el = h`<y :onkeydown="e=>log.push(e.key)"><x :ref="x" :onkeydown.enter.stop></x></y>`
   let state = sprae(el, {log:[]})
   state.x.dispatchEvent(new window.KeyboardEvent('keydown', { key: 'x', bubbles: true }));
   state.x.dispatchEvent(new window.KeyboardEvent('keydown', { key: 'Enter', bubbles: true }));
