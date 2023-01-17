@@ -266,16 +266,21 @@ const _stop = Symbol('stop')
 const addListener = (el, evt, startFn) => {
   // ona..onb
   let evts = evt.split('..').map(e => e.startsWith('on') ? e.slice(2) : e),
-      opts = {}
+      opts = {}, conditions = [], cond
 
   // onevt.debounce-108
   evts[0] = evts[0].replace(
     /\.(\w+)?-?([\w]+)?/g,
     (match, mod, param) => {
-      (mod=mods[mod]) ? ([el, startFn] = mod(el, startFn, opts, param), '') : ''
+      (mod=mods[mod]) ? ([el, startFn, cond] = mod(el, startFn, opts, param), cond && conditions.push(cond), '') : ''
       return ''
     }
   );
+  // we collect conditions into a sigle callback to check before throttles
+  if (conditions.length) {
+    let _cb = startFn
+    startFn = (e) => { for (let cond of conditions) if (cond(e) === false) return false; _cb(e) }
+  }
 
   if (evts.length == 1) el.addEventListener(evts[0], startFn, opts);
   else {
@@ -309,7 +314,7 @@ const mods = {
       })
     }
     return [el, e => {
-      if (pause) return (planned = true, _stop)
+      if (pause) return (planned = true)
       cb(e); block();
     }]
   },
@@ -326,16 +331,15 @@ const mods = {
   window(el, cb) { return [window, cb] },
   document(el, cb) { return [document, cb] },
   outside(el, cb) {
-    return [el, (e) => {
-      if (el.contains(e.target)) return _stop
-      if (e.target.isConnected === false) return _stop
-      if (el.offsetWidth < 1 && el.offsetHeight < 1) return _stop
-      cb(e)
+    return [el, cb, (e) => {
+      if (el.contains(e.target)) return false
+      if (e.target.isConnected === false) return false
+      if (el.offsetWidth < 1 && el.offsetHeight < 1) return false
     }]
   },
-  prevent(el, cb) { return [el, e => { if (cb(e) !== _stop) e.preventDefault(); } ]},
-  stop(el, cb) { return [el, e => { if (cb(e) !== _stop) e.stopPropagation(); } ]},
-  self(el, cb) { return [el, e => { e.target === el && cb(e) } ]},
+  prevent(el, cb) { return [el, cb, e => { e.preventDefault(); } ]},
+  stop(el, cb) { return [el, cb, e => { e.stopPropagation(); } ]},
+  self(el, cb) { return [el, cb, e => { return e.target === el } ]},
   once(el, cb, opts) { opts.once = true; return [el, cb] },
   passive(el, cb, opts) { opts.passive = true; return [el, cb] },
   capture(el, cb, opts) { opts.capture = true; return [el, cb] },
@@ -359,10 +363,8 @@ let keys = {
 keys.arrow = keys.down + keys.up + keys.left + keys.right
 for (let keyAttr in keys) {
   let keyName = keys[keyAttr]
-  mods[keyAttr] = (el, cb, opts, extraKey) => [el, e => {
-    // _stop indicates skip subsequent modifiers
-    if (!e.key || (e.key.length > 2 ? !keyName.includes?.(e.key) : !keyName.test?.(e.key))) return _stop
-    cb(e)
+  mods[keyAttr] = (el, cb, opts, extraKey) => [el, cb, e => {
+    if (!e.key || (e.key.length > 2 ? !keyName.includes?.(e.key) : !keyName.test?.(e.key))) return false
   }]
 }
 

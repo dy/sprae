@@ -688,14 +688,23 @@ var directives_default = (el, expr, state, name) => {
 };
 var _stop = Symbol("stop");
 var addListener = (el, evt, startFn) => {
-  let evts = evt.split("..").map((e3) => e3.startsWith("on") ? e3.slice(2) : e3), opts = {};
+  let evts = evt.split("..").map((e3) => e3.startsWith("on") ? e3.slice(2) : e3), opts = {}, conditions = [], cond;
   evts[0] = evts[0].replace(
     /\.(\w+)?-?([\w]+)?/g,
     (match, mod, param) => {
-      (mod = mods[mod]) ? ([el, startFn] = mod(el, startFn, opts, param), "") : "";
+      (mod = mods[mod]) ? ([el, startFn, cond] = mod(el, startFn, opts, param), cond && conditions.push(cond), "") : "";
       return "";
     }
   );
+  if (conditions.length) {
+    let _cb = startFn;
+    startFn = (e3) => {
+      for (let cond2 of conditions)
+        if (cond2(e3) === false)
+          return false;
+      _cb(e3);
+    };
+  }
   if (evts.length == 1)
     el.addEventListener(evts[0], startFn, opts);
   else {
@@ -733,7 +742,7 @@ var mods = {
     };
     return [el, (e3) => {
       if (pause)
-        return planned = true, _stop;
+        return planned = true;
       cb(e3);
       block();
     }];
@@ -756,31 +765,28 @@ var mods = {
     return [document, cb];
   },
   outside(el, cb) {
-    return [el, (e3) => {
+    return [el, cb, (e3) => {
       if (el.contains(e3.target))
-        return _stop;
+        return false;
       if (e3.target.isConnected === false)
-        return _stop;
+        return false;
       if (el.offsetWidth < 1 && el.offsetHeight < 1)
-        return _stop;
-      cb(e3);
+        return false;
     }];
   },
   prevent(el, cb) {
-    return [el, (e3) => {
-      if (cb(e3) !== _stop)
-        e3.preventDefault();
+    return [el, cb, (e3) => {
+      e3.preventDefault();
     }];
   },
   stop(el, cb) {
-    return [el, (e3) => {
-      if (cb(e3) !== _stop)
-        e3.stopPropagation();
+    return [el, cb, (e3) => {
+      e3.stopPropagation();
     }];
   },
   self(el, cb) {
-    return [el, (e3) => {
-      e3.target === el && cb(e3);
+    return [el, cb, (e3) => {
+      return e3.target === el;
     }];
   },
   once(el, cb, opts) {
@@ -831,10 +837,9 @@ var keys = {
 keys.arrow = keys.down + keys.up + keys.left + keys.right;
 for (let keyAttr in keys) {
   let keyName = keys[keyAttr];
-  mods[keyAttr] = (el, cb, opts, extraKey) => [el, (e3) => {
+  mods[keyAttr] = (el, cb, opts, extraKey) => [el, cb, (e3) => {
     if (!e3.key || (e3.key.length > 2 ? !keyName.includes?.(e3.key) : !keyName.test?.(e3.key)))
-      return _stop;
-    cb(e3);
+      return false;
   }];
 }
 var attr = (el, name, v2) => {
