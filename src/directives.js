@@ -266,34 +266,29 @@ const _stop = Symbol('stop')
 const addListener = (el, evt, startFn) => {
   // ona..onb
   let evts = evt.split('..').map(e => e.startsWith('on') ? e.slice(2) : e),
-      opts = {}, conditions = [], cond
+      opts = {target: el, hooks: [], fn: startFn}
 
   // onevt.debounce-108
-  evts[0] = evts[0].replace(
-    /\.(\w+)?-?([\w]+)?/g,
-    (match, mod, param) => {
-      (mod=mods[mod]) ? ([el, startFn, cond] = mod(el, startFn, opts, param), cond && conditions.push(cond), '') : ''
-      return ''
-    }
-  );
-  // we collect conditions into a sigle callback to check before throttles
-  if (conditions.length) {
-    let _cb = startFn
-    startFn = (e) => { for (let cond of conditions) if (cond(e) === false) return false; _cb(e) }
+  evts[0] = evts[0].replace(/\.(\w+)?-?([\w]+)?/g, (match, mod, param) => (mods[mod]?.(opts, param), ''));
+  // we collect condition hooks into a sigle callback to check before throttles
+  let {target, hooks, fn, ...listenerOpts} = opts
+  if (hooks.length) {
+    let _fn = fn
+    fn = (e) => { for (let hook of hooks) if (hook(e) === false) return false; return _fn(e) }
   }
 
-  if (evts.length == 1) el.addEventListener(evts[0], startFn, opts);
+  if (evts.length == 1) target.addEventListener(evts[0], fn, listenerOpts);
   else {
-    const nextEvt = (fn, cur=0) => {
+    const nextEvt = (handler, cur=0) => {
       let curListener = e => {
-        el.removeEventListener(evts[cur], curListener)
-        if (typeof (fn = fn.call(el,e)) !== 'function') fn = ()=>{}
-        if (++cur < evts.length) nextEvt(fn, cur);
-        else if (!startFn[_stop]) nextEvt(startFn); // update only if chain isn't stopped
+        target.removeEventListener(evts[cur], curListener)
+        if (typeof (handler = handler.call(target,e)) !== 'function') handler = ()=>{}
+        if (++cur < evts.length) nextEvt(handler, cur);
+        else if (!fn[_stop]) nextEvt(fn); // update only if chain isn't stopped
       }
-      el.addEventListener(evts[cur], curListener, opts)
+      target.addEventListener(evts[cur], curListener, listenerOpts)
     }
-    nextEvt(startFn)
+    nextEvt(fn)
   }
 }
 const removeListener = (el, evt, fn) => {
@@ -303,70 +298,66 @@ const removeListener = (el, evt, fn) => {
 
 // event modifiers
 const mods = {
-  throttle(el, cb, opts, limit) {
+  throttle(opts, limit) {
+    let {fn} = opts
     limit = Number(limit) || 108
     let pause, planned, block = () => {
       pause = true
       setTimeout(() => {
         pause = false
         // if event happened during blocked time, it schedules call by the end
-        if (planned) cb(e), planned = false, block();
+        if (planned) return (planned = false, block(), fn(e))
       })
     }
-    return [el, e => {
+    opts.fn = e => {
       if (pause) return (planned = true)
-      cb(e); block();
-    }]
+      block();
+      return fn(e);
+    }
   },
 
-  debounce(el, cb, opts, wait) {
+  debounce(opts, wait) {
+    let {fn} = opts
     wait = Number(wait) || 108;
     let timeout
-    return [el, (e) => {
+    opts.fn = (e) => {
       clearTimeout(timeout)
-      timeout = setTimeout(() => {timeout = null; cb(e)}, wait)
-    }]
+      timeout = setTimeout(() => {timeout = null; fn(e)}, wait)
+    }
   },
 
-  window(el, cb) { return [window, cb] },
-  document(el, cb) { return [document, cb] },
-  outside(el, cb) {
-    return [el, cb, (e) => {
-      if (el.contains(e.target)) return false
+  window(opts) { opts.target = window },
+  document(opts) { opts.target = document },
+  outside({target, hooks}) {
+    hooks.push((e) => {
+      if (target.contains(e.target)) return false
       if (e.target.isConnected === false) return false
-      if (el.offsetWidth < 1 && el.offsetHeight < 1) return false
-    }]
+      if (target.offsetWidth < 1 && target.offsetHeight < 1) return false
+    })
   },
-  prevent(el, cb) { return [el, cb, e => { e.preventDefault(); } ]},
-  stop(el, cb) { return [el, cb, e => { e.stopPropagation(); } ]},
-  self(el, cb) { return [el, cb, e => { return e.target === el } ]},
-  once(el, cb, opts) { opts.once = true; return [el, cb] },
-  passive(el, cb, opts) { opts.passive = true; return [el, cb] },
-  capture(el, cb, opts) { opts.capture = true; return [el, cb] },
+  prevent({hooks}) { hooks.push(e => { e.preventDefault(); })},
+  stop({hooks}) { hooks.push(e => { e.stopPropagation(); })},
+  self({target, hooks}) { hooks.push(e => { return e.target === target })},
+  once(opts) { opts.once = true; },
+  passive(opts) { opts.passive = true; },
+  capture(opts) { opts.capture = true; },
+
+  // keyboard
+  ctrl({hooks}) { hooks.push(e => e.key === 'Control' || e.key === 'Ctrl')},
+  shift({hooks}) { hooks.push(e => e.key === 'Shift')},
+  alt({hooks}) { hooks.push(e => e.key === 'Alt')},
+  meta({hooks}) { hooks.push(e => e.key === 'Meta')},
+  arrow({hooks}) { hooks.push(e => e.key.startsWith('Arrow'))},
+  enter({hooks}) { hooks.push(e => e.key === 'Enter')},
+  escape({hooks}) { hooks.push(e => e.key.startsWith('Esc'))},
+  tab({hooks}) { hooks.push(e => e.key === 'Tab')},
+  space({hooks}) { hooks.push(e => e.key === 'Space' || e.key === ' ')},
+  backspace({hooks}) { hooks.push(e => e.key === 'Backspace') },
+  delete({hooks}) { hooks.push(e => e.key === 'Delete') },
+  digit({hooks}) { hooks.push(e => /\d/.test(e.key)) },
+  letter({hooks}) { hooks.push(e => /[a-zA-Z]/.test(e.key)) },
+  character({hooks}) { hooks.push(e => /^\S$/.test(e.key) ) },
 };
-let keys = {
-  ctrl:'Control Ctrl',
-  shift:'Shift',
-  alt:'Alt',
-  meta:'Meta',cmd:'Meta',
-  down:'ArrowDown',up:'ArrowUp',left:'ArrowLeft',right:'ArrowRight',
-  end:'End',home:'Home',pagedown:'PageDown',pageup:'PageUp',
-  enter:'Enter',
-  esc:'Escape',escape:'Escape',tab:'Tab',
-  backspace:'Backspace', delete:'Delete',
-  space:/ /,
-  plus:/\+/,minus:/\-/,star:/\*/,slash:/\//,period:/\./,equal:/\=/,underscore:/\_/,
-  alnum: /\w/,
-  letter: /[a-zA-Z]/,
-  digit: /\d/
-}
-keys.arrow = keys.down + keys.up + keys.left + keys.right
-for (let keyAttr in keys) {
-  let keyName = keys[keyAttr]
-  mods[keyAttr] = (el, cb, opts, extraKey) => [el, cb, e => {
-    if (!e.key || (e.key.length > 2 ? !keyName.includes?.(e.key) : !keyName.test?.(e.key))) return false
-  }]
-}
 
 // set attr
 const attr = (el, name, v) => {

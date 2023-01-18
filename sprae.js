@@ -688,40 +688,35 @@ var directives_default = (el, expr, state, name) => {
 };
 var _stop = Symbol("stop");
 var addListener = (el, evt, startFn) => {
-  let evts = evt.split("..").map((e3) => e3.startsWith("on") ? e3.slice(2) : e3), opts = {}, conditions = [], cond;
-  evts[0] = evts[0].replace(
-    /\.(\w+)?-?([\w]+)?/g,
-    (match, mod, param) => {
-      (mod = mods[mod]) ? ([el, startFn, cond] = mod(el, startFn, opts, param), cond && conditions.push(cond), "") : "";
-      return "";
-    }
-  );
-  if (conditions.length) {
-    let _cb = startFn;
-    startFn = (e3) => {
-      for (let cond2 of conditions)
-        if (cond2(e3) === false)
+  let evts = evt.split("..").map((e3) => e3.startsWith("on") ? e3.slice(2) : e3), opts = { target: el, hooks: [], fn: startFn };
+  evts[0] = evts[0].replace(/\.(\w+)?-?([\w]+)?/g, (match, mod, param) => (mods[mod]?.(opts, param), ""));
+  let { target, hooks, fn, ...listenerOpts } = opts;
+  if (hooks.length) {
+    let _fn = fn;
+    fn = (e3) => {
+      for (let hook of hooks)
+        if (hook(e3) === false)
           return false;
-      _cb(e3);
+      return _fn(e3);
     };
   }
   if (evts.length == 1)
-    el.addEventListener(evts[0], startFn, opts);
+    target.addEventListener(evts[0], fn, listenerOpts);
   else {
-    const nextEvt = (fn, cur = 0) => {
+    const nextEvt = (handler, cur = 0) => {
       let curListener = (e3) => {
-        el.removeEventListener(evts[cur], curListener);
-        if (typeof (fn = fn.call(el, e3)) !== "function")
-          fn = () => {
+        target.removeEventListener(evts[cur], curListener);
+        if (typeof (handler = handler.call(target, e3)) !== "function")
+          handler = () => {
           };
         if (++cur < evts.length)
-          nextEvt(fn, cur);
-        else if (!startFn[_stop])
-          nextEvt(startFn);
+          nextEvt(handler, cur);
+        else if (!fn[_stop])
+          nextEvt(fn);
       };
-      el.addEventListener(evts[cur], curListener, opts);
+      target.addEventListener(evts[cur], curListener, listenerOpts);
     };
-    nextEvt(startFn);
+    nextEvt(fn);
   }
 };
 var removeListener = (el, evt, fn) => {
@@ -730,118 +725,119 @@ var removeListener = (el, evt, fn) => {
   el.removeEventListener(evt, fn);
 };
 var mods = {
-  throttle(el, cb, opts, limit) {
+  throttle(opts, limit) {
+    let { fn } = opts;
     limit = Number(limit) || 108;
     let pause, planned, block = () => {
       pause = true;
       setTimeout(() => {
         pause = false;
         if (planned)
-          cb(e), planned = false, block();
+          return planned = false, block(), fn(e);
       });
     };
-    return [el, (e3) => {
+    opts.fn = (e3) => {
       if (pause)
         return planned = true;
-      cb(e3);
       block();
-    }];
-  },
-  debounce(el, cb, opts, wait) {
-    wait = Number(wait) || 108;
-    let timeout, later = () => {
-      timeout = null;
-      cb(e);
+      return fn(e3);
     };
-    return [el, (e3) => {
+  },
+  debounce(opts, wait) {
+    let { fn } = opts;
+    wait = Number(wait) || 108;
+    let timeout;
+    opts.fn = (e3) => {
       clearTimeout(timeout);
-      timeout = setTimeout(later, wait);
-    }];
+      timeout = setTimeout(() => {
+        timeout = null;
+        fn(e3);
+      }, wait);
+    };
   },
-  window(el, cb) {
-    return [window, cb];
+  window(opts) {
+    opts.target = window;
   },
-  document(el, cb) {
-    return [document, cb];
+  document(opts) {
+    opts.target = document;
   },
-  outside(el, cb) {
-    return [el, cb, (e3) => {
-      if (el.contains(e3.target))
+  outside({ target, hooks }) {
+    hooks.push((e3) => {
+      if (target.contains(e3.target))
         return false;
       if (e3.target.isConnected === false)
         return false;
-      if (el.offsetWidth < 1 && el.offsetHeight < 1)
+      if (target.offsetWidth < 1 && target.offsetHeight < 1)
         return false;
-    }];
+    });
   },
-  prevent(el, cb) {
-    return [el, cb, (e3) => {
+  prevent({ hooks }) {
+    hooks.push((e3) => {
       e3.preventDefault();
-    }];
+    });
   },
-  stop(el, cb) {
-    return [el, cb, (e3) => {
+  stop({ hooks }) {
+    hooks.push((e3) => {
       e3.stopPropagation();
-    }];
+    });
   },
-  self(el, cb) {
-    return [el, cb, (e3) => {
-      return e3.target === el;
-    }];
+  self({ target, hooks }) {
+    hooks.push((e3) => {
+      return e3.target === target;
+    });
   },
-  once(el, cb, opts) {
+  once(opts) {
     opts.once = true;
-    return [el, cb];
   },
-  passive(el, cb, opts) {
+  passive(opts) {
     opts.passive = true;
-    return [el, cb];
   },
-  capture(el, cb, opts) {
+  capture(opts) {
     opts.capture = true;
-    return [el, cb];
+  },
+  ctrl({ hooks }) {
+    hooks.push((e3) => e3.key === "Control" || e3.key === "Ctrl");
+  },
+  shift({ hooks }) {
+    hooks.push((e3) => e3.key === "Shift");
+  },
+  alt({ hooks }) {
+    hooks.push((e3) => e3.key === "Alt");
+  },
+  meta({ hooks }) {
+    hooks.push((e3) => e3.key === "Meta");
+  },
+  arrow({ hooks }) {
+    hooks.push((e3) => e3.key.startsWith("Arrow"));
+  },
+  enter({ hooks }) {
+    hooks.push((e3) => e3.key === "Enter");
+  },
+  escape({ hooks }) {
+    hooks.push((e3) => e3.key.startsWith("Esc"));
+  },
+  tab({ hooks }) {
+    hooks.push((e3) => e3.key === "Tab");
+  },
+  space({ hooks }) {
+    hooks.push((e3) => e3.key === "Space" || e3.key === " ");
+  },
+  backspace({ hooks }) {
+    hooks.push((e3) => e3.key === "Backspace");
+  },
+  delete({ hooks }) {
+    hooks.push((e3) => e3.key === "Delete");
+  },
+  digit({ hooks }) {
+    hooks.push((e3) => /\d/.test(e3.key));
+  },
+  letter({ hooks }) {
+    hooks.push((e3) => /[a-zA-Z]/.test(e3.key));
+  },
+  character({ hooks }) {
+    hooks.push((e3) => /^\S$/.test(e3.key));
   }
 };
-var keys = {
-  ctrl: "Control Ctrl",
-  shift: "Shift",
-  alt: "Alt",
-  meta: "Meta",
-  cmd: "Meta",
-  down: "ArrowDown",
-  up: "ArrowUp",
-  left: "ArrowLeft",
-  right: "ArrowRight",
-  end: "End",
-  home: "Home",
-  pagedown: "PageDown",
-  pageup: "PageUp",
-  enter: "Enter",
-  esc: "Escape",
-  escape: "Escape",
-  tab: "Tab",
-  backspace: "Backspace",
-  delete: "Delete",
-  space: / /,
-  plus: /\+/,
-  minus: /\-/,
-  star: /\*/,
-  slash: /\//,
-  period: /\./,
-  equal: /\=/,
-  underscore: /\_/,
-  alnum: /\w/,
-  letter: /[a-zA-Z]/,
-  digit: /\d/
-};
-keys.arrow = keys.down + keys.up + keys.left + keys.right;
-for (let keyAttr in keys) {
-  let keyName = keys[keyAttr];
-  mods[keyAttr] = (el, cb, opts, extraKey) => [el, cb, (e3) => {
-    if (!e3.key || (e3.key.length > 2 ? !keyName.includes?.(e3.key) : !keyName.test?.(e3.key)))
-      return false;
-  }];
-}
 var attr = (el, name, v2) => {
   if (v2 == null || v2 === false)
     el.removeAttribute(name);
