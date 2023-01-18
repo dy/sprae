@@ -321,10 +321,10 @@ const mods = {
 
   debounce(el, cb, opts, wait) {
     wait = Number(wait) || 108;
-    let timeout, later = () => { timeout = null; cb(e) }
+    let timeout
     return [el, (e) => {
       clearTimeout(timeout)
-      timeout = setTimeout(later, wait)
+      timeout = setTimeout(() => {timeout = null; cb(e)}, wait)
     }]
   },
 

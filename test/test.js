@@ -632,6 +632,15 @@ test('on: keys with prevent', e => {
   is(state.log,['x'])
 })
 
+test('on: debounce', async e => {
+  let el = h`<x :onkeydown.debounce-1="e=>log.push(e.key)"></x>`
+  let state = sprae(el, {log:[]})
+  el.dispatchEvent(new window.KeyboardEvent('keydown', { key: 'x', bubbles: true }));
+  is(state.log, [])
+  await time(2)
+  is(state.log, ['x'])
+})
+
 test('with: inline', () => {
   let el = h`<x :with="{foo:'bar'}"><y :text="foo + baz"></y></x>`
   let state = sprae(el, {baz: 'qux'})
