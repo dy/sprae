@@ -1,6 +1,6 @@
 // directives & parsing
 import sprae from './core.js'
-import swap from 'swapdom'
+import swap from './domdiff.js'
 import signalStruct from 'signal-struct'
 import p from 'primitive-pool'
 
@@ -298,6 +298,8 @@ const removeListener = (el, evt, fn) => {
 
 // event modifiers
 const mods = {
+  prevent({hooks}) { hooks.push(e => { e.preventDefault(); })},
+  stop({hooks}) { hooks.push(e => { e.stopPropagation(); })},
   throttle(opts, limit) {
     let {fn} = opts
     limit = Number(limit) || 108
@@ -315,7 +317,6 @@ const mods = {
       return fn(e);
     }
   },
-
   debounce(opts, wait) {
     let {fn} = opts
     wait = Number(wait) || 108;
@@ -326,6 +327,7 @@ const mods = {
     }
   },
 
+  // target
   window(opts) { opts.target = window },
   document(opts) { opts.target = document },
   outside({target, hooks}) {
@@ -335,9 +337,9 @@ const mods = {
       if (target.offsetWidth < 1 && target.offsetHeight < 1) return false
     })
   },
-  prevent({hooks}) { hooks.push(e => { e.preventDefault(); })},
-  stop({hooks}) { hooks.push(e => { e.stopPropagation(); })},
   self({target, hooks}) { hooks.push(e => { return e.target === target })},
+
+  // options
   once(opts) { opts.once = true; },
   passive(opts) { opts.passive = true; },
   capture(opts) { opts.capture = true; },

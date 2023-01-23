@@ -443,6 +443,19 @@ test('each: :id and others must receive value from context', () => {
   is(el.innerHTML,`<x id="1"></x><x id="2"></x><x id="3"></x>`)
 })
 
+test('each: key-based caching is in-sync with direct elements', () => {
+  let el = h`<ul><li :each="i in x" :key="i" :id="i"></li></ul>`
+  let el2 = h`<ul><li :each="i in x" :id="i"></li></ul>`
+  let state = sprae(el, {x:2})
+  let state2 = sprae(el2, {x:2})
+  is(el.outerHTML, el2.outerHTML)
+  el.firstChild.after(el.firstChild.cloneNode(true))
+  el2.firstChild.after(el2.firstChild.cloneNode(true))
+  state.x = 3
+  state2.x = 3
+  is(el.outerHTML, el2.outerHTML)
+})
+
 test('on: base', () => {
   let el = h`<div :on="{click(e){log.push('click')},x}"></div>`
   let log = signal([])

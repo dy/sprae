@@ -434,37 +434,57 @@ function isObject(v2) {
   return v2 && v2.constructor === Object;
 }
 
-// node_modules/swapdom/swap-inflate.js
-var swap = (parent, a2, b2, end = null) => {
-  let i2 = 0, cur, next, bi, n2 = b2.length, m = a2.length, { remove, same, insert, replace } = swap;
-  while (i2 < n2 && i2 < m && same(a2[i2], b2[i2]))
-    i2++;
-  while (i2 < n2 && i2 < m && same(b2[n2 - 1], a2[m - 1]))
-    end = b2[--m, --n2];
-  if (i2 == m)
-    while (i2 < n2)
-      insert(end, b2[i2++], parent);
-  else {
-    cur = a2[i2];
-    while (i2 < n2) {
-      bi = b2[i2++], next = cur ? cur.nextSibling : end;
-      if (same(cur, bi))
-        cur = next;
-      else if (i2 < n2 && same(b2[i2], next))
-        replace(cur, bi, parent), cur = next;
-      else
-        insert(cur, bi, parent);
+// src/domdiff.js
+function domdiff_default(parent, a2, b2, before) {
+  const aIdx = /* @__PURE__ */ new Map();
+  const bIdx = /* @__PURE__ */ new Map();
+  let i2;
+  let j;
+  for (i2 = 0; i2 < a2.length; i2++) {
+    aIdx.set(a2[i2], i2);
+  }
+  for (i2 = 0; i2 < b2.length; i2++) {
+    bIdx.set(b2[i2], i2);
+  }
+  for (i2 = j = 0; i2 !== a2.length || j !== b2.length; ) {
+    var aElm = a2[i2], bElm = b2[j];
+    if (aElm === null) {
+      i2++;
+    } else if (b2.length <= j) {
+      parent.removeChild(a2[i2]);
+      i2++;
+    } else if (a2.length <= i2) {
+      parent.insertBefore(bElm, a2[i2] || before);
+      j++;
+    } else if (aElm === bElm) {
+      i2++;
+      j++;
+    } else {
+      var curElmInNew = bIdx.get(aElm);
+      var wantedElmInOld = aIdx.get(bElm);
+      if (curElmInNew === void 0) {
+        parent.removeChild(a2[i2]);
+        i2++;
+      } else if (wantedElmInOld === void 0) {
+        parent.insertBefore(
+          bElm,
+          a2[i2] || before
+        );
+        j++;
+      } else {
+        parent.insertBefore(
+          a2[wantedElmInOld],
+          a2[i2] || before
+        );
+        a2[wantedElmInOld] = null;
+        if (wantedElmInOld > i2 + 1)
+          i2++;
+        j++;
+      }
     }
-    while (!same(cur, end))
-      next = cur.nextSibling, remove(cur, parent), cur = next;
   }
   return b2;
-};
-swap.same = (a2, b2) => a2 == b2;
-swap.replace = (a2, b2, parent) => parent.replaceChild(b2, a2);
-swap.insert = (a2, b2, parent) => parent.insertBefore(b2, a2);
-swap.remove = (a2, parent) => parent.removeChild(a2);
-var swap_inflate_default = swap;
+}
 
 // node_modules/primitive-pool/index.js
 var cache = {};
@@ -562,7 +582,7 @@ primary["each"] = (tpl, expr) => {
         scope[each[0]] = item;
       elScopes.push(scope);
     }
-    swap_inflate_default(holder.parentNode, curEls, newEls, holder);
+    domdiff_default(holder.parentNode, curEls, newEls, holder);
     curEls = newEls;
     for (let i2 = 0; i2 < newEls.length; i2++) {
       sprae(newEls[i2], elScopes[i2]);
@@ -725,6 +745,16 @@ var removeListener = (el, evt, fn) => {
   el.removeEventListener(evt, fn);
 };
 var mods = {
+  prevent({ hooks }) {
+    hooks.push((e3) => {
+      e3.preventDefault();
+    });
+  },
+  stop({ hooks }) {
+    hooks.push((e3) => {
+      e3.stopPropagation();
+    });
+  },
   throttle(opts, limit) {
     let { fn } = opts;
     limit = Number(limit) || 108;
@@ -769,16 +799,6 @@ var mods = {
         return false;
       if (target.offsetWidth < 1 && target.offsetHeight < 1)
         return false;
-    });
-  },
-  prevent({ hooks }) {
-    hooks.push((e3) => {
-      e3.preventDefault();
-    });
-  },
-  stop({ hooks }) {
-    hooks.push((e3) => {
-      e3.stopPropagation();
     });
   },
   self({ target, hooks }) {
