@@ -665,6 +665,24 @@ test('on: debounce', async e => {
   is(state.log, ['x'])
 })
 
+test('on: throttle', async e => {
+  let el = h`<x :onkeydown.throttle-10="e=>log.push(e.key)"></x>`
+  let state = sprae(el, {log:[]})
+  el.dispatchEvent(new window.KeyboardEvent('keydown', { key: 'x', bubbles: true }));
+  el.dispatchEvent(new window.KeyboardEvent('keydown', { key: 'x', bubbles: true }));
+  is(state.log, ['x'])
+  await time(5)
+  el.dispatchEvent(new window.KeyboardEvent('keydown', { key: 'x', bubbles: true }));
+  is(state.log, ['x'])
+  await time(10)
+  is(state.log, ['x', 'x'])
+  await time(10)
+  is(state.log, ['x', 'x'])
+  el.dispatchEvent(new window.KeyboardEvent('keydown', { key: 'x', bubbles: true }));
+  is(state.log, ['x', 'x', 'x'])
+})
+
+
 test('with: inline', () => {
   let el = h`<x :with="{foo:'bar'}"><y :text="foo + baz"></y></x>`
   let state = sprae(el, {baz: 'qux'})

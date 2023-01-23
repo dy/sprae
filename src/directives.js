@@ -303,17 +303,17 @@ const mods = {
   throttle(opts, limit) {
     let {fn} = opts
     limit = Number(limit) || 108
-    let pause, planned, block = () => {
+    let pause, planned, block = (e) => {
       pause = true
       setTimeout(() => {
         pause = false
         // if event happened during blocked time, it schedules call by the end
         if (planned) return (planned = false, block(), fn(e))
-      })
+      }, limit)
     }
     opts.fn = e => {
       if (pause) return (planned = true)
-      block();
+      block(e);
       return fn(e);
     }
   },
