@@ -383,7 +383,7 @@ function parseExpr(el, expression, dir) {
       // Support expressions starting with "if" statements like: "if (...) doSomething()"
       || /^[\n\s]*if.*\(.*\)/.test(expression)
       // Support expressions starting with "let/const" like: "let foo = 'bar'"
-      || /^(let|const)\s/.test(expression)
+      || /\b(let|const)\s/.test(expression)
           ? `(() => { ${expression} })()`
           : expression;
 

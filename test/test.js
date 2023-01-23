@@ -96,10 +96,21 @@ test('props: multiprop', async () => {
 
 // FIXME: this must work without return
 test.todo('props: calculation', async () => {
-  let el = h`<x :x="let a = 5; return Array.from({length:a}, (_,i)=>i).join(' ')"></x>`
-  sprae(el);
-  is(el.outerHTML, `<x x="01234"></x>`)
+  let el = h`<x :x="let a = 5; return Array.from({length: x}, (_,i)=>i).join('')"></x>`
+  let state = sprae(el, {x:3});
+  is(el.outerHTML, `<x x="012"></x>`)
+  state.x = 4
+  is(el.outerHTML, `<x x="0123"></x>`)
 })
+
+test.todo('props: semicols in expression', async () => {
+  let el = h`<x :x="0; return Array.from({length: x}, (_,i)=>i).join('')"></x>`
+  let state = sprae(el, {x:3});
+  is(el.outerHTML, `<x x="012"></x>`)
+  state.x = 4
+  is(el.outerHTML, `<x x="0123"></x>`)
+})
+
 
 test('data: base', async () => {
   let el = h`<input :data="{a:1, fooBar:2}"/>`
