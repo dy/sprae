@@ -71,16 +71,16 @@ function v(i2) {
     }
   }
 }
-function e2(i2) {
+function e(i2) {
   this.v = i2;
   this.i = 0;
   this.n = void 0;
   this.t = void 0;
 }
-e2.prototype.h = function() {
+e.prototype.h = function() {
   return true;
 };
-e2.prototype.S = function(i2) {
+e.prototype.S = function(i2) {
   if (this.t !== i2 && void 0 === i2.e) {
     i2.x = this.t;
     if (void 0 !== this.t)
@@ -88,7 +88,7 @@ e2.prototype.S = function(i2) {
     this.t = i2;
   }
 };
-e2.prototype.U = function(i2) {
+e.prototype.U = function(i2) {
   var t2 = i2.e, h2 = i2.x;
   if (void 0 !== t2) {
     t2.x = h2;
@@ -101,7 +101,7 @@ e2.prototype.U = function(i2) {
   if (i2 === this.t)
     this.t = h2;
 };
-e2.prototype.subscribe = function(i2) {
+e.prototype.subscribe = function(i2) {
   var t2 = this;
   return b(function() {
     var h2 = t2.value, o2 = 32 & this.f;
@@ -113,16 +113,16 @@ e2.prototype.subscribe = function(i2) {
     }
   });
 };
-e2.prototype.valueOf = function() {
+e.prototype.valueOf = function() {
   return this.value;
 };
-e2.prototype.toString = function() {
+e.prototype.toString = function() {
   return this.value + "";
 };
-e2.prototype.peek = function() {
+e.prototype.peek = function() {
   return this.v;
 };
-Object.defineProperty(e2.prototype, "value", { get: function() {
+Object.defineProperty(e.prototype, "value", { get: function() {
   var i2 = v(this);
   if (void 0 !== i2)
     i2.i = this.i;
@@ -144,7 +144,7 @@ Object.defineProperty(e2.prototype, "value", { get: function() {
   }
 } });
 function u(i2) {
-  return new e2(i2);
+  return new e(i2);
 }
 function d(i2) {
   for (var t2 = i2.s; void 0 !== t2; t2 = t2.n)
@@ -183,13 +183,13 @@ function a(i2) {
   i2.s = h2;
 }
 function l(i2) {
-  e2.call(this, void 0);
+  e.call(this, void 0);
   this.x = i2;
   this.s = void 0;
   this.g = f - 1;
   this.f = 4;
 }
-(l.prototype = new e2()).h = function() {
+(l.prototype = new e()).h = function() {
   this.f &= -3;
   if (1 & this.f)
     return false;
@@ -230,10 +230,10 @@ l.prototype.S = function(i2) {
     for (var t2 = this.s; void 0 !== t2; t2 = t2.n)
       t2.S.S(t2);
   }
-  e2.prototype.S.call(this, i2);
+  e.prototype.S.call(this, i2);
 };
 l.prototype.U = function(i2) {
-  e2.prototype.U.call(this, i2);
+  e.prototype.U.call(this, i2);
   if (void 0 === this.t) {
     this.f &= -33;
     for (var t2 = this.s; void 0 !== t2; t2 = t2.n)
@@ -408,7 +408,7 @@ function signalStruct(values, proto) {
                 try {
                   Object.assign(s2.value, v2);
                   return;
-                } catch (e3) {
+                } catch (e2) {
                 }
               s2.value = Object.seal(signalStruct(v2));
             } else if (Array.isArray(v2))
@@ -708,25 +708,25 @@ var directives_default = (el, expr, state, name) => {
 };
 var _stop = Symbol("stop");
 var addListener = (el, evt, startFn) => {
-  let evts = evt.split("..").map((e3) => e3.startsWith("on") ? e3.slice(2) : e3), opts = { target: el, hooks: [], fn: startFn };
+  let evts = evt.split("..").map((e2) => e2.startsWith("on") ? e2.slice(2) : e2), opts = { target: el, hooks: [], fn: startFn };
   evts[0] = evts[0].replace(/\.(\w+)?-?([\w]+)?/g, (match, mod, param) => (mods[mod]?.(opts, param), ""));
   let { target, hooks, fn, ...listenerOpts } = opts;
   if (hooks.length) {
     let _fn = fn;
-    fn = (e3) => {
+    fn = (e2) => {
       for (let hook of hooks)
-        if (hook(e3) === false)
+        if (hook(e2) === false)
           return false;
-      return _fn(e3);
+      return _fn(e2);
     };
   }
   if (evts.length == 1)
     target.addEventListener(evts[0], fn, listenerOpts);
   else {
     const nextEvt = (handler, cur = 0) => {
-      let curListener = (e3) => {
+      let curListener = (e2) => {
         target.removeEventListener(evts[cur], curListener);
-        if (typeof (handler = handler.call(target, e3)) !== "function")
+        if (typeof (handler = handler.call(target, e2)) !== "function")
           handler = () => {
           };
         if (++cur < evts.length)
@@ -746,42 +746,42 @@ var removeListener = (el, evt, fn) => {
 };
 var mods = {
   prevent({ hooks }) {
-    hooks.push((e3) => {
-      e3.preventDefault();
+    hooks.push((e2) => {
+      e2.preventDefault();
     });
   },
   stop({ hooks }) {
-    hooks.push((e3) => {
-      e3.stopPropagation();
+    hooks.push((e2) => {
+      e2.stopPropagation();
     });
   },
   throttle(opts, limit) {
     let { fn } = opts;
     limit = Number(limit) || 108;
-    let pause, planned, block = () => {
+    let pause, planned, block = (e2) => {
       pause = true;
       setTimeout(() => {
         pause = false;
         if (planned)
-          return planned = false, block(), fn(e);
-      });
+          return planned = false, block(), fn(e2);
+      }, limit);
     };
-    opts.fn = (e3) => {
+    opts.fn = (e2) => {
       if (pause)
         return planned = true;
-      block();
-      return fn(e3);
+      block(e2);
+      return fn(e2);
     };
   },
   debounce(opts, wait) {
     let { fn } = opts;
     wait = Number(wait) || 108;
     let timeout;
-    opts.fn = (e3) => {
+    opts.fn = (e2) => {
       clearTimeout(timeout);
       timeout = setTimeout(() => {
         timeout = null;
-        fn(e3);
+        fn(e2);
       }, wait);
     };
   },
@@ -792,18 +792,18 @@ var mods = {
     opts.target = document;
   },
   outside({ target, hooks }) {
-    hooks.push((e3) => {
-      if (target.contains(e3.target))
+    hooks.push((e2) => {
+      if (target.contains(e2.target))
         return false;
-      if (e3.target.isConnected === false)
+      if (e2.target.isConnected === false)
         return false;
       if (target.offsetWidth < 1 && target.offsetHeight < 1)
         return false;
     });
   },
   self({ target, hooks }) {
-    hooks.push((e3) => {
-      return e3.target === target;
+    hooks.push((e2) => {
+      return e2.target === target;
     });
   },
   once(opts) {
@@ -816,46 +816,46 @@ var mods = {
     opts.capture = true;
   },
   ctrl({ hooks }) {
-    hooks.push((e3) => e3.key === "Control" || e3.key === "Ctrl");
+    hooks.push((e2) => e2.key === "Control" || e2.key === "Ctrl");
   },
   shift({ hooks }) {
-    hooks.push((e3) => e3.key === "Shift");
+    hooks.push((e2) => e2.key === "Shift");
   },
   alt({ hooks }) {
-    hooks.push((e3) => e3.key === "Alt");
+    hooks.push((e2) => e2.key === "Alt");
   },
   meta({ hooks }) {
-    hooks.push((e3) => e3.key === "Meta");
+    hooks.push((e2) => e2.key === "Meta");
   },
   arrow({ hooks }) {
-    hooks.push((e3) => e3.key.startsWith("Arrow"));
+    hooks.push((e2) => e2.key.startsWith("Arrow"));
   },
   enter({ hooks }) {
-    hooks.push((e3) => e3.key === "Enter");
+    hooks.push((e2) => e2.key === "Enter");
   },
   escape({ hooks }) {
-    hooks.push((e3) => e3.key.startsWith("Esc"));
+    hooks.push((e2) => e2.key.startsWith("Esc"));
   },
   tab({ hooks }) {
-    hooks.push((e3) => e3.key === "Tab");
+    hooks.push((e2) => e2.key === "Tab");
   },
   space({ hooks }) {
-    hooks.push((e3) => e3.key === "Space" || e3.key === " ");
+    hooks.push((e2) => e2.key === "Space" || e2.key === " ");
   },
   backspace({ hooks }) {
-    hooks.push((e3) => e3.key === "Backspace");
+    hooks.push((e2) => e2.key === "Backspace");
   },
   delete({ hooks }) {
-    hooks.push((e3) => e3.key === "Delete");
+    hooks.push((e2) => e2.key === "Delete");
   },
   digit({ hooks }) {
-    hooks.push((e3) => /\d/.test(e3.key));
+    hooks.push((e2) => /\d/.test(e2.key));
   },
   letter({ hooks }) {
-    hooks.push((e3) => /[a-zA-Z]/.test(e3.key));
+    hooks.push((e2) => /[a-zA-Z]/.test(e2.key));
   },
   character({ hooks }) {
-    hooks.push((e3) => /^\S$/.test(e3.key));
+    hooks.push((e2) => /^\S$/.test(e2.key));
   }
 };
 var attr = (el, name, v2) => {
@@ -868,19 +868,19 @@ var evaluatorMemo = {};
 function parseExpr(el, expression, dir) {
   let evaluate = evaluatorMemo[expression];
   if (!evaluate) {
-    let rightSideSafeExpression = /^[\n\s]*if.*\(.*\)/.test(expression) || /^(let|const)\s/.test(expression) ? `(() => { ${expression} })()` : expression;
+    let rightSideSafeExpression = /^[\n\s]*if.*\(.*\)/.test(expression) || /\b(let|const)\s/.test(expression) ? `(() => { ${expression} })()` : expression;
     try {
       evaluate = evaluatorMemo[expression] = new Function(`__scope`, `with (__scope) { return ${rightSideSafeExpression} };`);
-    } catch (e3) {
-      return exprError(e3, el, expression, dir);
+    } catch (e2) {
+      return exprError(e2, el, expression, dir);
     }
   }
   return (state) => {
     let result;
     try {
       result = evaluate.call(el, state);
-    } catch (e3) {
-      return exprError(e3, el, expression, dir);
+    } catch (e2) {
+      return exprError(e2, el, expression, dir);
     }
     return result;
   };
