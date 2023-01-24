@@ -291,9 +291,7 @@ const on = (target, evt, origFn) => {
     return off = addListener(curListener, ctxs[cur])
   }
   nextEvt(origFn)
-
   return () => off()
-
 
   // add listener applying the context
   function addListener(fn, {evt, target, test, delayed, stop, prevent, ...opts} ) {
