@@ -292,6 +292,8 @@ const on = (target, evt, origFn) => {
   }
   nextEvt(origFn)
 
+  return () => off()
+
 
   // add listener applying the context
   function addListener(fn, {evt, target, test, delayed, stop, prevent, ...opts} ) {
@@ -306,8 +308,6 @@ const on = (target, evt, origFn) => {
     target.addEventListener(evt, wrappedFn, opts)
     return () => target.removeEventListener(evt, wrappedFn, opts)
   };
-
-  return () => off()
 }
 
 // event modifiers
