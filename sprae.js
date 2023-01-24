@@ -711,7 +711,7 @@ var on = (target, evt, origFn) => {
     let ctx = { evt: "", target, test: () => true };
     ctx.evt = (e2.startsWith("on") ? e2.slice(2) : e2).replace(
       /\.(\w+)?-?([\w]+)?/g,
-      (match, mod, param) => (mods[mod]?.(ctx, param), "")
+      (match, mod, param) => (ctx.test = mods[mod]?.(ctx, param) || ctx.test, "")
     );
     return ctx;
   });
@@ -737,9 +737,9 @@ var on = (target, evt, origFn) => {
   nextEvt(origFn);
   return () => off();
 };
-var addListener = (fn, { evt, target, test, wrap, stop, prevent, ...opts }) => {
-  if (wrap)
-    fn = wrap(fn);
+var addListener = (fn, { evt, target, test, delayed, stop, prevent, ...opts }) => {
+  if (delayed)
+    fn = delayed(fn);
   let wrappedFn = (e2) => test(e2) && (stop && e2.stopPropagation(), prevent && e2.preventDefault(), fn.call(target, e2));
   target.addEventListener(evt, wrappedFn, opts);
   return () => target.removeEventListener(evt, wrappedFn, opts);
@@ -767,70 +767,36 @@ var mods = {
     ctx.target = document;
   },
   throttle(ctx, limit) {
-    ctx.wrap = (fn) => throttle(fn, Number(limit) || 108);
+    ctx.delayed = (fn) => throttle(fn, Number(limit) || 108);
   },
   debounce(ctx, wait) {
-    ctx.wrap = (fn) => debounce(fn, Number(wait) || 108);
+    ctx.delayed = (fn) => debounce(fn, Number(wait) || 108);
   },
-  outside(ctx) {
-    ctx.test = function(e2) {
-      let target = ctx.target;
-      if (target.contains(e2.target))
-        return false;
-      if (e2.target.isConnected === false)
-        return false;
-      if (target.offsetWidth < 1 && target.offsetHeight < 1)
-        return false;
-      return true;
-    };
+  outside: (ctx) => (e2) => {
+    let target = ctx.target;
+    if (target.contains(e2.target))
+      return false;
+    if (e2.target.isConnected === false)
+      return false;
+    if (target.offsetWidth < 1 && target.offsetHeight < 1)
+      return false;
+    return true;
   },
-  self(ctx) {
-    ctx.test = function(e2) {
-      return e2.target === ctx.target;
-    };
-  },
-  ctrl(ctx) {
-    ctx.test = (e2) => e2.key === "Control" || e2.key === "Ctrl";
-  },
-  shift(ctx) {
-    ctx.test = (e2) => e2.key === "Shift";
-  },
-  alt(ctx) {
-    ctx.test = (e2) => e2.key === "Alt";
-  },
-  meta(ctx) {
-    ctx.test = (e2) => e2.key === "Meta";
-  },
-  arrow(ctx) {
-    ctx.test = (e2) => e2.key.startsWith("Arrow");
-  },
-  enter(ctx) {
-    ctx.test = (e2) => e2.key === "Enter";
-  },
-  escape(ctx) {
-    ctx.test = (e2) => e2.key.startsWith("Esc");
-  },
-  tab(ctx) {
-    ctx.test = (e2) => e2.key === "Tab";
-  },
-  space(ctx) {
-    ctx.test = (e2) => e2.key === "Space" || e2.key === " ";
-  },
-  backspace(ctx) {
-    ctx.test = (e2) => e2.key === "Backspace";
-  },
-  delete(ctx) {
-    ctx.test = (e2) => e2.key === "Delete";
-  },
-  digit(ctx) {
-    ctx.test = (e2) => /^\d$/.test(e2.key);
-  },
-  letter(ctx) {
-    ctx.test = (e2) => /^[a-zA-Z]$/.test(e2.key);
-  },
-  character(ctx) {
-    ctx.test = (e2) => /^\S$/.test(e2.key);
-  }
+  self: (ctx) => (e2) => e2.target === ctx.target,
+  ctrl: () => (e2) => e2.key === "Control" || e2.key === "Ctrl",
+  shift: () => (e2) => e2.key === "Shift",
+  alt: () => (e2) => e2.key === "Alt",
+  meta: () => (e2) => e2.key === "Meta",
+  arrow: () => (e2) => e2.key.startsWith("Arrow"),
+  enter: () => (e2) => e2.key === "Enter",
+  escape: () => (e2) => e2.key.startsWith("Esc"),
+  tab: () => (e2) => e2.key === "Tab",
+  space: () => (e2) => e2.key === "Space" || e2.key === " ",
+  backspace: () => (e2) => e2.key === "Backspace",
+  delete: () => (e2) => e2.key === "Delete",
+  digit: () => (e2) => /^\d$/.test(e2.key),
+  letter: () => (e2) => /^[a-zA-Z]$/.test(e2.key),
+  character: () => (e2) => /^\S$/.test(e2.key)
 };
 var throttle = (fn, limit) => {
   let pause, planned, block = (e2) => {

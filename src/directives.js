@@ -268,7 +268,7 @@ const on = (target, evt, origFn) => {
     let ctx = { evt:'', target, test:()=>true };
     // onevt.debounce-108 -> evt.debounce-108
     ctx.evt = (e.startsWith('on') ? e.slice(2) : e).replace(/\.(\w+)?-?([\w]+)?/g,
-      (match, mod, param) => (mods[mod]?.(ctx, param), '')
+      (match, mod, param) => (ctx.test = mods[mod]?.(ctx, param) || ctx.test, '')
     );
     return ctx;
   });
@@ -295,8 +295,8 @@ const on = (target, evt, origFn) => {
   return () => off()
 }
 // add listener applying the context
-const addListener = (fn, {evt, target, test, wrap, stop, prevent, ...opts} ) => {
-  if (wrap) fn = wrap(fn)
+const addListener = (fn, {evt, target, test, delayed, stop, prevent, ...opts} ) => {
+  if (delayed) fn = delayed(fn)
   let wrappedFn = e => (
     test(e) && (
       stop&&e.stopPropagation(),
@@ -324,36 +324,34 @@ const mods = {
   document(ctx) { ctx.target = document },
 
   // FIXME: test looks very similar to test, mb it can be optimized
-  throttle(ctx, limit) { ctx.wrap = fn => throttle(fn, Number(limit) || 108)},
-  debounce(ctx, wait) { ctx.wrap = fn => debounce(fn, Number(wait) || 108) },
+  throttle(ctx, limit) { ctx.delayed = fn => throttle(fn, Number(limit) || 108)},
+  debounce(ctx, wait) { ctx.delayed = fn => debounce(fn, Number(wait) || 108) },
 
   // test
-  outside(ctx) {
-    ctx.test = function (e) {
-      let target = ctx.target
-      if (target.contains(e.target)) return false
-      if (e.target.isConnected === false) return false
-      if (target.offsetWidth < 1 && target.offsetHeight < 1) return false
-      return true
-    }
+  outside: ctx => e => {
+    let target = ctx.target
+    if (target.contains(e.target)) return false
+    if (e.target.isConnected === false) return false
+    if (target.offsetWidth < 1 && target.offsetHeight < 1) return false
+    return true
   },
-  self(ctx) { ctx.test = function(e){ return e.target === ctx.target } },
+  self: ctx => e => e.target === ctx.target,
 
   // keyboard
-  ctrl(ctx) { ctx.test = e => e.key === 'Control' || e.key === 'Ctrl'},
-  shift(ctx) { ctx.test = e => e.key === 'Shift'},
-  alt(ctx) { ctx.test = e => e.key === 'Alt'},
-  meta(ctx) { ctx.test = e => e.key === 'Meta'},
-  arrow(ctx) { ctx.test = e => e.key.startsWith('Arrow')},
-  enter(ctx) { ctx.test = e => e.key === 'Enter'},
-  escape(ctx) { ctx.test = e => e.key.startsWith('Esc')},
-  tab(ctx) { ctx.test = e => e.key === 'Tab'},
-  space(ctx) { ctx.test = e => e.key === 'Space' || e.key === ' '},
-  backspace(ctx) { ctx.test = e => e.key === 'Backspace'},
-  delete(ctx) { ctx.test = e => e.key === 'Delete'},
-  digit(ctx) { ctx.test = e => /^\d$/.test(e.key)},
-  letter(ctx) { ctx.test = e => /^[a-zA-Z]$/.test(e.key)},
-  character(ctx) { ctx.test = e => /^\S$/.test(e.key)},
+  ctrl: ctx => e => e.key === 'Control' || e.key === 'Ctrl',
+  shift: ctx => e => e.key === 'Shift',
+  alt: ctx => e => e.key === 'Alt',
+  meta: ctx => e => e.key === 'Meta',
+  arrow: ctx => e => e.key.startsWith('Arrow'),
+  enter: ctx => e => e.key === 'Enter',
+  escape: ctx => e => e.key.startsWith('Esc'),
+  tab: ctx => e => e.key === 'Tab',
+  space: ctx => e => e.key === 'Space' || e.key === ' ',
+  backspace: ctx => e => e.key === 'Backspace',
+  delete: ctx => e => e.key === 'Delete',
+  digit: ctx => e => /^\d$/.test(e.key),
+  letter: ctx => e => /^[a-zA-Z]$/.test(e.key),
+  character: ctx => e => /^\S$/.test(e.key),
 };
 
 // create delayed fns
