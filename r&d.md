@@ -350,6 +350,7 @@
   + allows `let a = 1; a;` case instead of `let a = 1; return a;`
   - we can't identify dynamic parts like `x[y]`, whereas signals subscribe dynamically
     ~ we can detect dynamic parts and handle them on proxy
+  + subscript allows subscriptions to async functions, unlike signals
 
 -> We can benchmark if updating set of known dependencies is faster than using preact subscriptions.
   + it seems more logical min-ground to know in advance what we depend on, rather than detect by-call as signals do.
@@ -464,6 +465,7 @@
     * [ ] prop.fx="" - run effect without changing property
     * [ ] x.prop="xyz" - set element property, rather than attribute (following topic)
     * [ ] x.raf="abc" - run regularly?
+    * [ ] x.watch-xyz - update by change of any of the deps
 
 ## [x] Writing props on elements (like ones in :each) -> nah, just use `:x="this.x=abc"`
 

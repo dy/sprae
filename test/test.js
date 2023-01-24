@@ -468,7 +468,7 @@ test('each: key-based caching is in-sync with direct elements', () => {
 })
 
 test('on: base', () => {
-  let el = h`<div :on="{click(e){log.push('click')},x}"></div>`
+  let el = h`<div :on="{click(e){log.push('click')}, x}"></div>`
   let log = signal([])
   let params = sprae(el, {x(){log.value.push('x')}, log})
 
@@ -571,30 +571,31 @@ test('on: chain of events', e => {
 test('on: state changes between chain of events', e => {
   let el = h`<x :on="{'x..y':fn}"></x>`
   let log = []
-  let state = sprae(el, {log, fn: () => console.log('log1')||log.push(1)})
-  console.log('xx')
+  let state = sprae(el, {log, fn: () => (log.push('x1'),()=>log.push('y1'))})
+  console.log('emit x, x')
   el.dispatchEvent(new window.Event('x'));
   el.dispatchEvent(new window.Event('x'));
-  is(log, [1])
-  state.fn = () => (console.log('log1.1')||log.push(1.1), () => log.push(2))
-  is(log, [1])
+  is(log, ['x1'])
+  console.log('update fn')
+  state.fn = () => (log.push('x2'), () => log.push('y2'))
+  is(log, ['x1'])
   // console.log('xx')
   // NOTE: state update registers new chain listener before finishing prev chain
   // el.dispatchEvent(new window.Event('x'));
   // el.dispatchEvent(new window.Event('x'));
   // is(log, [1])
-  console.log('yy')
+  console.log('emit y, y')
   el.dispatchEvent(new window.Event('y'));
   el.dispatchEvent(new window.Event('y'));
-  is(log, [1])
-  console.log('xx')
+  is(log, ['x1'])
+  console.log('emit x, x')
   el.dispatchEvent(new window.Event('x'));
   el.dispatchEvent(new window.Event('x'));
-  is(log, [1, 1.1])
-  console.log('yy')
+  is(log, ['x1','x2'])
+  console.log('emit y, y')
   el.dispatchEvent(new window.Event('y'));
   el.dispatchEvent(new window.Event('y'));
-  is(log, [1, 1.1, 2])
+  is(log, ['x1','x2','y2'])
 })
 
 test('on: once', e => {
@@ -682,6 +683,17 @@ test('on: throttle', async e => {
   is(state.log, ['x', 'x', 'x'])
 })
 
+test('on: modifiers chain', async e => {
+  let el = h`<x :onkeydown.letter..onkeyup.letter="e=>(log.push(e.key),(e)=>log.push(e.key))"></x>`
+  let state = sprae(el, {log:[]})
+  el.dispatchEvent(new window.KeyboardEvent('keydown', { key: 'x', bubbles: true }));
+  el.dispatchEvent(new window.KeyboardEvent('keydown', { key: 'Enter', bubbles: true }));
+  is(state.log,['x'])
+  el.dispatchEvent(new window.KeyboardEvent('keyup', { key: 'Enter', bubbles: true }));
+  is(state.log,['x'])
+  el.dispatchEvent(new window.KeyboardEvent('keyup', { key: 'x', bubbles: true }));
+  is(state.log,['x', 'x'])
+})
 
 test('with: inline', () => {
   let el = h`<x :with="{foo:'bar'}"><y :text="foo + baz"></y></x>`

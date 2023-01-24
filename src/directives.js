@@ -238,9 +238,9 @@ secondary['on'] = (el, expr) => {
 
   return (state) => {
     let listeners = evaluate(state);
-    for (let evt in listeners) addListener(el, evt, listeners[evt])
+    let offs = []; for (let evt in listeners) offs.push(on(el, evt, listeners[evt]));
     return () => {
-      for (let evt in listeners) removeListener(el, evt, listeners[evt])
+      for (let off of offs) off()
     }
   }
 }
@@ -255,111 +255,121 @@ export default (el, expr, state, name) => {
   if (evt) return (state => {
     // we need anonymous callback to enable modifiers like prevent
     let value = evaluate(state) || (()=>{})
-    addListener(el, evt, value)
-    return () => removeListener(el, evt, value)
+    return on(el, evt, value)
   })
 
   return state => attr(el, name, evaluate(state))
 }
 
 const _stop = Symbol('stop')
-const addListener = (el, evt, startFn) => {
+const on = (target, evt, origFn) => {
   // ona..onb
-  let evts = evt.split('..').map(e => e.startsWith('on') ? e.slice(2) : e),
-      opts = {target: el, hooks: [], fn: startFn}
+  let ctxs = evt.split('..').map(e => {
+    let ctx = { evt:'', target, opts:{}, test:()=>true, wrap:fn=>fn };
+    // onevt.debounce-108 -> evt.debounce-108
+    ctx.evt = (e.startsWith('on') ? e.slice(2) : e).replace(/\.(\w+)?-?([\w]+)?/g,
+      (match, mod, param) => (mods[mod]?.(ctx, param), '')
+    );
+    return ctx;
+  });
 
-  // onevt.debounce-108
-  evts[0] = evts[0].replace(/\.(\w+)?-?([\w]+)?/g, (match, mod, param) => (mods[mod]?.(opts, param), ''));
-  // we collect condition hooks into a sigle callback to check before throttles
-  let {target, hooks, fn, ...listenerOpts} = opts
-  if (hooks.length) {
-    let _fn = fn
-    fn = (e) => { for (let hook of hooks) if (hook(e) === false) return false; return _fn(e) }
-  }
+  // FIXME: must be in throttles
+  if (!origFn) origFn = () => {}
 
-  if (evts.length == 1) target.addEventListener(evts[0], fn, listenerOpts);
-  else {
-    const nextEvt = (handler, cur=0) => {
-      let curListener = e => {
-        target.removeEventListener(evts[cur], curListener)
-        if (typeof (handler = handler.call(target,e)) !== 'function') handler = ()=>{}
-        if (++cur < evts.length) nextEvt(handler, cur);
-        else if (!fn[_stop]) nextEvt(fn); // update only if chain isn't stopped
-      }
-      target.addEventListener(evts[cur], curListener, listenerOpts)
+  if (ctxs.length == 1) return addWrapped(origFn, ctxs[0])
+
+  let off
+  const nextEvt = (fn, cur=0) => {
+    let curListener = e => {
+      off();
+      if (typeof (fn = fn.call(target, e)) !== 'function') fn = ()=>{}
+      if (++cur < ctxs.length) nextEvt(fn, cur);
+      else nextEvt(origFn); // back to first event only if chain isn't stopped (by update)
     }
-    nextEvt(fn)
+    return off = addWrapped(curListener, ctxs[cur])
   }
+  nextEvt(origFn)
+  return () => off()
 }
-const removeListener = (el, evt, fn) => {
-  if (evt.indexOf('..')>=0) fn[_stop] = true
-  el.removeEventListener(evt, fn);
-}
+// add listener applying the context
+const addWrapped = (fn, {evt, target, opts, test, wrap} ) => {
+  fn = wrap(fn)
+  let wrappedFn = e => test(e) && fn.call(target, e)
+  target.addEventListener(evt, wrappedFn, opts)
+  return () => target.removeEventListener(evt, wrappedFn, opts)
+};
 
 // event modifiers
 const mods = {
-  prevent({hooks}) { hooks.push(e => { e.preventDefault(); })},
-  stop({hooks}) { hooks.push(e => { e.stopPropagation(); })},
-  throttle(opts, limit) {
-    let {fn} = opts
-    limit = Number(limit) || 108
-    let pause, planned, block = (e) => {
-      pause = true
-      setTimeout(() => {
-        pause = false
-        // if event happened during blocked time, it schedules call by the end
-        if (planned) return (planned = false, block(), fn(e))
-      }, limit)
-    }
-    opts.fn = e => {
-      if (pause) return (planned = true)
-      block(e);
-      return fn(e);
-    }
-  },
-  debounce(opts, wait) {
-    let {fn} = opts
-    wait = Number(wait) || 108;
-    let timeout
-    opts.fn = (e) => {
-      clearTimeout(timeout)
-      timeout = setTimeout(() => {timeout = null; fn(e)}, wait)
-    }
-  },
+  prevent(ctx) { let {test} = ctx; ctx.test = e => test(e) && (e.preventDefault(), true) },
+  stop(ctx) { let {test} = ctx; ctx.test = e => test(e) && (e.stopPropagation(), true) },
 
-  // target
-  window(opts) { opts.target = window },
-  document(opts) { opts.target = document },
-  outside({target, hooks}) {
-    hooks.push((e) => {
-      if (target.contains(e.target)) return false
-      if (e.target.isConnected === false) return false
-      if (target.offsetWidth < 1 && target.offsetHeight < 1) return false
-    })
-  },
-  self({target, hooks}) { hooks.push(e => { return e.target === target })},
+  // FIXME: test looks very similar to wrap, make sure it's proper
+  // it seems we only need normalized order of modifiers, not wrap/test/hook/call
+  throttle(ctx, limit) { ctx.wrap = fn => throttle(fn, Number(limit) || 108)},
+  debounce(ctx, wait) { ctx.wrap = fn => debounce(fn, Number(wait) || 108) },
 
   // options
-  once(opts) { opts.once = true; },
-  passive(opts) { opts.passive = true; },
-  capture(opts) { opts.capture = true; },
+  once(ctx) { ctx.opts.once = true; },
+  passive(ctx) { ctx.opts.passive = true; },
+  capture(ctx) { ctx.opts.capture = true; },
+
+  // target
+  window(ctx) { ctx.target = window },
+  document(ctx) { ctx.target = document },
+
+  // test
+  outside(ctx) {
+    ctx.test = (e) => {
+      let {target} = ctx
+      if (target.contains(e.target)) return
+      if (e.target.isConnected === false) return
+      if (target.offsetWidth < 1 && target.offsetHeight < 1) return
+      return true
+    }
+  },
+  self(ctx) { ctx.test = e => e.target === ctx.target },
 
   // keyboard
-  ctrl({hooks}) { hooks.push(e => e.key === 'Control' || e.key === 'Ctrl')},
-  shift({hooks}) { hooks.push(e => e.key === 'Shift')},
-  alt({hooks}) { hooks.push(e => e.key === 'Alt')},
-  meta({hooks}) { hooks.push(e => e.key === 'Meta')},
-  arrow({hooks}) { hooks.push(e => e.key.startsWith('Arrow'))},
-  enter({hooks}) { hooks.push(e => e.key === 'Enter')},
-  escape({hooks}) { hooks.push(e => e.key.startsWith('Esc'))},
-  tab({hooks}) { hooks.push(e => e.key === 'Tab')},
-  space({hooks}) { hooks.push(e => e.key === 'Space' || e.key === ' ')},
-  backspace({hooks}) { hooks.push(e => e.key === 'Backspace') },
-  delete({hooks}) { hooks.push(e => e.key === 'Delete') },
-  digit({hooks}) { hooks.push(e => /\d/.test(e.key)) },
-  letter({hooks}) { hooks.push(e => /[a-zA-Z]/.test(e.key)) },
-  character({hooks}) { hooks.push(e => /^\S$/.test(e.key) ) },
+  ctrl(ctx) { ctx.test = e => e.key === 'Control' || e.key === 'Ctrl'},
+  shift(ctx) { ctx.test = e => e.key === 'Shift'},
+  alt(ctx) { ctx.test = e => e.key === 'Alt'},
+  meta(ctx) { ctx.test = e => e.key === 'Meta'},
+  arrow(ctx) { ctx.test = e => e.key.startsWith('Arrow')},
+  enter(ctx) { ctx.test = e => e.key === 'Enter'},
+  escape(ctx) { ctx.test = e => e.key.startsWith('Esc')},
+  tab(ctx) { ctx.test = e => e.key === 'Tab'},
+  space(ctx) { ctx.test = e => e.key === 'Space' || e.key === ' '},
+  backspace(ctx) { ctx.test = e => e.key === 'Backspace'},
+  delete(ctx) { ctx.test = e => e.key === 'Delete'},
+  digit(ctx) { ctx.test = e => /^\d$/.test(e.key)},
+  letter(ctx) { ctx.test = e => /^[a-zA-Z]$/.test(e.key)},
+  character(ctx) { ctx.test = e => /^\S$/.test(e.key)},
 };
+
+// create delayed fns
+const throttle = (fn, limit) => {
+  let pause, planned, block = (e) => {
+    pause = true
+    setTimeout(() => {
+      pause = false
+      // if event happened during blocked time, it schedules call by the end
+      if (planned) return (planned = false, block(e), fn(e))
+    }, limit)
+  }
+  return (e) => {
+    if (pause) return (planned = true)
+    block(e);
+    return fn(e);
+  }
+}
+const debounce = (fn, wait) => {
+  let timeout
+  return (e) => {
+    clearTimeout(timeout)
+    timeout = setTimeout(() => {timeout = null; fn(e)}, wait)
+  }
+}
 
 // set attr
 const attr = (el, name, v) => {
@@ -367,10 +377,10 @@ const attr = (el, name, v) => {
   else el.setAttribute(name, v === true ? '' : (typeof v === 'number' || typeof v === 'string') ? v : '')
 }
 
-let evaluatorMemo = {}
 
-// borrowed from alpine: https://github.com/alpinejs/alpine/blob/main/packages/alpinejs/src/evaluator.js#L61
+// borrowed from alpine with improvements https://github.com/alpinejs/alpine/blob/main/packages/alpinejs/src/evaluator.js#L61
 // it seems to be more robust than subscript
+let evaluatorMemo = {}
 function parseExpr(el, expression, dir) {
   // guard static-time eval errors
   let evaluate = evaluatorMemo[expression]

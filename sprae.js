@@ -688,7 +688,7 @@ secondary["on"] = (el, expr) => {
       addListener(el, evt, listeners[evt]);
     return () => {
       for (let evt in listeners)
-        removeListener(el, evt, listeners[evt]);
+        listeners[evt][_off]?.();
     };
   };
 };
@@ -702,61 +702,55 @@ var directives_default = (el, expr, state, name) => {
       let value = evaluate(state2) || (() => {
       });
       addListener(el, evt, value);
-      return () => removeListener(el, evt, value);
+      return () => value[_off]();
     };
   return (state2) => attr(el, name, evaluate(state2));
 };
 var _stop = Symbol("stop");
-var addListener = (el, evt, startFn) => {
-  let evts = evt.split("..").map((e2) => e2.startsWith("on") ? e2.slice(2) : e2), opts = { target: el, hooks: [], fn: startFn };
-  evts[0] = evts[0].replace(/\.(\w+)?-?([\w]+)?/g, (match, mod, param) => (mods[mod]?.(opts, param), ""));
-  let { target, hooks, fn, ...listenerOpts } = opts;
-  if (hooks.length) {
-    let _fn = fn;
-    fn = (e2) => {
-      for (let hook of hooks)
-        if (hook(e2) === false)
-          return false;
-      return _fn(e2);
+var _off = Symbol("off");
+var addListener = (target, evt, origFn) => {
+  let ctxs = evt.split("..").map((e2) => {
+    let ctx = { evt: "", target, opts: {}, test: () => true, hook: null, mods: {}, origFn };
+    ctx.evt = (e2.startsWith("on") ? e2.slice(2) : e2).replace(
+      /\.(\w+)?-?([\w]+)?/g,
+      (match, mod, param) => (ctx.mods[mod] = param, mods[mod]?.(ctx, param), "")
+    );
+    return ctx;
+  });
+  if (!origFn)
+    origFn = () => {
     };
-  }
-  if (evts.length == 1)
-    target.addEventListener(evts[0], fn, listenerOpts);
+  if (ctxs.length == 1)
+    addWrapped(origFn, ctxs[0]);
   else {
-    const nextEvt = (handler, cur = 0) => {
+    const nextEvt = (fn, cur = 0) => {
       let curListener = (e2) => {
-        target.removeEventListener(evts[cur], curListener);
-        if (typeof (handler = handler.call(target, e2)) !== "function")
-          handler = () => {
+        curListener[_off]();
+        console.log(e2.type, e2.key);
+        if (typeof (fn = fn.call(target, e2)) !== "function")
+          fn = () => {
           };
-        if (++cur < evts.length)
-          nextEvt(handler, cur);
-        else if (!fn[_stop])
-          nextEvt(fn);
+        if (++cur < ctxs.length)
+          nextEvt(fn, cur);
+        else
+          nextEvt(origFn);
       };
-      target.addEventListener(evts[cur], curListener, listenerOpts);
+      console.log("add", ctxs[cur].evt, ctxs[cur].mods);
+      addWrapped(curListener, ctxs[cur]);
     };
-    nextEvt(fn);
+    nextEvt(origFn);
   }
 };
-var removeListener = (el, evt, fn) => {
-  if (evt.indexOf("..") >= 0)
-    fn[_stop] = true;
-  el.removeEventListener(evt, fn);
-};
+var addWrapped = (fn, { evt, target, opts, test, hook }, wrappedFn = (e2) => test(e2) && (hook?.(e2), fn.call(target, e2))) => (target.addEventListener(evt, wrappedFn, opts), fn[_off] = () => (fn[_off] = null, target.removeEventListener(evt, wrappedFn, opts)));
 var mods = {
-  prevent({ hooks }) {
-    hooks.push((e2) => {
-      e2.preventDefault();
-    });
+  prevent(ctx) {
+    ctx.hook = (e2) => e2.preventDefault();
   },
-  stop({ hooks }) {
-    hooks.push((e2) => {
-      e2.stopPropagation();
-    });
+  stop(ctx) {
+    ctx.hook = (e2) => e2.stopPropagation();
   },
-  throttle(opts, limit) {
-    let { fn } = opts;
+  throttle(ctx, limit) {
+    let { fn } = ctx;
     limit = Number(limit) || 108;
     let pause, planned, block = (e2) => {
       pause = true;
@@ -766,18 +760,18 @@ var mods = {
           return planned = false, block(), fn(e2);
       }, limit);
     };
-    opts.fn = (e2) => {
+    ctx.fn = (e2) => {
       if (pause)
         return planned = true;
       block(e2);
       return fn(e2);
     };
   },
-  debounce(opts, wait) {
-    let { fn } = opts;
+  debounce(ctx, wait) {
+    let { fn } = ctx;
     wait = Number(wait) || 108;
     let timeout;
-    opts.fn = (e2) => {
+    ctx.fn = (e2) => {
       clearTimeout(timeout);
       timeout = setTimeout(() => {
         timeout = null;
@@ -785,77 +779,77 @@ var mods = {
       }, wait);
     };
   },
-  window(opts) {
-    opts.target = window;
+  once(ctx) {
+    ctx.opts.once = true;
   },
-  document(opts) {
-    opts.target = document;
+  passive(ctx) {
+    ctx.opts.passive = true;
   },
-  outside({ target, hooks }) {
-    hooks.push((e2) => {
+  capture(ctx) {
+    ctx.opts.capture = true;
+  },
+  window(ctx) {
+    ctx.target = window;
+  },
+  document(ctx) {
+    ctx.target = document;
+  },
+  outside(ctx) {
+    ctx.test = (e2) => {
+      let { target } = ctx;
       if (target.contains(e2.target))
-        return false;
+        return;
       if (e2.target.isConnected === false)
-        return false;
+        return;
       if (target.offsetWidth < 1 && target.offsetHeight < 1)
-        return false;
-    });
+        return;
+      return true;
+    };
   },
-  self({ target, hooks }) {
-    hooks.push((e2) => {
-      return e2.target === target;
-    });
+  self(ctx) {
+    ctx.test = (e2) => e2.target === ctx.target;
   },
-  once(opts) {
-    opts.once = true;
+  ctrl(ctx) {
+    ctx.test = (e2) => e2.key === "Control" || e2.key === "Ctrl";
   },
-  passive(opts) {
-    opts.passive = true;
+  shift(ctx) {
+    ctx.test = (e2) => e2.key === "Shift";
   },
-  capture(opts) {
-    opts.capture = true;
+  alt(ctx) {
+    ctx.test = (e2) => e2.key === "Alt";
   },
-  ctrl({ hooks }) {
-    hooks.push((e2) => e2.key === "Control" || e2.key === "Ctrl");
+  meta(ctx) {
+    ctx.test = (e2) => e2.key === "Meta";
   },
-  shift({ hooks }) {
-    hooks.push((e2) => e2.key === "Shift");
+  arrow(ctx) {
+    ctx.test = (e2) => e2.key.startsWith("Arrow");
   },
-  alt({ hooks }) {
-    hooks.push((e2) => e2.key === "Alt");
+  enter(ctx) {
+    ctx.test = (e2) => e2.key === "Enter";
   },
-  meta({ hooks }) {
-    hooks.push((e2) => e2.key === "Meta");
+  escape(ctx) {
+    ctx.test = (e2) => e2.key.startsWith("Esc");
   },
-  arrow({ hooks }) {
-    hooks.push((e2) => e2.key.startsWith("Arrow"));
+  tab(ctx) {
+    ctx.test = (e2) => e2.key === "Tab";
   },
-  enter({ hooks }) {
-    hooks.push((e2) => e2.key === "Enter");
+  space(ctx) {
+    ctx.test = (e2) => e2.key === "Space" || e2.key === " ";
   },
-  escape({ hooks }) {
-    hooks.push((e2) => e2.key.startsWith("Esc"));
+  backspace(ctx) {
+    ctx.test = (e2) => e2.key === "Backspace";
   },
-  tab({ hooks }) {
-    hooks.push((e2) => e2.key === "Tab");
+  delete(ctx) {
+    ctx.test = (e2) => e2.key === "Delete";
   },
-  space({ hooks }) {
-    hooks.push((e2) => e2.key === "Space" || e2.key === " ");
+  digit(ctx) {
+    ctx.test = (e2) => /^\d$/.test(e2.key);
   },
-  backspace({ hooks }) {
-    hooks.push((e2) => e2.key === "Backspace");
+  letter(ctx) {
+    ctx.test = (e2) => /^[a-zA-Z]$/.test(e2.key);
   },
-  delete({ hooks }) {
-    hooks.push((e2) => e2.key === "Delete");
-  },
-  digit({ hooks }) {
-    hooks.push((e2) => /\d/.test(e2.key));
-  },
-  letter({ hooks }) {
-    hooks.push((e2) => /[a-zA-Z]/.test(e2.key));
-  },
-  character({ hooks }) {
-    hooks.push((e2) => /^\S$/.test(e2.key));
+  character(ctx) {
+    ctx.test = (e2) => /^\S$/.test(e2.key);
   }
 };
 var attr = (el, name, v2) => {
