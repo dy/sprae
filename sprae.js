@@ -684,11 +684,12 @@ secondary["on"] = (el, expr) => {
   let evaluate = parseExpr(el, expr, ":on");
   return (state) => {
     let listeners = evaluate(state);
+    let offs = [];
     for (let evt in listeners)
-      addListener(el, evt, listeners[evt]);
+      offs.push(on(el, evt, listeners[evt]));
     return () => {
-      for (let evt in listeners)
-        listeners[evt][_off]?.();
+      for (let off of offs)
+        off();
     };
   };
 };
@@ -701,19 +702,17 @@ var directives_default = (el, expr, state, name) => {
     return (state2) => {
       let value = evaluate(state2) || (() => {
       });
-      addListener(el, evt, value);
-      return () => value[_off]();
+      return on(el, evt, value);
     };
   return (state2) => attr(el, name, evaluate(state2));
 };
 var _stop = Symbol("stop");
-var _off = Symbol("off");
-var addListener = (target, evt, origFn) => {
+var on = (target, evt, origFn) => {
   let ctxs = evt.split("..").map((e2) => {
-    let ctx = { evt: "", target, opts: {}, test: () => true, hook: null, mods: {}, origFn };
+    let ctx = { evt: "", target, opts: {}, test: () => true, wrap: (fn) => fn };
     ctx.evt = (e2.startsWith("on") ? e2.slice(2) : e2).replace(
       /\.(\w+)?-?([\w]+)?/g,
-      (match, mod, param) => (ctx.mods[mod] = param, mods[mod]?.(ctx, param), "")
+      (match, mod, param) => (mods[mod]?.(ctx, param), "")
     );
     return ctx;
   });
@@ -721,63 +720,44 @@ var addListener = (target, evt, origFn) => {
     origFn = () => {
     };
   if (ctxs.length == 1)
-    addWrapped(origFn, ctxs[0]);
-  else {
-    const nextEvt = (fn, cur = 0) => {
-      let curListener = (e2) => {
-        curListener[_off]();
-        console.log(e2.type, e2.key);
-        if (typeof (fn = fn.call(target, e2)) !== "function")
-          fn = () => {
-          };
-        if (++cur < ctxs.length)
-          nextEvt(fn, cur);
-        else
-          nextEvt(origFn);
-      };
-      console.log("add", ctxs[cur].evt, ctxs[cur].mods);
-      addWrapped(curListener, ctxs[cur]);
+    return addWrapped(origFn, ctxs[0]);
+  let off;
+  const nextEvt = (fn, cur = 0) => {
+    let curListener = (e2) => {
+      off();
+      if (typeof (fn = fn.call(target, e2)) !== "function")
+        fn = () => {
+        };
+      if (++cur < ctxs.length)
+        nextEvt(fn, cur);
+      else
+        nextEvt(origFn);
     };
-    nextEvt(origFn);
-  }
+    return off = addWrapped(curListener, ctxs[cur]);
+  };
+  nextEvt(origFn);
+  return () => off();
 };
-var addWrapped = (fn, { evt, target, opts, test, hook }, wrappedFn = (e2) => test(e2) && (hook?.(e2), fn.call(target, e2))) => (target.addEventListener(evt, wrappedFn, opts), fn[_off] = () => (fn[_off] = null, target.removeEventListener(evt, wrappedFn, opts)));
+var addWrapped = (fn, { evt, target, opts, test, wrap }) => {
+  fn = wrap(fn);
+  let wrappedFn = (e2) => test(e2) && fn.call(target, e2);
+  target.addEventListener(evt, wrappedFn, opts);
+  return () => target.removeEventListener(evt, wrappedFn, opts);
+};
 var mods = {
   prevent(ctx) {
-    ctx.hook = (e2) => e2.preventDefault();
+    let { test } = ctx;
+    ctx.test = (e2) => test(e2) && (e2.preventDefault(), true);
   },
   stop(ctx) {
-    ctx.hook = (e2) => e2.stopPropagation();
+    let { test } = ctx;
+    ctx.test = (e2) => test(e2) && (e2.stopPropagation(), true);
   },
   throttle(ctx, limit) {
-    let { fn } = ctx;
-    limit = Number(limit) || 108;
-    let pause, planned, block = (e2) => {
-      pause = true;
-      setTimeout(() => {
-        pause = false;
-        if (planned)
-          return planned = false, block(), fn(e2);
-      }, limit);
-    };
-    ctx.fn = (e2) => {
-      if (pause)
-        return planned = true;
-      block(e2);
-      return fn(e2);
-    };
+    ctx.wrap = (fn) => throttle(fn, Number(limit) || 108);
   },
   debounce(ctx, wait) {
-    let { fn } = ctx;
-    wait = Number(wait) || 108;
-    let timeout;
-    ctx.fn = (e2) => {
-      clearTimeout(timeout);
-      timeout = setTimeout(() => {
-        timeout = null;
-        fn(e2);
-      }, wait);
-    };
+    ctx.wrap = (fn) => debounce(fn, Number(wait) || 108);
   },
   once(ctx) {
     ctx.opts.once = true;
@@ -851,6 +831,32 @@ var mods = {
   character(ctx) {
     ctx.test = (e2) => /^\S$/.test(e2.key);
   }
+};
+var throttle = (fn, limit) => {
+  let pause, planned, block = (e2) => {
+    pause = true;
+    setTimeout(() => {
+      pause = false;
+      if (planned)
+        return planned = false, block(e2), fn(e2);
+    }, limit);
+  };
+  return (e2) => {
+    if (pause)
+      return planned = true;
+    block(e2);
+    return fn(e2);
+  };
+};
+var debounce = (fn, wait) => {
+  let timeout;
+  return (e2) => {
+    clearTimeout(timeout);
+    timeout = setTimeout(() => {
+      timeout = null;
+      fn(e2);
+    }, wait);
+  };
 };
 var attr = (el, name, v2) => {
   if (v2 == null || v2 === false)
