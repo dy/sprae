@@ -706,10 +706,9 @@ var directives_default = (el, expr, state, name) => {
     };
   return (state2) => attr(el, name, evaluate(state2));
 };
-var _stop = Symbol("stop");
 var on = (target, evt, origFn) => {
   let ctxs = evt.split("..").map((e2) => {
-    let ctx = { evt: "", target, opts: {}, test: () => true, wrap: (fn) => fn };
+    let ctx = { evt: "", target, test: () => true };
     ctx.evt = (e2.startsWith("on") ? e2.slice(2) : e2).replace(
       /\.(\w+)?-?([\w]+)?/g,
       (match, mod, param) => (mods[mod]?.(ctx, param), "")
@@ -720,7 +719,7 @@ var on = (target, evt, origFn) => {
     origFn = () => {
     };
   if (ctxs.length == 1)
-    return addWrapped(origFn, ctxs[0]);
+    return addListener(origFn, ctxs[0]);
   let off;
   const nextEvt = (fn, cur = 0) => {
     let curListener = (e2) => {
@@ -733,40 +732,33 @@ var on = (target, evt, origFn) => {
       else
         nextEvt(origFn);
     };
-    return off = addWrapped(curListener, ctxs[cur]);
+    return off = addListener(curListener, ctxs[cur]);
   };
   nextEvt(origFn);
   return () => off();
 };
-var addWrapped = (fn, { evt, target, opts, test, wrap }) => {
-  fn = wrap(fn);
-  let wrappedFn = (e2) => test(e2) && fn.call(target, e2);
+var addListener = (fn, { evt, target, test, wrap, stop, prevent, ...opts }) => {
+  if (wrap)
+    fn = wrap(fn);
+  let wrappedFn = (e2) => test(e2) && (stop && e2.stopPropagation(), prevent && e2.preventDefault(), fn.call(target, e2));
   target.addEventListener(evt, wrappedFn, opts);
   return () => target.removeEventListener(evt, wrappedFn, opts);
 };
 var mods = {
   prevent(ctx) {
-    let { test } = ctx;
-    ctx.test = (e2) => test(e2) && (e2.preventDefault(), true);
+    ctx.prevent = true;
   },
   stop(ctx) {
-    let { test } = ctx;
-    ctx.test = (e2) => test(e2) && (e2.stopPropagation(), true);
-  },
-  throttle(ctx, limit) {
-    ctx.wrap = (fn) => throttle(fn, Number(limit) || 108);
-  },
-  debounce(ctx, wait) {
-    ctx.wrap = (fn) => debounce(fn, Number(wait) || 108);
+    ctx.stop = true;
   },
   once(ctx) {
-    ctx.opts.once = true;
+    ctx.once = true;
   },
   passive(ctx) {
-    ctx.opts.passive = true;
+    ctx.passive = true;
   },
   capture(ctx) {
-    ctx.opts.capture = true;
+    ctx.capture = true;
   },
   window(ctx) {
     ctx.target = window;
@@ -774,20 +766,28 @@ var mods = {
   document(ctx) {
     ctx.target = document;
   },
+  throttle(ctx, limit) {
+    ctx.wrap = (fn) => throttle(fn, Number(limit) || 108);
+  },
+  debounce(ctx, wait) {
+    ctx.wrap = (fn) => debounce(fn, Number(wait) || 108);
+  },
   outside(ctx) {
-    ctx.test = (e2) => {
-      let { target } = ctx;
+    ctx.test = function(e2) {
+      let target = ctx.target;
       if (target.contains(e2.target))
-        return;
+        return false;
       if (e2.target.isConnected === false)
-        return;
+        return false;
       if (target.offsetWidth < 1 && target.offsetHeight < 1)
-        return;
+        return false;
       return true;
     };
   },
   self(ctx) {
-    ctx.test = (e2) => e2.target === ctx.target;
+    ctx.test = function(e2) {
+      return e2.target === ctx.target;
+    };
   },
   ctrl(ctx) {
     ctx.test = (e2) => e2.key === "Control" || e2.key === "Ctrl";
