@@ -294,15 +294,15 @@ const on = (target, evt, origFn) => {
 // add listener applying the context
 const addWrapped = (fn, {evt, target, opts, test, wrap} ) => {
   fn = wrap(fn)
-  let wrappedFn = e => test(e) && fn.call(target, e)
+  let wrappedFn = e => test.call(target, e) && fn.call(target, e)
   target.addEventListener(evt, wrappedFn, opts)
   return () => target.removeEventListener(evt, wrappedFn, opts)
 };
 
 // event modifiers
 const mods = {
-  prevent(ctx) { let {test} = ctx; ctx.test = e => test(e) && (e.preventDefault(), true) },
-  stop(ctx) { let {test} = ctx; ctx.test = e => test(e) && (e.stopPropagation(), true) },
+  prevent(ctx) { let {test} = ctx; ctx.test = e => test.call(ctx.target, e) && (e.preventDefault(), true) },
+  stop(ctx) { let {test} = ctx; ctx.test = e => test.call(ctx.target, e) && (e.stopPropagation(), true) },
 
   // FIXME: test looks very similar to wrap, make sure it's proper
   // it seems we only need normalized order of modifiers, not wrap/test/hook/call
@@ -320,15 +320,15 @@ const mods = {
 
   // test
   outside(ctx) {
-    ctx.test = (e) => {
-      let {target} = ctx
-      if (target.contains(e.target)) return
-      if (e.target.isConnected === false) return
-      if (target.offsetWidth < 1 && target.offsetHeight < 1) return
+    ctx.test = function (e) {
+      let target = this
+      if (target.contains(e.target)) return false
+      if (e.target.isConnected === false) return false
+      if (target.offsetWidth < 1 && target.offsetHeight < 1) return false
       return true
     }
   },
-  self(ctx) { ctx.test = e => e.target === ctx.target },
+  self(ctx) { ctx.test = function(e){ return e.target === this } },
 
   // keyboard
   ctrl(ctx) { ctx.test = e => e.key === 'Control' || e.key === 'Ctrl'},
