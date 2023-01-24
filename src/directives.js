@@ -265,7 +265,7 @@ export default (el, expr, state, name) => {
 const on = (target, evt, origFn) => {
   // ona..onb
   let ctxs = evt.split('..').map(e => {
-    let ctx = { evt:'', target, test:()=>true, wrap:fn=>fn };
+    let ctx = { evt:'', target, test:()=>true };
     // onevt.debounce-108 -> evt.debounce-108
     ctx.evt = (e.startsWith('on') ? e.slice(2) : e).replace(/\.(\w+)?-?([\w]+)?/g,
       (match, mod, param) => (mods[mod]?.(ctx, param), '')
@@ -296,9 +296,9 @@ const on = (target, evt, origFn) => {
 }
 // add listener applying the context
 const addListener = (fn, {evt, target, test, wrap, stop, prevent, ...opts} ) => {
-  fn = wrap(fn)
+  if (wrap) fn = wrap(fn)
   let wrappedFn = e => (
-    test.call(target, e) && (
+    test(e) && (
       stop&&e.stopPropagation(),
       prevent&&e.preventDefault(),
       fn.call(target, e)
@@ -310,12 +310,9 @@ const addListener = (fn, {evt, target, test, wrap, stop, prevent, ...opts} ) => 
 
 // event modifiers
 const mods = {
+  // actions
   prevent(ctx) { ctx.prevent = true },
   stop(ctx) { ctx.stop = true },
-
-  // FIXME: test looks very similar to test, mb it can be optimized
-  throttle(ctx, limit) { ctx.wrap = fn => throttle(fn, Number(limit) || 108)},
-  debounce(ctx, wait) { ctx.wrap = fn => debounce(fn, Number(wait) || 108) },
 
   // options
   once(ctx) { ctx.once = true; },
@@ -326,17 +323,21 @@ const mods = {
   window(ctx) { ctx.target = window },
   document(ctx) { ctx.target = document },
 
+  // FIXME: test looks very similar to test, mb it can be optimized
+  throttle(ctx, limit) { ctx.wrap = fn => throttle(fn, Number(limit) || 108)},
+  debounce(ctx, wait) { ctx.wrap = fn => debounce(fn, Number(wait) || 108) },
+
   // test
   outside(ctx) {
     ctx.test = function (e) {
-      let target = this
+      let target = ctx.target
       if (target.contains(e.target)) return false
       if (e.target.isConnected === false) return false
       if (target.offsetWidth < 1 && target.offsetHeight < 1) return false
       return true
     }
   },
-  self(ctx) { ctx.test = function(e){ return e.target === this } },
+  self(ctx) { ctx.test = function(e){ return e.target === ctx.target } },
 
   // keyboard
   ctrl(ctx) { ctx.test = e => e.key === 'Control' || e.key === 'Ctrl'},
