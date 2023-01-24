@@ -261,11 +261,11 @@ export default (el, expr, state, name) => {
   return state => attr(el, name, evaluate(state))
 }
 
-const _stop = Symbol('stop')
+// bind event to target
 const on = (target, evt, origFn) => {
   // ona..onb
   let ctxs = evt.split('..').map(e => {
-    let ctx = { evt:'', target, opts:{}, test:()=>true, wrap:fn=>fn };
+    let ctx = { evt:'', target, opts:{}, test:()=>true, wrap:fn=>fn, stop:false, prevent:false };
     // onevt.debounce-108 -> evt.debounce-108
     ctx.evt = (e.startsWith('on') ? e.slice(2) : e).replace(/\.(\w+)?-?([\w]+)?/g,
       (match, mod, param) => (mods[mod]?.(ctx, param), '')
@@ -276,8 +276,10 @@ const on = (target, evt, origFn) => {
   // FIXME: must be in throttles
   if (!origFn) origFn = () => {}
 
-  if (ctxs.length == 1) return addWrapped(origFn, ctxs[0])
+  // single event bind
+  if (ctxs.length == 1) return addListener(origFn, ctxs[0])
 
+  // events chain cycler
   let off
   const nextEvt = (fn, cur=0) => {
     let curListener = e => {
@@ -286,26 +288,32 @@ const on = (target, evt, origFn) => {
       if (++cur < ctxs.length) nextEvt(fn, cur);
       else nextEvt(origFn); // back to first event only if chain isn't stopped (by update)
     }
-    return off = addWrapped(curListener, ctxs[cur])
+    return off = addListener(curListener, ctxs[cur])
   }
   nextEvt(origFn)
+
   return () => off()
 }
 // add listener applying the context
-const addWrapped = (fn, {evt, target, opts, test, wrap} ) => {
+const addListener = (fn, {evt, target, opts, test, wrap, stop, prevent} ) => {
   fn = wrap(fn)
-  let wrappedFn = e => test.call(target, e) && fn.call(target, e)
+  let wrappedFn = e => (
+    test.call(target, e) && (
+      stop&&e.stopPropagation(),
+      prevent&&e.preventDefault(),
+      fn.call(target, e)
+    )
+  )
   target.addEventListener(evt, wrappedFn, opts)
   return () => target.removeEventListener(evt, wrappedFn, opts)
 };
 
 // event modifiers
 const mods = {
-  prevent(ctx) { let {test} = ctx; ctx.test = e => test.call(ctx.target, e) && (e.preventDefault(), true) },
-  stop(ctx) { let {test} = ctx; ctx.test = e => test.call(ctx.target, e) && (e.stopPropagation(), true) },
+  prevent(ctx) { ctx.prevent = true },
+  stop(ctx) { ctx.stop = true },
 
-  // FIXME: test looks very similar to wrap, make sure it's proper
-  // it seems we only need normalized order of modifiers, not wrap/test/hook/call
+  // FIXME: test looks very similar to test, mb it can be optimized
   throttle(ctx, limit) { ctx.wrap = fn => throttle(fn, Number(limit) || 108)},
   debounce(ctx, wait) { ctx.wrap = fn => debounce(fn, Number(wait) || 108) },
 
