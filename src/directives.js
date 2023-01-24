@@ -292,21 +292,23 @@ const on = (target, evt, origFn) => {
   }
   nextEvt(origFn)
 
+
+  // add listener applying the context
+  function addListener(fn, {evt, target, test, delayed, stop, prevent, ...opts} ) {
+    if (delayed) fn = delayed(fn)
+    let wrappedFn = e => (
+      test(e) && (
+        stop&&e.stopPropagation(),
+        prevent&&e.preventDefault(),
+        fn.call(target, e)
+      )
+    )
+    target.addEventListener(evt, wrappedFn, opts)
+    return () => target.removeEventListener(evt, wrappedFn, opts)
+  };
+
   return () => off()
 }
-// add listener applying the context
-const addListener = (fn, {evt, target, test, delayed, stop, prevent, ...opts} ) => {
-  if (delayed) fn = delayed(fn)
-  let wrappedFn = e => (
-    test(e) && (
-      stop&&e.stopPropagation(),
-      prevent&&e.preventDefault(),
-      fn.call(target, e)
-    )
-  )
-  target.addEventListener(evt, wrappedFn, opts)
-  return () => target.removeEventListener(evt, wrappedFn, opts)
-};
 
 // event modifiers
 const mods = {

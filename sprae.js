@@ -735,14 +735,15 @@ var on = (target, evt, origFn) => {
     return off = addListener(curListener, ctxs[cur]);
   };
   nextEvt(origFn);
+  function addListener(fn, { evt: evt2, target: target2, test, delayed, stop, prevent, ...opts }) {
+    if (delayed)
+      fn = delayed(fn);
+    let wrappedFn = (e2) => test(e2) && (stop && e2.stopPropagation(), prevent && e2.preventDefault(), fn.call(target2, e2));
+    target2.addEventListener(evt2, wrappedFn, opts);
+    return () => target2.removeEventListener(evt2, wrappedFn, opts);
+  }
+  ;
   return () => off();
-};
-var addListener = (fn, { evt, target, test, delayed, stop, prevent, ...opts }) => {
-  if (delayed)
-    fn = delayed(fn);
-  let wrappedFn = (e2) => test(e2) && (stop && e2.stopPropagation(), prevent && e2.preventDefault(), fn.call(target, e2));
-  target.addEventListener(evt, wrappedFn, opts);
-  return () => target.removeEventListener(evt, wrappedFn, opts);
 };
 var mods = {
   prevent(ctx) {
@@ -783,20 +784,20 @@ var mods = {
     return true;
   },
   self: (ctx) => (e2) => e2.target === ctx.target,
-  ctrl: () => (e2) => e2.key === "Control" || e2.key === "Ctrl",
-  shift: () => (e2) => e2.key === "Shift",
-  alt: () => (e2) => e2.key === "Alt",
-  meta: () => (e2) => e2.key === "Meta",
-  arrow: () => (e2) => e2.key.startsWith("Arrow"),
-  enter: () => (e2) => e2.key === "Enter",
-  escape: () => (e2) => e2.key.startsWith("Esc"),
-  tab: () => (e2) => e2.key === "Tab",
-  space: () => (e2) => e2.key === "Space" || e2.key === " ",
-  backspace: () => (e2) => e2.key === "Backspace",
-  delete: () => (e2) => e2.key === "Delete",
-  digit: () => (e2) => /^\d$/.test(e2.key),
-  letter: () => (e2) => /^[a-zA-Z]$/.test(e2.key),
-  character: () => (e2) => /^\S$/.test(e2.key)
+  ctrl: (ctx) => (e2) => e2.key === "Control" || e2.key === "Ctrl",
+  shift: (ctx) => (e2) => e2.key === "Shift",
+  alt: (ctx) => (e2) => e2.key === "Alt",
+  meta: (ctx) => (e2) => e2.key === "Meta",
+  arrow: (ctx) => (e2) => e2.key.startsWith("Arrow"),
+  enter: (ctx) => (e2) => e2.key === "Enter",
+  escape: (ctx) => (e2) => e2.key.startsWith("Esc"),
+  tab: (ctx) => (e2) => e2.key === "Tab",
+  space: (ctx) => (e2) => e2.key === "Space" || e2.key === " ",
+  backspace: (ctx) => (e2) => e2.key === "Backspace",
+  delete: (ctx) => (e2) => e2.key === "Delete",
+  digit: (ctx) => (e2) => /^\d$/.test(e2.key),
+  letter: (ctx) => (e2) => /^[a-zA-Z]$/.test(e2.key),
+  character: (ctx) => (e2) => /^\S$/.test(e2.key)
 };
 var throttle = (fn, limit) => {
   let pause, planned, block = (e2) => {
