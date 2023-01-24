@@ -265,7 +265,7 @@ export default (el, expr, state, name) => {
 const on = (target, evt, origFn) => {
   // ona..onb
   let ctxs = evt.split('..').map(e => {
-    let ctx = { evt:'', target, opts:{}, test:()=>true, wrap:fn=>fn, stop:false, prevent:false };
+    let ctx = { evt:'', target, test:()=>true, wrap:fn=>fn };
     // onevt.debounce-108 -> evt.debounce-108
     ctx.evt = (e.startsWith('on') ? e.slice(2) : e).replace(/\.(\w+)?-?([\w]+)?/g,
       (match, mod, param) => (mods[mod]?.(ctx, param), '')
@@ -295,7 +295,7 @@ const on = (target, evt, origFn) => {
   return () => off()
 }
 // add listener applying the context
-const addListener = (fn, {evt, target, opts, test, wrap, stop, prevent} ) => {
+const addListener = (fn, {evt, target, test, wrap, stop, prevent, ...opts} ) => {
   fn = wrap(fn)
   let wrappedFn = e => (
     test.call(target, e) && (
@@ -318,9 +318,9 @@ const mods = {
   debounce(ctx, wait) { ctx.wrap = fn => debounce(fn, Number(wait) || 108) },
 
   // options
-  once(ctx) { ctx.opts.once = true; },
-  passive(ctx) { ctx.opts.passive = true; },
-  capture(ctx) { ctx.opts.capture = true; },
+  once(ctx) { ctx.once = true; },
+  passive(ctx) { ctx.passive = true; },
+  capture(ctx) { ctx.capture = true; },
 
   // target
   window(ctx) { ctx.target = window },
