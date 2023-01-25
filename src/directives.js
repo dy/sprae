@@ -273,9 +273,6 @@ const on = (target, evt, origFn) => {
     return ctx;
   });
 
-  // FIXME: must be in throttles
-  if (!origFn) origFn = () => {}
-
   // single event bind
   if (ctxs.length == 1) return addListener(origFn, ctxs[0])
 
@@ -294,17 +291,18 @@ const on = (target, evt, origFn) => {
   return () => off()
 
   // add listener applying the context
-  function addListener(fn, {evt, target, test, delayed, stop, prevent, ...opts} ) {
-    if (delayed) fn = delayed(fn)
-    let wrappedFn = e => (
-      test(e) && (
-        stop&&e.stopPropagation(),
-        prevent&&e.preventDefault(),
-        fn.call(target, e)
-      )
+  function addListener(fn, {evt, target, test, throttle, debounce, stop, prevent, ...opts} ) {
+    if (throttle) fn = throttled(fn, throttle)
+    else if (debounce) fn = debounced(fn, debounce)
+
+    let cb = e => test(e) && (
+      stop&&e.stopPropagation(),
+      prevent&&e.preventDefault(),
+      fn.call(target, e)
     )
-    target.addEventListener(evt, wrappedFn, opts)
-    return () => target.removeEventListener(evt, wrappedFn, opts)
+
+    target.addEventListener(evt, cb, opts)
+    return () => target.removeEventListener(evt, cb, opts)
   };
 }
 
@@ -324,8 +322,8 @@ const mods = {
   document(ctx) { ctx.target = document },
 
   // FIXME: test looks very similar to test, mb it can be optimized
-  throttle(ctx, limit) { ctx.delayed = fn => throttle(fn, Number(limit) || 108)},
-  debounce(ctx, wait) { ctx.delayed = fn => debounce(fn, Number(wait) || 108) },
+  throttle(ctx, limit) { ctx.throttle = Number(limit) || 108 },
+  debounce(ctx, wait) { ctx.debounce = Number(wait) || 108 },
 
   // test
   outside: ctx => e => {
@@ -355,7 +353,7 @@ const mods = {
 };
 
 // create delayed fns
-const throttle = (fn, limit) => {
+const throttled = (fn, limit) => {
   let pause, planned, block = (e) => {
     pause = true
     setTimeout(() => {
@@ -370,7 +368,7 @@ const throttle = (fn, limit) => {
     return fn(e);
   }
 }
-const debounce = (fn, wait) => {
+const debounced = (fn, wait) => {
   let timeout
   return (e) => {
     clearTimeout(timeout)

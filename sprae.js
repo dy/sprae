@@ -715,9 +715,6 @@ var on = (target, evt, origFn) => {
     );
     return ctx;
   });
-  if (!origFn)
-    origFn = () => {
-    };
   if (ctxs.length == 1)
     return addListener(origFn, ctxs[0]);
   let off;
@@ -735,15 +732,17 @@ var on = (target, evt, origFn) => {
     return off = addListener(curListener, ctxs[cur]);
   };
   nextEvt(origFn);
-  function addListener(fn, { evt: evt2, target: target2, test, delayed, stop, prevent, ...opts }) {
-    if (delayed)
-      fn = delayed(fn);
-    let wrappedFn = (e2) => test(e2) && (stop && e2.stopPropagation(), prevent && e2.preventDefault(), fn.call(target2, e2));
-    target2.addEventListener(evt2, wrappedFn, opts);
-    return () => target2.removeEventListener(evt2, wrappedFn, opts);
+  return () => off();
+  function addListener(fn, { evt: evt2, target: target2, test, throttle, debounce, stop, prevent, ...opts }) {
+    if (throttle)
+      fn = throttled(fn, throttle);
+    else if (debounce)
+      fn = debounced(fn, debounce);
+    let cb = (e2) => test(e2) && (stop && e2.stopPropagation(), prevent && e2.preventDefault(), fn.call(target2, e2));
+    target2.addEventListener(evt2, cb, opts);
+    return () => target2.removeEventListener(evt2, cb, opts);
   }
   ;
-  return () => off();
 };
 var mods = {
   prevent(ctx) {
@@ -768,10 +767,10 @@ var mods = {
     ctx.target = document;
   },
   throttle(ctx, limit) {
-    ctx.delayed = (fn) => throttle(fn, Number(limit) || 108);
+    ctx.throttle = Number(limit) || 108;
   },
   debounce(ctx, wait) {
-    ctx.delayed = (fn) => debounce(fn, Number(wait) || 108);
+    ctx.debounce = Number(wait) || 108;
   },
   outside: (ctx) => (e2) => {
     let target = ctx.target;
@@ -799,7 +798,7 @@ var mods = {
   letter: (ctx) => (e2) => /^[a-zA-Z]$/.test(e2.key),
   character: (ctx) => (e2) => /^\S$/.test(e2.key)
 };
-var throttle = (fn, limit) => {
+var throttled = (fn, limit) => {
   let pause, planned, block = (e2) => {
     pause = true;
     setTimeout(() => {
@@ -815,7 +814,7 @@ var throttle = (fn, limit) => {
     return fn(e2);
   };
 };
-var debounce = (fn, wait) => {
+var debounced = (fn, wait) => {
   let timeout;
   return (e2) => {
     clearTimeout(timeout);
