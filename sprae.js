@@ -634,7 +634,7 @@ secondary["style"] = (el, expr) => {
       el.setAttribute("style", initStyle + v2);
     else
       for (let k in v2)
-        el.style[k] = v2[k];
+        el.style.setProperty(k, v2[k]);
   };
 };
 secondary["text"] = (el, expr) => {

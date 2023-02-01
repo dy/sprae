@@ -62,6 +62,9 @@ test('style', async () => {
   is(el.outerHTML, `<x style="left: 1px; top: 1px"></x>`)
   params.style = {top: '2px'}
   is(el.outerHTML, `<x style="left: 1px; top: 2px;"></x>`)
+
+  params.style = {'--x': 123}
+  is(el.style.getPropertyValue('--x'), '123')
 })
 
 test('class', async () => {

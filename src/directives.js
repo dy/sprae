@@ -169,7 +169,7 @@ secondary['style'] = (el, expr) => {
   return (state) => {
     let v = evaluate(state)
     if (typeof v === 'string') el.setAttribute('style', initStyle + v)
-    else for (let k in v) el.style[k] = v[k]
+    else for (let k in v) el.style.setProperty(k, v[k])
   }
 }
 

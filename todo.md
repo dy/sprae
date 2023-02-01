@@ -36,6 +36,8 @@
 * ~~[x] run tiredown if element got removed from condition or loop (free memory)~~ no need just make sure no refs to elements stored
 * [x] `sprae(el, newState)` can update element's state directly (as batch!?) -> must be tested against repeats in directives
 * [x] :if :ref, :if :with -> context setters must come first always
+* [ ] :style="{'--x':value}"
+* [ ] debounce state updates to next tick? Ie. state is updated straight away but rerendered after?
 * [ ] frameworks benchmark
 * [ ] examples
   * [x] todomvc
