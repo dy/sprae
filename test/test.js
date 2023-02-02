@@ -705,7 +705,7 @@ test('on: throttle', async e => {
   is(state.log, ['x', 'x', 'x'])
 })
 
-test('on: nexttick', async e => {
+test.skip('on: nexttick', async e => {
   let el = h`<x :onkeydown.nexttick="e=>log.push(e.key)"></x>`
   let state = sprae(el, {log:[]})
   el.dispatchEvent(new window.KeyboardEvent('keydown', { key: 'x', bubbles: true }));

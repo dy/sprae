@@ -322,7 +322,7 @@ const mods = {
 
   throttle(ctx, limit) { ctx.defer = fn => throttle(fn, Number(limit) || 108) },
   debounce(ctx, wait) { ctx.defer = fn => debounce(fn, Number(wait) || 108) },
-  nexttick(ctx) { ctx.defer = fn => e => Promise.resolve().then(() => fn(e)) },
+  // nexttick(ctx) { ctx.defer = fn => e => Promise.resolve().then(() => fn(e)) },
 
   // test
   outside: ctx => e => {
