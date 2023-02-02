@@ -441,6 +441,11 @@
       + conventional
     * [x] onkey.enter, .space, .up|.down|.left|.right, .escape, .tab, .period, .slash, .caps-lock
       + conventional
+    * [x] onkey.nexttick
+      + seems to be needed, but what's the name?
+      * onkey.tick, onkey.nexttick, onkey.next,
+      * onkey.after, onkey.microtask, onkey.defer, onkey.immediate
+      * onkey.tick-1?
 
 ## [x] Mods design -> use event modifiers, not props modifiers
 

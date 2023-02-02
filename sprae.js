@@ -733,11 +733,9 @@ var on = (target, evt, origFn) => {
   };
   nextEvt(origFn);
   return () => off();
-  function addListener(fn, { evt: evt2, target: target2, test, throttle, debounce, stop, prevent, ...opts }) {
-    if (throttle)
-      fn = throttled(fn, throttle);
-    else if (debounce)
-      fn = debounced(fn, debounce);
+  function addListener(fn, { evt: evt2, target: target2, test, defer, stop, prevent, ...opts }) {
+    if (defer)
+      fn = defer(fn);
     let cb = (e2) => test(e2) && (stop && e2.stopPropagation(), prevent && e2.preventDefault(), fn.call(target2, e2));
     target2.addEventListener(evt2, cb, opts);
     return () => target2.removeEventListener(evt2, cb, opts);
@@ -767,10 +765,13 @@ var mods = {
     ctx.target = document;
   },
   throttle(ctx, limit) {
-    ctx.throttle = Number(limit) || 108;
+    ctx.defer = (fn) => throttle(fn, Number(limit) || 108);
   },
   debounce(ctx, wait) {
-    ctx.debounce = Number(wait) || 108;
+    ctx.defer = (fn) => debounce(fn, Number(wait) || 108);
+  },
+  nexttick(ctx) {
+    ctx.defer = (fn) => (e2) => Promise.resolve().then(() => fn(e2));
   },
   outside: (ctx) => (e2) => {
     let target = ctx.target;
@@ -814,7 +815,7 @@ var keys = {
   letter: (e2) => /^[a-zA-Z]$/.test(e2.key),
   character: (e2) => /^\S$/.test(e2.key)
 };
-var throttled = (fn, limit) => {
+var throttle = (fn, limit) => {
   let pause, planned, block = (e2) => {
     pause = true;
     setTimeout(() => {
@@ -830,7 +831,7 @@ var throttled = (fn, limit) => {
     return fn(e2);
   };
 };
-var debounced = (fn, wait) => {
+var debounce = (fn, wait) => {
   let timeout;
   return (e2) => {
     clearTimeout(timeout);

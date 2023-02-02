@@ -291,9 +291,8 @@ const on = (target, evt, origFn) => {
   return () => off()
 
   // add listener applying the context
-  function addListener(fn, {evt, target, test, throttle, debounce, stop, prevent, ...opts} ) {
-    if (throttle) fn = throttled(fn, throttle)
-    else if (debounce) fn = debounced(fn, debounce)
+  function addListener(fn, {evt, target, test, defer, stop, prevent, ...opts} ) {
+    if (defer) fn = defer(fn)
 
     let cb = e => test(e) && (
       stop&&e.stopPropagation(),
@@ -321,9 +320,9 @@ const mods = {
   window(ctx) { ctx.target = window },
   document(ctx) { ctx.target = document },
 
-  // FIXME: test looks very similar to test, mb it can be optimized
-  throttle(ctx, limit) { ctx.throttle = Number(limit) || 108 },
-  debounce(ctx, wait) { ctx.debounce = Number(wait) || 108 },
+  throttle(ctx, limit) { ctx.defer = fn => throttle(fn, Number(limit) || 108) },
+  debounce(ctx, wait) { ctx.defer = fn => debounce(fn, Number(wait) || 108) },
+  nexttick(ctx) { ctx.defer = fn => e => Promise.resolve().then(() => fn(e)) },
 
   // test
   outside: ctx => e => {
@@ -371,7 +370,7 @@ const keys = {
 }
 
 // create delayed fns
-const throttled = (fn, limit) => {
+const throttle = (fn, limit) => {
   let pause, planned, block = (e) => {
     pause = true
     setTimeout(() => {
@@ -386,7 +385,7 @@ const throttled = (fn, limit) => {
     return fn(e);
   }
 }
-const debounced = (fn, wait) => {
+const debounce = (fn, wait) => {
   let timeout
   return (e) => {
     clearTimeout(timeout)
