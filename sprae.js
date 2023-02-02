@@ -765,13 +765,10 @@ var mods = {
     ctx.target = document;
   },
   throttle(ctx, limit) {
-    ctx.defer = (fn) => throttle(fn, Number(limit) || 108);
+    ctx.defer = (fn) => throttle(fn, limit ? Number(limit) || 0 : 108);
   },
   debounce(ctx, wait) {
-    ctx.defer = (fn) => debounce(fn, Number(wait) || 108);
-  },
-  nexttick(ctx) {
-    ctx.defer = (fn) => (e2) => Promise.resolve().then(() => fn(e2));
+    ctx.defer = (fn) => debounce(fn, wait ? Number(wait) || 0 : 108);
   },
   outside: (ctx) => (e2) => {
     let target = ctx.target;

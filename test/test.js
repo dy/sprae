@@ -688,6 +688,15 @@ test('on: debounce', async e => {
   is(state.log, ['x'])
 })
 
+test('on: debounce 0', async e => {
+  let el = h`<x :onkeydown.debounce-0="e=>log.push(e.key)"></x>`
+  let state = sprae(el, {log:[]})
+  el.dispatchEvent(new window.KeyboardEvent('keydown', { key: 'x', bubbles: true }));
+  is(state.log, [])
+  await time(2)
+  is(state.log, ['x'])
+})
+
 test('on: throttle', async e => {
   let el = h`<x :onkeydown.throttle-10="e=>log.push(e.key)"></x>`
   let state = sprae(el, {log:[]})
