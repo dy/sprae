@@ -807,7 +807,7 @@ var keys = {
   enter: (e2) => e2.key === "Enter",
   escape: (e2) => e2.key.startsWith("Esc"),
   tab: (e2) => e2.key === "Tab",
-  space: (e2) => e2.key === "Space" || e2.key === " ",
+  space: (e2) => e2.key === "\xA0" || e2.key === "Space" || e2.key === " ",
   backspace: (e2) => e2.key === "Backspace",
   delete: (e2) => e2.key === "Delete",
   digit: (e2) => /^\d$/.test(e2.key),
