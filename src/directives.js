@@ -362,7 +362,7 @@ const keys = {
   enter: e => e.key === 'Enter',
   escape: e => e.key.startsWith('Esc'),
   tab: e => e.key === 'Tab',
-  space: e => e.key === 'Space' || e.key === ' ',
+  space: e => e.key === ' ' || e.key === 'Space' || e.key === ' ',
   backspace: e => e.key === 'Backspace',
   delete: e => e.key === 'Delete',
   digit: e => /^\d$/.test(e.key),
