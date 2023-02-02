@@ -652,6 +652,24 @@ test('on: keys', e => {
   is(state.log,[1,1])
 })
 
+test('on: key combinations', e => {
+  let el = h`<x :onkeydown.ctrl-enter="e=>log.push(1)"></x>`
+  let state = {log:[]}
+  sprae(el, state)
+  el.dispatchEvent(new window.KeyboardEvent('keydown', { key: '' }));
+  is(state.log,[])
+  el.dispatchEvent(new window.KeyboardEvent('keydown', { key: 'Enter' }));
+  el.dispatchEvent(new window.KeyboardEvent('keydown', { key: '' }));
+  is(state.log,[])
+  el.dispatchEvent(new window.KeyboardEvent('keydown', { key: 'Enter', ctrlKey: true }));
+  el.dispatchEvent(new window.KeyboardEvent('keydown', { key: 'Enter' }));
+  is(state.log,[1])
+  el.dispatchEvent(new window.KeyboardEvent('keydown', { key: 'Enter' }));
+  el.dispatchEvent(new window.KeyboardEvent('keydown', { key: 'Enter', ctrlKey: true }));
+  is(state.log,[1,1])
+  let el2 = h`<x :onkeydown.ctrl-alt-enter="e=>log.push(1)"></x>`
+})
+
 test('on: keys with prevent', e => {
   let el = h`<y :onkeydown="e=>log.push(e.key)"><x :ref="x" :onkeydown.enter.stop></x></y>`
   let state = sprae(el, {log:[]})

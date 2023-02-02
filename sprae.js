@@ -710,8 +710,8 @@ var on = (target, evt, origFn) => {
   let ctxs = evt.split("..").map((e2) => {
     let ctx = { evt: "", target, test: () => true };
     ctx.evt = (e2.startsWith("on") ? e2.slice(2) : e2).replace(
-      /\.(\w+)?-?([\w]+)?/g,
-      (match, mod, param) => (ctx.test = mods[mod]?.(ctx, param) || ctx.test, "")
+      /\.(\w+)?-?([-\w]+)?/g,
+      (match, mod, param = "") => (ctx.test = mods[mod]?.(ctx, ...param.split("-")) || ctx.test, "")
     );
     return ctx;
   });
@@ -783,20 +783,36 @@ var mods = {
     return true;
   },
   self: (ctx) => (e2) => e2.target === ctx.target,
-  ctrl: (ctx) => (e2) => e2.key === "Control" || e2.key === "Ctrl",
-  shift: (ctx) => (e2) => e2.key === "Shift",
-  alt: (ctx) => (e2) => e2.key === "Alt",
-  meta: (ctx) => (e2) => e2.key === "Meta",
-  arrow: (ctx) => (e2) => e2.key.startsWith("Arrow"),
-  enter: (ctx) => (e2) => e2.key === "Enter",
-  escape: (ctx) => (e2) => e2.key.startsWith("Esc"),
-  tab: (ctx) => (e2) => e2.key === "Tab",
-  space: (ctx) => (e2) => e2.key === "Space" || e2.key === " ",
-  backspace: (ctx) => (e2) => e2.key === "Backspace",
-  delete: (ctx) => (e2) => e2.key === "Delete",
-  digit: (ctx) => (e2) => /^\d$/.test(e2.key),
-  letter: (ctx) => (e2) => /^[a-zA-Z]$/.test(e2.key),
-  character: (ctx) => (e2) => /^\S$/.test(e2.key)
+  ctrl: (ctx, ...param) => (e2) => keys.ctrl(e2) && param.every((p2) => keys[p2] ? keys[p2](e2) : e2.key === p2),
+  shift: (ctx, ...param) => (e2) => keys.shift(e2) && param.every((p2) => keys[p2] ? keys[p2](e2) : e2.key === p2),
+  alt: (ctx, ...param) => (e2) => keys.alt(e2) && param.every((p2) => keys[p2] ? keys[p2](e2) : e2.key === p2),
+  meta: (ctx, ...param) => (e2) => keys.meta(e2) && param.every((p2) => keys[p2] ? keys[p2](e2) : e2.key === p2),
+  arrow: (ctx) => keys.arrow,
+  enter: (ctx) => keys.enter,
+  escape: (ctx) => keys.escape,
+  tab: (ctx) => keys.tab,
+  space: (ctx) => keys.space,
+  backspace: (ctx) => keys.backspace,
+  delete: (ctx) => keys.delete,
+  digit: (ctx) => keys.digit,
+  letter: (ctx) => keys.letter,
+  character: (ctx) => keys.character
+};
+var keys = {
+  ctrl: (e2) => e2.ctrlKey || e2.key === "Control" || e2.key === "Ctrl",
+  shift: (e2) => e2.shiftKey || e2.key === "Shift",
+  alt: (e2) => e2.altKey || e2.key === "Alt",
+  meta: (e2) => e2.metaKey || e2.key === "Meta" || e2.key === "Command",
+  arrow: (e2) => e2.key.startsWith("Arrow"),
+  enter: (e2) => e2.key === "Enter",
+  escape: (e2) => e2.key.startsWith("Esc"),
+  tab: (e2) => e2.key === "Tab",
+  space: (e2) => e2.key === "Space" || e2.key === " ",
+  backspace: (e2) => e2.key === "Backspace",
+  delete: (e2) => e2.key === "Delete",
+  digit: (e2) => /^\d$/.test(e2.key),
+  letter: (e2) => /^[a-zA-Z]$/.test(e2.key),
+  character: (e2) => /^\S$/.test(e2.key)
 };
 var throttled = (fn, limit) => {
   let pause, planned, block = (e2) => {

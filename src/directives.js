@@ -267,8 +267,8 @@ const on = (target, evt, origFn) => {
   let ctxs = evt.split('..').map(e => {
     let ctx = { evt:'', target, test:()=>true };
     // onevt.debounce-108 -> evt.debounce-108
-    ctx.evt = (e.startsWith('on') ? e.slice(2) : e).replace(/\.(\w+)?-?([\w]+)?/g,
-      (match, mod, param) => (ctx.test = mods[mod]?.(ctx, param) || ctx.test, '')
+    ctx.evt = (e.startsWith('on') ? e.slice(2) : e).replace(/\.(\w+)?-?([-\w]+)?/g,
+      (match, mod, param='') => (ctx.test = mods[mod]?.(ctx, ...param.split('-')) || ctx.test, '')
     );
     return ctx;
   });
@@ -336,21 +336,39 @@ const mods = {
   self: ctx => e => e.target === ctx.target,
 
   // keyboard
-  ctrl: ctx => e => e.key === 'Control' || e.key === 'Ctrl',
-  shift: ctx => e => e.key === 'Shift',
-  alt: ctx => e => e.key === 'Alt',
-  meta: ctx => e => e.key === 'Meta',
-  arrow: ctx => e => e.key.startsWith('Arrow'),
-  enter: ctx => e => e.key === 'Enter',
-  escape: ctx => e => e.key.startsWith('Esc'),
-  tab: ctx => e => e.key === 'Tab',
-  space: ctx => e => e.key === 'Space' || e.key === ' ',
-  backspace: ctx => e => e.key === 'Backspace',
-  delete: ctx => e => e.key === 'Delete',
-  digit: ctx => e => /^\d$/.test(e.key),
-  letter: ctx => e => /^[a-zA-Z]$/.test(e.key),
-  character: ctx => e => /^\S$/.test(e.key),
+  ctrl: (ctx, ...param) => e => keys.ctrl(e) && param.every(p => keys[p] ? keys[p](e) : e.key === p),
+  shift: (ctx, ...param) => e => keys.shift(e) && param.every(p => keys[p] ? keys[p](e) : e.key === p),
+  alt: (ctx, ...param) => e => keys.alt(e) && param.every(p => keys[p] ? keys[p](e) : e.key === p),
+  meta: (ctx, ...param) => e => keys.meta(e) && param.every(p => keys[p] ? keys[p](e) : e.key === p),
+  arrow: ctx => keys.arrow,
+  enter: ctx => keys.enter,
+  escape: ctx => keys.escape,
+  tab: ctx => keys.tab,
+  space: ctx => keys.space,
+  backspace: ctx => keys.backspace,
+  delete: ctx => keys.delete,
+  digit: ctx => keys.digit,
+  letter: ctx => keys.letter,
+  character: ctx => keys.character,
 };
+
+// key testers
+const keys = {
+  ctrl: e => e.ctrlKey || e.key === 'Control' || e.key === 'Ctrl',
+  shift: e => e.shiftKey || e.key === 'Shift',
+  alt: e => e.altKey || e.key === 'Alt',
+  meta: e => e.metaKey || e.key === 'Meta' || e.key === 'Command',
+  arrow: e => e.key.startsWith('Arrow'),
+  enter: e => e.key === 'Enter',
+  escape: e => e.key.startsWith('Esc'),
+  tab: e => e.key === 'Tab',
+  space: e => e.key === 'Space' || e.key === ' ',
+  backspace: e => e.key === 'Backspace',
+  delete: e => e.key === 'Delete',
+  digit: e => /^\d$/.test(e.key),
+  letter: e => /^[a-zA-Z]$/.test(e.key),
+  character: e => /^\S$/.test(e.key)
+}
 
 // create delayed fns
 const throttled = (fn, limit) => {
