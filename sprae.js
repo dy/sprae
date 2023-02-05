@@ -621,7 +621,7 @@ secondary["class"] = (el, expr) => {
   return (state) => {
     let v2 = evaluate(state);
     let className = typeof v2 === "string" ? v2 : (Array.isArray(v2) ? v2 : Object.entries(v2).map(([k, v3]) => v3 ? k : "")).filter(Boolean).join(" ");
-    el.className = (initClassName ? initClassName + " " : "") + className;
+    el.className = [initClassName, className].filter(Boolean).join(" ");
   };
 };
 secondary["style"] = (el, expr) => {
@@ -635,7 +635,6 @@ secondary["style"] = (el, expr) => {
       el.setAttribute("style", initStyle + v2);
     else {
       el.setAttribute("style", initStyle);
-      console.log(v2);
       for (let k in v2)
         el.style.setProperty(k, v2[k]);
     }
@@ -711,6 +710,8 @@ var directives_default = (el, expr, state, name) => {
   return (state2) => attr(el, name, evaluate(state2));
 };
 var on = (target, evt, origFn) => {
+  if (!origFn)
+    return;
   let ctxs = evt.split("..").map((e2) => {
     let ctx = { evt: "", target, test: () => true };
     ctx.evt = (e2.startsWith("on") ? e2.slice(2) : e2).replace(
@@ -721,22 +722,22 @@ var on = (target, evt, origFn) => {
   });
   if (ctxs.length == 1)
     return addListener(origFn, ctxs[0]);
-  let off;
-  const nextEvt = (fn, cur = 0) => {
+  const onFn = (fn, cur = 0) => {
+    let off;
     let curListener = (e2) => {
-      off();
-      if (typeof (fn = fn.call(target, e2)) !== "function")
-        fn = () => {
+      if (cur)
+        off();
+      let nextFn = fn.call(target, e2);
+      if (typeof nextFn !== "function")
+        nextFn = () => {
         };
-      if (++cur < ctxs.length)
-        nextEvt(fn, cur);
-      else
-        nextEvt(origFn);
+      if (cur + 1 < ctxs.length)
+        onFn(nextFn, !cur ? 1 : cur + 1);
     };
     return off = addListener(curListener, ctxs[cur]);
   };
-  nextEvt(origFn);
-  return () => off();
+  let rootOff = onFn(origFn);
+  return () => rootOff();
   function addListener(fn, { evt: evt2, target: target2, test, defer, stop, prevent, ...opts }) {
     if (defer)
       fn = defer(fn);

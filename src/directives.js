@@ -159,7 +159,7 @@ secondary['class'] = (el, expr) => {
   return (state) => {
     let v = evaluate(state)
     let className = typeof v === 'string' ? v : (Array.isArray(v) ? v : Object.entries(v).map(([k,v])=>v?k:'')).filter(Boolean).join(' ')
-    el.className = (initClassName ? initClassName + ' ' : '') + className;
+    el.className = [initClassName, className].filter(Boolean).join(' ');
   }
 }
 
@@ -267,6 +267,8 @@ export default (el, expr, state, name) => {
 
 // bind event to target
 const on = (target, evt, origFn) => {
+  if (!origFn) return
+
   // ona..onb
   let ctxs = evt.split('..').map(e => {
     let ctx = { evt:'', target, test:()=>true };
@@ -281,18 +283,18 @@ const on = (target, evt, origFn) => {
   if (ctxs.length == 1) return addListener(origFn, ctxs[0])
 
   // events chain cycler
-  let off
-  const nextEvt = (fn, cur=0) => {
+  const onFn = (fn, cur=0) => {
+    let off
     let curListener = e => {
-      off();
-      if (typeof (fn = fn.call(target, e)) !== 'function') fn = ()=>{}
-      if (++cur < ctxs.length) nextEvt(fn, cur);
-      else nextEvt(origFn); // back to first event only if chain isn't stopped (by update)
+      if (cur) off(); // don't remove entry listener - we must keep chain entry always open
+      let nextFn = fn.call(target, e)
+      if (typeof nextFn !== 'function') nextFn = ()=>{}
+      if (cur+1 < ctxs.length) onFn(nextFn, !cur ? 1 : cur+1);
     }
     return off = addListener(curListener, ctxs[cur])
   }
-  nextEvt(origFn)
-  return () => off()
+  let rootOff = onFn(origFn)
+  return () => rootOff()
 
   // add listener applying the context
   function addListener(fn, {evt, target, test, defer, stop, prevent, ...opts} ) {

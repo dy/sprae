@@ -492,6 +492,7 @@ test('on: base', () => {
   el.dispatchEvent(new window.Event('x'));
   is(log.value, ['click','x','xx']);
 
+  console.log('make null')
   params.x = null;
   el.dispatchEvent(new window.Event('x'));
   is(log.value, ['click','x','xx']);
@@ -559,11 +560,11 @@ test('on: in-out side-effects', e => {
   el.dispatchEvent(new window.Event('in'));
   is(log, ['in','out','in'])
   el.dispatchEvent(new window.Event('in'));
-  is(log, ['in','out','in'])
+  is(log, ['in','out','in', 'in'])
   el.dispatchEvent(new window.Event('out'));
-  is(log, ['in','out','in','out'])
+  is(log, ['in','out','in','in','out','out'])
   el.dispatchEvent(new window.Event('out'));
-  is(log, ['in','out','in','out'])
+  is(log, ['in','out','in','in','out','out'])
 })
 
 test('on: chain of events', e => {
@@ -576,14 +577,44 @@ test('on: chain of events', e => {
   is(state.log, ['mousedown','mousemove'])
   el.dispatchEvent(new window.Event('mouseup'));
   is(state.log, ['mousedown','mousemove','mouseup'])
+  el.dispatchEvent(new window.Event('mouseup'));
+  is(state.log, ['mousedown','mousemove','mouseup'])
+  el.dispatchEvent(new window.Event('mousedown'));
+  is(state.log, ['mousedown','mousemove','mouseup','mousedown'])
+})
+
+test('on: parallel chains', e => {
+  let el = h`<div :onx..ony..onz="e=>('x',log.push(e.type),e=>('y',log.push(e.type),e=>('z',log.push(e.type))))"></div>`
+  let state = sprae(el, {log:[]})
+
+  console.log('emit x')
+  el.dispatchEvent(new window.Event('x'));
+  is(state.log, ['x'])
+  console.log('emit x')
+  el.dispatchEvent(new window.Event('x'));
+  is(state.log, ['x','x'])
+  console.log('emit y')
+  el.dispatchEvent(new window.Event('y'));
+  is(state.log, ['x','x','y','y'])
+  console.log('emit y')
+  el.dispatchEvent(new window.Event('y'));
+  is(state.log, ['x','x','y','y'])
+  console.log('emit z')
+  el.dispatchEvent(new window.Event('z'));
+  console.log('emit y')
+  el.dispatchEvent(new window.Event('y'));
+  is(state.log, ['x','x','y','y','z','z'])
+  el.dispatchEvent(new window.Event('z'));
+  is(state.log, ['x','x','y','y','z','z']);
+  el.dispatchEvent(new window.Event('x'));
+  is(state.log, ['x','x','y','y','z','z','x']);
 })
 
 test('on: state changes between chain of events', e => {
   let el = h`<x :on="{'x..y':fn}"></x>`
   let log = []
-  let state = sprae(el, {log, fn: () => (log.push('x1'),()=>log.push('y1'))})
-  console.log('emit x, x')
-  el.dispatchEvent(new window.Event('x'));
+  let state = sprae(el, {log, fn: () => (log.push('x1'), ()=>log.push('y1'))})
+  console.log('emit x')
   el.dispatchEvent(new window.Event('x'));
   is(log, ['x1'])
   console.log('update fn')
@@ -597,15 +628,14 @@ test('on: state changes between chain of events', e => {
   console.log('emit y, y')
   el.dispatchEvent(new window.Event('y'));
   el.dispatchEvent(new window.Event('y'));
-  is(log, ['x1'])
-  console.log('emit x, x')
+  is(log, ['x1', 'y1'])
+  console.log('emit x')
   el.dispatchEvent(new window.Event('x'));
-  el.dispatchEvent(new window.Event('x'));
-  is(log, ['x1','x2'])
+  is(log, ['x1','y1','x2'])
   console.log('emit y, y')
   el.dispatchEvent(new window.Event('y'));
   el.dispatchEvent(new window.Event('y'));
-  is(log, ['x1','x2','y2'])
+  is(log, ['x1','y1','x2','y2'])
 })
 
 test('on: once', e => {

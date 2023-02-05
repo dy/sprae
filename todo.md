@@ -46,3 +46,4 @@
 * [x] evt modifiers
   * [x] once, capture, passive
   * [x] ...rest
+* [x] parallel chains
