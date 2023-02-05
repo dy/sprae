@@ -497,3 +497,19 @@
 
   5. `:x="this.x=value"`
     + yepyepyep
+
+## [ ] Multiple chain events resolution:
+  * Consider
+  ```
+  :onclick..onclick="play"
+  :onkeydown.document.alt-space..onkeydown.document.alt-space="play"
+  ```
+  * When started by click and ended by alt-space, it doesn't clear the onclick
+  * We actually want here `:onclick:onkeydown.document.alt-space..onclick:onkeydown.document.alt-space`.
+    - this makes inconsistency of `..onclick` - colon is missing
+    - also it makes precedence of `:` and `..` unclear - what comes before what after.
+
+  ? Can we use `:onclick.toggle="play"`?
+    - it doesn't help with switch-over
+  ? Some 'or' character `:onclick--onkeydown`
+  ? We can redirect to main event, that's it

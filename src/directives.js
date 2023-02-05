@@ -158,7 +158,8 @@ secondary['class'] = (el, expr) => {
   let initClassName = el.className
   return (state) => {
     let v = evaluate(state)
-    el.className = initClassName + typeof v === 'string' ? v : (Array.isArray(v) ? v : Object.entries(v).map(([k,v])=>v?k:'')).filter(Boolean).join(' ')
+    let className = typeof v === 'string' ? v : (Array.isArray(v) ? v : Object.entries(v).map(([k,v])=>v?k:'')).filter(Boolean).join(' ')
+    el.className = (initClassName ? initClassName + ' ' : '') + className;
   }
 }
 
@@ -169,7 +170,10 @@ secondary['style'] = (el, expr) => {
   return (state) => {
     let v = evaluate(state)
     if (typeof v === 'string') el.setAttribute('style', initStyle + v)
-    else for (let k in v) el.style.setProperty(k, v[k])
+    else {
+      el.setAttribute('style', initStyle)
+      for (let k in v) el.style.setProperty(k, v[k])
+    }
   }
 }
 

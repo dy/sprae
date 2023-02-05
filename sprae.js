@@ -404,7 +404,7 @@ function signalStruct(values, proto) {
           },
           set(v2) {
             if (isObject(v2)) {
-              if (isObject(s2.value))
+              if (isObject(s2.value) && Object.keys(s2.value).join(" ") === Object.keys(v2).join(" "))
                 try {
                   Object.assign(s2.value, v2);
                   return;
@@ -620,7 +620,8 @@ secondary["class"] = (el, expr) => {
   let initClassName = el.className;
   return (state) => {
     let v2 = evaluate(state);
-    el.className = initClassName + typeof v2 === "string" ? v2 : (Array.isArray(v2) ? v2 : Object.entries(v2).map(([k, v3]) => v3 ? k : "")).filter(Boolean).join(" ");
+    let className = typeof v2 === "string" ? v2 : (Array.isArray(v2) ? v2 : Object.entries(v2).map(([k, v3]) => v3 ? k : "")).filter(Boolean).join(" ");
+    el.className = (initClassName ? initClassName + " " : "") + className;
   };
 };
 secondary["style"] = (el, expr) => {
@@ -632,9 +633,12 @@ secondary["style"] = (el, expr) => {
     let v2 = evaluate(state);
     if (typeof v2 === "string")
       el.setAttribute("style", initStyle + v2);
-    else
+    else {
+      el.setAttribute("style", initStyle);
+      console.log(v2);
       for (let k in v2)
         el.style.setProperty(k, v2[k]);
+    }
   };
 };
 secondary["text"] = (el, expr) => {

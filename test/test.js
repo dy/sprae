@@ -65,17 +65,24 @@ test('style', async () => {
 
   params.style = {'--x': 123}
   is(el.style.getPropertyValue('--x'), '123')
+
+  params.style = {top:'1px', bottom:'2px'}
+  is(el.outerHTML, `<x style="left: 1px; top: 1px; bottom: 2px;"></x>`)
+
+  params.style = {top:'2px'}
+  // FIXME
+  is(el.outerHTML, `<x style="left: 1px; top: 2px;"></x>`)
 })
 
 test('class', async () => {
-  let el = h`<x :class="a"></x><y :class="[b, c]"></y><z :class="{b:true, c:d}"></z>`
+  let el = h`<x class="base" :class="a"></x><y :class="[b, c]"></y><z :class="{b:true, c:d}"></z>`
   const c = signal('z')
   let params = sprae(el, {a:'x', b:'y', c, d:false});
-  is(el.outerHTML, `<x class="x"></x><y class="y z"></y><z class="b"></z>`);
+  is(el.outerHTML, `<x class="base x"></x><y class="y z"></y><z class="b"></z>`);
   params.d = true;
-  is(el.outerHTML, `<x class="x"></x><y class="y z"></y><z class="b c"></z>`);
+  is(el.outerHTML, `<x class="base x"></x><y class="y z"></y><z class="b c"></z>`);
   c.value = 'w'
-  is(el.outerHTML, `<x class="x"></x><y class="y w"></y><z class="b c"></z>`);
+  is(el.outerHTML, `<x class="base x"></x><y class="y w"></y><z class="b c"></z>`);
 })
 
 test('props: base', async () => {
