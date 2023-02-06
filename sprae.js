@@ -3,12 +3,12 @@ function i() {
   throw new Error("Cycle detected");
 }
 function t() {
-  if (!(n > 1)) {
+  if (!(s > 1)) {
     var i2, t2 = false;
     while (void 0 !== r) {
       var h2 = r;
       r = void 0;
-      s++;
+      n++;
       while (void 0 !== h2) {
         var o2 = h2.o;
         h2.o = void 0;
@@ -25,17 +25,17 @@ function t() {
         h2 = o2;
       }
     }
-    s = 0;
-    n--;
+    n = 0;
+    s--;
     if (t2)
       throw i2;
   } else
-    n--;
+    s--;
 }
 function h(i2) {
-  if (n > 0)
+  if (s > 0)
     return i2();
-  n++;
+  s++;
   try {
     return i2();
   } finally {
@@ -44,27 +44,30 @@ function h(i2) {
 }
 var o = void 0;
 var r = void 0;
-var n = 0;
 var s = 0;
+var n = 0;
 var f = 0;
 function v(i2) {
   if (void 0 !== o) {
     var t2 = i2.n;
     if (void 0 === t2 || t2.t !== o) {
-      o.s = t2 = { i: 0, S: i2, p: void 0, n: o.s, t: o, e: void 0, x: void 0, r: t2 };
+      t2 = { i: 0, S: i2, p: o.s, n: void 0, t: o, e: void 0, x: void 0, r: t2 };
+      if (void 0 !== o.s)
+        o.s.n = t2;
+      o.s = t2;
       i2.n = t2;
       if (32 & o.f)
         i2.S(t2);
       return t2;
     } else if (-1 === t2.i) {
       t2.i = 0;
-      if (void 0 !== t2.p) {
-        t2.p.n = t2.n;
-        if (void 0 !== t2.n)
-          t2.n.p = t2.p;
-        t2.p = void 0;
-        t2.n = o.s;
-        o.s.p = t2;
+      if (void 0 !== t2.n) {
+        t2.n.p = t2.p;
+        if (void 0 !== t2.p)
+          t2.p.n = t2.n;
+        t2.p = o.s;
+        t2.n = void 0;
+        o.s.n = t2;
         o.s = t2;
       }
       return t2;
@@ -89,21 +92,23 @@ e.prototype.S = function(i2) {
   }
 };
 e.prototype.U = function(i2) {
-  var t2 = i2.e, h2 = i2.x;
-  if (void 0 !== t2) {
-    t2.x = h2;
-    i2.e = void 0;
+  if (void 0 !== this.t) {
+    var t2 = i2.e, h2 = i2.x;
+    if (void 0 !== t2) {
+      t2.x = h2;
+      i2.e = void 0;
+    }
+    if (void 0 !== h2) {
+      h2.e = t2;
+      i2.x = void 0;
+    }
+    if (i2 === this.t)
+      this.t = h2;
   }
-  if (void 0 !== h2) {
-    h2.e = t2;
-    i2.x = void 0;
-  }
-  if (i2 === this.t)
-    this.t = h2;
 };
 e.prototype.subscribe = function(i2) {
   var t2 = this;
-  return b(function() {
+  return p(function() {
     var h2 = t2.value, o2 = 32 & this.f;
     this.f &= -33;
     try {
@@ -129,12 +134,12 @@ Object.defineProperty(e.prototype, "value", { get: function() {
   return this.v;
 }, set: function(h2) {
   if (h2 !== this.v) {
-    if (s > 100)
+    if (n > 100)
       i();
     this.v = h2;
     this.i++;
     f++;
-    n++;
+    s++;
     try {
       for (var o2 = this.t; void 0 !== o2; o2 = o2.x)
         o2.t.N();
@@ -159,22 +164,24 @@ function c(i2) {
       t2.r = h2;
     t2.S.n = t2;
     t2.i = -1;
+    if (void 0 === t2.n) {
+      i2.s = t2;
+      break;
+    }
   }
 }
 function a(i2) {
   var t2 = i2.s, h2 = void 0;
   while (void 0 !== t2) {
-    var o2 = t2.n;
+    var o2 = t2.p;
     if (-1 === t2.i) {
       t2.S.U(t2);
-      t2.n = void 0;
-    } else {
-      if (void 0 !== h2)
-        h2.p = t2;
-      t2.p = void 0;
-      t2.n = h2;
+      if (void 0 !== o2)
+        o2.n = t2.n;
+      if (void 0 !== t2.n)
+        t2.n.p = o2;
+    } else
       h2 = t2;
-    }
     t2.S.n = t2.r;
     if (void 0 !== t2.r)
       t2.r = void 0;
@@ -233,11 +240,13 @@ l.prototype.S = function(i2) {
   e.prototype.S.call(this, i2);
 };
 l.prototype.U = function(i2) {
-  e.prototype.U.call(this, i2);
-  if (void 0 === this.t) {
-    this.f &= -33;
-    for (var t2 = this.s; void 0 !== t2; t2 = t2.n)
-      t2.S.U(t2);
+  if (void 0 !== this.t) {
+    e.prototype.U.call(this, i2);
+    if (void 0 === this.t) {
+      this.f &= -33;
+      for (var t2 = this.s; void 0 !== t2; t2 = t2.n)
+        t2.S.U(t2);
+    }
   }
 };
 l.prototype.N = function() {
@@ -272,7 +281,7 @@ function y(i2) {
   var h2 = i2.u;
   i2.u = void 0;
   if ("function" == typeof h2) {
-    n++;
+    s++;
     var r2 = o;
     o = void 0;
     try {
@@ -305,14 +314,14 @@ function g(i2) {
     _(this);
   t();
 }
-function p(i2) {
+function b(i2) {
   this.x = i2;
   this.u = void 0;
   this.s = void 0;
   this.o = void 0;
   this.f = 32;
 }
-p.prototype.c = function() {
+b.prototype.c = function() {
   var i2 = this.S();
   try {
     if (!(8 & this.f) && void 0 !== this.x)
@@ -321,33 +330,38 @@ p.prototype.c = function() {
     i2();
   }
 };
-p.prototype.S = function() {
+b.prototype.S = function() {
   if (1 & this.f)
     i();
   this.f |= 1;
   this.f &= -9;
   y(this);
   c(this);
-  n++;
+  s++;
   var t2 = o;
   o = this;
   return g.bind(this, t2);
 };
-p.prototype.N = function() {
+b.prototype.N = function() {
   if (!(2 & this.f)) {
     this.f |= 2;
     this.o = r;
     r = this;
   }
 };
-p.prototype.d = function() {
+b.prototype.d = function() {
   this.f |= 8;
   if (!(1 & this.f))
     _(this);
 };
-function b(i2) {
-  var t2 = new p(i2);
-  t2.c();
+function p(i2) {
+  var t2 = new b(i2);
+  try {
+    t2.c();
+  } catch (i3) {
+    t2.d();
+    throw i3;
+  }
   return t2.d.bind(t2);
 }
 
@@ -941,7 +955,7 @@ function sprae(container, values) {
   for (let update of updates)
     if (update) {
       let teardown;
-      b(() => {
+      p(() => {
         if (typeof teardown === "function")
           teardown();
         teardown = update(state);
