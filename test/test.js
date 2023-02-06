@@ -69,7 +69,7 @@ test('style', async () => {
   params.style = {top:'1px', bottom:'2px'}
   is(el.outerHTML, `<x style="left: 1px; top: 1px; bottom: 2px;"></x>`)
 
-  params.style = {top:'2px'}
+  params.style = {top:'2px', bottom: null}
   // FIXME
   is(el.outerHTML, `<x style="left: 1px; top: 2px;"></x>`)
 })
