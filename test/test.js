@@ -751,6 +751,19 @@ test('on: throttle', async e => {
   is(state.log, ['x', 'x', 'x'])
 })
 
+test('on: toggle', async e => {
+  let el = h`<x :onx.toggle="e=>(log.push(1),e=>log.push(2))"></x>`
+  let state = sprae(el, {log:[]})
+  el.dispatchEvent(new window.KeyboardEvent('x'));
+  is(state.log, [1])
+  el.dispatchEvent(new window.KeyboardEvent('x'));
+  is(state.log, [1,2])
+  el.dispatchEvent(new window.KeyboardEvent('x'));
+  is(state.log, [1,2,1])
+  el.dispatchEvent(new window.KeyboardEvent('x'));
+  is(state.log, [1,2,1,2])
+})
+
 test.skip('on: nexttick', async e => {
   let el = h`<x :onkeydown.nexttick="e=>log.push(e.key)"></x>`
   let state = sprae(el, {log:[]})

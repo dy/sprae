@@ -177,6 +177,7 @@ Add event listeners.
 * `.prevent`, `.stop` – prevent default or stop propagation.
 * `.window`, `.document`, `.outside`, `.self` – specify event target.
 * `.throttle-<ms>`, `.debounce-<ms>` – defer function call with one of the methods.
+* `.toggle` – run function and its result in turn.
 * `.ctrl`, `.shift`, `.alt`, `.meta`, `.arrow`, `.enter`, `.escape`, `.tab`, `.space`, `.backspace`, `.delete`, `.digit`, `.letter`, `.character` – filter by [`event.key`](https://developer.mozilla.org/en-US/docs/Web/API/UI_Events/Keyboard_event_key_values).
 * `.ctrl-<key>, .alt-<key>, .meta-<key>, .shift-<key>` – key combinations, eg. `.ctrl-alt-delete` or `.meta-x`.
 * `.*` – any other modifier has no effect, but allows binding multiple handlers to same event (like jQuery event classes).

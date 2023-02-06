@@ -280,7 +280,7 @@ const on = (target, evt, origFn) => {
   });
 
   // single event bind
-  if (ctxs.length == 1) return addListener(origFn, ctxs[0])
+  if (ctxs.length == 1) return addListenerWithMods(origFn, ctxs[0])
 
   // events chain cycler
   const onFn = (fn, cur=0) => {
@@ -291,13 +291,13 @@ const on = (target, evt, origFn) => {
       if (typeof nextFn !== 'function') nextFn = ()=>{}
       if (cur+1 < ctxs.length) onFn(nextFn, !cur ? 1 : cur+1);
     }
-    return off = addListener(curListener, ctxs[cur])
+    return off = addListenerWithMods(curListener, ctxs[cur])
   }
   let rootOff = onFn(origFn)
   return () => rootOff()
 
   // add listener applying the context
-  function addListener(fn, {evt, target, test, defer, stop, prevent, ...opts} ) {
+  function addListenerWithMods(fn, {evt, target, test, defer, stop, prevent, ...opts} ) {
     if (defer) fn = defer(fn)
 
     let cb = e => test(e) && (
@@ -325,6 +325,8 @@ const mods = {
   // target
   window(ctx) { ctx.target = window },
   document(ctx) { ctx.target = document },
+
+  toggle(ctx) { ctx.defer = (fn, out) => (e => out ? (out.call?.(ctx.target, e), out=null) : (out = fn())) },
 
   throttle(ctx, limit) { ctx.defer = fn => throttle(fn, limit ? Number(limit) || 0 : 108) },
   debounce(ctx, wait) { ctx.defer = fn => debounce(fn, wait ? Number(wait) || 0 : 108) },

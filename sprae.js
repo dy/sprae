@@ -721,7 +721,7 @@ var on = (target, evt, origFn) => {
     return ctx;
   });
   if (ctxs.length == 1)
-    return addListener(origFn, ctxs[0]);
+    return addListenerWithMods(origFn, ctxs[0]);
   const onFn = (fn, cur = 0) => {
     let off;
     let curListener = (e2) => {
@@ -734,11 +734,11 @@ var on = (target, evt, origFn) => {
       if (cur + 1 < ctxs.length)
         onFn(nextFn, !cur ? 1 : cur + 1);
     };
-    return off = addListener(curListener, ctxs[cur]);
+    return off = addListenerWithMods(curListener, ctxs[cur]);
   };
   let rootOff = onFn(origFn);
   return () => rootOff();
-  function addListener(fn, { evt: evt2, target: target2, test, defer, stop, prevent, ...opts }) {
+  function addListenerWithMods(fn, { evt: evt2, target: target2, test, defer, stop, prevent, ...opts }) {
     if (defer)
       fn = defer(fn);
     let cb = (e2) => test(e2) && (stop && e2.stopPropagation(), prevent && e2.preventDefault(), fn.call(target2, e2));
@@ -768,6 +768,9 @@ var mods = {
   },
   document(ctx) {
     ctx.target = document;
+  },
+  toggle(ctx) {
+    ctx.defer = (fn, out) => (e2) => out ? (out.call?.(ctx.target, e2), out = null) : out = fn();
   },
   throttle(ctx, limit) {
     ctx.defer = (fn) => throttle(fn, limit ? Number(limit) || 0 : 108);
