@@ -56,6 +56,14 @@ test('common: comments', async () => {
   is(el.outerHTML, `<x></x>`)
 })
 
+test('common: newlines', async () => {
+  let el = h`<x :text="
+  x
+  "></x>`
+  sprae(el, {x:1})
+  is(el.outerHTML, `<x>1</x>`)
+})
+
 test('style', async () => {
   let el = h`<x style="left: 1px" :style="style"></x>`
   let params = sprae(el, {style: "top: 1px"})
@@ -437,6 +445,12 @@ test('each: keyed', async () => {
   state.xs = [3,3,3]
   is(el.textContent, '3')
   // is(el.firstChild, first)
+})
+
+test('each: wrapped source', async () => {
+  let el = h`<div><x :each="i in (x || 2)" :text="i"></x></div>`
+  sprae(el, {x:0})
+  is(el.innerHTML, `<x>1</x><x>2</x>`)
 })
 
 test.todo('each: unmounted elements remove listeners', async () => {

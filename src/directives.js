@@ -427,7 +427,7 @@ function parseExpr(el, expression, dir) {
           : expression;
 
     try {
-      evaluate = evaluatorMemo[expression] = new Function(`__scope`,`with (__scope) { return ${rightSideSafeExpression} };`)
+      evaluate = evaluatorMemo[expression] = new Function(`__scope`,`with (__scope) { return ${rightSideSafeExpression.trim()} };`)
     } catch ( e ) {
       return exprError(e, el, expression, dir)
     }

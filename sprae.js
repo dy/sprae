@@ -418,7 +418,7 @@ function signalStruct(values, proto) {
           },
           set(v2) {
             if (isObject(v2)) {
-              if (isObject(s2.value) && Object.keys(s2.value).join(" ") === Object.keys(v2).join(" "))
+              if (isObject(s2.value))
                 try {
                   Object.assign(s2.value, v2);
                   return;
@@ -872,7 +872,7 @@ function parseExpr(el, expression, dir) {
   if (!evaluate) {
     let rightSideSafeExpression = /^[\n\s]*if.*\(.*\)/.test(expression) || /\b(let|const)\s/.test(expression) ? `(() => { ${expression} })()` : expression;
     try {
-      evaluate = evaluatorMemo[expression] = new Function(`__scope`, `with (__scope) { return ${rightSideSafeExpression} };`);
+      evaluate = evaluatorMemo[expression] = new Function(`__scope`, `with (__scope) { return ${rightSideSafeExpression.trim()} };`);
     } catch (e2) {
       return exprError(e2, el, expression, dir);
     }

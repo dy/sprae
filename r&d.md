@@ -498,7 +498,7 @@
   5. `:x="this.x=value"`
     + yepyepyep
 
-## [ ] Multiple chain events resolution:
+## [x] Multiple chain events resolution -> redirect to main event for now
   * Consider
   ```
   :onclick..onclick="play"
@@ -512,4 +512,14 @@
   ? Can we use `:onclick.toggle="play"`?
     - it doesn't help with switch-over
   ? Some 'or' character `:onclick--onkeydown`
-  ? We can redirect to main event, that's it
+  ? We can redirect to main event, that's it for now
+
+## [ ] Insert content by reusing the node/template,
+
+  * Makes easy use of repeatable fragments, instead of web-components
+  + sort-of "detached" for-each
+  + reinforces :ref
+  ? does it replace element or puts a content?
+
+  1. :use="ref-id"
+  2. :
