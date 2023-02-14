@@ -139,7 +139,7 @@ Set any attribute value or run effect.
 <!-- Bulk properties -->
 <input :="{ id: name, name, type:'text', value }" />
 
-<!-- Effect (triggers any time foo or bar changes) -->
+<!-- Effects (trigger any time foo or bar changes) -->
 <div :="if (foo) bar()" :fx="void bar()" ></div>
 ```
 
