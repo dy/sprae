@@ -359,12 +359,12 @@
     ? maybe define setters such that when they're set
 
 2. Use sandboxed proxy
-  - tough evaluation
-  - implementation hiccups
-  - screwed up data
-  - no full protection
+  - tougher evaluation
+  - no full protection (Function.constructor)
   - relatively slow
   + does minimal catch
+  + allows scope control
+  + allows dynamic subscription to requested fields ( no need for preact/signals neither for signal-struct )
 
 ## [x] :onclick="direct code" ? -> no: immediately invoked.
 
