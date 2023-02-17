@@ -500,22 +500,35 @@ function domdiff_default(parent, a2, b2, before) {
   return b2;
 }
 
-// node_modules/primitive-pool/index.js
-var cache = {};
-var nullObj = {};
-var undefinedObj = {};
-var primitive_pool_default = (key) => {
-  if (key === null)
-    return nullObj;
-  if (key === void 0)
-    return undefinedObj;
-  if (typeof key === "number" || key instanceof Number)
-    return cache[key] || (cache[key] = new Number(key));
-  if (typeof key === "string" || key instanceof String)
-    return cache[key] || (cache[key] = new String(key));
-  if (typeof key === "boolean" || key instanceof Boolean)
-    return cache[key] || (cache[key] = new Boolean(key));
-  return key;
+// src/weakish-map.js
+var refs = /* @__PURE__ */ new WeakMap();
+var set = (value) => {
+  const ref = new WeakRef(value);
+  refs.set(value, ref);
+  return ref;
+};
+var get = (value) => refs.get(value) || set(value);
+var WeakishMap = class extends Map {
+  #registry = new FinalizationRegistry((key) => super.delete(key));
+  get size() {
+    return [...this].length;
+  }
+  constructor(entries = []) {
+    super();
+    for (const [key, value] of entries)
+      this.set(key, value);
+  }
+  get(key) {
+    return super.get(key)?.deref();
+  }
+  set(key, value) {
+    let ref = super.get(key);
+    if (ref)
+      this.#registry.unregister(ref);
+    ref = get(value);
+    this.#registry.register(value, key, ref);
+    return super.set(key, ref);
+  }
 };
 
 // src/directives.js
@@ -563,8 +576,8 @@ primary["each"] = (tpl, expr) => {
   const keyExpr = tpl.getAttribute(":key");
   const itemKey = keyExpr ? parseExpr(null, keyExpr) : null;
   tpl.removeAttribute(":key");
-  const scopes = /* @__PURE__ */ new WeakMap();
-  const itemEls = /* @__PURE__ */ new WeakMap();
+  const scopes = new WeakishMap();
+  const itemEls = new WeakishMap();
   let curEls = [];
   return (state) => {
     let list = evaluate(state);
@@ -581,8 +594,6 @@ primary["each"] = (tpl, expr) => {
     let newEls = [], elScopes = [];
     for (let [idx, item] of list) {
       let el, scope, key = itemKey?.({ [each[0]]: item, [each[1]]: idx });
-      if (isPrimitive(key))
-        key = primitive_pool_default(key);
       if (key == null)
         el = tpl.cloneNode(true);
       else
@@ -900,9 +911,6 @@ ${dir}=${expression ? `"${expression}"
 }
 function dashcase(str) {
   return str.replace(/[A-Z\u00C0-\u00D6\u00D8-\u00DE]/g, (match) => "-" + match.toLowerCase());
-}
-function isPrimitive(obj) {
-  return typeof obj === "string" || typeof obj === "boolean" || typeof obj === "number";
 }
 
 // src/core.js

@@ -447,7 +447,7 @@
       * onkey.after, onkey.microtask, onkey.defer, onkey.immediate
       * onkey.tick-1?
 
-## [x] Mods design -> use event modifiers, not props modifiers
+## [ ] Prop modifiers
 
   * [ ] Prop modifiers
     - overall seems code complication without much benefit
@@ -470,7 +470,8 @@
     * [ ] prop.fx="" - run effect without changing property
     * [ ] x.prop="xyz" - set element property, rather than attribute (following topic)
     * [ ] x.raf="abc" - run regularly?
-    * [ ] x.watch-xyz - update by change of any of the deps
+    * [ ] x.watch-a-b-c - update by change of any of the deps
+    * [ ] :x.always - update by _any_ dep change
 
 ## [x] Writing props on elements (like ones in :each) -> nah, just use `:x="this.x=abc"`
 

@@ -2,7 +2,7 @@
 import sprae from './core.js'
 import swap from './domdiff.js'
 import signalStruct from 'signal-struct'
-import p from 'primitive-pool'
+import { WeakishMap } from './weakish-map.js'
 
 // reserved directives - order matters!
 // primary initialized first by selector, secondary initialized by iterating attributes
@@ -69,8 +69,8 @@ primary['each'] = (tpl, expr) => {
   tpl.removeAttribute(':key')
 
 
-  const scopes = new WeakMap() // stores scope per data item
-  const itemEls = new WeakMap() // element per data item
+  const scopes = new WeakishMap() // stores scope per data item
+  const itemEls = new WeakishMap() // element per data item
   let curEls = []
 
   return (state) => {
@@ -88,7 +88,6 @@ primary['each'] = (tpl, expr) => {
 
     for (let [idx, item] of list) {
       let el, scope, key = itemKey?.({[each[0]]: item, [each[1]]: idx})
-      if (isPrimitive(key)) key = p(key); // singletonize key
 
       // we consider if data items are primitive, then nodes needn't be cached
       // since likely they're very simple to create
@@ -451,7 +450,3 @@ function exprError(error, element, expression, dir) {
 function dashcase(str) {
 	return str.replace(/[A-Z\u00C0-\u00D6\u00D8-\u00DE]/g, (match) => '-' + match.toLowerCase());
 };
-
-function isPrimitive(obj) {
-  return typeof obj === 'string' || typeof obj === 'boolean' || typeof obj === 'number'
-}
