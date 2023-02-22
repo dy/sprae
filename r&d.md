@@ -447,6 +447,8 @@
       * onkey.after, onkey.microtask, onkey.defer, onkey.immediate
       * onkey.tick-1?
 
+### [ ] onkey.unfocusable
+
 ## [ ] Prop modifiers
 
   * [ ] Prop modifiers

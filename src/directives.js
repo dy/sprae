@@ -106,7 +106,6 @@ primary['each'] = (tpl, expr) => {
       elScopes.push(scope)
     }
 
-    // swap is really fast & tiny
     swap(holder.parentNode, curEls, newEls, holder)
     curEls = newEls
 
@@ -421,8 +420,8 @@ function parseExpr(el, expression, dir) {
       // Support expressions starting with "if" statements like: "if (...) doSomething()"
       || /^[\n\s]*if.*\(.*\)/.test(expression)
       // Support expressions starting with "let/const" like: "let foo = 'bar'"
-      || /\b(let|const)\s/.test(expression)
-          ? `(() => { ${expression} })()`
+      || (/\b(let|const)\s/.test(expression) && !dir.startsWith(':on'))
+          ? `(() => {${expression}})()`
           : expression;
 
     try {

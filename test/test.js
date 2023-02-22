@@ -64,6 +64,13 @@ test('common: newlines', async () => {
   is(el.outerHTML, `<x>1</x>`)
 })
 
+test('common: const in on', async () => {
+  let el = h`<div :onx="() => {const x=1; y=x+1}"></div>`
+  let state = sprae(el, {y:0})
+  el.dispatchEvent(new CustomEvent('x'))
+  is(state.y, 2)
+})
+
 test('style', async () => {
   let el = h`<x style="left: 1px" :style="style"></x>`
   let params = sprae(el, {style: "top: 1px"})
@@ -113,7 +120,7 @@ test('props: multiprop', async () => {
 })
 
 // FIXME: this must work without return
-test.todo('props: calculation', async () => {
+test('props: calculation', async () => {
   let el = h`<x :x="let a = 5; return Array.from({length: x}, (_,i)=>i).join('')"></x>`
   let state = sprae(el, {x:3});
   is(el.outerHTML, `<x x="012"></x>`)
