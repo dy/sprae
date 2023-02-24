@@ -1,503 +1,114 @@
-// node_modules/@preact/signals-core/dist/signals-core.module.js
-function i() {
-  throw new Error("Cycle detected");
-}
-function t() {
-  if (!(s > 1)) {
-    var i2, t2 = false;
-    while (void 0 !== r) {
-      var h2 = r;
-      r = void 0;
-      n++;
-      while (void 0 !== h2) {
-        var o2 = h2.o;
-        h2.o = void 0;
-        h2.f &= -3;
-        if (!(8 & h2.f) && d(h2))
-          try {
-            h2.c();
-          } catch (h3) {
-            if (!t2) {
-              i2 = h3;
-              t2 = true;
-            }
-          }
-        h2 = o2;
-      }
+// node_modules/state-fx/fx-state.js
+var currentFx;
+var targetFxs = /* @__PURE__ */ new WeakMap();
+var targetProxy = /* @__PURE__ */ new WeakMap();
+var handler = {
+  get(target, prop) {
+    let value = target[prop];
+    if (target?.constructor?.prototype[prop])
+      return value;
+    if (currentFx) {
+      let propFxs = targetFxs.get(target);
+      if (!propFxs)
+        targetFxs.set(target, propFxs = {});
+      if (!propFxs[prop])
+        propFxs[prop] = [currentFx];
+      else if (!propFxs[prop].includes(currentFx))
+        propFxs[prop].push(currentFx);
     }
-    n = 0;
-    s--;
-    if (t2)
-      throw i2;
-  } else
-    s--;
-}
-function h(i2) {
-  if (s > 0)
-    return i2();
-  s++;
-  try {
-    return i2();
-  } finally {
-    t();
-  }
-}
-var o = void 0;
-var r = void 0;
-var s = 0;
-var n = 0;
-var f = 0;
-function v(i2) {
-  if (void 0 !== o) {
-    var t2 = i2.n;
-    if (void 0 === t2 || t2.t !== o) {
-      t2 = { i: 0, S: i2, p: o.s, n: void 0, t: o, e: void 0, x: void 0, r: t2 };
-      if (void 0 !== o.s)
-        o.s.n = t2;
-      o.s = t2;
-      i2.n = t2;
-      if (32 & o.f)
-        i2.S(t2);
-      return t2;
-    } else if (-1 === t2.i) {
-      t2.i = 0;
-      if (void 0 !== t2.n) {
-        t2.n.p = t2.p;
-        if (void 0 !== t2.p)
-          t2.p.n = t2.n;
-        t2.p = o.s;
-        t2.n = void 0;
-        o.s.n = t2;
-        o.s = t2;
-      }
-      return t2;
+    if (isObject(value) || Array.isArray(value)) {
+      let proxy = targetProxy.get(value);
+      if (!proxy)
+        targetProxy.set(value, proxy = new Proxy(value, handler));
+      return proxy;
     }
-  }
-}
-function e(i2) {
-  this.v = i2;
-  this.i = 0;
-  this.n = void 0;
-  this.t = void 0;
-}
-e.prototype.h = function() {
-  return true;
-};
-e.prototype.S = function(i2) {
-  if (this.t !== i2 && void 0 === i2.e) {
-    i2.x = this.t;
-    if (void 0 !== this.t)
-      this.t.e = i2;
-    this.t = i2;
-  }
-};
-e.prototype.U = function(i2) {
-  if (void 0 !== this.t) {
-    var t2 = i2.e, h2 = i2.x;
-    if (void 0 !== t2) {
-      t2.x = h2;
-      i2.e = void 0;
-    }
-    if (void 0 !== h2) {
-      h2.e = t2;
-      i2.x = void 0;
-    }
-    if (i2 === this.t)
-      this.t = h2;
-  }
-};
-e.prototype.subscribe = function(i2) {
-  var t2 = this;
-  return p(function() {
-    var h2 = t2.value, o2 = 32 & this.f;
-    this.f &= -33;
-    try {
-      i2(h2);
-    } finally {
-      this.f |= o2;
-    }
-  });
-};
-e.prototype.valueOf = function() {
-  return this.value;
-};
-e.prototype.toString = function() {
-  return this.value + "";
-};
-e.prototype.peek = function() {
-  return this.v;
-};
-Object.defineProperty(e.prototype, "value", { get: function() {
-  var i2 = v(this);
-  if (void 0 !== i2)
-    i2.i = this.i;
-  return this.v;
-}, set: function(h2) {
-  if (h2 !== this.v) {
-    if (n > 100)
-      i();
-    this.v = h2;
-    this.i++;
-    f++;
-    s++;
-    try {
-      for (var o2 = this.t; void 0 !== o2; o2 = o2.x)
-        o2.t.N();
-    } finally {
-      t();
-    }
-  }
-} });
-function u(i2) {
-  return new e(i2);
-}
-function d(i2) {
-  for (var t2 = i2.s; void 0 !== t2; t2 = t2.n)
-    if (t2.S.i !== t2.i || !t2.S.h() || t2.S.i !== t2.i)
+    return value;
+  },
+  set(target, prop, value, receiver) {
+    const prev = target[prop];
+    if (Object.is(prev, value))
       return true;
-  return false;
-}
-function c(i2) {
-  for (var t2 = i2.s; void 0 !== t2; t2 = t2.n) {
-    var h2 = t2.S.n;
-    if (void 0 !== h2)
-      t2.r = h2;
-    t2.S.n = t2;
-    t2.i = -1;
-    if (void 0 === t2.n) {
-      i2.s = t2;
-      break;
+    target[prop] = value;
+    let propFxs = targetFxs.get(target);
+    if (propFxs?.[prop]) {
+      for (let fx2 of propFxs[prop])
+        fx2.call();
     }
-  }
-}
-function a(i2) {
-  var t2 = i2.s, h2 = void 0;
-  while (void 0 !== t2) {
-    var o2 = t2.p;
-    if (-1 === t2.i) {
-      t2.S.U(t2);
-      if (void 0 !== o2)
-        o2.n = t2.n;
-      if (void 0 !== t2.n)
-        t2.n.p = o2;
-    } else
-      h2 = t2;
-    t2.S.n = t2.r;
-    if (void 0 !== t2.r)
-      t2.r = void 0;
-    t2 = o2;
-  }
-  i2.s = h2;
-}
-function l(i2) {
-  e.call(this, void 0);
-  this.x = i2;
-  this.s = void 0;
-  this.g = f - 1;
-  this.f = 4;
-}
-(l.prototype = new e()).h = function() {
-  this.f &= -3;
-  if (1 & this.f)
-    return false;
-  if (32 == (36 & this.f))
     return true;
-  this.f &= -5;
-  if (this.g === f)
-    return true;
-  this.g = f;
-  this.f |= 1;
-  if (this.i > 0 && !d(this)) {
-    this.f &= -2;
+  },
+  deleteProperty(target, prop) {
+    target[prop] = void 0;
+    delete target[prop];
     return true;
   }
-  var i2 = o;
-  try {
-    c(this);
-    o = this;
-    var t2 = this.x();
-    if (16 & this.f || this.v !== t2 || 0 === this.i) {
-      this.v = t2;
-      this.f &= -17;
-      this.i++;
-    }
-  } catch (i3) {
-    this.v = i3;
-    this.f |= 16;
-    this.i++;
-  }
-  o = i2;
-  a(this);
-  this.f &= -2;
-  return true;
 };
-l.prototype.S = function(i2) {
-  if (void 0 === this.t) {
-    this.f |= 36;
-    for (var t2 = this.s; void 0 !== t2; t2 = t2.n)
-      t2.S.S(t2);
-  }
-  e.prototype.S.call(this, i2);
+var state = (obj) => {
+  return new Proxy(obj, handler);
 };
-l.prototype.U = function(i2) {
-  if (void 0 !== this.t) {
-    e.prototype.U.call(this, i2);
-    if (void 0 === this.t) {
-      this.f &= -33;
-      for (var t2 = this.s; void 0 !== t2; t2 = t2.n)
-        t2.S.U(t2);
-    }
-  }
+var fx = (fn) => {
+  const call = () => {
+    let prev = currentFx;
+    currentFx = call;
+    fn();
+    currentFx = prev;
+  };
+  call();
+  return call;
 };
-l.prototype.N = function() {
-  if (!(2 & this.f)) {
-    this.f |= 6;
-    for (var i2 = this.t; void 0 !== i2; i2 = i2.x)
-      i2.t.N();
-  }
-};
-l.prototype.peek = function() {
-  if (!this.h())
-    i();
-  if (16 & this.f)
-    throw this.v;
-  return this.v;
-};
-Object.defineProperty(l.prototype, "value", { get: function() {
-  if (1 & this.f)
-    i();
-  var t2 = v(this);
-  this.h();
-  if (void 0 !== t2)
-    t2.i = this.i;
-  if (16 & this.f)
-    throw this.v;
-  return this.v;
-} });
-function w(i2) {
-  return new l(i2);
-}
-function y(i2) {
-  var h2 = i2.u;
-  i2.u = void 0;
-  if ("function" == typeof h2) {
-    s++;
-    var r2 = o;
-    o = void 0;
-    try {
-      h2();
-    } catch (t2) {
-      i2.f &= -2;
-      i2.f |= 8;
-      _(i2);
-      throw t2;
-    } finally {
-      o = r2;
-      t();
-    }
-  }
-}
-function _(i2) {
-  for (var t2 = i2.s; void 0 !== t2; t2 = t2.n)
-    t2.S.U(t2);
-  i2.x = void 0;
-  i2.s = void 0;
-  y(i2);
-}
-function g(i2) {
-  if (o !== this)
-    throw new Error("Out-of-order effect");
-  a(this);
-  o = i2;
-  this.f &= -2;
-  if (8 & this.f)
-    _(this);
-  t();
-}
-function b(i2) {
-  this.x = i2;
-  this.u = void 0;
-  this.s = void 0;
-  this.o = void 0;
-  this.f = 32;
-}
-b.prototype.c = function() {
-  var i2 = this.S();
-  try {
-    if (!(8 & this.f) && void 0 !== this.x)
-      this.u = this.x();
-  } finally {
-    i2();
-  }
-};
-b.prototype.S = function() {
-  if (1 & this.f)
-    i();
-  this.f |= 1;
-  this.f &= -9;
-  y(this);
-  c(this);
-  s++;
-  var t2 = o;
-  o = this;
-  return g.bind(this, t2);
-};
-b.prototype.N = function() {
-  if (!(2 & this.f)) {
-    this.f |= 2;
-    this.o = r;
-    r = this;
-  }
-};
-b.prototype.d = function() {
-  this.f |= 8;
-  if (!(1 & this.f))
-    _(this);
-};
-function p(i2) {
-  var t2 = new b(i2);
-  try {
-    t2.c();
-  } catch (i3) {
-    t2.d();
-    throw i3;
-  }
-  return t2.d.bind(t2);
-}
-
-// node_modules/sube/sube.js
-Symbol.observable ||= Symbol("observable");
-var observable = (arg) => arg && !!(arg[Symbol.observable] || arg[Symbol.asyncIterator] || arg.call && arg.set || arg.subscribe || arg.then);
-var registry = new FinalizationRegistry((unsub) => unsub.call?.());
-var unsubr = (sub) => sub && (() => sub.unsubscribe?.());
-var sube_default = (target, next, error, complete, stop, unsub) => target && (unsub = unsubr((target[Symbol.observable]?.() || target).subscribe?.(next, error, complete)) || target.set && target.call?.(stop, next) || (target.then?.((v2) => (!stop && next(v2), complete?.()), error) || (async (v2) => {
-  try {
-    for await (v2 of target) {
-      if (stop)
-        return;
-      next(v2);
-    }
-    complete?.();
-  } catch (err) {
-    error?.(err);
-  }
-})()) && ((_2) => stop = 1), registry.register(target, unsub), unsub);
-
-// node_modules/signal-struct/signal-struct.js
-var isSignal = (v2) => v2 && v2.peek;
-var isStruct = (v2) => v2 && v2[_struct];
-var _struct = Symbol("signal-struct");
-signalStruct.isStruct = isStruct;
-function signalStruct(values, proto) {
-  if (isStruct(values) && !proto)
-    return values;
-  if (isObject(values)) {
-    const state = Object.create(proto || Object.getPrototypeOf(values)), signals = {}, descs = Object.getOwnPropertyDescriptors(values);
-    for (let key in descs) {
-      let desc = descs[key];
-      if (desc.get) {
-        let s2 = signals[key] = w(desc.get.bind(state));
-        Object.defineProperty(state, key, {
-          get() {
-            return s2.value;
-          },
-          set: desc.set?.bind(state),
-          configurable: false,
-          enumerable: true
-        });
-      } else {
-        let value = desc.value;
-        let isObservable = observable(value), s2 = signals[key] = isSignal(value) ? value : u(
-          isObservable ? void 0 : isObject(value) ? Object.seal(signalStruct(value)) : Array.isArray(value) ? signalStruct(value) : value
-        );
-        if (isObservable)
-          sube_default(value, (v2) => s2.value = v2);
-        Object.defineProperty(state, key, {
-          get() {
-            return s2.value;
-          },
-          set(v2) {
-            if (isObject(v2)) {
-              if (isObject(s2.value))
-                try {
-                  Object.assign(s2.value, v2);
-                  return;
-                } catch (e2) {
-                }
-              s2.value = Object.seal(signalStruct(v2));
-            } else if (Array.isArray(v2))
-              s2.value = signalStruct(v2);
-            else
-              s2.value = v2;
-          },
-          enumerable: true,
-          configurable: false
-        });
-      }
-    }
-    Object.defineProperty(state, _struct, { configurable: false, enumerable: false, value: true });
-    return state;
-  }
-  if (Array.isArray(values) && !isStruct(values[0])) {
-    for (let i2 = 0; i2 < values.length; i2++)
-      values[i2] = signalStruct(values[i2]);
-  }
-  return values;
-}
-function isObject(v2) {
-  return v2 && v2.constructor === Object;
+function isObject(v) {
+  return v && v.constructor === Object;
 }
 
 // src/domdiff.js
-function domdiff_default(parent, a2, b2, before) {
+function domdiff_default(parent, a, b, before) {
   const aIdx = /* @__PURE__ */ new Map();
   const bIdx = /* @__PURE__ */ new Map();
-  let i2;
+  let i;
   let j;
-  for (i2 = 0; i2 < a2.length; i2++) {
-    aIdx.set(a2[i2], i2);
+  for (i = 0; i < a.length; i++) {
+    aIdx.set(a[i], i);
   }
-  for (i2 = 0; i2 < b2.length; i2++) {
-    bIdx.set(b2[i2], i2);
+  for (i = 0; i < b.length; i++) {
+    bIdx.set(b[i], i);
   }
-  for (i2 = j = 0; i2 !== a2.length || j !== b2.length; ) {
-    var aElm = a2[i2], bElm = b2[j];
+  for (i = j = 0; i !== a.length || j !== b.length; ) {
+    var aElm = a[i], bElm = b[j];
     if (aElm === null) {
-      i2++;
-    } else if (b2.length <= j) {
-      parent.removeChild(a2[i2]);
-      i2++;
-    } else if (a2.length <= i2) {
-      parent.insertBefore(bElm, a2[i2] || before);
+      i++;
+    } else if (b.length <= j) {
+      parent.removeChild(a[i]);
+      i++;
+    } else if (a.length <= i) {
+      parent.insertBefore(bElm, a[i] || before);
       j++;
     } else if (aElm === bElm) {
-      i2++;
+      i++;
       j++;
     } else {
       var curElmInNew = bIdx.get(aElm);
       var wantedElmInOld = aIdx.get(bElm);
       if (curElmInNew === void 0) {
-        parent.removeChild(a2[i2]);
-        i2++;
+        parent.removeChild(a[i]);
+        i++;
       } else if (wantedElmInOld === void 0) {
         parent.insertBefore(
           bElm,
-          a2[i2] || before
+          a[i] || before
         );
         j++;
       } else {
         parent.insertBefore(
-          a2[wantedElmInOld],
-          a2[i2] || before
+          a[wantedElmInOld],
+          a[i] || before
         );
-        a2[wantedElmInOld] = null;
-        if (wantedElmInOld > i2 + 1)
-          i2++;
+        a[wantedElmInOld] = null;
+        if (wantedElmInOld > i + 1)
+          i++;
         j++;
       }
     }
   }
-  return b2;
+  return b;
 }
 
 // src/weakish-map.js
@@ -552,12 +163,12 @@ primary["if"] = (el, expr) => {
       break;
   }
   el.replaceWith(cur = holder);
-  return (state) => {
-    let i2 = clauses.findIndex((f2) => f2(state));
-    if (els[i2] != cur) {
+  return (state2) => {
+    let i = clauses.findIndex((f) => f(state2));
+    if (els[i] != cur) {
       ;
-      (cur[_each] || cur).replaceWith(cur = els[i2] || holder);
-      sprae(cur, state);
+      (cur[_each] || cur).replaceWith(cur = els[i] || holder);
+      sprae(cur, state2);
     }
   };
 };
@@ -579,14 +190,14 @@ primary["each"] = (tpl, expr) => {
   const scopes = new WeakishMap();
   const itemEls = new WeakishMap();
   let curEls = [];
-  return (state) => {
-    let list = evaluate(state);
+  return (state2) => {
+    let list = evaluate(state2);
     if (!list)
       list = [];
     else if (typeof list === "number")
-      list = Array.from({ length: list }, (_2, i2) => [i2, i2 + 1]);
+      list = Array.from({ length: list }, (_, i) => [i, i + 1]);
     else if (Array.isArray(list))
-      list = list.map((item, i2) => [i2 + 1, item]);
+      list = list.map((item, i) => [i + 1, item]);
     else if (typeof list === "object")
       list = Object.entries(list);
     else
@@ -600,7 +211,7 @@ primary["each"] = (tpl, expr) => {
         (el = itemEls.get(key)) || itemEls.set(key, el = tpl.cloneNode(true));
       newEls.push(el);
       if (key == null || !(scope = scopes.get(key))) {
-        scope = signalStruct({ [each[0]]: item, [each[1]]: idx }, state);
+        scope = Object.create(state2, { [each[0]]: { value: item }, [each[1]]: { value: idx } });
         if (key != null)
           scopes.set(key, scope);
       } else
@@ -609,8 +220,8 @@ primary["each"] = (tpl, expr) => {
     }
     domdiff_default(holder.parentNode, curEls, newEls, holder);
     curEls = newEls;
-    for (let i2 = 0; i2 < newEls.length; i2++) {
-      sprae(newEls[i2], elScopes[i2]);
+    for (let i = 0; i < newEls.length; i++) {
+      sprae(newEls[i], elScopes[i]);
     }
   };
 };
@@ -632,20 +243,20 @@ function parseForExpression(expression) {
     ];
   return [item, "", items];
 }
-secondary["ref"] = (el, expr, state) => {
-  state[expr] = el;
+secondary["ref"] = (el, expr, state2) => {
+  state2[expr] = el;
 };
 secondary["id"] = (el, expr) => {
   let evaluate = parseExpr(el, expr, ":id");
-  const update = (v2) => el.id = v2 || v2 === 0 ? v2 : "";
-  return (state) => update(evaluate(state));
+  const update = (v) => el.id = v || v === 0 ? v : "";
+  return (state2) => update(evaluate(state2));
 };
 secondary["class"] = (el, expr) => {
   let evaluate = parseExpr(el, expr, ":class");
   let initClassName = el.className;
-  return (state) => {
-    let v2 = evaluate(state);
-    let className = typeof v2 === "string" ? v2 : (Array.isArray(v2) ? v2 : Object.entries(v2).map(([k, v3]) => v3 ? k : "")).filter(Boolean).join(" ");
+  return (state2) => {
+    let v = evaluate(state2);
+    let className = typeof v === "string" ? v : (Array.isArray(v) ? v : Object.entries(v).map(([k, v2]) => v2 ? k : "")).filter(Boolean).join(" ");
     el.className = [initClassName, className].filter(Boolean).join(" ");
   };
 };
@@ -654,28 +265,28 @@ secondary["style"] = (el, expr) => {
   let initStyle = el.getAttribute("style") || "";
   if (!initStyle.endsWith(";"))
     initStyle += "; ";
-  return (state) => {
-    let v2 = evaluate(state);
-    if (typeof v2 === "string")
-      el.setAttribute("style", initStyle + v2);
+  return (state2) => {
+    let v = evaluate(state2);
+    if (typeof v === "string")
+      el.setAttribute("style", initStyle + v);
     else {
       el.setAttribute("style", initStyle);
-      for (let k in v2)
-        el.style.setProperty(k, v2[k]);
+      for (let k in v)
+        el.style.setProperty(k, v[k]);
     }
   };
 };
 secondary["text"] = (el, expr) => {
   let evaluate = parseExpr(el, expr, ":text");
-  return (state) => {
-    let value = evaluate(state);
+  return (state2) => {
+    let value = evaluate(state2);
     el.textContent = value == null ? "" : value;
   };
 };
 secondary["data"] = (el, expr) => {
   let evaluate = parseExpr(el, expr, ":data");
-  return (state) => {
-    let value = evaluate(state);
+  return (state2) => {
+    let value = evaluate(state2);
     for (let key in value)
       el.dataset[key] = value[key];
   };
@@ -686,13 +297,13 @@ secondary["aria"] = (el, expr) => {
     for (let key in value)
       attr(el, "aria-" + dashcase(key), value[key] == null ? null : value[key] + "");
   };
-  return (state) => update(evaluate(state));
+  return (state2) => update(evaluate(state2));
 };
 secondary[""] = (el, expr) => {
   let evaluate = parseExpr(el, expr, ":");
   if (evaluate)
-    return (state) => {
-      let value = evaluate(state);
+    return (state2) => {
+      let value = evaluate(state2);
       for (let key in value)
         attr(el, dashcase(key), value[key]);
     };
@@ -706,12 +317,12 @@ secondary["value"] = (el, expr) => {
     el.value = value;
     el.selectedOptions[0]?.setAttribute("selected", "");
   } : (value) => el.value = value;
-  return (state) => update(evaluate(state));
+  return (state2) => update(evaluate(state2));
 };
 secondary["on"] = (el, expr) => {
   let evaluate = parseExpr(el, expr, ":on");
-  return (state) => {
-    let listeners = evaluate(state);
+  return (state2) => {
+    let listeners = evaluate(state2);
     let offs = [];
     for (let evt in listeners)
       offs.push(on(el, evt, listeners[evt]));
@@ -721,25 +332,25 @@ secondary["on"] = (el, expr) => {
     };
   };
 };
-var directives_default = (el, expr, state, name) => {
+var directives_default = (el, expr, state2, name) => {
   let evt = name.startsWith("on") && name.slice(2);
   let evaluate = parseExpr(el, expr, ":" + name);
   if (!evaluate)
     return;
   if (evt)
-    return (state2) => {
-      let value = evaluate(state2) || (() => {
+    return (state3) => {
+      let value = evaluate(state3) || (() => {
       });
       return on(el, evt, value);
     };
-  return (state2) => attr(el, name, evaluate(state2));
+  return (state3) => attr(el, name, evaluate(state3));
 };
 var on = (target, evt, origFn) => {
   if (!origFn)
     return;
-  let ctxs = evt.split("..").map((e2) => {
+  let ctxs = evt.split("..").map((e) => {
     let ctx = { evt: "", target, test: () => true };
-    ctx.evt = (e2.startsWith("on") ? e2.slice(2) : e2).replace(
+    ctx.evt = (e.startsWith("on") ? e.slice(2) : e).replace(
       /\.(\w+)?-?([-\w]+)?/g,
       (match, mod, param = "") => (ctx.test = mods[mod]?.(ctx, ...param.split("-")) || ctx.test, "")
     );
@@ -749,10 +360,10 @@ var on = (target, evt, origFn) => {
     return addListenerWithMods(origFn, ctxs[0]);
   const onFn = (fn, cur = 0) => {
     let off;
-    let curListener = (e2) => {
+    let curListener = (e) => {
       if (cur)
         off();
-      let nextFn = fn.call(target, e2);
+      let nextFn = fn.call(target, e);
       if (typeof nextFn !== "function")
         nextFn = () => {
         };
@@ -766,7 +377,7 @@ var on = (target, evt, origFn) => {
   function addListenerWithMods(fn, { evt: evt2, target: target2, test, defer, stop, prevent, ...opts }) {
     if (defer)
       fn = defer(fn);
-    let cb = (e2) => test(e2) && (stop && e2.stopPropagation(), prevent && e2.preventDefault(), fn.call(target2, e2));
+    let cb = (e) => test(e) && (stop && e.stopPropagation(), prevent && e.preventDefault(), fn.call(target2, e));
     target2.addEventListener(evt2, cb, opts);
     return () => target2.removeEventListener(evt2, cb, opts);
   }
@@ -795,7 +406,7 @@ var mods = {
     ctx.target = document;
   },
   toggle(ctx) {
-    ctx.defer = (fn, out) => (e2) => out ? (out.call?.(ctx.target, e2), out = null) : out = fn();
+    ctx.defer = (fn, out) => (e) => out ? (out.call?.(ctx.target, e), out = null) : out = fn();
   },
   throttle(ctx, limit) {
     ctx.defer = (fn) => throttle(fn, limit ? Number(limit) || 0 : 108);
@@ -803,21 +414,21 @@ var mods = {
   debounce(ctx, wait) {
     ctx.defer = (fn) => debounce(fn, wait ? Number(wait) || 0 : 108);
   },
-  outside: (ctx) => (e2) => {
+  outside: (ctx) => (e) => {
     let target = ctx.target;
-    if (target.contains(e2.target))
+    if (target.contains(e.target))
       return false;
-    if (e2.target.isConnected === false)
+    if (e.target.isConnected === false)
       return false;
     if (target.offsetWidth < 1 && target.offsetHeight < 1)
       return false;
     return true;
   },
-  self: (ctx) => (e2) => e2.target === ctx.target,
-  ctrl: (ctx, ...param) => (e2) => keys.ctrl(e2) && param.every((p2) => keys[p2] ? keys[p2](e2) : e2.key === p2),
-  shift: (ctx, ...param) => (e2) => keys.shift(e2) && param.every((p2) => keys[p2] ? keys[p2](e2) : e2.key === p2),
-  alt: (ctx, ...param) => (e2) => keys.alt(e2) && param.every((p2) => keys[p2] ? keys[p2](e2) : e2.key === p2),
-  meta: (ctx, ...param) => (e2) => keys.meta(e2) && param.every((p2) => keys[p2] ? keys[p2](e2) : e2.key === p2),
+  self: (ctx) => (e) => e.target === ctx.target,
+  ctrl: (ctx, ...param) => (e) => keys.ctrl(e) && param.every((p) => keys[p] ? keys[p](e) : e.key === p),
+  shift: (ctx, ...param) => (e) => keys.shift(e) && param.every((p) => keys[p] ? keys[p](e) : e.key === p),
+  alt: (ctx, ...param) => (e) => keys.alt(e) && param.every((p) => keys[p] ? keys[p](e) : e.key === p),
+  meta: (ctx, ...param) => (e) => keys.meta(e) && param.every((p) => keys[p] ? keys[p](e) : e.key === p),
   arrow: (ctx) => keys.arrow,
   enter: (ctx) => keys.enter,
   escape: (ctx) => keys.escape,
@@ -830,52 +441,52 @@ var mods = {
   character: (ctx) => keys.character
 };
 var keys = {
-  ctrl: (e2) => e2.ctrlKey || e2.key === "Control" || e2.key === "Ctrl",
-  shift: (e2) => e2.shiftKey || e2.key === "Shift",
-  alt: (e2) => e2.altKey || e2.key === "Alt",
-  meta: (e2) => e2.metaKey || e2.key === "Meta" || e2.key === "Command",
-  arrow: (e2) => e2.key.startsWith("Arrow"),
-  enter: (e2) => e2.key === "Enter",
-  escape: (e2) => e2.key.startsWith("Esc"),
-  tab: (e2) => e2.key === "Tab",
-  space: (e2) => e2.key === "\xA0" || e2.key === "Space" || e2.key === " ",
-  backspace: (e2) => e2.key === "Backspace",
-  delete: (e2) => e2.key === "Delete",
-  digit: (e2) => /^\d$/.test(e2.key),
-  letter: (e2) => /^[a-zA-Z]$/.test(e2.key),
-  character: (e2) => /^\S$/.test(e2.key)
+  ctrl: (e) => e.ctrlKey || e.key === "Control" || e.key === "Ctrl",
+  shift: (e) => e.shiftKey || e.key === "Shift",
+  alt: (e) => e.altKey || e.key === "Alt",
+  meta: (e) => e.metaKey || e.key === "Meta" || e.key === "Command",
+  arrow: (e) => e.key.startsWith("Arrow"),
+  enter: (e) => e.key === "Enter",
+  escape: (e) => e.key.startsWith("Esc"),
+  tab: (e) => e.key === "Tab",
+  space: (e) => e.key === "\xA0" || e.key === "Space" || e.key === " ",
+  backspace: (e) => e.key === "Backspace",
+  delete: (e) => e.key === "Delete",
+  digit: (e) => /^\d$/.test(e.key),
+  letter: (e) => /^[a-zA-Z]$/.test(e.key),
+  character: (e) => /^\S$/.test(e.key)
 };
 var throttle = (fn, limit) => {
-  let pause, planned, block = (e2) => {
+  let pause, planned, block = (e) => {
     pause = true;
     setTimeout(() => {
       pause = false;
       if (planned)
-        return planned = false, block(e2), fn(e2);
+        return planned = false, block(e), fn(e);
     }, limit);
   };
-  return (e2) => {
+  return (e) => {
     if (pause)
       return planned = true;
-    block(e2);
-    return fn(e2);
+    block(e);
+    return fn(e);
   };
 };
 var debounce = (fn, wait) => {
   let timeout;
-  return (e2) => {
+  return (e) => {
     clearTimeout(timeout);
     timeout = setTimeout(() => {
       timeout = null;
-      fn(e2);
+      fn(e);
     }, wait);
   };
 };
-var attr = (el, name, v2) => {
-  if (v2 == null || v2 === false)
+var attr = (el, name, v) => {
+  if (v == null || v === false)
     el.removeAttribute(name);
   else
-    el.setAttribute(name, v2 === true ? "" : typeof v2 === "number" || typeof v2 === "string" ? v2 : "");
+    el.setAttribute(name, v === true ? "" : typeof v === "number" || typeof v === "string" ? v : "");
 };
 var evaluatorMemo = {};
 function parseExpr(el, expression, dir) {
@@ -884,16 +495,16 @@ function parseExpr(el, expression, dir) {
     let rightSideSafeExpression = /^[\n\s]*if.*\(.*\)/.test(expression) || /\b(let|const)\s/.test(expression) && !dir.startsWith(":on") ? `(() => {${expression}})()` : expression;
     try {
       evaluate = evaluatorMemo[expression] = new Function(`__scope`, `with (__scope) { return ${rightSideSafeExpression.trim()} };`);
-    } catch (e2) {
-      return exprError(e2, el, expression, dir);
+    } catch (e) {
+      return exprError(e, el, expression, dir);
     }
   }
-  return (state) => {
+  return (state2) => {
     let result;
     try {
-      result = evaluate.call(el, state);
-    } catch (e2) {
-      return exprError(e2, el, expression, dir);
+      result = evaluate.call(el, state2);
+    } catch (e) {
+      return exprError(e, el, expression, dir);
     }
     return result;
   };
@@ -919,11 +530,11 @@ function sprae(container, values) {
   if (!container.children)
     return;
   if (memo.has(container)) {
-    let state2 = memo.get(container);
-    h(() => Object.assign(state2, values));
-    return state2;
+    let state3 = memo.get(container);
+    Object.assign(state3, values);
+    return state3;
   }
-  const state = signalStruct(values || {});
+  const state2 = state(values || {});
   const updates = [];
   const init = (el, parent = el.parentNode) => {
     for (let name in primary) {
@@ -931,16 +542,16 @@ function sprae(container, values) {
       if (el.hasAttribute?.(attrName)) {
         let expr = el.getAttribute(attrName);
         el.removeAttribute(attrName);
-        updates.push(primary[name](el, expr, state, name));
+        updates.push(primary[name](el, expr, state2, name));
         if (memo.has(el) || el.parentNode !== parent)
           return false;
       }
     }
     if (el.attributes) {
-      for (let i2 = 0; i2 < el.attributes.length; ) {
-        let attr2 = el.attributes[i2];
+      for (let i = 0; i < el.attributes.length; ) {
+        let attr2 = el.attributes[i];
         if (attr2.name[0] !== ":") {
-          i2++;
+          i++;
           continue;
         }
         el.removeAttribute(attr2.name);
@@ -948,30 +559,29 @@ function sprae(container, values) {
         let attrNames = attr2.name.slice(1).split(":");
         for (let attrName of attrNames) {
           let dir = secondary[attrName] || directives_default;
-          updates.push(dir(el, expr, state, attrName));
+          updates.push(dir(el, expr, state2, attrName));
           if (memo.has(el) || el.parentNode !== parent)
             return false;
         }
       }
     }
-    for (let i2 = 0, child; child = el.children[i2]; i2++) {
+    for (let i = 0, child; child = el.children[i]; i++) {
       if (init(child, el) === false)
-        i2--;
+        i--;
     }
   };
   init(container);
   for (let update of updates)
     if (update) {
       let teardown;
-      p(() => {
+      fx(() => {
         if (typeof teardown === "function")
           teardown();
-        teardown = update(state);
+        teardown = update(state2);
       });
     }
-  Object.seal(state);
-  memo.set(container, state);
-  return state;
+  memo.set(container, state2);
+  return state2;
 }
 
 // src/index.js
