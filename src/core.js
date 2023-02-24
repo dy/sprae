@@ -1,6 +1,5 @@
-import signalStruct from 'signal-struct';
+import { state as createState, fx } from 'state-fx';
 import defaultDirective, { primary, secondary } from './directives.js';
-import { effect, batch } from '@preact/signals-core'
 
 // sprae element: apply directives
 const memo = new WeakMap
@@ -8,12 +7,14 @@ export default function sprae(container, values) {
   if (!container.children) return
   if (memo.has(container)) {
     let state = memo.get(container)
-    batch(() => Object.assign(state, values))
+    // batch(() => Object.assign(state, values))
+    // FIXME: make batch here
+    Object.assign(state, values)
     return state
   }
 
   // signalStruct returns values if it's signalStruct already
-  const state = signalStruct(values || {});
+  const state = createState(values || {});
   const updates = []
 
   // init directives on element
@@ -64,13 +65,12 @@ export default function sprae(container, values) {
   // state is created after inits because directives can extend init values (expose refs etc)
   for (let update of updates) if (update) {
     let teardown
-    effect(() => {
+    fx(() => {
       if (typeof teardown === 'function') teardown()
       teardown = update(state)
     });
   }
 
-  Object.seal(state);
   memo.set(container, state);
 
   return state;

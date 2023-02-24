@@ -1,7 +1,7 @@
 // directives & parsing
 import sprae from './core.js'
 import swap from './domdiff.js'
-import signalStruct from 'signal-struct'
+import { state as createState ,fx} from 'state-fx'
 import { WeakishMap } from './weakish-map.js'
 
 // reserved directives - order matters!
@@ -97,7 +97,7 @@ primary['each'] = (tpl, expr) => {
       newEls.push(el)
 
       if (key == null || !(scope = scopes.get(key))) {
-        scope = signalStruct({[each[0]]: item, [each[1]]:idx}, state)
+        scope = Object.create(state, {[each[0]]: {value:item}, [each[1]]: {value: idx}})
         if (key != null) scopes.set(key, scope)
       }
       // need to explicitly set item to update existing children's values

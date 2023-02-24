@@ -7,7 +7,7 @@
   "type": "module",
   "dependencies": {
     "@preact/signals-core": "^1.2.3",
-    "signal-struct": "^1.10.0",
+    "state-fx": "^1.0.0",
     "swapdom": "^1.1.1"
   },
   "devDependencies": {

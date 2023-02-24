@@ -290,6 +290,7 @@ This way, for example, _@preact/signals_ or _rxjs_ can be connected directly byp
 </script>
 ```
 
+<!--
 **2.** Data supports signal values, which can be an alternative way to control template state:
 
 ```html
@@ -325,8 +326,9 @@ This way, for example, _@preact/signals_ or _rxjs_ can be connected directly byp
   });
 </script>
 ```
+-->
 
-**4.** Getters turn into computed values automatically (setters remain as is):
+**2.** Getters turn into computed values automatically (setters remain as is):
 
 ```html
 <div id="x-plus-y">
