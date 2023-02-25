@@ -871,7 +871,7 @@ test('ref: base', () => {
 })
 
 test('ref: with :each', () => {
-  let a = h`<y><x :ref="x" :each="item in items" :text="console.log('render text', x), log.push(x), item"/></y>`
+  let a = h`<y><x :ref="x" :each="item in items" :text="log.push(x), item"/></y>`
   let state = sprae(a, {log: [], items: [1,2]})
   is(a.innerHTML, `<x>1</x><x>2</x>`)
   is(state.log, [...a.children])
@@ -907,7 +907,7 @@ test(':: scope directives must come first', async () => {
   is(a.outerHTML, `<x>1</x>`)
 })
 
-test.todo('getters', async () => {
+test.skip('getters', async () => {
   let x = h`<x>
     <h2 :if="doubledCount > 10">YAY!</h2>
     <button :text="count" :on="{click:increment}"/>

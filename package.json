@@ -6,7 +6,7 @@
   "module": "src/index.js",
   "type": "module",
   "dependencies": {
-    "state-fx": "^1.1.0",
+    "staet": "^1.0.2",
     "swapdom": "^1.1.1"
   },
   "devDependencies": {

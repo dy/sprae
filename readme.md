@@ -22,6 +22,8 @@ Sprae defines attributes starting with `:` as directives:
 
 * `sprae` initializes subtree with data and immediately evaporates `:` attrs.
 * `state` is object reflecting current values, changing any of its props rerenders subtree.
+* To batch-update multiple properties `sprae` can be run repeatedly as: `sprae(container, newValues)`
+
 
 <!--
 <details>
@@ -248,81 +250,6 @@ Expose element to data scope with the `id`:
 
   // element is in the state
   state.text // <textarea></textarea>
-</script>
-```
-
-
-<!--
-
-### Reactivity
-
-_sprae_ is built on top of [_@preact/signals_](https://ghub.io/@preact/signals). That gives:
-
-* Expressions don't require explicit access to `.value` (see [signal-struct](https://github.com/dy/signal-struct))
-* Expressions support any reactive values in data (see [sube](https://github.com/dy/sube))
-* Updates happen minimally only when used values update
-* Subscription is weak and get disposed when element is disposed.
-
-Directive expressions are natively reactive, ie. data may contain any async/reactive values, such as:
-
-* _Promise_ / _Thenable_
-* _Observable_ / _Subject_ / _Subscribable_
-* _AsyncIterable_
-* _observ-*_
-* etc., see [sube](https://github.com/dy/sube/blob/main/README.md) for the full list.
-
-This way, for example, _@preact/signals_ or _rxjs_ can be connected directly bypassing subscription or reading value.
--->
-
-## Hints
-
-**1.** To batch-update state (avoid multiple DOM changes), rerun sprae with new state:
-
-```html
-<li :each="item, id in items" :key="id" :text="item"></li>
-
-<script type="module">
-  sprae(el, {items: ['foo', 'bar', 'baz']})
-  // <li>foo</li><li>bar</li><li>baz</li>
-
-  sprae(el, {items: ['foo', 'qux']})
-  // <li>foo</li><li>qux</li>
-</script>
-```
-
-<!--
-**2.** Data recognizes reactive values: _Promise_ / _Thenable_, _Observable_ / _Subscribable_, _AsyncIterable_, _Signal_ (etc., see [sube](https://github.com/dy/sube/blob/main/README.md)). This way, for example, _rxjs_ or _@preact/signals_ can be connected to template directly.
-
-```html
-<div :text="clicks">#</div> clicks
-
-<script type="module">
-  import sprae from 'sprae';
-  import { fromEvent, scan } from 'rxjs';
-  import signal from '@preact/signals-core';
-
-  const val = signal(1)
-  sprae(document, {
-    val,
-    clicks: fromEvent(document, 'click').pipe(scan((count) => count + 1, 0))
-  });
-</script>
-```
--->
-
-**2.** Getters turn into computed values automatically (setters remain as is):
-
-```html
-<div id="x-plus-y">
-  <span :text="x">x</span> + <span :text="y">y</span> = <span :text="z">z</span>
-</div>
-
-<script type="module">
-  import sprae from 'sprae';
-  let state = sprae(document, { x:1, y:1, get z() { return this.x + this.y } })
-
-  state.x = 2, state.y = 2
-  state.z // 4
 </script>
 ```
 

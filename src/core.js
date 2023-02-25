@@ -1,4 +1,4 @@
-import { state as createState, fx } from 'state-fx';
+import { state as createState, fx, batch } from 'staet';
 import defaultDirective, { primary, secondary } from './directives.js';
 
 // sprae element: apply directives
@@ -7,13 +7,17 @@ export default function sprae(container, values) {
   if (!container.children) return
   if (memo.has(container)) {
     let state = memo.get(container)
-    // batch(() => Object.assign(state, values))
-    // FIXME: make batch here
-    Object.assign(state, values)
+    batch(() => Object.assign(state, values))
     return state
   }
 
-  // signalStruct returns values if it's signalStruct already
+  // subscribe to reactives
+  // for (let prop in values) {
+  //   if (observable(values[prop])) {
+  //     let value = values[prop]; values[prop] = null
+  //     sube(value, value => state[prop] = value)
+  //   }
+  // }
   const state = createState(values || {});
   const updates = []
 

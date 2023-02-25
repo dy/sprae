@@ -1,5 +1,6 @@
-// node_modules/state-fx/fx-state.js
+// node_modules/staet/staet.js
 var currentFx;
+var currentBatch;
 var targetFxs = /* @__PURE__ */ new WeakMap();
 var targetProxy = /* @__PURE__ */ new WeakMap();
 var proxyTarget = /* @__PURE__ */ new WeakMap();
@@ -8,7 +9,7 @@ var handler = {
   has(target, prop) {
     return prop in target || parents.has(target) && prop in parents.get(target);
   },
-  get(target, prop, receiver) {
+  get(target, prop) {
     if (typeof prop === "symbol")
       return target[prop];
     else if (!(prop in target))
@@ -25,7 +26,7 @@ var handler = {
       else if (!propFxs[prop].includes(currentFx))
         propFxs[prop].push(currentFx);
     }
-    if (isObject(value) || Array.isArray(value)) {
+    if (value && value.constructor === Object || Array.isArray(value)) {
       let proxy = targetProxy.get(value);
       if (!proxy)
         targetProxy.set(value, proxy = new Proxy(value, handler));
@@ -42,11 +43,10 @@ var handler = {
     if (Object.is(prev, value))
       return true;
     target[prop] = value;
-    let propFxs = targetFxs.get(target);
-    if (propFxs?.[prop]) {
-      for (let fx2 of propFxs[prop])
-        fx2.call();
-    }
+    let propFxs = targetFxs.get(target)?.[prop];
+    if (propFxs)
+      for (let fx2 of propFxs)
+        currentBatch ? currentBatch.add(fx2) : fx2.call();
     return true;
   },
   deleteProperty(target, prop) {
@@ -78,9 +78,15 @@ var fx = (fn) => {
   call();
   return call;
 };
-function isObject(v) {
-  return v && v.constructor === Object;
-}
+var batch = (fn) => {
+  let prevBatch = currentBatch;
+  currentBatch = /* @__PURE__ */ new Set();
+  fn();
+  for (let fx2 of currentBatch)
+    fx2.call();
+  currentBatch.clear();
+  currentBatch = prevBatch;
+};
 
 // src/domdiff.js
 function domdiff_default(parent, a, b, before) {
@@ -556,7 +562,7 @@ function sprae(container, values) {
     return;
   if (memo.has(container)) {
     let state3 = memo.get(container);
-    Object.assign(state3, values);
+    batch(() => Object.assign(state3, values));
     return state3;
   }
   const state2 = state(values || {});
