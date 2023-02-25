@@ -47,7 +47,7 @@ primary['if'] = (el, expr) => {
 // :with must come before :each, but :if has primary importance
 primary['with'] = (el, expr, rootState) => {
   let evaluate = parseExpr(el, expr, 'with')
-  sprae(el, signalStruct(evaluate(rootState), rootState));
+  sprae(el, createState(evaluate(rootState), rootState));
 }
 
 const _each = Symbol(':each')
@@ -97,7 +97,7 @@ primary['each'] = (tpl, expr) => {
       newEls.push(el)
 
       if (key == null || !(scope = scopes.get(key))) {
-        scope = Object.create(state, {[each[0]]: {value:item}, [each[1]]: {value: idx}})
+        scope = createState({[each[0]]: item, [each[1]]: idx}, state)
         if (key != null) scopes.set(key, scope)
       }
       // need to explicitly set item to update existing children's values

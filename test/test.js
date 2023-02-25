@@ -290,7 +290,7 @@ test('each: array', async () => {
   is(el.innerHTML, '')
 })
 
-test.todo('each: object', async () => {
+test('each: object', async () => {
   // FIXME: in some conspicuous reason jsdom fails to update text nodes somehow
   let el = h`<p>
     <span :each="x,key in b" :text="[key,x]"></span>
@@ -308,7 +308,7 @@ test.todo('each: object', async () => {
   is(el.innerHTML, '')
 })
 
-test.todo('each: loop within loop', async () => {
+test('each: loop within loop', async () => {
   let el = h`<p>
     <x :each="b in c"><y :each="a in b" :text="a"></y></x>
   </p>`
@@ -328,7 +328,7 @@ test.todo('each: loop within loop', async () => {
   // is(el.innerHTML, '')
 })
 
-test.todo('each: reactive values', async () => {
+test.skip('each: reactive values', async () => {
   let el = h`<p>
     <span :each="a in b" :text="a"></span>
   </p>`
@@ -345,7 +345,7 @@ test.todo('each: reactive values', async () => {
   is(el.innerHTML, '')
 })
 
-test.todo('each: loop with condition', async () => {
+test('each: loop with condition', async () => {
   // NOTE: there doesn't seem to be much value in exactly that
   // also it creates confusion with :else directive
   // prohibitin that allows in-order directives init
@@ -364,7 +364,7 @@ test.todo('each: loop with condition', async () => {
   is(el.innerHTML, '')
 })
 
-test.todo('each: condition with loop', async () => {
+test('each: condition with loop', async () => {
   let el = h`<p>
   <span :if="c" :each="a in b" :text="a"></span>
   <span :else :text="c"></span>
@@ -384,7 +384,7 @@ test.todo('each: condition with loop', async () => {
   is(el.innerHTML, '<span>false</span>')
 })
 
-test.todo('each: loop within condition', async () => {
+test('each: loop within condition', async () => {
   let el = h`<p>
     <x :if="a==1"><y :each="i in a" :text="i"></y></x>
     <x :else :if="a==2"><y :each="i in a" :text="-i"></y></x>
@@ -399,7 +399,7 @@ test.todo('each: loop within condition', async () => {
   is(el.innerHTML, '')
 })
 
-test.todo('each: condition within loop', async () => {
+test('each: condition within loop', async () => {
   let el = h`<p>
     <x :each="a in b">
       <y :if="a==1" :text="'1:'+a"></y>
@@ -417,7 +417,7 @@ test.todo('each: condition within loop', async () => {
   is(el.innerHTML, '')
 })
 
-test.todo('each: next items have own "this", not single one', async () => {
+test('each: next items have own "this", not single one', async () => {
   // FIXME: let el = h`<x :each="x in 3"></x>`
   let el = h`<div><x :each="x in 3" :data="{x}" :x="log.push(x, this.dataset.x)"></x></div>`
   let log = []
@@ -425,7 +425,7 @@ test.todo('each: next items have own "this", not single one', async () => {
   is(state.log, [1,'1',2,'2',3,'3'])
 })
 
-test.todo('each: unkeyed', async () => {
+test('each: unkeyed', async () => {
   let el = h`<div><x :each="x in xs" :text="x"></x></div>`
   let state = sprae(el, {xs:[1,2,3]})
   is(el.children.length, 3)
@@ -439,7 +439,7 @@ test.todo('each: unkeyed', async () => {
   // is(el.firstChild, first)
 })
 
-test.todo('each: keyed', async () => {
+test('each: keyed', async () => {
   // keyed
   let el = h`<div><x :each="x in xs" :text="x" :key="x"></x></div>`
   let state = sprae(el, {xs:[1,2,3]})
@@ -454,17 +454,17 @@ test.todo('each: keyed', async () => {
   // is(el.firstChild, first)
 })
 
-test.todo('each: wrapped source', async () => {
+test('each: wrapped source', async () => {
   let el = h`<div><x :each="i in (x || 2)" :text="i"></x></div>`
   sprae(el, {x:0})
   is(el.innerHTML, `<x>1</x><x>2</x>`)
 })
 
-test.todo('each: unmounted elements remove listeners', async () => {
+test('each: unmounted elements remove listeners', async () => {
   // let's hope they get removed without memory leaks :')
 })
 
-test.todo('each: internal children get updated by state update, also: update by running again', () => {
+test('each: internal children get updated by state update, also: update by running again', () => {
   let el = h`<><x :each="item, idx in items" :text="item" :key="idx"></x></>`
   let state = sprae(el, { items: [1,2,3] })
   is(el.textContent, '123')
@@ -479,13 +479,13 @@ test.todo('each: internal children get updated by state update, also: update by 
   is(el.textContent, '123')
 })
 
-test.todo('each: :id and others must receive value from context', () => {
+test('each: :id and others must receive value from context', () => {
   let el = h`<div><x :id="idx" :each="item, idx in items"></x></div>`
   sprae(el, {items:[1,2,3]})
   is(el.innerHTML,`<x id="1"></x><x id="2"></x><x id="3"></x>`)
 })
 
-test.todo('each: key-based caching is in-sync with direct elements', () => {
+test('each: key-based caching is in-sync with direct elements', () => {
   let el = h`<ul><li :each="i in x" :key="i" :id="i"></li></ul>`
   let el2 = h`<ul><li :each="i in x" :id="i"></li></ul>`
   let state = sprae(el, {x:2})
