@@ -2,11 +2,20 @@
 var currentFx;
 var targetFxs = /* @__PURE__ */ new WeakMap();
 var targetProxy = /* @__PURE__ */ new WeakMap();
+var proxyTarget = /* @__PURE__ */ new WeakMap();
+var parents = /* @__PURE__ */ new WeakMap();
 var handler = {
-  get(target, prop) {
+  has(target, prop) {
+    return prop in target || parents.has(target) && prop in parents.get(target);
+  },
+  get(target, prop, receiver) {
+    if (typeof prop === "symbol")
+      return target[prop];
+    else if (!(prop in target))
+      return parents.get(target)?.[prop];
+    else if (Array.isArray(target) && prop in Array.prototype)
+      return target[prop];
     let value = target[prop];
-    if (target?.constructor?.prototype[prop])
-      return value;
     if (currentFx) {
       let propFxs = targetFxs.get(target);
       if (!propFxs)
@@ -24,7 +33,11 @@ var handler = {
     }
     return value;
   },
-  set(target, prop, value, receiver) {
+  set(target, prop, value) {
+    if (!(prop in target) && parents.has(target))
+      return parents.get(target)[prop] = value;
+    else if (Array.isArray(target) && prop in Array.prototype)
+      return target[prop] = value;
     const prev = target[prop];
     if (Object.is(prev, value))
       return true;
@@ -42,8 +55,18 @@ var handler = {
     return true;
   }
 };
-var state = (obj) => {
-  return new Proxy(obj, handler);
+var state = (obj, parent) => {
+  if (targetProxy.has(obj))
+    return targetProxy.get(obj);
+  if (proxyTarget.has(obj))
+    return obj;
+  let proxy = new Proxy(obj, handler);
+  targetProxy.set(obj, proxy);
+  proxyTarget.set(proxy, obj);
+  if (parent) {
+    parents.set(obj, state(parent));
+  }
+  return proxy;
 };
 var fx = (fn) => {
   const call = () => {
@@ -174,7 +197,8 @@ primary["if"] = (el, expr) => {
 };
 primary["with"] = (el, expr, rootState) => {
   let evaluate = parseExpr(el, expr, "with");
-  sprae(el, signalStruct(evaluate(rootState), rootState));
+  let state2 = state(evaluate(rootState), rootState);
+  sprae(el, state2);
 };
 var _each = Symbol(":each");
 primary["each"] = (tpl, expr) => {
@@ -187,6 +211,7 @@ primary["each"] = (tpl, expr) => {
   const keyExpr = tpl.getAttribute(":key");
   const itemKey = keyExpr ? parseExpr(null, keyExpr) : null;
   tpl.removeAttribute(":key");
+  const refExpr = tpl.getAttribute(":ref");
   const scopes = new WeakishMap();
   const itemEls = new WeakishMap();
   let curEls = [];
@@ -211,7 +236,7 @@ primary["each"] = (tpl, expr) => {
         (el = itemEls.get(key)) || itemEls.set(key, el = tpl.cloneNode(true));
       newEls.push(el);
       if (key == null || !(scope = scopes.get(key))) {
-        scope = Object.create(state2, { [each[0]]: { value: item }, [each[1]]: { value: idx } });
+        scope = state({ [each[0]]: item, [refExpr || ""]: null, [each[1]]: idx }, state2);
         if (key != null)
           scopes.set(key, scope);
       } else
@@ -516,7 +541,7 @@ function exprError(error, element, expression, dir) {
 ${dir}=${expression ? `"${expression}"
 
 ` : ""}`, element);
-  setTimeout(() => {
+  queueMicrotask(() => {
     throw error;
   }, 0);
 }
