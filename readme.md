@@ -291,29 +291,7 @@ This way, for example, _@preact/signals_ or _rxjs_ can be connected directly byp
 ```
 
 <!--
-**2.** Data supports signal values, which can be an alternative way to control template state:
-
-```html
-<div id="done" :text="loading ? 'loading' : result">...</div>
-
-<script type="module">
-  import sprae from 'sprae';
-  import { signal } from '@preact/signals';
-
-  // <div id="done">...</div>
-
-  const loading = signal(true), result = signal(false);
-  sprae(done, { loading, result })
-  setTimeout(() => (loading.value = true, result.value = 'done'), 1000)
-
-  // <div id="done">loading</div>
-
-  // ... 1s after
-  // <div id="done">done</div>
-</script>
-```
-
-**3.** Data recognizes reactive values as inputs as well: _Promise_ / _Thenable_, _Observable_ / _Subscribable_, _AsyncIterable_ (etc., see [sube](https://github.com/dy/sube/blob/main/README.md)). This way, for example, _rxjs_ can be connected to template directly.
+**2.** Data recognizes reactive values: _Promise_ / _Thenable_, _Observable_ / _Subscribable_, _AsyncIterable_, _Signal_ (etc., see [sube](https://github.com/dy/sube/blob/main/README.md)). This way, for example, _rxjs_ or _@preact/signals_ can be connected to template directly.
 
 ```html
 <div :text="clicks">#</div> clicks
@@ -321,7 +299,11 @@ This way, for example, _@preact/signals_ or _rxjs_ can be connected directly byp
 <script type="module">
   import sprae from 'sprae';
   import { fromEvent, scan } from 'rxjs';
+  import signal from '@preact/signals-core';
+
+  const val = signal(1)
   sprae(document, {
+    val,
     clicks: fromEvent(document, 'click').pipe(scan((count) => count + 1, 0))
   });
 </script>

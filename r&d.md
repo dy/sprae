@@ -320,7 +320,7 @@
   + it has better control over serialization
   + `:onchange:oninput="e=>xyz"` is very good
 
-## [ ] Sandbox? -> too complex for now. Waiting for use-cases
+## [x] Sandbox? -> we need it anyways via Proxy.
 
 1. Use subscript?
   + solves access to any internal signals on syntactic level
@@ -365,6 +365,7 @@
   + does minimal catch
   + allows scope control
   + allows dynamic subscription to requested fields ( no need for preact/signals neither for signal-struct )
+  + we anyways need sandbox even in case of subscript
 
 ## [x] :onclick="direct code" ? -> no: immediately invoked.
 

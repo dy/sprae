@@ -38,7 +38,7 @@
 * [x] :if :ref, :if :with -> context setters must come first always
 * [x] :style="{'--x':value}"
 * [x] :onkeydown.ctrl-alt-D
-* [ ] debounce state updates to next tick? Ie. state is updated straight away but rerendered after?
+* [ ] postpone prop updates to next tick? Ie. state is updated straight away but rerendered after?
 * [ ] frameworks benchmark
 * [ ] examples
   * [x] todomvc
@@ -47,3 +47,4 @@
   * [x] once, capture, passive
   * [x] ...rest
 * [x] parallel chains
+* [ ] Sandbox globals

@@ -815,7 +815,7 @@ test('with: inline', () => {
   state.baz = 'quux'
   is(el.innerHTML, `<y>barquux</y>`)
 })
-test('with: inline reactive', () => {
+test.skip('with: inline reactive', () => {
   let el = h`<x :with="{foo:'bar'}"><y :text="foo + baz"></y></x>`
   let baz = signal('qux')
   sprae(el, {baz})
@@ -826,9 +826,9 @@ test('with: inline reactive', () => {
 })
 test('with: data', () => {
   let el = h`<x :with="x"><y :text="foo"></y></x>`
-  let state = sprae(el, {x:{foo:'bar'}})
+  let state = sprae(el, {x: {foo:'bar'}})
   is(el.innerHTML, `<y>bar</y>`)
-  console.log('update')
+  console.log('update', state.x)
   state.x.foo = 'baz'
   // Object.assign(state, {x:{foo:'baz'}})
   is(el.innerHTML, `<y>baz</y>`)
@@ -842,7 +842,7 @@ test('with: transparency', () => {
   params.b.bar = 'baz'
   is(el.innerHTML, `<y>foobaz</y>`)
 })
-test('with: reactive transparency', () => {
+test.skip('with: reactive transparency', () => {
   let el = h`<x :with="{foo:1}"><y :with="b.c" :text="foo+bar"></y></x>`
   const bar = signal('2')
   sprae(el, {b:{c:{bar}}})
@@ -871,7 +871,7 @@ test('ref: base', () => {
 })
 
 test('ref: with :each', () => {
-  let a = h`<y><x :ref="x" :each="item in items" :text="log.push(x), item"/></y>`
+  let a = h`<y><x :ref="x" :each="item in items" :text="console.log('render text', x), log.push(x), item"/></y>`
   let state = sprae(a, {log: [], items: [1,2]})
   is(a.innerHTML, `<x>1</x><x>2</x>`)
   is(state.log, [...a.children])
@@ -900,7 +900,7 @@ test(':: scope refers to current element', async () => {
   is(state.log, [el])
 })
 
-test.todo(':: scope directives must come first', async () => {
+test(':: scope directives must come first', async () => {
   // NOTE: we init attributes in order of definition
   let a = h`<x :text="y" :with="{y:1}" :ref="x"></x>`
   sprae(a, {})

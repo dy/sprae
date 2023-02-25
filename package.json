@@ -6,8 +6,7 @@
   "module": "src/index.js",
   "type": "module",
   "dependencies": {
-    "@preact/signals-core": "^1.2.3",
-    "state-fx": "^1.0.0",
+    "state-fx": "^1.1.0",
     "swapdom": "^1.1.1"
   },
   "devDependencies": {

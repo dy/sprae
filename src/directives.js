@@ -1,7 +1,7 @@
 // directives & parsing
 import sprae from './core.js'
 import swap from './domdiff.js'
-import { state as createState ,fx} from 'state-fx'
+import { state as createState} from 'state-fx'
 import { WeakishMap } from './weakish-map.js'
 
 // reserved directives - order matters!
@@ -47,7 +47,8 @@ primary['if'] = (el, expr) => {
 // :with must come before :each, but :if has primary importance
 primary['with'] = (el, expr, rootState) => {
   let evaluate = parseExpr(el, expr, 'with')
-  sprae(el, createState(evaluate(rootState), rootState));
+  let state = createState(evaluate(rootState), rootState)
+  sprae(el, state);
 }
 
 const _each = Symbol(':each')
@@ -68,6 +69,7 @@ primary['each'] = (tpl, expr) => {
   const itemKey = keyExpr ? parseExpr(null, keyExpr) : null;
   tpl.removeAttribute(':key')
 
+  const refExpr = tpl.getAttribute(':ref');
 
   const scopes = new WeakishMap() // stores scope per data item
   const itemEls = new WeakishMap() // element per data item
@@ -97,7 +99,7 @@ primary['each'] = (tpl, expr) => {
       newEls.push(el)
 
       if (key == null || !(scope = scopes.get(key))) {
-        scope = createState({[each[0]]: item, [each[1]]: idx}, state)
+        scope = createState({[each[0]]: item, [refExpr||'']: null, [each[1]]: idx}, state)
         if (key != null) scopes.set(key, scope)
       }
       // need to explicitly set item to update existing children's values
@@ -443,7 +445,7 @@ function parseExpr(el, expression, dir) {
 function exprError(error, element, expression, dir) {
   Object.assign( error, { element, expression } )
   console.warn(`∴ ${error.message}\n\n${dir}=${ expression ? `"${expression}"\n\n` : '' }`, element)
-  setTimeout(() => { throw error }, 0)
+  queueMicrotask(() => { throw error }, 0)
 }
 
 function dashcase(str) {
