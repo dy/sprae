@@ -5,6 +5,8 @@ import {tick, time} from 'wait-please'
 import sprae from '../src/index.js'
 import h from 'hyperf'
 
+import './state.js'
+
 Object.defineProperty(DocumentFragment.prototype, 'outerHTML', {
   get() {
     let s = ''

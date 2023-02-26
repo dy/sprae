@@ -1,4 +1,4 @@
-import { state as createState, fx, batch } from 'staet';
+import { state as createState, fx, batch } from './state.js';
 import defaultDirective, { primary, secondary } from './directives.js';
 
 // sprae element: apply directives

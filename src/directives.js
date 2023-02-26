@@ -1,7 +1,7 @@
 // directives & parsing
 import sprae from './core.js'
 import swap from './domdiff.js'
-import { state as createState} from 'staet'
+import { state as createState} from './state.js'
 import { WeakishMap } from './weakish-map.js'
 
 // reserved directives - order matters!

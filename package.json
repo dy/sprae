@@ -6,7 +6,6 @@
   "module": "src/index.js",
   "type": "module",
   "dependencies": {
-    "staet": "^1.0.2",
     "swapdom": "^1.1.1"
   },
   "devDependencies": {
@@ -15,6 +14,7 @@
     "esbuild": "^0.15.14",
     "hyperf": "^1.5.0",
     "jsdom": "^21.1.0",
+    "signal-struct": "^1.10.0",
     "terser": "^5.15.1",
     "tst": "^7.1.1",
     "usignal": "^0.8.9",
