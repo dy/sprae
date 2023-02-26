@@ -4,17 +4,27 @@ var currentBatch;
 var targetFxs = /* @__PURE__ */ new WeakMap();
 var targetProxy = /* @__PURE__ */ new WeakMap();
 var proxyTarget = /* @__PURE__ */ new WeakMap();
-var parents = /* @__PURE__ */ new WeakMap();
+var _parent = Symbol("parent");
+var sandbox = {
+  Array,
+  Object,
+  Number,
+  String,
+  Boolean,
+  Function,
+  Date,
+  console
+};
 var handler = {
   has(target, prop) {
-    return prop in target || parents.has(target) && prop in parents.get(target);
+    return true;
   },
   get(target, prop) {
     if (typeof prop === "symbol")
       return target[prop];
-    else if (!(prop in target))
-      return parents.get(target)?.[prop];
-    else if (Array.isArray(target) && prop in Array.prototype)
+    if (!(prop in target))
+      return target[_parent]?.[prop] ?? sandbox[prop];
+    if (Array.isArray(target) && prop in Array.prototype)
       return target[prop];
     let value = target[prop];
     if (currentFx) {
@@ -35,9 +45,9 @@ var handler = {
     return value;
   },
   set(target, prop, value) {
-    if (!(prop in target) && parents.has(target))
-      return parents.get(target)[prop] = value;
-    else if (Array.isArray(target) && prop in Array.prototype)
+    if (!(prop in target) && target[_parent] && prop in target[_parent])
+      return target[_parent][prop] = value;
+    if (Array.isArray(target) && prop in Array.prototype)
       return target[prop] = value;
     const prev = target[prop];
     if (Object.is(prev, value))
@@ -64,7 +74,7 @@ var state = (obj, parent) => {
   targetProxy.set(obj, proxy);
   proxyTarget.set(proxy, obj);
   if (parent) {
-    parents.set(obj, state(parent));
+    obj[_parent] = state(parent);
   }
   return proxy;
 };
@@ -203,7 +213,8 @@ primary["if"] = (el, expr) => {
 };
 primary["with"] = (el, expr, rootState) => {
   let evaluate = parseExpr(el, expr, "with");
-  let state2 = state(evaluate(rootState), rootState);
+  const localState = evaluate(rootState);
+  let state2 = state(localState, rootState);
   sprae(el, state2);
 };
 var _each = Symbol(":each");
