@@ -27,7 +27,7 @@
   * [x] to avoid extending signal-struct, we must collect state data before, and call updates after for extended state
 * [x] optimization: replace element-props with direct (better) setters
   * [x] Make sure `false` gets serialized, not removes attr
-* [ ] Sandbox expressions: no global, no "scope" object name, no "arguments"
+* [x] Sandbox expressions: no global, no "scope" object name, no "arguments"
 * ~~[x] report usignal problem~~ author is not really interested
 * [x] `this` doesn't refer to element/scope in event handlers
 * [x] :text="" empty values shouldn't throw
@@ -38,12 +38,12 @@
 * [x] :if :ref, :if :with -> context setters must come first always
 * [x] :style="{'--x':value}"
 * [x] :onkeydown.ctrl-alt-D
-* [ ] debounce state updates to next tick? Ie. state is updated straight away but rerendered after?
 * [ ] frameworks benchmark
-* [ ] examples
+* [x] examples
   * [x] todomvc
   * [x] waveplay
 * [x] evt modifiers
   * [x] once, capture, passive
   * [x] ...rest
 * [x] parallel chains
+* [x] Sandbox

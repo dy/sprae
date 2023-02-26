@@ -1,7 +1,7 @@
 // directives & parsing
 import sprae from './core.js'
 import swap from './domdiff.js'
-import signalStruct from 'signal-struct'
+import { state as createState} from './state.js'
 import { WeakishMap } from './weakish-map.js'
 
 // reserved directives - order matters!
@@ -47,7 +47,10 @@ primary['if'] = (el, expr) => {
 // :with must come before :each, but :if has primary importance
 primary['with'] = (el, expr, rootState) => {
   let evaluate = parseExpr(el, expr, 'with')
-  sprae(el, signalStruct(evaluate(rootState), rootState));
+  const localState = evaluate(rootState)
+  let state = createState(localState, rootState)
+  // console.log(123, state.foo, state.bar)
+  sprae(el, state);
 }
 
 const _each = Symbol(':each')
@@ -68,6 +71,7 @@ primary['each'] = (tpl, expr) => {
   const itemKey = keyExpr ? parseExpr(null, keyExpr) : null;
   tpl.removeAttribute(':key')
 
+  const refExpr = tpl.getAttribute(':ref');
 
   const scopes = new WeakishMap() // stores scope per data item
   const itemEls = new WeakishMap() // element per data item
@@ -97,7 +101,7 @@ primary['each'] = (tpl, expr) => {
       newEls.push(el)
 
       if (key == null || !(scope = scopes.get(key))) {
-        scope = signalStruct({[each[0]]: item, [each[1]]:idx}, state)
+        scope = createState({[each[0]]: item, [refExpr||'']: null, [each[1]]: idx}, state)
         if (key != null) scopes.set(key, scope)
       }
       // need to explicitly set item to update existing children's values
@@ -177,7 +181,6 @@ secondary['style'] = (el, expr) => {
 
 secondary['text'] = (el, expr) => {
   let evaluate = parseExpr(el, expr, ':text')
-
   return (state) => {
     let value = evaluate(state)
     el.textContent = value == null ? '' : value;
@@ -443,7 +446,7 @@ function parseExpr(el, expression, dir) {
 function exprError(error, element, expression, dir) {
   Object.assign( error, { element, expression } )
   console.warn(`∴ ${error.message}\n\n${dir}=${ expression ? `"${expression}"\n\n` : '' }`, element)
-  setTimeout(() => { throw error }, 0)
+  queueMicrotask(() => { throw error }, 0)
 }
 
 function dashcase(str) {

@@ -320,7 +320,7 @@
   + it has better control over serialization
   + `:onchange:oninput="e=>xyz"` is very good
 
-## [ ] Sandbox? -> too complex for now. Waiting for use-cases
+## [x] Sandbox? -> we need it anyways via Proxy, so yes
 
 1. Use subscript?
   + solves access to any internal signals on syntactic level
@@ -365,6 +365,7 @@
   + does minimal catch
   + allows scope control
   + allows dynamic subscription to requested fields ( no need for preact/signals neither for signal-struct )
+  + we anyways need sandbox even in case of subscript
 
 ## [x] :onclick="direct code" ? -> no: immediately invoked.
 
@@ -451,29 +452,28 @@
 
 ## [ ] Prop modifiers
 
-  * [ ] Prop modifiers
-    - overall seems code complication without much benefit
-    * [ ] value.bind? value.watch?
-      - let's wait for use-case: value can be too big to set it every time
-    * [ ] prop.reflect, prop.observe
-      - let's wait for use-case
-    * [ ] prop.boolean, .number, .string, .array, .object
-      - let's wait for use-case
-    * [ ] prop.once, prop.fx ? prop.init?
-      - doesn't seem required, let's wait for use case
-    * [ ] prop.change - run only if value changes
-      - seems like unnecessary manual optimization that must be done always automatically
-      ? are there cases where force-update is necessary?
-    * [ ] prop.throttle-xxx, prop.debounce-xxx
-      - let's wait until that's really a problem
-    * [ ] prop.class
-      ? what's the use-case
-    * [ ] prop.next="" - run update after other DOM updates happen
-    * [ ] prop.fx="" - run effect without changing property
-    * [ ] x.prop="xyz" - set element property, rather than attribute (following topic)
-    * [ ] x.raf="abc" - run regularly?
-    * [ ] x.watch-a-b-c - update by change of any of the deps
-    * [ ] :x.always - update by _any_ dep change
+  - overall seems code complication without much benefit
+  * [ ] value.bind? value.watch?
+    - let's wait for use-case: value can be too big to set it every time
+  * [ ] prop.reflect, prop.observe
+    - let's wait for use-case
+  * [ ] prop.boolean, .number, .string, .array, .object
+    - let's wait for use-case
+  * [ ] prop.once, prop.fx ? prop.init?
+    - doesn't seem required, let's wait for use case
+  * [ ] prop.change - run only if value changes
+    - seems like unnecessary manual optimization that must be done always automatically
+    ? are there cases where force-update is necessary?
+  * [ ] prop.throttle-xxx, prop.debounce-xxx
+    - let's wait until that's really a problem
+  * [ ] prop.class
+    ? what's the use-case
+  * [ ] prop.next="" - run update after other DOM updates happen
+  * [ ] prop.fx="" - run effect without changing property
+  * [ ] x.prop="xyz" - set element property, rather than attribute (following topic)
+  * [ ] x.raf="abc" - run regularly?
+  * [ ] x.watch-a-b-c - update by change of any of the deps
+  * [ ] :x.always - update by _any_ dep change
 
 ## [x] Writing props on elements (like ones in :each) -> nah, just use `:x="this.x=abc"`
 
