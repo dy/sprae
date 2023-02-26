@@ -564,7 +564,7 @@ function dashcase(str) {
 }
 
 // src/core.js
-sprae.sandbox = sandbox;
+sprae.globals = sandbox;
 var memo = /* @__PURE__ */ new WeakMap();
 function sprae(container, values) {
   if (!container.children)
