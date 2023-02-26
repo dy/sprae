@@ -1,4 +1,4 @@
-// node_modules/staet/staet.js
+// src/state.js
 var currentFx;
 var currentBatch;
 var targetFxs = /* @__PURE__ */ new WeakMap();
