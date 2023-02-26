@@ -923,8 +923,8 @@ test.skip('getters', async () => {
 })
 
 test('sandbox', async () => {
-  let el = h`<x :x="log.push(typeof window, typeof console)"></x>`
+  let el = h`<x :x="log.push(typeof window, typeof console, typeof arguments, typeof __scope)"></x>`
   let log = []
   sprae(el, {log})
-  is(log, ['undefined', 'object'])
+  is(log, ['undefined', 'object', 'undefined', 'undefined'])
 })

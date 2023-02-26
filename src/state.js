@@ -20,7 +20,7 @@ const handler = {
 
   get(target, prop) {
     if (typeof prop === 'symbol') return target[prop]
-    if (!(prop in target)) return target[_parent]?.[prop] ?? sandbox[prop]
+    if (!(prop in target)) return target[_parent]?.[prop]
     if (Array.isArray(target) && prop in Array.prototype) return target[prop];
     let value = target[prop]
 
@@ -47,7 +47,7 @@ const handler = {
   },
 
   set(target, prop, value) {
-    if (!(prop in target) && target[_parent] && prop in target[_parent]) return target[_parent][prop] = value
+    if (!(prop in target) && (target[_parent] && prop in target[_parent])) return target[_parent][prop] = value
     if (Array.isArray(target) && prop in Array.prototype) return target[prop] = value;
 
     const prev = target[prop]
@@ -84,9 +84,7 @@ export const state = (obj, parent) => {
   proxyTarget.set(proxy, obj)
 
   // inherit from parent state
-  if (parent) {
-    obj[_parent] = state(parent)
-  }
+  obj[_parent] = parent ? state(parent) : sandbox
 
   return proxy
 }

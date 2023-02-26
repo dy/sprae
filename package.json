@@ -23,7 +23,7 @@
   },
   "scripts": {
     "test": "node -r ./test/register.cjs test/test.js",
-    "build": "esbuild --bundle ./src/index.js --outfile=sprae.js --format=esm",
+    "build": "esbuild --bundle ./src/index.js --outfile=sprae.js --format=esm && npm run min",
     "watch": "esbuild --bundle ./src/index.js --outfile=sprae.js --format=esm --sourcemap --watch",
     "min": "terser sprae.js -o sprae.min.js --module -c passes=3 -m"
   },

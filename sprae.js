@@ -23,7 +23,7 @@ var handler = {
     if (typeof prop === "symbol")
       return target[prop];
     if (!(prop in target))
-      return target[_parent]?.[prop] ?? sandbox[prop];
+      return target[_parent]?.[prop];
     if (Array.isArray(target) && prop in Array.prototype)
       return target[prop];
     let value = target[prop];
@@ -45,7 +45,7 @@ var handler = {
     return value;
   },
   set(target, prop, value) {
-    if (!(prop in target) && target[_parent] && prop in target[_parent])
+    if (!(prop in target) && (target[_parent] && prop in target[_parent]))
       return target[_parent][prop] = value;
     if (Array.isArray(target) && prop in Array.prototype)
       return target[prop] = value;
@@ -73,9 +73,7 @@ var state = (obj, parent) => {
   let proxy = new Proxy(obj, handler);
   targetProxy.set(obj, proxy);
   proxyTarget.set(proxy, obj);
-  if (parent) {
-    obj[_parent] = state(parent);
-  }
+  obj[_parent] = parent ? state(parent) : sandbox;
   return proxy;
 };
 var fx = (fn) => {
