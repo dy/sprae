@@ -258,7 +258,7 @@ Expressions are sandboxed, ie. have no access to global or window.
 
 Default sandbox provides: _Array_, _Object_, _Number_, _String_, _Boolean_, _Date_, _console_.
 
-Sandbox can be extended via `Object.assign(sprae.sandbox, { BigInt, window, document })` etc.
+Sandbox can be extended via `Object.assign(sprae.globals, { BigInt, window, document })` etc.
 
 ## Examples
 

@@ -929,7 +929,7 @@ test('sandbox', async () => {
   is(log, ['undefined', 'object', 'undefined', 'undefined'])
 
   log.splice(0)
-  Object.assign(sprae.sandbox, { window })
+  Object.assign(sprae.globals, { window })
   sprae(el.cloneNode(), {log})
   is(log, ['object', 'object', 'undefined', 'undefined'])
 })

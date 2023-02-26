@@ -1,7 +1,7 @@
 import { state as createState, fx, batch, sandbox } from './state.js';
 import defaultDirective, { primary, secondary } from './directives.js';
 
-sprae.sandbox=sandbox
+sprae.globals=sandbox
 
 // sprae element: apply directives
 const memo = new WeakMap
