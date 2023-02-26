@@ -4,18 +4,24 @@ let currentFx, currentBatch
 const targetFxs = new WeakMap
 const targetProxy = new WeakMap
 const proxyTarget = new WeakMap
-const parents = new WeakMap
+const _parent = Symbol('parent')
+
+// default root sandbox
+const sandbox = {
+  Array, Object, Number, String, Boolean, Function, Date,
+  console
+}
 
 const handler = {
   has(target, prop){
-    return prop in target || (parents.has(target) && prop in parents.get(target))
+    // sandbox everything
+    return true
   },
 
   get(target, prop) {
-    // avoid reacting on Array methods or symbols
     if (typeof prop === 'symbol') return target[prop]
-    else if (!(prop in target)) return parents.get(target)?.[prop]
-    else if (Array.isArray(target) && prop in Array.prototype) return target[prop];
+    if (!(prop in target)) return target[_parent]?.[prop] ?? sandbox[prop]
+    if (Array.isArray(target) && prop in Array.prototype) return target[prop];
     let value = target[prop]
 
     if (currentFx) {
@@ -41,8 +47,8 @@ const handler = {
   },
 
   set(target, prop, value) {
-    if (!(prop in target) && parents.has(target)) return (parents.get(target)[prop] = value)
-    else if (Array.isArray(target) && prop in Array.prototype) return target[prop] = value;
+    if (!(prop in target) && target[_parent] && prop in target[_parent]) return target[_parent][prop] = value
+    if (Array.isArray(target) && prop in Array.prototype) return target[prop] = value;
 
     const prev = target[prop]
 
@@ -79,7 +85,7 @@ export const state = (obj, parent) => {
 
   // inherit from parent state
   if (parent) {
-    parents.set(obj, state(parent))
+    obj[_parent] = state(parent)
   }
 
   return proxy

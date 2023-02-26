@@ -921,3 +921,10 @@ test.skip('getters', async () => {
     increment(){ this.count++ }
   })
 })
+
+test('sandbox', async () => {
+  let el = h`<x :x="log.push(typeof window, typeof console)"></x>`
+  let log = []
+  sprae(el, {log})
+  is(log, ['undefined', 'object'])
+})

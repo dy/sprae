@@ -47,7 +47,9 @@ primary['if'] = (el, expr) => {
 // :with must come before :each, but :if has primary importance
 primary['with'] = (el, expr, rootState) => {
   let evaluate = parseExpr(el, expr, 'with')
-  let state = createState(evaluate(rootState), rootState)
+  const localState = evaluate(rootState)
+  let state = createState(localState, rootState)
+  // console.log(123, state.foo, state.bar)
   sprae(el, state);
 }
 
@@ -179,7 +181,6 @@ secondary['style'] = (el, expr) => {
 
 secondary['text'] = (el, expr) => {
   let evaluate = parseExpr(el, expr, ':text')
-
   return (state) => {
     let value = evaluate(state)
     el.textContent = value == null ? '' : value;
