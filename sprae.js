@@ -11,12 +11,11 @@ var sandbox = {
   Number,
   String,
   Boolean,
-  Function,
   Date,
   console
 };
 var handler = {
-  has(target, prop) {
+  has() {
     return true;
   },
   get(target, prop) {
@@ -565,6 +564,7 @@ function dashcase(str) {
 }
 
 // src/core.js
+sprae.sandbox = sandbox;
 var memo = /* @__PURE__ */ new WeakMap();
 function sprae(container, values) {
   if (!container.children)

@@ -24,7 +24,6 @@ Sprae defines attributes starting with `:` as directives:
 * `state` is object reflecting current values, changing any of its props rerenders subtree.
 * To batch-update multiple properties `sprae` can be run repeatedly as: `sprae(container, newValues)`
 
-
 <!--
 <details>
 <summary><strong>Autoinit</strong></summary>
@@ -252,6 +251,14 @@ Expose element to data scope with the `id`:
   state.text // <textarea></textarea>
 </script>
 ```
+
+## Sandbox
+
+Expressions are sandboxed, ie. have no access to global or window.
+
+Default sandbox provides: _Array_, _Object_, _Number_, _String_, _Boolean_, _Date_, _console_.
+
+Sandbox can be extended via `Object.assign(sprae.sandbox, { BigInt, window, document })` etc.
 
 ## Examples
 

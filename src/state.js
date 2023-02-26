@@ -7,13 +7,13 @@ const proxyTarget = new WeakMap
 const _parent = Symbol('parent')
 
 // default root sandbox
-const sandbox = {
-  Array, Object, Number, String, Boolean, Function, Date,
+export const sandbox = {
+  Array, Object, Number, String, Boolean, Date,
   console
 }
 
 const handler = {
-  has(target, prop){
+  has(){
     // sandbox everything
     return true
   },

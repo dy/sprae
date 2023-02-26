@@ -925,6 +925,11 @@ test.skip('getters', async () => {
 test('sandbox', async () => {
   let el = h`<x :x="log.push(typeof window, typeof console, typeof arguments, typeof __scope)"></x>`
   let log = []
-  sprae(el, {log})
+  sprae(el.cloneNode(), {log})
   is(log, ['undefined', 'object', 'undefined', 'undefined'])
+
+  log.splice(0)
+  Object.assign(sprae.sandbox, { window })
+  sprae(el.cloneNode(), {log})
+  is(log, ['object', 'object', 'undefined', 'undefined'])
 })
