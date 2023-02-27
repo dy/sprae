@@ -1,5 +1,5 @@
 // currentFx stack of listeners
-let currentFx, currentBatch
+let currentFx, batch = new Set, pendingUpdate
 
 const targetFxs = new WeakMap
 const targetProxy = new WeakMap
@@ -60,7 +60,8 @@ const handler = {
     // whenever target prop is set, call all dependent fxs
     let propFxs = targetFxs.get(target)?.[prop]
 
-    if (propFxs) for (let fx of propFxs) currentBatch ? currentBatch.add(fx) : fx.call()
+    if (propFxs) for (let fx of propFxs) batch.add(fx)
+    planUpdate()
 
     // FIXME: unsubscribe / delete effects by setting null/undefined
     // if (value == null) targetFxs.delete(prev)
@@ -103,11 +104,13 @@ export const fx = (fn) => {
   return call
 }
 
-export const batch = fn => {
-  let prevBatch = currentBatch
-  currentBatch = new Set
-  fn()
-  for (let fx of currentBatch) fx.call()
-  currentBatch.clear()
-  currentBatch = prevBatch
+export const planUpdate = () => {
+  if (!pendingUpdate) {
+    pendingUpdate = true
+    queueMicrotask(() => {
+      for (let fx of batch) fx.call()
+      batch.clear()
+      pendingUpdate = false
+    })
+  }
 }

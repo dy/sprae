@@ -1,6 +1,7 @@
 // src/state.js
 var currentFx;
-var currentBatch;
+var batch = /* @__PURE__ */ new Set();
+var pendingUpdate;
 var targetFxs = /* @__PURE__ */ new WeakMap();
 var targetProxy = /* @__PURE__ */ new WeakMap();
 var proxyTarget = /* @__PURE__ */ new WeakMap();
@@ -55,7 +56,8 @@ var handler = {
     let propFxs = targetFxs.get(target)?.[prop];
     if (propFxs)
       for (let fx2 of propFxs)
-        currentBatch ? currentBatch.add(fx2) : fx2.call();
+        batch.add(fx2);
+    planUpdate();
     return true;
   },
   deleteProperty(target, prop) {
@@ -85,14 +87,16 @@ var fx = (fn) => {
   call();
   return call;
 };
-var batch = (fn) => {
-  let prevBatch = currentBatch;
-  currentBatch = /* @__PURE__ */ new Set();
-  fn();
-  for (let fx2 of currentBatch)
-    fx2.call();
-  currentBatch.clear();
-  currentBatch = prevBatch;
+var planUpdate = () => {
+  if (!pendingUpdate) {
+    pendingUpdate = true;
+    queueMicrotask(() => {
+      for (let fx2 of batch)
+        fx2.call();
+      batch.clear();
+      pendingUpdate = false;
+    });
+  }
 };
 
 // src/domdiff.js
@@ -569,11 +573,8 @@ var memo = /* @__PURE__ */ new WeakMap();
 function sprae(container, values) {
   if (!container.children)
     return;
-  if (memo.has(container)) {
-    let state3 = memo.get(container);
-    batch(() => Object.assign(state3, values));
-    return state3;
-  }
+  if (memo.has(container))
+    return Object.assign(memo.get(container), values);
   const state2 = state(values || {});
   const updates = [];
   const init = (el, parent = el.parentNode) => {

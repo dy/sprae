@@ -1,4 +1,4 @@
-import { state as createState, fx, batch, sandbox } from './state.js';
+import { state as createState, fx, sandbox } from './state.js';
 import defaultDirective, { primary, secondary } from './directives.js';
 
 sprae.globals=sandbox
@@ -7,11 +7,7 @@ sprae.globals=sandbox
 const memo = new WeakMap
 export default function sprae(container, values) {
   if (!container.children) return
-  if (memo.has(container)) {
-    let state = memo.get(container)
-    batch(() => Object.assign(state, values))
-    return state
-  }
+  if (memo.has(container)) return Object.assign( memo.get(container), values)
 
   // subscribe to reactives
   // for (let prop in values) {

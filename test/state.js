@@ -1,9 +1,10 @@
-import {state, fx, batch} from '../src/state.js'
+import {state, fx} from '../src/state.js'
 import t, {is, ok} from 'tst'
 import signalStruct from 'signal-struct'
 import { effect } from '@preact/signals-core'
+import {tick} from 'wait-please'
 
-t('state: basic', t => {
+t('state: basic', async t => {
   let s = state({x:0, y:1})
 
   let xy; fx(() => xy = s.x + s.y)
@@ -12,12 +13,14 @@ t('state: basic', t => {
   s.x = 2
   console.log('set 3')
   s.y = 3
+  await tick()
   is(xy, 5, 'Eq')
   s.y = 4
+  await tick()
   is(xy, 6, 'Eq')
 })
 
-t('state: signal-struct basics', t => {
+t('state: signal-struct basics', async t => {
   let s = state({
     x: 0,
     y: 1,
@@ -39,8 +42,10 @@ t('state: signal-struct basics', t => {
   is(xy, 1)
   s.x = 2
   s.y = 3
+  await tick()
   is(xy, 5)
   s.y = 4
+  await tick()
   is(xy, 6)
 
   // getters are computed
@@ -51,7 +56,7 @@ t('state: signal-struct basics', t => {
   is(s.xy, 6)
 })
 
-t('state: deep props', () => {
+t('state: deep props', async () => {
   let s = state({
     z: { r: 2, i: 3 }
   })
@@ -60,17 +65,20 @@ t('state: deep props', () => {
   let len; fx(() => (len = (s.z.r**2 + s.z.i**2)**0.5))
   s.z.r = 3
   s.z.i = 4
+  await tick()
   is(len, 5)
   s.z.r = 4
   s.z.i = 3
+  await tick()
   is(len, 5)
 
   // updating internal objects/arrays turns them into signals too
   s.z = { r: 5, i: 12}
+  await tick()
   is(len, 13)
 })
 
-t('state: array', () => {
+t('state: array', async () => {
   let s = state({
     w: [1,2]
   })
@@ -79,23 +87,27 @@ t('state: array', () => {
   let mult; fx(() => mult = s.w?.[0] * s.w?.[1] || 0)
   is(mult, 2)
   s.w = [3,4]
+  await tick()
   is(mult,12)
 
   // nullifying is fine
   s.w = null
+  await tick()
   is(mult, 0)
 
   // delete is fine
   delete s.w
 
+  await tick()
   is(mult, 0)
 
   console.log('set w')
   s.w = [1,2]
+  await tick()
   is(mult, 2)
 })
 
-t('state: bulk-update', () => {
+t('state: bulk-update', async () => {
   let s = state({
     x: 0,
     y: 1,
@@ -114,6 +126,7 @@ t('state: bulk-update', () => {
   // let [signals, update] = s
   // update({ x: 1, y: 1, z: { r: 3, i: 4 } })
   Object.assign(s, { x: 1, y: 1, z: { r: 3, i: 4 } })
+  await tick()
   is(xy, 2)
   is(len, 5, 'len after update')
 })
@@ -178,31 +191,37 @@ t('state: inheritance', () => {
   // })
 })
 
-t('state: inheritance: updating values in chain', () => {
+t('state: inheritance: updating values in chain', async () => {
   let s1 = {x:1}
   let s = state(s1, {y:2})
-  console.group('fx')
+  // console.group('fx')
   let xy = 0; fx(() => xy = s.x + s.y);
-  console.groupEnd('fx')
+  // console.groupEnd('fx')
+  await tick()
   is(xy, 3)
   s.x++
+  await tick()
   is(xy, 4)
   console.log('y++')
   s.y++
+  await tick()
   is(xy, 5)
 })
 
-t('state: array items', () => {
+t('state: array items', async () => {
   // arrays get each item converted to signal struct
   let s5 = state({list: [{x:1}, {x:2}]})
   let sum; fx(()=> sum = s5.list.reduce((sum, item)=>item.x + sum, 0))
   is(sum, 3)
   s5.list[0].x = 2
+  await tick()
   is(sum, 4)
   console.log('set array value')
   s5.list = [{x:3}, {x:3}]
+  await tick()
   is(sum, 6)
   s5.list = [{x:3}, {x:3}, {x:4}]
+  await tick()
   is(sum, 10)
 })
 
@@ -214,14 +233,16 @@ t('state: arrays retain reference', () => {
   is(list,[1,4,3])
 })
 
-t('state: direct list', () => {
+t('state: direct list', async () => {
   // works with arrays as well
   let list = state([{x:1}, {x:2}])
   let sum; fx(()=> sum = list.reduce((sum, item)=>item.x + sum, 0))
   is(sum, 3)
   list[0].x = 2
+  await tick()
   is(sum, 4)
   list.splice(0, 2, {x:3}, {x:3})
+  await tick()
   console.log(list)
   is(sum, 6)
 })
@@ -240,7 +261,7 @@ t('state: circular?', () => {
   is (a, [1, 2])
 })
 
-t('state: batch', () => {
+t.skip('state: batch', () => {
   let s = state({x:1, y:2})
   let log = []; fx(() => log.push(s.x + s.y))
   is(log, [3])

@@ -25,6 +25,7 @@ test('hidden: core', async () => {
   let params = sprae(el, {hidden:true})
   is(el.outerHTML, `<div hidden=""></div>`)
   params.hidden = false
+  await tick()
   is(el.outerHTML, `<div></div>`)
 })
 
@@ -42,6 +43,7 @@ test('common: reactive', async () => {
   let params = sprae(el, {name:'text', url:'//google.com'})
   is(el.outerHTML, `<label for="text">text</label><input id="text" name="text" type="text"><a href="//google.com"></a><img src="//google.com">`)
   params.name = 'email'
+  await tick()
   is(el.outerHTML, `<label for="email">email</label><input id="email" name="email" type="email"><a href="//google.com"></a><img src="//google.com">`)
 })
 
@@ -76,17 +78,22 @@ test('style', async () => {
   let el = h`<x style="left: 1px" :style="style"></x>`
   let params = sprae(el, {style: "top: 1px"})
   is(el.outerHTML, `<x style="left: 1px; top: 1px"></x>`)
+
   params.style = {top: '2px'}
+  await tick()
   is(el.outerHTML, `<x style="left: 1px; top: 2px;"></x>`)
 
   params.style = {'--x': 123}
+  await tick()
   is(el.style.getPropertyValue('--x'), '123')
 
   params.style = {top:'1px', bottom:'2px'}
+  await tick()
   is(el.outerHTML, `<x style="left: 1px; top: 1px; bottom: 2px;"></x>`)
 
   params.style = {top:'2px', bottom: null}
   // FIXME
+  await tick()
   is(el.outerHTML, `<x style="left: 1px; top: 2px;"></x>`)
 })
 
@@ -96,6 +103,7 @@ test('class', async () => {
   let params = sprae(el, {a:'x', b:'y', c, d:false});
   is(el.outerHTML, `<x class="base x"></x><y class="y z"></y><z class="b"></z>`);
   params.d = true;
+  await tick()
   is(el.outerHTML, `<x class="base x"></x><y class="y z"></y><z class="b c"></z>`);
   // c.value = 'w'
   // is(el.outerHTML, `<x class="base x"></x><y class="y w"></y><z class="b c"></z>`);
@@ -126,6 +134,7 @@ test('props: calculation', async () => {
   let state = sprae(el, {x:3});
   is(el.outerHTML, `<x x="012"></x>`)
   state.x = 4
+  await tick()
   is(el.outerHTML, `<x x="0123"></x>`)
 })
 
@@ -156,6 +165,7 @@ test('value: direct', async () => {
   is(el.value, '1')
   is(el.outerHTML, `<input value="1">`)
   state.a = 2
+  await tick()
   is(el.value, '2')
   is(el.outerHTML, `<input value="2">`)
 
@@ -182,6 +192,7 @@ test('text: core', async () => {
   let params = sprae(el, {text:'abc'})
   is(el.outerHTML, `<div>abc</div>`)
   params.text = null
+  await tick()
   is(el.outerHTML, `<div></div>`)
 })
 
@@ -196,10 +207,13 @@ test('if: base', async () => {
 
   is(el.innerHTML, '<span>a</span>')
   params.a = 2
+  await tick()
   is(el.innerHTML, '<span>b</span>')
   params.a = 3
+  await tick()
   is(el.innerHTML, '<span>c</span>')
   params.a = null
+  await tick()
   is(el.innerHTML, '<span>c</span>')
 })
 
@@ -214,15 +228,20 @@ test('if: short with insertions', async () => {
 
   is(el.innerHTML, '<span>1:1</span>')
   params.a = 2
+  await tick()
   is(el.innerHTML, '<span>2:2</span>')
   params.a = 3
+  await tick()
   is(el.innerHTML, '<span>3</span>')
   params.a = 4
+  await tick()
   is(el.innerHTML, '<span>4</span>')
 
   params.a = 1
+  await tick()
   is(el.innerHTML, '<span>1:1</span>')
   params.a = 4
+  await tick()
   is(el.innerHTML, '<span>4</span>')
 
   params.a = null
@@ -258,11 +277,12 @@ test('if: (#3) subsequent content is not abandoned', async () => {
   is(x.outerHTML, `<x><z>123</z></x>`)
 })
 
-test('if: + :with doesnt prevent secondary effects from happening', () => {
+test('if: + :with doesnt prevent secondary effects from happening', async () => {
   let el = h`<div><x :if="x" :with="{}" :text="x"></x></div>`
   let state = sprae(el, {x:''})
   is(el.innerHTML, ``)
   state.x = '123'
+  await tick()
   is(el.innerHTML, `<x>123</x>`)
 
   // NOTE: we ignore this case
@@ -284,10 +304,13 @@ test('each: array', async () => {
   is(el.innerHTML, '')
   console.log('set 1,2')
   params.b = [1,2]
+  await tick()
   is(el.innerHTML, '<span>1</span><span>2</span>')
   params.b = []
+  await tick()
   is(el.innerHTML, '')
   params.b = null
+  await tick()
   is(el.innerHTML, '')
 })
 
@@ -302,10 +325,13 @@ test('each: object', async () => {
   is(el.innerHTML, '')
   console.log('set 1,2')
   params.b = { x:1, y:2 }
+  await tick()
   is(el.innerHTML, '<span>x,1</span><span>y,2</span>')
   params.b = []
+  await tick()
   is(el.innerHTML, '')
   params.b = null
+  await tick()
   is(el.innerHTML, '')
 })
 
@@ -318,12 +344,15 @@ test('each: loop within loop', async () => {
 
   is(el.innerHTML, '<x><y>1</y><y>2</y></x><x><y>3</y><y>4</y></x>')
   params.c = [[5,6], [3,4]]
+  await tick()
   is(el.innerHTML, '<x><y>5</y><y>6</y></x><x><y>3</y><y>4</y></x>')
   // params.c[1] = [7,8]
   params.c = [params.c[0], [7,8]]
+  await tick()
   is(el.innerHTML, '<x><y>5</y><y>6</y></x><x><y>7</y><y>8</y></x>')
   // is(el.innerHTML, '<span>1</span><span>2</span>')
   params.c = []
+  await tick()
   is(el.innerHTML, '')
   // params.b = null
   // is(el.innerHTML, '')
@@ -358,10 +387,13 @@ test('each: loop with condition', async () => {
 
   is(el.innerHTML, '')
   params.c = true
+  await tick()
   is(el.innerHTML, '<span>1</span><span>2</span>')
   params.b = [1]
+  await tick()
   is(el.innerHTML, '<span>1</span>')
   params.b = null
+  await tick()
   is(el.innerHTML, '')
 })
 
@@ -375,13 +407,17 @@ test('each: condition with loop', async () => {
 
   is(el.innerHTML, '<span>false</span>')
   params.c = true
+  await tick()
   is(el.innerHTML, '<span>1</span><span>2</span>')
   params.b = [1]
+  await tick()
   is(el.innerHTML, '<span>1</span>')
   params.b = null
+  await tick()
   is(el.innerHTML, '')
   console.log('c=false')
   params.c = false
+  await tick()
   is(el.innerHTML, '<span>false</span>')
 })
 
@@ -395,8 +431,10 @@ test('each: loop within condition', async () => {
 
   is(el.innerHTML, '<x><y>1</y></x>')
   params.a = 2
+  await tick()
   is(el.innerHTML, '<x><y>-1</y><y>-2</y></x>')
   params.a = 0
+  await tick()
   is(el.innerHTML, '')
 })
 
@@ -413,8 +451,10 @@ test('each: condition within loop', async () => {
 
   is(el.innerHTML, '<x><y>1:1</y></x><x><y>2:2</y></x><x><y>3</y></x>')
   params.b = [2]
+  await tick()
   is(el.innerHTML, '<x><y>2:2</y></x>')
   params.b = null
+  await tick()
   is(el.innerHTML, '')
 })
 
@@ -433,9 +473,11 @@ test('each: unkeyed', async () => {
   is(el.textContent, '123')
   // let first = el.firstChild
   state.xs = [1,3,2]
+  await tick()
   // is(el.firstChild, first)
   is(el.textContent, '132')
   state.xs = [3,3,3]
+  await tick()
   is(el.textContent, '333')
   // is(el.firstChild, first)
 })
@@ -448,9 +490,11 @@ test('each: keyed', async () => {
   is(el.textContent, '123')
   let first = el.firstChild
   state.xs = [1,3,2]
+  await tick()
   is(el.firstChild, first)
   is(el.textContent, '132')
   state.xs = [3,3,3]
+  await tick()
   is(el.textContent, '3')
   // is(el.firstChild, first)
 })
@@ -465,18 +509,21 @@ test('each: unmounted elements remove listeners', async () => {
   // let's hope they get removed without memory leaks :')
 })
 
-test('each: internal children get updated by state update, also: update by running again', () => {
+test('each: internal children get updated by state update, also: update by running again', async () => {
   let el = h`<><x :each="item, idx in items" :text="item" :key="idx"></x></>`
   let state = sprae(el, { items: [1,2,3] })
   is(el.textContent, '123')
   state.items = [2, 2, 3]
+  await tick()
   is(el.textContent, '223')
   state = sprae(el, { items: [0,2,3] })
+  await tick()
   is(el.textContent, '023')
   // NOTE: this doesn't update items, since they're new array
   console.log('set items')
   state.items[0] = 1
-  state.items = [...state.items]
+  // state.items = [...state.items]
+  await tick()
   is(el.textContent, '123')
 })
 
@@ -499,7 +546,7 @@ test('each: key-based caching is in-sync with direct elements', () => {
   is(el.outerHTML, el2.outerHTML)
 })
 
-test('on: base', () => {
+test('on: base', async () => {
   let el = h`<div :on="{click(e){log.push('click')}, x}"></div>`
   let log = []
   let params = sprae(el, {x(){log.push('x')}, log})
@@ -511,11 +558,13 @@ test('on: base', () => {
   is(log, ['click','x'])
 
   params.x = function(){log.push('xx')}
+  await tick()
   el.dispatchEvent(new window.Event('x'));
   is(log, ['click','x','xx']);
 
   console.log('make null')
   params.x = null;
+  await tick()
   el.dispatchEvent(new window.Event('x'));
   is(log, ['click','x','xx']);
 })
@@ -632,7 +681,7 @@ test('on: parallel chains', e => {
   is(state.log, ['x','x','y','y','z','z','x']);
 })
 
-test('on: state changes between chain of events', e => {
+test('on: state changes between chain of events', async e => {
   let el = h`<x :on="{'x..y':fn}"></x>`
   let log = []
   let state = sprae(el, {log, fn: () => (log.push('x1'), ()=>log.push('y1'))})
@@ -641,6 +690,7 @@ test('on: state changes between chain of events', e => {
   is(log, ['x1'])
   console.log('update fn')
   state.fn = () => (log.push('x2'), () => log.push('y2'))
+  await tick()
   is(log, ['x1'])
   // console.log('xx')
   // NOTE: state update registers new chain listener before finishing prev chain
@@ -808,12 +858,13 @@ test('on: modifiers chain', async e => {
   is(state.log,['x', 'x'])
 })
 
-test('with: inline', () => {
+test('with: inline', async () => {
   let el = h`<x :with="{foo:'bar'}"><y :text="foo + baz"></y></x>`
   let state = sprae(el, {baz: 'qux'})
   // FIXME: this doesn't inherit root scope baz property and instead uses hard-initialized one
   is(el.innerHTML, `<y>barqux</y>`)
   state.baz = 'quux'
+  await tick()
   is(el.innerHTML, `<y>barquux</y>`)
 })
 test.skip('with: inline reactive', () => {
@@ -825,22 +876,24 @@ test.skip('with: inline reactive', () => {
   baz.value = 'quux'
   is(el.innerHTML, `<y>barquux</y>`)
 })
-test('with: data', () => {
+test('with: data', async () => {
   let el = h`<x :with="x"><y :text="foo"></y></x>`
   let state = sprae(el, {x: {foo:'bar'}})
   is(el.innerHTML, `<y>bar</y>`)
   console.log('update', state.x)
   state.x.foo = 'baz'
+  await tick()
   // Object.assign(state, {x:{foo:'baz'}})
   is(el.innerHTML, `<y>baz</y>`)
 })
-test('with: transparency', () => {
+test('with: transparency', async () => {
   // NOTE: y:text initializes through directive, not through parent
   // therefore by default :text uses parent's state, not defined by element itself
   let el = h`<x :with="{foo:'foo'}"><y :with="b" :text="foo+bar"></y></x>`
   let params = sprae(el, {b:{bar:'bar'}})
   is(el.innerHTML, `<y>foobar</y>`)
   params.b.bar = 'baz'
+  await tick()
   is(el.innerHTML, `<y>foobaz</y>`)
 })
 test.skip('with: reactive transparency', () => {
@@ -851,22 +904,25 @@ test.skip('with: reactive transparency', () => {
   bar.value = '3'
   is(el.innerHTML, `<y>13</y>`)
 })
-test('with: writes to state', () => {
+test('with: writes to state', async () => {
   let a = h`<x :with="{a:1}"><y :on="{x(){a++}}" :text="a"></y></x>`
   sprae(a)
   is(a.innerHTML, `<y>1</y>`)
   a.firstChild.dispatchEvent(new window.Event('x'))
+  await tick()
   is(a.innerHTML, `<y>2</y>`)
   a.firstChild.dispatchEvent(new window.Event('x'))
+  await tick()
   is(a.innerHTML, `<y>3</y>`)
 })
 
-test('ref: base', () => {
+test('ref: base', async () => {
   let a = h`<a :ref="a" :init="log.push(a), null" :text="b"></a>`
   let state = sprae(a, {log:[], b:1})
   is(state.log[0], a)
   is(a.outerHTML, `<a>1</a>`)
   state.b = 2
+  await tick()
   is(a.outerHTML, `<a>2</a>`)
   is(state.a, a, 'Exposes to the state');
 })
