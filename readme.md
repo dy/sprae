@@ -21,8 +21,7 @@ Sprae defines attributes starting with `:` as directives:
 ```
 
 * `sprae` initializes subtree with data and immediately evaporates `:` attrs.
-* `state` is object reflecting current values, changing any of its props rerenders subtree.
-* To batch-update multiple properties `sprae` can be run repeatedly as: `sprae(container, newValues)`
+* `state` is object reflecting current values, changing any of its props rerenders subtree in a tick.
 
 <!--
 <details>
@@ -263,7 +262,7 @@ Sandbox can be extended via `Object.assign(sprae.globals, { BigInt, window, docu
 ## Examples
 
 * TODO MVC: [demo](https://dy.github.io/sprae/examples/todomvc), [code](https://github.com/dy/sprae/blob/main/examples/todomvc.html)
-* Waveplay: [demo](https://dy.github.io/waveplay), [code](https://github.com/dy/waveedit)
+* Wavearea: [demo](https://dy.github.io/wavearea?src=cdn.freesound.org/previews/586/586281_2332564-lq.mp3), [code](https://github.com/dy/wavearea)
 
 ## Justification
 
