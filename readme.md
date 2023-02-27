@@ -254,7 +254,7 @@ Expose element to data scope with the `id`:
 
 ## Sandbox
 
-Expressions are sandboxed, ie. have no access to global or window.
+Expressions are sandboxed, ie. have no access to global or window (since sprae can be run in server environment).
 
 Default sandbox provides: _Array_, _Object_, _Number_, _String_, _Boolean_, _Date_, _console_.
 
