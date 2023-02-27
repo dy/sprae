@@ -262,7 +262,7 @@ Sandbox can be extended via `Object.assign(sprae.globals, { BigInt, window, docu
 ## Examples
 
 * TODO MVC: [demo](https://dy.github.io/sprae/examples/todomvc), [code](https://github.com/dy/sprae/blob/main/examples/todomvc.html)
-* Wavearea: [demo](https://dy.github.io/wavearea?src=cdn.freesound.org/previews/586/586281_2332564-lq.mp3), [code](https://github.com/dy/wavearea)
+* Wavearea: [demo](https://dy.github.io/wavearea?src=//cdn.freesound.org/previews/586/586281_2332564-lq.mp3), [code](https://github.com/dy/wavearea)
 
 ## Justification
 
