@@ -47,3 +47,5 @@
   * [x] ...rest
 * [x] parallel chains
 * [x] Sandbox
+* [ ] There's some weird bug with attaching event listeners to document, hmmm. Need test case.
+* [ ] Autorun

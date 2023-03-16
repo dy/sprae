@@ -2,8 +2,30 @@
 
 > DOM microhydration with `:` attributes
 
+## Install
 
-## Usage
+To use as module, import [`sprae.js`](./sprae.js) from either local path or CDN:
+
+```html
+<script type="module">
+  // import sprae from 'https://cdn.jsdelivr.net/npm/sprae/sprae.js';
+  import sprae from './path/to/sprae.js';
+</script>
+```
+
+To autoinit on document, include script:
+
+```html
+<!-- <script src="https://cdn.jsdelivr.net/npm/sprae/sprae.document.js" defer></script> -->
+<script src="./path/to/sprae.document.js" defer></script>
+
+<!-- Init element with data -->
+<div :with="{data:1}">
+  <span :text="data"></span>
+</div>
+```
+
+## Use
 
 Sprae defines attributes starting with `:` as directives:
 

@@ -627,6 +627,8 @@ function sprae(container, values) {
 
 // src/index.js
 var src_default = sprae;
+if (document.currentScript)
+  sprae(document.documentElement);
 export {
   src_default as default
 };

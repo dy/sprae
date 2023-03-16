@@ -239,6 +239,7 @@ t('state: direct list', async () => {
   let sum; fx(()=> sum = list.reduce((sum, item)=>item.x + sum, 0))
   is(sum, 3)
   list[0].x = 2
+  is(list[0].x, 2)
   await tick()
   is(sum, 4)
   list.splice(0, 2, {x:3}, {x:3})
