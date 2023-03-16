@@ -2,10 +2,8 @@
 
 > DOM microhydration with `:` attributes.
 
-_Sprae_ is minimal essential alternative to [alpine](https://github.com/alpinejs/alpine), [petite-vue](https://github.com/vuejs/petite-vue) or [template-parts](https://github.com/github/template-parts) with enhanced ergonomics.
-
-It enables simple markup logic without JS. Perfect for small websites or prototypes.
-
+_Sprae_ is minimal essential progressive enhancement framework, an alternative to [alpine](https://github.com/alpinejs/alpine), [petite-vue](https://github.com/vuejs/petite-vue) or [template-parts](https://github.com/github/template-parts) with enhanced ergonomics.<br/>
+It enables simple markup logic without JS. Perfect for small websites or prototypes. See [justification](#justification) for more info.
 
 ## Install
 
@@ -254,7 +252,7 @@ Sandbox can be extended via `Object.assign(sprae.globals, { BigInt, window, docu
 
 _Sprae_ takes convention of _templize directives_ (_alpine_/_vue_ attrs) and builds upon <del>[_@preact/signals_](https://ghub.io/@preact/signals)</del> simple reacti.
 
-* It doesn't break static html markup.
+* It doesn't break or modify initial static html markup.
 * It falls back to element content if uninitialized.
 * It doesn't enforce SPA nor JSX.
 * It enables island hydration.
@@ -262,7 +260,6 @@ _Sprae_ takes convention of _templize directives_ (_alpine_/_vue_ attrs) and bui
 * Expressions are naturally reactive and incur minimal updates.
 * Input data may contain [signals](https://ghub.io/@preact/signals) or [reactive values](https://ghub.io/sube).
 * Elements / data API is open and enable easy interop.
-
 
 It is reminiscent of [XSLT](https://www.w3schools.com/xml/xsl_intro.asp), considered a [buried treasure](https://github.com/bahrus/be-restated) by web-connoisseurs.
 
