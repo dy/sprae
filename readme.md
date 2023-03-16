@@ -233,8 +233,14 @@ Expose element to current data scope with the `id`:
 ## Sandbox
 
 Expressions are sandboxed, ie. have no access to global or window (since sprae can be run in server environment).
-Default sandbox provides: _Array_, _Object_, _Number_, _String_, _Boolean_, _Date_, _console_.
-Sandbox can be extended as `Object.assign(sprae.globals, { BigInt, window, document })` etc.
+
+```html
+<div :x="window.x"></div>
+<!-- window is undefined -->
+```
+
+Default sandbox provides: _Array_, _Object_, _Number_, _String_, _Boolean_, _Date_, _console_.<br/>
+Sandbox can be extended as `Object.assign(sprae.globals, { BigInt, window, document })`.
 
 ## Examples
 
