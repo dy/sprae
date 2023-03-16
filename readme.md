@@ -169,9 +169,9 @@ Spread multiple attibures.
 <input :="{ id: name, name, type:'text', value }" />
 ```
 
-#### `:on<event>="handler"`, `:on="events"`, `:<in>..<out>="handler"`
+#### `:on<event>="handler"`, `:on<in>..on<out>="handler"`
 
-Add event listeners.
+Add event listener or events chain.
 
 ```html
 <!-- Single event -->
@@ -192,9 +192,6 @@ Add event listeners.
 
 <!-- Event modifiers -->
 <button :onclick.throttle-500="handler">Not too often</button>
-
-<!-- Bulk/custom events -->
-<button :on="{ click: handler, touch: handler, special: handler }">Submit</button>
 ```
 
 ##### Event modifiers
