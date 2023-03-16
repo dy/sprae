@@ -13,13 +13,13 @@ To use as module, import [`sprae.js`](./sprae.js) from either local path or CDN:
 </script>
 ```
 
-To autoinit on document, include script:
+To autoinit on document, include script as:
 
 ```html
 <!-- <script src="https://cdn.jsdelivr.net/npm/sprae/sprae.document.js" defer></script> -->
 <script src="./path/to/sprae.document.js" defer></script>
 
-<!-- Init element with data -->
+<!-- :with defines sprae scope -->
 <div :with="{data:1}">
   <span :text="data"></span>
 </div>
@@ -214,7 +214,7 @@ Set [data-*](https://developer.mozilla.org/en-US/docs/Web/HTML/Global_attributes
 <input data-foo="1" data-bar-baz="true" />
 -->
 ```
-
+<!--
 #### `:aria="values"`
 
 Set [aria-role](https://developer.mozilla.org/en-US/docs/Web/Accessibility/ARIA) attributes. Boolean values are stringified.
@@ -226,7 +226,7 @@ Set [aria-role](https://developer.mozilla.org/en-US/docs/Web/Accessibility/ARIA)
   expanded: false,
   activeOption: 'item1',
   activedescendant: ''
-}" />
+}" /> -->
 <!--
 <input role="combobox" aria-controls="joketypes" aria-autocomplete="list" aria-expanded="false" aria-active-option="item1" aria-activedescendant="">
 -->
@@ -234,7 +234,7 @@ Set [aria-role](https://developer.mozilla.org/en-US/docs/Web/Accessibility/ARIA)
 
 #### `:with="data"`
 
-Define variables for a subtree fragment scope.
+Define (extend) data scope for a subtree.
 
 ```html
 <!-- Inline data -->
@@ -251,7 +251,7 @@ Define variables for a subtree fragment scope.
 
 #### `:ref="id"`
 
-Expose element to data scope with the `id`:
+Expose element to current data scope with the `id`:
 
 ```html
 <!-- single item -->
