@@ -1,33 +1,33 @@
 # ∴ spræ [![tests](https://github.com/dy/sprae/actions/workflows/node.js.yml/badge.svg)](https://github.com/dy/sprae/actions/workflows/node.js.yml) [![size](https://img.shields.io/bundlephobia/minzip/sprae?label=size)](https://bundlephobia.com/result?p=sprae) [![npm](https://img.shields.io/npm/v/sprae?color=orange)](https://npmjs.org/sprae)
 
-> DOM microhydration with `:` attributes
+> DOM microhydration with `:` attributes.
 
 ## Install
 
-To use as module, import [`sprae.js`](./sprae.js) from either local path or CDN:
+To autoinit on document, include [`sprae.auto.js`](./sprae.auto.js):
+
+```html
+<!-- <script src="https://cdn.jsdelivr.net/npm/sprae/sprae.auto.js" defer></script> -->
+<script src="./path/to/sprae.auto.js" defer></script>
+
+<div :scope="{foo:'bar'}">
+  <span :text="foo"></span>
+</div>
+```
+
+To use as module, import [`sprae.js`](./sprae.js):
 
 ```html
 <script type="module">
   // import sprae from 'https://cdn.jsdelivr.net/npm/sprae/sprae.js';
   import sprae from './path/to/sprae.js';
+  sprae(el, {foo: 'bar'});
 </script>
-```
-
-To autoinit on document, include script as:
-
-```html
-<!-- <script src="https://cdn.jsdelivr.net/npm/sprae/sprae.document.js" defer></script> -->
-<script src="./path/to/sprae.document.js" defer></script>
-
-<!-- :with defines sprae scope -->
-<div :with="{data:1}">
-  <span :text="data"></span>
-</div>
 ```
 
 ## Use
 
-Sprae defines attributes starting with `:` as directives:
+Sprae evaluates attributes starting with `:`:
 
 ```html
 <div id="container" :if="user">
@@ -42,29 +42,28 @@ Sprae defines attributes starting with `:` as directives:
 </script>
 ```
 
-* `sprae` initializes subtree with data and immediately evaporates `:` attrs.
-* `state` is object reflecting current values, changing any of its props rerenders subtree in a tick.
+* `sprae` initializes container's subtree with data and immediately evaporates `:` attrs.
+* `state` object reflects current values, changing any props rerenders subtree next tick.
 
-<!--
-<details>
-<summary><strong>Autoinit</strong></summary>
-
-sprae can be used without build step or JS, autoinitializing document:
-
-```html
-<script src="./sprae.js" defer init="{ count: 0 }"></script>
-
-<span :text="count">
-<button :on="{ click: e => count++ }">inc</button>
-```
-
-* `:with` defines data for regions of the tree to autoinit sprae on.
-* `init` attribute tells sprae to automatically initialize document.
-
-</details>
--->
 
 ## Attributes
+
+#### `:scope="data"`
+
+Define or extend data scope for a subtree.
+
+```html
+<!-- Inline data -->
+<x :scope="{ foo: 'bar' }" :text="foo"></x>
+
+<!-- External data -->
+<y :scope="data"></y>
+
+<!-- Transparency -->
+<x :scope="{ foo: 'bar' }">
+  <y :scope="{ baz: 'qux' }" :text="foo + baz"></y>
+</x>
+```
 
 #### `:if="condition"`, `:else`
 
@@ -204,50 +203,6 @@ Add event listeners.
 * `.ctrl-<key>, .alt-<key>, .meta-<key>, .shift-<key>` – key combinations, eg. `.ctrl-alt-delete` or `.meta-x`.
 * `.*` – any other modifier has no effect, but allows binding multiple handlers to same event (like jQuery event classes).
 
-#### `:data="values"`
-
-Set [data-*](https://developer.mozilla.org/en-US/docs/Web/HTML/Global_attributes/data-*) attributes. CamelCase is converted to dash-case.
-
-```html
-<input :data="{foo: 1, barBaz: true}" />
-<!--
-<input data-foo="1" data-bar-baz="true" />
--->
-```
-<!--
-#### `:aria="values"`
-
-Set [aria-role](https://developer.mozilla.org/en-US/docs/Web/Accessibility/ARIA) attributes. Boolean values are stringified.
-
-```html
-<input role="combobox" :aria="{
-  controls: 'joketypes',
-  autocomplete: 'list',
-  expanded: false,
-  activeOption: 'item1',
-  activedescendant: ''
-}" /> -->
-<!--
-<input role="combobox" aria-controls="joketypes" aria-autocomplete="list" aria-expanded="false" aria-active-option="item1" aria-activedescendant="">
--->
-```
-
-#### `:with="data"`
-
-Define (extend) data scope for a subtree.
-
-```html
-<!-- Inline data -->
-<x :with="{ foo: 'bar' }" :text="foo"></x>
-
-<!-- External data -->
-<y :with="data"></y>
-
-<!-- Transparency -->
-<x :with="{ foo: 'bar' }">
-  <y :with="{ baz: 'qux' }" :text="foo + baz"></y>
-</x>
-```
 
 #### `:ref="id"`
 

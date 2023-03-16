@@ -10,8 +10,8 @@ export const primary = {}, secondary = {}
 
 
 // :if is interchangeable with :each depending on order, :if :each or :each :if have different meanings
-// as for :if :with - :if must init first, since it is lazy, to avoid initializing component ahead of time by :with
-// we consider :with={x} :if={x} case insignificant
+// as for :if :scope - :if must init first, since it is lazy, to avoid initializing component ahead of time by :scope
+// we consider :scope={x} :if={x} case insignificant
 primary['if'] = (el, expr) => {
   let holder = document.createTextNode(''),
       clauses = [parseExpr(el, expr, ':if')],
@@ -44,9 +44,9 @@ primary['if'] = (el, expr) => {
   }
 }
 
-// :with must come before :each, but :if has primary importance
-primary['with'] = (el, expr, rootState) => {
-  let evaluate = parseExpr(el, expr, 'with')
+// :scope must come before :each, but :if has primary importance
+primary['scope'] = (el, expr, rootState) => {
+  let evaluate = parseExpr(el, expr, 'scope')
   const localState = evaluate(rootState)
   let state = createState(localState, rootState)
   // console.log(123, state.foo, state.bar)
@@ -185,23 +185,6 @@ secondary['text'] = (el, expr) => {
     let value = evaluate(state)
     el.textContent = value == null ? '' : value;
   }
-}
-
-secondary['data'] = (el, expr) => {
-  let evaluate = parseExpr(el, expr, ':data')
-
-  return ((state) => {
-    let value = evaluate(state)
-    for (let key in value) el.dataset[key] = value[key];
-  })
-}
-
-secondary['aria'] = (el, expr) => {
-  let evaluate = parseExpr(el, expr, ':aria')
-  const update = (value) => {
-    for (let key in value) attr(el, 'aria-' + dashcase(key), value[key] == null ? null : value[key] + '');
-  }
-  return ((state) => update(evaluate(state)))
 }
 
 // set props in-bulk or run effect

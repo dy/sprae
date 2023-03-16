@@ -212,8 +212,8 @@ primary["if"] = (el, expr) => {
     }
   };
 };
-primary["with"] = (el, expr, rootState) => {
-  let evaluate = parseExpr(el, expr, "with");
+primary["scope"] = (el, expr, rootState) => {
+  let evaluate = parseExpr(el, expr, "scope");
   const localState = evaluate(rootState);
   let state2 = state(localState, rootState);
   sprae(el, state2);
@@ -325,22 +325,6 @@ secondary["text"] = (el, expr) => {
     let value = evaluate(state2);
     el.textContent = value == null ? "" : value;
   };
-};
-secondary["data"] = (el, expr) => {
-  let evaluate = parseExpr(el, expr, ":data");
-  return (state2) => {
-    let value = evaluate(state2);
-    for (let key in value)
-      el.dataset[key] = value[key];
-  };
-};
-secondary["aria"] = (el, expr) => {
-  let evaluate = parseExpr(el, expr, ":aria");
-  const update = (value) => {
-    for (let key in value)
-      attr(el, "aria-" + dashcase(key), value[key] == null ? null : value[key] + "");
-  };
-  return (state2) => update(evaluate(state2));
 };
 secondary[""] = (el, expr) => {
   let evaluate = parseExpr(el, expr, ":");
