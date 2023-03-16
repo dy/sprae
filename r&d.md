@@ -526,7 +526,11 @@
   ? does it replace element or puts a content?
 
   1. :use="ref-id"
-  2. :
+  ```
+  <template :ref="abc"><span :text="abc"></span></template>
+
+  <div :use="abc" :scope="{abc:'def'}"></div>
+  ```
 
 ## [x] Remove non-essential directives -> yep, less API friction
   * :aria - can be defined via plain attributes
