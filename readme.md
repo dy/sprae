@@ -12,9 +12,7 @@ To autoinit on document, include [`sprae.auto.js`](./sprae.auto.js):
 <!-- <script src="https://cdn.jsdelivr.net/npm/sprae/sprae.auto.js" defer></script> -->
 <script src="./path/to/sprae.auto.js" defer></script>
 
-<div :scope="{foo:'bar'}">
-  <span :text="foo"></span>
-</div>
+<a :each="id in 10" :href="`#${id}`"></a>
 ```
 
 To use as module, import [`sprae.js`](./sprae.js):
