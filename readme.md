@@ -61,7 +61,7 @@ Define or extend data scope for a subtree.
 <!-- External data -->
 <y :scope="data"></y>
 
-<!-- Transparency -->
+<!-- Extend scope -->
 <x :scope="{ foo: 'bar' }">
   <y :scope="{ baz: 'qux' }" :text="foo + baz"></y>
 </x>
@@ -233,10 +233,8 @@ Expose element to current data scope with the `id`:
 ## Sandbox
 
 Expressions are sandboxed, ie. have no access to global or window (since sprae can be run in server environment).
-
 Default sandbox provides: _Array_, _Object_, _Number_, _String_, _Boolean_, _Date_, _console_.
-
-Sandbox can be extended via `Object.assign(sprae.globals, { BigInt, window, document })` etc.
+Sandbox can be extended as `Object.assign(sprae.globals, { BigInt, window, document })` etc.
 
 ## Examples
 
