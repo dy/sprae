@@ -146,7 +146,7 @@ Set value of an input, textarea or select. Takes handle of `checked` and `select
 </select>
 ```
 
-#### `:<prop>="value?"`, `:="props?"`
+#### `:<prop>="value?"`
 
 Set any attribute value or run effect.
 
@@ -157,11 +157,16 @@ Set any attribute value or run effect.
 <!-- Multiple properties -->
 <input :id:name="name" />
 
-<!-- Bulk properties -->
-<input :="{ id: name, name, type:'text', value }" />
+<!-- Effect (triggers any time bar changes) -->
+<div :fx="void bar()" ></div>
+```
 
-<!-- Effects (trigger any time foo or bar changes) -->
-<div :="if (foo) bar()" :fx="void bar()" ></div>
+#### `:="props?"`
+
+Spread multiple attibures.
+
+```html
+<input :="{ id: name, name, type:'text', value }" />
 ```
 
 #### `:on<event>="handler"`, `:on="events"`, `:<in>..<out>="handler"`
