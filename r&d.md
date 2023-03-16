@@ -474,6 +474,7 @@
   * [ ] x.raf="abc" - run regularly?
   * [ ] x.watch-a-b-c - update by change of any of the deps
   * [ ] :x.always - update by _any_ dep change
+  * [ ] :class.active="active"
 
 ## [x] Writing props on elements (like ones in :each) -> nah, just use `:x="this.x=abc"`
 

@@ -2,6 +2,11 @@
 
 > DOM microhydration with `:` attributes.
 
+_Sprae_ is minimal essential alternative to [alpine](https://github.com/alpinejs/alpine), [petite-vue](https://github.com/vuejs/petite-vue) or [template-parts](https://github.com/github/template-parts) with enhanced ergonomics.
+
+It enables simple markup logic without JS. Perfect for small websites or prototypes.
+
+
 ## Install
 
 To autoinit on document, include [`sprae.auto.js`](./sprae.auto.js):
@@ -110,17 +115,17 @@ Welcome, <span :text="user.name">Guest</span>.
 
 #### `:class="value"`
 
-Set class value from either string, array or object. Appends existing `class` attribute, if any.
+Set class value from either string, array or object. Extends existing `class` attribute, if any.
 
 ```html
 <div :class="`foo ${bar}`"></div>
-<div :class="['foo', 'bar']"></div>
-<div :class="{foo: true, bar: false}"></div>
 
-<div class="a" :class="['b', 'c']"></div>
-<!--
-<div class="a b c"></div>
--->
+<!-- extend existing class -->
+<div class="foo" :class="`bar`"></div>
+<!-- <div class="foo bar"></div> -->
+
+<!-- object with values -->
+<div :class="{foo:true, bar: false}"></div>
 ```
 
 #### `:style="value"`
@@ -243,13 +248,11 @@ Sandbox can be extended via `Object.assign(sprae.globals, { BigInt, window, docu
 
 ## Justification
 
-_Sprae_ is lightweight essential alternative to [alpine](https://github.com/alpinejs/alpine), [petite-vue](https://github.com/vuejs/petite-vue), [templize](https://github.com/dy/templize) or JSX with better ergonomics.
-
 * [Template-parts](https://github.com/dy/template-parts) / [templize](https://github.com/dy/templize) is progressive, but is stuck with native HTML quirks ([parsing table](https://github.com/github/template-parts/issues/24), [svg attributes](https://github.com/github/template-parts/issues/25), [liquid syntax](https://shopify.github.io/liquid/tags/template/#raw) conflict etc). Also ergonomics of `attr="{{}}"` is inferior to `:attr=""` since it creates flash of uninitialized values.
 * [Alpine](https://github.com/alpinejs/alpine) / [vue](https://github.com/vuejs/petite-vue) / [lit](https://github.com/lit/lit/tree/main/packages/lit-html) escapes native HTML quirks, but the syntax is a bit scattered: `:attr`, `v-*`,`x-*`, `@evt`, `{{}}` can be expressed with single convention. Besides, functionality is too broad and can be reduced to essence: perfection is when there's nothing to take away, not add. Also they tend to [self-encapsulate](https://github.com/alpinejs/alpine/discussions/3223), making interop hard.
 * React/[preact](https://ghub.io/preact) does the job wiring up JS to HTML, but with an extreme of migrating HTML to JSX and enforcing SPA, which is not organic for HTML. Also it doesn't support reactive fields (needs render call).
 
-_Sprae_ takes convention of _templize directives_ (_alpine_/_vue_ attrs) and builds upon [_@preact/signals_](https://ghub.io/@preact/signals).
+_Sprae_ takes convention of _templize directives_ (_alpine_/_vue_ attrs) and builds upon <del>[_@preact/signals_](https://ghub.io/@preact/signals)</del> simple reacti.
 
 * It doesn't break static html markup.
 * It falls back to element content if uninitialized.
