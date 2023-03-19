@@ -59,6 +59,8 @@
         return target[_parent]?.[prop];
       if (Array.isArray(target) && prop in Array.prototype)
         return target[prop];
+      if (prop in Object.prototype)
+        return target[prop];
       let value = target[prop];
       if (currentFx) {
         let propFxs = targetFxs.get(target);

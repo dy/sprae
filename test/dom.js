@@ -922,7 +922,7 @@ test(':render by ref', async () => {
   is(a.outerHTML, `<template><div :text="123"></div></template><x><div>123</div></x>`)
 })
 
-test(':render :with', async () => {
+test(':render state', async () => {
   let a = h`<template :ref="abc"><div :text="text"></div></template><x :render="abc" />`
   let state = sprae(a, {text:'abc'})
   is(a.outerHTML, `<template><div :text="text"></div></template><x><div>abc</div></x>`)
@@ -930,6 +930,19 @@ test(':render :with', async () => {
   await tick()
   is(a.outerHTML, `<template><div :text="text"></div></template><x><div>def</div></x>`)
 })
+
+test(':render :with', async () => {
+  let a = h`<template :ref="tpl"><div :text="text"></div></template><x :render="tpl" :with="{text:'abc'}" />`
+  let state = sprae(a)
+  is(a.outerHTML, `<template><div :text="text"></div></template><x><div>abc</div></x>`)
+})
+
+test(':render multiples', async () => {
+  let el = h`<template :ref="tpl"><div :each="item in items" :text="item.id"></div></template><x :render="tpl" :with="{items:[{id:'a'},{id:'b'}]}" />`
+  let state = sprae(el)
+  is(el.outerHTML, `<template><div :each="item in items" :text="item.id"></div></template><x><div>a</div><div>b</div></x>`)
+})
+
 
 test('ref: base', async () => {
   let a = h`<a :ref="a" :init="log.push(a), null" :text="b"></a>`
