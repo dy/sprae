@@ -1,4 +1,36 @@
 (() => {
+  // src/util.js
+  var queueMicrotask = Promise.prototype.then.bind(Promise.resolve());
+  var refs = /* @__PURE__ */ new WeakMap();
+  var set = (value) => {
+    const ref = new WeakRef(value);
+    refs.set(value, ref);
+    return ref;
+  };
+  var get = (value) => refs.get(value) || set(value);
+  var WeakishMap = class extends Map {
+    #registry = new FinalizationRegistry((key) => super.delete(key));
+    get size() {
+      return [...this].length;
+    }
+    constructor(entries = []) {
+      super();
+      for (const [key, value] of entries)
+        this.set(key, value);
+    }
+    get(key) {
+      return super.get(key)?.deref();
+    }
+    set(key, value) {
+      let ref = super.get(key);
+      if (ref)
+        this.#registry.unregister(ref);
+      ref = get(value);
+      this.#registry.register(value, key, ref);
+      return super.set(key, ref);
+    }
+  };
+
   // src/state.js
   var currentFx;
   var batch = /* @__PURE__ */ new Set();
@@ -152,37 +184,6 @@
     return b;
   }
 
-  // src/weakish-map.js
-  var refs = /* @__PURE__ */ new WeakMap();
-  var set = (value) => {
-    const ref = new WeakRef(value);
-    refs.set(value, ref);
-    return ref;
-  };
-  var get = (value) => refs.get(value) || set(value);
-  var WeakishMap = class extends Map {
-    #registry = new FinalizationRegistry((key) => super.delete(key));
-    get size() {
-      return [...this].length;
-    }
-    constructor(entries = []) {
-      super();
-      for (const [key, value] of entries)
-        this.set(key, value);
-    }
-    get(key) {
-      return super.get(key)?.deref();
-    }
-    set(key, value) {
-      let ref = super.get(key);
-      if (ref)
-        this.#registry.unregister(ref);
-      ref = get(value);
-      this.#registry.register(value, key, ref);
-      return super.set(key, ref);
-    }
-  };
-
   // src/directives.js
   var primary = {};
   var secondary = {};
@@ -213,8 +214,8 @@
       }
     };
   };
-  primary["scope"] = (el, expr, rootState) => {
-    let evaluate = parseExpr(el, expr, "scope");
+  primary["with"] = (el, expr, rootState) => {
+    let evaluate = parseExpr(el, expr, ":with");
     const localState = evaluate(rootState);
     let state2 = state(localState, rootState);
     sprae(el, state2);
@@ -223,12 +224,12 @@
   primary["each"] = (tpl, expr) => {
     let each = parseForExpression(expr);
     if (!each)
-      return exprError(new Error(), tpl, expr);
+      return exprError(new Error(), tpl, expr, ":each");
     const holder = tpl[_each] = document.createTextNode("");
     tpl.replaceWith(holder);
     const evaluate = parseExpr(tpl, each[2], ":each");
     const keyExpr = tpl.getAttribute(":key");
-    const itemKey = keyExpr ? parseExpr(null, keyExpr) : null;
+    const itemKey = keyExpr ? parseExpr(null, keyExpr, ":each") : null;
     tpl.removeAttribute(":key");
     const refExpr = tpl.getAttribute(":ref");
     const scopes = new WeakishMap();
@@ -287,6 +288,14 @@
       ];
     return [item, "", items];
   }
+  secondary["render"] = (el, expr, state2) => {
+    let evaluate = parseExpr(el, expr, ":render"), tpl = evaluate(state2);
+    if (!tpl)
+      exprError(new Error("Template not found"), el, expr, ":render");
+    let content = tpl.content.cloneNode(true);
+    el.replaceChildren(content);
+    sprae(el, state2);
+  };
   secondary["ref"] = (el, expr, state2) => {
     state2[expr] = el;
   };
@@ -537,11 +546,11 @@
       return result;
     };
   }
-  function exprError(error, element, expression, dir) {
+  function exprError(error, element, expression, directive) {
     Object.assign(error, { element, expression });
     console.warn(`\u2234 ${error.message}
 
-${dir}=${expression ? `"${expression}"
+${directive}=${expression ? `"${expression}"
 
 ` : ""}`, element);
     queueMicrotask(() => {
