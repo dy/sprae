@@ -12,9 +12,7 @@ To autoinit on document, include [`sprae.auto.js`](./sprae.auto.js):
 <!-- <script src="https://cdn.jsdelivr.net/npm/sprae/sprae.auto.js" defer></script> -->
 <script src="./path/to/sprae.auto.js" defer></script>
 
-<div :with="{foo:'bar'}">
-  <span :text="foo"></span>
-</div>
+<a :each="id in ['a','b','c']" :href="`#${id}`"></a>
 ```
 
 To use as module, import [`sprae.js`](./sprae.js):
@@ -131,7 +129,7 @@ Set value of an input, textarea or select. Takes handle of `checked` and `select
 </select>
 ```
 
-#### `:<prop>="value?"`, `:="props?"`
+#### `:<prop>="value?"`
 
 Set any attribute value or run effect.
 
@@ -142,16 +140,21 @@ Set any attribute value or run effect.
 <!-- Multiple properties -->
 <input :id:name="name" />
 
-<!-- Bulk properties -->
-<input :="{ id: name, name, type:'text', value }" />
-
-<!-- Effects (trigger any time foo or bar changes) -->
-<div :="if (foo) bar()" :fx="void bar()" ></div>
+<!-- Effect (triggers any time bar changes) -->
+<div :fx="void bar()" ></div>
 ```
 
-#### `:on<event>="handler"`, `:on="events"`, `:<in>..<out>="handler"`
+#### `:="props?"`
 
-Add event listeners.
+Spread multiple attibures.
+
+```html
+<input :="{ id: name, name, type:'text', value }" />
+```
+
+#### `:on<event>="handler"`, `:on<in>..on<out>="handler"`
+
+Add event listener or events chain.
 
 ```html
 <!-- Single event -->
@@ -172,9 +175,6 @@ Add event listeners.
 
 <!-- Event modifiers -->
 <button :onclick.throttle-500="handler">Not too often</button>
-
-<!-- Bulk/custom events -->
-<button :on="{ click: handler, touch: handler, special: handler }">Submit</button>
 ```
 
 ##### Event modifiers
@@ -243,8 +243,14 @@ Expose element to current data scope with the `id`:
 ## Sandbox
 
 Expressions are sandboxed, ie. have no access to global or window (since sprae can be run in server environment).
-Default sandbox provides: _Array_, _Object_, _Number_, _String_, _Boolean_, _Date_, _console_.
-Sandbox can be extended as `Object.assign(sprae.globals, { BigInt, window, document })` etc.
+
+```html
+<div :x="window.x"></div>
+<!-- window is undefined -->
+```
+
+Default sandbox provides: _Array_, _Object_, _Number_, _String_, _Boolean_, _Date_, _console_.<br/>
+Sandbox can be extended as `Object.assign(sprae.globals, { BigInt, window, document })`.
 
 ## Examples
 
