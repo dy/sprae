@@ -277,8 +277,8 @@ test('if: (#3) subsequent content is not abandoned', async () => {
   is(x.outerHTML, `<x><z>123</z></x>`)
 })
 
-test('if: + :scope doesnt prevent secondary effects from happening', async () => {
-  let el = h`<div><x :if="x" :scope="{}" :text="x"></x></div>`
+test('if: + :with doesnt prevent secondary effects from happening', async () => {
+  let el = h`<div><x :if="x" :with="{}" :text="x"></x></div>`
   let state = sprae(el, {x:''})
   is(el.innerHTML, ``)
   state.x = '123'
@@ -286,7 +286,7 @@ test('if: + :scope doesnt prevent secondary effects from happening', async () =>
   is(el.innerHTML, `<x>123</x>`)
 
   // NOTE: we ignore this case
-  // let el2 = h`<div><x :if="x" :scope="{x:cond}" :text="x"></x></div>`
+  // let el2 = h`<div><x :if="x" :with="{x:cond}" :text="x"></x></div>`
   // let state2 = sprae(el, {cond:''})
   // is(el2.innerHTML, ``)
   // state2.cond = '123'
@@ -859,7 +859,7 @@ test('on: modifiers chain', async e => {
 })
 
 test('with: inline', async () => {
-  let el = h`<x :scope="{foo:'bar'}"><y :text="foo + baz"></y></x>`
+  let el = h`<x :with="{foo:'bar'}"><y :text="foo + baz"></y></x>`
   let state = sprae(el, {baz: 'qux'})
   // FIXME: this doesn't inherit root scope baz property and instead uses hard-initialized one
   is(el.innerHTML, `<y>barqux</y>`)
@@ -868,7 +868,7 @@ test('with: inline', async () => {
   is(el.innerHTML, `<y>barquux</y>`)
 })
 test.skip('with: inline reactive', () => {
-  let el = h`<x :scope="{foo:'bar'}"><y :text="foo + baz"></y></x>`
+  let el = h`<x :with="{foo:'bar'}"><y :text="foo + baz"></y></x>`
   let baz = signal('qux')
   sprae(el, {baz})
   // FIXME: this doesn't inherit root scope baz property and instead uses hard-initialized one
@@ -877,7 +877,7 @@ test.skip('with: inline reactive', () => {
   is(el.innerHTML, `<y>barquux</y>`)
 })
 test('with: data', async () => {
-  let el = h`<x :scope="x"><y :text="foo"></y></x>`
+  let el = h`<x :with="x"><y :text="foo"></y></x>`
   let state = sprae(el, {x: {foo:'bar'}})
   is(el.innerHTML, `<y>bar</y>`)
   console.log('update', state.x)
@@ -889,7 +889,7 @@ test('with: data', async () => {
 test('with: transparency', async () => {
   // NOTE: y:text initializes through directive, not through parent
   // therefore by default :text uses parent's state, not defined by element itself
-  let el = h`<x :scope="{foo:'foo'}"><y :scope="b" :text="foo+bar"></y></x>`
+  let el = h`<x :with="{foo:'foo'}"><y :with="b" :text="foo+bar"></y></x>`
   let params = sprae(el, {b:{bar:'bar'}})
   is(el.innerHTML, `<y>foobar</y>`)
   params.b.bar = 'baz'
@@ -897,7 +897,7 @@ test('with: transparency', async () => {
   is(el.innerHTML, `<y>foobaz</y>`)
 })
 test.skip('with: reactive transparency', () => {
-  let el = h`<x :scope="{foo:1}"><y :scope="b.c" :text="foo+bar"></y></x>`
+  let el = h`<x :with="{foo:1}"><y :with="b.c" :text="foo+bar"></y></x>`
   const bar = signal('2')
   sprae(el, {b:{c:{bar}}})
   is(el.innerHTML, `<y>12</y>`)
@@ -905,7 +905,7 @@ test.skip('with: reactive transparency', () => {
   is(el.innerHTML, `<y>13</y>`)
 })
 test('with: writes to state', async () => {
-  let a = h`<x :scope="{a:1}"><y :on="{x(){a++}}" :text="a"></y></x>`
+  let a = h`<x :with="{a:1}"><y :on="{x(){a++}}" :text="a"></y></x>`
   sprae(a)
   is(a.innerHTML, `<y>1</y>`)
   a.firstChild.dispatchEvent(new window.Event('x'))
@@ -914,6 +914,21 @@ test('with: writes to state', async () => {
   a.firstChild.dispatchEvent(new window.Event('x'))
   await tick()
   is(a.innerHTML, `<y>3</y>`)
+})
+
+test(':render by ref', async () => {
+  let a = h`<template :ref="abc"><div :text="123"></div></template><x :render="abc">456</x>`
+  sprae(a)
+  is(a.outerHTML, `<template><div :text="123"></div></template><x><div>123</div></x>`)
+})
+
+test(':render :with', async () => {
+  let a = h`<template :ref="abc"><div :text="text"></div></template><x :render="abc" />`
+  let state = sprae(a, {text:'abc'})
+  is(a.outerHTML, `<template><div :text="text"></div></template><x><div>abc</div></x>`)
+  state.text = 'def'
+  await tick()
+  is(a.outerHTML, `<template><div :text="text"></div></template><x><div>def</div></x>`)
 })
 
 test('ref: base', async () => {
@@ -959,7 +974,7 @@ test(':: scope refers to current element', async () => {
 
 test(':: scope directives must come first', async () => {
   // NOTE: we init attributes in order of definition
-  let a = h`<x :text="y" :scope="{y:1}" :ref="x"></x>`
+  let a = h`<x :text="y" :with="{y:1}" :ref="x"></x>`
   sprae(a, {})
   is(a.outerHTML, `<x>1</x>`)
 })

@@ -518,19 +518,57 @@
   ? Some 'or' character `:onclick--onkeydown`
   ? We can redirect to main event, that's it for now
 
-## [ ] Insert content by reusing the node/template,
+## [x] Insert content by reusing the node/template -> use `:render="ref" :with="data"`
 
   * Makes easy use of repeatable fragments, instead of web-components
   + sort-of "detached" for-each
   + reinforces :ref
   ? does it replace element or puts a content?
+  * Refs:
+    * https://github.com/justinfagnani/html-include-element - src=
+    * https://www.npmjs.com/package/imported-template - content=path-to-file
+    * https://github.com/SirPepe/html-import src="content.selector"
+    * https://github.com/Juicy/juicy-html - html="rawhtml"
+    * https://www.npmjs.com/package/html-import-wc - src=path
+    * https://github.com/sashafirsov/slotted-element - src=path-to-htmlor-json
+    * https://github.com/webcomponents/html-imports - href=filepath
+    * https://github.com/giuseppeg/xm - import src=filepath
+    * https://github.com/ProjectEvergreen/greenwood/tree/master/packages/plugin-include-html#link-tag-html-only
+    * https://github.com/maherbo/include-HTML-document-fragment - link href=path
+    * https://github.com/github/include-fragment-element - src=path-to-html
 
   1. :use="ref-id"
   ```
-  <template :ref="abc"><span :text="abc"></span></template>
+  <template :ref="abc" id="abc"><span :text="abc"></span></template>
 
-  <div :use="abc" :scope="{abc:'def'}"></div>
+  <div :use="abc" :with="{abc:'def'}"></div>
+  <div :use="'#abc'" :with="{abc:'def'}"></div>
   ```
+
+  - `<use>` from SVG replaces element, but we need inserting content
+
+  2. :content="#template-id"
+
+  - conflicts with direct inline content
+
+  3. :include="#template-id"
+
+  - conflicts with path to file
+
+  4. :tpl="#template-id"
+
+  - some confusion of meaning
+
+  5. :render="#template-id"
+
+  + compatible with liquid 5.0
+  + makes sense as :render=a :with=b
+
+  * Let's think consequently.
+    1. `<template>` element has direct purpose for that
+    2. We provide content fallback for unloaded elements in case of `:text` as `<x :text="abc">fallback</x>`
+    3. There's too many ways to implement fetching - ideally we leave that concern out and focus only on including content
+    4. The approach is almost ready declarative custom element. `<template>` is standard part of it - adds to 1.
 
 ## [x] Remove non-essential directives -> yep, less API friction
   * :aria - can be defined via plain attributes

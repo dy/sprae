@@ -8,7 +8,7 @@
 * [x] combinations: :else :if
 * [x] :each :if, :if :each
 * [x] :each :each
-* [x] :scope must be able to write state value as well
+* [x] :with must be able to write state value as well
 * [x] docs: give example to each directive
 * [x] initialize per-element: <x :each><y :if></y><x> - tree-dependent (:each comes first).
 * [x] generalize common attributes :prop="xyz"
@@ -22,7 +22,7 @@
 * [x] bulk events :ona:onb
 * [x] multiprop setter :a:b="c"
 * [x] make `this` in expression an element
-  * ~~[x] replace :ref with :scope="this as x"~~
+  * ~~[x] replace :ref with :with="this as x"~~
 * [x] :ref creates instance in current state, not creates a new state
   * [x] to avoid extending signal-struct, we must collect state data before, and call updates after for extended state
 * [x] optimization: replace element-props with direct (better) setters
@@ -31,11 +31,11 @@
 * ~~[x] report usignal problem~~ author is not really interested
 * [x] `this` doesn't refer to element/scope in event handlers
 * [x] :text="" empty values shouldn't throw
-* [x] implement :scope
+* [x] implement :with
 * [x] update :value without losing focus / position
 * ~~[x] run tiredown if element got removed from condition or loop (free memory)~~ no need just make sure no refs to elements stored
 * [x] `sprae(el, newState)` can update element's state directly (as batch!?) -> must be tested against repeats in directives
-* [x] :if :ref, :if :scope -> context setters must come first always
+* [x] :if :ref, :if :with -> context setters must come first always
 * [x] :style="{'--x':value}"
 * [x] :onkeydown.ctrl-alt-D
 * [ ] frameworks benchmark

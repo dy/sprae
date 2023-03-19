@@ -12,7 +12,7 @@ To autoinit on document, include [`sprae.auto.js`](./sprae.auto.js):
 <!-- <script src="https://cdn.jsdelivr.net/npm/sprae/sprae.auto.js" defer></script> -->
 <script src="./path/to/sprae.auto.js" defer></script>
 
-<div :scope="{foo:'bar'}">
+<div :with="{foo:'bar'}">
   <span :text="foo"></span>
 </div>
 ```
@@ -49,23 +49,6 @@ Sprae evaluates attributes starting with `:`:
 
 
 ## Attributes
-
-#### `:scope="data"`
-
-Define or extend data scope for a subtree.
-
-```html
-<!-- Inline data -->
-<x :scope="{ foo: 'bar' }" :text="foo"></x>
-
-<!-- External data -->
-<y :scope="data"></y>
-
-<!-- Extend scope -->
-<x :scope="{ foo: 'bar' }">
-  <y :scope="{ baz: 'qux' }" :text="foo + baz"></y>
-</x>
-```
 
 #### `:if="condition"`, `:else`
 
@@ -205,6 +188,33 @@ Add event listeners.
 * `.ctrl-<key>, .alt-<key>, .meta-<key>, .shift-<key>` – key combinations, eg. `.ctrl-alt-delete` or `.meta-x`.
 * `.*` – any other modifier has no effect, but allows binding multiple handlers to same event (like jQuery event classes).
 
+#### `:with="data"`
+
+Define or extend data scope for a subtree.
+
+```html
+<!-- Inline data -->
+<x :with="{ foo: 'bar' }" :text="foo"></x>
+
+<!-- External data -->
+<y :with="data"></y>
+
+<!-- Extend scope -->
+<x :with="{ foo: 'bar' }">
+  <y :with="{ baz: 'qux' }" :text="foo + baz"></y>
+</x>
+```
+
+#### `:render="ref"`
+
+Include template as element content.
+
+```html
+<template :ref="foo"><span :text="foo"></span></template>
+
+<div :render="foo" :with="{foo:'bar'}">unknown</div>
+<div :render="foo" :with="{foo:'baz'}">unknown</div>
+```
 
 #### `:ref="id"`
 

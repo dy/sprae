@@ -1,3 +1,5 @@
+import { queueMicrotask } from "./util.js"
+
 // currentFx stack of listeners
 let currentFx, batch = new Set, pendingUpdate
 

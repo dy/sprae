@@ -2,7 +2,7 @@
 import sprae from './core.js'
 import swap from './domdiff.js'
 import { state as createState} from './state.js'
-import { WeakishMap } from './weakish-map.js'
+import { queueMicrotask, WeakishMap } from './util.js'
 
 // reserved directives - order matters!
 // primary initialized first by selector, secondary initialized by iterating attributes
@@ -10,8 +10,8 @@ export const primary = {}, secondary = {}
 
 
 // :if is interchangeable with :each depending on order, :if :each or :each :if have different meanings
-// as for :if :scope - :if must init first, since it is lazy, to avoid initializing component ahead of time by :scope
-// we consider :scope={x} :if={x} case insignificant
+// as for :if :with - :if must init first, since it is lazy, to avoid initializing component ahead of time by :with
+// we consider :with={x} :if={x} case insignificant
 primary['if'] = (el, expr) => {
   let holder = document.createTextNode(''),
       clauses = [parseExpr(el, expr, ':if')],
@@ -44,9 +44,9 @@ primary['if'] = (el, expr) => {
   }
 }
 
-// :scope must come before :each, but :if has primary importance
-primary['scope'] = (el, expr, rootState) => {
-  let evaluate = parseExpr(el, expr, 'scope')
+// :with must come before :each, but :if has primary importance
+primary['with'] = (el, expr, rootState) => {
+  let evaluate = parseExpr(el, expr, ':with')
   const localState = evaluate(rootState)
   let state = createState(localState, rootState)
   // console.log(123, state.foo, state.bar)
@@ -58,7 +58,7 @@ const _each = Symbol(':each')
 // :each must init before :ref, :id or any others, since it defines scope
 primary['each'] = (tpl, expr) => {
   let each = parseForExpression(expr);
-  if (!each) return exprError(new Error, tpl, expr);
+  if (!each) return exprError(new Error, tpl, expr, ':each');
 
   // FIXME: make sure no memory leak here
   // we need :if to be able to replace holder instead of tpl for :if :each case
@@ -68,7 +68,7 @@ primary['each'] = (tpl, expr) => {
   const evaluate = parseExpr(tpl, each[2], ':each');
 
   const keyExpr = tpl.getAttribute(':key');
-  const itemKey = keyExpr ? parseExpr(null, keyExpr) : null;
+  const itemKey = keyExpr ? parseExpr(null, keyExpr, ':each') : null;
   tpl.removeAttribute(':key')
 
   const refExpr = tpl.getAttribute(':ref');
@@ -142,6 +142,16 @@ function parseForExpression(expression) {
   return [item, '', items]
 }
 
+secondary['render'] = (el, expr, state) => {
+  let evaluate = parseExpr(el, expr, ':render'),
+      tpl = evaluate(state)
+
+  if (!tpl) exprError(new Error('Template not found'), el, expr, ':render');
+
+  let content = tpl.content.cloneNode(true);
+  el.replaceChildren(content)
+  sprae(el, state)
+}
 
 secondary['ref'] = (el, expr, state) => {
   // FIXME: wait for complex ref use-case
@@ -426,9 +436,9 @@ function parseExpr(el, expression, dir) {
   }
 }
 
-function exprError(error, element, expression, dir) {
+function exprError(error, element, expression, directive) {
   Object.assign( error, { element, expression } )
-  console.warn(`∴ ${error.message}\n\n${dir}=${ expression ? `"${expression}"\n\n` : '' }`, element)
+  console.warn(`∴ ${error.message}\n\n${directive}=${ expression ? `"${expression}"\n\n` : '' }`, element)
   queueMicrotask(() => { throw error }, 0)
 }
 
