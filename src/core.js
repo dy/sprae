@@ -31,7 +31,8 @@ export default function sprae(container, values) {
         updates.push(primary[name](el, expr, state, name))
 
         // stop if element was spraed by directive or skipped (detached)
-        if (memo.has(el) || el.parentNode !== parent) return false
+        if (memo.has(el)) return
+        if (el.parentNode !== parent) return false
       }
     }
 
@@ -48,9 +49,7 @@ export default function sprae(container, values) {
         for (let attrName of attrNames) {
           let dir = secondary[attrName] || defaultDirective;
           updates.push(dir(el, expr, state, attrName));
-
-          // stop if element was spraed by directive or skipped (detached)
-          if (memo.has(el) || el.parentNode !== parent) return false
+          // NOTE: secondary directives don't stop flow nor extend state, so no need to check
         }
       }
     }

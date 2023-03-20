@@ -120,6 +120,14 @@ primary['each'] = (tpl, expr) => {
   }
 }
 
+// ref must be last within primaries, since that must be skipped by :each, but before secondaries
+primary['ref'] = (el, expr, state) => {
+  // FIXME: wait for complex ref use-case
+  // parseExpr(el, `__scope[${expr}]=this`, ':ref')(values)
+  state[expr] = el;
+}
+
+
 // This was taken AlpineJS, former VueJS 2.* core. Thanks Alpine & Vue!
 function parseForExpression(expression) {
   let forIteratorRE = /,([^,\}\]]*)(?:,([^,\}\]]*))?$/
@@ -151,12 +159,6 @@ secondary['render'] = (el, expr, state) => {
   let content = tpl.content.cloneNode(true);
   el.replaceChildren(content)
   sprae(el, state)
-}
-
-secondary['ref'] = (el, expr, state) => {
-  // FIXME: wait for complex ref use-case
-  // parseExpr(el, `__scope[${expr}]=this`, ':ref')(values)
-  state[expr] = el;
 }
 
 secondary['id'] = (el, expr) => {

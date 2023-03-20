@@ -915,6 +915,11 @@ test('with: writes to state', async () => {
   await tick()
   is(a.innerHTML, `<y>3</y>`)
 })
+test('with: one of children (internal number of iterations, cant see the result here)', async () => {
+  let a = h `<div><x :text="x"></x><x :with={x:2} :text="x"></x><x :text="y">3</x></div>`
+  sprae(a, {x:1,y:3})
+  is(a.innerHTML,`<x>1</x><x>2</x><x>3</x>`)
+})
 
 test(':render by ref', async () => {
   let a = h`<template :ref="abc"><div :text="123"></div></template><x :render="abc">456</x>`
@@ -937,10 +942,16 @@ test(':render :with', async () => {
   is(a.outerHTML, `<template><div :text="text"></div></template><x><div>abc</div></x>`)
 })
 
-test(':render multiples', async () => {
+test(':render nested items', async () => {
   let el = h`<template :ref="tpl"><div :each="item in items" :text="item.id"></div></template><x :render="tpl" :with="{items:[{id:'a'},{id:'b'}]}" />`
   let state = sprae(el)
   is(el.outerHTML, `<template><div :each="item in items" :text="item.id"></div></template><x><div>a</div><div>b</div></x>`)
+})
+
+test.todo(':render template after use', async () => {
+  let a = h`<x :render="tpl" :with="{text:'abc'}" /><template :ref="tpl"><div :text="text"></div></template>`
+  let state = sprae(a)
+  is(a.outerHTML, `<x><div>abc</div></x><template><div :text="text"></div></template>`)
 })
 
 
