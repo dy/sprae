@@ -308,11 +308,11 @@
   };
   secondary["class"] = (el, expr) => {
     let evaluate = parseExpr(el, expr, ":class");
-    let initClassName = el.className;
+    let initClassName = el.getAttribute("class");
     return (state2) => {
       let v = evaluate(state2);
       let className = typeof v === "string" ? v : (Array.isArray(v) ? v : Object.entries(v).map(([k, v2]) => v2 ? k : "")).filter(Boolean).join(" ");
-      el.className = [initClassName, className].filter(Boolean).join(" ");
+      el.setAttribute("class", [initClassName, className].filter(Boolean).join(" "));
     };
   };
   secondary["style"] = (el, expr) => {
