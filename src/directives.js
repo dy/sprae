@@ -1,6 +1,7 @@
 // directives & parsing
 import sprae from './core.js'
 import swap from './domdiff.js'
+// import swap from 'swapdom'
 import { state as createState} from './state.js'
 import { queueMicrotask, WeakishMap } from './util.js'
 
@@ -169,11 +170,11 @@ secondary['id'] = (el, expr) => {
 
 secondary['class'] = (el, expr) => {
   let evaluate = parseExpr(el, expr, ':class')
-  let initClassName = el.className
+  let initClassName = el.getAttribute('class')
   return (state) => {
     let v = evaluate(state)
     let className = typeof v === 'string' ? v : (Array.isArray(v) ? v : Object.entries(v).map(([k,v])=>v?k:'')).filter(Boolean).join(' ')
-    el.className = [initClassName, className].filter(Boolean).join(' ');
+    el.setAttribute('class',[initClassName, className].filter(Boolean).join(' '));
   }
 }
 
