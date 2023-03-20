@@ -272,6 +272,9 @@
       }
     };
   };
+  primary["ref"] = (el, expr, state2) => {
+    state2[expr] = el;
+  };
   function parseForExpression(expression) {
     let forIteratorRE = /,([^,\}\]]*)(?:,([^,\}\]]*))?$/;
     let stripParensRE = /^\s*\(|\)\s*$/g;
@@ -297,9 +300,6 @@
     let content = tpl.content.cloneNode(true);
     el.replaceChildren(content);
     sprae(el, state2);
-  };
-  secondary["ref"] = (el, expr, state2) => {
-    state2[expr] = el;
   };
   secondary["id"] = (el, expr) => {
     let evaluate = parseExpr(el, expr, ":id");
@@ -580,7 +580,9 @@ ${directive}=${expression ? `"${expression}"
           let expr = el.getAttribute(attrName);
           el.removeAttribute(attrName);
           updates.push(primary[name](el, expr, state2, name));
-          if (memo.has(el) || el.parentNode !== parent)
+          if (memo.has(el))
+            return;
+          if (el.parentNode !== parent)
             return false;
         }
       }
@@ -597,8 +599,6 @@ ${directive}=${expression ? `"${expression}"
           for (let attrName of attrNames) {
             let dir = secondary[attrName] || directives_default;
             updates.push(dir(el, expr, state2, attrName));
-            if (memo.has(el) || el.parentNode !== parent)
-              return false;
           }
         }
       }
