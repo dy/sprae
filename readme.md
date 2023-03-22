@@ -256,6 +256,7 @@ Sandbox can be extended as `Object.assign(sprae.globals, { BigInt })`.
 
 * TODO MVC: [demo](https://dy.github.io/sprae/examples/todomvc), [code](https://github.com/dy/sprae/blob/main/examples/todomvc.html)
 * Wavearea: [demo](https://dy.github.io/wavearea?src=//cdn.freesound.org/previews/586/586281_2332564-lq.mp3), [code](https://github.com/dy/wavearea)
+* Prostogreen [demo](http://web-being.org/prostogreen/), [code](https://github.com/web-being/prostogreen/)
 
 ## Justification
 
@@ -263,15 +264,14 @@ Sandbox can be extended as `Object.assign(sprae.globals, { BigInt })`.
 * [Alpine](https://github.com/alpinejs/alpine) / [vue](https://github.com/vuejs/petite-vue) / [lit](https://github.com/lit/lit/tree/main/packages/lit-html) escapes native HTML quirks, but the syntax is a bit scattered: `:attr`, `v-*`,`x-*`, `@evt`, `{{}}` can be expressed with single convention. Besides, functionality is too broad and can be reduced to essence: perfection is when there's nothing to take away, not add. Also they tend to [self-encapsulate](https://github.com/alpinejs/alpine/discussions/3223), making interop hard.
 * React/[preact](https://ghub.io/preact) does the job wiring up JS to HTML, but with an extreme of migrating HTML to JSX and enforcing SPA, which is not organic for HTML. Also it doesn't support reactive fields (needs render call).
 
-_Sprae_ takes convention of _templize directives_ (_alpine_/_vue_ attrs) and builds upon <del>[_@preact/signals_](https://ghub.io/@preact/signals)</del> simple reacti.
+_Sprae_ takes convention of _templize directives_ (_alpine_/_vue_ attrs) and builds upon <del>[_@preact/signals_](https://ghub.io/@preact/signals)</del> simple reactive state.
 
-* It doesn't break or modify initial static html markup.
+* It doesn't break or modify static html markup.
 * It falls back to element content if uninitialized.
 * It doesn't enforce SPA nor JSX.
 * It enables island hydration.
 * It reserves minimal syntax space as `:` convention (keeping tree neatly decorated, not scattered).
 * Expressions are naturally reactive and incur minimal updates.
-* Input data may contain [signals](https://ghub.io/@preact/signals) or [reactive values](https://ghub.io/sube).
 * Elements / data API is open and enable easy interop.
 
 It is reminiscent of [XSLT](https://www.w3schools.com/xml/xsl_intro.asp), considered a [buried treasure](https://github.com/bahrus/be-restated) by web-connoisseurs.
