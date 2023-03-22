@@ -63,14 +63,12 @@ Control flow of elements.
 Multiply element. `index` value starts from 1.
 
 ```html
-<ul>
-  <li :each="item in items" :text="item">Untitled</li>
-</ul>
+<ul><li :each="item in items" :text="item"></ul>
 
 <!-- Cases -->
 <li :each="item, idx in list" />
 <li :each="val, key in obj" />
-<li :each="idx, idx0 in number" />
+<li :each="idx1, idx0 in number" />
 
 <!-- Loop by condition -->
 <li :if="items" :each="item in items" :text="item" />
@@ -78,9 +76,6 @@ Multiply element. `index` value starts from 1.
 
 <!-- Key items to reuse elements -->
 <li :each="item in items" :key="item.id" :text="item.value" />
-
-<!-- To avoid FOUC -->
-<style>[:each]{visibility: hidden}</style>
 ```
 
 #### `:text="value"`
@@ -131,7 +126,7 @@ Set value of an input, textarea or select. Takes handle of `checked` and `select
 
 #### `:<prop>="value?"`
 
-Set any attribute value or run effect.
+Set any attribute value or run an effect.
 
 ```html
 <!-- Single property -->
@@ -166,10 +161,8 @@ Add event listener or events chain.
 <!-- Sequence of events -->
 <button :onfocus..onblur="e => {
   // onfocus
-  let id = setInterval(track,200)
   return e => {
     // onblur
-    clearInterval(id)
   }
 }">
 
@@ -223,6 +216,7 @@ Expose element to current data scope with the `id`:
 ```html
 <!-- single item -->
 <textarea :ref="text" placeholder="Enter text..."></textarea>
+<span :text="text.value"></span>
 
 <!-- iterable items -->
 <ul>
@@ -230,14 +224,6 @@ Expose element to current data scope with the `id`:
     <input :onfocus..onblur="e => (item.classList.add('editing'), e => item.classList.remove('editing'))"/>
   </li>
 </ul>
-
-<script type="module">
-  import sprae from 'sprae';
-  let state = sprae(document, {items: ['a','b','c']})
-
-  // element is in the state
-  state.text // <textarea></textarea>
-</script>
 ```
 
 ## Sandbox
@@ -251,6 +237,15 @@ Expressions are sandboxed, ie. have no access to global or window (since sprae c
 
 Default sandbox provides: _window_, _document_, _console_, _history_, _location_, _Array_, _Object_, _Number_, _String_, _Boolean_, _Date_, _Set_, _Map_.<br/>
 Sandbox can be extended as `Object.assign(sprae.globals, { BigInt })`.
+
+## FOUC
+
+To avoid _flash of unstyled content_, you can hide sprae attribute or add a custom effect, eg. `:hidden` - that will be removed once sprae is initialized:
+
+```html
+<div :hidden></div>
+<style>[:each],[:hidden] {visibility: hidden}</style>
+```
 
 ## Examples
 
