@@ -40,22 +40,20 @@
               :onchange="e => (item.done = !item.done, save(todos))"
             />
             <label :text="item.text"></label>
-            <button class="destroy" :onclick="e => save(todos = todos.filter(i => i !== item))"></button>
+            <button class="destroy" :onclick="e => (save(todos = todos.filter(i => i.text !== item.text)))"></button>
           </div>
           <input class=edit
             :value="item.text"
-            :on="{
-              input(e) { item.text = e.target.value; save(todos) },
-              blur(e) { li.classList.remove('editing'); },
-              keypress(e) { e.key === 'Enter' ? e.target.blur() : null },
-            }"
+            :oninput="e => {item.text = e.target.value; save(todos)}"
+            :onblur="e => li.classList.remove('editing');"
+            :onkeypress="(e) => { e.key === 'Enter' ? e.target.blur() : null }"
           />
         </li>
       </ul>
     </section>
     <footer class="footer">
       <span class="todo-count">
-        <strong :text="count">#</strong> <span :text="plur('item', count)">items</span> left
+        <strong :text="count()">#</strong> <span :text="plur('item', count())">items</span> left
       </span>
       <ul class="filters">
         <li :each="label, key in {'#/': 'All', '#/active': 'Active', '#/completed': 'Completed'}">
@@ -77,19 +75,19 @@
   <script src="https://unpkg.com/todomvc-common/base.js"></script>
   <script type="importmap"> {
     "imports": {
-      "sprae": "https://cdn.skypack.dev/sprae",
+      "sprae": "https://cdn.jsdelivr.net/npm/sprae/sprae.min.js",
       "plur": "https://cdn.skypack.dev/plur"
     }
   }
   </script>
   <script type="module">
-    import sprae from 'sprae'
+    import sprae from '../sprae.js'
     import plur from 'plur'
 
     let state = sprae(document.body, {
       plur,
       todos: JSON.parse(localStorage.getItem('todomvc.items') || '[]'),
-      get count() { return this.todos.filter(item => !item.done).length },
+      count() { return this.todos.filter(item => !item.done).length },
       hash: window.location.hash || '#/',
       save: items => localStorage.setItem('todomvc.items', JSON.stringify(items))
     })
