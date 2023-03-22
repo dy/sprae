@@ -11,7 +11,7 @@ const _parent = Symbol('parent')
 // default root sandbox
 export const sandbox = {
   Array, Object, Number, String, Boolean, Date,
-  console
+  console, window, document, history, location
 }
 
 const handler = {
@@ -23,9 +23,8 @@ const handler = {
   get(target, prop) {
     if (typeof prop === 'symbol') return target[prop]
     if (!(prop in target)) return target[_parent]?.[prop]
-    if (Array.isArray(target) && prop in Array.prototype) return target[prop];
-    // .constructor etc
-    if (prop in Object.prototype) return target[prop];
+    // .constructor, .slice etc
+    if (prop in Object.prototype || (Array.isArray(target) && prop in Array.prototype && prop !== 'length')) return target[prop];
 
     let value = target[prop]
     if (currentFx) {
@@ -52,12 +51,9 @@ const handler = {
 
   set(target, prop, value) {
     if (!(prop in target) && (target[_parent] && prop in target[_parent])) return target[_parent][prop] = value
-    if (Array.isArray(target) && prop in Array.prototype) return target[prop] = value;
-
-    const prev = target[prop]
 
     // avoid bumping unchanged values
-    if (Object.is(prev, value)) return true
+    if (!Array.isArray(target) && Object.is(target[prop], value)) return true
 
     target[prop] = value
 

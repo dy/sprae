@@ -249,8 +249,8 @@ Expressions are sandboxed, ie. have no access to global or window (since sprae c
 <!-- window is undefined -->
 ```
 
-Default sandbox provides: _Array_, _Object_, _Number_, _String_, _Boolean_, _Date_, _console_.<br/>
-Sandbox can be extended as `Object.assign(sprae.globals, { BigInt, window, document })`.
+Default sandbox provides: _window_, _document_, _console_, _history_, _location_, _Array_, _Object_, _Number_, _String_, _Boolean_, _Date_, _Set_, _Map_.<br/>
+Sandbox can be extended as `Object.assign(sprae.globals, { BigInt })`.
 
 ## Examples
 

@@ -50,7 +50,6 @@ primary['with'] = (el, expr, rootState) => {
   let evaluate = parseExpr(el, expr, ':with')
   const localState = evaluate(rootState)
   let state = createState(localState, rootState)
-  // console.log(123, state.foo, state.bar)
   sprae(el, state);
 }
 

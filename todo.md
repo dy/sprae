@@ -48,4 +48,4 @@
 * [x] parallel chains
 * [x] Sandbox
 * [x] Autorun
-* [ ] There's some weird bug with attaching event listeners to document, hmmm. Need test case.
+* [x] There's some bug with prostogreen not triggering effect. (caused by special array.length case)

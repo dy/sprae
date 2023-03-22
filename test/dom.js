@@ -1030,13 +1030,22 @@ test.skip('getters', async () => {
 })
 
 test('sandbox', async () => {
-  let el = h`<x :x="log.push(typeof window, typeof console, typeof arguments, typeof __scope)"></x>`
+  let el = h`<x :x="log.push(typeof self, typeof console, typeof arguments, typeof __scope)"></x>`
   let log = []
   sprae(el.cloneNode(), {log})
   is(log, ['undefined', 'object', 'undefined', 'undefined'])
 
   log.splice(0)
-  Object.assign(sprae.globals, { window })
+  Object.assign(sprae.globals, { self: window })
   sprae(el.cloneNode(), {log})
   is(log, ['object', 'object', 'undefined', 'undefined'])
+})
+
+test('subscribe to array length', async () => {
+  let el = h`<div :with="{likes:[]}"><x :onx="e=>likes.push(1)"></x><y :text="likes.length"></y></div>`
+  sprae(el)
+  is(el.innerHTML, `<x></x><y>0</y>`)
+  el.firstChild.dispatchEvent(new CustomEvent('x'))
+  await tick()
+  is(el.innerHTML, `<x></x><y>1</y>`)
 })

@@ -46,7 +46,11 @@
     String,
     Boolean,
     Date,
-    console
+    console,
+    window,
+    document,
+    history,
+    location
   };
   var handler = {
     has() {
@@ -57,9 +61,7 @@
         return target[prop];
       if (!(prop in target))
         return target[_parent]?.[prop];
-      if (Array.isArray(target) && prop in Array.prototype)
-        return target[prop];
-      if (prop in Object.prototype)
+      if (prop in Object.prototype || Array.isArray(target) && prop in Array.prototype && prop !== "length")
         return target[prop];
       let value = target[prop];
       if (currentFx) {
@@ -82,10 +84,7 @@
     set(target, prop, value) {
       if (!(prop in target) && (target[_parent] && prop in target[_parent]))
         return target[_parent][prop] = value;
-      if (Array.isArray(target) && prop in Array.prototype)
-        return target[prop] = value;
-      const prev = target[prop];
-      if (Object.is(prev, value))
+      if (!Array.isArray(target) && Object.is(target[prop], value))
         return true;
       target[prop] = value;
       let propFxs = targetFxs.get(target)?.[prop];
