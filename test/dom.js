@@ -1021,6 +1021,15 @@ test(':: scope directives must come first', async () => {
   is(a.outerHTML, `<x>1</x>`)
 })
 
+test.todo('immediate scope', async () => {
+  let el = h`<x :with="{arr:[], inc(){ arr.push(1) }}" :onx="e=>inc()" :text="arr[0]"></x>`
+  sprae(el)
+  is(el.outerHTML, `<x></x>`)
+  el.dispatchEvent(new CustomEvent('x'))
+  await tick()
+  is(el.outerHTML, `<x>1</x>`)
+})
+
 test('getters', async () => {
   let x = h`<h2 :text="doubledCount >= 1 ? 1 : 0"></h2>`
   let state = sprae(x, {
