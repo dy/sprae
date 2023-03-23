@@ -49,5 +49,5 @@
 * [x] Sandbox
 * [x] Autorun
 * [x] There's some bug with prostogreen not triggering effect. (caused by special array.length case)
-* [ ] Getters must become evaluable
+* [x] Getters must become evaluable
 * [ ] `:with="{likes:[], like(){ /* likes should not be undefined here */ }}"`

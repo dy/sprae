@@ -50,6 +50,7 @@ const handler = {
   },
 
   set(target, prop, value) {
+    // "fake" prototype chain, since regular one doesn't fit
     if (!(prop in target) && (target[_parent] && prop in target[_parent])) return target[_parent][prop] = value
 
     // avoid bumping unchanged values
@@ -83,6 +84,15 @@ export const state = (obj, parent) => {
   let proxy = new Proxy(obj, handler)
   targetProxy.set(obj, proxy)
   proxyTarget.set(proxy, obj)
+
+  // bind all getters here to proxy
+  let descriptors = Object.getOwnPropertyDescriptors(obj)
+  for (let name in descriptors) {
+    let desc = descriptors[name]
+    if (desc.get) {
+      if (desc.get) desc.get = desc.get.bind(proxy), Object.defineProperty(obj, name, desc)
+    }
+  }
 
   // inherit from parent state
   obj[_parent] = parent ? state(parent) : sandbox
