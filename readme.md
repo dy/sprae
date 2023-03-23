@@ -2,7 +2,7 @@
 
 > DOM microhydration with `:` attributes.
 
-_Sprae_ is tiny progressive enhancement lib, a minimal essential alternative to [alpine](https://github.com/alpinejs/alpine), [petite-vue](https://github.com/vuejs/petite-vue) or [template-parts](https://github.com/github/template-parts) with improved ergonomics. It enables simple markup logic without external scripts. Perfect for small websites or prototypes.
+_Sprae_ is tiny progressive enhancement framework, a minimal essential alternative to [alpine](https://github.com/alpinejs/alpine), [petite-vue](https://github.com/vuejs/petite-vue) or [template-parts](https://github.com/github/template-parts) with improved ergonomics. It enables simple markup logic without external scripts. Perfect for small websites, prototypes or UI logic.
 
 ## Install
 
