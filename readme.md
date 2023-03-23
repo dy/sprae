@@ -6,6 +6,8 @@ _Sprae_ is tiny progressive enhancement framework, a minimal essential alternati
 
 ## Use
 
+### Autoinit
+
 To autoinit on document, include [`sprae.auto.js`](./sprae.auto.js):
 
 ```html
@@ -14,6 +16,8 @@ To autoinit on document, include [`sprae.auto.js`](./sprae.auto.js):
 
 <a :each="id in ['a','b','c']" :href="`#${id}`" :text="id"></a>
 ```
+
+### Manual init
 
 To use as module, import [`sprae.js`](./sprae.js):
 
