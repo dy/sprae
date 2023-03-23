@@ -86,6 +86,7 @@ export const state = (obj, parent) => {
   proxyTarget.set(proxy, obj)
 
   // bind all getters here to proxy
+  // FIXME: alternatively we can store getters somewhere
   let descriptors = Object.getOwnPropertyDescriptors(obj)
   for (let name in descriptors) {
     let desc = descriptors[name]

@@ -107,6 +107,14 @@ var state = (obj, parent) => {
   let proxy = new Proxy(obj, handler);
   targetProxy.set(obj, proxy);
   proxyTarget.set(proxy, obj);
+  let descriptors = Object.getOwnPropertyDescriptors(obj);
+  for (let name in descriptors) {
+    let desc = descriptors[name];
+    if (desc.get) {
+      if (desc.get)
+        desc.get = desc.get.bind(proxy), Object.defineProperty(obj, name, desc);
+    }
+  }
   obj[_parent] = parent ? state(parent) : sandbox;
   return proxy;
 };
