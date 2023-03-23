@@ -4,7 +4,7 @@
 
 _Sprae_ is tiny progressive enhancement framework, a minimal essential alternative to [alpine](https://github.com/alpinejs/alpine), [petite-vue](https://github.com/vuejs/petite-vue) or [template-parts](https://github.com/github/template-parts) with improved ergonomics. It enables simple markup logic without external scripts. Perfect for small websites, prototypes or UI logic.
 
-## Install
+## Use
 
 To autoinit on document, include [`sprae.auto.js`](./sprae.auto.js):
 
@@ -18,32 +18,20 @@ To autoinit on document, include [`sprae.auto.js`](./sprae.auto.js):
 To use as module, import [`sprae.js`](./sprae.js):
 
 ```html
-<script type="module">
-  // import sprae from 'https://cdn.jsdelivr.net/npm/sprae/sprae.js';
-  import sprae from './path/to/sprae.js';
-  sprae(el, {foo: 'bar'});
-</script>
-```
-
-## Use
-
-Sprae evaluates attributes starting with `:`:
-
-```html
 <div id="container" :if="user">
   Logged in as <span :text="user.displayName">Guest.</span>
 </div>
 
 <script type="module">
-  import sprae from 'sprae';
+  // import sprae from 'https://cdn.jsdelivr.net/npm/sprae/sprae.js';
+  import sprae from './path/to/sprae.js';
 
   const state = sprae(container, { user: { displayName: 'Dmitry Ivanov' } });
   state.user.displayName = 'dy'; // automatically updates DOM
 </script>
 ```
 
-* `sprae` initializes container's subtree with data and immediately evaporates `:` attrs.
-* `state` object reflects current values, changing any props rerenders subtree next tick.
+Sprae evaluates `:`-attributes and evaporates them. Reactive `state` reflects current values, can be updated directly.
 
 
 ## Attributes
