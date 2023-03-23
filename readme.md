@@ -31,7 +31,7 @@ To use as module, import [`sprae.js`](./sprae.js):
   import sprae from './path/to/sprae.js';
 
   const state = sprae(container, { user: { displayName: 'Dmitry Ivanov' } });
-  state.user.displayName = 'dy'; // automatically updates DOM
+  state.user.displayName = 'dy'; // updates DOM next tick
 </script>
 ```
 
