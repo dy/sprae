@@ -109,6 +109,12 @@ test('class', async () => {
   // is(el.outerHTML, `<x class="base x"></x><y class="y w"></y><z class="b c"></z>`);
 })
 
+test('class: undefined value', async () => {
+  let el = h`<x :class="a"></x><y :class="[b]"></y><z :class="{c}"></z>`
+  sprae(el, {a:undefined, b:undefined, c:undefined})
+  is(el.outerHTML, `<x></x><y></y><z></z>`)
+})
+
 test('class: old svg fun', async () => {
   // raw html creates svganimatedstring
   let el = document.createElement('div')

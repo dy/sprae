@@ -310,8 +310,19 @@
     let initClassName = el.getAttribute("class");
     return (state2) => {
       let v = evaluate(state2);
-      let className = typeof v === "string" ? v : (Array.isArray(v) ? v : Object.entries(v).map(([k, v2]) => v2 ? k : "")).filter(Boolean).join(" ");
-      el.setAttribute("class", [initClassName, className].filter(Boolean).join(" "));
+      let className = [initClassName];
+      if (v) {
+        if (typeof v === "string")
+          className.push(v);
+        else if (Array.isArray(v))
+          className.push(...v);
+        else
+          className.push(...Object.entries(v).map(([k, v2]) => v2 ? k : ""));
+      }
+      if (className = className.filter(Boolean).join(" "))
+        el.setAttribute("class", className);
+      else
+        el.removeAttribute("class");
     };
   };
   secondary["style"] = (el, expr) => {

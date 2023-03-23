@@ -448,8 +448,6 @@
       * onkey.after, onkey.microtask, onkey.defer, onkey.immediate
       * onkey.tick-1?
 
-### [ ] onkey.unfocusable
-
 ## [ ] Prop modifiers
 
   - overall seems code complication without much benefit
@@ -475,6 +473,7 @@
   * [ ] x.watch-a-b-c - update by change of any of the deps
   * [ ] :x.always - update by _any_ dep change
   * [ ] :class.active="active"
+  * [ ] :x.persist="v"
 
 ## [x] Writing props on elements (like ones in :each) -> nah, just use `:x="this.x=abc"`
 
