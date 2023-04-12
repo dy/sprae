@@ -8,7 +8,7 @@ _Sprae_ is tiny progressive enhancement framework, a minimal essential alternati
 
 ### Autoinit
 
-To autoinit on document, include [`sprae.auto.js`](./sprae.auto.js):
+To autoinit document, include [`sprae.auto.js`](./sprae.auto.js):
 
 ```html
 <!-- <script src="https://cdn.jsdelivr.net/npm/sprae/sprae.auto.js" defer></script> -->
