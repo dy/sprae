@@ -225,13 +225,14 @@
     - slows down domdiff
     - can be solved as `<x :if="xxx" :="xxx && (...)'">` automatically
 
-## [x] :onmount/onunmount? -> for now no reasons
+## [ ] :onmount/onunmount? ->
 
   + useful for :if, :each
   + useful to dispose listeners via :onunmount (opposed to hidden symbols)
   - doesn't really solve disposal: if element is attached again, it would need to reattach removed listeners
     -> can be dolved via teardowns returned from updators
     -> nah, event listeners don't need collection, just make sure no refs to element remain
+  + can be useful for lazy-loadings
 
 ## [x] :focus="direct code", :evt="direct code" -> nah, too messy.
 
@@ -374,7 +375,18 @@
     - still need that syntax for filters, maps etc
   + can be made async by default
   - illicit `event` object
+    + we don't seem to ever need that event argument, many cases are covered by `.prevent` or `.stop`
+    ~+ generally `e=>` seem to conflict logically with modifiers sense
+  + `e=>` brings syntax burden - we may not ever need functions
+    + less problem detecting `const/let` in code
   - conflicts with regular attrs logic: the code is immediately invoked and can assign a function.
+  - `:oninput="e => (handleCaret(e), updateTimecodes())"`
+  - `:onbeforeinput="handleBeforeInput"`
+  - `:ondragenter..ondragleave:ondragenter..ondrop="e=>(this.classList.add('w-dragover'),e=>this.classList.remove('w-dragover'))"`
+  - `:ondrop="e=>console.log(e.dataTransfer.types)||e.preventDefault()"`
+  - `:onfocus="e => (e.relatedTarget ? e.relatedTarget.focus() : e.target.blur())"`
+  - `:onpopstate.window="e => goto(e.state)"`
+  - `:onclick.toggle="play"`
 
 ## [x] Should getters convert to computed? -> yes, that's relatively cheap and useful
 
