@@ -447,10 +447,10 @@ test('each: loop within condition', async () => {
 
   const params = sprae(el, { a: 1 })
 
-  is(el.innerHTML, '<x><y>1</y></x>')
+  is(el.innerHTML, '<x><y>0</y></x>')
   params.a = 2
   await tick()
-  is(el.innerHTML, '<x><y>-1</y><y>-2</y></x>')
+  is(el.innerHTML, '<x><y>0</y><y>-1</y></x>')
   params.a = 0
   await tick()
   is(el.innerHTML, '')
@@ -481,7 +481,7 @@ test('each: next items have own "this", not single one', async () => {
   let el = h`<div><x :each="x in 3" :data-x="x" :x="log.push(x, this.dataset.x)"></x></div>`
   let log = []
   let state = sprae(el, {log})
-  is(state.log, [1,'1',2,'2',3,'3'])
+  is(state.log, [0,'0',1,'1',2,'2'])
 })
 
 test('each: unkeyed', async () => {
@@ -520,7 +520,7 @@ test('each: keyed', async () => {
 test('each: wrapped source', async () => {
   let el = h`<div><x :each="i in (x || 2)" :text="i"></x></div>`
   sprae(el, {x:0})
-  is(el.innerHTML, `<x>1</x><x>2</x>`)
+  is(el.innerHTML, `<x>0</x><x>1</x>`)
 })
 
 test('each: unmounted elements remove listeners', async () => {
@@ -562,6 +562,12 @@ test('each: key-based caching is in-sync with direct elements', () => {
   state.x = 3
   state2.x = 3
   is(el.outerHTML, el2.outerHTML)
+})
+
+test('each: with :with', () => {
+  let el = h`<ul><li :each="i in 3" :with="{x:i}" :text="x"></li></ul>`
+  sprae(el)
+  is(el.outerHTML, `<ul><li>0</li><li>1</li><li>2</li></ul>`)
 })
 
 test('on: base', async () => {

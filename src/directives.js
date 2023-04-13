@@ -45,14 +45,6 @@ primary['if'] = (el, expr) => {
   }
 }
 
-// :with must come before :each, but :if has primary importance
-primary['with'] = (el, expr, rootState) => {
-  let evaluate = parseExpr(el, expr, ':with')
-  const localState = evaluate(rootState)
-  let state = createState(localState, rootState)
-  sprae(el, state);
-}
-
 const _each = Symbol(':each')
 
 // :each must init before :ref, :id or any others, since it defines scope
@@ -82,7 +74,7 @@ primary['each'] = (tpl, expr) => {
     let list = evaluate(state)
 
     if (!list) list = []
-    else if (typeof list === 'number') list = Array.from({length: list}, (_, i)=>[i, i+1])
+    else if (typeof list === 'number') list = Array.from({length: list}, (_, i)=>[i+1, i])
     else if (Array.isArray(list)) list = list.map((item,i) => [i+1, item])
     else if (typeof list === 'object') list = Object.entries(list)
     else exprError(Error('Bad list value'), tpl, expr, ':each', list)
@@ -118,6 +110,15 @@ primary['each'] = (tpl, expr) => {
       sprae(newEls[i], elScopes[i])
     }
   }
+}
+
+// `:each` can redefine scope as `:each="a in {myScope}"`,
+// same time per-item scope as `:each="..." :with="{collapsed:true}"` is useful
+primary['with'] = (el, expr, rootState) => {
+  let evaluate = parseExpr(el, expr, ':with')
+  const localState = evaluate(rootState)
+  let state = createState(localState, rootState)
+  sprae(el, state);
 }
 
 // ref must be last within primaries, since that must be skipped by :each, but before secondaries
