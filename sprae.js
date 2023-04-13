@@ -222,12 +222,6 @@ primary["if"] = (el, expr) => {
     }
   };
 };
-primary["with"] = (el, expr, rootState) => {
-  let evaluate = parseExpr(el, expr, ":with");
-  const localState = evaluate(rootState);
-  let state2 = state(localState, rootState);
-  sprae(el, state2);
-};
 var _each = Symbol(":each");
 primary["each"] = (tpl, expr) => {
   let each = parseForExpression(expr);
@@ -248,7 +242,7 @@ primary["each"] = (tpl, expr) => {
     if (!list)
       list = [];
     else if (typeof list === "number")
-      list = Array.from({ length: list }, (_, i) => [i, i + 1]);
+      list = Array.from({ length: list }, (_, i) => [i + 1, i]);
     else if (Array.isArray(list))
       list = list.map((item, i) => [i + 1, item]);
     else if (typeof list === "object")
@@ -277,6 +271,12 @@ primary["each"] = (tpl, expr) => {
       sprae(newEls[i], elScopes[i]);
     }
   };
+};
+primary["with"] = (el, expr, rootState) => {
+  let evaluate = parseExpr(el, expr, ":with");
+  const localState = evaluate(rootState);
+  let state2 = state(localState, rootState);
+  sprae(el, state2);
 };
 primary["ref"] = (el, expr, state2) => {
   state2[expr] = el;
