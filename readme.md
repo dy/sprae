@@ -60,7 +60,7 @@ Multiply element. `index` value starts from 1.
 <!-- Cases -->
 <li :each="item, idx in list" />
 <li :each="val, key in obj" />
-<li :each="idx0, idx1 in number" />
+<li :each="idx0, idx in number" />
 
 <!-- Loop by condition -->
 <li :if="items" :each="item in items" :text="item" />
@@ -247,11 +247,11 @@ To avoid _flash of unstyled content_, you can hide sprae attribute or add a cust
 
 ## Justification & alternatives
 
-* [Template-parts](https://github.com/dy/template-parts) / [templize](https://github.com/dy/templize) is progressive, but is stuck with native HTML quirks ([parsing table](https://github.com/github/template-parts/issues/24), [SVG attributes](https://github.com/github/template-parts/issues/25), [liquid syntax](https://shopify.github.io/liquid/tags/template/#raw) conflict etc). Also ergonomics of `attr="{{}}"` is inferior to `:attr=""` since it creates flash of uninitialized values. 
+* [Template-parts](https://github.com/dy/template-parts) / [templize](https://github.com/dy/templize) is progressive, but is stuck with native HTML quirks ([parsing table](https://github.com/github/template-parts/issues/24), [SVG attributes](https://github.com/github/template-parts/issues/25), [liquid syntax](https://shopify.github.io/liquid/tags/template/#raw) conflict etc). Also ergonomics of `attr="{{}}"` is inferior to `:attr=""` since it creates flash of uninitialized values.
 * [Alpine](https://github.com/alpinejs/alpine) / [vue](https://github.com/vuejs/petite-vue) / [lit](https://github.com/lit/lit/tree/main/packages/lit-html) / [lucia](https://github.com/aidenybai/lucia) escapes native HTML quirks, but the syntax is a bit scattered: `:attr`, `v-*`,`x-*`, `l-*` `@evt`, `{{}}` can be expressed with single convention. `{{}}` also conflicts with template-parts and liquid/django. Besides, functionality is too broad and can be reduced to essence: perfection is when there's nothing to take away, not add. Also they tend to [self-encapsulate](https://github.com/alpinejs/alpine/discussions/3223), making interop hard.
 * React/[preact](https://ghub.io/preact) does the job wiring up JS to HTML, but with an extreme of migrating HTML to JSX and enforcing SPA, which is not organic for HTML. Also it doesn't support reactive fields (needs render call).
 
-_Sprae_ takes idea of _templize directives_/_alpine_/_vue_ attrs and builds upon <del>[_@preact/signals_](https://ghub.io/@preact/signals)</del> simple reactive state. 
+_Sprae_ takes idea of _templize directives_/_alpine_/_vue_ attrs and builds upon <del>[_@preact/signals_](https://ghub.io/@preact/signals)</del> simple reactive state.
 
 * It doesn't break or modify static html markup.
 * It falls back to element content if uninitialized.
