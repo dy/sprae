@@ -223,8 +223,8 @@ Expose element to current data scope with the `id`:
 Expressions are sandboxed, ie. have no access to global or window (since sprae can be run in server environment).
 
 ```html
-<div :x="window.x"></div>
-<!-- window is undefined -->
+<div :x="global.x"></div>
+<!-- global is undefined -->
 ```
 
 Default sandbox provides: _window_, _document_, _console_, _history_, _location_, _Array_, _Object_, _Number_, _String_, _Boolean_, _Date_, _Set_, _Map_.<br/>
