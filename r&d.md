@@ -395,7 +395,7 @@
   - `:onclick.toggle="play"`
     ~ `:onclick.toggle="play()"`
 
-## [ ] Should we introduce `@click` for short-notation events?
+## [x] Should we introduce `@click` for short-notation events? -> let's keep `:onx` for raw events, `@x` for normal events
   + gives shorter code for majority of cases
   + can be non-conflicting
   + compatible with all frameworks (vue, alpine, lucia, lit)

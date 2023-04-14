@@ -50,5 +50,5 @@
 * [x] Autorun
 * [x] There's some bug with prostogreen not triggering effect. (caused by special array.length case)
 * [x] Getters must become evaluable
+* [x] `<li :each="item in items" :with="{collapsed:true}"><button :onclick='e=>collapsed=false'></li>`
 * [ ] `:with="{likes:[], like(){ /* likes should not be undefined here */ }}"`
-* [ ] `<li :each="item in items" :with="{collapsed:true}"><button :onclick='e=>collapsed=false'></li>`
