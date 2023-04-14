@@ -190,11 +190,9 @@ Set any attribute value or run an effect.
 
 ## Events
 
-`@`-attributes allow inline event handler code.
-
 #### `@<event>="handler"`, `@<foo>.bar@<baz>.qux="handler"`
 
-Attach event listener or multiple listeners with possible modifiers.
+Attach event listener or multiple listeners with possible modifiers, `event` variable holds current event.
 
 ```html
 <!-- Single event -->
