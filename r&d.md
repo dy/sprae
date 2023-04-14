@@ -381,12 +381,56 @@
     + less problem detecting `const/let` in code
   - conflicts with regular attrs logic: the code is immediately invoked and can assign a function.
   - `:oninput="e => (handleCaret(e), updateTimecodes())"`
+    ~ `:oninput="handleCaret(event), updateTimecodes()"`
   - `:onbeforeinput="handleBeforeInput"`
+    ~ `:onbeforeinput="handleBeforeInput(event)"`
   - `:ondragenter..ondragleave:ondragenter..ondrop="e=>(this.classList.add('w-dragover'),e=>this.classList.remove('w-dragover'))"`
+    ~ `:ondragenter..ondragleave:ondragenter..ondrop="this.classList.add('w-dragover'), e=>this.classList.remove('w-dragover')"`
   - `:ondrop="e=>console.log(e.dataTransfer.types)||e.preventDefault()"`
+    ~ `:ondrop.prevent="console.log(event.dataTransfer.types)"`
   - `:onfocus="e => (e.relatedTarget ? e.relatedTarget.focus() : e.target.blur())"`
+    ~ `:onfocus="event.relatedTarget ? event.relatedTarget.focus() : event.target.blur()"`
   - `:onpopstate.window="e => goto(e.state)"`
+    ~ `:onpopstate.window="goto(event.state)"`
   - `:onclick.toggle="play"`
+    ~ `:onclick.toggle="play()"`
+
+## [ ] Should we introduce `@click` for short-notation events?
+  + gives shorter code for majority of cases
+  + can be non-conflicting
+  + compatible with all frameworks (vue, alpine, lucia, lit)
+  + gives better meaning to modifiers - moves them outside of `:` attribute
+  - multiple events `@input@change="code"` is not nice
+    ~ that's fine and even meaningful
+  - chain of events `@focus..@blur="return (e)=>{}"` creates confusing `return` outside of body, as well as inconsistent chain pattern
+    ? remove that pattern
+      + it's still unsatisfactory: `@mousedown.document..@mouseup.document="e=> (isMouseDown = true, e=> isMouseDown = false)"` works, but what if we want to add `@touchstart..@touchend`, or
+        . `@click..@click="play" @keydown.alt-space..@keydown.alt-space="play"`, so in other words we need cross-reaction `@click_or_altspace..@click_or_altspace`, not just one single chain.
+        + actually here `@click@keydown.space..@click@keydown.space` is possible, unlike `:ona..onb` case, the question is how to provide sequence in attribute
+        + the thing is that local state, introduced by initiator events, is not useful by itself, detached from scope.
+          . the state is better reflected in data scope, rather than by initiator event.
+          ? what about temporaries like `@a..@b="id=setTimeout(),()=>clearTimeout(id)"` or `@a.toggle="stop=play(),stop"`
+            . use `:with={id:null} @a="id=setTimeout()" @b="clearTimeout(id)"`
+  - introduces illicit `event` variable ~ although compatible with standard, still obscure
+  - `@` prefix is unchangeable ~ can be removed, not set, but still on the verge.
+  - `@click.toggle="code"` has same problem as `@a..@b` - how can we make code separation in attribute?
+    ?+ remove toggle
+
+## [x] Multiple chain events resolution -> redirect to main event for now
+  * Consider
+  ```
+  :onclick..onclick="play"
+  :onkeydown.document.alt-space..onkeydown.document.alt-space="play"
+  ```
+  * When started by click and ended by alt-space, it doesn't clear the onclick
+  * We actually want here `:onclick:onkeydown.document.alt-space..onclick:onkeydown.document.alt-space`.
+    - this makes inconsistency of `..onclick` - colon is missing
+    - also it makes precedence of `:` and `..` unclear - what comes before what after.
+
+  ? Can we use `:onclick.toggle="play"`?
+    - it doesn't help with switch-over
+  ? Some 'or' character `:onclick--onkeydown`
+  ? We can redirect to main event, that's it for now
 
 ## [x] Should getters convert to computed? -> yes, that's relatively cheap and useful
 
@@ -512,22 +556,6 @@
 
   5. `:x="this.x=value"`
     + yepyepyep
-
-## [x] Multiple chain events resolution -> redirect to main event for now
-  * Consider
-  ```
-  :onclick..onclick="play"
-  :onkeydown.document.alt-space..onkeydown.document.alt-space="play"
-  ```
-  * When started by click and ended by alt-space, it doesn't clear the onclick
-  * We actually want here `:onclick:onkeydown.document.alt-space..onclick:onkeydown.document.alt-space`.
-    - this makes inconsistency of `..onclick` - colon is missing
-    - also it makes precedence of `:` and `..` unclear - what comes before what after.
-
-  ? Can we use `:onclick.toggle="play"`?
-    - it doesn't help with switch-over
-  ? Some 'or' character `:onclick--onkeydown`
-  ? We can redirect to main event, that's it for now
 
 ## [x] Insert content by reusing the node/template -> use `:render="ref" :with="data"`
 

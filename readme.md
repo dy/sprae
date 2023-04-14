@@ -139,40 +139,6 @@ Spread multiple attibures.
 <input :="{ id: name, name, type:'text', value }" />
 ```
 
-#### `:on<event>="handler"`, `:on<in>..on<out>="handler"`
-
-Add event listener or events chain.
-
-```html
-<!-- Single event -->
-<input type="checkbox" :onchange="e => isChecked=e.target.value">
-
-<!-- Multiple events -->
-<input :value="text" :oninput:onchange="e => text=e.target.value">
-
-<!-- Sequence of events -->
-<button :onfocus..onblur="e => {
-  // onfocus
-  return e => {
-    // onblur
-  }
-}">
-
-<!-- Event modifiers -->
-<button :onclick.throttle-500="handler">Not too often</button>
-```
-
-##### Event modifiers
-
-* `.once`, `.passive`, `.capture` – listener [options](https://developer.mozilla.org/en-US/docs/Web/API/EventTarget/addEventListener#options).
-* `.prevent`, `.stop` – prevent default or stop propagation.
-* `.window`, `.document`, `.outside`, `.self` – specify event target.
-* `.throttle-<ms>`, `.debounce-<ms>` – defer function call with one of the methods.
-* `.toggle` – run function and its result in turn.
-* `.ctrl`, `.shift`, `.alt`, `.meta`, `.arrow`, `.enter`, `.escape`, `.tab`, `.space`, `.backspace`, `.delete`, `.digit`, `.letter`, `.character` – filter by [`event.key`](https://developer.mozilla.org/en-US/docs/Web/API/UI_Events/Keyboard_event_key_values).
-* `.ctrl-<key>, .alt-<key>, .meta-<key>, .shift-<key>` – key combinations, eg. `.ctrl-alt-delete` or `.meta-x`.
-* `.*` – any other modifier has no effect, but allows binding multiple handlers to same event (like jQuery event classes).
-
 #### `:with="data"`
 
 Define or extend data scope for a subtree.
@@ -197,8 +163,8 @@ Include template as element content.
 ```html
 <template :ref="foo"><span :text="foo"></span></template>
 
-<div :render="foo" :with="{foo:'bar'}">unknown</div>
-<div :render="foo" :with="{foo:'baz'}">unknown</div>
+<div :render="foo" :with="{foo:'bar'}">...inserted here...</div>
+<div :render="foo" :with="{foo:'baz'}">...inserted here...</div>
 ```
 
 #### `:ref="id"`
@@ -213,10 +179,38 @@ Expose element to current data scope with the `id`:
 <!-- iterable items -->
 <ul>
   <li :each="item in items" :ref="item">
-    <input :onfocus..onblur="e => (item.classList.add('editing'), e => item.classList.remove('editing'))"/>
+    <input @focus="item.classList.add('editing')" @blur="item.classList.remove('editing')"/>
   </li>
 </ul>
 ```
+
+## Events
+
+#### `@<event>="handler"`, `@<foo>.bar@<baz>.qux="handler"`
+
+Attach event listener or multiple listeners with possible modifiers.
+
+```html
+<!-- Single event -->
+<input type="checkbox" @change="isChecked = event.target.value">
+
+<!-- Multiple events -->
+<input :value="text" @input@change="text = event.target.value">
+
+<!-- Event modifiers -->
+<button @click.throttle-500="handler(event)">Not too often</button>
+```
+
+##### Event modifiers
+
+* `.once`, `.passive`, `.capture` – listener [options](https://developer.mozilla.org/en-US/docs/Web/API/EventTarget/addEventListener#options).
+* `.prevent`, `.stop` – prevent default or stop propagation.
+* `.window`, `.document`, `.outside`, `.self` – specify event target.
+* `.throttle-<ms>`, `.debounce-<ms>` – defer function call with one of the methods.
+* `.toggle` – run function and its result in turn.
+* `.ctrl`, `.shift`, `.alt`, `.meta`, `.arrow`, `.enter`, `.escape`, `.tab`, `.space`, `.backspace`, `.delete`, `.digit`, `.letter`, `.character` – filter by [`event.key`](https://developer.mozilla.org/en-US/docs/Web/API/UI_Events/Keyboard_event_key_values).
+* `.ctrl-<key>, .alt-<key>, .meta-<key>, .shift-<key>` – key combinations, eg. `.ctrl-alt-delete` or `.meta-x`.
+* `.*` – any other modifier has no effect, but allows binding multiple handlers to same event (like jQuery event classes).
 
 ## Sandbox
 
@@ -248,7 +242,7 @@ To avoid _flash of unstyled content_, you can hide sprae attribute or add a cust
 ## Justification & alternatives
 
 * [Template-parts](https://github.com/dy/template-parts) / [templize](https://github.com/dy/templize) is progressive, but is stuck with native HTML quirks ([parsing table](https://github.com/github/template-parts/issues/24), [SVG attributes](https://github.com/github/template-parts/issues/25), [liquid syntax](https://shopify.github.io/liquid/tags/template/#raw) conflict etc). Also ergonomics of `attr="{{}}"` is inferior to `:attr=""` since it creates flash of uninitialized values. Also it's just nice to keep `{{}}` generic, regardless of markup, and attributes as part of markup.
-* [Alpine](https://github.com/alpinejs/alpine) / [vue](https://github.com/vuejs/petite-vue) / [lit](https://github.com/lit/lit/tree/main/packages/lit-html) / [lucia](https://github.com/aidenybai/lucia) escapes native HTML quirks, but the syntax is a bit scattered: `:attr`, `v-*`,`x-*`, `l-*` `@evt`, `{{}}` can be expressed with single convention. `{{}}` also conflicts with template-parts and liquid/django. Besides, functionality is too broad and can be reduced to essence: perfection is when there's nothing to take away, not add. Also they tend to [self-encapsulate](https://github.com/alpinejs/alpine/discussions/3223), making interop hard.
+* [Alpine](https://github.com/alpinejs/alpine) / [vue](https://github.com/vuejs/petite-vue) / [lit](https://github.com/lit/lit/tree/main/packages/lit-html) / [lucia](https://github.com/aidenybai/lucia) escape native HTML quirks, but the syntax (`:attr`, `v-*`,`x-*`, `l-*` `@evt`, `{{}}`) and functionality is too broad and can be reduced to essence: "perfection is when there's nothing to take away, not add". Also they tend to [self-encapsulate](https://github.com/alpinejs/alpine/discussions/3223) making interop hard, invent own tooling or complex reactivity.
 * React/[preact](https://ghub.io/preact) does the job wiring up JS to HTML, but with an extreme of migrating HTML to JSX and enforcing SPA, which is not organic for HTML. Also it doesn't support reactive fields (needs render call).
 
 _Sprae_ takes idea of _templize directives_/_alpine_/_vue_ attrs and builds upon <del>[_@preact/signals_](https://ghub.io/@preact/signals)</del> simple reactive state.

@@ -14,39 +14,38 @@
   <section class="todoapp">
     <header class="header">
       <h1>todos</h1>
-      <input class="new-todo" placeholder="What needs to be done?" autofocus :onkeypress="e => {
-        if (e.key !== 'Enter') return
-        save(todos = [...todos, { text: e.target.value, done: false}])
-        e.target.value = ''
-      }">
+      <input class="new-todo" placeholder="What needs to be done?" autofocus @keypress.enter="
+        save(todos = [...todos, { text: this.value, done: false}])
+        this.value = ''
+      ">
     </header>
     <section class="main">
-      <input id="toggle-all" class="toggle-all" type="checkbox" :onclick="e => {
+      <input id="toggle-all" class="toggle-all" type="checkbox" @click="
         const all = todos.every(item => item.done)
         save(todos = todos.map(item => (item.done = !all, item)))
-      }">
+      ">
       <label for="toggle-all">Mark all as complete</label>
       <ul class="todo-list">
         <li :ref="li" :each="item in todos"
           :class="{completed: item.done}"
           :hidden="hash === '#/active' ? item.done : hash === '#/completed' ? !item.done : false"
-          :ondblclick="e => {
+          @dblclick="
             li.querySelector('.edit').focus()
             li.classList.add('editing')
-          }">
+          ">
           <div class="view">
             <input class="toggle" type="checkbox"
               :checked="item.done"
-              :onchange="e => (item.done = !item.done, save(todos))"
+              @change="item.done = !item.done, save(todos)"
             />
             <label :text="item.text"></label>
-            <button class="destroy" :onclick="e => (save(todos = todos.filter(i => i.text !== item.text)))"></button>
+            <button class="destroy" @click="save(todos = todos.filter(i => i.text !== item.text))"></button>
           </div>
           <input class=edit
             :value="item.text"
-            :oninput="e => {item.text = e.target.value; save(todos)}"
-            :onblur="e => li.classList.remove('editing');"
-            :onkeypress="(e) => { e.key === 'Enter' ? e.target.blur() : null }"
+            @input="item.text = this.value; save(todos)"
+            @blur="li.classList.remove('editing');"
+            @keypress.enter="this.blur()"
           />
         </li>
       </ul>
@@ -62,7 +61,7 @@
       </ul>
       <button class="clear-completed"
         :hidden="todos.every(item => !item.done)"
-        :onclick="e => save(todos = todos.filter(item => !item.done ? true : false))">
+        @click="save(todos = todos.filter(item => !item.done ? true : false))">
         Clear completed
       </button>
     </footer>
