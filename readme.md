@@ -190,9 +190,9 @@ Set any attribute value or run an effect.
 
 ## Events
 
-#### `@<event>="handler"`, `@<foo>@<bar>.<baz>="handler"`
+#### `@<event>="handle"`, `@<foo>@<bar>.<baz>="handle"`
 
-Attach event listener or multiple listeners with possible modifiers, `event` variable holds current event.
+Attach event(s) listener with possible modifiers. `event` variable holds current event.
 
 ```html
 <!-- Single event -->
