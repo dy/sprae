@@ -376,19 +376,6 @@
     } : (value) => el.value = value;
     return (state2) => update(evaluate(state2));
   };
-  secondary["on"] = (el, expr) => {
-    let evaluate = parseExpr(el, expr, ":on");
-    return (state2) => {
-      let listeners = evaluate(state2);
-      let offs = [];
-      for (let evt in listeners)
-        offs.push(on(el, evt, listeners[evt]));
-      return () => {
-        for (let off of offs)
-          off();
-      };
-    };
-  };
   var directives_default = (el, expr, state2, name) => {
     let evt = name.startsWith("on") && name.slice(2);
     let evaluate = parseExpr(el, expr, ":" + name);
@@ -402,43 +389,20 @@
       };
     return (state3) => attr(el, name, evaluate(state3));
   };
-  var on = (target, evt, origFn) => {
-    if (!origFn)
+  var on = (el, e, fn) => {
+    if (!fn)
       return;
-    let ctxs = evt.split("..").map((e) => {
-      let ctx = { evt: "", target, test: () => true };
-      ctx.evt = (e.startsWith("on") ? e.slice(2) : e).replace(
-        /\.(\w+)?-?([-\w]+)?/g,
-        (match, mod, param = "") => (ctx.test = mods[mod]?.(ctx, ...param.split("-")) || ctx.test, "")
-      );
-      return ctx;
-    });
-    if (ctxs.length == 1)
-      return addListenerWithMods(origFn, ctxs[0]);
-    const onFn = (fn, cur = 0) => {
-      let off;
-      let curListener = (e) => {
-        if (cur)
-          off();
-        let nextFn = fn.call(target, e);
-        if (typeof nextFn !== "function")
-          nextFn = () => {
-          };
-        if (cur + 1 < ctxs.length)
-          onFn(nextFn, !cur ? 1 : cur + 1);
-      };
-      return off = addListenerWithMods(curListener, ctxs[cur]);
-    };
-    let rootOff = onFn(origFn);
-    return () => rootOff();
-    function addListenerWithMods(fn, { evt: evt2, target: target2, test, defer, stop, prevent, ...opts }) {
-      if (defer)
-        fn = defer(fn);
-      let cb = (e) => test(e) && (stop && e.stopPropagation(), prevent && e.preventDefault(), fn.call(target2, e));
-      target2.addEventListener(evt2, cb, opts);
-      return () => target2.removeEventListener(evt2, cb, opts);
-    }
-    ;
+    const ctx = { evt: "", target: el, test: () => true };
+    ctx.evt = (e.startsWith("on") ? e.slice(2) : e).replace(
+      /\.(\w+)?-?([-\w]+)?/g,
+      (match, mod, param = "") => (ctx.test = mods[mod]?.(ctx, ...param.split("-")) || ctx.test, "")
+    );
+    const { evt, target, test, defer, stop, prevent, ...opts } = ctx;
+    if (defer)
+      fn = defer(fn);
+    const cb = (e2) => test(e2) && (stop && e2.stopPropagation(), prevent && e2.preventDefault(), fn.call(target, e2));
+    target.addEventListener(evt, cb, opts);
+    return () => target.removeEventListener(evt, cb, opts);
   };
   var mods = {
     prevent(ctx) {
@@ -461,9 +425,6 @@
     },
     document(ctx) {
       ctx.target = document;
-    },
-    toggle(ctx) {
-      ctx.defer = (fn, out) => (e) => out ? (out.call?.(ctx.target, e), out = null) : out = fn();
     },
     throttle(ctx, limit) {
       ctx.defer = (fn) => throttle(fn, limit ? Number(limit) || 0 : 108);
@@ -606,18 +567,18 @@ ${directive}=${expression ? `"${expression}"
       }
       if (el.attributes) {
         for (let i = 0; i < el.attributes.length; ) {
-          let attr2 = el.attributes[i];
-          if (attr2.name[0] !== ":") {
+          let attr2 = el.attributes[i], prefix = attr2.name[0];
+          if (prefix === ":" || prefix === "@") {
+            el.removeAttribute(attr2.name);
+            let expr = prefix === "@" ? `event=>{${attr2.value}}` : attr2.value, names = attr2.name.slice(1).split(prefix);
+            for (let name of names) {
+              if (prefix === "@")
+                name = `on` + name;
+              let dir = secondary[name] || directives_default;
+              updates.push(dir(el, expr, state2, name));
+            }
+          } else
             i++;
-            continue;
-          }
-          el.removeAttribute(attr2.name);
-          let expr = attr2.value;
-          let attrNames = attr2.name.slice(1).split(":");
-          for (let attrName of attrNames) {
-            let dir = secondary[attrName] || directives_default;
-            updates.push(dir(el, expr, state2, attrName));
-          }
         }
       }
       for (let i = 0, child; child = el.children[i]; i++) {
