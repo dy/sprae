@@ -190,7 +190,7 @@ Set any attribute value or run an effect.
 
 ## Events
 
-#### `@<event>="handler"`, `@<foo>.bar@<baz>.qux="handler"`
+#### `@<event>="handler"`, `@<foo>@<bar>.<baz>="handler"`
 
 Attach event listener or multiple listeners with possible modifiers, `event` variable holds current event.
 
