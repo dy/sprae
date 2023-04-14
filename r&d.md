@@ -414,7 +414,8 @@
   - introduces illicit `event` variable ~ although compatible with standard, still obscure
   - `@` prefix is unchangeable ~ can be removed, not set, but still on the verge.
   - `@click.toggle="code"` has same problem as `@a..@b` - how can we make code separation in attribute?
-    ?+ remove toggle
+    + remove toggle
+  + overall less code
 
 ## [x] Multiple chain events resolution -> redirect to main event for now
   * Consider

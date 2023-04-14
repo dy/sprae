@@ -12,7 +12,7 @@
     "@preact/signals": "^1.1.3",
     "es-module-shims": "^1.6.2",
     "esbuild": "^0.15.14",
-    "hyperf": "^1.5.0",
+    "hyperf": "^1.6.2",
     "jsdom": "^21.1.0",
     "signal-struct": "^1.10.0",
     "terser": "^5.15.1",

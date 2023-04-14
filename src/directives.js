@@ -240,18 +240,6 @@ secondary['value'] = (el, expr) => {
   return (state) => update(evaluate(state))
 }
 
-secondary['on'] = (el, expr) => {
-  let evaluate = parseExpr(el, expr, ':on')
-
-  return (state) => {
-    let listeners = evaluate(state);
-    let offs = []; for (let evt in listeners) offs.push(on(el, evt, listeners[evt]));
-    return () => {
-      for (let off of offs) off()
-    }
-  }
-}
-
 // any unknown directive
 export default (el, expr, state, name) => {
   let evt = name.startsWith('on') && name.slice(2)
@@ -268,50 +256,30 @@ export default (el, expr, state, name) => {
   return state => attr(el, name, evaluate(state))
 }
 
-// bind event to target
-const on = (target, evt, origFn) => {
-  if (!origFn) return
+// bind event to a target
+export const on = (el, e, fn) => {
+  if (!fn) return
 
-  // ona..onb
-  let ctxs = evt.split('..').map(e => {
-    let ctx = { evt:'', target, test:()=>true };
-    // onevt.debounce-108 -> evt.debounce-108
-    ctx.evt = (e.startsWith('on') ? e.slice(2) : e).replace(/\.(\w+)?-?([-\w]+)?/g,
-      (match, mod, param='') => (ctx.test = mods[mod]?.(ctx, ...param.split('-')) || ctx.test, '')
-    );
-    return ctx;
-  });
+  const ctx = { evt:'', target:el, test:()=>true };
 
-  // single event bind
-  if (ctxs.length == 1) return addListenerWithMods(origFn, ctxs[0])
-
-  // events chain cycler
-  const onFn = (fn, cur=0) => {
-    let off
-    let curListener = e => {
-      if (cur) off(); // don't remove entry listener - we must keep chain entry always open
-      let nextFn = fn.call(target, e)
-      if (typeof nextFn !== 'function') nextFn = ()=>{}
-      if (cur+1 < ctxs.length) onFn(nextFn, !cur ? 1 : cur+1);
-    }
-    return off = addListenerWithMods(curListener, ctxs[cur])
-  }
-  let rootOff = onFn(origFn)
-  return () => rootOff()
+  // onevt.debounce-108 -> evt.debounce-108
+  ctx.evt = (e.startsWith('on') ? e.slice(2) : e).replace(/\.(\w+)?-?([-\w]+)?/g,
+    (match, mod, param='') => (ctx.test = mods[mod]?.(ctx, ...param.split('-')) || ctx.test, '')
+  );
 
   // add listener applying the context
-  function addListenerWithMods(fn, {evt, target, test, defer, stop, prevent, ...opts} ) {
-    if (defer) fn = defer(fn)
+  const {evt, target, test, defer, stop, prevent, ...opts} = ctx;
 
-    let cb = e => test(e) && (
-      stop&&e.stopPropagation(),
-      prevent&&e.preventDefault(),
-      fn.call(target, e)
-    )
+  if (defer) fn = defer(fn)
 
-    target.addEventListener(evt, cb, opts)
-    return () => target.removeEventListener(evt, cb, opts)
-  };
+  const cb = e => test(e) && (
+    stop&&e.stopPropagation(),
+    prevent&&e.preventDefault(),
+    fn.call(target, e)
+  )
+
+  target.addEventListener(evt, cb, opts)
+  return () => target.removeEventListener(evt, cb, opts)
 }
 
 // event modifiers
@@ -328,8 +296,6 @@ const mods = {
   // target
   window(ctx) { ctx.target = window },
   document(ctx) { ctx.target = document },
-
-  toggle(ctx) { ctx.defer = (fn, out) => (e => out ? (out.call?.(ctx.target, e), out=null) : (out = fn())) },
 
   throttle(ctx, limit) { ctx.defer = fn => throttle(fn, limit ? Number(limit) || 0 : 108) },
   debounce(ctx, wait) { ctx.defer = fn => debounce(fn, wait ? Number(wait) || 0 : 108) },

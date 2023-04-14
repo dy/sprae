@@ -1,5 +1,5 @@
 import { state as createState, fx, sandbox } from './state.js';
-import defaultDirective, { primary, secondary } from './directives.js';
+import defaultDirective, { primary, secondary, on } from './directives.js';
 
 sprae.globals=sandbox
 
@@ -39,18 +39,23 @@ export default function sprae(container, values) {
     // catch other attributes as secondary
     if (el.attributes) {
       for (let i = 0; i < el.attributes.length;) {
-        let attr = el.attributes[i]
-        if (attr.name[0] !== ':') {i++; continue}
-        el.removeAttribute(attr.name)
-        let expr = attr.value
+        let attr = el.attributes[i], prefix = attr.name[0]
 
-        // multiple attributes like :id:for=""
-        let attrNames = attr.name.slice(1).split(':')
-        for (let attrName of attrNames) {
-          let dir = secondary[attrName] || defaultDirective;
-          updates.push(dir(el, expr, state, attrName));
-          // NOTE: secondary directives don't stop flow nor extend state, so no need to check
+        if (prefix === ':' || prefix === '@') {
+          el.removeAttribute(attr.name)
+          let expr = prefix === '@' ? `event=>{${attr.value}}` : attr.value,
+              names = attr.name.slice(1).split(prefix)
+
+          // multiple attributes like :id:for="" or @click@touchstart
+          for (let name of names) {
+            // @click forwards to :onclick=event=>{...inline}
+            if (prefix === '@') name = `on` + name
+            let dir = secondary[name] || defaultDirective;
+            updates.push(dir(el, expr, state, name));
+            // NOTE: secondary directives don't stop flow nor extend state, so no need to check
+          }
         }
+        else i++;
       }
     }
 
