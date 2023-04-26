@@ -390,10 +390,11 @@ function parseExpr(el, expression, dir) {
     let rightSideSafeExpression = 0
       // Support expressions starting with "if" statements like: "if (...) doSomething()"
       || /^[\n\s]*if.*\(.*\)/.test(expression)
-      // Support expressions starting with "let/const" like: "let foo = 'bar'"
-      || (/\b(let|const)\s/.test(expression) && !dir.startsWith(':on'))
-          ? `(() => {${expression}})()`
-          : expression;
+      // // Support expressions starting with "let/const" like: "let foo = 'bar'"
+      // || (/\b(let|const)\s/.test(expression) && !dir.startsWith(':on'))
+      //     ? `(() => {${expression}})()`
+      //     :
+      expression;
 
     try {
       evaluate = evaluatorMemo[expression] = new Function(`__scope`,`with (__scope) { return ${rightSideSafeExpression.trim()} };`)

@@ -64,6 +64,13 @@ test('common: const in on', async () => {
   is(state.y, 2)
 })
 
+test('common: const in with', async () => {
+  let el = h`<div :with="{x(){let x = 1; y=x;}}" @x="x()"></div>`
+  let state = sprae(el,{y:0})
+  el.dispatchEvent(new CustomEvent('x'))
+  is(state.y, 1)
+})
+
 test('style', async () => {
   let el = h`<x style="left: 1px" :style="style"></x>`
   let params = sprae(el, {style: "top: 1px"})
