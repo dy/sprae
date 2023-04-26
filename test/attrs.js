@@ -143,9 +143,8 @@ test('props: multiprop', async () => {
   is(el.outerHTML, `<input id="0" name="0" for="0">`)
 })
 
-// FIXME: this must work without return
 test('props: calculation', async () => {
-  let el = h`<x :x="let a = 5; return Array.from({length: x}, (_,i)=>i).join('')"></x>`
+  let el = h`<x :x="(()=>{ let a = 5; return Array.from({length: x}, (_,i)=>i).join('') })()"></x>`
   let state = sprae(el, {x:3});
   is(el.outerHTML, `<x x="012"></x>`)
   state.x = 4

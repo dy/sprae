@@ -384,20 +384,8 @@ function parseExpr(el, expression, dir) {
   let evaluate = evaluatorMemo[expression]
 
   if (!evaluate) {
-    // Some expressions that are useful in Alpine are not valid as the right side of an expression.
-    // Here we'll detect if the expression isn't valid for an assignement and wrap it in a self-
-    // calling function so that we don't throw an error AND a "return" statement can b e used.
-    let rightSideSafeExpression = 0
-      // Support expressions starting with "if" statements like: "if (...) doSomething()"
-      || /^[\n\s]*if.*\(.*\)/.test(expression)
-      // // Support expressions starting with "let/const" like: "let foo = 'bar'"
-      // || (/\b(let|const)\s/.test(expression) && !dir.startsWith(':on'))
-      //     ? `(() => {${expression}})()`
-      //     :
-      expression;
-
     try {
-      evaluate = evaluatorMemo[expression] = new Function(`__scope`,`with (__scope) { return ${rightSideSafeExpression.trim()} };`)
+      evaluate = evaluatorMemo[expression] = new Function(`__scope`,`with (__scope) { return ${expression.trim()} };`)
     } catch ( e ) {
       return exprError(e, el, expression, dir)
     }

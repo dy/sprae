@@ -614,3 +614,7 @@
   * :aria - can be defined via plain attributes
   * :data - confusable with :scope, doesn't provide much value, can be used as `:data-x=""` etc
   * :={} - what's the meaning? Can be replaced with multiple attributes, no? No: no easy way to spread attributes.
+
+## [x] let/const in expressions: allow or prohibit -> let's prohibit, force user to wrap into a function himself
+
+  - allowing forces wrapping internally, which creates return statement confustion
