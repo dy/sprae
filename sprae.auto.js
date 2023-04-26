@@ -510,9 +510,8 @@
   function parseExpr(el, expression, dir) {
     let evaluate = evaluatorMemo[expression];
     if (!evaluate) {
-      let rightSideSafeExpression = /^[\n\s]*if.*\(.*\)/.test(expression) || /\b(let|const)\s/.test(expression) && !dir.startsWith(":on") ? `(() => {${expression}})()` : expression;
       try {
-        evaluate = evaluatorMemo[expression] = new Function(`__scope`, `with (__scope) { return ${rightSideSafeExpression.trim()} };`);
+        evaluate = evaluatorMemo[expression] = new Function(`__scope`, `with (__scope) { return ${expression.trim()} };`);
       } catch (e) {
         return exprError(e, el, expression, dir);
       }
