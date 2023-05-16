@@ -246,7 +246,7 @@ To avoid _flash of unstyled content_, you can hide sprae attribute or add a cust
 ## Justification & alternatives
 
 * [Template-parts](https://github.com/dy/template-parts) / [templize](https://github.com/dy/templize) is progressive, but is stuck with native HTML quirks ([parsing table](https://github.com/github/template-parts/issues/24), [SVG attributes](https://github.com/github/template-parts/issues/25), [liquid syntax](https://shopify.github.io/liquid/tags/template/#raw) conflict etc). Also ergonomics of `attr="{{}}"` is inferior to `:attr=""` since it creates flash of uninitialized values. Also it's just nice to keep `{{}}` generic, regardless of markup, and attributes as part of markup.
-* [Alpine](https://github.com/alpinejs/alpine) / [vue](https://github.com/vuejs/petite-vue) / [lit](https://github.com/lit/lit/tree/main/packages/lit-html) / [lucia](https://github.com/aidenybai/lucia) escape native HTML quirks, but the syntax space (`:attr`, `v-*`,`x-*`, `l-*` `@evt`, `{{}}`) is too broad, as well as functionality. Perfection is when there's nothing to take away, not add (c). Also they tend to [self-encapsulate](https://github.com/alpinejs/alpine/discussions/3223) making interop hard, invent own tooling or complex reactivity.
+* [Alpine](https://github.com/alpinejs/alpine) / [vue](https://github.com/vuejs/petite-vue) / [lit](https://github.com/lit/lit/tree/main/packages/lit-html) escape native HTML quirks, but the syntax space (`:attr`, `v-*`,`x-*`, `l-*` `@evt`, `{{}}`) is too broad, as well as functionality. Perfection is when there's nothing to take away, not add (c). Also they tend to [self-encapsulate](https://github.com/alpinejs/alpine/discussions/3223) making interop hard, invent own tooling or complex reactivity.
 * React/[preact](https://ghub.io/preact) does the job wiring up JS to HTML, but with an extreme of migrating HTML to JSX and enforcing SPA, which is not organic for HTML. Also it doesn't support reactive fields (needs render call).
 
 _Sprae_ takes idea of _templize directives_/_alpine_/_vue_ attrs and builds upon <del>[_@preact/signals_](https://ghub.io/@preact/signals)</del> simple reactive state.
@@ -261,5 +261,11 @@ _Sprae_ takes idea of _templize directives_/_alpine_/_vue_ attrs and builds upon
 
 It is reminiscent of [XSLT](https://www.w3schools.com/xml/xsl_intro.asp), considered a [buried treasure](https://github.com/bahrus/be-restated) by web-connoisseurs.
 
+## Alternatives
+
+* [Alpine](https://github.com/alpinejs/alpine)
+* [Lucia](https://github.com/aidenybai/lucia)
+* [Petite-vue](https://github.com/vuejs/petite-vue)
+* [Reken](https://github.com/hbroek/reken)
 
 <p align="center"><a href="https://github.com/krsnzd/license/">🕉</a></p>
