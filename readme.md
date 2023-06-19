@@ -1,8 +1,8 @@
 # ∴ spræ [![tests](https://github.com/dy/sprae/actions/workflows/node.js.yml/badge.svg)](https://github.com/dy/sprae/actions/workflows/node.js.yml) [![size](https://img.shields.io/bundlephobia/minzip/sprae?label=size)](https://bundlephobia.com/result?p=sprae) [![npm](https://img.shields.io/npm/v/sprae?color=orange)](https://npmjs.org/sprae)
 
-> DOM microhydration with `:` attributes.
+> DOM tree hydration with reactivity.
 
-_Sprae_ is tiny progressive enhancement framework, a minimal essential alternative to [alpine](https://github.com/alpinejs/alpine)/[lucia](https://github.com/aidenybai/lucia), [petite-vue](https://github.com/vuejs/petite-vue) or [template-parts](https://github.com/github/template-parts) with improved ergonomics[*](#justification--alternatives). It enables simple markup logic without external scripts. Perfect for small websites, prototypes or UI logic.
+_Sprae_ is progressive enhancement framework, a tiny essential alternative to [alpine](https://github.com/alpinejs/alpine), [lucia](https://github.com/aidenybai/lucia), [petite-vue](https://github.com/vuejs/petite-vue) or [template-parts](https://github.com/github/template-parts) with improved ergonomics[*](#justification--alternatives). It enables simple markup logic without external scripts. Perfect for small websites, prototypes or UI logic.
 
 ## Use
 
@@ -19,7 +19,7 @@ To autoinit document, include [`sprae.auto.js`](./sprae.auto.js):
 
 ### Manual init
 
-To use as module, import [`sprae.js`](./sprae.js):
+To init manually as module, import [`sprae.js`](./sprae.js):
 
 ```html
 <div id="container" :if="user">
@@ -35,8 +35,7 @@ To use as module, import [`sprae.js`](./sprae.js):
 </script>
 ```
 
-Sprae evaluates `:`-attributes and evaporates them. Reactive `state` reflects current values, can be updated directly.
-
+Sprae evaluates `:`-attributes and evaporates them. Reactive `state` reflects current values, can be updated directly (performs batching internally to efficiently update multiple values).
 
 ## Attributes
 
@@ -218,14 +217,15 @@ Attach event(s) listener with possible modifiers. `event` variable holds current
 
 ## Sandbox
 
-Expressions are sandboxed, ie. have no access to global or window (since sprae can be run in server environment).
+Expressions are sandboxed, ie. don't access global/window scope by default (since sprae can be run in server environment).
 
 ```html
-<div :x="global.x"></div>
-<!-- global is undefined -->
+<div :x="scrollY"></div>
+<!-- scrollY is undefined -->
 ```
 
-Default sandbox provides: _window_, _document_, _console_, _history_, _location_, _Array_, _Object_, _Number_, _String_, _Boolean_, _Date_, _Set_, _Map_.<br/>
+Default sandbox provides: _window_, _document_, _console_, _history_, _location_, _Array_, _Object_, _Number_, _String_, _Boolean_, _Date_, _Set_, _Map_.
+
 Sandbox can be extended as `Object.assign(sprae.globals, { BigInt })`.
 
 ## FOUC
