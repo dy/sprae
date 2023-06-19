@@ -35,7 +35,7 @@ To init manually as module, import [`sprae.js`](./sprae.js):
 </script>
 ```
 
-Sprae evaluates `:`-attributes and evaporates them. Reactive `state` reflects current values, can be updated directly (performs batching internally to efficiently update multiple values).
+Sprae evaluates `:`-attributes and evaporates them. Reactive `state` reflects current values, can be updated directly (batches multiple updates internally for efficiency).
 
 ## Attributes
 
