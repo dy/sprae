@@ -2,7 +2,7 @@
 
 > DOM tree hydration with reactivity.
 
-_Sprae_ is progressive enhancement framework, a tiny essential alternative to [alpine](https://github.com/alpinejs/alpine), [lucia](https://github.com/aidenybai/lucia), [petite-vue](https://github.com/vuejs/petite-vue) or [template-parts](https://github.com/github/template-parts) with improved ergonomics[*](#justification--alternatives). It enables simple markup logic without external scripts. Perfect for small websites, prototypes or UI logic.
+_Sprae_ is progressive enhancement framework, a tiny essential alternative to [alpine](https://github.com/alpinejs/alpine), [petite-vue](https://github.com/vuejs/petite-vue) or [template-parts](https://github.com/github/template-parts) with improved ergonomics[*](#justification--alternatives). It enables simple markup logic without external scripts. Perfect for small websites, prototypes or UI logic.
 
 ## Use
 
