@@ -38,7 +38,6 @@
 * [x] :if :ref, :if :with -> context setters must come first always
 * [x] :style="{'--x':value}"
 * [x] :onkeydown.ctrl-alt-D
-* [ ] frameworks benchmark
 * [x] examples
   * [x] todomvc
   * [x] waveplay
@@ -52,3 +51,4 @@
 * [x] Getters must become evaluable
 * [x] `<li :each="item in items" :with="{collapsed:true}"><button :onclick='e=>collapsed=false'></li>`
 * [ ] `:with="{likes:[], like(){ /* likes should not be undefined here */ }}"`
+* [ ] frameworks benchmark
