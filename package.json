@@ -47,7 +47,7 @@
     "templating"
   ],
   "author": "Dmitry Ivanov <df.creative@gmail.com>",
-  "license": "ISC",
+  "license": "MIT",
   "bugs": {
     "url": "https://github.com/dy/sprae/issues"
   },
