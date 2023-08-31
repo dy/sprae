@@ -14,7 +14,11 @@ To autoinit document, include [`sprae.auto.js`](./sprae.auto.js):
 <!-- <script src="https://cdn.jsdelivr.net/npm/sprae/sprae.auto.js" defer></script> -->
 <script src="./path/to/sprae.auto.js" defer></script>
 
-<a :each="id in ['a','b','c']" :href="`#${id}`" :text="id"></a>
+<ul>
+  <li :each="item in ['apple', 'bananas', 'citrus']"">
+    <a :href="`#${item}`" :text="item" />
+  </li>
+</ul>
 ```
 
 ### Manual init
@@ -23,19 +27,21 @@ To init manually as module, import [`sprae.js`](./sprae.js):
 
 ```html
 <div id="container" :if="user">
-  Logged in as <span :text="user.displayName">Guest.</span>
+  Logged in as <span :text="user.name">Guest.</span>
 </div>
 
 <script type="module">
   // import sprae from 'https://cdn.jsdelivr.net/npm/sprae/sprae.js';
   import sprae from './path/to/sprae.js';
 
-  const state = sprae(container, { user: { displayName: 'Dmitry Ivanov' } });
-  state.user.displayName = 'dy'; // updates DOM
+  const state = sprae(container, { user: { name: 'Dmitry Ivanov' } });
+  state.user.name = 'dy'; // updates DOM
 </script>
 ```
 
-Sprae evaluates `:`-attributes and evaporates them. Reactive `state` reflects current values, can be updated directly (batches multiple updates internally for efficiency).
+Sprae evaluates `:`-attributes and evaporates them.<br/>
+Reactive `state` reflects current values, can be updated directly.<br/>
+It batches multiple updates internally for efficiency.
 
 ## Attributes
 
@@ -79,14 +85,14 @@ Welcome, <span :text="user.name">Guest</span>.
 
 #### `:class="value"`
 
-Set class value from either string, array or object. Extends existing `class` attribute, if any.
+Set class value from either a string, array or object. 
 
 ```html
+<!-- set from string -->
 <div :class="`foo ${bar}`"></div>
 
-<!-- extend existing class -->
+<!-- extends existing class as "foo bar" -->
 <div class="foo" :class="`bar`"></div>
-<!-- <div class="foo bar"></div> -->
 
 <!-- object with values -->
 <div :class="{foo:true, bar: false}"></div>
@@ -94,11 +100,16 @@ Set class value from either string, array or object. Extends existing `class` at
 
 #### `:style="value"`
 
-Set style value from object or a string. Extends existing `style` attribute, if any.
+Set style value from an object or a string. Extends existing `style` attribute, if any.
 
 ```html
-<div :style="`foo: bar`"></div>
+<!-- from string -->
+<div :style="`foo: ${bar}`"></div>
+
+<!-- from object -->
 <div :style="{foo: 'bar'}"></div>
+
+<!-- set CSS variable -->
 <div :style="{'--baz': qux}"></div>
 ```
 
@@ -107,9 +118,11 @@ Set style value from object or a string. Extends existing `style` attribute, if 
 Set value of an input, textarea or select. Takes handle of `checked` and `selected` attributes.
 
 ```html
-<input :value="text" />
-<textarea :value="text" />
+<!-- set from value -->
+<input :value="value" />
+<textarea :value="value" />
 
+<!-- selects right option -->
 <select :value="selected">
   <option :each="i in 5" :value="i" :text="i"></option>
 </select>
@@ -132,15 +145,30 @@ Define or extend data scope for a subtree.
 </x>
 ```
 
-#### `:render="ref"`
+#### `:<prop>="value?"`
 
-Include template as element content.
+Set any attribute value or run an effect.
 
 ```html
-<template :ref="foo"><span :text="foo"></span></template>
+<!-- Single property -->
+<label :for="name" :text="name" />
 
-<div :render="foo" :with="{foo:'bar'}">...inserted here...</div>
-<div :render="foo" :with="{foo:'baz'}">...inserted here...</div>
+<!-- Multiple properties -->
+<input :id:name="name" />
+
+<!-- Effect - returns undefined, triggers any time bar changes -->
+<div :fx="void bar()" ></div>
+
+<!-- Raw event listener (see events) -->
+<div :onclick="e=>e.preventDefault()"></div>
+```
+
+#### `:="props?"`
+
+Spread multiple attibures.
+
+```html
+<input :="{ id: name, name, type:'text', value }" />
 ```
 
 #### `:ref="id"`
@@ -160,30 +188,17 @@ Expose element to current data scope with the `id`:
 </ul>
 ```
 
-#### `:="props?"`
+#### `:render="ref"`
 
-Spread multiple attibures.
-
-```html
-<input :="{ id: name, name, type:'text', value }" />
-```
-
-#### `:<prop>="value?"`
-
-Set any attribute value or run an effect.
+Include template as element content.
 
 ```html
-<!-- Single property -->
-<label :for="name" :text="name" />
+<!-- assign template element to foo variable -->
+<template :ref="foo"><span :text="foo"></span></template>
 
-<!-- Multiple properties -->
-<input :id:name="name" />
-
-<!-- Effect - returns undefined, triggers any time bar changes -->
-<div :fx="void bar()" ></div>
-
-<!-- Raw event listener (see events) -->
-<div :onclick="e=>e.preventDefault()"></div>
+<!-- rended template as content -->
+<div :render="foo" :with="{foo:'bar'}">...inserted here...</div>
+<div :render="foo" :with="{foo:'baz'}">...inserted here...</div>
 ```
 
 
@@ -224,7 +239,7 @@ Expressions are sandboxed, ie. don't access global/window scope by default (sinc
 <!-- scrollY is undefined -->
 ```
 
-Default sandbox provides: _window_, _document_, _console_, _history_, _location_, _Array_, _Object_, _Number_, _String_, _Boolean_, _Date_, _Set_, _Map_.
+Default sandbox provides: _window_, _document_, _console_, _history_, _location_, _Date_, _Set_, _Map_.
 
 Sandbox can be extended as `Object.assign(sprae.globals, { BigInt })`.
 
@@ -264,8 +279,7 @@ It is reminiscent of [XSLT](https://www.w3schools.com/xml/xsl_intro.asp), consid
 ## Alternatives
 
 * [Alpine](https://github.com/alpinejs/alpine)
-* [Lucia](https://github.com/aidenybai/lucia)
+* ~~[Lucia](https://github.com/aidenybai/lucia)~~ deprecated
 * [Petite-vue](https://github.com/vuejs/petite-vue)
-* [Reken](https://github.com/hbroek/reken)
 
 <p align="center"><a href="https://github.com/krsnzd/license/">🕉</a></p>
