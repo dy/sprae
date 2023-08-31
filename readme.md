@@ -97,7 +97,7 @@ Set class value from either string, array or object. Extends existing `class` at
 Set style value from object or a string. Extends existing `style` attribute, if any.
 
 ```html
-<div :style="foo: bar"></div>
+<div :style="`foo: bar`"></div>
 <div :style="{foo: 'bar'}"></div>
 <div :style="{'--baz': qux}"></div>
 ```
