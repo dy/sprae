@@ -1,7 +1,7 @@
 {
   "name": "sprae",
   "description": "DOM microhydration.",
-  "version": "6.1.1",
+  "version": "6.1.2",
   "main": "src/index.js",
   "module": "src/index.js",
   "type": "module",
