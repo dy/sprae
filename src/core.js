@@ -1,13 +1,13 @@
 import { state as createState, fx, sandbox } from './state.js';
 import defaultDirective, { primary, secondary, on } from './directives.js';
 
-sprae.globals=sandbox
+sprae.globals = sandbox
 
 // sprae element: apply directives
 const memo = new WeakMap
 export default function sprae(container, values) {
   if (!container.children) return
-  if (memo.has(container)) return Object.assign( memo.get(container), values)
+  if (memo.has(container)) return Object.assign(memo.get(container), values)
 
   // subscribe to reactives
   // for (let prop in values) {
@@ -20,7 +20,7 @@ export default function sprae(container, values) {
   const updates = []
 
   // init directives on element
-  const init = (el, parent=el.parentNode) => {
+  const init = (el, parent = el.parentNode) => {
     // init primary attributes first
     for (let name in primary) {
       let attrName = ':' + name
@@ -43,8 +43,8 @@ export default function sprae(container, values) {
 
         if (prefix === ':' || prefix === '@') {
           el.removeAttribute(attr.name)
-          let expr = prefix === '@' ? `event=>{${attr.value}}` : attr.value,
-              names = attr.name.slice(1).split(prefix)
+          let expr = prefix === '@' ? `${attr.value.includes('await') ? 'async' : ''} event=>{${attr.value}}` : attr.value,
+            names = attr.name.slice(1).split(prefix)
 
           // multiple attributes like :id:for="" or @click@touchstart
           for (let name of names) {

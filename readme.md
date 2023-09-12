@@ -85,7 +85,7 @@ Welcome, <span :text="user.name">Guest</span>.
 
 #### `:class="value"`
 
-Set class value from either a string, array or object. 
+Set class value from either a string, array or object.
 
 ```html
 <!-- set from string -->
@@ -206,7 +206,7 @@ Include template as element content.
 
 #### `@<event>="handle"`, `@<foo>@<bar>.<baz>="handle"`
 
-Attach event(s) listener with possible modifiers. `event` variable holds current event.
+Attach event(s) listener with possible modifiers. `event` variable holds current event. Allows async handlers.
 
 ```html
 <!-- Single event -->

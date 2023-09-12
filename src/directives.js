@@ -2,21 +2,20 @@
 import sprae from './core.js'
 import swap from './domdiff.js'
 // import swap from 'swapdom'
-import { state as createState} from './state.js'
+import { state as createState } from './state.js'
 import { queueMicrotask, WeakishMap } from './util.js'
 
 // reserved directives - order matters!
 // primary initialized first by selector, secondary initialized by iterating attributes
 export const primary = {}, secondary = {}
 
-
 // :if is interchangeable with :each depending on order, :if :each or :each :if have different meanings
 // as for :if :with - :if must init first, since it is lazy, to avoid initializing component ahead of time by :with
 // we consider :with={x} :if={x} case insignificant
 primary['if'] = (el, expr) => {
   let holder = document.createTextNode(''),
-      clauses = [parseExpr(el, expr, ':if')],
-      els = [el], cur = el
+    clauses = [parseExpr(el, expr, ':if')],
+    els = [el], cur = el
 
   while (cur = el.nextElementSibling) {
     if (cur.hasAttribute(':else')) {
@@ -37,7 +36,7 @@ primary['if'] = (el, expr) => {
   return (state) => {
     let i = clauses.findIndex(f => f(state))
     if (els[i] != cur) {
-      ;(cur[_each] || cur).replaceWith(cur = els[i] || holder);
+      ; (cur[_each] || cur).replaceWith(cur = els[i] || holder);
       // NOTE: it lazily initializes elements on insertion, it's safe to sprae multiple times
       // but :if must come first to avoid preliminary caching
       sprae(cur, state);
@@ -74,8 +73,8 @@ primary['each'] = (tpl, expr) => {
     let list = evaluate(state)
 
     if (!list) list = []
-    else if (typeof list === 'number') list = Array.from({length: list}, (_, i)=>[i+1, i])
-    else if (Array.isArray(list)) list = list.map((item,i) => [i+1, item])
+    else if (typeof list === 'number') list = Array.from({ length: list }, (_, i) => [i + 1, i])
+    else if (Array.isArray(list)) list = list.map((item, i) => [i + 1, item])
     else if (typeof list === 'object') list = Object.entries(list)
     else exprError(Error('Bad list value'), tpl, expr, ':each', list)
 
@@ -83,7 +82,7 @@ primary['each'] = (tpl, expr) => {
     let newEls = [], elScopes = []
 
     for (let [idx, item] of list) {
-      let el, scope, key = itemKey?.({[each[0]]: item, [each[1]]: idx})
+      let el, scope, key = itemKey?.({ [each[0]]: item, [each[1]]: idx })
 
       // we consider if data items are primitive, then nodes needn't be cached
       // since likely they're very simple to create
@@ -93,7 +92,7 @@ primary['each'] = (tpl, expr) => {
       newEls.push(el)
 
       if (key == null || !(scope = scopes.get(key))) {
-        scope = createState({[each[0]]: item, [refExpr||'']: null, [each[1]]: idx}, state)
+        scope = createState({ [each[0]]: item, [refExpr || '']: null, [each[1]]: idx }, state)
         if (key != null) scopes.set(key, scope)
       }
       // need to explicitly set item to update existing children's values
@@ -153,7 +152,7 @@ function parseForExpression(expression) {
 
 secondary['render'] = (el, expr, state) => {
   let evaluate = parseExpr(el, expr, ':render'),
-      tpl = evaluate(state)
+    tpl = evaluate(state)
 
   if (!tpl) exprError(new Error('Template not found'), el, expr, ':render');
 
@@ -177,7 +176,7 @@ secondary['class'] = (el, expr) => {
     if (v) {
       if (typeof v === 'string') className.push(v)
       else if (Array.isArray(v)) className.push(...v)
-      else className.push(...Object.entries(v).map(([k,v])=>v?k:''))
+      else className.push(...Object.entries(v).map(([k, v]) => v ? k : ''))
     }
     if (className = className.filter(Boolean).join(' ')) el.setAttribute('class', className);
     else el.removeAttribute('class')
@@ -222,19 +221,19 @@ secondary['value'] = (el, expr) => {
   let from, to
   let update = (
     el.type === 'text' || el.type === '' ? value => el.setAttribute('value', el.value = value == null ? '' : value) :
-    el.tagName === 'TEXTAREA' || el.type === 'text' || el.type === '' ? value => (
-      // we retain selection in input
-      from = el.selectionStart, to = el.selectionEnd,
-      el.setAttribute('value', el.value = value == null ? '' : value),
-      from && el.setSelectionRange(from, to)
-    ) :
-    el.type === 'checkbox' ? value => (el.value = value ? 'on' : '', attr(el, 'checked', value)) :
-    el.type === 'select-one' ? value => {
-      for (let option in el.options) option.removeAttribute('selected')
-      el.value = value;
-      el.selectedOptions[0]?.setAttribute('selected', '')
-    } :
-    value => el.value = value
+      el.tagName === 'TEXTAREA' || el.type === 'text' || el.type === '' ? value => (
+        // we retain selection in input
+        from = el.selectionStart, to = el.selectionEnd,
+        el.setAttribute('value', el.value = value == null ? '' : value),
+        from && el.setSelectionRange(from, to)
+      ) :
+        el.type === 'checkbox' ? value => (el.value = value ? 'on' : '', attr(el, 'checked', value)) :
+          el.type === 'select-one' ? value => {
+            for (let option in el.options) option.removeAttribute('selected')
+            el.value = value;
+            el.selectedOptions[0]?.setAttribute('selected', '')
+          } :
+            value => el.value = value
   )
 
   return (state) => update(evaluate(state))
@@ -243,13 +242,13 @@ secondary['value'] = (el, expr) => {
 // any unknown directive
 export default (el, expr, state, name) => {
   let evt = name.startsWith('on') && name.slice(2)
-  let evaluate = parseExpr(el, expr, ':'+name)
+  let evaluate = parseExpr(el, expr, ':' + name)
 
   if (!evaluate) return
 
   if (evt) return (state => {
     // we need anonymous callback to enable modifiers like prevent
-    let value = evaluate(state) || (()=>{})
+    let value = evaluate(state) || (() => { })
     return on(el, evt, value)
   })
 
@@ -260,21 +259,21 @@ export default (el, expr, state, name) => {
 export const on = (el, e, fn) => {
   if (!fn) return
 
-  const ctx = { evt:'', target:el, test:()=>true };
+  const ctx = { evt: '', target: el, test: () => true };
 
   // onevt.debounce-108 -> evt.debounce-108
   ctx.evt = (e.startsWith('on') ? e.slice(2) : e).replace(/\.(\w+)?-?([-\w]+)?/g,
-    (match, mod, param='') => (ctx.test = mods[mod]?.(ctx, ...param.split('-')) || ctx.test, '')
+    (match, mod, param = '') => (ctx.test = mods[mod]?.(ctx, ...param.split('-')) || ctx.test, '')
   );
 
   // add listener applying the context
-  const {evt, target, test, defer, stop, prevent, ...opts} = ctx;
+  const { evt, target, test, defer, stop, prevent, ...opts } = ctx;
 
   if (defer) fn = defer(fn)
 
   const cb = e => test(e) && (
-    stop&&e.stopPropagation(),
-    prevent&&e.preventDefault(),
+    stop && e.stopPropagation(),
+    prevent && e.preventDefault(),
     fn.call(target, e)
   )
 
@@ -365,7 +364,7 @@ const debounce = (fn, wait) => {
   let timeout
   return (e) => {
     clearTimeout(timeout)
-    timeout = setTimeout(() => {timeout = null; fn(e)}, wait)
+    timeout = setTimeout(() => { timeout = null; fn(e) }, wait)
   }
 }
 
@@ -385,8 +384,8 @@ function parseExpr(el, expression, dir) {
 
   if (!evaluate) {
     try {
-      evaluate = evaluatorMemo[expression] = new Function(`__scope`,`with (__scope) { return ${expression.trim()} };`)
-    } catch ( e ) {
+      evaluate = evaluatorMemo[expression] = new Function(`__scope`, `with (__scope) { return ${expression.trim()} };`)
+    } catch (e) {
       return exprError(e, el, expression, dir)
     }
   }
@@ -401,11 +400,11 @@ function parseExpr(el, expression, dir) {
 }
 
 function exprError(error, element, expression, directive) {
-  Object.assign( error, { element, expression } )
-  console.warn(`∴ ${error.message}\n\n${directive}=${ expression ? `"${expression}"\n\n` : '' }`, element)
+  Object.assign(error, { element, expression })
+  console.warn(`∴ ${error.message}\n\n${directive}=${expression ? `"${expression}"\n\n` : ''}`, element)
   queueMicrotask(() => { throw error }, 0)
 }
 
 function dashcase(str) {
-	return str.replace(/[A-Z\u00C0-\u00D6\u00D8-\u00DE]/g, (match) => '-' + match.toLowerCase());
+  return str.replace(/[A-Z\u00C0-\u00D6\u00D8-\u00DE]/g, (match) => '-' + match.toLowerCase());
 };

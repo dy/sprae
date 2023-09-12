@@ -5,6 +5,13 @@
   "main": "src/index.js",
   "module": "src/index.js",
   "type": "module",
+  "files": [
+    "sprae.auto.js",
+    "sprae.auto.min.js",
+    "sprae.js",
+    "sprae.min.js",
+    "src"
+  ],
   "dependencies": {
     "swapdom": "^1.1.1"
   },
