@@ -569,7 +569,7 @@ ${directive}=${expression ? `"${expression}"
           let attr2 = el.attributes[i], prefix = attr2.name[0];
           if (prefix === ":" || prefix === "@") {
             el.removeAttribute(attr2.name);
-            let expr = prefix === "@" ? `event=>{${attr2.value}}` : attr2.value, names = attr2.name.slice(1).split(prefix);
+            let expr = prefix === "@" ? `${attr2.value.includes("await") ? "async" : ""} event=>{${attr2.value}}` : attr2.value, names = attr2.name.slice(1).split(prefix);
             for (let name of names) {
               if (prefix === "@")
                 name = `on` + name;
