@@ -281,5 +281,6 @@ It is reminiscent of [XSLT](https://www.w3schools.com/xml/xsl_intro.asp), consid
 * [Alpine](https://github.com/alpinejs/alpine)
 * ~~[Lucia](https://github.com/aidenybai/lucia)~~ deprecated
 * [Petite-vue](https://github.com/vuejs/petite-vue)
+* [nuejs](https://github.com/nuejs/nuejs)
 
 <p align="center"><a href="https://github.com/krsnzd/license/">🕉</a></p>
