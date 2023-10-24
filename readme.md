@@ -252,6 +252,29 @@ To avoid _flash of unstyled content_, you can hide sprae attribute or add a cust
 <style>[:each],[:hidden] {visibility: hidden}</style>
 ```
 
+## Benchmark
+
+Done via [js-framework-benchmark](https://github.com/krausest/js-framework-benchmark).
+
+```sh
+# prerequisite
+npm ci
+npm run install-server
+npm start
+
+# build
+cd frameworks/keyed/sprae
+npm ci
+npm run build-prod
+
+# bench
+cd ../../..
+cd webdriver-ts
+npm ci
+npm run compile
+npm run bench keyed/sprae
+```
+
 ## Examples
 
 * TODO MVC: [demo](https://dy.github.io/sprae/examples/todomvc), [code](https://github.com/dy/sprae/blob/main/examples/todomvc.html)
