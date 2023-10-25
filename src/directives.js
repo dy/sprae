@@ -2,7 +2,7 @@
 import sprae from './core.js'
 import swap from './domdiff.js'
 // import swap from 'swapdom'
-import createState from './state.proxy.js'
+import createState from './state.signals-proxy.js'
 import { queueMicrotask, WeakishMap } from './util.js'
 
 // reserved directives - order matters!

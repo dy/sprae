@@ -30,7 +30,7 @@ var WeakishMap = class extends Map {
   }
 };
 
-// src/state.proxy.js
+// src/state.signals-proxy.js
 var currentFx;
 var batch = /* @__PURE__ */ new Set();
 var pendingUpdate;
@@ -152,7 +152,7 @@ function domdiff_default(parent, a, b, before) {
   for (i = 0; i < b.length; i++) {
     bIdx.set(b[i], i);
   }
-  for (i = j = 0; i !== a.length || j !== b.length; ) {
+  for (i = j = 0; i !== a.length || j !== b.length;) {
     var aElm = a[i], bElm = b[j];
     if (aElm === null) {
       i++;
@@ -564,7 +564,7 @@ function sprae(container, values) {
       }
     }
     if (el.attributes) {
-      for (let i = 0; i < el.attributes.length; ) {
+      for (let i = 0; i < el.attributes.length;) {
         let attr2 = el.attributes[i], prefix = attr2.name[0];
         if (prefix === ":" || prefix === "@") {
           el.removeAttribute(attr2.name);
