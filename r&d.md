@@ -348,10 +348,12 @@
   + allows easier handle of `:with="a=1,b=2,c=3"` - we just naturally get local variables without messup with global
     + we can even define locals without `let`...
   - not having "comfy" compatible JS at hand: cognitive load of whole language "layer" in-between
+    ~ `:each` is not js anyways
   + allows `let a = 1; a;` case instead of `let a = 1; return a;`
-  - we can't identify dynamic parts like `x[y]`, whereas signals subscribe dynamically
+  - we can't identify dynamic parts like `x[y]`, whereas Proxy subscribe dynamically
     ~ we can detect dynamic parts and handle them on proxy
   + subscript allows subscriptions to async functions, unlike signals
+  +? we can detect `array.length`, not sure what for
 
 -> We can benchmark if updating set of known dependencies is faster than using preact subscriptions.
   + it seems more logical min-ground to know in advance what we depend on, rather than detect by-call as signals do.

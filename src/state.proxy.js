@@ -1,3 +1,4 @@
+// proxy-based store implementation: more flexible, less optimal and with memory leak now
 import { queueMicrotask } from "./util.js"
 
 // currentFx stack of listeners
@@ -15,7 +16,7 @@ export const sandbox = {
 }
 
 const handler = {
-  has(){
+  has() {
     // sandbox everything
     return true
   },
@@ -77,7 +78,7 @@ const handler = {
   }
 }
 
-export const state = (obj, parent) => {
+export default function state(obj, parent) {
   if (targetProxy.has(obj)) return targetProxy.get(obj)
   if (proxyTarget.has(obj)) return obj // is proxy already
 
@@ -85,7 +86,7 @@ export const state = (obj, parent) => {
   targetProxy.set(obj, proxy)
   proxyTarget.set(proxy, obj)
 
-  // bind all getters here to proxy
+  // bind all getters & functions here to proxy
   // FIXME: alternatively we can store getters somewhere
   let descriptors = Object.getOwnPropertyDescriptors(obj)
   for (let name in descriptors) {
@@ -93,6 +94,9 @@ export const state = (obj, parent) => {
     if (desc.get) {
       if (desc.get) desc.get = desc.get.bind(proxy), Object.defineProperty(obj, name, desc)
     }
+    // else if (typeof desc.value === 'function') {
+    //   desc.value = desc.value.bind(proxy), Object.defineProperty(obj, name, desc)
+    // }
   }
 
   // inherit from parent state

@@ -1,4 +1,4 @@
-import { state as createState, fx, sandbox } from './state.js';
+import createState, { fx, sandbox } from './state.proxy.js';
 import defaultDirective, { primary, secondary, on } from './directives.js';
 
 sprae.globals = sandbox
@@ -9,13 +9,6 @@ export default function sprae(container, values) {
   if (!container.children) return
   if (memo.has(container)) return Object.assign(memo.get(container), values)
 
-  // subscribe to reactives
-  // for (let prop in values) {
-  //   if (observable(values[prop])) {
-  //     let value = values[prop]; values[prop] = null
-  //     sube(value, value => state[prop] = value)
-  //   }
-  // }
   const state = createState(values || {});
   const updates = []
 

@@ -31,7 +31,7 @@
     }
   };
 
-  // src/state.js
+  // src/state.proxy.js
   var currentFx;
   var batch = /* @__PURE__ */ new Set();
   var pendingUpdate;
@@ -100,7 +100,7 @@
       return true;
     }
   };
-  var state = (obj, parent) => {
+  function state(obj, parent) {
     if (targetProxy.has(obj))
       return targetProxy.get(obj);
     if (proxyTarget.has(obj))
@@ -118,7 +118,7 @@
     }
     obj[_parent] = parent ? state(parent) : sandbox;
     return proxy;
-  };
+  }
   var fx = (fn) => {
     const call = () => {
       let prev = currentFx;
