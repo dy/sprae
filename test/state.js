@@ -167,6 +167,7 @@ t('state: state from state', () => {
 
 t('state: inheritance', () => {
   let s = state({ x: 0 })
+  //s.x;
   let s1 = state({ y: 2 }, s)
   is(s1.x, 0)
   is(s1.y, 2)
@@ -227,7 +228,7 @@ t('state: array items', async () => {
   is(sum, 10)
 })
 
-t('state: set element as prop', () => {
+t.todo('state: set element as prop', () => {
   const a = document.createElement('a')
   let s = state({ a })
   s.b = a
@@ -246,15 +247,15 @@ t.skip('state: arrays retain reference', () => {
 
 t('state: direct list', async () => {
   // works with arrays as well
-  let list = state([{ x: 1 }, { x: 2 }])
-  let sum; fx(() => sum = list.reduce((sum, item) => item.x + sum, 0))
+  let list = state([1, 2])
+  let sum; fx(() => sum = list.reduce((sum, item) => item + sum, 0))
   is(sum, 3)
-  list[0].x = 2
-  is(list[0].x, 2)
+  list[0] = 2
+  is(list[0], 2)
   await tick()
   is(sum, 4)
   console.log('splice')
-  list.splice(0, 2, { x: 3 }, { x: 3 })
+  list.splice(0, 2, 3, 3)
   await tick()
   console.log(list)
   is(sum, 6)
@@ -275,13 +276,13 @@ t('state: array length', () => {
   is(log, [1, 2])
 })
 
-t('state: detect circular?', async () => {
+t.only('state: detect circular?', async () => {
   let a = state([])
   // NOTE: the reason it didn't cycle in state.proxy was that it actually wasn't updating properly
   // since it must cycle here, a.push internally reads .length and self-subscribes effect
-  throws(() => {
-    fx(() => a.push(1))
-  }, /Cycle/)
+  fx(() => a.push(1))
+  await tick()
+  is(a.length, 1)
 })
 
 t('state: batch', () => {

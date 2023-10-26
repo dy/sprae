@@ -5,6 +5,7 @@
 // + signals provide nice tracking mechanism, unlike own arrays
 // + signals detect cycles
 // + it's just robust
+// ? must it modify initial store
 
 import { signal, computed, effect, batch } from '@preact/signals-core'
 // import { signal, computed } from 'usignal/sync'
@@ -21,63 +22,65 @@ export const sandbox = {
 }
 
 const isObject = v => v?.constructor === Object
-const toSignal = v => v?.peek ? v : signal(createState(v))
 
 const memo = new WeakMap
 
-export default function createState(values, proto) {
+export default function createState(values, parent) {
   if (!isObject(values) && !Array.isArray(values)) return values;
-  if (memo.has(values) && !proto) return values;
+  if (memo.has(values) && !parent) return values;
 
-  const _length = Array.isArray(values) ? signal(0) : null,
-    signals = proto ? Object.create(memo.get(createState(proto))) : Array.isArray(values) ? [] : {},
+  const isArray = Array.isArray(values),
+    signals = parent ? Object.create(memo.get(parent = createState(parent))) : Array.isArray(values) ? [] : {},
     state = new Proxy(signals, {
       // sandbox everything
       has() { return true },
       get(signals, key) {
-        const s = signals[key]
-        // .constructor, .slice etc
-        if (typeof s === 'function') return s
-        // console.log('get', key, signals)
-        // length needs outside stash since array can't redefine it
-        if (_length && key === 'length') return _length.value
-        return s ? s.value : sandbox[key]
+        return getSignal(key)?.valueOf()
       },
       set(signals, key, v) {
-        const s = signals[key]
+        const s = getSignal(key)
         // console.log('set', key, v)
-        if (!s) signals[key] = toSignal(v)
-        else if (s._set) s._set(v) // stashed _set for get/set props
+
+        // create new unknown property
+        if (!s) signals[key] = signal(createState(v?.valueOf()))
+
+        // stashed _set for values with getter/setter
+        else if (s._set) s._set(v)
         // FIXME: is there meaningful way to update same-signature object?
         // else if (isObject(v) && isObject(s.value)) Object.assign(s.value, v)
-        else if (s.peek) s.value = createState(v)
-        else signals[key] = v // non-signal values, like .length
+        else s.value = createState(v?.valueOf())
 
-        if (_length && key === 'length') _length.value = v // update array length dependents
         return true
       }
     })
 
-  // for array - init signals for values
-  if (Array.isArray(values)) state.push(...values)
-  // for object - init from descriptors
-  else {
-    const descs = Object.getOwnPropertyDescriptors(values)
+  // gets / initializes signal for provided key
+  function getSignal(key) {
+    const _key = isArray && key === 'length' ? '__length' : key
+    let s = signals[_key]
 
-    // define signal accessors for exported object
-    for (let key in descs) {
-      let desc = descs[key]
+    // init value
+    if (!s) {
+      if (values.hasOwnProperty(key)) {
+        // create signal from descriptor
+        const desc = Object.getOwnPropertyDescriptor(values, key)
+        // getter turns into computed
+        if (desc?.get) {
+          (s = signals[_key] = computed(desc.get.bind(state)))._set = desc.set?.bind(state) // stash setter
+        }
+        else {
+          // NOTE: we recreate signal props instead of just setting them to make sure parent is unaffected
+          s = signals[_key] = desc.value?.peek ? desc.value : signal(createState(desc.value))
+        }
+      }
+      // touch parent (lazy-inits there)
+      else if (parent) parent[key], s = signals[_key]
 
-      // getter turns into computed
-      if (desc.get) {
-        const s = signals[key] = computed(desc.get.bind(state))
-        if (desc.set) s._set = desc.set.bind(state) // stash setter
-      }
-      else {
-        // NOTE: we recreate signal props instead of just setting them to make sure proto is unaffected
-        signals[key] = toSignal(desc.value)
-      }
+      // Array, window etc
+      if (!s && sandbox.hasOwnProperty(key)) return sandbox[key]
     }
+
+    return s
   }
 
   memo.set(state, signals)

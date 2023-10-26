@@ -472,7 +472,7 @@ test('each: condition within loop', async () => {
   is(el.innerHTML, '')
 })
 
-test.only('each: next items have own "this", not single one', async () => {
+test('each: next items have own "this", not single one', async () => {
   // FIXME: let el = h`<x :each="x in 3"></x>`
   let el = h`<div><x :each="x in 3" :data-x="x" :x="log.push(x, this.dataset.x)"></x></div>`
   let log = []
