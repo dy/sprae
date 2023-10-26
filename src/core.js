@@ -1,4 +1,4 @@
-import createState, { fx, sandbox } from './state.signals-proxy.js';
+import createState, { fx, sandbox, batch } from './state.signals-proxy.js';
 import defaultDirective, { primary, secondary, on } from './directives.js';
 
 sprae.globals = sandbox
@@ -7,7 +7,7 @@ sprae.globals = sandbox
 const memo = new WeakMap
 export default function sprae(container, values) {
   if (!container.children) return
-  if (memo.has(container)) return Object.assign(memo.get(container), values)
+  if (memo.has(container)) return batch(() => Object.assign(memo.get(container), values))
 
   const state = createState(values || {});
   const updates = []

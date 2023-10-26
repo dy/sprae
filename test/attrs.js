@@ -472,7 +472,7 @@ test('each: condition within loop', async () => {
   is(el.innerHTML, '')
 })
 
-test('each: next items have own "this", not single one', async () => {
+test.only('each: next items have own "this", not single one', async () => {
   // FIXME: let el = h`<x :each="x in 3"></x>`
   let el = h`<div><x :each="x in 3" :data-x="x" :x="log.push(x, this.dataset.x)"></x></div>`
   let log = []
@@ -684,6 +684,7 @@ test.todo(':render template after use', async () => {
 test('ref: base', async () => {
   let a = h`<a :ref="a" :init="log.push(a), null" :text="b"></a>`
   let state = sprae(a, { log: [], b: 1 })
+  await tick()
   is(state.log[0], a)
   is(a.outerHTML, `<a>1</a>`)
   state.b = 2

@@ -1,5 +1,5 @@
-import state, { fx } from '../src/state.signals-proxy.js'
-import t, { is, ok } from 'tst'
+import state, { fx, batch } from '../src/state.signals-proxy.js'
+import t, { is, ok, throws } from 'tst'
 import signalStruct from 'signal-struct'
 import { effect } from '@preact/signals-core'
 import { tick } from 'wait-please'
@@ -82,9 +82,10 @@ t('state: array', async () => {
   let s = state({
     w: [1, 2]
   })
+  is(s.w, [1, 2])
 
   // updating array is fine
-  let mult; fx(() => mult = s.w?.[0] * s.w?.[1] || 0)
+  let mult; fx(() => (mult = s.w?.[0] * s.w?.[1] || 0))
   is(mult, 2)
   s.w = [3, 4]
   await tick()
@@ -192,7 +193,7 @@ t('state: inheritance', () => {
 
 t('state: inheritance: updating values in chain', async () => {
   let s1 = { x: 1 }
-  let s = state(s1, state({ y: 2 }))
+  let s = state(s1, { y: 2 })
   // console.group('fx')
   let xy = 0; fx(() => (xy = s.x + s.y));
   // console.groupEnd('fx')
@@ -206,6 +207,7 @@ t('state: inheritance: updating values in chain', async () => {
   s.y++
   await tick()
   is(xy, 5)
+  is(s1.y, undefined)
 })
 
 t('state: array items', async () => {
@@ -223,6 +225,14 @@ t('state: array items', async () => {
   s5.list = [{ x: 3 }, { x: 3 }, { x: 4 }]
   await tick()
   is(sum, 10)
+})
+
+t('state: set element as prop', () => {
+  const a = document.createElement('a')
+  let s = state({ a })
+  s.b = a
+  is(s.a, a)
+  is(s.b, a)
 })
 
 t.skip('state: arrays retain reference', () => {
@@ -257,14 +267,24 @@ t('state: array methods', () => {
   is(b, [2])
 })
 
-t('state: circular?', () => {
-  let a = state([])
-  fx(() => a.push(1))
-  a.push(2)
-  is(a, [1, 2])
+t('state: array length', () => {
+  let a = state([1]), log = []
+  fx(() => log.push(a.length))
+  is(log, [1])
+  a.push(1)
+  is(log, [1, 2])
 })
 
-t.skip('state: batch', () => {
+t('state: detect circular?', async () => {
+  let a = state([])
+  // NOTE: the reason it didn't cycle in state.proxy was that it actually wasn't updating properly
+  // since it must cycle here, a.push internally reads .length and self-subscribes effect
+  throws(() => {
+    fx(() => a.push(1))
+  }, /Cycle/)
+})
+
+t('state: batch', () => {
   let s = state({ x: 1, y: 2 })
   let log = []; fx(() => log.push(s.x + s.y))
   is(log, [3])
@@ -274,6 +294,12 @@ t.skip('state: batch', () => {
     batch(() => s.x++)
   ))
   is(log, [3, 5, 6])
+})
+
+t('state: inheritance does not change root', () => {
+  const root = state({ x: 1, y: 2 })
+  const s = state({ x: 2 }, root)
+  is(root.x, 1)
 })
 
 t('state: bench', () => {
