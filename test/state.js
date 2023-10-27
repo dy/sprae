@@ -1,7 +1,5 @@
 import state, { fx, batch } from '../src/state.signals-proxy.js'
 import t, { is, ok, throws } from 'tst'
-import signalStruct from 'signal-struct'
-import { effect } from '@preact/signals-core'
 import { tick } from 'wait-please'
 
 t('state: basic', async t => {
@@ -215,7 +213,13 @@ t('state: inheritance: lazy init', async () => {
   let s = state({ x: { foo: 'bar' } })
   let s1 = state(s.x, s)
   is(s1.foo, 'bar')
+  let last
+  fx(() => (last = s1.foo))
+  is(last, 'bar')
+  console.log('s.x.foo = `baz`')
   s.x.foo = 'baz'
+  await tick()
+  is(last, 'baz')
   is(s1.x.foo, 'baz')
 })
 
@@ -316,23 +320,36 @@ t('state: inheritance does not change root', () => {
   is(root.x, 1)
 })
 
-t('state: bench', () => {
+t.only('state: bench', async () => {
   const N = 100000
 
-  let s2 = signalStruct({ x: 1, y: 2 }), xy2
-  effect(() => xy2 = s2.x * s2.y)
-  console.time('signalStruct')
+  // signal-struct
+  const { default: signals, fx: fx2 } = await import('../src/state.signals.js')
+  let s2 = signals({ x: 1, y: 2 }), xy2
+  fx2(() => xy2 = s2.x * s2.y)
+  console.time('signals')
   for (let i = 0; i < N; i++) {
     s2.x++, s2.y++
+    xy2 ** 2
   }
-  console.timeEnd('signalStruct')
+  console.timeEnd('signals')
 
+  const { default: proxy, fx: fx3 } = await import('../src/state.proxy.js')
+  let s3 = proxy({ x: 1, y: 2 }), xy3
+  fx3(() => xy3 = s3.x * s3.y)
+  console.time('proxy')
+  for (let i = 0; i < N; i++) {
+    s3.x++, s3.y++
+    xy3 ** 2
+  }
+  console.timeEnd('proxy')
 
   let s1 = state({ x: 1, y: 2 }), xy
   fx(() => xy = s1.x * s1.y)
-  console.time('fxs')
+  console.time('signals-proxy')
   for (let i = 0; i < N; i++) {
     s1.x++, s1.y++
+    xy ** 2
   }
-  console.timeEnd('fxs')
+  console.timeEnd('signals-proxy')
 })

@@ -60,14 +60,14 @@ test('common: newlines', async () => {
 test('common: const in on', async () => {
   let el = h`<div :onx="() => {const x=1; y=x+1}"></div>`
   let state = sprae(el, { y: 0 })
-  el.dispatchEvent(new CustomEvent('x'))
+  el.dispatchEvent(new window.CustomEvent('x'))
   is(state.y, 2)
 })
 
 test('common: const in with', async () => {
   let el = h`<div :with="{x(){let x = 1; y=x;}}" @x="x()"></div>`
   let state = sprae(el, { y: 0 })
-  el.dispatchEvent(new CustomEvent('x'))
+  el.dispatchEvent(new window.CustomEvent('x'))
   is(state.y, 1)
 })
 
@@ -577,7 +577,7 @@ test('each: subscribe to modifying list', async () => {
   const state = sprae(el, { rows: [1], remove() { this.rows = [] } })
   is(el.outerHTML, `<ul><li>1</li></ul>`)
   // state.remove()
-  el.querySelector('li').dispatchEvent(new CustomEvent('remove'))
+  el.querySelector('li').dispatchEvent(new window.Event('remove'))
   console.log('---removed', state.rows)
 
   await tick();
@@ -612,7 +612,7 @@ test('with: data', async () => {
   // Object.assign(state, { x: { foo: 'baz' } })
   is(el.innerHTML, `<y>baz</y>`)
 })
-test.only('with: transparency', async () => {
+test('with: transparency', async () => {
   // NOTE: y:text initializes through directive, not through parent
   // therefore by default :text uses parent's state, not defined by element itself
   let el = h`<x :with="{foo:'foo'}"><y :with="b" :text="foo+bar"></y></x>`
@@ -734,7 +734,7 @@ test.todo('immediate scope', async () => {
   let el = h`<x :with="{arr:[], inc(){ arr.push(1) }}" :onx="e=>inc()" :text="arr[0]"></x>`
   sprae(el)
   is(el.outerHTML, `<x></x>`)
-  el.dispatchEvent(new CustomEvent('x'))
+  el.dispatchEvent(new window.CustomEvent('x'))
   await tick()
   is(el.outerHTML, `<x>1</x>`)
 })
@@ -766,7 +766,7 @@ test('subscribe to array length', async () => {
   let el = h`<div :with="{likes:[]}"><x :onx="e=>(likes.push(1))"></x><y :text="likes.length"></y></div>`
   sprae(el)
   is(el.innerHTML, `<x></x><y>0</y>`)
-  el.firstChild.dispatchEvent(new CustomEvent('x'))
+  el.firstChild.dispatchEvent(new window.CustomEvent('x'))
   await tick()
   is(el.innerHTML, `<x></x><y>1</y>`)
 })

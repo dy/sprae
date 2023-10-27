@@ -71,7 +71,9 @@ export default function createState(values, parent) {
 
   // init signals placeholders (instead of ownKeys & getOwnPropertyDescriptor handlers)
   for (let key in values) {
-    signals[key] = null // make placeholder
+    // FIXME: make lazy signals actually work (breaks 2 tests)
+    // signals[key] = null // make placeholder
+    signals[key] = initSignal(key)
   }
 
   // initialize signal for provided key
@@ -86,9 +88,7 @@ export default function createState(values, parent) {
         (signals[key] = computed(desc.get.bind(state)))._set = desc.set?.bind(state);
         return signals[key]
       }
-
-      // NOTE: we explicitly read values[key] instead of desc.value since it can be lazy-uninitialized
-      return signals[key] = desc.value?.peek ? values[key] : signal(createState(values[key]))
+      return signals[key] = desc.value?.peek ? desc.value : signal(createState(desc.value))
     }
 
     // touch parent
