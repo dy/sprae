@@ -22,65 +22,75 @@ export const sandbox = {
 }
 
 const isObject = v => v?.constructor === Object
-
 const memo = new WeakMap
+
+// track last accessed property to figure out if .length was directly accessed from expression or via .push/etc method
+let lastProp
 
 export default function createState(values, parent) {
   if (!isObject(values) && !Array.isArray(values)) return values;
   if (memo.has(values) && !parent) return values;
 
-  const isArray = Array.isArray(values),
+  const _len = Array.isArray(values) && signal(values.length),
     signals = parent ? Object.create(memo.get(parent = createState(parent))) : Array.isArray(values) ? [] : {},
     state = new Proxy(signals, {
       // sandbox everything
       has() { return true },
       get(signals, key) {
-        return getSignal(key)?.valueOf()
+        // console.log('get', lastProp, key)
+        let v
+        // if .length is read within .push/etc - peek signal (don't subscribe)
+        if (_len && key === 'length') v = Array.prototype[lastProp] ? _len.peek() : _len.value;
+        else v = (signals[key] || initSignal(key))?.valueOf()
+        lastProp = key
+        return v
       },
       set(signals, key, v) {
-        const s = getSignal(key)
-        // console.log('set', key, v)
+        // .length
+        if (_len && key === 'length') _len.value = signals.length = v;
 
-        // create new unknown property
-        if (!s) signals[key] = signal(createState(v?.valueOf()))
+        else {
+          const s = signals[key] || initSignal(key)
 
-        // stashed _set for values with getter/setter
-        else if (s._set) s._set(v)
-        // FIXME: is there meaningful way to update same-signature object?
-        // else if (isObject(v) && isObject(s.value)) Object.assign(s.value, v)
-        else s.value = createState(v?.valueOf())
+          // new unknown property
+          if (!s) signals[key] = signal(createState(v?.valueOf()))
+          // stashed _set for values with getter/setter
+          else if (s._set) s._set(v)
+          // FIXME: is there meaningful way to update same-signature object?
+          // else if (isObject(v) && isObject(s.value)) Object.assign(s.value, v)
+          // .x = y
+          else s.value = createState(v?.valueOf())
+        }
 
+        lastProp = null
         return true
       }
     })
 
-  // gets / initializes signal for provided key
-  function getSignal(key) {
-    const _key = isArray && key === 'length' ? '__length' : key
-    let s = signals[_key]
+  // init signals placeholders
+  for (let key in values) signals[key] = null
 
-    // init value
-    if (!s) {
-      if (values.hasOwnProperty(key)) {
-        // create signal from descriptor
-        const desc = Object.getOwnPropertyDescriptor(values, key)
-        // getter turns into computed
-        if (desc?.get) {
-          (s = signals[_key] = computed(desc.get.bind(state)))._set = desc.set?.bind(state) // stash setter
-        }
-        else {
-          // NOTE: we recreate signal props instead of just setting them to make sure parent is unaffected
-          s = signals[_key] = desc.value?.peek ? desc.value : signal(createState(desc.value))
-        }
+  // get / initialize signal for provided key
+  function initSignal(key) {
+    // init existing value
+    if (values.hasOwnProperty(key)) {
+      // create signal from descriptor
+      const desc = Object.getOwnPropertyDescriptor(values, key)
+      // getter turns into computed
+      if (desc?.get) {
+        // stash setter
+        (signals[key] = computed(desc.get.bind(state)))._set = desc.set?.bind(state);
+        return signals[key]
       }
-      // touch parent (lazy-inits there)
-      else if (parent) parent[key], s = signals[_key]
 
-      // Array, window etc
-      if (!s && sandbox.hasOwnProperty(key)) return sandbox[key]
+      return signals[key] = desc.value?.peek ? desc.value : signal(createState(desc.value))
     }
 
-    return s
+    // touch parent
+    if (parent) return parent[key]
+
+    // Array, window etc
+    if (sandbox.hasOwnProperty(key)) return sandbox[key]
   }
 
   memo.set(state, signals)

@@ -211,6 +211,11 @@ t('state: inheritance: updating values in chain', async () => {
   is(s1.y, undefined)
 })
 
+t('state: sandbox', async () => {
+  let s = state({ x: 1 })
+  is(s.window, window)
+})
+
 t('state: array items', async () => {
   // arrays get each item converted to signal struct
   let s5 = state({ list: [{ x: 1 }, { x: 2 }] })
@@ -276,7 +281,7 @@ t('state: array length', () => {
   is(log, [1, 2])
 })
 
-t.only('state: detect circular?', async () => {
+t('state: detect circular?', async () => {
   let a = state([])
   // NOTE: the reason it didn't cycle in state.proxy was that it actually wasn't updating properly
   // since it must cycle here, a.push internally reads .length and self-subscribes effect
