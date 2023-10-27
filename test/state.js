@@ -211,6 +211,14 @@ t('state: inheritance: updating values in chain', async () => {
   is(s1.y, undefined)
 })
 
+t('state: inheritance: lazy init', async () => {
+  let s = state({ x: { foo: 'bar' } })
+  let s1 = state(s.x, s)
+  is(s1.foo, 'bar')
+  s.x.foo = 'baz'
+  is(s1.x.foo, 'baz')
+})
+
 t('state: sandbox', async () => {
   let s = state({ x: 1 })
   is(s.window, window)

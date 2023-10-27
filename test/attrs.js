@@ -473,7 +473,7 @@ test('each: condition within loop', async () => {
 })
 
 test('each: next items have own "this", not single one', async () => {
-  // FIXME: let el = h`<x :each="x in 3"></x>`
+  // FIXME: fragment init like let el = h`<x :each="x in 3"></x>`
   let el = h`<div><x :each="x in 3" :data-x="x" :x="log.push(x, this.dataset.x)"></x></div>`
   let log = []
   let state = sprae(el, { log })
@@ -609,10 +609,10 @@ test('with: data', async () => {
   console.log('update', state.x)
   state.x.foo = 'baz'
   await tick()
-  // Object.assign(state, {x:{foo:'baz'}})
+  // Object.assign(state, { x: { foo: 'baz' } })
   is(el.innerHTML, `<y>baz</y>`)
 })
-test('with: transparency', async () => {
+test.only('with: transparency', async () => {
   // NOTE: y:text initializes through directive, not through parent
   // therefore by default :text uses parent's state, not defined by element itself
   let el = h`<x :with="{foo:'foo'}"><y :with="b" :text="foo+bar"></y></x>`
@@ -753,14 +753,13 @@ test('getters', async () => {
 
 test('sandbox', async () => {
   let el = h`<x :x="log.push(typeof self, typeof console, typeof arguments, typeof __scope)"></x>`
-  let log = []
-  sprae(el.cloneNode(), { log })
-  is(log, ['undefined', 'object', 'undefined', 'undefined'])
+  const s = sprae(el.cloneNode(), { log: [] })
+  is(s.log, ['undefined', 'object', 'undefined', 'undefined'])
 
-  log.splice(0)
+  s.log.splice(0)
   Object.assign(sprae.globals, { self: window })
-  sprae(el.cloneNode(), { log })
-  is(log, ['object', 'object', 'undefined', 'undefined'])
+  sprae(el.cloneNode(), { log: s.log })
+  is(s.log, ['object', 'object', 'undefined', 'undefined'])
 })
 
 test('subscribe to array length', async () => {

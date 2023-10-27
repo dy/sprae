@@ -30,19 +30,21 @@ let lastProp
 export default function createState(values, parent) {
   if (!isObject(values) && !Array.isArray(values)) return values;
   if (memo.has(values) && !parent) return values;
-
+  // .length signal is stored outside, since cannot be replaced
   const _len = Array.isArray(values) && signal(values.length),
+    // dict with signals storing values
     signals = parent ? Object.create(memo.get(parent = createState(parent))) : Array.isArray(values) ? [] : {},
+    // proxy conducts prop access to signals
     state = new Proxy(signals, {
       // sandbox everything
       has() { return true },
       get(signals, key) {
-        // console.log('get', lastProp, key)
+        // console.log('get', key)
         let v
         // if .length is read within .push/etc - peek signal (don't subscribe)
         if (_len && key === 'length') v = Array.prototype[lastProp] ? _len.peek() : _len.value;
         else v = (signals[key] || initSignal(key))?.valueOf()
-        lastProp = key
+        if (_len) lastProp = key
         return v
       },
       set(signals, key, v) {
@@ -62,15 +64,17 @@ export default function createState(values, parent) {
           else s.value = createState(v?.valueOf())
         }
 
-        lastProp = null
+        if (_len) lastProp = null
         return true
       }
     })
 
-  // init signals placeholders
-  for (let key in values) signals[key] = null
+  // init signals placeholders (instead of ownKeys & getOwnPropertyDescriptor handlers)
+  for (let key in values) {
+    signals[key] = null // make placeholder
+  }
 
-  // get / initialize signal for provided key
+  // initialize signal for provided key
   function initSignal(key) {
     // init existing value
     if (values.hasOwnProperty(key)) {
@@ -83,7 +87,8 @@ export default function createState(values, parent) {
         return signals[key]
       }
 
-      return signals[key] = desc.value?.peek ? desc.value : signal(createState(desc.value))
+      // NOTE: we explicitly read values[key] instead of desc.value since it can be lazy-uninitialized
+      return signals[key] = desc.value?.peek ? values[key] : signal(createState(values[key]))
     }
 
     // touch parent
