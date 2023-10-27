@@ -18,7 +18,7 @@ export const sandbox = {
   Array, Object, Number, String, Boolean, Date,
   console, window, document, history, navigator, location, screen, localStorage, sessionStorage,
   alert, prompt, confirm, fetch, performance,
-  setTimeout, setInterval, requestAnimationFrame, requestIdleCallback
+  setTimeout, setInterval, requestAnimationFrame
 }
 
 const isObject = v => v?.constructor === Object
