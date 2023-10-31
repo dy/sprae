@@ -680,7 +680,7 @@ test.todo(':render template after use', async () => {
   is(a.outerHTML, `<x><div>abc</div></x><template><div :text="text"></div></template>`)
 })
 
-
+// FIXME: state.proxy gets into max callstack here
 test('ref: base', async () => {
   let a = h`<a :ref="a" :init="log.push(a), null" :text="b"></a>`
   let state = sprae(a, { log: [], b: 1 })

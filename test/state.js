@@ -285,11 +285,12 @@ t('state: array methods', () => {
   is(b, [2])
 })
 
-t('state: array length', () => {
+t('state: array length', async () => {
   let a = state([1]), log = []
   fx(() => log.push(a.length))
   is(log, [1])
   a.push(1)
+  await tick()
   is(log, [1, 2])
 })
 
@@ -299,18 +300,21 @@ t('state: detect circular?', async () => {
   // since it must cycle here, a.push internally reads .length and self-subscribes effect
   fx(() => a.push(1))
   await tick()
+  console.log(a)
   is(a.length, 1)
 })
 
-t('state: batch', () => {
+t('state: batch', async () => {
   let s = state({ x: 1, y: 2 })
   let log = []; fx(() => log.push(s.x + s.y))
   is(log, [3])
   batch(() => (s.x++, s.y++))
+  await tick();
   is(log, [3, 5])
   batch(() => (
     batch(() => s.x++)
   ))
+  await tick();
   is(log, [3, 5, 6])
 })
 
@@ -320,7 +324,7 @@ t('state: inheritance does not change root', () => {
   is(root.x, 1)
 })
 
-t.only('state: bench', async () => {
+t('state: bench', async () => {
   const N = 100000
 
   // signal-struct
@@ -344,8 +348,9 @@ t.only('state: bench', async () => {
   }
   console.timeEnd('proxy')
 
-  let s1 = state({ x: 1, y: 2 }), xy
-  fx(() => xy = s1.x * s1.y)
+  const { default: sproxy, fx: fx1 } = await import('../src/state.signals-proxy.js')
+  let s1 = sproxy({ x: 1, y: 2 }), xy
+  fx1(() => xy = s1.x * s1.y)
   console.time('signals-proxy')
   for (let i = 0; i < N; i++) {
     s1.x++, s1.y++
