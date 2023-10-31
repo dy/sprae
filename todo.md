@@ -51,6 +51,7 @@
 * [x] Getters must become evaluable
 * [x] `<li :each="item in items" :with="{collapsed:true}"><button :onclick='e=>collapsed=false'></li>`
 * [ ] `:with="{likes:[], like(){ /* likes should not be undefined here */ }}"`
-* [ ] frameworks benchmark
+* [ ] frameworks benchmark -> contrib to krausest
 * [ ] Reduce memory leak
-* [ ] Make store actually lazy-init (now it's not)
+* [ ] Make signals-proxy state actually lazy-init (now it's not)
+* [ ] Make regular proxy state not causing infinite recursion
