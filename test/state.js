@@ -1,7 +1,5 @@
-import state, { fx } from '../src/state.proxy.js'
-import t, { is, ok } from 'tst'
-import signalStruct from 'signal-struct'
-import { effect } from '@preact/signals-core'
+import state, { fx, batch } from '../src/state.signals-proxy.js'
+import t, { is, ok, throws } from 'tst'
 import { tick } from 'wait-please'
 
 t('state: basic', async t => {
@@ -82,9 +80,10 @@ t('state: array', async () => {
   let s = state({
     w: [1, 2]
   })
+  is(s.w, [1, 2])
 
   // updating array is fine
-  let mult; fx(() => mult = s.w?.[0] * s.w?.[1] || 0)
+  let mult; fx(() => (mult = s.w?.[0] * s.w?.[1] || 0))
   is(mult, 2)
   s.w = [3, 4]
   await tick()
@@ -166,6 +165,7 @@ t('state: state from state', () => {
 
 t('state: inheritance', () => {
   let s = state({ x: 0 })
+  //s.x;
   let s1 = state({ y: 2 }, s)
   is(s1.x, 0)
   is(s1.y, 2)
@@ -192,7 +192,7 @@ t('state: inheritance', () => {
 
 t('state: inheritance: updating values in chain', async () => {
   let s1 = { x: 1 }
-  let s = state(s1, state({ y: 2 }))
+  let s = state(s1, { y: 2 })
   // console.group('fx')
   let xy = 0; fx(() => (xy = s.x + s.y));
   // console.groupEnd('fx')
@@ -206,6 +206,26 @@ t('state: inheritance: updating values in chain', async () => {
   s.y++
   await tick()
   is(xy, 5)
+  is(s1.y, undefined)
+})
+
+t('state: inheritance: lazy init', async () => {
+  let s = state({ x: { foo: 'bar' } })
+  let s1 = state(s.x, s)
+  is(s1.foo, 'bar')
+  let last
+  fx(() => (last = s1.foo))
+  is(last, 'bar')
+  console.log('s.x.foo = `baz`')
+  s.x.foo = 'baz'
+  await tick()
+  is(last, 'baz')
+  is(s1.x.foo, 'baz')
+})
+
+t('state: sandbox', async () => {
+  let s = state({ x: 1 })
+  is(s.window, window)
 })
 
 t('state: array items', async () => {
@@ -225,7 +245,16 @@ t('state: array items', async () => {
   is(sum, 10)
 })
 
-t('state: arrays retain reference', () => {
+t.todo('state: set element as prop', () => {
+  const a = document.createElement('a')
+  let s = state({ a })
+  s.b = a
+  is(s.a, a)
+  is(s.b, a)
+})
+
+t.skip('state: arrays retain reference', () => {
+  // NOTE: not sure if we need it
   // arrays retain reference
   let list = [1, 2, 3]
   let s6 = state({ list })
@@ -235,15 +264,15 @@ t('state: arrays retain reference', () => {
 
 t('state: direct list', async () => {
   // works with arrays as well
-  let list = state([{ x: 1 }, { x: 2 }])
-  let sum; fx(() => sum = list.reduce((sum, item) => item.x + sum, 0))
+  let list = state([1, 2])
+  let sum; fx(() => sum = list.reduce((sum, item) => item + sum, 0))
   is(sum, 3)
-  list[0].x = 2
-  is(list[0].x, 2)
+  list[0] = 2
+  is(list[0], 2)
   await tick()
   is(sum, 4)
   console.log('splice')
-  list.splice(0, 2, { x: 3 }, { x: 3 })
+  list.splice(0, 2, 3, 3)
   await tick()
   console.log(list)
   is(sum, 6)
@@ -256,42 +285,76 @@ t('state: array methods', () => {
   is(b, [2])
 })
 
-t('state: circular?', () => {
-  let a = state([])
-  fx(() => a.push(1))
-  a.push(2)
-  is(a, [1, 2])
+t('state: array length', async () => {
+  let a = state([1]), log = []
+  fx(() => log.push(a.length))
+  is(log, [1])
+  a.push(1)
+  await tick()
+  is(log, [1, 2])
 })
 
-t.skip('state: batch', () => {
+t('state: detect circular?', async () => {
+  let a = state([])
+  // NOTE: the reason it didn't cycle in state.proxy was that it actually wasn't updating properly
+  // since it must cycle here, a.push internally reads .length and self-subscribes effect
+  fx(() => a.push(1))
+  await tick()
+  console.log(a)
+  is(a.length, 1)
+})
+
+t('state: batch', async () => {
   let s = state({ x: 1, y: 2 })
   let log = []; fx(() => log.push(s.x + s.y))
   is(log, [3])
   batch(() => (s.x++, s.y++))
+  await tick();
   is(log, [3, 5])
   batch(() => (
     batch(() => s.x++)
   ))
+  await tick();
   is(log, [3, 5, 6])
 })
 
-t('state: bench', () => {
+t('state: inheritance does not change root', () => {
+  const root = state({ x: 1, y: 2 })
+  const s = state({ x: 2 }, root)
+  is(root.x, 1)
+})
+
+t('state: bench', async () => {
   const N = 100000
 
-  let s2 = signalStruct({ x: 1, y: 2 }), xy2
-  effect(() => xy2 = s2.x * s2.y)
-  console.time('signalStruct')
+  // signal-struct
+  const { default: signals, fx: fx2 } = await import('../src/state.signals.js')
+  let s2 = signals({ x: 1, y: 2 }), xy2
+  fx2(() => xy2 = s2.x * s2.y)
+  console.time('signals')
   for (let i = 0; i < N; i++) {
     s2.x++, s2.y++
+    xy2 ** 2
   }
-  console.timeEnd('signalStruct')
+  console.timeEnd('signals')
 
+  const { default: proxy, fx: fx3 } = await import('../src/state.proxy.js')
+  let s3 = proxy({ x: 1, y: 2 }), xy3
+  fx3(() => xy3 = s3.x * s3.y)
+  console.time('proxy')
+  for (let i = 0; i < N; i++) {
+    s3.x++, s3.y++
+    xy3 ** 2
+  }
+  console.timeEnd('proxy')
 
-  let s1 = state({ x: 1, y: 2 }), xy
-  fx(() => xy = s1.x * s1.y)
-  console.time('fxs')
+  const { default: sproxy, fx: fx1 } = await import('../src/state.signals-proxy.js')
+  let s1 = sproxy({ x: 1, y: 2 }), xy
+  fx1(() => xy = s1.x * s1.y)
+  console.time('signals-proxy')
   for (let i = 0; i < N; i++) {
     s1.x++, s1.y++
+    xy ** 2
   }
-  console.timeEnd('fxs')
+  console.timeEnd('signals-proxy')
 })

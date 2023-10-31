@@ -441,10 +441,13 @@
   - possibly longer init
 
 ## [ ] Better :ref
+
   + :ref="`a-${1}`"
   + :id:ref="xyz"
+    - `:id` is string, `:ref` is var name
   ? maybe id should have same signature
   ? should it be very similar mechanism to `:with="a=1,b=2"`
+  ~ ref must be possible as `:fx="x=this"`
 
 ## [x] Event modifiers :ona.once, `:ona` -> let's try, there's a lot of use for both props and event
 

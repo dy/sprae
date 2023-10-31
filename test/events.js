@@ -42,16 +42,15 @@ test('events: multiple events', e => {
 test('events: once', e => {
   // NOTE: if callback updates it's still rebound
   let el = h`<x @x.once="(x&&log.push(this))" ></x>`
-  let log = []
-  let state = sprae(el, { log, x: 1 })
+  let s = sprae(el, { log: [], x: 1 })
   el.dispatchEvent(new window.Event('x'));
-  is(log, [el])
+  is(s.log, [el])
   el.dispatchEvent(new window.Event('x'));
-  is(log, [el])
-  state.x = 2
+  is(s.log, [el])
+  s.x = 2
   el.dispatchEvent(new window.Event('x'));
   el.dispatchEvent(new window.Event('x'));
-  is(log, [el])
+  is(s.log, [el])
 })
 
 test('events: capture, stop, prevent', e => {
@@ -79,8 +78,7 @@ test('events: window, self', e => {
 
 test('events: keys', e => {
   let el = h`<x @keydown.enter="log.push(1)"></x>`
-  let state = { log: [] }
-  sprae(el, state)
+  let state = sprae(el, { log: [] })
   el.dispatchEvent(new window.KeyboardEvent('keydown', { key: '' }));
   is(state.log, [])
   el.dispatchEvent(new window.KeyboardEvent('keydown', { key: 'Enter' }));
@@ -92,8 +90,7 @@ test('events: keys', e => {
 
 test('events: key combinations', e => {
   let el = h`<x @keydown.ctrl-enter="log.push(1)"></x>`
-  let state = { log: [] }
-  sprae(el, state)
+  let state = sprae(el, { log: [] })
   el.dispatchEvent(new window.KeyboardEvent('keydown', { key: '' }));
   is(state.log, [])
   el.dispatchEvent(new window.KeyboardEvent('keydown', { key: 'Enter' }));

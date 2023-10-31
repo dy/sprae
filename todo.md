@@ -52,3 +52,5 @@
 * [x] `<li :each="item in items" :with="{collapsed:true}"><button :onclick='e=>collapsed=false'></li>`
 * [ ] `:with="{likes:[], like(){ /* likes should not be undefined here */ }}"`
 * [ ] frameworks benchmark
+* [ ] Reduce memory leak
+* [ ] Make store actually lazy-init (now it's not)

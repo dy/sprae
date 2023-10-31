@@ -2,7 +2,7 @@
 import sprae from './core.js'
 import swap from './domdiff.js'
 // import swap from 'swapdom'
-import createState from './state.proxy.js'
+import createState from './state.signals-proxy.js'
 import { queueMicrotask, WeakishMap } from './util.js'
 
 // reserved directives - order matters!
@@ -129,6 +129,7 @@ primary['ref'] = (el, expr, state) => {
 
 
 // This was taken AlpineJS, former VueJS 2.* core. Thanks Alpine & Vue!
+// takes instruction like `item in list`, returns ['item', '', 'list']
 function parseForExpression(expression) {
   let forIteratorRE = /,([^,\}\]]*)(?:,([^,\}\]]*))?$/
   let stripParensRE = /^\s*\(|\)\s*$/g
@@ -147,6 +148,7 @@ function parseForExpression(expression) {
     items
   ]
 
+  // FIXME: it can possibly return index as second param
   return [item, '', items]
 }
 
