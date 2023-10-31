@@ -40,8 +40,25 @@ To init manually as module, import [`sprae.js`](./sprae.js):
 ```
 
 Sprae evaluates `:`-attributes and evaporates them.<br/>
+
+## State
+
 Sprae creates reactive state representing current values in rendered DOM.<br/>
 It is based on [preact signals](https://github.com/preactjs/signals) and can take them as inputs.
+
+```js
+const version = signal('alpha')
+const state = sprae(container, { foo: 'bar', version })
+
+// Updating state properties rerenders the DOM.
+state.foo = 'baz'
+
+// Updating input signal rerenders the DOM.
+version.value = 'beta'
+
+// To batch-update, reinitialize sprae
+sprae(container, { foo: 'qux', version: 'gamma' })
+```
 
 ## Attributes
 
