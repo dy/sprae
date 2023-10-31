@@ -2,7 +2,7 @@
 
 > DOM tree hydration with reactivity.
 
-_Sprae_ is progressive enhancement framework, a tiny essential alternative to [alpine](https://github.com/alpinejs/alpine), [petite-vue](https://github.com/vuejs/petite-vue) or [template-parts](https://github.com/github/template-parts) with improved ergonomics[*](#justification--alternatives). It enables simple markup logic without external scripts. Perfect for small websites, prototypes or UI logic.
+_Sprae_ is progressive enhancement framework, a tiny essential alternative to [alpine](https://github.com/alpinejs/alpine), [petite-vue](https://github.com/vuejs/petite-vue) or [template-parts](https://github.com/github/template-parts) with enhanced ergonomics[*](#justification--alternatives). It enables simple markup logic without external scripts. Perfect for small websites, prototypes or UI logic.
 
 ## Use
 
@@ -39,9 +39,26 @@ To init manually as module, import [`sprae.js`](./sprae.js):
 </script>
 ```
 
-Sprae evaluates `:`-attributes and evaporates them.<br/>
-Reactive `state` reflects current values, can be updated directly.<br/>
-It batches multiple updates internally for efficiency.
+Sprae evaluates `:`-attributes and evaporates them.
+
+## State
+
+Sprae uses reactive store object representing current values in rendered DOM.<br/>
+It is based on [preact signals](https://github.com/preactjs/signals) and can take them as inputs.
+
+```js
+const s = signal('x')
+const state = sprae(container, { foo: 'bar', version: 'alpha', s })
+
+// Updating its properties rerenders the DOM.
+state.foo = 'baz'
+
+// Updating input signal rerenders the DOM.
+s.value = 'y'
+
+// To batch-update, reinitialize sprae
+sprae(container, { foo: 'qux', version: 'beta' })
+```
 
 ## Attributes
 

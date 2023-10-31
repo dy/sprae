@@ -60,14 +60,14 @@ test('common: newlines', async () => {
 test('common: const in on', async () => {
   let el = h`<div :onx="() => {const x=1; y=x+1}"></div>`
   let state = sprae(el, { y: 0 })
-  el.dispatchEvent(new CustomEvent('x'))
+  el.dispatchEvent(new window.CustomEvent('x'))
   is(state.y, 2)
 })
 
 test('common: const in with', async () => {
   let el = h`<div :with="{x(){let x = 1; y=x;}}" @x="x()"></div>`
   let state = sprae(el, { y: 0 })
-  el.dispatchEvent(new CustomEvent('x'))
+  el.dispatchEvent(new window.CustomEvent('x'))
   is(state.y, 1)
 })
 
@@ -473,7 +473,7 @@ test('each: condition within loop', async () => {
 })
 
 test('each: next items have own "this", not single one', async () => {
-  // FIXME: let el = h`<x :each="x in 3"></x>`
+  // FIXME: fragment init like let el = h`<x :each="x in 3"></x>`
   let el = h`<div><x :each="x in 3" :data-x="x" :x="log.push(x, this.dataset.x)"></x></div>`
   let log = []
   let state = sprae(el, { log })
@@ -577,7 +577,7 @@ test('each: subscribe to modifying list', async () => {
   const state = sprae(el, { rows: [1], remove() { this.rows = [] } })
   is(el.outerHTML, `<ul><li>1</li></ul>`)
   // state.remove()
-  el.querySelector('li').dispatchEvent(new CustomEvent('remove'))
+  el.querySelector('li').dispatchEvent(new window.Event('remove'))
   console.log('---removed', state.rows)
 
   await tick();
@@ -609,7 +609,7 @@ test('with: data', async () => {
   console.log('update', state.x)
   state.x.foo = 'baz'
   await tick()
-  // Object.assign(state, {x:{foo:'baz'}})
+  // Object.assign(state, { x: { foo: 'baz' } })
   is(el.innerHTML, `<y>baz</y>`)
 })
 test('with: transparency', async () => {
@@ -680,10 +680,11 @@ test.todo(':render template after use', async () => {
   is(a.outerHTML, `<x><div>abc</div></x><template><div :text="text"></div></template>`)
 })
 
-
+// FIXME: state.proxy gets into max callstack here
 test('ref: base', async () => {
   let a = h`<a :ref="a" :init="log.push(a), null" :text="b"></a>`
   let state = sprae(a, { log: [], b: 1 })
+  await tick()
   is(state.log[0], a)
   is(a.outerHTML, `<a>1</a>`)
   state.b = 2
@@ -733,7 +734,7 @@ test.todo('immediate scope', async () => {
   let el = h`<x :with="{arr:[], inc(){ arr.push(1) }}" :onx="e=>inc()" :text="arr[0]"></x>`
   sprae(el)
   is(el.outerHTML, `<x></x>`)
-  el.dispatchEvent(new CustomEvent('x'))
+  el.dispatchEvent(new window.CustomEvent('x'))
   await tick()
   is(el.outerHTML, `<x>1</x>`)
 })
@@ -752,21 +753,20 @@ test('getters', async () => {
 
 test('sandbox', async () => {
   let el = h`<x :x="log.push(typeof self, typeof console, typeof arguments, typeof __scope)"></x>`
-  let log = []
-  sprae(el.cloneNode(), { log })
-  is(log, ['undefined', 'object', 'undefined', 'undefined'])
+  const s = sprae(el.cloneNode(), { log: [] })
+  is(s.log, ['undefined', 'object', 'undefined', 'undefined'])
 
-  log.splice(0)
+  s.log.splice(0)
   Object.assign(sprae.globals, { self: window })
-  sprae(el.cloneNode(), { log })
-  is(log, ['object', 'object', 'undefined', 'undefined'])
+  sprae(el.cloneNode(), { log: s.log })
+  is(s.log, ['object', 'object', 'undefined', 'undefined'])
 })
 
 test('subscribe to array length', async () => {
   let el = h`<div :with="{likes:[]}"><x :onx="e=>(likes.push(1))"></x><y :text="likes.length"></y></div>`
   sprae(el)
   is(el.innerHTML, `<x></x><y>0</y>`)
-  el.firstChild.dispatchEvent(new CustomEvent('x'))
+  el.firstChild.dispatchEvent(new window.CustomEvent('x'))
   await tick()
   is(el.innerHTML, `<x></x><y>1</y>`)
 })

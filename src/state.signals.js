@@ -3,11 +3,11 @@ import { signal, computed, effect } from '@preact/signals-core'
 // import { signal, computed } from 'usignal/sync'
 // import { signal, computed } from '@webreflection/signal'
 
-const isSignal = v => v && v.peek
-const isState = (v) => v && v[_st]
-const _st = Symbol('state'), _len = Symbol('length')
+const isSignal = v => v?.peek
+const isState = v => v?.[_st]
+const isObject = v => v?.constructor === Object
 
-createState.isState = isState
+const _st = Symbol('state')
 
 export { effect as fx }
 
@@ -40,8 +40,8 @@ export default function createState(values, proto) {
       else {
         let value = desc.value
         let s = signals[key] = isSignal(value) ? value :
-          // if initial value is an object - we turn it into sealed struct
           signal(
+            // if initial value is an object - we turn it into sealed struct
             isObject(value) ? Object.seal(createState(value)) :
               Array.isArray(value) ? createState(value) :
                 value
@@ -74,13 +74,9 @@ export default function createState(values, proto) {
 
   // for arrays we turn internals into signal structs
   // FIXME: make proxy to intercept length and other single values
-  if (Array.isArray(values) && !isState(values[0])) {
+  if (Array.isArray(values)) {
     for (let i = 0; i < values.length; i++) values[i] = createState(values[i])
   }
 
   return values
-}
-
-function isObject(v) {
-  return (v && v.constructor === Object)
 }

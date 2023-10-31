@@ -1,8 +1,10 @@
 // proxy-based store implementation: more flexible, less optimal and with memory leak now
+// FIXME: make simpler prototype chain, likely manual
+// FIXME: detect circular updates
 import { queueMicrotask } from "./util.js"
 
 // currentFx stack of listeners
-let currentFx, batch = new Set, pendingUpdate
+let currentFx, batch = [], pendingUpdate
 
 const targetFxs = new WeakMap
 const targetProxy = new WeakMap
@@ -15,6 +17,11 @@ export const sandbox = {
   console, window, document, history, location
 }
 
+const callArg = (fn) => fn(), nop = () => { }
+export { callArg as batch };
+
+let lastProp
+
 const handler = {
   has() {
     // sandbox everything
@@ -22,12 +29,18 @@ const handler = {
   },
 
   get(target, prop) {
-    if (typeof prop === 'symbol') return target[prop]
+    if (typeof prop === 'symbol') return lastProp = null, target[prop]
     if (!(prop in target)) return target[_parent]?.[prop]
+
+    // ignore .length effects called within .push
+    if (lastProp && prop === 'length') return lastProp = null, target[prop];
+
     // .constructor, .slice etc
-    if (prop in Object.prototype || (Array.isArray(target) && prop in Array.prototype && prop !== 'length')) return target[prop];
+    if (Object.prototype[prop]) return target[prop]
+    if (Array.isArray(target) && Array.prototype[prop] && prop !== 'length') return lastProp = prop, target[prop];
 
     let value = target[prop]
+
     if (currentFx) {
       // get actual target from prototype chain
       // while (!target.hasOwnProperty(prop)) target = Object.getPrototypeOf(target)
@@ -62,7 +75,11 @@ const handler = {
     // whenever target prop is set, call all dependent fxs
     let propFxs = targetFxs.get(target)?.[prop]
 
-    if (propFxs) for (let fx of propFxs) batch.add(fx)
+    if (propFxs) for (let fx of propFxs) {
+      // put fx latest
+      if (fx.planned != null) batch[fx.planned] = null
+      fx.planned = batch.push(fx) - 1
+    }
     planUpdate()
 
     // FIXME: unsubscribe / delete effects by setting null/undefined
@@ -120,12 +137,12 @@ export const fx = (fn) => {
 }
 
 export const planUpdate = () => {
-  if (!pendingUpdate) {
-    pendingUpdate = true
-    queueMicrotask(() => {
-      for (let fx of batch) fx.call()
-      batch.clear()
-      pendingUpdate = false
-    })
-  }
+  // if (!pendingUpdate) {
+  //   pendingUpdate = true
+  //   queueMicrotask(() => {
+  let fx
+  while (batch.length) fx = batch.shift(), fx && (fx(), fx.planned = null)
+  //     pendingUpdate = false
+  //   })
+  // }
 }
