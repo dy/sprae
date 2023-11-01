@@ -752,12 +752,14 @@ test('getters', async () => {
 })
 
 test('sandbox', async () => {
+  // let el = h`<x :x="log.push(1)"></x>`
   let el = h`<x :x="log.push(typeof self, typeof console, typeof arguments, typeof __scope)"></x>`
   const s = sprae(el.cloneNode(), { log: [] })
   is(s.log, ['undefined', 'object', 'undefined', 'undefined'])
 
   s.log.splice(0)
   Object.assign(sprae.globals, { self: window })
+  console.log('--------- sprae again')
   sprae(el.cloneNode(), { log: s.log })
   is(s.log, ['object', 'object', 'undefined', 'undefined'])
 })

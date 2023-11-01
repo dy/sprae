@@ -321,7 +321,11 @@
   + it has better control over serialization
   + `:onchange:oninput="e=>xyz"` is very good
 
-## [x] Sandbox? -> we need it anyways via Proxy, so yes
+## [x] Store: sandbox? -> we need it anyways via Proxy, so yes
+
+- What for? We anyways expose almost everything.
+  + To make eval safer.
+    - we cannot provide absolute safety anyways
 
 1. Use subscript?
   + solves access to any internal signals on syntactic level
@@ -334,6 +338,9 @@
       ~ can be fine to limit expressions to meaningful default: no Proxy, generators, awaits, global access etc.
   - Somewhat heavy to bundle
     ~ 1-2kb is not super-heavy, besides kicks out signal-struct (with preact signals?)
+    + compared to including signals maybe not as much
+  + Allows detecting precisely deps from syntax level, not deep-live-detection, which can be unwanted
+  + Allows creating optimized evaluator, without proxy
   + Scope is easier to provide: no need for signal proxy
   + Can detect access errors in advance
   + Syntax-level access to signals can be inavoidable: external signals still "leak in" (via arrays or etc.).
@@ -369,6 +376,68 @@
   + allows scope control
   + allows dynamic subscription to requested fields ( no need for preact/signals neither for signal-struct )
   + we anyways need sandbox even in case of subscript
+
+## [ ] Store: how to organize array.length subscription?
+
+* It causes recursion in `:x='array.push(x)'`
+
+0. Ignore arrays as insubscribable
++ allows signals-only store (signal-struct)
++ fastest
+- ignores array mutations, unless explicitly called
+
+0.a Drop exposing single-property store in favor of batch-update
++ Simpler API
++ Very precise diff-update
++ No need for batch method
+~ essentially encourages signals-proxy or proxy, since
+  * why not exposing proxy as just props-access, that applies throttled batch-update (collects multiple updates and runs batch after)
+  * since API allows only batch, why not allowing signals as single-prop entries
+
+1. Detect when `.length` is called within `.push/protoMethod` via method wrapping
+- doesn't solve generic implicit subscription, like `buf.write()` that calls implicitly subscribable `buf.size`
+
+2. Detect from source by subscript
+- limited syntax
+- heavier to bundle
+- messy stacktrace
+- no comfy js at hand
+- doesn't detect dynamic subs like `calc().length`
+
+## [ ] Store: strategies
+
+1. Signals struct
+  + fastest
+  + limits access to not-existing props
+  + seals object
+  + no circular update trouble
+  - doesn't handle arrays
+
+
+2. Proxy
+  + any-prop access, including not-existing
+  + modern-ish
+  + own tech
+  + allows handling arrays
+    - some mess with .length subscription
+  - doesn't take in individual signals
+  - slow-ish
+    ~ must be improved
+  - some mess with proto access
+    ~ must be improved
+  - no circular update detection
+
+3. Signals proxy
+  + medium performance
+  + no proxy store mess
+  + subscriptions handled via signals (proved)
+  + circular update detection
+  - heavy-ish
+  - not own tech
+    + hi-quality though
+  - doesn't solve recursive .length
+
+4. Subscript-based something
 
 ## [x] :onclick="direct code" ? -> no: immediately invoked.
 

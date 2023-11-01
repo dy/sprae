@@ -294,6 +294,12 @@ t('state: array length', async () => {
   is(log, [1, 2])
 })
 
+t.todo('state: from array state', async () => {
+  let a = state([1])
+  fx(() => a.push(a.push(1)))
+})
+
+
 t('state: detect circular?', async () => {
   let a = state([])
   // NOTE: the reason it didn't cycle in state.proxy was that it actually wasn't updating properly

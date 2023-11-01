@@ -254,7 +254,7 @@ export default (el, expr, state, name) => {
     return on(el, evt, value)
   })
 
-  return state => attr(el, name, evaluate(state))
+  return state => (attr(el, name, evaluate(state)))
 }
 
 // bind event to a target

@@ -1,5 +1,5 @@
 // signals-based store implementation
-import { signal, computed, effect } from '@preact/signals-core'
+import { signal, computed, effect, batch } from '@preact/signals-core'
 // import { signal, computed } from 'usignal/sync'
 // import { signal, computed } from '@webreflection/signal'
 
@@ -9,7 +9,7 @@ const isObject = v => v?.constructor === Object
 
 const _st = Symbol('state')
 
-export { effect as fx }
+export { effect as fx, batch }
 
 export default function createState(values, proto) {
   if (isState(values) && !proto) return values;

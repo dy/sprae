@@ -1,6 +1,7 @@
-import createState, { fx, sandbox, batch } from './state.signals-proxy.js';
+import createState, { fx, batch, sandbox } from './state.signals-proxy.js';
 import defaultDirective, { primary, secondary, on } from './directives.js';
 
+// default root sandbox
 sprae.globals = sandbox
 
 // sprae element: apply directives
