@@ -22,11 +22,9 @@
     "esbuild": "^0.15.14",
     "hyperf": "^1.6.2",
     "jsdom": "^21.1.0",
-    "signal-struct": "^1.10.0",
     "terser": "^5.15.1",
     "tst": "^7.1.1",
     "usignal": "^0.8.9",
-    "value-ref": "^2.1.0",
     "wait-please": "^3.1.0"
   },
   "scripts": {

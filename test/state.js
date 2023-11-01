@@ -211,16 +211,20 @@ t('state: inheritance: updating values in chain', async () => {
 
 t('state: inheritance: lazy init', async () => {
   let s = state({ x: { foo: 'bar' } })
-  let s1 = state(s.x, s)
+  console.log('------create s1')
+  const x = s.x;
+  let s1 = state(x, s)
   is(s1.foo, 'bar')
   let last
   fx(() => (last = s1.foo))
   is(last, 'bar')
   console.log('s.x.foo = `baz`')
-  s.x.foo = 'baz'
+  x.foo = 'baz'
   await tick()
   is(last, 'baz')
-  is(s1.x.foo, 'baz')
+  is(s1.foo, 'baz')
+  s1.foo = 'qux'
+  is(x.foo, 'qux')
 })
 
 t('state: sandbox', async () => {

@@ -53,6 +53,6 @@
 * [ ] `:with="{likes:[], like(){ /* likes should not be undefined here */ }}"`
 * [ ] frameworks benchmark -> contrib to krausest
 * [ ] Reduce memory leak
-* [ ] Make signals-proxy state actually lazy-init (now it's not)
-* [ ] Fix multiple `.push` cycle problem
-* [ ] Make regular proxy state not causing infinite recursion
+* [x] Make signals-proxy state actually lazy-init (now it's not)
+* [x] Fix multiple `.push` cycle problem
+* [x] ~~Make regular proxy state not causing infinite recursion~~ we don't hold to own proxy now

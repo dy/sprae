@@ -418,14 +418,12 @@ function createState(values, parent) {
       return true;
     },
     get(signals2, key) {
-      let v2;
-      if (_len && key === "length")
-        v2 = Array.prototype[lastProp] ? _len.peek() : _len.value;
-      else
-        v2 = (signals2[key] || initSignal(key))?.valueOf();
       if (_len)
-        lastProp = key;
-      return v2;
+        if (key === "length")
+          return Array.prototype[lastProp] ? _len.peek() : _len.value;
+        else
+          lastProp = key;
+      return (signals2[key] || initSignal(key))?.valueOf();
     },
     set(signals2, key, v2) {
       if (_len && key === "length")
@@ -439,14 +437,12 @@ function createState(values, parent) {
         else
           s.value = createState(v2?.valueOf());
       }
-      if (_len)
-        lastProp = null;
       return true;
     }
   });
-  for (let key in values) {
-    signals[key] = initSignal(key);
-  }
+  let initSignals = memo.get(values);
+  for (let key in values)
+    values[key], signals[key] = initSignals?.[key];
   function initSignal(key) {
     if (values.hasOwnProperty(key)) {
       const desc = Object.getOwnPropertyDescriptor(values, key);

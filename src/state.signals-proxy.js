@@ -30,6 +30,7 @@ let lastProp
 export default function createState(values, parent) {
   if (!isObject(values) && !Array.isArray(values)) return values;
   if (memo.has(values) && !parent) return values;
+  // console.group('createState', values, parent)
   // .length signal is stored outside, since cannot be replaced
   const _len = Array.isArray(values) && signal(values.length),
     // dict with signals storing values
@@ -39,7 +40,7 @@ export default function createState(values, parent) {
       // sandbox everything
       has() { return true },
       get(signals, key) {
-        // console.log('get', key)
+        // console.log('get', key, signals)
         // if .length is read within .push/etc - peek signal (don't subscribe)
         if (_len)
           if (key === 'length') return Array.prototype[lastProp] ? _len.peek() : _len.value;
@@ -68,13 +69,12 @@ export default function createState(values, parent) {
     })
 
   // init signals placeholders (instead of ownKeys & getOwnPropertyDescriptor handlers)
-  for (let key in values) {
-    // FIXME: make lazy signals actually work (breaks 2 tests)
-    // signals[key] = null // make placeholder
-    signals[key] = initSignal(key)
-  }
+  // if values are existing proxy - take its signals instead of creating new ones
+  let initSignals = memo.get(values)
+  for (let key in values) values[key], signals[key] = initSignals?.[key];
 
   // initialize signal for provided key
+  // FIXME: chances are there's redundant checks
   function initSignal(key) {
     // init existing value
     if (values.hasOwnProperty(key)) {
@@ -97,6 +97,6 @@ export default function createState(values, parent) {
   }
 
   memo.set(state, signals)
-
+  // console.groupEnd()
   return state
 }
