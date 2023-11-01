@@ -40,12 +40,11 @@ export default function createState(values, parent) {
       has() { return true },
       get(signals, key) {
         // console.log('get', key)
-        let v
         // if .length is read within .push/etc - peek signal (don't subscribe)
-        if (_len && key === 'length') v = Array.prototype[lastProp] ? _len.peek() : _len.value;
-        else v = (signals[key] || initSignal(key))?.valueOf()
-        if (_len) lastProp = key
-        return v
+        if (_len)
+          if (key === 'length') return Array.prototype[lastProp] ? _len.peek() : _len.value;
+          else lastProp = key;
+        return (signals[key] || initSignal(key))?.valueOf()
       },
       set(signals, key, v) {
         // .length
@@ -64,7 +63,6 @@ export default function createState(values, parent) {
           else s.value = createState(v?.valueOf())
         }
 
-        if (_len) lastProp = null
         return true
       }
     })

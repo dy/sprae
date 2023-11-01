@@ -404,7 +404,7 @@
 - no comfy js at hand
 - doesn't detect dynamic subs like `calc().length`
 
-## [ ] Store: strategies
+## [ ] Store: strategies -> 3. seems the most balanced for now
 
 1. Signals struct
   + fastest

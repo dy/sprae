@@ -54,4 +54,5 @@
 * [ ] frameworks benchmark -> contrib to krausest
 * [ ] Reduce memory leak
 * [ ] Make signals-proxy state actually lazy-init (now it's not)
+* [ ] Fix multiple `.push` cycle problem
 * [ ] Make regular proxy state not causing infinite recursion

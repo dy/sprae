@@ -294,7 +294,7 @@ t('state: array length', async () => {
   is(log, [1, 2])
 })
 
-t.todo('state: from array state', async () => {
+t('state: from array state', async () => {
   let a = state([1])
   fx(() => a.push(a.push(1)))
 })
