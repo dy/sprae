@@ -50,9 +50,10 @@
 * [x] There's some bug with prostogreen not triggering effect. (caused by special array.length case)
 * [x] Getters must become evaluable
 * [x] `<li :each="item in items" :with="{collapsed:true}"><button :onclick='e=>collapsed=false'></li>`
-* [ ] `:with="{likes:[], like(){ /* likes should not be undefined here */ }}"`
+* [x] ~~`:with="{likes:[], like(){ /* likes should not be undefined here */ }}"`~~ nah, it's fine
+* [ ] Reduce memory leak - via jsbenchmark example
 * [ ] frameworks benchmark -> contrib to krausest
-* [ ] Reduce memory leak
+* [ ] make use of actual swapdom
 * [x] Make signals-proxy state actually lazy-init (now it's not)
 * [x] Fix multiple `.push` cycle problem
 * [x] ~~Make regular proxy state not causing infinite recursion~~ we don't hold to own proxy now

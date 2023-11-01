@@ -256,7 +256,10 @@ Expressions are sandboxed, ie. don't access global/window scope by default (sinc
 <!-- scrollY is undefined -->
 ```
 
-Default sandbox provides: _window_, _document_, _console_, _history_, _location_, _Date_, _Set_, _Map_.
+Default sandbox provides most popular global objects: _Array_, _Object_, _Number_, _String_, _Boolean_, _Date_,
+  _console_, _window_, _document_, _history_, _navigator_, _location_, _screen_, _localStorage_, _sessionStorage_,
+  _alert_, _prompt_, _confirm_, _fetch_, _performance_,
+  _setTimeout_, _setInterval_, _requestAnimationFrame_.
 
 Sandbox can be extended as `Object.assign(sprae.globals, { BigInt })`.
 
@@ -272,6 +275,9 @@ To avoid _flash of unstyled content_, you can hide sprae attribute or add a cust
 ## Benchmark
 
 Done via [js-framework-benchmark](https://github.com/krausest/js-framework-benchmark).
+
+<details>
+<summary>How to run</summary>
 
 ```sh
 # prerequisite
@@ -299,6 +305,7 @@ cd ..
 cd webdriver-ts
 npm run results
 ```
+</details>
 
 ## Examples
 
@@ -311,9 +318,9 @@ npm run results
 
 * [Template-parts](https://github.com/dy/template-parts) / [templize](https://github.com/dy/templize) is progressive, but is stuck with native HTML quirks ([parsing table](https://github.com/github/template-parts/issues/24), [SVG attributes](https://github.com/github/template-parts/issues/25), [liquid syntax](https://shopify.github.io/liquid/tags/template/#raw) conflict etc). Also ergonomics of `attr="{{}}"` is inferior to `:attr=""` since it creates flash of uninitialized values. Also it's just nice to keep `{{}}` generic, regardless of markup, and attributes as part of markup.
 * [Alpine](https://github.com/alpinejs/alpine) / [vue](https://github.com/vuejs/petite-vue) / [lit](https://github.com/lit/lit/tree/main/packages/lit-html) escape native HTML quirks, but the syntax space (`:attr`, `v-*`,`x-*`, `l-*` `@evt`, `{{}}`) is too broad, as well as functionality. Perfection is when there's nothing to take away, not add (c). Also they tend to [self-encapsulate](https://github.com/alpinejs/alpine/discussions/3223) making interop hard, invent own tooling or complex reactivity.
-* React/[preact](https://ghub.io/preact) does the job wiring up JS to HTML, but with an extreme of migrating HTML to JSX and enforcing SPA, which is not organic for HTML. Also it doesn't support reactive fields (needs render call).
+* React / [preact](https://ghub.io/preact) does the job wiring up JS to HTML, but with an extreme of migrating HTML to JSX and enforcing SPA, which is not organic for HTML. Also it doesn't support reactive fields (needs render call).
 
-_Sprae_ takes idea of _templize directives_/_alpine_/_vue_ attrs and builds upon <del>[_@preact/signals_](https://ghub.io/@preact/signals)</del> simple reactive state.
+_Sprae_ takes idea of _templize_ / _alpine_ / _vue_ attributes and builds simple reactive state based on [_@preact/signals_](https://ghub.io/@preact/signals).
 
 * It doesn't break or modify static html markup.
 * It falls back to element content if uninitialized.
