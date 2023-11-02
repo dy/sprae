@@ -51,7 +51,9 @@
 * [x] Getters must become evaluable
 * [x] `<li :each="item in items" :with="{collapsed:true}"><button :onclick='e=>collapsed=false'></li>`
 * [x] ~~`:with="{likes:[], like(){ /* likes should not be undefined here */ }}"`~~ nah, it's fine
-* [ ] Reduce memory leak - via jsbenchmark example
+* [x] Reduce memory leak - via jsbenchmark example
+  * [x] make disposers
+  * [ ] make sure internals are disposed as well
 * [ ] frameworks benchmark -> contrib to krausest
 * [ ] make use of actual swapdom
 * [x] Make signals-proxy state actually lazy-init (now it's not)

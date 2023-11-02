@@ -1,21 +1,24 @@
 // https://github.com/luwes/js-diff-benchmark/blob/master/libs/list-difference.js
 // this implementation is more persistent in terms of preserving in-between nodes
+// also it handles _dispose
 
 // a is old list, b is the new
-export default function(parent, a, b, before) {
+export default function (parent, a, b, before) {
   const aIdx = new Map();
   const bIdx = new Map();
   let i;
   let j;
 
-  // Create a mapping from keys to their position in the old list
-  for (i = 0; i < a.length; i++) {
-    aIdx.set(a[i], i);
-  }
-
   // Create a mapping from keys to their position in the new list
   for (i = 0; i < b.length; i++) {
     bIdx.set(b[i], i);
+  }
+
+  // Create a mapping from keys to their position in the old list
+  for (i = 0; i < a.length; i++) {
+    aIdx.set(a[i], i);
+    // dispose a[i] if is going to disappear
+    if (!bIdx.has(a[i])) a[i][Symbol.dispose]?.()
   }
 
   for (i = j = 0; i !== a.length || j !== b.length;) {

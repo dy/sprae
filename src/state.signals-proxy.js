@@ -41,6 +41,7 @@ export default function createState(values, parent) {
       has() { return true },
       get(signals, key) {
         // console.log('get', key, signals)
+        if (typeof key === 'symbol') return values[key]
         // if .length is read within .push/etc - peek signal (don't subscribe)
         if (_len)
           if (key === 'length') return Array.prototype[lastProp] ? _len.peek() : _len.value;
@@ -48,8 +49,10 @@ export default function createState(values, parent) {
         return (signals[key] || initSignal(key))?.valueOf()
       },
       set(signals, key, v) {
+        if (typeof key === 'symbol') values[key] = v
+
         // .length
-        if (_len && key === 'length') _len.value = signals.length = v;
+        else if (_len && key === 'length') _len.value = signals.length = v;
 
         else {
           const s = signals[key] || initSignal(key)

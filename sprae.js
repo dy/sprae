@@ -418,6 +418,8 @@ function createState(values, parent) {
       return true;
     },
     get(signals2, key) {
+      if (typeof key === "symbol")
+        return values[key];
       if (_len)
         if (key === "length")
           return Array.prototype[lastProp] ? _len.peek() : _len.value;
@@ -426,7 +428,9 @@ function createState(values, parent) {
       return (signals2[key] || initSignal(key))?.valueOf();
     },
     set(signals2, key, v2) {
-      if (_len && key === "length")
+      if (typeof key === "symbol")
+        values[key] = v2;
+      else if (_len && key === "length")
         _len.value = signals2.length = v2;
       else {
         const s = signals2[key] || initSignal(key);
@@ -467,11 +471,13 @@ function domdiff_default(parent, a2, b2, before) {
   const bIdx = /* @__PURE__ */ new Map();
   let i2;
   let j;
-  for (i2 = 0; i2 < a2.length; i2++) {
-    aIdx.set(a2[i2], i2);
-  }
   for (i2 = 0; i2 < b2.length; i2++) {
     bIdx.set(b2[i2], i2);
+  }
+  for (i2 = 0; i2 < a2.length; i2++) {
+    aIdx.set(a2[i2], i2);
+    if (!bIdx.has(a2[i2]))
+      a2[i2][Symbol.dispose]?.();
   }
   for (i2 = j = 0; i2 !== a2.length || j !== b2.length; ) {
     var aElm = a2[i2], bElm = b2[j];
@@ -621,7 +627,7 @@ primary["each"] = (tpl, expr) => {
     domdiff_default(holder.parentNode, curEls, newEls, holder);
     curEls = newEls;
     for (let i2 = 0; i2 < newEls.length; i2++) {
-      sprae(newEls[i2], elScopes[i2]);
+      newEls[i2][Symbol.dispose] = sprae(newEls[i2], elScopes[i2])[Symbol.dispose];
     }
   };
 };
@@ -663,7 +669,9 @@ secondary["render"] = (el, expr, state) => {
 secondary["id"] = (el, expr) => {
   let evaluate = parseExpr(el, expr, ":id");
   const update = (v2) => el.id = v2 || v2 === 0 ? v2 : "";
-  return (state) => update(evaluate(state));
+  return (state) => {
+    update(evaluate(state));
+  };
 };
 secondary["class"] = (el, expr) => {
   let evaluate = parseExpr(el, expr, ":class");
@@ -726,7 +734,9 @@ secondary["value"] = (el, expr) => {
     el.value = value;
     el.selectedOptions[0]?.setAttribute("selected", "");
   } : (value) => el.value = value;
-  return (state) => update(evaluate(state));
+  return (state) => {
+    update(evaluate(state));
+  };
 };
 var directives_default = (el, expr, state, name) => {
   let evt = name.startsWith("on") && name.slice(2);
@@ -739,7 +749,9 @@ var directives_default = (el, expr, state, name) => {
       });
       return on(el, evt, value);
     };
-  return (state2) => attr(el, name, evaluate(state2));
+  return (state2) => {
+    attr(el, name, evaluate(state2));
+  };
 };
 var on = (el, e2, fn) => {
   if (!fn)
@@ -894,6 +906,7 @@ function dashcase(str) {
 }
 
 // src/core.js
+Symbol.dispose ||= Symbol("dispose");
 sprae.globals = sandbox;
 var memo2 = /* @__PURE__ */ new WeakMap();
 function sprae(container, values) {
@@ -902,7 +915,7 @@ function sprae(container, values) {
   if (memo2.has(container))
     return n(() => Object.assign(memo2.get(container), values));
   const state = createState(values || {});
-  const updates = [];
+  const updates = [], disposes = [];
   const init = (el, parent = el.parentNode) => {
     for (let name in primary) {
       let attrName = ":" + name;
@@ -940,14 +953,18 @@ function sprae(container, values) {
   init(container);
   for (let update of updates)
     if (update) {
-      let teardown;
-      O(() => {
-        if (typeof teardown === "function")
-          teardown();
-        teardown = update(state);
-      });
+      const idx = disposes.length;
+      disposes.push(null, O(() => {
+        disposes[idx]?.();
+        disposes[idx] = update(state);
+      }));
     }
   memo2.set(container, state);
+  state[Symbol.dispose] = () => {
+    while (disposes.length)
+      disposes.shift()?.();
+    memo2.delete(container);
+  };
   return state;
 }
 

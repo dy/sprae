@@ -272,6 +272,10 @@ To avoid _flash of unstyled content_, you can hide sprae attribute or add a cust
 <style>[:each],[:hidden] {visibility: hidden}</style>
 ```
 
+## Dispose
+
+To destroy state and detach sprae handlers, call `state[Symbol.dispose]()`.
+
 ## Benchmark
 
 Done via [js-framework-benchmark](https://github.com/krausest/js-framework-benchmark).

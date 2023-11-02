@@ -1,6 +1,9 @@
 import createState, { fx, batch, sandbox } from './state.signals-proxy.js';
 import defaultDirective, { primary, secondary, on } from './directives.js';
 
+// provide dispose symbol
+Symbol.dispose ||= Symbol('dispose');
+
 // default root sandbox
 sprae.globals = sandbox
 
@@ -11,7 +14,7 @@ export default function sprae(container, values) {
   if (memo.has(container)) return batch(() => Object.assign(memo.get(container), values))
 
   const state = createState(values || {});
-  const updates = []
+  const updates = [], disposes = []
 
   // init directives on element
   const init = (el, parent = el.parentNode) => {
@@ -62,16 +65,24 @@ export default function sprae(container, values) {
   init(container);
 
   // call updates: subscribes directives to state;
-  // state is created after inits because directives can extend init values (expose refs etc)
+  // saves disposal functions
+  // FIXME: make sure internal states are disposed as well
   for (let update of updates) if (update) {
-    let teardown
-    fx(() => {
-      if (typeof teardown === 'function') teardown()
-      teardown = update(state)
-    });
+    // save teardown under specifix index
+    const idx = disposes.length
+    disposes.push(null, fx(() => {
+      disposes[idx]?.();
+      disposes[idx] = update(state);
+    }));
   }
 
   memo.set(container, state);
+
+  // export disposer
+  state[Symbol.dispose] = () => {
+    while (disposes.length) disposes.shift()?.();
+    memo.delete(container);
+  };
 
   return state;
 }

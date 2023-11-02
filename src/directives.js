@@ -5,6 +5,7 @@ import swap from './domdiff.js'
 import createState from './state.signals-proxy.js'
 import { queueMicrotask, WeakishMap } from './util.js'
 
+
 // reserved directives - order matters!
 // primary initialized first by selector, secondary initialized by iterating attributes
 export const primary = {}, secondary = {}
@@ -45,6 +46,10 @@ primary['if'] = (el, expr) => {
 }
 
 const _each = Symbol(':each')
+
+// configure domswap so that when elements are removed by :each, their listeners are removed either
+// swap.replace = (a, b, parent) => (a[_dispose]?.(), parent.replaceChild(b, a))
+// swap.remove = (a, parent) => (a[_dispose]?.(), parent.removeChild(a))
 
 // :each must init before :ref, :id or any others, since it defines scope
 primary['each'] = (tpl, expr) => {
@@ -106,7 +111,7 @@ primary['each'] = (tpl, expr) => {
 
     // init new elements
     for (let i = 0; i < newEls.length; i++) {
-      sprae(newEls[i], elScopes[i])
+      newEls[i][Symbol.dispose] = sprae(newEls[i], elScopes[i])[Symbol.dispose]
     }
   }
 }
@@ -166,7 +171,7 @@ secondary['render'] = (el, expr, state) => {
 secondary['id'] = (el, expr) => {
   let evaluate = parseExpr(el, expr, ':id')
   const update = v => el.id = v || v === 0 ? v : ''
-  return (state) => update(evaluate(state))
+  return (state) => { update(evaluate(state)) }
 }
 
 secondary['class'] = (el, expr) => {
@@ -238,7 +243,7 @@ secondary['value'] = (el, expr) => {
             value => el.value = value
   )
 
-  return (state) => update(evaluate(state))
+  return (state) => { update(evaluate(state)) }
 }
 
 // any unknown directive
@@ -254,7 +259,7 @@ export default (el, expr, state, name) => {
     return on(el, evt, value)
   })
 
-  return state => (attr(el, name, evaluate(state)))
+  return state => { attr(el, name, evaluate(state)) }
 }
 
 // bind event to a target
@@ -280,7 +285,9 @@ export const on = (el, e, fn) => {
   )
 
   target.addEventListener(evt, cb, opts)
-  return () => target.removeEventListener(evt, cb, opts)
+
+  // return off
+  return () => (target.removeEventListener(evt, cb, opts))
 }
 
 // event modifiers
