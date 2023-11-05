@@ -1,10 +1,13 @@
 // directives & parsing
-import sprae from './core.js'
-import swap from './domdiff.js'
-// import swap from 'swapdom'
+import sprae, { _dispose } from './core.js'
+// import swap from './domdiff.js'
+import swap from 'swapdom'
 import createState from './state.signals-proxy.js'
 import { queueMicrotask, WeakishMap } from './util.js'
 
+// configure swapdom to dispose detached elements :each (removes listeners)
+swap.replace = (a, b, parent) => (a[_dispose](), parent.replaceChild(b, a))
+swap.remove = (a, parent) => (a[_dispose](), parent.removeChild(a))
 
 // reserved directives - order matters!
 // primary initialized first by selector, secondary initialized by iterating attributes
@@ -18,6 +21,7 @@ primary['if'] = (el, expr) => {
     clauses = [parseExpr(el, expr, ':if')],
     els = [el], cur = el
 
+  // consume all following siblings with :else, :if into a single group
   while (cur = el.nextElementSibling) {
     if (cur.hasAttribute(':else')) {
       cur.removeAttribute(':else');
@@ -46,10 +50,6 @@ primary['if'] = (el, expr) => {
 }
 
 const _each = Symbol(':each')
-
-// configure domswap so that when elements are removed by :each, their listeners are removed either
-// swap.replace = (a, b, parent) => (a[_dispose]?.(), parent.replaceChild(b, a))
-// swap.remove = (a, parent) => (a[_dispose]?.(), parent.removeChild(a))
 
 // :each must init before :ref, :id or any others, since it defines scope
 primary['each'] = (tpl, expr) => {
@@ -84,35 +84,37 @@ primary['each'] = (tpl, expr) => {
     else exprError(Error('Bad list value'), tpl, expr, ':each', list)
 
     // collect elements/scopes for items
-    let newEls = [], elScopes = []
+    let newEls = [], elScopes = [], keys = {}
 
     for (let [idx, item] of list) {
-      let el, scope, key = itemKey?.({ [each[0]]: item, [each[1]]: idx })
+      let el, scope, key = itemKey?.({ [each[0]]: item, [each[1]]: idx });
 
       // we consider if data items are primitive, then nodes needn't be cached
       // since likely they're very simple to create
       if (key == null) el = tpl.cloneNode(true);
       else (el = itemEls.get(key)) || itemEls.set(key, el = tpl.cloneNode(true));
 
-      newEls.push(el)
+      // avoid duplicates
+      if (key == null || !keys[key]) newEls.push(keys[key] = el);
 
       if (key == null || !(scope = scopes.get(key))) {
-        scope = createState({ [each[0]]: item, [refExpr || '']: null, [each[1]]: idx }, state)
-        if (key != null) scopes.set(key, scope)
+        scope = createState({ [each[0]]: item, [refExpr || '']: null, [each[1]]: idx }, state);
+        if (key != null) scopes.set(key, scope);
       }
       // need to explicitly set item to update existing children's values
-      else scope[each[0]] = item
+      else scope[each[0]] = item;
 
-      elScopes.push(scope)
+      elScopes.push(scope);
     }
 
-    swap(holder.parentNode, curEls, newEls, holder)
+    // shortcuts
+    if (!curEls.length) holder.before(...newEls)
+    else if (!newEls.length) for (let el of curEls) el[_dispose](), el.remove()
+    else swap(holder.parentNode, curEls, newEls, holder)
     curEls = newEls
 
     // init new elements
-    for (let i = 0; i < newEls.length; i++) {
-      newEls[i][Symbol.dispose] = sprae(newEls[i], elScopes[i])[Symbol.dispose]
-    }
+    for (let i = 0; i < newEls.length; i++) sprae(newEls[i], elScopes[i])
   }
 }
 

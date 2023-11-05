@@ -2,7 +2,7 @@ import createState, { fx, batch, sandbox } from './state.signals-proxy.js';
 import defaultDirective, { primary, secondary, on } from './directives.js';
 
 // provide dispose symbol
-Symbol.dispose ||= Symbol('dispose');
+export const _dispose = (Symbol.dispose ||= Symbol('dispose'));
 
 // default root sandbox
 sprae.globals = sandbox
@@ -79,7 +79,7 @@ export default function sprae(container, values) {
   memo.set(container, state);
 
   // export disposer
-  state[Symbol.dispose] = () => {
+  container[_dispose] = state[_dispose] = () => {
     while (disposes.length) disposes.shift()?.();
     memo.delete(container);
   };

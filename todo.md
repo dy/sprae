@@ -55,8 +55,8 @@
   * [x] make disposers
   * [ ] make sure internals are disposed as well
 * [ ] frameworks benchmark -> contrib to krausest
-* [ ] fix swapping rows error
-* [ ] make use of actual swapdom
+* [x] fix swapping rows error
+* [x] make use of actual swapdom
 * [ ] optimization:
   * [ ] faster create rows
   * [ ] faster replace all rows

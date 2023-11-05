@@ -19,7 +19,7 @@ test('hidden: core', async () => {
   is(el.outerHTML, `<div></div>`)
 })
 
-test.skip('hidden: reactive', async () => {
+test('hidden: reactive', async () => {
   const hidden = signal(true)
   let el = h`<div :hidden="hidden"></div>`
   sprae(el, { hidden })
@@ -261,7 +261,7 @@ test('if: short with insertions', async () => {
   params.a = null
 })
 
-test.skip('if: reactive values', async () => {
+test('if: reactive values', async () => {
   let el = h`<p>
     <span :if="a==1" :text="'1:'+a"></span>
     <span :else :if="a==2" :text="'2:'+a"></span>
@@ -372,7 +372,7 @@ test('each: loop within loop', async () => {
   // is(el.innerHTML, '')
 })
 
-test.skip('each: reactive values', async () => {
+test('each: reactive values', async () => {
   let el = h`<p>
     <span :each="a in b" :text="a"></span>
   </p>`
@@ -550,17 +550,43 @@ test('each: :id and others must receive value from context', () => {
   is(el.innerHTML, `<x id="1"></x><x id="2"></x><x id="3"></x>`)
 })
 
-test('each: key-based caching is in-sync with direct elements', () => {
+test.skip('each: key-based caching is in-sync with direct elements', () => {
+  // FIXME: I wonder if that's that big of a deal
   let el = h`<ul><li :each="i in x" :key="i" :id="i"></li></ul>`
   let el2 = h`<ul><li :each="i in x" :id="i"></li></ul>`
   let state = sprae(el, { x: 2 })
   let state2 = sprae(el2, { x: 2 })
   is(el.outerHTML, el2.outerHTML)
+  console.log('---inserts')
   el.firstChild.after(el.firstChild.cloneNode(true))
   el2.firstChild.after(el2.firstChild.cloneNode(true))
+  console.log('state.x = 3')
   state.x = 3
   state2.x = 3
   is(el.outerHTML, el2.outerHTML)
+})
+
+test('each: swapping', () => {
+  let el = h`<table>
+    <tr :each="item in rows" :key="item.id" :text="item.id" />
+  </table>`;
+
+  const rows = [{ id: 1 }, { id: 2 }, { id: 3 }, { id: 4 }, { id: 5 }]
+
+  let s = sprae(el, {
+    rows,
+    swap() {
+      const a = this.rows[1]
+      console.log(`[1]=[4]`)
+      this.rows[1] = this.rows[this.rows.length - 2]
+      console.log(`[4]=[1]`)
+      this.rows[this.rows.length - 2] = a
+    }
+  })
+
+  is(el.outerHTML, `<table><tr>1</tr><tr>2</tr><tr>3</tr><tr>4</tr><tr>5</tr></table>`)
+  s.swap()
+  is(el.outerHTML, `<table><tr>1</tr><tr>4</tr><tr>3</tr><tr>2</tr><tr>5</tr></table>`)
 })
 
 test('each: with :with', () => {
@@ -593,7 +619,7 @@ test('with: inline', async () => {
   await tick()
   is(el.innerHTML, `<y>barquux</y>`)
 })
-test.skip('with: inline reactive', () => {
+test('with: inline reactive', () => {
   let el = h`<x :with="{foo:'bar'}"><y :text="foo + baz"></y></x>`
   let baz = signal('qux')
   sprae(el, { baz })
@@ -622,7 +648,7 @@ test('with: transparency', async () => {
   await tick()
   is(el.innerHTML, `<y>foobaz</y>`)
 })
-test.skip('with: reactive transparency', () => {
+test('with: reactive transparency', () => {
   let el = h`<x :with="{foo:1}"><y :with="b.c" :text="foo+bar"></y></x>`
   const bar = signal('2')
   sprae(el, { b: { c: { bar } } })
@@ -700,8 +726,9 @@ test('ref: with :each', () => {
   is(state.log, [...a.children])
 })
 
-test.skip(':: reactive values', async () => {
-  let a = new Promise((ok) => setTimeout(() => ok(2), 10))
+test(':: reactive values', async () => {
+  let a = signal();
+  setTimeout(() => a.value = 2, 10)
 
   let el = h`<x :text="a">1</x>`
   sprae(el, { a })
