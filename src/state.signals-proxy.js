@@ -40,7 +40,7 @@ export default function createState(values, parent) {
       // sandbox everything
       has() { return true },
       get(signals, key) {
-        // console.log('get', key, signals)
+        // console.log('get', key)
         if (typeof key === 'symbol') return values[key]
         // if .length is read within .push/etc - peek signal (don't subscribe)
         if (_len)

@@ -298,6 +298,16 @@ t('state: array length', async () => {
   is(log, [1, 2])
 })
 
+t.skip('state: changing length changes disposed items', async () => {
+  // NOTE: we don't explicitly handle it here, since we force :each to read .length of the list, so it rerenders any time length changes.
+  let a = state([1, 2, 3]), log = []
+  fx(() => log.push(a.at(-1)))
+  is(log, [3])
+  a.splice(0)
+  await tick()
+  is(log, [1, 1])
+})
+
 t('state: from array state', async () => {
   let a = state([1])
   fx(() => a.push(a.push(1)))

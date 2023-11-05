@@ -57,9 +57,11 @@
 * [ ] frameworks benchmark -> contrib to krausest
 * [x] fix swapping rows error
 * [x] make use of actual swapdom
+* [x] fix removing last row issue
 * [ ] optimization:
-  * [ ] faster create rows
-  * [ ] faster replace all rows
+  * [x] faster create rows
+  * [x] faster replace all rows
+  * [ ] fix remove row perf issue
 * [x] Make signals-proxy state actually lazy-init (now it's not)
 * [x] Fix multiple `.push` cycle problem
 * [x] ~~Make regular proxy state not causing infinite recursion~~ we don't hold to own proxy now

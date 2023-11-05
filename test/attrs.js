@@ -566,6 +566,28 @@ test.skip('each: key-based caching is in-sync with direct elements', () => {
   is(el.outerHTML, el2.outerHTML)
 })
 
+test('each: remove last', () => {
+  let el = h`<table>
+    <tr :each="item in rows" :key="item.id" :text="item.id" />
+  </table>
+  `;
+
+  const rows = [{ id: 1 }, { id: 2 }, { id: 3 }, { id: 4 }, { id: 5 }]
+
+  let s = sprae(el, {
+    rows,
+    remove(item) {
+      const index = this.rows.findIndex(x => x.id == item.id)
+      this.rows.splice(index, 1)
+    }
+  })
+
+  is(el.outerHTML, `<table><tr>1</tr><tr>2</tr><tr>3</tr><tr>4</tr><tr>5</tr></table>`)
+  console.log('Remove id 5')
+  s.remove({ id: 5 })
+  is(el.outerHTML, `<table><tr>1</tr><tr>2</tr><tr>3</tr><tr>4</tr></table>`)
+})
+
 test('each: swapping', () => {
   let el = h`<table>
     <tr :each="item in rows" :key="item.id" :text="item.id" />
