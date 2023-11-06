@@ -62,7 +62,8 @@ primary['each'] = (tpl, expr) => {
   tpl.replaceWith(holder)
 
   // NOTE: we inject subscription to list.length in handle .splice(0) etc.
-  const evaluate = parseExpr(tpl, each[2], ':each', `(${each[2]})?.length`);
+  const evaluate = parseExpr(tpl, `__=${each[2]}, __?.length, __`, ':each');
+  // const evaluate = parseExpr(tpl, each[2], ':each');
 
   const keyExpr = tpl.getAttribute(':key');
   const itemKey = keyExpr ? parseExpr(null, keyExpr, ':each') : null;
@@ -390,13 +391,13 @@ const attr = (el, name, v) => {
 // borrowed from alpine with improvements https://github.com/alpinejs/alpine/blob/main/packages/alpinejs/src/evaluator.js#L61
 // it seems to be more robust than subscript
 let evaluatorMemo = {}
-function parseExpr(el, expression, dir, precondition = '') {
+function parseExpr(el, expression, dir) {
   // guard static-time eval errors
   let evaluate = evaluatorMemo[expression]
 
   if (!evaluate) {
     try {
-      evaluate = evaluatorMemo[expression] = new Function(`__scope`, `with (__scope) { ${precondition}; return ${expression.trim()} };`)
+      evaluate = evaluatorMemo[expression] = new Function(`__scope`, `with (__scope) { let __; return ${expression.trim()} };`)
     } catch (e) {
       return exprError(e, el, expression, dir)
     }
