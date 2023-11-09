@@ -1,5 +1,5 @@
 // import { signal } from 'usignal/sync'
-import { signal } from '@preact/signals-core'
+import { signal, effect } from '@preact/signals-core'
 import test, { is, any, throws } from 'tst'
 import { tick, time } from 'wait-please'
 import sprae from '../src/index.js'
@@ -588,7 +588,30 @@ test('each: remove last', () => {
   is(el.outerHTML, `<table><tr>1</tr><tr>2</tr><tr>3</tr><tr>4</tr></table>`)
 })
 
+test('each: remove first', () => {
+  let el = h`<table>
+    <tr :each="item in rows" :key="item.id" :text="item.id" />
+  </table>
+  `;
+
+  const rows = [{ id: 1 }, { id: 2 }, { id: 3 }, { id: 4 }, { id: 5 }]
+
+  let s = sprae(el, {
+    rows,
+    remove(item) {
+      const index = this.rows.findIndex(x => x.id == item.id)
+      this.rows.splice(index, 1)
+    }
+  })
+
+  is(el.outerHTML, `<table><tr>1</tr><tr>2</tr><tr>3</tr><tr>4</tr><tr>5</tr></table>`)
+  console.log('Remove id 1')
+  s.remove({ id: 1 })
+  is(el.outerHTML, `<table><tr>2</tr><tr>3</tr><tr>4</tr><tr>5</tr></table>`)
+})
+
 test('each: swapping', () => {
+
   let el = h`<table>
     <tr :each="item in rows" :key="item.id" :text="item.id" />
   </table>`;

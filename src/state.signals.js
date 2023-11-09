@@ -9,7 +9,7 @@ const isObject = v => v?.constructor === Object
 
 const _st = Symbol('state')
 
-export { effect as fx, batch }
+export { effect, batch }
 
 export default function createState(values, proto) {
   if (isState(values) && !proto) return values;

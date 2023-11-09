@@ -11,7 +11,7 @@ import { signal, computed, effect, batch } from '@preact/signals-core'
 // import { signal, computed } from 'usignal/sync'
 // import { signal, computed } from '@webreflection/signal'
 
-export { effect as fx, batch }
+export { effect, batch }
 
 // default root sandbox
 export const sandbox = {
@@ -22,10 +22,13 @@ export const sandbox = {
 }
 
 const isObject = v => v?.constructor === Object
-const memo = new WeakMap
+export const memo = new WeakMap
 
 // track last accessed property to figure out if .length was directly accessed from expression or via .push/etc method
-let lastProp
+let lastProp, _mute = Symbol('muted')
+
+// skip subscriptions
+export const mute = (list) => (memo.get(list)[_mute] = true, () => memo.get(list)[_mute] = false)
 
 export default function createState(values, parent) {
   if (!isObject(values) && !Array.isArray(values)) return values;
@@ -44,11 +47,13 @@ export default function createState(values, parent) {
         if (typeof key === 'symbol') return values[key]
         // if .length is read within .push/etc - peek signal (don't subscribe)
         if (_len)
-          if (key === 'length') return Array.prototype[lastProp] ? _len.peek() : _len.value;
+          if (key === 'length') return (Array.prototype[lastProp] || signals[_mute]) ? _len.peek() : _len.value;
           else lastProp = key;
-        return (signals[key] || initSignal(key))?.valueOf()
+        const s = signals[key] || initSignal(key)
+        return (signals[_mute] && s.peek) ? s.peek() : s?.valueOf()
       },
       set(signals, key, v) {
+        // console.log('set', key)
         if (typeof key === 'symbol') values[key] = v
 
         // .length
@@ -93,6 +98,7 @@ export default function createState(values, parent) {
     }
 
     // touch parent
+    // FIXME: something fishy's going on here
     if (parent) return parent[key]
 
     // Array, window etc

@@ -1,13 +1,7 @@
 // directives & parsing
 import sprae, { _dispose } from './core.js'
-// import swap from './domdiff.js'
-import swap from 'swapdom'
-import createState from './state.signals-proxy.js'
+import createState, { effect } from './state.signals-proxy.js'
 import { queueMicrotask, WeakishMap } from './util.js'
-
-// configure swapdom to dispose detached elements :each (removes listeners)
-swap.replace = (a, b, parent) => (a[_dispose](), parent.replaceChild(b, a))
-swap.remove = (a, parent) => (a[_dispose](), parent.removeChild(a))
 
 // reserved directives - order matters!
 // primary initialized first by selector, secondary initialized by iterating attributes
@@ -16,7 +10,7 @@ export const primary = {}, secondary = {}
 // :if is interchangeable with :each depending on order, :if :each or :each :if have different meanings
 // as for :if :with - :if must init first, since it is lazy, to avoid initializing component ahead of time by :with
 // we consider :with={x} :if={x} case insignificant
-primary['if'] = (el, expr) => {
+primary['if'] = (el, expr, state) => {
   let holder = document.createTextNode(''),
     clauses = [parseExpr(el, expr, ':if')],
     els = [el], cur = el
@@ -38,7 +32,8 @@ primary['if'] = (el, expr) => {
 
   el.replaceWith(cur = holder)
 
-  return (state) => {
+  const dispose = effect(() => {
+    // find matched clause (re-evaluates any time any clause updates)
     let i = clauses.findIndex(f => f(state))
     if (els[i] != cur) {
       ; (cur[_each] || cur).replaceWith(cur = els[i] || holder);
@@ -46,23 +41,28 @@ primary['if'] = (el, expr) => {
       // but :if must come first to avoid preliminary caching
       sprae(cur, state);
     }
+  })
+
+  return () => {
+    for (const el of els) el[_dispose]?.() // dispose all internal spraes
+    dispose() // dispose subscription
   }
 }
 
 const _each = Symbol(':each')
 
 // :each must init before :ref, :id or any others, since it defines scope
-primary['each'] = (tpl, expr) => {
+primary['each'] = (tpl, expr, state) => {
+  throw 'Unimplemented: each'
   let each = parseForExpression(expr);
   if (!each) return exprError(new Error, tpl, expr, ':each');
 
-  // FIXME: make sure no memory leak here
   // we need :if to be able to replace holder instead of tpl for :if :each case
   const holder = tpl[_each] = document.createTextNode('')
   tpl.replaceWith(holder)
 
   // NOTE: we inject subscription to list.length in handle .splice(0) etc.
-  const evaluate = parseExpr(tpl, `__=${each[2]}, __?.length, __`, ':each');
+  const evaluate = parseExpr(tpl, each[2], ':each');
   // const evaluate = parseExpr(tpl, each[2], ':each');
 
   const keyExpr = tpl.getAttribute(':key');
@@ -72,51 +72,56 @@ primary['each'] = (tpl, expr) => {
   const refExpr = tpl.getAttribute(':ref');
 
   const scopes = new WeakishMap() // stores scope per data item
-  const itemEls = new WeakishMap() // element per data item
-  let curEls = []
+  const els = new WeakishMap() // element per data item
 
-  return (state) => {
+  // this function is called whenever list changes - not its internals
+  return () => {
+    console.log('rerender list')
     // get items
     let list = evaluate(state)
 
-    if (!list) list = []
-    else if (typeof list === 'number') list = Array.from({ length: list }, (_, i) => [i + 1, i])
-    else if (Array.isArray(list)) list = list.map((item, i) => [i + 1, item])
-    else if (typeof list === 'object') list = Object.entries(list)
+    // we have granular control over what kind of list argument
+    if (!list);
+    else if (typeof list === 'number') {
+      Array.from({ length: list }, (_, i) => [i + 1, i])
+      throw 'Unimplemented: each of number'
+    }
+    // each item updates itself: no recondiliation algo
+    else if (Array.isArray(list)) {
+      // FIXME: handle straight array
+      if (!signals) throw 'Unimplemented: straight array, like value of a signal'
+      const unmute = mute(list)
+      for (let i = 0; i < list.length; i++) {
+        const dispose = effect(() => {
+          const item = list[i]
+          let el, scope, key = itemKey?.({ [each[0]]: item, [each[1]]: i });
+
+          if (key == null) {
+            el = tpl.cloneNode(true)
+            // FIXME: why refExpr was null?
+            scope = createState({ [each[0]]: item, [refExpr || '']: el, [each[1]]: i }, state)
+          }
+          else {
+            (el = els.get(key)) || els.set(key, el = tpl.cloneNode(true));
+            (scope = scopes.get(key)) || scopes.set(key, scope = createState({ [each[0]]: item, [refExpr || '']: el, [each[1]]: i }, state))
+          }
+          holder.before(el)
+          sprae(el, scope)
+        })
+      }
+      // subscribe explicitly to array length change
+      effect(() => {
+        list.length
+        // FIXME: handle length change properly
+        throw 'Unimplemented: array length change'
+      })
+      unmute()
+    }
+    else if (typeof list === 'object') {
+      throw 'Unimplemented: object iteration'
+    }
     else exprError(Error('Bad list value'), tpl, expr, ':each', list)
 
-    // collect elements/scopes for items
-    let newEls = [], elScopes = [], keys = {}
-
-    for (let [idx, item] of list) {
-      let el, scope, key = itemKey?.({ [each[0]]: item, [each[1]]: idx });
-
-      // we consider if data items are primitive, then nodes needn't be cached
-      // since likely they're very simple to create
-      if (key == null) el = tpl.cloneNode(true);
-      else (el = itemEls.get(key)) || itemEls.set(key, el = tpl.cloneNode(true));
-
-      // avoid duplicates
-      if (key == null || !keys[key]) newEls.push(keys[key] = el);
-
-      if (key == null || !(scope = scopes.get(key))) {
-        scope = createState({ [each[0]]: item, [refExpr || '']: null, [each[1]]: idx }, state);
-        if (key != null) scopes.set(key, scope);
-      }
-      // need to explicitly set item to update existing children's values
-      else scope[each[0]] = item;
-
-      elScopes.push(scope);
-    }
-
-    // shortcuts
-    if (!curEls.length) holder.before(...newEls)
-    else if (!newEls.length) for (let el of curEls) el[_dispose](), el.remove()
-    else swap(holder.parentNode, curEls, newEls, holder)
-    curEls = newEls
-
-    // init new elements
-    for (let i = 0; i < newEls.length; i++) sprae(newEls[i], elScopes[i])
   }
 }
 
@@ -126,7 +131,7 @@ primary['with'] = (el, expr, rootState) => {
   let evaluate = parseExpr(el, expr, ':with')
   const localState = evaluate(rootState)
   let state = createState(localState, rootState)
-  sprae(el, state);
+  return sprae(el, state)[_dispose];
 }
 
 // ref must be last within primaries, since that must be skipped by :each, but before secondaries
@@ -169,19 +174,19 @@ secondary['render'] = (el, expr, state) => {
 
   let content = tpl.content.cloneNode(true);
   el.replaceChildren(content)
-  sprae(el, state)
+  return sprae(el, state)[_dispose]
 }
 
-secondary['id'] = (el, expr) => {
+secondary['id'] = (el, expr, state) => {
   let evaluate = parseExpr(el, expr, ':id')
   const update = v => el.id = v || v === 0 ? v : ''
-  return (state) => { update(evaluate(state)) }
+  return effect(() => update(evaluate(state)))
 }
 
-secondary['class'] = (el, expr) => {
+secondary['class'] = (el, expr, state) => {
   let evaluate = parseExpr(el, expr, ':class')
   let initClassName = el.getAttribute('class')
-  return (state) => {
+  return effect(() => {
     let v = evaluate(state)
     let className = [initClassName]
     if (v) {
@@ -191,42 +196,42 @@ secondary['class'] = (el, expr) => {
     }
     if (className = className.filter(Boolean).join(' ')) el.setAttribute('class', className);
     else el.removeAttribute('class')
-  }
+  })
 }
 
-secondary['style'] = (el, expr) => {
+secondary['style'] = (el, expr, state) => {
   let evaluate = parseExpr(el, expr, ':style')
   let initStyle = el.getAttribute('style') || ''
   if (!initStyle.endsWith(';')) initStyle += '; '
-  return (state) => {
+  return effect(() => {
     let v = evaluate(state)
     if (typeof v === 'string') el.setAttribute('style', initStyle + v)
     else {
       el.setAttribute('style', initStyle)
       for (let k in v) el.style.setProperty(k, v[k])
     }
-  }
+  })
 }
 
-secondary['text'] = (el, expr) => {
+secondary['text'] = (el, expr, state) => {
   let evaluate = parseExpr(el, expr, ':text')
-  return (state) => {
+  return effect(() => {
     let value = evaluate(state)
     el.textContent = value == null ? '' : value;
-  }
+  })
 }
 
 // set props in-bulk or run effect
-secondary[''] = (el, expr) => {
+secondary[''] = (el, expr, state) => {
   let evaluate = parseExpr(el, expr, ':')
-  if (evaluate) return (state) => {
+  if (evaluate) return effect(() => {
     let value = evaluate(state)
     for (let key in value) attr(el, dashcase(key), value[key]);
-  }
+  })
 }
 
 // connect expr to element value
-secondary['value'] = (el, expr) => {
+secondary['value'] = (el, expr, state) => {
   let evaluate = parseExpr(el, expr, ':value')
 
   let from, to
@@ -247,7 +252,7 @@ secondary['value'] = (el, expr) => {
             value => el.value = value
   )
 
-  return (state) => { update(evaluate(state)) }
+  return effect(() => { update(evaluate(state)) })
 }
 
 // any unknown directive
@@ -257,17 +262,21 @@ export default (el, expr, state, name) => {
 
   if (!evaluate) return
 
-  if (evt) return (state => {
-    // we need anonymous callback to enable modifiers like prevent
-    let value = evaluate(state) || (() => { })
-    return on(el, evt, value)
-  })
+  if (evt) {
+    let off, dispose = effect(() => {
+      if (off) off(), off = null
+      // we need anonymous callback to enable modifiers like prevent
+      let value = evaluate(state)
+      if (value) off = on(el, evt, value)
+    })
+    return () => (off?.(), dispose())
+  }
 
-  return state => { attr(el, name, evaluate(state)) }
+  return effect(() => { attr(el, name, evaluate(state)) })
 }
 
 // bind event to a target
-export const on = (el, e, fn) => {
+const on = (el, e, fn) => {
   if (!fn) return
 
   const ctx = { evt: '', target: el, test: () => true };

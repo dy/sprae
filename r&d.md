@@ -404,7 +404,7 @@
 - no comfy js at hand
 - doesn't detect dynamic subs like `calc().length`
 
-## [ ] Store: strategies -> 3. seems the most balanced for now
+## [x] Store: strategies -> 3. seems the most balanced for now
 
 1. Signals struct
   + fastest
@@ -438,6 +438,19 @@
   - doesn't solve recursive .length
 
 4. Subscript-based something
+
+## [ ] :each over/undersubscription
+
+* we must subscribe to each item from the list - it should update itself only, not the whole list. How?
+
+1. Async reconciliation part - it plans list rerendering (loop part) in the next tick, and this tick may have as many item changes as needed
+
+2. Individual effects per-item `fx(() => {updateItem(list[idx])})`
+  * Can be created in advance, and list updates only cause effects changes
+
+3. Nested effects: parent effects don't get subscribed in internal effects, so we just modify :each to create multiple internal effects per-item.
+  + we might not need swapdom, since nodes manage themselves
+
 
 ## [x] :onclick="direct code" ? -> no: immediately invoked.
 

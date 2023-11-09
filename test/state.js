@@ -1,4 +1,4 @@
-import state, { fx, batch } from '../src/state.signals-proxy.js'
+import state, { effect as fx, batch } from '../src/state.signals-proxy.js'
 import t, { is, ok, throws } from 'tst'
 import { tick } from 'wait-please'
 
@@ -348,7 +348,7 @@ t('state: bench', async () => {
   const N = 100000
 
   // signal-struct
-  const { default: signals, fx: fx2 } = await import('../src/state.signals.js')
+  const { default: signals, effect: fx2 } = await import('../src/state.signals.js')
   let s2 = signals({ x: 1, y: 2 }), xy2
   fx2(() => xy2 = s2.x * s2.y)
   console.time('signals')
@@ -358,7 +358,7 @@ t('state: bench', async () => {
   }
   console.timeEnd('signals')
 
-  const { default: proxy, fx: fx3 } = await import('../src/state.proxy.js')
+  const { default: proxy, effect: fx3 } = await import('../src/state.proxy.js')
   let s3 = proxy({ x: 1, y: 2 }), xy3
   fx3(() => xy3 = s3.x * s3.y)
   console.time('proxy')
@@ -368,7 +368,7 @@ t('state: bench', async () => {
   }
   console.timeEnd('proxy')
 
-  const { default: sproxy, fx: fx1 } = await import('../src/state.signals-proxy.js')
+  const { default: sproxy, effect: fx1 } = await import('../src/state.signals-proxy.js')
   let s1 = sproxy({ x: 1, y: 2 }), xy
   fx1(() => xy = s1.x * s1.y)
   console.time('signals-proxy')

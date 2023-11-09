@@ -122,7 +122,7 @@ export default function state(obj, parent) {
   return proxy
 }
 
-export const fx = (fn) => {
+const fx = (fn) => {
   const call = () => {
     let prev = currentFx
     currentFx = call
@@ -136,7 +136,7 @@ export const fx = (fn) => {
   return call
 }
 
-export const planUpdate = () => {
+const planUpdate = () => {
   // if (!pendingUpdate) {
   //   pendingUpdate = true
   //   queueMicrotask(() => {
@@ -146,3 +146,5 @@ export const planUpdate = () => {
   //   })
   // }
 }
+
+export { fx as effect };
