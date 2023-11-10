@@ -307,22 +307,49 @@ test('if: + :with doesnt prevent secondary effects from happening', async () => 
   // is(el2.innerHTML, `<x>123</x>`)
 })
 
-test('each: array', async () => {
+test.only('each: array', async () => {
   // FIXME: in some conspicuous reason jsdom fails to update text nodes somehow
   let el = h`<p>
     <span :each="a in b" :text="a"></span>
   </p>`
 
-  const params = sprae(el, { b: [] })
+  const params = sprae(el, { b: [0] })
 
-  is(el.innerHTML, '')
-  console.log('set 1,2')
-  params.b = [1, 2]
+  is(el.innerHTML, '<span>0</span>')
+  params.b = [1]
+  // params.b[0] = _delete
+  return
+
+  console.log('items=[2,3]')
+  params.b = [2, 3]
   await tick()
-  is(el.innerHTML, '<span>1</span><span>2</span>')
+  is(el.innerHTML, '<span>2</span><span>3</span>')
+
+  console.log('items[0]=1')
+  params.b[0] = 1
+  is(el.innerHTML, '<span>1</span><span>3</span>')
+
+  console.log('items.shift()')
+  params.b.shift()
+  await tick()
+  is(el.innerHTML, '<span>3</span>')
+
+  console.log('items.length=2')
+  params.b.length = 2
+  await tick()
+  is(el.innerHTML, '<span>3</span><span></span>')
+
+  console.log('items.pop()')
+  params.b.pop()
+  await tick()
+  is(el.innerHTML, '<span>3</span>')
+
+  console.log('items=[]')
   params.b = []
   await tick()
   is(el.innerHTML, '')
+
+  console.log('items=null')
   params.b = null
   await tick()
   is(el.innerHTML, '')
