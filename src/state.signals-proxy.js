@@ -7,11 +7,13 @@
 // + it's just robust
 // ? must it modify initial store
 
-import { signal, computed, effect, batch } from '@preact/signals-core'
+import { signal, computed, effect, batch, untracked } from '@preact/signals-core'
 // import { signal, computed } from 'usignal/sync'
 // import { signal, computed } from '@webreflection/signal'
 
-export { effect, batch }
+export { effect, computed, batch, untracked }
+
+export const _dispose = (Symbol.dispose ||= Symbol('dispose'));
 
 // default root sandbox
 export const sandbox = {
@@ -25,53 +27,62 @@ const isObject = v => v?.constructor === Object
 export const memo = new WeakMap
 
 // track last accessed property to figure out if .length was directly accessed from expression or via .push/etc method
-let lastProp, _mute = Symbol('muted')
-
-// skip subscriptions
-export const mute = (list) => (memo.get(list)[_mute] = true, () => memo.get(list)[_mute] = false)
+let lastProp
 
 export default function createState(values, parent) {
   if (!isObject(values) && !Array.isArray(values)) return values;
+  // ignore existing state as argument
   if (memo.has(values) && !parent) return values;
   // console.group('createState', values, parent)
   // .length signal is stored outside, since cannot be replaced
   const _len = Array.isArray(values) && signal(values.length),
     // dict with signals storing values
     signals = parent ? Object.create(memo.get(parent = createState(parent))) : Array.isArray(values) ? [] : {},
+    proto = signals.constructor.prototype,
     // proxy conducts prop access to signals
     state = new Proxy(signals, {
       // sandbox everything
       has() { return true },
       get(signals, key) {
         // console.log('get', key)
-        if (typeof key === 'symbol') return values[key]
         // if .length is read within .push/etc - peek signal (don't subscribe)
         if (_len)
-          if (key === 'length') return (Array.prototype[lastProp] || signals[_mute]) ? _len.peek() : _len.value;
+          if (key === 'length') return (proto[lastProp]) ? _len.peek() : _len.value;
           else lastProp = key;
+        if (proto[key]) return proto[key]
         const s = signals[key] || initSignal(key)
-        return (signals[_mute] && s.peek) ? s.peek() : s?.valueOf()
+        return s?.valueOf()
       },
       set(signals, key, v) {
-        // console.log('set', key)
-        if (typeof key === 'symbol') values[key] = v
-
+        // console.log('set', key, v)
         // .length
-        else if (_len && key === 'length') _len.value = signals.length = v;
+        if (_len && key === 'length') {
+          // force cleaning up tail
+          // for (let i = v, l = signals.length; i < l; i++) delete state[i]
+          _len.value = signals.length = v;
+        }
 
         else {
           const s = signals[key] || initSignal(key)
-
+          v = v?.valueOf();
           // new unknown property
-          if (!s) signals[key] = signal(createState(v?.valueOf()))
+          if (!s) signals[key] = signal(createState(v))
           // stashed _set for values with getter/setter
           else if (s._set) s._set(v)
-          // FIXME: is there meaningful way to update same-signature object?
-          // else if (isObject(v) && isObject(s.value)) Object.assign(s.value, v)
+          // FIXME: patch object
+          // else if (isObject(v) && isObject(s.value)) {
+          //   Object.assign(s.value, v)
+          //   for (let key in s.value) if (!v.hasOwnProperty(key)) s.value[key] = undefined
+          // }
           // .x = y
-          else s.value = createState(v?.valueOf())
+          else s.value = createState(v)
         }
 
+        return true
+      },
+      deleteProperty(signals, key) {
+        // console.log('delete', key)
+        if (key in signals) delete signals[key]
         return true
       }
     })
@@ -79,7 +90,7 @@ export default function createState(values, parent) {
   // init signals placeholders (instead of ownKeys & getOwnPropertyDescriptor handlers)
   // if values are existing proxy - take its signals instead of creating new ones
   let initSignals = memo.get(values)
-  for (let key in values) values[key], signals[key] = initSignals?.[key];
+  for (let key in values) values[key], signals[key] = initSignals?.[key] ?? null;
 
   // initialize signal for provided key
   // FIXME: chances are there's redundant checks
@@ -98,7 +109,7 @@ export default function createState(values, parent) {
     }
 
     // touch parent
-    // FIXME: something fishy's going on here
+    // FIXME: something fishy's going on here - we don't return signal
     if (parent) return parent[key]
 
     // Array, window etc
