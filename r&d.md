@@ -386,7 +386,7 @@
 + fastest
 - ignores array mutations, unless explicitly called
 
-0.a Drop exposing single-property store in favor of batch-update
+0.a Abandon returning single-property store, in favor of batch-update
 + Simpler API
 + Very precise diff-update
 + No need for batch method
@@ -413,7 +413,6 @@
   + no circular update trouble
   - doesn't handle arrays
 
-
 2. Proxy
   + any-prop access, including not-existing
   + modern-ish
@@ -426,6 +425,7 @@
   - some mess with proto access
     ~ must be improved
   - no circular update detection
+  + allows detecting precisely what array ops were performed, to apply corresponding DOM updates
 
 3. Signals proxy
   + medium performance
@@ -435,7 +435,9 @@
   - heavy-ish
   - not own tech
     + hi-quality though
-  - doesn't solve recursive .length
+  - doesn't solve recursive .length out of the box
+    ~ alleviated by tracking
+  - store looks ugly, some proxies over signals objects
 
 4. Subscript-based something
 
@@ -450,6 +452,7 @@
 
 3. Nested effects: parent effects don't get subscribed in internal effects, so we just modify :each to create multiple internal effects per-item.
   + we might not need swapdom, since nodes manage themselves
+  * note the untracked function
 
 
 ## [x] :onclick="direct code" ? -> no: immediately invoked.
