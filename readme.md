@@ -274,7 +274,7 @@ To avoid _flash of unstyled content_, you can hide sprae attribute or add a cust
 
 ## Dispose
 
-To destroy state and detach sprae handlers, call `state[Symbol.dispose]()`.
+To destroy state and detach sprae handlers, call `element[Symbol.dispose]()`.
 
 ## Benchmark
 

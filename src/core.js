@@ -1,8 +1,6 @@
-import createState, { batch, sandbox } from './state.signals-proxy.js';
+import createState, { batch, sandbox, _dispose } from './state.signals-proxy.js';
 import defaultDirective, { primary, secondary } from './directives.js';
 
-// provide dispose symbol
-export const _dispose = (Symbol.dispose ||= Symbol('dispose'));
 
 // default root sandbox
 sprae.globals = sandbox
@@ -10,7 +8,8 @@ sprae.globals = sandbox
 // sprae element: apply directives
 const memo = new WeakMap
 export default function sprae(container, values) {
-  if (!container.children) return
+  if (!container.children) return // ignore what?
+
   if (memo.has(container)) return batch(() => Object.assign(memo.get(container), values))
 
   const state = createState(values || {});
@@ -27,7 +26,7 @@ export default function sprae(container, values) {
 
         disposes.push(primary[name](el, expr, state, name))
 
-        // stop if element was spraed by directive or skipped (detached)
+        // stop if element was spraed by directive or skipped (detached) like in case of :if or :each
         if (memo.has(el)) return
         if (el.parentNode !== parent) return false
       }
@@ -64,13 +63,19 @@ export default function sprae(container, values) {
 
   init(container);
 
+  // if element was spraed by :with or :each instruction - skip
+  if (memo.has(container)) return disposes.pop(), memo.get(container)
+
+  // save
   memo.set(container, state);
 
-  // expose disposal
-  container[_dispose] = state[_dispose] = () => {
-    while (disposes.length) disposes.shift()?.();
-    memo.delete(container);
-  };
+  // expose dispose
+  if (disposes.length) Object.defineProperty(container, _dispose, {
+    value: () => {
+      while (disposes.length) disposes.shift()?.();
+      memo.delete(container);
+    }
+  });
 
   return state;
 }

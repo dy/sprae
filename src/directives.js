@@ -1,6 +1,6 @@
 // directives & parsing
-import sprae, { _dispose } from './core.js'
-import createState, { effect } from './state.signals-proxy.js'
+import sprae from './core.js'
+import createState, { effect, computed, memo, untracked, _dispose } from './state.signals-proxy.js'
 import { queueMicrotask, WeakishMap } from './util.js'
 
 // reserved directives - order matters!
@@ -131,7 +131,8 @@ primary['with'] = (el, expr, rootState) => {
   let evaluate = parseExpr(el, expr, ':with')
   const localState = evaluate(rootState)
   let state = createState(localState, rootState)
-  return sprae(el, state)[_dispose];
+  sprae(el, state)
+  return el[_dispose];
 }
 
 // ref must be last within primaries, since that must be skipped by :each, but before secondaries
@@ -174,7 +175,8 @@ secondary['render'] = (el, expr, state) => {
 
   let content = tpl.content.cloneNode(true);
   el.replaceChildren(content)
-  return sprae(el, state)[_dispose]
+  sprae(el, state)
+  return el[_dispose]
 }
 
 secondary['id'] = (el, expr, state) => {
