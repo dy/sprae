@@ -49,80 +49,93 @@ primary['if'] = (el, expr, state) => {
   }
 }
 
-const _each = Symbol(':each')
+const _each = Symbol(':each'), _delete = Symbol('delete')
 
 // :each must init before :ref, :id or any others, since it defines scope
 primary['each'] = (tpl, expr, state) => {
-  throw 'Unimplemented: each'
   let each = parseForExpression(expr);
   if (!each) return exprError(new Error, tpl, expr, ':each');
 
+  const [itemVar, idxVar, itemsExpr] = each;
+
   // we need :if to be able to replace holder instead of tpl for :if :each case
+  // FIXME: I don't think _each is relevant anymore - :if seems to come first also it's sync
   const holder = tpl[_each] = document.createTextNode('')
   tpl.replaceWith(holder)
 
-  // NOTE: we inject subscription to list.length in handle .splice(0) etc.
-  const evaluate = parseExpr(tpl, each[2], ':each');
-  // const evaluate = parseExpr(tpl, each[2], ':each');
+  const evaluate = parseExpr(tpl, itemsExpr, ':each');
 
-  const keyExpr = tpl.getAttribute(':key');
-  const itemKey = keyExpr ? parseExpr(null, keyExpr, ':each') : null;
-  tpl.removeAttribute(':key')
+  // const keyExpr = tpl.getAttribute(':key');
+  // const itemKey = keyExpr ? parseExpr(null, keyExpr, ':each') : ()=>{};
+  // tpl.removeAttribute(':key')
 
-  const refExpr = tpl.getAttribute(':ref');
+  // we re-create items any time new items are produced
+  let items, prevl
+  effect(() => {
+    const newItems = evaluate(state)
+    console.group('new items', items, newItems)
 
-  const scopes = new WeakishMap() // stores scope per data item
-  const els = new WeakishMap() // element per data item
+    if (!items) untracked(() => {
+      items = newItems, prevl = items.length
+      for (let i = 0, l = items.length; i < l; i++) initChild(i)
+    })
+    else untracked(() => {
+      // dispose tail (done internally in state)
+      // FIXME: what if new items are state-array
+      let oldl = items.length, newl = newItems.length, minl = Math.min(newl, oldl), i = 0
+      // patch existing items
+      for (; i < minl; i++) console.log('PATCH', i, newItems[i]), items[i] = newItems[i]
+      // init new items
+      for (; i < newl; i++) console.log('NEW ITEM'), items[i] = newItems[i], initChild(i)
+      // dispose old items
+      for (; i < oldl; i++) items[i] = _delete
+      items.length = newItems.length
+    })
 
-  // this function is called whenever list changes - not its internals
-  return () => {
-    console.log('rerender list')
-    // get items
-    let list = evaluate(state)
-
-    // we have granular control over what kind of list argument
-    if (!list);
-    else if (typeof list === 'number') {
-      Array.from({ length: list }, (_, i) => [i + 1, i])
-      throw 'Unimplemented: each of number'
-    }
-    // each item updates itself: no recondiliation algo
-    else if (Array.isArray(list)) {
-      // FIXME: handle straight array
-      if (!signals) throw 'Unimplemented: straight array, like value of a signal'
-      const unmute = mute(list)
-      for (let i = 0; i < list.length; i++) {
-        const dispose = effect(() => {
-          const item = list[i]
-          let el, scope, key = itemKey?.({ [each[0]]: item, [each[1]]: i });
-
-          if (key == null) {
-            el = tpl.cloneNode(true)
-            // FIXME: why refExpr was null?
-            scope = createState({ [each[0]]: item, [refExpr || '']: el, [each[1]]: i }, state)
-          }
-          else {
-            (el = els.get(key)) || els.set(key, el = tpl.cloneNode(true));
-            (scope = scopes.get(key)) || scopes.set(key, scope = createState({ [each[0]]: item, [refExpr || '']: el, [each[1]]: i }, state))
-          }
-          holder.before(el)
-          sprae(el, scope)
-        })
-      }
-      // subscribe explicitly to array length change
-      effect(() => {
-        list.length
-        // FIXME: handle length change properly
-        throw 'Unimplemented: array length change'
+    // length change effect
+    const cleanup = effect(() => {
+      console.log('LENGTH CHANGE')
+      const newl = newItems.length
+      untracked(() => {
+        if (prevl > newl) console.log('less', prevl, newl) // dispose old items
+        else for (let i = prevl; i < newl; i++) initChild(i) // init new items
+        prevl = newl
       })
-      unmute()
-    }
-    else if (typeof list === 'object') {
-      throw 'Unimplemented: object iteration'
-    }
-    else exprError(Error('Bad list value'), tpl, expr, ':each', list)
+    })
 
+    console.groupEnd()
+
+    return cleanup
+  })
+
+  function initChild(i) {
+    const el = tpl.cloneNode(true), scope = createState({ [itemVar]: items[i], [idxVar]: i }, state)
+    holder.before(el)
+    sprae(el, scope)
+    const uneffect = effect(() => {
+      // NOTE: we can't just take over the signal from parent as [itemVar], because parent can be deleted
+      console.log('UPDATE EFFECT', i, items[i])
+      if (items[i] === _delete) console.log('DELETE'), uneffect(), el[_dispose](), el.remove(), delete items[i]
+      else scope[itemVar] = items[i]
+    })
   }
+
+  // // we have granular control over what kind of list argument
+  // if (!items);
+  // else if (typeof items === 'number') {
+  //   Array.from({ length: items }, (_, i) => [i + 1, i])
+  //   throw 'Unimplemented: each of number'
+  // }
+  // // each item updates itself: no recondiliation algo
+  // else if (Array.isArray(items)) {
+  // }
+  // else if (typeof items === 'object') {
+  //   throw 'Unimplemented: object iteration'
+  // }
+  // else exprError(Error('Bad items value'), tpl, expr, ':each', items)
+
+
+  return () => { for (let i = 0, l = items.length; i < l; i++) { items[i] = _delete } }
 }
 
 // `:each` can redefine scope as `:each="a in {myScope}"`,

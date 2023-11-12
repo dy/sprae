@@ -26,6 +26,8 @@ export const sandbox = {
 const isObject = v => v?.constructor === Object
 export const memo = new WeakMap
 
+const isPrimitive = (value) => value !== Object(value);
+
 // track last accessed property to figure out if .length was directly accessed from expression or via .push/etc method
 let lastProp
 
@@ -55,28 +57,38 @@ export default function createState(values, parent) {
       },
       set(signals, key, v) {
         // console.log('set', key, v)
-        // .length
-        if (_len && key === 'length') {
-          // force cleaning up tail
-          // for (let i = v, l = signals.length; i < l; i++) delete state[i]
-          _len.value = signals.length = v;
+        if (_len) {
+          // .length
+          if (key === 'length') {
+            // force cleaning up tail
+            // for (let i = v, l = signals.length; i < l; i++) delete state[i]
+            _len.value = signals.length = v;
+            return true
+          }
         }
 
-        else {
-          const s = signals[key] || initSignal(key)
-          v = v?.valueOf();
-          // new unknown property
-          if (!s) signals[key] = signal(createState(v))
-          // stashed _set for values with getter/setter
-          else if (s._set) s._set(v)
-          // FIXME: patch object
-          // else if (isObject(v) && isObject(s.value)) {
-          //   Object.assign(s.value, v)
-          //   for (let key in s.value) if (!v.hasOwnProperty(key)) s.value[key] = undefined
-          // }
-          // .x = y
-          else s.value = createState(v)
+        const s = signals[key] || initSignal(key)
+        v = v?.valueOf();
+        console.log('set', key, v)
+        // new unknown property
+        // FIXME: why do we need this? It must be created by initSignal, no?
+        if (!s) signals[key] = signal(isPrimitive(v) ? v : createState(v))
+        // skip unchanged (although handled in last case - we skip a few iterations)
+        else if (v === s?.value);
+        // stashed _set for values with getter/setter
+        else if (s._set) s._set(v)
+        else if (isPrimitive(v)) s.value = v
+        // FIXME: patch array
+        // FIXME: patch object
+        else if (isObject(v) && isObject(s.value)) {
+          Object.assign(s.value, v)
+          for (let key in s.value) if (!v.hasOwnProperty(key)) s.value[key] = undefined
         }
+        // .x = y
+        else s.value = createState(v)
+
+        // force changing length, if eg. a=[]; a[1]=1 - need to come after setting the item
+        if (_len && key >= _len.value) _len.value = signals.length = Number(key) + 1
 
         return true
       },

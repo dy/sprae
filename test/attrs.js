@@ -1,9 +1,10 @@
 // import { signal } from 'usignal/sync'
-import { signal, effect } from '@preact/signals-core'
+import { signal, effect, untracked } from '@preact/signals-core'
 import test, { is, any, throws } from 'tst'
 import { tick, time } from 'wait-please'
 import sprae from '../src/index.js'
 import h from 'hyperf'
+import createState, { } from '../src/state.signals-proxy.js'
 
 
 test.skip('autoinit', async () => {
@@ -316,9 +317,15 @@ test.only('each: array', async () => {
   const params = sprae(el, { b: [0] })
 
   is(el.innerHTML, '<span>0</span>')
-  params.b = [1]
-  // params.b[0] = _delete
-  return
+
+  console.log('items[0]=1')
+  params.b[0] = 1
+  is(el.innerHTML, '<span>1</span>')
+
+  console.log('items[1]=3')
+  params.b[1] = 3
+  await tick()
+  is(el.innerHTML, `<span>1</span><span>3</span>`)
 
   console.log('items=[2,3]')
   params.b = [2, 3]
