@@ -82,13 +82,9 @@ primary['each'] = (tpl, expr, state) => {
     else untracked(() => {
       // dispose tail (done internally in state)
       // FIXME: what if new items are state-array
-      let oldl = items.length, newl = newItems.length, minl = Math.min(newl, oldl), i = 0
-      // patch existing items
-      for (; i < minl; i++) console.log('PATCH', i, newItems[i]), items[i] = newItems[i]
-      // init new items
-      for (; i < newl; i++) console.log('NEW ITEM'), items[i] = newItems[i], initChild(i)
-      // dispose old items
-      for (; i < oldl; i++) items[i] = _delete
+      let oldl = items.length, newl = newItems.length, i = 0
+      // patch existing items and insert new items - init happens in length effect
+      for (; i < newl; i++) console.log('PATCH', i, newItems[i]), items[i] = newItems[i]
       items.length = newItems.length
     })
 
@@ -98,6 +94,8 @@ primary['each'] = (tpl, expr, state) => {
       const newl = newItems.length
       untracked(() => {
         if (prevl > newl) console.log('less', prevl, newl) // dispose old items
+      if (prevl !== newl) untracked(() => {
+        if (prevl > newl) for (let i = newl; i < prevl; i++) items[i] = _delete
         else for (let i = prevl; i < newl; i++) initChild(i) // init new items
         prevl = newl
       })

@@ -68,24 +68,34 @@ export default function createState(values, parent) {
         }
 
         const s = signals[key] || initSignal(key)
-        v = v?.valueOf();
+        // v = v?.valueOf();
         console.log('set', key, v)
         // new unknown property
         // FIXME: why do we need this? It must be created by initSignal, no?
         if (!s) signals[key] = signal(isPrimitive(v) ? v : createState(v))
-        // skip unchanged (although handled in last case - we skip a few iterations)
-        else if (v === s.peek());
-        // stashed _set for values with getter/setter
-        else if (s._set) s._set(v)
-        else if (isPrimitive(v)) s.value = v
-        // FIXME: patch array
-        // FIXME: patch object
-        else if (isObject(v) && isObject(s.peek())) {
-          Object.assign(s.value, v)
-          for (let key in s.peek()) if (!v.hasOwnProperty(key)) s.value[key] = undefined
+        // skip unchanged (although can be handled by last condition - we skip a few checks this way)
+        else {
+          const cur = s.peek()
+          if (v === cur);
+          // stashed _set for values with getter/setter
+          else if (s._set) s._set(v)
+          else if (isPrimitive(v)) s.value = v
+          // patch array
+          else if (Array.isArray(v) && Array.isArray(cur)) {
+            untracked(() => {
+              let i = 0;
+              for (; i < v.length; i++) cur[i] = v[i]
+              cur.length = v.length
+            })
+          }
+          // patch object
+          else if (isObject(v) && isObject(cur)) {
+            Object.assign(s.value, v)
+            for (let key in cur) if (!v.hasOwnProperty(key)) s.value[key] = undefined
+          }
+          // .x = y
+          else s.value = createState(v)
         }
-        // .x = y
-        else s.value = createState(v)
 
         // force changing length, if eg. a=[]; a[1]=1 - need to come after setting the item
         if (_len && key >= _len.peek()) _len.value = signals.length = Number(key) + 1
