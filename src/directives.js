@@ -1,6 +1,6 @@
 // directives & parsing
 import sprae from './core.js'
-import createState, { effect, computed, memo, untracked, _dispose } from './state.signals-proxy.js'
+import createState, { effect, computed, memo, untracked, _dispose, _delete } from './state.signals-proxy.js'
 import { queueMicrotask, WeakishMap } from './util.js'
 
 // reserved directives - order matters!
@@ -49,7 +49,7 @@ primary['if'] = (el, expr, state) => {
   }
 }
 
-const _each = Symbol(':each'), _delete = Symbol('delete')
+const _each = Symbol(':each')
 
 // :each must init before :ref, :id or any others, since it defines scope
 primary['each'] = (tpl, expr, state) => {
@@ -72,8 +72,20 @@ primary['each'] = (tpl, expr, state) => {
   // we re-create items any time new items are produced
   let items, prevl
   effect(() => {
-    const newItems = evaluate(state)
-    console.group('new items', items, newItems)
+    console.log("CHANGE")
+    let newItems = evaluate(state)
+
+    if (!newItems) newItems = []
+    else if (typeof newItems === 'number') {
+      newItems = Array.from({ length: newItems }, (_, i) => i)
+    }
+    else if (Array.isArray(newItems));
+    else if (typeof newItems === 'object') {
+      throw 'Unimplemented: object iteration'
+    }
+    else {
+      exprError(Error('Bad items value'), tpl, expr, ':each', newItems)
+    }
 
     if (!items) untracked(() => {
       items = newItems, prevl = items.length
@@ -82,28 +94,20 @@ primary['each'] = (tpl, expr, state) => {
     else untracked(() => {
       // dispose tail (done internally in state)
       // FIXME: what if new items are state-array
-      let oldl = items.length, newl = newItems.length, i = 0
+      let newl = newItems?.length || 0, i = 0
       // patch existing items and insert new items - init happens in length effect
-      for (; i < newl; i++) console.log('PATCH', i, newItems[i]), items[i] = newItems[i]
-      items.length = newItems.length
+      for (; i < newl; i++) items[i] = newItems[i]
+      items.length = newl
     })
 
     // length change effect
-    const cleanup = effect(() => {
-      console.log('LENGTH CHANGE')
-      const newl = newItems.length
-      untracked(() => {
-        if (prevl > newl) console.log('less', prevl, newl) // dispose old items
+    return effect(() => {
+      const newl = newItems?.length || 0
       if (prevl !== newl) untracked(() => {
-        if (prevl > newl) for (let i = newl; i < prevl; i++) items[i] = _delete
-        else for (let i = prevl; i < newl; i++) initChild(i) // init new items
+        for (let i = prevl; i < newl; i++) initChild(i) // init new items
         prevl = newl
       })
     })
-
-    console.groupEnd()
-
-    return cleanup
   })
 
   function initChild(i) {
@@ -112,28 +116,12 @@ primary['each'] = (tpl, expr, state) => {
     sprae(el, scope)
     const uneffect = effect(() => {
       // NOTE: we can't just take over the signal from parent as [itemVar], because parent can be deleted
-      console.log('UPDATE EFFECT', i, items[i])
-      if (items[i] === _delete) console.log('DELETE'), uneffect(), el[_dispose](), el.remove(), delete items[i]
+      if (items[i] === _delete) uneffect(), el[_dispose](), el.remove(), delete items[i]
       else scope[itemVar] = items[i]
     })
   }
 
-  // // we have granular control over what kind of list argument
-  // if (!items);
-  // else if (typeof items === 'number') {
-  //   Array.from({ length: items }, (_, i) => [i + 1, i])
-  //   throw 'Unimplemented: each of number'
-  // }
-  // // each item updates itself: no recondiliation algo
-  // else if (Array.isArray(items)) {
-  // }
-  // else if (typeof items === 'object') {
-  //   throw 'Unimplemented: object iteration'
-  // }
-  // else exprError(Error('Bad items value'), tpl, expr, ':each', items)
-
-
-  return () => { for (let i = 0, l = items.length; i < l; i++) { items[i] = _delete } }
+  return () => items.length = 0
 }
 
 // `:each` can redefine scope as `:each="a in {myScope}"`,
@@ -220,8 +208,10 @@ secondary['style'] = (el, expr, state) => {
     let v = evaluate(state)
     if (typeof v === 'string') el.setAttribute('style', initStyle + v)
     else {
-      el.setAttribute('style', initStyle)
-      for (let k in v) el.style.setProperty(k, v[k])
+      untracked(() => {
+        el.setAttribute('style', initStyle)
+        for (let k in v) if (typeof v[k] !== 'symbol') el.style.setProperty(k, v[k])
+      })
     }
   })
 }

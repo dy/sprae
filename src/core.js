@@ -1,4 +1,4 @@
-import createState, { batch, sandbox, _dispose } from './state.signals-proxy.js';
+import createState, { batch, sandbox, _dispose, memo as stateMemo } from './state.signals-proxy.js';
 import defaultDirective, { primary, secondary } from './directives.js';
 
 
@@ -12,6 +12,7 @@ export default function sprae(container, values) {
 
   if (memo.has(container)) return batch(() => Object.assign(memo.get(container), values))
 
+  // take over existing state instead of creating clone
   const state = createState(values || {});
   const disposes = []
 
@@ -64,7 +65,7 @@ export default function sprae(container, values) {
   init(container);
 
   // if element was spraed by :with or :each instruction - skip
-  if (memo.has(container)) return memo.get(container)
+  if (memo.has(container)) return state //memo.get(container)
 
   // save
   memo.set(container, state);

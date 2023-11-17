@@ -156,7 +156,8 @@ t.skip('state: state from same instance', () => {
   ok(s1 === s2)
 })
 
-t('state: state from state', () => {
+t.skip('state: state from state', () => {
+  // NOTE: we do clone, not returning reference
   let s = { x: 1 }
   let s1 = state(s)
   let s2 = state(s1)
@@ -202,11 +203,13 @@ t('state: inheritance: updating values in chain', async () => {
   s.x++
   await tick()
   is(xy, 4)
+  is(s1.x, 2)
   console.log('y++')
   s.y++
   await tick()
   is(xy, 5)
-  is(s1.y, undefined)
+  // NOTE: this is identical behavior to `a={y:1}, b=Object.create(a), b.y++`
+  is(s1.y, 3)
 })
 
 t('state: inheritance: lazy init', async () => {
@@ -235,7 +238,7 @@ t('state: sandbox', async () => {
 t('state: array items', async () => {
   // arrays get each item converted to signal struct
   let s5 = state({ list: [{ x: 1 }, { x: 2 }] })
-  let sum; fx(() => sum = s5.list.reduce((sum, item) => item.x + sum, 0))
+  let sum; fx(() => (sum = s5.list.reduce((sum, item) => (item.x + sum), 0)))
   is(sum, 3)
   s5.list[0].x = 2
   await tick()
@@ -244,9 +247,17 @@ t('state: array items', async () => {
   s5.list = [{ x: 3 }, { x: 3 }]
   await tick()
   is(sum, 6)
+  console.log('DO: list = [{x:3},{x:3},{x:4}]')
   s5.list = [{ x: 3 }, { x: 3 }, { x: 4 }]
   await tick()
   is(sum, 10)
+})
+
+t('state: object patch', async () => {
+  let s = state({ o: { x: 1 } })
+  is(s.o, { x: 1 })
+  s.o = { y: 2 }
+  is(s.o, { y: 2 })
 })
 
 t.todo('state: set element as prop', () => {
