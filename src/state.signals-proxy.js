@@ -110,7 +110,7 @@ export default function createState(values, parent) {
 
   // init signals placeholders (instead of ownKeys & getOwnPropertyDescriptor handlers)
   // if values are existing proxy (in case of extending parent) - take its signals instead of creating new ones
-  for (let key in values) values[key], signals[key] = initSignals?.[key] ?? null;
+  for (let key in values) signals[key] = initSignals?.[key] ?? initSignal(key);
 
   // initialize signal for provided key
   function initSignal(key) {
