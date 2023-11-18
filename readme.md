@@ -2,7 +2,7 @@
 
 > DOM tree hydration with reactivity.
 
-_Sprae_ is progressive enhancement framework, a tiny essential alternative to [alpine](https://github.com/alpinejs/alpine), [petite-vue](https://github.com/vuejs/petite-vue) or [template-parts](https://github.com/github/template-parts) with enhanced ergonomics[*](#justification--alternatives). It enables simple markup logic without external scripts. Perfect for small websites, prototypes or UI logic.
+_Sprae_ is compact and ergonomic [*](#justification--alternatives) progressive enhancement framework. It provides clear markup logic without need for complex scripts, making it perfect for small-scale websites, prototypes or UI logic. It is tiny and performant alternative to [alpine](https://github.com/alpinejs/alpine), [petite-vue](https://github.com/vuejs/petite-vue) or [template-parts](https://github.com/github/template-parts).
 
 ## Usage
 
@@ -43,20 +43,22 @@ Sprae evaluates `:`-attributes and evaporates them.<br/>
 
 ## State
 
-Sprae creates reactive state representing current values in rendered DOM.<br/>
-It is based on [preact signals](https://github.com/preactjs/signals) and can take them as inputs.
+Sprae creates reactive state that mirrors current DOM values.<br/>
+It is based on [signals](https://github.com/preactjs/signals) and can take them as inputs.
 
 ```js
 const version = signal('alpha')
+
+// Sprae container with initial state values
 const state = sprae(container, { foo: 'bar', version })
 
-// Updating state properties rerenders the DOM.
+// Modify state property 'foo', triggering a DOM update
 state.foo = 'baz'
 
-// Updating input signal rerenders the DOM.
+// Update the version signal, which also triggers a DOM refresh
 version.value = 'beta'
 
-// To batch-update, reinitialize sprae
+// For batch update, re-sprae with new state values
 sprae(container, { foo: 'qux', version: 'gamma' })
 ```
 
@@ -74,7 +76,7 @@ Control flow of elements.
 
 #### `:each="item, index in items"`
 
-Multiply element. `index` value starts from 1.
+Multiply element.
 
 ```html
 <ul><li :each="item in items" :text="item"></ul>
@@ -87,9 +89,6 @@ Multiply element. `index` value starts from 1.
 <!-- Loop by condition -->
 <li :if="items" :each="item in items" :text="item" />
 <li :else>Empty list</li>
-
-<!-- Key items to reuse elements -->
-<li :each="item in items" :key="item.id" :text="item.value" />
 ```
 
 #### `:text="value"`
@@ -316,7 +315,6 @@ npm run results
 * TODO MVC: [demo](https://dy.github.io/sprae/examples/todomvc), [code](https://github.com/dy/sprae/blob/main/examples/todomvc.html)
 * Wavearea: [demo](https://dy.github.io/wavearea?src=//cdn.freesound.org/previews/586/586281_2332564-lq.mp3), [code](https://github.com/dy/wavearea)
 * Prostogreen [demo](http://web-being.org/prostogreen/), [code](https://github.com/web-being/prostogreen/)
-
 
 ## Justification
 
