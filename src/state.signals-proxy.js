@@ -7,11 +7,15 @@
 // + it's just robust
 // ? must it modify initial store
 
-import { signal, computed, effect, batch } from '@preact/signals-core'
+import { signal, computed, effect, batch, untracked } from '@preact/signals-core'
 // import { signal, computed } from 'usignal/sync'
 // import { signal, computed } from '@webreflection/signal'
 
-export { effect as fx, batch }
+export { effect, computed, batch, untracked }
+
+export const _dispose = (Symbol.dispose ||= Symbol('dispose'));
+export const _signals = Symbol('signals');
+
 
 // default root sandbox
 export const sandbox = {
@@ -22,62 +26,93 @@ export const sandbox = {
 }
 
 const isObject = v => v?.constructor === Object
-const memo = new WeakMap
+const isPrimitive = (value) => value !== Object(value);
 
 // track last accessed property to figure out if .length was directly accessed from expression or via .push/etc method
 let lastProp
 
 export default function createState(values, parent) {
   if (!isObject(values) && !Array.isArray(values)) return values;
-  if (memo.has(values) && !parent) return values;
-  // console.group('createState', values, parent)
+  // ignore existing state as argument
+  if (values[_signals] && !parent) return values;
+  const initSignals = values[_signals]
+
   // .length signal is stored outside, since cannot be replaced
-  const _len = Array.isArray(values) && signal(values.length),
+  const _len = Array.isArray(values) && signal((initSignals || values).length),
     // dict with signals storing values
-    signals = parent ? Object.create(memo.get(parent = createState(parent))) : Array.isArray(values) ? [] : {},
-    // proxy conducts prop access to signals
-    state = new Proxy(signals, {
-      // sandbox everything
-      has() { return true },
-      get(signals, key) {
-        // console.log('get', key)
-        if (typeof key === 'symbol') return values[key]
-        // if .length is read within .push/etc - peek signal (don't subscribe)
-        if (_len)
-          if (key === 'length') return Array.prototype[lastProp] ? _len.peek() : _len.value;
-          else lastProp = key;
-        return (signals[key] || initSignal(key))?.valueOf()
-      },
-      set(signals, key, v) {
-        if (typeof key === 'symbol') values[key] = v
+    signals = parent ? Object.create((parent = createState(parent))[_signals]) : Array.isArray(values) ? [] : {},
+    proto = signals.constructor.prototype;
 
+  // proxy conducts prop access to signals
+  const state = new Proxy(values, {
+    // sandbox everything
+    has() { return true },
+    get(values, key) {
+      // if .length is read within .push/etc - peek signal (don't subscribe)
+      if (_len)
+        if (key === 'length') return (proto[lastProp]) ? _len.peek() : _len.value;
+        else lastProp = key;
+      if (proto[key]) return proto[key]
+      if (key === _signals) return signals
+      const s = signals[key] || initSignal(key)
+      if (s) return s.value // existing property
+      if (parent) return parent[key]; // touch parent
+      if (sandbox.hasOwnProperty(key)) return sandbox[key] // Array, window etc
+    },
+    set(values, key, v) {
+      if (_len) {
         // .length
-        else if (_len && key === 'length') _len.value = signals.length = v;
-
-        else {
-          const s = signals[key] || initSignal(key)
-
-          // new unknown property
-          if (!s) signals[key] = signal(createState(v?.valueOf()))
-          // stashed _set for values with getter/setter
-          else if (s._set) s._set(v)
-          // FIXME: is there meaningful way to update same-signature object?
-          // else if (isObject(v) && isObject(s.value)) Object.assign(s.value, v)
-          // .x = y
-          else s.value = createState(v?.valueOf())
+        if (key === 'length') {
+          batch(() => {
+            // force cleaning up tail
+            for (let i = v, l = signals.length; i < l; i++) delete state[i]
+            // force init new signals
+            for (let i = signals.length; i < v; i++) state[i] = null
+            _len.value = signals.length = values.length = v;
+          })
+          return true
         }
-
-        return true
       }
-    })
+
+      const s = signals[key] || initSignal(key, v) || signal()
+      const cur = s.peek()
+
+      // skip unchanged (although can be handled by last condition - we skip a few checks this way)
+      if (v === cur);
+      // stashed _set for values with getter/setter
+      else if (s._set) s._set(v)
+      // patch array
+      else if (Array.isArray(v) && Array.isArray(cur)) {
+        untracked(() => batch(() => {
+          let i = 0, l = v.length;
+          for (; i < l; i++) cur[i] = values[key][i] = v[i]
+          cur.length = l // forces deleting tail signals
+          s.value = null, s.value = cur // bump effects
+        }))
+      }
+      // .x = y
+      else {
+        // reflect change in values
+        if (Array.isArray(cur)) cur.length = 0 // cleanup array subs
+        s.value = createState(values[key] = v)
+      }
+
+      // force changing length, if eg. a=[]; a[1]=1 - need to come after setting the item
+      if (_len && key >= _len.peek()) _len.value = signals.length = values.length = Number(key) + 1
+
+      return true
+    },
+    deleteProperty(values, key) {
+      if (key in signals) signals[key]._del?.(), delete signals[key], delete values[key]
+      return true
+    }
+  })
 
   // init signals placeholders (instead of ownKeys & getOwnPropertyDescriptor handlers)
-  // if values are existing proxy - take its signals instead of creating new ones
-  let initSignals = memo.get(values)
-  for (let key in values) values[key], signals[key] = initSignals?.[key];
+  // if values are existing proxy (in case of extending parent) - take its signals instead of creating new ones
+  for (let key in values) values[key], signals[key] = initSignals?.[key] ?? null;
 
   // initialize signal for provided key
-  // FIXME: chances are there's redundant checks
   function initSignal(key) {
     // init existing value
     if (values.hasOwnProperty(key)) {
@@ -89,17 +124,10 @@ export default function createState(values, parent) {
         (signals[key] = computed(desc.get.bind(state)))._set = desc.set?.bind(state);
         return signals[key]
       }
+      // take over existing signal or create new signal
       return signals[key] = desc.value?.peek ? desc.value : signal(createState(desc.value))
     }
-
-    // touch parent
-    if (parent) return parent[key]
-
-    // Array, window etc
-    if (sandbox.hasOwnProperty(key)) return sandbox[key]
   }
 
-  memo.set(state, signals)
-  // console.groupEnd()
   return state
 }

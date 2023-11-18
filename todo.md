@@ -61,7 +61,8 @@
 * [ ] optimization:
   * [x] faster create rows
   * [x] faster replace all rows
-  * [ ] fix remove row perf issue
+  * [x] fix remove row perf issue
 * [x] Make signals-proxy state actually lazy-init (now it's not)
 * [x] Fix multiple `.push` cycle problem
 * [x] ~~Make regular proxy state not causing infinite recursion~~ we don't hold to own proxy now
+* [x] All FIXMEs

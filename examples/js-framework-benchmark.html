@@ -88,11 +88,11 @@
     }
 
     sprae(document.getElementById('main'), {
-      rows: [],
+      rows: buildData(3),
       selected: null,
 
       remove(item) {
-        const index = this.rows.findIndex(x => x.id == item.id)
+        const index = this.rows.findIndex(x => (x.id == item.id))
         this.rows.splice(index, 1)
       },
 

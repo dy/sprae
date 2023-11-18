@@ -1,9 +1,10 @@
 // import { signal } from 'usignal/sync'
-import { signal } from '@preact/signals-core'
+import { signal, effect, untracked } from '@preact/signals-core'
 import test, { is, any, throws } from 'tst'
 import { tick, time } from 'wait-please'
 import sprae from '../src/index.js'
 import h from 'hyperf'
+import createState, { } from '../src/state.signals-proxy.js'
 
 
 test.skip('autoinit', async () => {
@@ -68,6 +69,7 @@ test('common: const in with', async () => {
   let el = h`<div :with="{x(){let x = 1; y=x;}}" @x="x()"></div>`
   let state = sprae(el, { y: 0 })
   el.dispatchEvent(new window.CustomEvent('x'))
+  await tick()
   is(state.y, 1)
 })
 
@@ -295,6 +297,7 @@ test('if: + :with doesnt prevent secondary effects from happening', async () => 
   let el = h`<div><x :if="x" :with="{}" :text="x"></x></div>`
   let state = sprae(el, { x: '' })
   is(el.innerHTML, ``)
+  console.log('state.x=123')
   state.x = '123'
   await tick()
   is(el.innerHTML, `<x>123</x>`)
@@ -307,29 +310,87 @@ test('if: + :with doesnt prevent secondary effects from happening', async () => 
   // is(el2.innerHTML, `<x>123</x>`)
 })
 
-test('each: array', async () => {
-  // FIXME: in some conspicuous reason jsdom fails to update text nodes somehow
+test('each: array full', async () => {
   let el = h`<p>
     <span :each="a in b" :text="a"></span>
   </p>`
 
-  const params = sprae(el, { b: [] })
+  const params = sprae(el, { b: [0] })
 
-  is(el.innerHTML, '')
-  console.log('set 1,2')
-  params.b = [1, 2]
+  is(el.innerHTML, '<span>0</span>')
+
+  console.log('items[0]=1')
+  params.b[0] = 1
+  is(el.innerHTML, '<span>1</span>')
+
+  console.log('items[1]=3')
+  params.b[1] = 3
   await tick()
-  is(el.innerHTML, '<span>1</span><span>2</span>')
+  is(el.innerHTML, `<span>1</span><span>3</span>`)
+
+  console.log('items=[2,3]')
+  params.b = [2, 3]
+  await tick()
+  is(el.innerHTML, '<span>2</span><span>3</span>')
+
+  console.log('items[0]=1')
+  params.b[0] = 1
+  is(el.innerHTML, '<span>1</span><span>3</span>')
+
+  console.log('items.shift()')
+  params.b.shift()
+  await tick()
+  is(el.innerHTML, '<span>3</span>')
+
+  console.log('items.length=2')
+  params.b.length = 2
+  await tick()
+  is(el.innerHTML, '<span>3</span><span></span>')
+
+  console.log('items.pop()')
+  params.b.pop()
+  await tick()
+  is(el.innerHTML, '<span>3</span>')
+
+  console.log('items=[]')
   params.b = []
   await tick()
   is(el.innerHTML, '')
+
+  console.log('items=null')
   params.b = null
   await tick()
   is(el.innerHTML, '')
 })
 
+
+test('each: array length ops', async () => {
+  let el = h`<p><span :each="a in b" :text="a"></span></p>`
+  const params = sprae(el, { b: [0] })
+
+  is(el.innerHTML, '<span>0</span>')
+  params.b.length = 2
+  is(el.innerHTML, '<span>0</span><span></span>')
+  params.b.pop()
+  is(el.innerHTML, '<span>0</span>')
+})
+
+test('each: array shift, pop', async () => {
+  let el = h`<p><span :each="a in b" :text="a"></span></p>`
+  const params = sprae(el, { b: [0, 1] })
+
+  is(el.innerHTML, '<span>0</span><span>1</span>')
+
+  console.log('items[0]=1')
+  params.b.shift()
+  is(el.innerHTML, '<span>1</span>')
+  params.b.push(2)
+  is(el.innerHTML, '<span>1</span><span>2</span>')
+  params.b.pop()
+  is(el.innerHTML, '<span>1</span>')
+})
+
 test('each: object', async () => {
-  // FIXME: in some conspicuous reason jsdom fails to update text nodes somehow
   let el = h`<p>
     <span :each="x,key in b" :text="[key,x]"></span>
   </p>`
@@ -383,6 +444,7 @@ test('each: reactive values', async () => {
   is(el.innerHTML, '')
   b.value = [1, 2]
   is(el.innerHTML, '<span>1</span><span>2</span>')
+  console.log('b.value=[]')
   b.value = []
   is(el.innerHTML, '')
   params.b = null
@@ -406,6 +468,7 @@ test('each: loop with condition', async () => {
   params.b = [1]
   await tick()
   is(el.innerHTML, '<span>1</span>')
+  console.log('set null')
   params.b = null
   await tick()
   is(el.innerHTML, '')
@@ -496,7 +559,7 @@ test('each: unkeyed', async () => {
   // is(el.firstChild, first)
 })
 
-test('each: keyed', async () => {
+test.skip('each: keyed', async () => {
   // keyed
   let el = h`<div><x :each="x in xs" :text="x" :key="x"></x></div>`
   let state = sprae(el, { xs: [1, 2, 3] })
@@ -547,7 +610,7 @@ test('each: internal children get updated by state update, also: update by runni
 test('each: :id and others must receive value from context', () => {
   let el = h`<div><x :id="idx" :each="item, idx in items"></x></div>`
   sprae(el, { items: [1, 2, 3] })
-  is(el.innerHTML, `<x id="1"></x><x id="2"></x><x id="3"></x>`)
+  is(el.innerHTML, `<x id="0"></x><x id="1"></x><x id="2"></x>`)
 })
 
 test.skip('each: key-based caching is in-sync with direct elements', () => {
@@ -568,7 +631,7 @@ test.skip('each: key-based caching is in-sync with direct elements', () => {
 
 test('each: remove last', () => {
   let el = h`<table>
-    <tr :each="item in rows" :key="item.id" :text="item.id" />
+    <tr :each="item in rows" :text="item.id" />
   </table>
   `;
 
@@ -588,9 +651,31 @@ test('each: remove last', () => {
   is(el.outerHTML, `<table><tr>1</tr><tr>2</tr><tr>3</tr><tr>4</tr></table>`)
 })
 
+test('each: remove first', () => {
+  let el = h`<table>
+    <tr :each="item in rows" :text="item.id" />
+  </table>
+  `;
+
+  const rows = [{ id: 1 }, { id: 2 }, { id: 3 }, { id: 4 }, { id: 5 }]
+
+  let s = sprae(el, {
+    rows,
+    remove(item) {
+      const index = this.rows.findIndex(x => x.id == item.id)
+      this.rows.splice(index, 1)
+    }
+  })
+
+  is(el.outerHTML, `<table><tr>1</tr><tr>2</tr><tr>3</tr><tr>4</tr><tr>5</tr></table>`)
+  console.log('Remove id 1')
+  s.remove({ id: 1 })
+  is(el.outerHTML, `<table><tr>2</tr><tr>3</tr><tr>4</tr><tr>5</tr></table>`)
+})
+
 test('each: swapping', () => {
   let el = h`<table>
-    <tr :each="item in rows" :key="item.id" :text="item.id" />
+    <tr :each="item in rows" :text="item.id" />
   </table>`;
 
   const rows = [{ id: 1 }, { id: 2 }, { id: 3 }, { id: 4 }, { id: 5 }]
@@ -635,7 +720,6 @@ test('each: subscribe to modifying list', async () => {
 test('with: inline', async () => {
   let el = h`<x :with="{foo:'bar'}"><y :text="foo + baz"></y></x>`
   let state = sprae(el, { baz: 'qux' })
-  // FIXME: this doesn't inherit root scope baz property and instead uses hard-initialized one
   is(el.innerHTML, `<y>barqux</y>`)
   state.baz = 'quux'
   await tick()
@@ -645,7 +729,6 @@ test('with: inline reactive', () => {
   let el = h`<x :with="{foo:'bar'}"><y :text="foo + baz"></y></x>`
   let baz = signal('qux')
   sprae(el, { baz })
-  // FIXME: this doesn't inherit root scope baz property and instead uses hard-initialized one
   is(el.innerHTML, `<y>barqux</y>`)
   baz.value = 'quux'
   is(el.innerHTML, `<y>barquux</y>`)

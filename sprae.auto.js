@@ -45,6 +45,20 @@
     }
   }
   var o = void 0;
+  var h = 0;
+  function s(i2) {
+    if (h > 0)
+      return i2();
+    var t2 = o;
+    o = void 0;
+    h++;
+    try {
+      return i2();
+    } finally {
+      h--;
+      o = t2;
+    }
+  }
   var f = void 0;
   var v = 0;
   var e = 0;
@@ -381,6 +395,8 @@
   }
 
   // src/state.signals-proxy.js
+  var _dispose = Symbol.dispose ||= Symbol("dispose");
+  var _signals = Symbol("signals");
   var sandbox = {
     Array,
     Object,
@@ -407,47 +423,80 @@
     requestAnimationFrame
   };
   var isObject = (v2) => v2?.constructor === Object;
-  var memo = /* @__PURE__ */ new WeakMap();
   var lastProp;
   function createState(values, parent) {
     if (!isObject(values) && !Array.isArray(values))
       return values;
-    if (memo.has(values) && !parent)
+    if (values[_signals] && !parent)
       return values;
-    const _len = Array.isArray(values) && a(values.length), signals = parent ? Object.create(memo.get(parent = createState(parent))) : Array.isArray(values) ? [] : {}, state = new Proxy(signals, {
+    const initSignals = values[_signals];
+    const _len = Array.isArray(values) && a((initSignals || values).length), signals = parent ? Object.create((parent = createState(parent))[_signals]) : Array.isArray(values) ? [] : {}, proto = signals.constructor.prototype;
+    const state = new Proxy(values, {
       has() {
         return true;
       },
-      get(signals2, key) {
-        if (typeof key === "symbol")
-          return values[key];
+      get(values2, key) {
         if (_len)
           if (key === "length")
-            return Array.prototype[lastProp] ? _len.peek() : _len.value;
+            return proto[lastProp] ? _len.peek() : _len.value;
           else
             lastProp = key;
-        return (signals2[key] || initSignal(key))?.valueOf();
+        if (proto[key])
+          return proto[key];
+        if (key === _signals)
+          return signals;
+        const s2 = signals[key] || initSignal(key);
+        if (s2)
+          return s2.value;
+        if (parent)
+          return parent[key];
+        if (sandbox.hasOwnProperty(key))
+          return sandbox[key];
       },
-      set(signals2, key, v2) {
-        if (typeof key === "symbol")
-          values[key] = v2;
-        else if (_len && key === "length")
-          _len.value = signals2.length = v2;
-        else {
-          const s = signals2[key] || initSignal(key);
-          if (!s)
-            signals2[key] = a(createState(v2?.valueOf()));
-          else if (s._set)
-            s._set(v2);
-          else
-            s.value = createState(v2?.valueOf());
+      set(values2, key, v2) {
+        if (_len) {
+          if (key === "length") {
+            n(() => {
+              for (let i2 = v2, l2 = signals.length; i2 < l2; i2++)
+                delete state[i2];
+              for (let i2 = signals.length; i2 < v2; i2++)
+                state[i2] = null;
+              _len.value = signals.length = values2.length = v2;
+            });
+            return true;
+          }
         }
+        const s2 = signals[key] || initSignal(key, v2) || a();
+        const cur = s2.peek();
+        if (v2 === cur)
+          ;
+        else if (s2._set)
+          s2._set(v2);
+        else if (Array.isArray(v2) && Array.isArray(cur)) {
+          s(() => n(() => {
+            let i2 = 0, l2 = v2.length;
+            for (; i2 < l2; i2++)
+              cur[i2] = values2[key][i2] = v2[i2];
+            cur.length = l2;
+            s2.value = null, s2.value = cur;
+          }));
+        } else {
+          if (Array.isArray(cur))
+            cur.length = 0;
+          s2.value = createState(values2[key] = v2);
+        }
+        if (_len && key >= _len.peek())
+          _len.value = signals.length = values2.length = Number(key) + 1;
+        return true;
+      },
+      deleteProperty(values2, key) {
+        if (key in signals)
+          signals[key]._del?.(), delete signals[key], delete values2[key];
         return true;
       }
     });
-    let initSignals = memo.get(values);
     for (let key in values)
-      values[key], signals[key] = initSignals?.[key];
+      values[key], signals[key] = initSignals?.[key] ?? null;
     function initSignal(key) {
       if (values.hasOwnProperty(key)) {
         const desc = Object.getOwnPropertyDescriptor(values, key);
@@ -457,105 +506,17 @@
         }
         return signals[key] = desc.value?.peek ? desc.value : a(createState(desc.value));
       }
-      if (parent)
-        return parent[key];
-      if (sandbox.hasOwnProperty(key))
-        return sandbox[key];
     }
-    memo.set(state, signals);
     return state;
-  }
-
-  // src/domdiff.js
-  function domdiff_default(parent, a2, b2, before) {
-    const aIdx = /* @__PURE__ */ new Map();
-    const bIdx = /* @__PURE__ */ new Map();
-    let i2;
-    let j;
-    for (i2 = 0; i2 < b2.length; i2++) {
-      bIdx.set(b2[i2], i2);
-    }
-    for (i2 = 0; i2 < a2.length; i2++) {
-      aIdx.set(a2[i2], i2);
-      if (!bIdx.has(a2[i2]))
-        a2[i2][Symbol.dispose]?.();
-    }
-    for (i2 = j = 0; i2 !== a2.length || j !== b2.length; ) {
-      var aElm = a2[i2], bElm = b2[j];
-      if (aElm === null) {
-        i2++;
-      } else if (b2.length <= j) {
-        parent.removeChild(a2[i2]);
-        i2++;
-      } else if (a2.length <= i2) {
-        parent.insertBefore(bElm, a2[i2] || before);
-        j++;
-      } else if (aElm === bElm) {
-        i2++;
-        j++;
-      } else {
-        var curElmInNew = bIdx.get(aElm);
-        var wantedElmInOld = aIdx.get(bElm);
-        if (curElmInNew === void 0) {
-          parent.removeChild(a2[i2]);
-          i2++;
-        } else if (wantedElmInOld === void 0) {
-          parent.insertBefore(
-            bElm,
-            a2[i2] || before
-          );
-          j++;
-        } else {
-          parent.insertBefore(
-            a2[wantedElmInOld],
-            a2[i2] || before
-          );
-          a2[wantedElmInOld] = null;
-          if (wantedElmInOld > i2 + 1)
-            i2++;
-          j++;
-        }
-      }
-    }
-    return b2;
   }
 
   // src/util.js
   var queueMicrotask = Promise.prototype.then.bind(Promise.resolve());
-  var refs = /* @__PURE__ */ new WeakMap();
-  var set = (value) => {
-    const ref = new WeakRef(value);
-    refs.set(value, ref);
-    return ref;
-  };
-  var get = (value) => refs.get(value) || set(value);
-  var WeakishMap = class extends Map {
-    #registry = new FinalizationRegistry((key) => super.delete(key));
-    get size() {
-      return [...this].length;
-    }
-    constructor(entries = []) {
-      super();
-      for (const [key, value] of entries)
-        this.set(key, value);
-    }
-    get(key) {
-      return super.get(key)?.deref();
-    }
-    set(key, value) {
-      let ref = super.get(key);
-      if (ref)
-        this.#registry.unregister(ref);
-      ref = get(value);
-      this.#registry.register(value, key, ref);
-      return super.set(key, ref);
-    }
-  };
 
   // src/directives.js
   var primary = {};
   var secondary = {};
-  primary["if"] = (el, expr) => {
+  primary["if"] = (el, expr, state) => {
     let holder = document.createTextNode(""), clauses = [parseExpr(el, expr, ":if")], els = [el], cur = el;
     while (cur = el.nextElementSibling) {
       if (cur.hasAttribute(":else")) {
@@ -573,70 +534,92 @@
         break;
     }
     el.replaceWith(cur = holder);
-    return (state) => {
+    const dispose = O(() => {
       let i2 = clauses.findIndex((f2) => f2(state));
       if (els[i2] != cur) {
         ;
         (cur[_each] || cur).replaceWith(cur = els[i2] || holder);
         sprae(cur, state);
       }
+    });
+    return () => {
+      for (const el2 of els)
+        el2[_dispose]?.();
+      dispose();
     };
   };
   var _each = Symbol(":each");
-  primary["each"] = (tpl, expr) => {
+  primary["each"] = (tpl, expr, state) => {
     let each = parseForExpression(expr);
     if (!each)
       return exprError(new Error(), tpl, expr, ":each");
+    const [itemVar, idxVar, itemsExpr] = each;
     const holder = tpl[_each] = document.createTextNode("");
     tpl.replaceWith(holder);
-    const evaluate = parseExpr(tpl, each[2], ":each");
-    const keyExpr = tpl.getAttribute(":key");
-    const itemKey = keyExpr ? parseExpr(null, keyExpr, ":each") : null;
-    tpl.removeAttribute(":key");
-    const refExpr = tpl.getAttribute(":ref");
-    const scopes = new WeakishMap();
-    const itemEls = new WeakishMap();
-    let curEls = [];
-    return (state) => {
-      let list = evaluate(state);
-      if (!list)
-        list = [];
-      else if (typeof list === "number")
-        list = Array.from({ length: list }, (_2, i2) => [i2 + 1, i2]);
-      else if (Array.isArray(list))
-        list = list.map((item, i2) => [i2 + 1, item]);
-      else if (typeof list === "object")
-        list = Object.entries(list);
-      else
-        exprError(Error("Bad list value"), tpl, expr, ":each", list);
-      let newEls = [], elScopes = [];
-      for (let [idx, item] of list) {
-        let el, scope, key = itemKey?.({ [each[0]]: item, [each[1]]: idx });
-        if (key == null)
-          el = tpl.cloneNode(true);
-        else
-          (el = itemEls.get(key)) || itemEls.set(key, el = tpl.cloneNode(true));
-        newEls.push(el);
-        if (key == null || !(scope = scopes.get(key))) {
-          scope = createState({ [each[0]]: item, [refExpr || ""]: null, [each[1]]: idx }, state);
-          if (key != null)
-            scopes.set(key, scope);
-        } else
-          scope[each[0]] = item;
-        elScopes.push(scope);
+    const evaluate = parseExpr(tpl, itemsExpr, ":each");
+    let items, prevl = 0, keys2;
+    O(() => {
+      let newItems = evaluate(state);
+      if (!newItems)
+        newItems = [];
+      else if (typeof newItems === "number") {
+        newItems = Array.from({ length: newItems }, (_2, i2) => i2);
+      } else if (Array.isArray(newItems))
+        ;
+      else if (typeof newItems === "object") {
+        keys2 = Object.keys(newItems);
+        newItems = Object.values(newItems);
+      } else {
+        exprError(Error("Bad items value"), tpl, expr, ":each", newItems);
       }
-      domdiff_default(holder.parentNode, curEls, newEls, holder);
-      curEls = newEls;
-      for (let i2 = 0; i2 < newEls.length; i2++) {
-        newEls[i2][Symbol.dispose] = sprae(newEls[i2], elScopes[i2])[Symbol.dispose];
-      }
-    };
+      s(() => n(() => {
+        if (!items?.[_signals][0]?.peek) {
+          for (let i2 = 0, signals = items?.[_signals]; i2 < prevl; i2++)
+            signals[i2]?._del();
+          items = newItems, items[_signals] ||= {};
+        } else {
+          let newl = newItems.length, i2 = 0;
+          for (; i2 < newl; i2++)
+            items[i2] = newItems[i2];
+          items.length = newl;
+        }
+      }));
+      return O(() => {
+        let newl = newItems.length;
+        if (prevl !== newl)
+          s(() => n(() => {
+            const signals = items[_signals];
+            for (let i2 = prevl; i2 < newl; i2++) {
+              items[i2];
+              const el = tpl.cloneNode(true), scope = createState({
+                [itemVar]: signals[i2] ?? items[i2],
+                [idxVar]: keys2?.[i2] ?? i2
+              }, state);
+              holder.before(el);
+              sprae(el, scope);
+              const { _del } = signals[i2] ||= {};
+              signals[i2]._del = () => {
+                delete signals[i2];
+                _del?.();
+                el[_dispose](), el.remove(), delete items[i2];
+              };
+            }
+            prevl = newl;
+          }));
+      });
+    });
+    return () => n(() => {
+      for (let _i of items[_signals])
+        _i?._del();
+      items.length = 0;
+    });
   };
   primary["with"] = (el, expr, rootState) => {
     let evaluate = parseExpr(el, expr, ":with");
     const localState = evaluate(rootState);
     let state = createState(localState, rootState);
     sprae(el, state);
+    return el[_dispose];
   };
   primary["ref"] = (el, expr, state) => {
     state[expr] = el;
@@ -666,18 +649,17 @@
     let content = tpl.content.cloneNode(true);
     el.replaceChildren(content);
     sprae(el, state);
+    return el[_dispose];
   };
-  secondary["id"] = (el, expr) => {
+  secondary["id"] = (el, expr, state) => {
     let evaluate = parseExpr(el, expr, ":id");
     const update = (v2) => el.id = v2 || v2 === 0 ? v2 : "";
-    return (state) => {
-      update(evaluate(state));
-    };
+    return O(() => update(evaluate(state)));
   };
-  secondary["class"] = (el, expr) => {
+  secondary["class"] = (el, expr, state) => {
     let evaluate = parseExpr(el, expr, ":class");
     let initClassName = el.getAttribute("class");
-    return (state) => {
+    return O(() => {
       let v2 = evaluate(state);
       let className = [initClassName];
       if (v2) {
@@ -692,41 +674,44 @@
         el.setAttribute("class", className);
       else
         el.removeAttribute("class");
-    };
+    });
   };
-  secondary["style"] = (el, expr) => {
+  secondary["style"] = (el, expr, state) => {
     let evaluate = parseExpr(el, expr, ":style");
     let initStyle = el.getAttribute("style") || "";
     if (!initStyle.endsWith(";"))
       initStyle += "; ";
-    return (state) => {
+    return O(() => {
       let v2 = evaluate(state);
       if (typeof v2 === "string")
         el.setAttribute("style", initStyle + v2);
       else {
-        el.setAttribute("style", initStyle);
-        for (let k in v2)
-          el.style.setProperty(k, v2[k]);
+        s(() => {
+          el.setAttribute("style", initStyle);
+          for (let k in v2)
+            if (typeof v2[k] !== "symbol")
+              el.style.setProperty(k, v2[k]);
+        });
       }
-    };
+    });
   };
-  secondary["text"] = (el, expr) => {
+  secondary["text"] = (el, expr, state) => {
     let evaluate = parseExpr(el, expr, ":text");
-    return (state) => {
+    return O(() => {
       let value = evaluate(state);
       el.textContent = value == null ? "" : value;
-    };
+    });
   };
-  secondary[""] = (el, expr) => {
+  secondary[""] = (el, expr, state) => {
     let evaluate = parseExpr(el, expr, ":");
     if (evaluate)
-      return (state) => {
+      return O(() => {
         let value = evaluate(state);
         for (let key in value)
           attr(el, dashcase(key), value[key]);
-      };
+      });
   };
-  secondary["value"] = (el, expr) => {
+  secondary["value"] = (el, expr, state) => {
     let evaluate = parseExpr(el, expr, ":value");
     let from, to;
     let update = el.type === "text" || el.type === "" ? (value) => el.setAttribute("value", el.value = value == null ? "" : value) : el.tagName === "TEXTAREA" || el.type === "text" || el.type === "" ? (value) => (from = el.selectionStart, to = el.selectionEnd, el.setAttribute("value", el.value = value == null ? "" : value), from && el.setSelectionRange(from, to)) : el.type === "checkbox" ? (value) => (el.value = value ? "on" : "", attr(el, "checked", value)) : el.type === "select-one" ? (value) => {
@@ -735,24 +720,28 @@
       el.value = value;
       el.selectedOptions[0]?.setAttribute("selected", "");
     } : (value) => el.value = value;
-    return (state) => {
+    return O(() => {
       update(evaluate(state));
-    };
+    });
   };
   var directives_default = (el, expr, state, name) => {
     let evt = name.startsWith("on") && name.slice(2);
     let evaluate = parseExpr(el, expr, ":" + name);
     if (!evaluate)
       return;
-    if (evt)
-      return (state2) => {
-        let value = evaluate(state2) || (() => {
-        });
-        return on(el, evt, value);
-      };
-    return (state2) => {
-      attr(el, name, evaluate(state2));
-    };
+    if (evt) {
+      let off, dispose = O(() => {
+        if (off)
+          off(), off = null;
+        let value = evaluate(state);
+        if (value)
+          off = on(el, evt, value);
+      });
+      return () => (off?.(), dispose());
+    }
+    return O(() => {
+      attr(el, name, evaluate(state));
+    });
   };
   var on = (el, e2, fn) => {
     if (!fn)
@@ -876,7 +865,7 @@
     let evaluate = evaluatorMemo[expression];
     if (!evaluate) {
       try {
-        evaluate = evaluatorMemo[expression] = new Function(`__scope`, `with (__scope) { return ${expression.trim()} };`);
+        evaluate = evaluatorMemo[expression] = new Function(`__scope`, `with (__scope) { let __; return ${expression.trim()} };`);
       } catch (e2) {
         return exprError(e2, el, expression, dir);
       }
@@ -907,24 +896,23 @@ ${directive}=${expression ? `"${expression}"
   }
 
   // src/core.js
-  Symbol.dispose ||= Symbol("dispose");
   sprae.globals = sandbox;
-  var memo2 = /* @__PURE__ */ new WeakMap();
+  var memo = /* @__PURE__ */ new WeakMap();
   function sprae(container, values) {
     if (!container.children)
       return;
-    if (memo2.has(container))
-      return n(() => Object.assign(memo2.get(container), values));
+    if (memo.has(container))
+      return n(() => Object.assign(memo.get(container), values));
     const state = createState(values || {});
-    const updates = [], disposes = [];
+    const disposes = [];
     const init = (el, parent = el.parentNode) => {
       for (let name in primary) {
         let attrName = ":" + name;
         if (el.hasAttribute?.(attrName)) {
           let expr = el.getAttribute(attrName);
           el.removeAttribute(attrName);
-          updates.push(primary[name](el, expr, state, name));
-          if (memo2.has(el))
+          disposes.push(primary[name](el, expr, state, name));
+          if (memo.has(el))
             return;
           if (el.parentNode !== parent)
             return false;
@@ -940,7 +928,7 @@ ${directive}=${expression ? `"${expression}"
               if (prefix === "@")
                 name = `on` + name;
               let dir = secondary[name] || directives_default;
-              updates.push(dir(el, expr, state, name));
+              disposes.push(dir(el, expr, state, name));
             }
           } else
             i2++;
@@ -952,20 +940,17 @@ ${directive}=${expression ? `"${expression}"
       }
     };
     init(container);
-    for (let update of updates)
-      if (update) {
-        const idx = disposes.length;
-        disposes.push(null, O(() => {
-          disposes[idx]?.();
-          disposes[idx] = update(state);
-        }));
-      }
-    memo2.set(container, state);
-    state[Symbol.dispose] = () => {
-      while (disposes.length)
-        disposes.shift()?.();
-      memo2.delete(container);
-    };
+    if (memo.has(container))
+      return state;
+    memo.set(container, state);
+    if (disposes.length)
+      Object.defineProperty(container, _dispose, {
+        value: () => {
+          while (disposes.length)
+            disposes.shift()?.();
+          memo.delete(container);
+        }
+      });
     return state;
   }
 

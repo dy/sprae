@@ -386,7 +386,7 @@
 + fastest
 - ignores array mutations, unless explicitly called
 
-0.a Drop exposing single-property store in favor of batch-update
+0.a Abandon returning single-property store, in favor of batch-update
 + Simpler API
 + Very precise diff-update
 + No need for batch method
@@ -404,7 +404,7 @@
 - no comfy js at hand
 - doesn't detect dynamic subs like `calc().length`
 
-## [ ] Store: strategies -> 3. seems the most balanced for now
+## [x] Store: strategies -> 3. seems the most balanced for now
 
 1. Signals struct
   + fastest
@@ -412,7 +412,6 @@
   + seals object
   + no circular update trouble
   - doesn't handle arrays
-
 
 2. Proxy
   + any-prop access, including not-existing
@@ -426,6 +425,7 @@
   - some mess with proto access
     ~ must be improved
   - no circular update detection
+  + allows detecting precisely what array ops were performed, to apply corresponding DOM updates
 
 3. Signals proxy
   + medium performance
@@ -435,9 +435,25 @@
   - heavy-ish
   - not own tech
     + hi-quality though
-  - doesn't solve recursive .length
+  - doesn't solve recursive .length out of the box
+    ~ alleviated by tracking
+  - store looks ugly, some proxies over signals objects
 
 4. Subscript-based something
+
+## [ ] :each over/undersubscription
+
+* we must subscribe to each item from the list - it should update itself only, not the whole list. How?
+
+1. Async reconciliation part - it plans list rerendering (loop part) in the next tick, and this tick may have as many item changes as needed
+
+2. Individual effects per-item `fx(() => {updateItem(list[idx])})`
+  * Can be created in advance, and list updates only cause effects changes
+
+3. Nested effects: parent effects don't get subscribed in internal effects, so we just modify :each to create multiple internal effects per-item.
+  + we might not need swapdom, since nodes manage themselves
+  * note the untracked function
+
 
 ## [x] :onclick="direct code" ? -> no: immediately invoked.
 
