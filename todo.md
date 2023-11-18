@@ -53,12 +53,12 @@
 * [x] ~~`:with="{likes:[], like(){ /* likes should not be undefined here */ }}"`~~ nah, it's fine
 * [x] Reduce memory leak - via jsbenchmark example
   * [x] make disposers
-  * [ ] make sure internals are disposed as well
-* [ ] frameworks benchmark -> contrib to krausest
+  * [x] make sure internals are disposed as well
+* [x] frameworks benchmark -> contrib to krausest
 * [x] fix swapping rows error
 * [x] make use of actual swapdom
 * [x] fix removing last row issue
-* [ ] optimization:
+* [x] optimization:
   * [x] faster create rows
   * [x] faster replace all rows
   * [x] fix remove row perf issue
