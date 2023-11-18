@@ -59,7 +59,6 @@ primary['each'] = (tpl, expr, state) => {
   const [itemVar, idxVar, itemsExpr] = each;
 
   // we need :if to be able to replace holder instead of tpl for :if :each case
-  // FIXME: I don't think _each is relevant anymore - :if seems to come first also it's sync
   const holder = tpl[_each] = document.createTextNode('')
   tpl.replaceWith(holder)
 
@@ -122,7 +121,10 @@ primary['each'] = (tpl, expr, state) => {
     (items.$[i] ||= {})._delete = () => { delete items.$[i]; _delete?.(); el[_dispose](), el.remove(), delete items[i] }
   }
 
-  return () => items.length = 0
+  return () => {
+    for (let _i of items.$) _i?._delete()
+    items.length = 0
+  }
 }
 
 // `:each` can redefine scope as `:each="a in {myScope}"`,
@@ -163,7 +165,6 @@ function parseForExpression(expression) {
     items
   ]
 
-  // FIXME: it can possibly return index as second param
   return [item, '', items]
 }
 
