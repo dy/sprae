@@ -87,7 +87,7 @@ Multiply element.
 <!-- Cases -->
 <li :each="item, idx in list" />
 <li :each="val, key in obj" />
-<li :each="idx0, idx in number" />
+<li :each="idx in number" />
 
 <!-- Loop by condition -->
 <li :if="items" :each="item in items" :text="item" />
@@ -113,8 +113,8 @@ Set class value from either a string, array or object.
 <!-- extends existing class as "foo bar" -->
 <div class="foo" :class="`bar`"></div>
 
-<!-- object with values -->
-<div :class="{foo:true, bar: false}"></div>
+<!-- clsx: object / list -->
+<div :class="[foo && 'foo', {bar: bar}]"></div>
 ```
 
 #### `:style="value"`
