@@ -89,6 +89,7 @@ t('state: array', async () => {
   await tick()
   is(mult, 12)
 
+  console.log('s.w = null')
   // nullifying is fine
   s.w = null
   await tick()

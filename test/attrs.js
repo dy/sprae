@@ -676,7 +676,6 @@ test('each: remove first', () => {
 })
 
 test('each: swapping', () => {
-
   let el = h`<table>
     <tr :each="item in rows" :text="item.id" />
   </table>`;

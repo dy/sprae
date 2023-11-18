@@ -1,4 +1,4 @@
-import createState, { batch, sandbox, _dispose, memo as stateMemo } from './state.signals-proxy.js';
+import createState, { batch, sandbox, _dispose } from './state.signals-proxy.js';
 import defaultDirective, { primary, secondary } from './directives.js';
 
 

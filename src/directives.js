@@ -1,6 +1,6 @@
 // directives & parsing
 import sprae from './core.js'
-import createState, { effect, computed, memo, untracked, _dispose, _delete } from './state.signals-proxy.js'
+import createState, { effect, computed, untracked, _dispose } from './state.signals-proxy.js'
 import { queueMicrotask, WeakishMap } from './util.js'
 
 // reserved directives - order matters!
@@ -65,45 +65,46 @@ primary['each'] = (tpl, expr, state) => {
 
   const evaluate = parseExpr(tpl, itemsExpr, ':each');
 
-  // const keyExpr = tpl.getAttribute(':key');
-  // const itemKey = keyExpr ? parseExpr(null, keyExpr, ':each') : ()=>{};
-  // tpl.removeAttribute(':key')
-
   // we re-create items any time new items are produced
-  let items, prevl
+  let items, prevl, keys
   effect(() => {
-    console.log("CHANGE")
     let newItems = evaluate(state)
 
+    // convert items to array
     if (!newItems) newItems = []
     else if (typeof newItems === 'number') {
       newItems = Array.from({ length: newItems }, (_, i) => i)
     }
     else if (Array.isArray(newItems));
     else if (typeof newItems === 'object') {
-      throw 'Unimplemented: object iteration'
+      keys = Object.keys(newItems);
+      newItems = Object.values(newItems);
     }
     else {
       exprError(Error('Bad items value'), tpl, expr, ':each', newItems)
     }
 
+    // provide state-compatible stash
+    newItems.$ ||= {}
+
+    // init items
     if (!items) untracked(() => {
       items = newItems, prevl = items.length
-      for (let i = 0, l = items.length; i < l; i++) initChild(i)
+      for (let i = 0; i < prevl; i++) initChild(i)
     })
     else untracked(() => {
-      // dispose tail (done internally in state)
-      // FIXME: what if new items are state-array
       let newl = newItems?.length || 0, i = 0
       // patch existing items and insert new items - init happens in length effect
       for (; i < newl; i++) items[i] = newItems[i]
-      items.length = newl
+      items.length = newl // dispose tail (done internally in state)
     })
 
     // length change effect
     return effect(() => {
       const newl = newItems?.length || 0
       if (prevl !== newl) untracked(() => {
+        // manual dispose for plain arrays (not states)
+        if (!items.$[0]?.peek) for (let i = 0; i < prevl; i++) items.$[i]?._delete()
         for (let i = prevl; i < newl; i++) initChild(i) // init new items
         prevl = newl
       })
@@ -111,14 +112,14 @@ primary['each'] = (tpl, expr, state) => {
   })
 
   function initChild(i) {
-    const el = tpl.cloneNode(true), scope = createState({ [itemVar]: items[i], [idxVar]: i }, state)
+    items[i]; // touch item to create signal
+    const el = tpl.cloneNode(true), scope = createState({
+      [itemVar]: items.$[i] ?? items[i], [idxVar]: keys?.[i] ?? i
+    }, state)
     holder.before(el)
     sprae(el, scope)
-    const uneffect = effect(() => {
-      // NOTE: we can't just take over the signal from parent as [itemVar], because parent can be deleted
-      if (items[i] === _delete) uneffect(), el[_dispose](), el.remove(), delete items[i]
-      else scope[itemVar] = items[i]
-    })
+    const _delete = items.$[i]?._delete;
+    (items.$[i] ||= {})._delete = () => { delete items.$[i]; _delete?.(); el[_dispose](), el.remove(), delete items[i] }
   }
 
   return () => items.length = 0
