@@ -311,7 +311,6 @@ test('if: + :with doesnt prevent secondary effects from happening', async () => 
 })
 
 test('each: array full', async () => {
-  // FIXME: in some conspicuous reason jsdom fails to update text nodes somehow
   let el = h`<p>
     <span :each="a in b" :text="a"></span>
   </p>`
@@ -392,7 +391,6 @@ test('each: array shift, pop', async () => {
 })
 
 test('each: object', async () => {
-  // FIXME: in some conspicuous reason jsdom fails to update text nodes somehow
   let el = h`<p>
     <span :each="x,key in b" :text="[key,x]"></span>
   </p>`
@@ -722,7 +720,6 @@ test('each: subscribe to modifying list', async () => {
 test('with: inline', async () => {
   let el = h`<x :with="{foo:'bar'}"><y :text="foo + baz"></y></x>`
   let state = sprae(el, { baz: 'qux' })
-  // FIXME: this doesn't inherit root scope baz property and instead uses hard-initialized one
   is(el.innerHTML, `<y>barqux</y>`)
   state.baz = 'quux'
   await tick()
@@ -732,7 +729,6 @@ test('with: inline reactive', () => {
   let el = h`<x :with="{foo:'bar'}"><y :text="foo + baz"></y></x>`
   let baz = signal('qux')
   sprae(el, { baz })
-  // FIXME: this doesn't inherit root scope baz property and instead uses hard-initialized one
   is(el.innerHTML, `<y>barqux</y>`)
   baz.value = 'quux'
   is(el.innerHTML, `<y>barquux</y>`)

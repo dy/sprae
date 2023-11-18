@@ -231,6 +231,18 @@ t('state: inheritance: lazy init', async () => {
   is(x.foo, 'qux')
 })
 
+t('state: inheritance subscribes to parent getter', async () => {
+  let s = state({ x: 1 })
+  let s1 = state({}, s)
+  let log = []
+  fx(() => log.push(s1.z))
+  is(log, [undefined])
+  s1.z = 1
+  fx(() => log.push(s1.z))
+  s1.z = 2
+  is(log, [undefined, 1, 2])
+})
+
 t('state: sandbox', async () => {
   let s = state({ x: 1 })
   is(s.window, window)
@@ -324,7 +336,6 @@ t('state: from array state', async () => {
   let a = state([1])
   fx(() => a.push(a.push(1)))
 })
-
 
 t('state: detect circular?', async () => {
   let a = state([])

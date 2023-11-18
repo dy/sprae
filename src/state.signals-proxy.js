@@ -53,8 +53,16 @@ export default function createState(values, parent) {
         else lastProp = key;
       if (proto[key]) return proto[key]
       if (key === '$') return signals
-      const s = signals[key] || initSignal(key)
-      return s?.valueOf()
+      let s = signals[key] || initSignal(key)
+      if (!s) {
+        // touch parent
+        if (parent) return parent[key];
+        // Array, window etc
+        if (sandbox.hasOwnProperty(key)) return sandbox[key]
+        // new unknown property - ignore subscription until created
+        if (!s) return
+      }
+      return s.value;
     },
     set(values, key, v) {
       if (_len) {
@@ -71,42 +79,34 @@ export default function createState(values, parent) {
       if (key === '$') return false
 
       // console.log('set', key, v)
-      const s = signals[key] || initSignal(key)
-      // new unknown property
-      // FIXME: why do we need this? It must be created by initSignal, no?
-      if (!s) signals[key] = signal(isPrimitive(v) ? v : createState(v))
+      let s = signals[key] || initSignal(key, v)
+
+      if (!s) {
+        // Array, window etc - ignore rewriting
+        if (sandbox.hasOwnProperty(key)) return false
+        // create new unknown property
+        s = signal()
+      }
+
+      const cur = s.peek()
       // skip unchanged (although can be handled by last condition - we skip a few checks this way)
+      if (v === cur);
+      // stashed _set for values with getter/setter
+      else if (s._set) s._set(v)
+      // patch array
+      else if (Array.isArray(v) && Array.isArray(cur)) {
+        untracked(() => {
+          let i = 0, l = v.length;
+          for (; i < l; i++) cur[i] = values[key][i] = v[i]
+          cur.length = l // forces deleting tail signals
+          batch(() => (s.value = null, s.value = cur)) // bump effects
+        })
+      }
+      // .x = y
       else {
-        const cur = s.peek()
-        if (v === cur);
-        // stashed _set for values with getter/setter
-        else if (s._set) s._set(v)
-        // patch array
-        else if (Array.isArray(v) && Array.isArray(cur)) {
-          untracked(() => {
-            let i = 0, l = v.length;
-            for (; i < l; i++) cur[i] = values[key][i] = v[i]
-            cur.length = l // forces deleting tail signals
-            batch(() => (s.value = null, s.value = cur)) // bump effects
-          })
-        }
-        // patch object
-        // NOTE: we don't patch object
-        // else if (isObject(v) && isObject(cur)) {
-        //   untracked(() => {
-        //     // FIXME: it's possible to run batch here instead of rerendering every other item
-        //     for (let p in cur) if (!v.hasOwnProperty(p)) delete cur[p] // delete removed signals
-        //     for (let p in v) cur[p] = values[key][p] = v[p] // patch existing items
-        //     batch(() => (s.value = null, s.value = cur)) // make sure state is bumped (clone)
-        //   })
-        // }
-        // .x = y
-        else {
-          // reflect change in values
-          // FIXME: likely we need to change parent here
-          if (Array.isArray(cur)) cur.length = 0 // cleanup array subs
-          s.value = createState(values[key] = v)
-        }
+        // reflect change in values
+        if (Array.isArray(cur)) cur.length = 0 // cleanup array subs
+        s.value = createState(values[key] = v)
       }
 
       // force changing length, if eg. a=[]; a[1]=1 - need to come after setting the item
@@ -124,7 +124,6 @@ export default function createState(values, parent) {
   for (let key in values) values[key], signals[key] = initSignals?.[key] ?? null;
 
   // initialize signal for provided key
-  // FIXME: chances are there's redundant checks
   function initSignal(key) {
     // init existing value
     if (values.hasOwnProperty(key)) {
@@ -139,13 +138,6 @@ export default function createState(values, parent) {
       // take over existing signal or create new signal
       return signals[key] = desc.value?.peek ? desc.value : signal(createState(desc.value))
     }
-
-    // touch parent
-    // FIXME: something fishy's going on here - we don't return signal
-    if (parent) return parent[key]
-
-    // Array, window etc
-    if (sandbox.hasOwnProperty(key)) return sandbox[key]
   }
 
   // console.groupEnd()
