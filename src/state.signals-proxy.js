@@ -63,30 +63,32 @@ export default function createState(values, parent) {
       if (_len) {
         // .length
         if (key === 'length') {
-          // force cleaning up tail
-          for (let i = v, l = signals.length; i < l; i++) delete state[i]
-          // force init new signals
-          for (let i = signals.length; i < v; i++) state[i] = null
-          _len.value = signals.length = values.length = v;
+          batch(() => {
+            // force cleaning up tail
+            for (let i = v, l = signals.length; i < l; i++) delete state[i]
+            // force init new signals
+            for (let i = signals.length; i < v; i++) state[i] = null
+            _len.value = signals.length = values.length = v;
+          })
           return true
         }
       }
 
       const s = signals[key] || initSignal(key, v) || signal()
-
       const cur = s.peek()
+
       // skip unchanged (although can be handled by last condition - we skip a few checks this way)
       if (v === cur);
       // stashed _set for values with getter/setter
       else if (s._set) s._set(v)
       // patch array
       else if (Array.isArray(v) && Array.isArray(cur)) {
-        untracked(() => {
+        untracked(() => batch(() => {
           let i = 0, l = v.length;
           for (; i < l; i++) cur[i] = values[key][i] = v[i]
           cur.length = l // forces deleting tail signals
-          batch(() => (s.value = null, s.value = cur)) // bump effects
-        })
+          s.value = null, s.value = cur // bump effects
+        }))
       }
       // .x = y
       else {
@@ -97,6 +99,7 @@ export default function createState(values, parent) {
 
       // force changing length, if eg. a=[]; a[1]=1 - need to come after setting the item
       if (_len && key >= _len.peek()) _len.value = signals.length = values.length = Number(key) + 1
+
       return true
     },
     deleteProperty(values, key) {
