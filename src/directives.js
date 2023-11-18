@@ -1,7 +1,7 @@
 // directives & parsing
 import sprae from './core.js'
 import createState, { effect, computed, untracked, batch, _dispose, _signals } from './state.signals-proxy.js'
-import { queueMicrotask, WeakishMap } from './util.js'
+import { queueMicrotask } from './util.js'
 
 // reserved directives - order matters!
 // primary initialized first by selector, secondary initialized by iterating attributes
@@ -107,9 +107,11 @@ primary['each'] = (tpl, expr, state) => {
         const signals = items[_signals]
         for (let i = prevl; i < newl; i++) {
           items[i]; // touch item to create signal
-          const el = tpl.cloneNode(true), scope = createState({
-            [itemVar]: signals[i] ?? items[i], [idxVar]: keys?.[i] ?? i
-          }, state)
+          const el = tpl.cloneNode(true),
+            scope = createState({
+              [itemVar]: signals[i] ?? items[i],
+              [idxVar]: keys?.[i] ?? i
+            }, state)
           holder.before(el)
           sprae(el, scope)
           const { _del } = (signals[i] ||= {});

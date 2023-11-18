@@ -57,7 +57,7 @@ export default function createState(values, parent) {
       const s = signals[key] || initSignal(key)
       if (s) return s.value // existing property
       if (parent) return parent[key]; // touch parent
-      if (sandbox.hasOwnProperty(key)) return sandbox[key] // Array, window etc
+      return sandbox[key] // Array, window etc
     },
     set(values, key, v) {
       if (_len) {
@@ -66,8 +66,6 @@ export default function createState(values, parent) {
           batch(() => {
             // force cleaning up tail
             for (let i = v, l = signals.length; i < l; i++) delete state[i]
-            // force init new signals
-            for (let i = signals.length; i < v; i++) state[i] = null
             _len.value = signals.length = values.length = v;
           })
           return true
@@ -84,16 +82,14 @@ export default function createState(values, parent) {
       // patch array
       else if (Array.isArray(v) && Array.isArray(cur)) {
         untracked(() => batch(() => {
-          let i = 0, l = v.length;
-          for (; i < l; i++) cur[i] = values[key][i] = v[i]
+          let i = 0, l = v.length, vals = values[key];
+          for (; i < l; i++) cur[i] = vals[i] = v[i]
           cur.length = l // forces deleting tail signals
-          s.value = null, s.value = cur // bump effects
         }))
       }
       // .x = y
       else {
         // reflect change in values
-        if (Array.isArray(cur)) cur.length = 0 // cleanup array subs
         s.value = createState(values[key] = v)
       }
 
@@ -103,7 +99,7 @@ export default function createState(values, parent) {
       return true
     },
     deleteProperty(values, key) {
-      if (key in signals) signals[key]._del?.(), delete signals[key], delete values[key]
+      signals[key]?._del?.(), delete signals[key], delete values[key]
       return true
     }
   })

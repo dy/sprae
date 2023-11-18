@@ -377,7 +377,7 @@
   + allows dynamic subscription to requested fields ( no need for preact/signals neither for signal-struct )
   + we anyways need sandbox even in case of subscript
 
-## [ ] Store: how to organize array.length subscription?
+## [x] Store: how to organize array.length subscription? -> see signals-proxy
 
 * It causes recursion in `:x='array.push(x)'`
 
@@ -441,7 +441,7 @@
 
 4. Subscript-based something
 
-## [ ] :each over/undersubscription
+## [x] :each over/undersubscription -> proxy-signals store solves that
 
 * we must subscribe to each item from the list - it should update itself only, not the whole list. How?
 
@@ -708,3 +708,7 @@
 ## [x] let/const in expressions: allow or prohibit -> let's prohibit, force user to wrap into a function himself
 
   - allowing forces wrapping internally, which creates return statement confustion
+
+## [x] Take over parent signals, rather than inherit?
+
+  - Parent state can dynamically obtain new signal, and nested states won't have access to that
