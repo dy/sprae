@@ -34,7 +34,7 @@ export default function createState(values, parent) {
   // ignore existing state as argument
   if (values.$ && !parent) return values;
   const initSignals = values.$
-  // console.group('createState', values, parent)
+
   // .length signal is stored outside, since cannot be replaced
   const _len = Array.isArray(values) && signal((initSignals || values).length),
     // dict with signals storing values
@@ -46,23 +46,18 @@ export default function createState(values, parent) {
     // sandbox everything
     has() { return true },
     get(values, key) {
-      // console.log('get', key)
       // if .length is read within .push/etc - peek signal (don't subscribe)
       if (_len)
         if (key === 'length') return (proto[lastProp]) ? _len.peek() : _len.value;
         else lastProp = key;
       if (proto[key]) return proto[key]
       if (key === '$') return signals
-      let s = signals[key] || initSignal(key)
+      const s = signals[key] || initSignal(key)
       if (!s) {
-        // touch parent
-        if (parent) return parent[key];
-        // Array, window etc
-        if (sandbox.hasOwnProperty(key)) return sandbox[key]
-        // new unknown property - ignore subscription until created
-        if (!s) return
+        if (parent) return parent[key]; // touch parent
+        if (sandbox.hasOwnProperty(key)) return sandbox[key] // Array, window etc
       }
-      return s.value;
+      return s?.value;
     },
     set(values, key, v) {
       if (_len) {
@@ -78,15 +73,7 @@ export default function createState(values, parent) {
       }
       if (key === '$') return false
 
-      // console.log('set', key, v)
-      let s = signals[key] || initSignal(key, v)
-
-      if (!s) {
-        // Array, window etc - ignore rewriting
-        if (sandbox.hasOwnProperty(key)) return false
-        // create new unknown property
-        s = signal()
-      }
+      const s = signals[key] || initSignal(key, v) || signal()
 
       const cur = s.peek()
       // skip unchanged (although can be handled by last condition - we skip a few checks this way)
@@ -140,6 +127,5 @@ export default function createState(values, parent) {
     }
   }
 
-  // console.groupEnd()
   return state
 }
