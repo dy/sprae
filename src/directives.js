@@ -1,6 +1,6 @@
 // directives & parsing
 import sprae from './core.js'
-import createState, { effect, computed, untracked, _dispose } from './state.signals-proxy.js'
+import createState, { effect, computed, untracked, batch, _dispose, _signals } from './state.signals-proxy.js'
 import { queueMicrotask, WeakishMap } from './util.js'
 
 // reserved directives - order matters!
@@ -65,7 +65,7 @@ primary['each'] = (tpl, expr, state) => {
   const evaluate = parseExpr(tpl, itemsExpr, ':each');
 
   // we re-create items any time new items are produced
-  let items, prevl, keys
+  let items, prevl = 0, keys
   effect(() => {
     let newItems = evaluate(state)
 
@@ -83,48 +83,47 @@ primary['each'] = (tpl, expr, state) => {
       exprError(Error('Bad items value'), tpl, expr, ':each', newItems)
     }
 
-    // provide state-compatible stash
-    newItems.$ ||= {}
-
-    // init items
-    if (!items) untracked(() => {
-      items = newItems, prevl = items.length
-      for (let i = 0; i < prevl; i++) initChild(i)
-    })
-    else untracked(() => {
-      let newl = newItems?.length || 0, i = 0
+    untracked(() => batch(() => {
+      // init items
+      if (!items?.[_signals][0]?.peek) {
+        // manual dispose for plain arrays (not states) - _signals here is just fake holder for destructors
+        for (let i = 0, signals = items?.[_signals]; i < prevl; i++) signals[i]?._del()
+        // NOTE: new items are initialized in length effect below
+        items = newItems, items[_signals] ||= {}
+      }
       // patch existing items and insert new items - init happens in length effect
-      for (; i < newl; i++) items[i] = newItems[i]
-      items.length = newl // dispose tail (done internally in state)
-    })
+      else {
+        let newl = newItems.length, i = 0
+        for (; i < newl; i++) items[i] = newItems[i]
+        items.length = newl // dispose tail (done internally in state)
+      }
+    }))
 
     // length change effect
     return effect(() => {
-      const newl = newItems?.length || 0
-      if (prevl !== newl) untracked(() => {
-        // manual dispose for plain arrays (not states)
-        if (!items.$[0]?.peek) for (let i = 0; i < prevl; i++) items.$[i]?._delete()
-        for (let i = prevl; i < newl; i++) initChild(i) // init new items
+      let newl = newItems.length // indicate that we track it
+      if (prevl !== newl) untracked(() => batch(() => {
+        // init new items
+        const signals = items[_signals]
+        for (let i = prevl; i < newl; i++) {
+          items[i]; // touch item to create signal
+          const el = tpl.cloneNode(true), scope = createState({
+            [itemVar]: signals[i] ?? items[i], [idxVar]: keys?.[i] ?? i
+          }, state)
+          holder.before(el)
+          sprae(el, scope)
+          const { _del } = (signals[i] ||= {});
+          signals[i]._del = () => { delete signals[i]; _del?.(); el[_dispose](), el.remove(), delete items[i] }
+        }
         prevl = newl
-      })
+      }))
     })
   })
 
-  function initChild(i) {
-    items[i]; // touch item to create signal
-    const el = tpl.cloneNode(true), scope = createState({
-      [itemVar]: items.$[i] ?? items[i], [idxVar]: keys?.[i] ?? i
-    }, state)
-    holder.before(el)
-    sprae(el, scope)
-    const _delete = items.$[i]?._delete;
-    (items.$[i] ||= {})._delete = () => { delete items.$[i]; _delete?.(); el[_dispose](), el.remove(), delete items[i] }
-  }
-
-  return () => {
-    for (let _i of items.$) _i?._delete()
+  return () => batch(() => {
+    for (let _i of items[_signals]) _i?._del()
     items.length = 0
-  }
+  })
 }
 
 // `:each` can redefine scope as `:each="a in {myScope}"`,

@@ -14,6 +14,8 @@ import { signal, computed, effect, batch, untracked } from '@preact/signals-core
 export { effect, computed, batch, untracked }
 
 export const _dispose = (Symbol.dispose ||= Symbol('dispose'));
+export const _signals = Symbol('signals');
+
 
 // default root sandbox
 export const sandbox = {
@@ -32,13 +34,13 @@ let lastProp
 export default function createState(values, parent) {
   if (!isObject(values) && !Array.isArray(values)) return values;
   // ignore existing state as argument
-  if (values.$ && !parent) return values;
-  const initSignals = values.$
+  if (values[_signals] && !parent) return values;
+  const initSignals = values[_signals]
 
   // .length signal is stored outside, since cannot be replaced
   const _len = Array.isArray(values) && signal((initSignals || values).length),
     // dict with signals storing values
-    signals = parent ? Object.create((parent = createState(parent)).$) : Array.isArray(values) ? [] : {},
+    signals = parent ? Object.create((parent = createState(parent))[_signals]) : Array.isArray(values) ? [] : {},
     proto = signals.constructor.prototype;
 
   // proxy conducts prop access to signals
@@ -51,13 +53,11 @@ export default function createState(values, parent) {
         if (key === 'length') return (proto[lastProp]) ? _len.peek() : _len.value;
         else lastProp = key;
       if (proto[key]) return proto[key]
-      if (key === '$') return signals
+      if (key === _signals) return signals
       const s = signals[key] || initSignal(key)
-      if (!s) {
-        if (parent) return parent[key]; // touch parent
-        if (sandbox.hasOwnProperty(key)) return sandbox[key] // Array, window etc
-      }
-      return s?.value;
+      if (s) return s.value // existing property
+      if (parent) return parent[key]; // touch parent
+      if (sandbox.hasOwnProperty(key)) return sandbox[key] // Array, window etc
     },
     set(values, key, v) {
       if (_len) {
@@ -71,7 +71,6 @@ export default function createState(values, parent) {
           return true
         }
       }
-      if (key === '$') return false
 
       const s = signals[key] || initSignal(key, v) || signal()
 
@@ -101,7 +100,7 @@ export default function createState(values, parent) {
       return true
     },
     deleteProperty(values, key) {
-      if (key in signals) signals[key]._delete?.(), delete signals[key], delete values[key]
+      if (key in signals) signals[key]._del?.(), delete signals[key], delete values[key]
       return true
     }
   })
