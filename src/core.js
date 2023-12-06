@@ -10,12 +10,7 @@ export default function sprae(container, initValues) {
   // update values signal
   if (memo.has(container)) {
     const [dispose, values] = memo.get(container)
-    const prevValues = values.peek()
-    Object.assign(prevValues, initValues)
-    batch(() => {
-      values.value = null
-      values.value = prevValues
-    })
+    values.value = initValues
     return dispose
   }
 

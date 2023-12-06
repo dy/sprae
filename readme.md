@@ -47,24 +47,20 @@ To init manually as module, import [`sprae.js`](./sprae.js):
 
 Sprae evaluates `:`-attributes and evaporates them.<br/>
 
-## State
+## Reactivity
 
-Sprae takes static values or [signals](https://github.com/preactjs/signals) than can provide reactivity.
+Sprae can provide reactivity via [preact signals](https://github.com/preactjs/signals).
 
 ```js
+import {signal} from '@preact/signals-core'
+
 const version = signal('alpha')
 
 // Sprae container
-const dispose = sprae(container, { version })
+sprae(container, { version })
 
 // Update value
 version.value = 'beta'
-
-// For batch update, re-sprae with new state values
-sprae(container, { version: 'gamma' })
-
-// To destruct sprae, just call dispose
-dispose();
 ```
 
 ## Attributes
@@ -251,22 +247,6 @@ Attach event(s) listener with possible modifiers. `event` variable holds current
 * `.*` – any other modifier has no effect, but allows binding multiple handlers to same event (like jQuery event classes).
 
 
-## Sandbox
-
-Expressions are sandboxed, ie. don't access global/window scope by default (since sprae can be run in server environment).
-
-```html
-<div :x="scrollY"></div>
-<!-- scrollY is undefined -->
-```
-
-Default sandbox provides most popular global objects: _Array_, _Object_, _Number_, _String_, _Boolean_, _Date_,
-  _console_, _window_, _document_, _history_, _navigator_, _location_, _screen_, _localStorage_, _sessionStorage_,
-  _alert_, _prompt_, _confirm_, _fetch_, _performance_,
-  _setTimeout_, _setInterval_, _requestAnimationFrame_.
-
-Sandbox can be extended as `Object.assign(sprae.globals, { BigInt })`.
-
 ## FOUC
 
 To avoid _flash of unstyled content_, you can hide sprae attribute or add a custom effect, eg. `:hidden` - that will be removed once sprae is initialized:
@@ -278,7 +258,7 @@ To avoid _flash of unstyled content_, you can hide sprae attribute or add a cust
 
 ## Dispose
 
-To destroy state and detach sprae handlers, call `element[Symbol.dispose]()`.
+To destroy state and detach sprae handlers, call function returned from sprae: `dispose = sprae(...);`.
 
 ## Benchmark
 

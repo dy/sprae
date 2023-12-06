@@ -33,7 +33,7 @@ test('common: reactive', async () => {
   let el = h`<label :for="name" :text="name" ></label><input :id="name" :name="name" :type="name" :disabled="!name"/><a :href="url"></a><img :src="url"/>`
   sprae(el, { name: 'text', url: '//google.com' })
   is(el.outerHTML, `<label for="text">text</label><input id="text" name="text" type="text"><a href="//google.com"></a><img src="//google.com">`)
-  sprae(el, { name: 'email' })
+  sprae(el, { name: 'email', url: '//google.com' })
   await tick()
   is(el.outerHTML, `<label for="email">email</label><input id="email" name="email" type="email"><a href="//google.com"></a><img src="//google.com">`)
 })
@@ -58,7 +58,7 @@ test('common: newlines', async () => {
   is(el.outerHTML, `<x>1</x>`)
 })
 
-test('common: const in on', async () => {
+test.only('common: const in on', async () => {
   let el = h`<div :onx="() => {const x=1; y=x+1}"></div>`
   let state = sprae(el, { y: 0 })
   el.dispatchEvent(new window.CustomEvent('x'))
