@@ -1,8 +1,6 @@
 # ∴ spræ [![tests](https://github.com/dy/sprae/actions/workflows/node.js.yml/badge.svg)](https://github.com/dy/sprae/actions/workflows/node.js.yml) [![size](https://img.shields.io/bundlephobia/minzip/sprae?label=size)](https://bundlephobia.com/result?p=sprae) [![npm](https://img.shields.io/npm/v/sprae?color=orange)](https://npmjs.org/sprae)
 
-> DOM tree hydration with reactivity.
-
-_Sprae_ is compact ergonomic[*](#justification--alternatives) progressive enhancement framework.<br/>
+_Sprae_ is compact ergonomic progressive enhancement framework.<br/>
 It provides `:`-attributes that enable simple markup logic without need for complex scripts.<br/>
 Perfect for small-scale websites, prototypes or UI logic.<br/>
 It is tiny and performant alternative to [alpine](https://github.com/alpinejs/alpine), [petite-vue](https://github.com/vuejs/petite-vue) or [template-parts](https://github.com/github/template-parts).
@@ -38,10 +36,13 @@ To init manually as module, import [`sprae.js`](./sprae.js):
   import sprae from './path/to/sprae.js';
 
   // init
-  sprae(container, { user: { name: 'Dmitry Ivanov' } });
+  const dispose = sprae(container, { user: { name: 'Dmitry Ivanov' } });
 
   // update
   sprae(container, { user: { name: 'dy' } })
+
+  // destroy
+  dispose()
 </script>
 ```
 
@@ -49,7 +50,7 @@ Sprae evaluates `:`-attributes and evaporates them.<br/>
 
 ## Reactivity
 
-Sprae can provide reactivity via [preact signals](https://github.com/preactjs/signals).
+Sprae can provide target reactivity via [preact signals](https://github.com/preactjs/signals).
 
 ```js
 import {signal} from '@preact/signals-core'
@@ -255,10 +256,6 @@ To avoid _flash of unstyled content_, you can hide sprae attribute or add a cust
 <div :hidden></div>
 <style>[:each],[:hidden] {visibility: hidden}</style>
 ```
-
-## Dispose
-
-To destroy state and detach sprae handlers, call function returned from sprae: `dispose = sprae(...);`.
 
 ## Benchmark
 
