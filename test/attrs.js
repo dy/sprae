@@ -13,9 +13,9 @@ test.skip('autoinit', async () => {
 
 test('hidden: core', async () => {
   let el = h`<div :hidden="hidden"></div>`
-  let params = sprae(el, { hidden: true })
+  sprae(el, { hidden: true })
   is(el.outerHTML, `<div hidden=""></div>`)
-  params.hidden = false
+  sprae(el, { hidden: false })
   await tick()
   is(el.outerHTML, `<div></div>`)
 })
@@ -31,9 +31,9 @@ test('hidden: reactive', async () => {
 
 test('common: reactive', async () => {
   let el = h`<label :for="name" :text="name" ></label><input :id="name" :name="name" :type="name" :disabled="!name"/><a :href="url"></a><img :src="url"/>`
-  let params = sprae(el, { name: 'text', url: '//google.com' })
+  sprae(el, { name: 'text', url: '//google.com' })
   is(el.outerHTML, `<label for="text">text</label><input id="text" name="text" type="text"><a href="//google.com"></a><img src="//google.com">`)
-  params.name = 'email'
+  sprae(el, { name: 'email' })
   await tick()
   is(el.outerHTML, `<label for="email">email</label><input id="email" name="email" type="email"><a href="//google.com"></a><img src="//google.com">`)
 })

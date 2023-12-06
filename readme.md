@@ -3,7 +3,7 @@
 > DOM tree hydration with reactivity.
 
 _Sprae_ is compact ergonomic[*](#justification--alternatives) progressive enhancement framework.<br/>
-It provides reactive `:`-attributes that enable simple markup logic without need for complex scripts.<br/>
+It provides `:`-attributes that enable simple markup logic without need for complex scripts.<br/>
 Perfect for small-scale websites, prototypes or UI logic.<br/>
 It is tiny and performant alternative to [alpine](https://github.com/alpinejs/alpine), [petite-vue](https://github.com/vuejs/petite-vue) or [template-parts](https://github.com/github/template-parts).
 
@@ -37,8 +37,11 @@ To init manually as module, import [`sprae.js`](./sprae.js):
   // import sprae from 'https://cdn.jsdelivr.net/npm/sprae/sprae.js';
   import sprae from './path/to/sprae.js';
 
-  const state = sprae(container, { user: { name: 'Dmitry Ivanov' } });
-  state.user.name = 'dy'; // updates DOM
+  // init
+  sprae(container, { user: { name: 'Dmitry Ivanov' } });
+
+  // update
+  sprae(container, { user: { name: 'dy' } })
 </script>
 ```
 
@@ -46,23 +49,22 @@ Sprae evaluates `:`-attributes and evaporates them.<br/>
 
 ## State
 
-Sprae creates reactive state that mirrors current DOM values.<br/>
-It is based on [signals](https://github.com/preactjs/signals) and can take them as inputs.
+Sprae takes static values or [signals](https://github.com/preactjs/signals) than can provide reactivity.
 
 ```js
 const version = signal('alpha')
 
-// Sprae container with initial state values
-const state = sprae(container, { foo: 'bar', version })
+// Sprae container
+const dispose = sprae(container, { version })
 
-// Modify state property 'foo', triggering a DOM update
-state.foo = 'baz'
-
-// Update the version signal, which also triggers a DOM refresh
+// Update value
 version.value = 'beta'
 
 // For batch update, re-sprae with new state values
-sprae(container, { foo: 'qux', version: 'gamma' })
+sprae(container, { version: 'gamma' })
+
+// To destruct sprae, just call dispose
+dispose();
 ```
 
 ## Attributes

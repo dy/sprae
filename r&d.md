@@ -712,3 +712,17 @@
 ## [x] Take over parent signals, rather than inherit?
 
   - Parent state can dynamically obtain new signal, and nested states won't have access to that
+
+## [ ] Ditch proxy-store in favor of preact/signals
+
+  + way less size
+  + way easier internal logic/debugging
+  + reactive values are explicitly kept
+  + no duplication
+  + state update can be done in proper batch-way `sprae(el, obj)`
+  + sprae can return `dispose` function directly
+  + better performance / memory metrics
+  + simpler API: there's no notion of state
+  - no Sandbox
+    ~ it's sifting anyways
+  ~+ we can split up state into something separate

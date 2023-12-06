@@ -1,20 +1,26 @@
-import createState, { batch, sandbox, _dispose } from './state.signals-proxy.js';
+import { signal, batch } from '@preact/signals-core';
 import defaultDirective, { primary, secondary } from './directives.js';
-
-
-// default root sandbox
-sprae.globals = sandbox
 
 // sprae element: apply directives
 const memo = new WeakMap
-export default function sprae(container, values) {
-  if (!container.children) return // ignore what?
+export default function sprae(container, initValues) {
+  // ignore non-element nodes
+  if (!container.children) return
 
-  if (memo.has(container)) return batch(() => Object.assign(memo.get(container), values))
+  // update values signal
+  if (memo.has(container)) {
+    const [dispose, values] = memo.get(container)
+    const prevValues = values.peek()
+    Object.assign(prevValues, initValues)
+    batch(() => {
+      values.value = null
+      values.value = prevValues
+    })
+    return dispose
+  }
 
-  // take over existing state instead of creating clone
-  const state = createState(values || {});
-  const disposes = []
+  // create signal representation of init values - to let attrs react on update
+  const disposes = [], values = signal(initValues)
 
   // init directives on element
   const init = (el, parent = el.parentNode) => {
@@ -25,7 +31,7 @@ export default function sprae(container, values) {
         let expr = el.getAttribute(attrName)
         el.removeAttribute(attrName)
 
-        disposes.push(primary[name](el, expr, state, name))
+        disposes.push(primary[name](el, expr, values, name))
 
         // stop if element was spraed by directive or skipped (detached) like in case of :if or :each
         if (memo.has(el)) return
@@ -48,7 +54,7 @@ export default function sprae(container, values) {
             // @click forwards to :onclick=event=>{...inline}
             if (prefix === '@') name = `on` + name
             let dir = secondary[name] || defaultDirective;
-            disposes.push(dir(el, expr, state, name));
+            disposes.push(dir(el, expr, values, name));
             // NOTE: secondary directives don't stop flow nor extend state, so no need to check
           }
         }
@@ -65,18 +71,14 @@ export default function sprae(container, values) {
   init(container);
 
   // if element was spraed by :with or :each instruction - skip
-  if (memo.has(container)) return state //memo.get(container)
+  if (memo.has(container)) return memo.get(container)[0]
 
-  // save
-  memo.set(container, state);
+  // save & return destructor
+  const dispose = () => {
+    while (disposes.length) disposes.shift()?.();
+    memo.delete(container);
+  }
+  memo.set(container, [dispose, values]);
 
-  // expose dispose
-  if (disposes.length) Object.defineProperty(container, _dispose, {
-    value: () => {
-      while (disposes.length) disposes.shift()?.();
-      memo.delete(container);
-    }
-  });
-
-  return state;
+  return dispose
 }

@@ -134,8 +134,7 @@ primary['with'] = (el, expr, rootState) => {
   let evaluate = parseExpr(el, expr, ':with')
   const localState = evaluate(rootState)
   let state = createState(localState, rootState)
-  sprae(el, state)
-  return el[_dispose];
+  return sprae(el, state)
 }
 
 // ref must be last within primaries, since that must be skipped by :each, but before secondaries
@@ -171,27 +170,26 @@ function parseForExpression(expression) {
 
 secondary['render'] = (el, expr, state) => {
   let evaluate = parseExpr(el, expr, ':render'),
-    tpl = evaluate(state)
+    tpl = evaluate(state.value)?.valueOf()
 
   if (!tpl) exprError(new Error('Template not found'), el, expr, ':render');
 
   let content = tpl.content.cloneNode(true);
   el.replaceChildren(content)
-  sprae(el, state)
-  return el[_dispose]
+  return sprae(el, state)
 }
 
 secondary['id'] = (el, expr, state) => {
   let evaluate = parseExpr(el, expr, ':id')
   const update = v => el.id = v || v === 0 ? v : ''
-  return effect(() => update(evaluate(state)))
+  return effect(() => update(evaluate(state.value)?.valueOf()))
 }
 
 secondary['class'] = (el, expr, state) => {
   let evaluate = parseExpr(el, expr, ':class')
   let initClassName = el.getAttribute('class')
   return effect(() => {
-    let v = evaluate(state)
+    let v = evaluate(state.value)?.valueOf()
     let className = [initClassName]
     if (v) {
       if (typeof v === 'string') className.push(v)
@@ -208,7 +206,7 @@ secondary['style'] = (el, expr, state) => {
   let initStyle = el.getAttribute('style') || ''
   if (!initStyle.endsWith(';')) initStyle += '; '
   return effect(() => {
-    let v = evaluate(state)
+    let v = evaluate(state.value)?.valueOf()
     if (typeof v === 'string') el.setAttribute('style', initStyle + v)
     else {
       untracked(() => {
@@ -222,7 +220,7 @@ secondary['style'] = (el, expr, state) => {
 secondary['text'] = (el, expr, state) => {
   let evaluate = parseExpr(el, expr, ':text')
   return effect(() => {
-    let value = evaluate(state)
+    let value = evaluate(state.value)?.valueOf()
     el.textContent = value == null ? '' : value;
   })
 }
@@ -231,7 +229,8 @@ secondary['text'] = (el, expr, state) => {
 secondary[''] = (el, expr, state) => {
   let evaluate = parseExpr(el, expr, ':')
   if (evaluate) return effect(() => {
-    let value = evaluate(state)
+    if (!state.value) return
+    let value = evaluate(state.value)?.valueOf()
     for (let key in value) attr(el, dashcase(key), value[key]);
   })
 }
@@ -258,7 +257,7 @@ secondary['value'] = (el, expr, state) => {
             value => el.value = value
   )
 
-  return effect(() => { update(evaluate(state)) })
+  return effect(() => { update(evaluate(state.value)?.valueOf()) })
 }
 
 // any unknown directive
@@ -272,13 +271,16 @@ export default (el, expr, state, name) => {
     let off, dispose = effect(() => {
       if (off) off(), off = null
       // we need anonymous callback to enable modifiers like prevent
-      let value = evaluate(state)
+      let value = evaluate(state.value)?.valueOf()
       if (value) off = on(el, evt, value)
     })
     return () => (off?.(), dispose())
   }
 
-  return effect(() => { attr(el, name, evaluate(state)) })
+  return effect(() => {
+    if (!state.value) return
+    attr(el, name, evaluate(state.value)?.valueOf())
+  })
 }
 
 // bind event to a target
