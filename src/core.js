@@ -10,8 +10,8 @@ export default function sprae(container, values) {
   // update values signal
   if (memo.has(container)) {
     const [dispose, state] = memo.get(container)
-    console.log('update', state.value, values)
-    state.value = values
+    const prev = state.peek(), cur = values.valueOf()
+    batch(() => (Object.assign(prev, cur), state.value = null, state.value = prev))
     return dispose
   }
 

@@ -1,7 +1,7 @@
 // directives & parsing
 import sprae from './core.js'
-import createState, { effect, computed, untracked, batch, _dispose, _signals } from './state.signals-proxy.js'
 import { queueMicrotask } from './util.js'
+import { signal, effect, untracked } from '@preact/signals-core'
 
 // reserved directives - order matters!
 // primary initialized first by selector, secondary initialized by iterating attributes
@@ -132,17 +132,16 @@ primary['each'] = (tpl, expr, state) => {
 
 // `:each` can redefine scope as `:each="a in {myScope}"`,
 // same time per-item scope as `:each="..." :with="{collapsed:true}"` is useful
-primary['with'] = (el, expr, rootState) => {
+primary['with'] = (el, expr, state) => {
   let evaluate = parseExpr(el, expr, ':with')
-  // const localState = evaluate(rootState)
-  // let state = createState(localState, rootState)
-  // return sprae(el, state)
 
   return effect(() => {
-    const localState = evaluate(rootState.value)?.valueOf()
-    let state = Object.assign(localState, rootState.value)
-    sprae(el, state)
-    console.log(1, rootState.value)
+    const values = state.value
+    const substate = signal(evaluate(values)?.valueOf())
+    const subvalues = substate.peek()
+    // properly extend ignoring keys
+    for (let k in values) if (!subvalues.hasOwnProperty(k)) subvalues[k] = values[k]
+    sprae(el, substate)
   })
 }
 

@@ -733,6 +733,7 @@ test('with: inline', async () => {
   let state = { baz: 'qux' }
   sprae(el, state)
   is(el.innerHTML, `<y>barqux</y>`)
+  console.log('---')
   sprae(el, { baz: 'quux' })
   await tick()
   is(el.innerHTML, `<y>barquux</y>`)
@@ -745,7 +746,7 @@ test('with: inline reactive', () => {
   baz.value = 'quux'
   is(el.innerHTML, `<y>barquux</y>`)
 })
-test.only('with: data', async () => {
+test('with: data', async () => {
   let el = h`<x :with="x"><y :text="foo"></y></x>`
   let state = { x: { foo: 'bar' } }
   sprae(el, state)
@@ -761,9 +762,11 @@ test('with: transparency', async () => {
   // NOTE: y:text initializes through directive, not through parent
   // therefore by default :text uses parent's state, not defined by element itself
   let el = h`<x :with="{foo:'foo'}"><y :with="b" :text="foo+bar"></y></x>`
-  let params = sprae(el, { b: { bar: 'bar' } })
+  let params = { b: { bar: 'bar' } }
+  sprae(el, params)
   is(el.innerHTML, `<y>foobar</y>`)
   params.b.bar = 'baz'
+  sprae(el, params)
   await tick()
   is(el.innerHTML, `<y>foobaz</y>`)
 })
@@ -786,7 +789,7 @@ test('with: writes to state', async () => {
   await tick()
   is(a.innerHTML, `<y>3</y>`)
 })
-test('with: one of children (internal number of iterations, cant see the result here)', async () => {
+test('with: one of children', async () => {
   let a = h`<div><x :text="x"></x><x :with={x:2} :text="x"></x><x :text="y">3</x></div>`
   sprae(a, { x: 1, y: 3 })
   is(a.innerHTML, `<x>1</x><x>2</x><x>3</x>`)
