@@ -3,19 +3,20 @@ import defaultDirective, { primary, secondary } from './directives.js';
 
 // sprae element: apply directives
 const memo = new WeakMap
-export default function sprae(container, initValues) {
+export default function sprae(container, values) {
   // ignore non-element nodes
   if (!container.children) return
 
   // update values signal
   if (memo.has(container)) {
-    const [dispose, values] = memo.get(container)
-    values.value = initValues
+    const [dispose, state] = memo.get(container)
+    console.log('update', state.value, values)
+    state.value = values
     return dispose
   }
 
   // create signal representation of init values - to let attrs react on update
-  const disposes = [], values = signal(initValues)
+  const disposes = [], state = values?.peek ? values : signal(values)
 
   // init directives on element
   const init = (el, parent = el.parentNode) => {
@@ -26,7 +27,7 @@ export default function sprae(container, initValues) {
         let expr = el.getAttribute(attrName)
         el.removeAttribute(attrName)
 
-        disposes.push(primary[name](el, expr, values, name))
+        disposes.push(primary[name](el, expr, state, name))
 
         // stop if element was spraed by directive or skipped (detached) like in case of :if or :each
         if (memo.has(el)) return
@@ -49,7 +50,7 @@ export default function sprae(container, initValues) {
             // @click forwards to :onclick=event=>{...inline}
             if (prefix === '@') name = `on` + name
             let dir = secondary[name] || defaultDirective;
-            disposes.push(dir(el, expr, values, name));
+            disposes.push(dir(el, expr, state, name));
             // NOTE: secondary directives don't stop flow nor extend state, so no need to check
           }
         }
@@ -73,7 +74,7 @@ export default function sprae(container, initValues) {
     while (disposes.length) disposes.shift()?.();
     memo.delete(container);
   }
-  memo.set(container, [dispose, values]);
+  memo.set(container, [dispose, state]);
 
   return dispose
 }

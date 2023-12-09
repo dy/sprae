@@ -4,7 +4,6 @@ import test, { is, any, throws } from 'tst'
 import { tick, time } from 'wait-please'
 import sprae from '../src/index.js'
 import h from 'hyperf'
-import createState, { } from '../src/state.signals-proxy.js'
 
 
 test.skip('autoinit', async () => {
@@ -58,16 +57,17 @@ test('common: newlines', async () => {
   is(el.outerHTML, `<x>1</x>`)
 })
 
-test.only('common: const in on', async () => {
-  let el = h`<div :onx="() => {const x=1; y=x+1}"></div>`
-  let state = sprae(el, { y: 0 })
+test('common: const in on', async () => {
+  let el = h`<div :onx="() => {const x=1; y=x+1;}"></div>`
+  let state = { y: 0 };
+  sprae(el, state)
   el.dispatchEvent(new window.CustomEvent('x'))
   is(state.y, 2)
 })
 
 test('common: const in with', async () => {
   let el = h`<div :with="{x(){let x = 1; y=x;}}" @x="x()"></div>`
-  let state = sprae(el, { y: 0 })
+  let state = { y: 0 }; sprae(el, state)
   el.dispatchEvent(new window.CustomEvent('x'))
   await tick()
   is(state.y, 1)
@@ -75,23 +75,24 @@ test('common: const in with', async () => {
 
 test('style', async () => {
   let el = h`<x style="left: 1px" :style="style"></x>`
-  let params = sprae(el, { style: "top: 1px" })
+  let params = { style: signal("top: 1px") };
+  sprae(el, params)
   is(el.outerHTML, `<x style="left: 1px; top: 1px"></x>`)
 
-  params.style = { top: '2px' }
+  params.style.value = { top: '2px' }
   await tick()
   is(el.outerHTML, `<x style="left: 1px; top: 2px;"></x>`)
 
-  params.style = { '--x': 123 }
+  params.style.value = { '--x': 123 }
   await tick()
   is(el.style.getPropertyValue('--x'), '123')
 
-  params.style = { top: '1px', bottom: '2px' }
+  params.style.value = { top: '1px', bottom: '2px' }
   await tick()
   is(el.outerHTML, `<x style="left: 1px; top: 1px; bottom: 2px;"></x>`)
 
-  params.style = { top: '2px', bottom: null }
-  // FIXME
+  params.style.value = { top: '2px', bottom: null }
+
   await tick()
   is(el.outerHTML, `<x style="left: 1px; top: 2px;"></x>`)
 })
@@ -99,9 +100,10 @@ test('style', async () => {
 test('class', async () => {
   let el = h`<x class="base" :class="a"></x><y :class="[b, c]"></y><z :class="{b:true, c:d}"></z>`
   const c = signal('z')
-  let params = sprae(el, { a: 'x', b: 'y', c, d: false });
+  let params = { a: 'x', b: 'y', c, d: signal(false) }
+  sprae(el, params);
   is(el.outerHTML, `<x class="base x"></x><y class="y z"></y><z class="b"></z>`);
-  params.d = true;
+  params.d.value = true;
   await tick()
   is(el.outerHTML, `<x class="base x"></x><y class="y z"></y><z class="b c"></z>`);
   // c.value = 'w'
@@ -117,11 +119,12 @@ test('class: undefined value', async () => {
 test('class: old svg fun', async () => {
   // raw html creates svganimatedstring
   let el = document.createElement('div')
-  el.innerHTML = `<svg class="foo" :class="a ? 'x' : 'y'"></svg>`
+  el.innerHTML = `<svg class="foo" :class="a.value ? 'x' : 'y'"></svg>`
 
-  let s = sprae(el, { a: true })
+  let s = { a: signal(true) };
+  sprae(el, s)
   is(el.innerHTML, `<svg class="foo x"></svg>`)
-  s.a = false
+  s.a.value = false
   await tick()
   is(el.innerHTML, `<svg class="foo y"></svg>`)
 })
@@ -147,9 +150,10 @@ test('props: multiprop', async () => {
 
 test('props: calculation', async () => {
   let el = h`<x :x="(()=>{ let a = 5; return Array.from({length: x}, (_,i)=>i).join('') })()"></x>`
-  let state = sprae(el, { x: 3 });
+  let state = { x: signal(3) }
+  sprae(el, state);
   is(el.outerHTML, `<x x="012"></x>`)
-  state.x = 4
+  state.x.value = 4
   await tick()
   is(el.outerHTML, `<x x="0123"></x>`)
 })
@@ -177,10 +181,11 @@ test.skip('aria: base', async () => {
 
 test('value: direct', async () => {
   let el = h`<input :value="a" />`
-  let state = sprae(el, { a: 1 })
+  let state = { a: signal(1) }
+  sprae(el, state)
   is(el.value, '1')
   is(el.outerHTML, `<input value="1">`)
-  state.a = 2
+  state.a.value = 2
   await tick()
   is(el.value, '2')
   is(el.outerHTML, `<input value="2">`)
@@ -192,22 +197,24 @@ test('value: direct', async () => {
 
 test('value: textarea', async () => {
   let el = h`<textarea :value="a"></textarea>`
-  let state = sprae(el, { a: 'abcdefgh' })
+  let state = { a: 'abcdefgh' }
+  sprae(el, state)
   is(el.selectionStart, 8)
   is(el.selectionEnd, 8)
   el.setSelectionRange(1, 4)
   is(el.selectionStart, 1)
   is(el.selectionEnd, 4)
-  state.a = 'xyzyvw'
+  sprae(el, { a: 'xyzyvw' })
   is(el.selectionStart, 1)
   is(el.selectionEnd, 4)
 })
 
 test('text: core', async () => {
   let el = h`<div :text="text"></div>`
-  let params = sprae(el, { text: 'abc' })
+  let params = { text: signal('abc') }
+  sprae(el, params)
   is(el.outerHTML, `<div>abc</div>`)
-  params.text = null
+  params.text.value = null
   await tick()
   is(el.outerHTML, `<div></div>`)
 })
@@ -219,16 +226,17 @@ test('if: base', async () => {
     <span :else >c</span>
   </p>`
 
-  const params = sprae(el, { a: 1 })
+  const params = { a: signal(1) }
+  sprae(el, params)
 
   is(el.innerHTML, '<span>a</span>')
-  params.a = 2
+  params.a.value = 2
   await tick()
   is(el.innerHTML, '<span>b</span>')
-  params.a = 3
+  params.a.value = 3
   await tick()
   is(el.innerHTML, '<span>c</span>')
-  params.a = null
+  params.a.value = null
   await tick()
   is(el.innerHTML, '<span>c</span>')
 })
@@ -240,27 +248,28 @@ test('if: short with insertions', async () => {
     <span :else :text="a"></span>
   </p>`
 
-  const params = sprae(el, { a: 1 })
+  const params = { a: 1 }
+  sprae(el, params)
 
   is(el.innerHTML, '<span>1:1</span>')
-  params.a = 2
+  sprae(el, { a: 2 })
   await tick()
   is(el.innerHTML, '<span>2:2</span>')
-  params.a = 3
+  sprae(el, { a: 3 })
   await tick()
   is(el.innerHTML, '<span>3</span>')
-  params.a = 4
+  sprae(el, { a: 4 })
   await tick()
   is(el.innerHTML, '<span>4</span>')
 
-  params.a = 1
+  sprae(el, { a: 1 })
   await tick()
   is(el.innerHTML, '<span>1:1</span>')
-  params.a = 4
+  sprae(el, { a: 4 })
   await tick()
   is(el.innerHTML, '<span>4</span>')
 
-  params.a = null
+  sprae(el, { a: null })
 })
 
 test('if: reactive values', async () => {
@@ -295,10 +304,11 @@ test('if: (#3) subsequent content is not abandoned', async () => {
 
 test('if: + :with doesnt prevent secondary effects from happening', async () => {
   let el = h`<div><x :if="x" :with="{}" :text="x"></x></div>`
-  let state = sprae(el, { x: '' })
+  let state = { x: signal('') }
+  sprae(el, state)
   is(el.innerHTML, ``)
   console.log('state.x=123')
-  state.x = '123'
+  state.x.value = '123'
   await tick()
   is(el.innerHTML, `<x>123</x>`)
 
@@ -315,7 +325,8 @@ test('each: array full', async () => {
     <span :each="a in b" :text="a"></span>
   </p>`
 
-  const params = sprae(el, { b: [0] })
+  const params = { b: [0] };
+  sprae(el, params)
 
   is(el.innerHTML, '<span>0</span>')
 
@@ -719,9 +730,10 @@ test('each: subscribe to modifying list', async () => {
 
 test('with: inline', async () => {
   let el = h`<x :with="{foo:'bar'}"><y :text="foo + baz"></y></x>`
-  let state = sprae(el, { baz: 'qux' })
+  let state = { baz: 'qux' }
+  sprae(el, state)
   is(el.innerHTML, `<y>barqux</y>`)
-  state.baz = 'quux'
+  sprae(el, { baz: 'quux' })
   await tick()
   is(el.innerHTML, `<y>barquux</y>`)
 })
@@ -733,12 +745,14 @@ test('with: inline reactive', () => {
   baz.value = 'quux'
   is(el.innerHTML, `<y>barquux</y>`)
 })
-test('with: data', async () => {
+test.only('with: data', async () => {
   let el = h`<x :with="x"><y :text="foo"></y></x>`
-  let state = sprae(el, { x: { foo: 'bar' } })
+  let state = { x: { foo: 'bar' } }
+  sprae(el, state)
   is(el.innerHTML, `<y>bar</y>`)
-  console.log('update', state.x)
+  console.log('---', state.x)
   state.x.foo = 'baz'
+  sprae(el, state)
   await tick()
   // Object.assign(state, { x: { foo: 'baz' } })
   is(el.innerHTML, `<y>baz</y>`)

@@ -8,6 +8,7 @@
 // ? must it modify initial store
 
 import { signal, computed, effect, batch, untracked } from '@preact/signals-core'
+import { isObject, isPrimitive } from './util.js'
 // import { signal, computed } from 'usignal/sync'
 // import { signal, computed } from '@webreflection/signal'
 
@@ -24,9 +25,6 @@ export const sandbox = {
   alert, prompt, confirm, fetch, performance,
   setTimeout, setInterval, requestAnimationFrame
 }
-
-const isObject = v => v?.constructor === Object
-const isPrimitive = (value) => value !== Object(value);
 
 // track last accessed property to figure out if .length was directly accessed from expression or via .push/etc method
 let lastProp

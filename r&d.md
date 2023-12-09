@@ -598,26 +598,26 @@
 ## [ ] Prop modifiers
 
   - overall seems code complication without much benefit
-  * [ ] value.bind? value.watch?
+  * [ ] :value.bind? :value.watch?
     - let's wait for use-case: value can be too big to set it every time
-  * [ ] prop.reflect, prop.observe
+  * [ ] :prop.reflect, :prop.observe
     - let's wait for use-case
-  * [ ] prop.boolean, .number, .string, .array, .object
+  * [ ] :prop.boolean, .number, .string, .array, .object
     - let's wait for use-case
-  * [ ] prop.once, prop.fx ? prop.init?
+  * [ ] :prop.once, :prop.fx ? :prop.init?
     - doesn't seem required, let's wait for use case
-  * [ ] prop.change - run only if value changes
+  * [ ] :prop.change - run only if value changes
     - seems like unnecessary manual optimization that must be done always automatically
     ? are there cases where force-update is necessary?
-  * [ ] prop.throttle-xxx, prop.debounce-xxx
+  * [ ] :prop.throttle-xxx, :prop.debounce-xxx
     - let's wait until that's really a problem
-  * [ ] prop.class
+  * [ ] :prop.class
     ? what's the use-case
-  * [ ] prop.next="" - run update after other DOM updates happen
-  * [ ] prop.fx="" - run effect without changing property
-  * [ ] x.prop="xyz" - set element property, rather than attribute (following topic)
-  * [ ] x.raf="abc" - run regularly?
-  * [ ] x.watch-a-b-c - update by change of any of the deps
+  * [ ] :prop.next="" - run update after other DOM updates happen
+  * [ ] :prop.fx="" - run effect without changing property
+  * [ ] :x.prop="xyz" - set element property, rather than attribute (following topic)
+  * [ ] :x.raf="abc" - run regularly?
+  * [ ] :x.watch-a-b-c - update by change of any of the deps
   * [ ] :x.always - update by _any_ dep change
   * [ ] :class.active="active"
   * [ ] :x.persist="v"
@@ -726,3 +726,44 @@
   - no Sandbox
     ~ it's sifting anyways
   ~+ we can split up state into something separate
+
+## [ ] ? is there a way to use it without preact/signals dependency?
+  + would be nice, since sube doesn't require disposal, unlike preact/signals
+    - not really: signal.subscribe needs subsequent unsubscribe
+    * so there's really little chance to avoid disposals
+  + it gives less unexpected / accidental subscriptions / cycles, since subscribable value is explicit
+    - it
+  - :class="`${a.value}` ${b.value}"
+    ~ suppose we limit subscription to only output object as :class="[a, b]"
+  - :text="a.value + b.value"
+    ~ it would need to become calculated property `aText=computed(()=>a.value+b.value)`, `:text="aText"`
+  + there's less point of holding autosprae
+  - :disabled="!name" - too much hassle to create computed prop, no?
+
+## [ ] What's possible best way to indicate dependencies (w/o signals)
+  ? :disabled~name="!name"
+    - not valid attribute
+  ? :disabled.-name
+    - messes up prop modifiers
+  ? :disabled.watch-name="!name"
+    - too long, also excludes names with dashes
+  ? :disabled--name="!name"
+    + not conflicting with prop modifiers
+    + unique syntax space
+    * :text--a--b="`${a} ${b}`"
+    * :class--a--b="[a, b]"
+    + gives reference to CSS variables starting with --, but here it's prop variables
+    - :style--caretY--caretX--cols can be out of context and too long
+  ? :disabled="!var(name)", :disabled=
+  ? substitute signal values with {valueOf} wrappers that register deps?
+    - too heavy
+  ? subscript
+    - heavy
+    ~ doesn't parse dynamic parts
+  ? regex-parse all ids and match against provided values
+    + fastest
+    + simplest
+    - doesn't parse dynamic prop access
+      ~? maybe we don't need it, do we?
+      ~ myabe it's better to keep them untouched to avoid oversubscription
+    -~ not obvious which items are subscribable which are not

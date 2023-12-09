@@ -24,7 +24,9 @@ primary['if'] = (el, expr, state) => {
         els.push(cur); clauses.push(parseExpr(el, expr, ':else :if'));
       }
       else {
-        cur.remove(); els.push(cur); clauses.push(() => 1);
+        cur.remove();
+        els.push(cur);
+        clauses.push(() => 1);
       }
     }
     else break;
@@ -34,13 +36,13 @@ primary['if'] = (el, expr, state) => {
 
   const dispose = effect(() => {
     // find matched clause (re-evaluates any time any clause updates)
-    let i = clauses.findIndex(f => f(state))
+    let i = clauses.findIndex(evaluate => evaluate(state.value)?.valueOf())
     if (els[i] != cur) {
       ; (cur[_each] || cur).replaceWith(cur = els[i] || holder);
       // NOTE: it lazily initializes elements on insertion, it's safe to sprae multiple times
       // but :if must come first to avoid preliminary caching
-      sprae(cur, state);
     }
+    sprae(cur, state.value);
   })
 
   return () => {
@@ -132,9 +134,16 @@ primary['each'] = (tpl, expr, state) => {
 // same time per-item scope as `:each="..." :with="{collapsed:true}"` is useful
 primary['with'] = (el, expr, rootState) => {
   let evaluate = parseExpr(el, expr, ':with')
-  const localState = evaluate(rootState)
-  let state = createState(localState, rootState)
-  return sprae(el, state)
+  // const localState = evaluate(rootState)
+  // let state = createState(localState, rootState)
+  // return sprae(el, state)
+
+  return effect(() => {
+    const localState = evaluate(rootState.value)?.valueOf()
+    let state = Object.assign(localState, rootState.value)
+    sprae(el, state)
+    console.log(1, rootState.value)
+  })
 }
 
 // ref must be last within primaries, since that must be skipped by :each, but before secondaries
@@ -193,8 +202,8 @@ secondary['class'] = (el, expr, state) => {
     let className = [initClassName]
     if (v) {
       if (typeof v === 'string') className.push(v)
-      else if (Array.isArray(v)) className.push(...v)
-      else className.push(...Object.entries(v).map(([k, v]) => v ? k : ''))
+      else if (Array.isArray(v)) className.push(...v.map(v => v?.valueOf()))
+      else className.push(...Object.entries(v).map(([k, v]) => v?.valueOf() ? k : ''))
     }
     if (className = className.filter(Boolean).join(' ')) el.setAttribute('class', className);
     else el.removeAttribute('class')
@@ -229,7 +238,6 @@ secondary['text'] = (el, expr, state) => {
 secondary[''] = (el, expr, state) => {
   let evaluate = parseExpr(el, expr, ':')
   if (evaluate) return effect(() => {
-    if (!state.value) return
     let value = evaluate(state.value)?.valueOf()
     for (let key in value) attr(el, dashcase(key), value[key]);
   })
@@ -278,7 +286,6 @@ export default (el, expr, state, name) => {
   }
 
   return effect(() => {
-    if (!state.value) return
     attr(el, name, evaluate(state.value)?.valueOf())
   })
 }
@@ -414,7 +421,7 @@ function parseExpr(el, expression, dir) {
 
   if (!evaluate) {
     try {
-      evaluate = evaluatorMemo[expression] = new Function(`__scope`, `with (__scope) { let __; return ${expression.trim()} };`)
+      evaluate = evaluatorMemo[expression] = new Function(`__scope={}`, `with (__scope) { return ${expression.trim()} };`)
     } catch (e) {
       return exprError(e, el, expression, dir)
     }

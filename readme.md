@@ -7,42 +7,16 @@ It is tiny and performant alternative to [alpine](https://github.com/alpinejs/al
 
 ## Usage
 
-### Autoinit
-
-To autoinit document, include [`sprae.auto.js`](./sprae.auto.js):
-
-```html
-<!-- <script src="https://cdn.jsdelivr.net/npm/sprae/sprae.auto.js" defer></script> -->
-<script defer src="./path/to/sprae.auto.js"></script>
-
-<ul>
-  <li :each="item in ['apple', 'bananas', 'citrus']"">
-    <a :href="`#${item}`" :text="item" />
-  </li>
-</ul>
-```
-
-### Manual init
-
-To init manually as module, import [`sprae.js`](./sprae.js):
-
 ```html
 <div id="container" :if="user">
   Logged in as <span :text="user.name">Guest.</span>
 </div>
 
 <script type="module">
-  // import sprae from 'https://cdn.jsdelivr.net/npm/sprae/sprae.js';
-  import sprae from './path/to/sprae.js';
+  import sprae from './path/to/sprae.js'; // eg. https://cdn.jsdelivr.net/npm/sprae/sprae.js
 
-  // init
-  const dispose = sprae(container, { user: { name: 'Dmitry Ivanov' } });
-
-  // update
-  sprae(container, { user: { name: 'dy' } })
-
-  // destroy
-  dispose()
+  const update = sprae(container, { user: { name: 'Dmitry Ivanov' } });
+  update({ user: { name: 'Dhira Kanta' } })
 </script>
 ```
 
@@ -50,19 +24,25 @@ Sprae evaluates `:`-attributes and evaporates them.<br/>
 
 ## Reactivity
 
-Sprae can provide target reactivity via [preact signals](https://github.com/preactjs/signals).
+Sprae can provide reactivity via eg. [preact signals](https://github.com/preactjs/signals). If attribute receives reactive value, it automatically subscribes to it.
 
-```js
-import {signal} from '@preact/signals-core'
+```html
+<div id="container" :if="user">
+  Logged in as <span :text="user.name">Guest.</span>
+</div>
 
-const version = signal('alpha')
+<script type="module">
+  import sprae from 'sprae';
+  import {signal} from '@preact/signals-core';
 
-// Sprae container
-sprae(container, { version })
+  const state = { user: { name: signal('Dmitry Ivanov') } };
 
-// Update value
-version.value = 'beta'
+  sprae(container, state);
+  state.user.name.value = 'Dhira Kanta'; // update
+</script>
 ```
+
+Unsubscription happens automatically once target is garbage collected.
 
 ## Attributes
 
