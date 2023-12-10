@@ -148,7 +148,7 @@ primary['with'] = (el, expr, state) => {
 // ref must be last within primaries, since that must be skipped by :each, but before secondaries
 primary['ref'] = (el, expr, state) => {
   // FIXME: wait for complex ref use-case
-  // parseExpr(el, `__scope[${expr}]=this`, ':ref')(values)
+  // parseExpr(el, `__state[${expr}]=this`, ':ref')(values)
   state[expr] = el;
 }
 
@@ -420,7 +420,7 @@ function parseExpr(el, expression, dir) {
 
   if (!evaluate) {
     try {
-      evaluate = evaluatorMemo[expression] = new Function(`__scope={}`, `with (__scope) { return ${expression.trim()} };`)
+      evaluate = evaluatorMemo[expression] = new Function(`__state={}`, `with (__state) { return ${expression.trim()} };`)
     } catch (e) {
       return exprError(e, el, expression, dir)
     }

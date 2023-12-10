@@ -713,7 +713,7 @@
 
   - Parent state can dynamically obtain new signal, and nested states won't have access to that
 
-## [ ] Ditch proxy-store in favor of preact/signals
+## [x] Ditch proxy-store in favor of preact/signals -> let's try
 
   + way less size
   + way easier internal logic/debugging
@@ -727,7 +727,7 @@
     ~ it's sifting anyways
   ~+ we can split up state into something separate
 
-## [ ] ? is there a way to use it without preact/signals dependency?
+## [x] ? is there a way to use it without preact/signals dependency? -> seems too complicated and implicit
   + would be nice, since sube doesn't require disposal, unlike preact/signals
     - not really: signal.subscribe needs subsequent unsubscribe
     * so there's really little chance to avoid disposals
@@ -740,7 +740,7 @@
   + there's less point of holding autosprae
   - :disabled="!name" - too much hassle to create computed prop, no?
 
-## [ ] What's possible best way to indicate dependencies (w/o signals)
+### [ ] What's possible best way to indicate dependencies (w/o signals)
   ? :disabled~name="!name"
     - not valid attribute
   ? :disabled.-name
