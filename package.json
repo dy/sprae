@@ -6,14 +6,13 @@
   "module": "src/index.js",
   "type": "module",
   "files": [
-    "sprae.auto.js",
-    "sprae.auto.min.js",
     "sprae.js",
     "sprae.min.js",
     "src"
   ],
   "dependencies": {
-    "@preact/signals-core": "^1.5.0"
+    "@preact/signals-core": "^1.5.0",
+    "swapdom": "^1.1.1"
   },
   "devDependencies": {
     "@preact/signals": "^1.1.3",
@@ -28,11 +27,10 @@
   },
   "scripts": {
     "test": "node -r ./test/register.cjs test/test.js",
-    "build": "npm run build-esm && npm run build-iife && npm run min",
+    "build": "npm run build-esm && npm run min",
     "build-esm": "esbuild --bundle ./src/index.js --outfile=sprae.js --format=esm",
-    "build-iife": "esbuild --bundle ./src/index.js --outfile=sprae.auto.js --format=iife",
     "watch": "esbuild --bundle ./src/index.js --outfile=sprae.js --format=esm --sourcemap --watch",
-    "min": "terser sprae.js -o sprae.min.js --module -c passes=3 -m && terser sprae.auto.js -o sprae.auto.min.js --module -c passes=3 -m"
+    "min": "terser sprae.js -o sprae.min.js --module -c passes=3 -m"
   },
   "repository": {
     "type": "git",

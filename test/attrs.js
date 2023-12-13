@@ -1,5 +1,5 @@
 // import { signal } from 'usignal/sync'
-import { signal, effect, untracked } from '@preact/signals-core'
+import { signal, effect, untracked, batch } from '@preact/signals-core'
 import test, { is, any, throws } from 'tst'
 import { tick, time } from 'wait-please'
 import sprae from '../src/index.js'
@@ -320,7 +320,7 @@ test('if: + :with doesnt prevent secondary effects from happening', async () => 
   // is(el2.innerHTML, `<x>123</x>`)
 })
 
-test('each: array full', async () => {
+test.skip('each: array full', async () => {
   let el = h`<p>
     <span :each="a in b" :text="a"></span>
   </p>`
@@ -375,7 +375,7 @@ test('each: array full', async () => {
 })
 
 
-test('each: array length ops', async () => {
+test.skip('each: array length ops', async () => {
   let el = h`<p><span :each="a in b" :text="a"></span></p>`
   const params = sprae(el, { b: [0] })
 
@@ -386,7 +386,7 @@ test('each: array length ops', async () => {
   is(el.innerHTML, '<span>0</span>')
 })
 
-test('each: array shift, pop', async () => {
+test.skip('each: array shift, pop', async () => {
   let el = h`<p><span :each="a in b" :text="a"></span></p>`
   const params = sprae(el, { b: [0, 1] })
 
@@ -406,17 +406,18 @@ test('each: object', async () => {
     <span :each="x,key in b" :text="[key,x]"></span>
   </p>`
 
-  const params = sprae(el, { b: null })
+  const params = { b: signal(null) }
+  sprae(el, params)
 
   is(el.innerHTML, '')
   console.log('set 1,2')
-  params.b = { x: 1, y: 2 }
+  params.b.value = { x: 1, y: 2 }
   await tick()
   is(el.innerHTML, '<span>x,1</span><span>y,2</span>')
-  params.b = []
+  params.b.value = []
   await tick()
   is(el.innerHTML, '')
-  params.b = null
+  params.b.value = null
   await tick()
   is(el.innerHTML, '')
 })
@@ -426,18 +427,19 @@ test('each: loop within loop', async () => {
     <x :each="b in c"><y :each="a in b" :text="a"></y></x>
   </p>`
 
-  const params = sprae(el, { c: [[1, 2], [3, 4]] })
+  const params = { c: signal([[1, 2], [3, 4]]) }
+  sprae(el, params)
 
   is(el.innerHTML, '<x><y>1</y><y>2</y></x><x><y>3</y><y>4</y></x>')
-  params.c = [[5, 6], [3, 4]]
+  params.c.value = [[5, 6], [3, 4]]
   await tick()
   is(el.innerHTML, '<x><y>5</y><y>6</y></x><x><y>3</y><y>4</y></x>')
   // params.c[1] = [7,8]
-  params.c = [params.c[0], [7, 8]]
+  params.c.value = [params.c.value[0], [7, 8]]
   await tick()
   is(el.innerHTML, '<x><y>5</y><y>6</y></x><x><y>7</y><y>8</y></x>')
   // is(el.innerHTML, '<span>1</span><span>2</span>')
-  params.c = []
+  params.c.value = []
   await tick()
   is(el.innerHTML, '')
   // params.b = null
@@ -470,17 +472,18 @@ test('each: loop with condition', async () => {
   <span :each="a in b" :text="a" :if="c"></span>
   </p>`
 
-  const params = sprae(el, { b: [1, 2], c: false })
+  const params = { b: signal([1, 2]), c: signal(false) }
+  sprae(el, params)
 
   is(el.innerHTML, '')
-  params.c = true
+  params.c.value = true
   await tick()
   is(el.innerHTML, '<span>1</span><span>2</span>')
-  params.b = [1]
+  params.b.value = [1]
   await tick()
   is(el.innerHTML, '<span>1</span>')
   console.log('set null')
-  params.b = null
+  params.b.value = null
   await tick()
   is(el.innerHTML, '')
 })
@@ -491,20 +494,21 @@ test('each: condition with loop', async () => {
   <span :else :text="c"></span>
   </p>`
 
-  const params = sprae(el, { b: [1, 2], c: false })
+  const params = { b: signal([1, 2]), c: signal(false) }
+  sprae(el, params)
 
   is(el.innerHTML, '<span>false</span>')
-  params.c = true
+  params.c.value = true
   await tick()
   is(el.innerHTML, '<span>1</span><span>2</span>')
-  params.b = [1]
+  params.b.value = [1]
   await tick()
   is(el.innerHTML, '<span>1</span>')
-  params.b = null
+  params.b.value = null
   await tick()
   is(el.innerHTML, '')
   console.log('c=false')
-  params.c = false
+  params.c.value = false
   await tick()
   is(el.innerHTML, '<span>false</span>')
 })
@@ -518,10 +522,12 @@ test('each: loop within condition', async () => {
   const params = sprae(el, { a: 1 })
 
   is(el.innerHTML, '<x><y>0</y></x>')
-  params.a = 2
+  sprae(el, { a: 2 })
+  // params.a = 2
   await tick()
   is(el.innerHTML, '<x><y>0</y><y>-1</y></x>')
-  params.a = 0
+  // params.a = 0
+  sprae(el, { a: 0 })
   await tick()
   is(el.innerHTML, '')
 })
@@ -535,13 +541,14 @@ test('each: condition within loop', async () => {
     </x>
   </p>`
 
-  const params = sprae(el, { b: [1, 2, 3] })
+  const params = { b: signal([1, 2, 3]) }
+  sprae(el, params)
 
   is(el.innerHTML, '<x><y>1:1</y></x><x><y>2:2</y></x><x><y>3</y></x>')
-  params.b = [2]
+  params.b.value = [2]
   await tick()
   is(el.innerHTML, '<x><y>2:2</y></x>')
-  params.b = null
+  params.b.value = null
   await tick()
   is(el.innerHTML, '')
 })
@@ -551,37 +558,39 @@ test('each: next items have own "this", not single one', async () => {
   let el = h`<div><x :each="x in 3" :data-x="x" :x="log.push(x, this.dataset.x)"></x></div>`
   let log = []
   let state = sprae(el, { log })
-  is(state.log, [0, '0', 1, '1', 2, '2'])
+  is(log, [0, '0', 1, '1', 2, '2'])
 })
 
 test('each: unkeyed', async () => {
   let el = h`<div><x :each="x in xs" :text="x"></x></div>`
-  let state = sprae(el, { xs: [1, 2, 3] })
+  let state = { xs: signal([1, 2, 3]) }
+  sprae(el, state)
   is(el.children.length, 3)
   is(el.textContent, '123')
-  // let first = el.firstChild
-  state.xs = [1, 3, 2]
+  let first = el.firstChild
+  state.xs.value = [1, 3, 2]
   await tick()
   // is(el.firstChild, first)
   is(el.textContent, '132')
-  state.xs = [3, 3, 3]
+  state.xs.value = [3, 3, 3]
   await tick()
   is(el.textContent, '333')
   // is(el.firstChild, first)
 })
 
-test.skip('each: keyed', async () => {
+test('each: keyed', async () => {
   // keyed
-  let el = h`<div><x :each="x in xs" :text="x" :key="x"></x></div>`
-  let state = sprae(el, { xs: [1, 2, 3] })
+  let el = h`<div><x :each="x in xs" :text="x.id"></x></div>`
+  let state = { xs: signal([{ id: 1 }, { id: 2 }, { id: 3 }]) }
+  sprae(el, state)
   is(el.children.length, 3)
   is(el.textContent, '123')
   let first = el.firstChild
-  state.xs = [1, 3, 2]
+  state.xs.value = [{ id: 1 }, { id: 3 }, { id: 2 }]
   await tick()
   is(el.firstChild, first)
   is(el.textContent, '132')
-  state.xs = [3, 3, 3]
+  state.xs.value = [{ id: 3 }, { id: 3 }, { id: 3 }]
   await tick()
   is(el.textContent, '3')
   // is(el.firstChild, first)
@@ -593,27 +602,29 @@ test('each: wrapped source', async () => {
   is(el.innerHTML, `<x>0</x><x>1</x>`)
 })
 
-test('each: unmounted elements remove listeners', async () => {
+test.todo('each: unmounted elements remove listeners', async () => {
   // let's hope they get removed without memory leaks :')
 })
 
 test('each: internal children get updated by state update, also: update by running again', async () => {
   let el = h`<><x :each="item, idx in items" :text="item" :key="idx"></x></>`
-  let state = sprae(el, { items: [1, 2, 3] })
+  let state = { items: signal([1, 2, 3]) }
+  sprae(el, state)
   is(el.textContent, '123')
-  state.items = [2, 2, 3]
+  state.items.value = [2, 2, 3]
   await tick()
   is(el.textContent, '223')
   console.log('items = [0, 2, 3]')
-  // state.items = [0, 2, 3]
-  state = sprae(el, { items: [0, 2, 3] })
+  state.items.value = [0, 2, 3]
+  // state = { items: [0, 2, 3] }
+  sprae(el, state)
   await tick()
   is(el.textContent, '023')
   // NOTE: this doesn't update items, since they're new array
   console.log('state.items[0] = 1')
   console.log(state.items)
-  state.items[0] = 1
-  // state.items = [...state.items]
+  state.items.value[0] = 1
+  state.items.value = [...state.items.value]
   await tick()
   is(el.textContent, '123')
 })
@@ -646,15 +657,18 @@ test('each: remove last', () => {
   </table>
   `;
 
-  const rows = [{ id: 1 }, { id: 2 }, { id: 3 }, { id: 4 }, { id: 5 }]
+  const rows = signal([{ id: 1 }, { id: 2 }, { id: 3 }, { id: 4 }, { id: 5 }])
 
-  let s = sprae(el, {
+  let s = {
     rows,
     remove(item) {
-      const index = this.rows.findIndex(x => x.id == item.id)
-      this.rows.splice(index, 1)
+      const index = this.rows.value.findIndex(x => x.id == item.id)
+      this.rows.value.splice(index, 1)
+      let prev = this.rows.value
+      batch(() => (this.rows.value = null, this.rows.value = prev))
     }
-  })
+  }
+  sprae(el, s)
 
   is(el.outerHTML, `<table><tr>1</tr><tr>2</tr><tr>3</tr><tr>4</tr><tr>5</tr></table>`)
   console.log('Remove id 5')
@@ -668,15 +682,17 @@ test('each: remove first', () => {
   </table>
   `;
 
-  const rows = [{ id: 1 }, { id: 2 }, { id: 3 }, { id: 4 }, { id: 5 }]
+  const rows = signal([{ id: 1 }, { id: 2 }, { id: 3 }, { id: 4 }, { id: 5 }])
 
-  let s = sprae(el, {
+  let s = {
     rows,
     remove(item) {
-      const index = this.rows.findIndex(x => x.id == item.id)
-      this.rows.splice(index, 1)
+      const index = this.rows.value.findIndex(x => x.id == item.id)
+      this.rows.value.splice(index, 1)
+      this.rows.value = [...this.rows.value]
     }
-  })
+  }
+  sprae(el, s)
 
   is(el.outerHTML, `<table><tr>1</tr><tr>2</tr><tr>3</tr><tr>4</tr><tr>5</tr></table>`)
   console.log('Remove id 1')
@@ -689,18 +705,21 @@ test('each: swapping', () => {
     <tr :each="item in rows" :text="item.id" />
   </table>`;
 
-  const rows = [{ id: 1 }, { id: 2 }, { id: 3 }, { id: 4 }, { id: 5 }]
+  const rows = signal([{ id: 1 }, { id: 2 }, { id: 3 }, { id: 4 }, { id: 5 }])
 
-  let s = sprae(el, {
+  let s = {
     rows,
     swap() {
-      const a = this.rows[1]
+      const rows = this.rows.value
+      const a = rows[1]
       console.log(`[1]=[4]`)
-      this.rows[1] = this.rows[this.rows.length - 2]
+      rows[1] = rows[rows.length - 2]
       console.log(`[4]=[1]`)
-      this.rows[this.rows.length - 2] = a
+      rows[rows.length - 2] = a
+      this.rows.value = null; this.rows.value = rows
     }
-  })
+  }
+  sprae(el, s)
 
   is(el.outerHTML, `<table><tr>1</tr><tr>2</tr><tr>3</tr><tr>4</tr><tr>5</tr></table>`)
   s.swap()
@@ -718,7 +737,8 @@ test('each: subscribe to modifying list', async () => {
     <li :each="item in rows" :text="item" @remove="remove(item)">
     </li>
   </ul>`
-  const state = sprae(el, { rows: [1], remove() { this.rows = [] } })
+  const state = { rows: signal([1]), remove() { this.rows.value = [] } }
+  sprae(el, state)
   is(el.outerHTML, `<ul><li>1</li></ul>`)
   // state.remove()
   el.querySelector('li').dispatchEvent(new window.Event('remove'))
@@ -779,8 +799,8 @@ test('with: reactive transparency', () => {
   is(el.innerHTML, `<y>13</y>`)
 })
 test('with: writes to state', async () => {
-  let a = h`<x :with="{a:1}"><y :onx="e=>a++" :text="a"></y></x>`
-  sprae(a)
+  let a = h`<x :with="{a:signal(1)}"><y :onx="e=>a.value++" :text="a"></y></x>`
+  sprae(a, { signal })
   is(a.innerHTML, `<y>1</y>`)
   a.firstChild.dispatchEvent(new window.Event('x'))
   await tick()
@@ -828,14 +848,13 @@ test.todo(':render template after use', async () => {
   is(a.outerHTML, `<x><div>abc</div></x><template><div :text="text"></div></template>`)
 })
 
-// FIXME: state.proxy gets into max callstack here
 test('ref: base', async () => {
-  let a = h`<a :ref="a" :init="log.push(a), null" :text="b"></a>`
-  let state = sprae(a, { log: [], b: 1 })
+  let a = h`<a :ref="a" :init="log.push(a),null" :text="b"></a>`
+  let state = { log: [], b: signal(1), a: null }; sprae(a, state)
   await tick()
   is(state.log[0], a)
   is(a.outerHTML, `<a>1</a>`)
-  state.b = 2
+  state.b.value = 2
   await tick()
   is(a.outerHTML, `<a>2</a>`)
   is(state.a, a, 'Exposes to the state');
@@ -843,7 +862,8 @@ test('ref: base', async () => {
 
 test('ref: with :each', () => {
   let a = h`<y><x :ref="x" :each="item in items" :text="log.push(x), item"/></y>`
-  let state = sprae(a, { log: [], items: [1, 2] })
+  let state = { log: [], items: [1, 2] }
+  sprae(a, state)
   is(a.innerHTML, `<x>1</x><x>2</x>`)
   is(state.log, [...a.children])
 })

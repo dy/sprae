@@ -1,7 +1,9 @@
 // directives & parsing
-import sprae from './core.js'
-import { queueMicrotask } from './util.js'
-import { signal, effect, untracked } from '@preact/signals-core'
+import sprae, { _state, _dispose } from './core.js'
+import { isPrimitive, queueMicrotask } from './util.js'
+import { signal, effect, untracked, batch } from '@preact/signals-core'
+import swap from 'swapdom'
+
 
 // reserved directives - order matters!
 // primary initialized first by selector, secondary initialized by iterating attributes
@@ -51,7 +53,7 @@ primary['if'] = (el, expr, state) => {
   }
 }
 
-const _each = Symbol(':each')
+const _each = Symbol(':each'), _scope = Symbol(':scope')
 
 // :each must init before :ref, :id or any others, since it defines scope
 primary['each'] = (tpl, expr, state) => {
@@ -65,68 +67,48 @@ primary['each'] = (tpl, expr, state) => {
   tpl.replaceWith(holder)
 
   const evaluate = parseExpr(tpl, itemsExpr, ':each');
+  let cache = {}, curEls = []
 
-  // we re-create items any time new items are produced
-  let items, prevl = 0, keys
   effect(() => {
-    let newItems = evaluate(state)
+    // whenever root state changes (even without correlation with list) it rerenders full list...
+    // therefore we have to make sure update is fast
+    let values = state.value,
+      newItems = evaluate(values).valueOf(), keys
 
     // convert items to array
-    if (!newItems) newItems = []
-    else if (typeof newItems === 'number') {
-      newItems = Array.from({ length: newItems }, (_, i) => i)
-    }
-    else if (Array.isArray(newItems));
-    else if (typeof newItems === 'object') {
-      keys = Object.keys(newItems);
-      newItems = Object.values(newItems);
-    }
-    else {
-      exprError(Error('Bad items value'), tpl, expr, ':each', newItems)
+    if (!newItems) newItems = keys = []
+    else if (typeof newItems === 'number') newItems = (keys = Array.from({ length: newItems }).map((_, i) => i))
+    else if (Array.isArray(newItems)) keys = newItems.map((item, i) => i)
+    else if (typeof newItems === 'object') keys = Object.keys(newItems), newItems = Object.values(newItems);
+    else exprError(Error('Bad items value'), tpl, expr, ':each', newItems)
+
+    // collect elements/scopes for items
+    const newEls = []
+
+    // create elements for new items
+    for (let item of newItems) {
+      let key = item?.key || item?.id
+      let el = (key != null && cache[key])
+
+      if (!el) {
+        el = tpl.cloneNode(true)
+        if (key != null) cache[key] = el
+      }
+
+      newEls.push(el)
     }
 
-    untracked(() => batch(() => {
-      // init items
-      if (!items?.[_signals][0]?.peek) {
-        // manual dispose for plain arrays (not states) - _signals here is just fake holder for destructors
-        for (let i = 0, signals = items?.[_signals]; i < prevl; i++) signals[i]?._del()
-        // NOTE: new items are initialized in length effect below
-        items = newItems, items[_signals] ||= {}
-      }
-      // patch existing items and insert new items - init happens in length effect
-      else {
-        let newl = newItems.length, i = 0
-        for (; i < newl; i++) items[i] = newItems[i]
-        items.length = newl // dispose tail (done internally in state)
-      }
-    }))
+    swap(holder.parentNode, curEls, newEls, holder)
+    curEls = newEls
 
-    // length change effect
-    return effect(() => {
-      let newl = newItems.length // indicate that we track it
-      if (prevl !== newl) untracked(() => batch(() => {
-        // init new items
-        const signals = items[_signals]
-        for (let i = prevl; i < newl; i++) {
-          items[i]; // touch item to create signal
-          const el = tpl.cloneNode(true),
-            scope = createState({
-              [itemVar]: signals[i] ?? items[i],
-              [idxVar]: keys?.[i] ?? i
-            }, state)
-          holder.before(el)
-          sprae(el, scope)
-          const { _del } = (signals[i] ||= {});
-          signals[i]._del = () => { delete signals[i]; _del?.(); el[_dispose](), el.remove(), delete items[i] }
-        }
-        prevl = newl
-      }))
-    })
+    // (re)initialize scopes
+    for (let i = 0, l = newEls.length; i < l; i++)
+      sprae(newEls[i], Object.assign(Object.create(values || {}), { [itemVar]: newItems[i], [idxVar]: keys[i] }))
   })
 
   return () => batch(() => {
-    for (let _i of items[_signals]) _i?._del()
-    items.length = 0
+    for (let el of curEls) el[_dispose]?.()
+    cache = curEls = null
   })
 }
 
@@ -136,12 +118,10 @@ primary['with'] = (el, expr, state) => {
   let evaluate = parseExpr(el, expr, ':with')
 
   return effect(() => {
-    const values = state.value
-    const substate = signal(evaluate(values)?.valueOf())
-    const subvalues = substate.peek()
+    const values = state.value, subvalues = evaluate(values)?.valueOf()
     // properly extend ignoring keys
     for (let k in values) if (!subvalues.hasOwnProperty(k)) subvalues[k] = values[k]
-    sprae(el, substate)
+    sprae(el, subvalues)
   })
 }
 
@@ -149,7 +129,7 @@ primary['with'] = (el, expr, state) => {
 primary['ref'] = (el, expr, state) => {
   // FIXME: wait for complex ref use-case
   // parseExpr(el, `__state[${expr}]=this`, ':ref')(values)
-  state[expr] = el;
+  state.value[expr] = el;
 }
 
 
@@ -407,7 +387,7 @@ const debounce = (fn, wait) => {
 // set attr
 const attr = (el, name, v) => {
   if (v == null || v === false) el.removeAttribute(name)
-  else el.setAttribute(name, v === true ? '' : (typeof v === 'number' || typeof v === 'string') ? v : '')
+  else if (isPrimitive(v)) el.setAttribute(name, v === true ? '' : v)
 }
 
 

@@ -1,18 +1,18 @@
 import { signal, batch } from '@preact/signals-core';
 import defaultDirective, { primary, secondary } from './directives.js';
 
+export const _state = Symbol('state'), _dispose = (Symbol.dispose ||= Symbol('dispose'))
+
 // sprae element: apply directives
-const memo = new WeakMap
 export default function sprae(container, values) {
   // ignore non-element nodes
   if (!container.children) return
 
   // update values signal
-  if (memo.has(container)) {
-    const [dispose, state] = memo.get(container)
-    const prev = state.peek(), cur = values.valueOf()
+  if (container[_state]) {
+    const state = container[_state], prev = state.peek(), cur = values.valueOf()
     batch(() => (Object.assign(prev, cur), state.value = null, state.value = prev))
-    return dispose
+    return container
   }
 
   // create signal representation of init values - to let attrs react on update
@@ -30,7 +30,7 @@ export default function sprae(container, values) {
         disposes.push(primary[name](el, expr, state, name))
 
         // stop if element was spraed by directive or skipped (detached) like in case of :if or :each
-        if (memo.has(el)) return
+        if (el[_state]) return
         if (el.parentNode !== parent) return false
       }
     }
@@ -67,14 +67,15 @@ export default function sprae(container, values) {
   init(container);
 
   // if element was spraed by :with or :each instruction - skip
-  if (memo.has(container)) return memo.get(container)[0]
+  if (container[_dispose]) return container
 
   // save & return destructor
   const dispose = () => {
     while (disposes.length) disposes.shift()?.();
-    memo.delete(container);
+    container[_dispose] = container[_state] = null
   }
-  memo.set(container, [dispose, state]);
+  container[_dispose] = dispose
+  container[_state] = state
 
-  return dispose
+  return container
 }

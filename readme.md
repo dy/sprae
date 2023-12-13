@@ -24,7 +24,7 @@ Sprae evaluates `:`-attributes and evaporates them.<br/>
 
 ## Reactivity
 
-Sprae can provide reactivity via eg. [preact signals](https://github.com/preactjs/signals). If attribute receives reactive value, it automatically subscribes to it.
+Sprae can provide reactivity via [preact signals](https://github.com/preactjs/signals). If attribute receives reactive value, it automatically subscribes to it.
 
 ```html
 <div id="container" :if="user">

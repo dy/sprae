@@ -297,9 +297,6 @@ Object.defineProperty(_.prototype, "value", { get: function() {
     throw this.v;
   return this.v;
 } });
-function p(i2) {
-  return new _(i2);
-}
 function g(i2) {
   var t2 = i2.u;
   i2.u = void 0;
@@ -393,117 +390,44 @@ function O(i2) {
   return t2.d.bind(t2);
 }
 
-// src/state.signals-proxy.js
-var _dispose = Symbol.dispose ||= Symbol("dispose");
-var _signals = Symbol("signals");
-var sandbox = {
-  Array,
-  Object,
-  Number,
-  String,
-  Boolean,
-  Date,
-  console,
-  window,
-  document,
-  history,
-  navigator,
-  location,
-  screen,
-  localStorage,
-  sessionStorage,
-  alert,
-  prompt,
-  confirm,
-  fetch,
-  performance,
-  setTimeout,
-  setInterval,
-  requestAnimationFrame
-};
-var isObject = (v2) => v2?.constructor === Object;
-var lastProp;
-function createState(values, parent) {
-  if (!isObject(values) && !Array.isArray(values))
-    return values;
-  if (values[_signals] && !parent)
-    return values;
-  const initSignals = values[_signals];
-  const _len = Array.isArray(values) && a((initSignals || values).length), signals = parent ? Object.create((parent = createState(parent))[_signals]) : Array.isArray(values) ? [] : {}, proto = signals.constructor.prototype;
-  const state = new Proxy(values, {
-    has() {
-      return true;
-    },
-    get(values2, key) {
-      if (_len)
-        if (key === "length")
-          return proto[lastProp] ? _len.peek() : _len.value;
-        else
-          lastProp = key;
-      if (proto[key])
-        return proto[key];
-      if (key === _signals)
-        return signals;
-      const s2 = signals[key] || initSignal(key);
-      if (s2)
-        return s2.value;
-      if (parent)
-        return parent[key];
-      return sandbox[key];
-    },
-    set(values2, key, v2) {
-      if (_len) {
-        if (key === "length") {
-          n(() => {
-            for (let i2 = v2, l2 = signals.length; i2 < l2; i2++)
-              delete state[i2];
-            _len.value = signals.length = values2.length = v2;
-          });
-          return true;
-        }
-      }
-      const s2 = signals[key] || initSignal(key, v2) || a();
-      const cur = s2.peek();
-      if (v2 === cur)
-        ;
-      else if (s2._set)
-        s2._set(v2);
-      else if (Array.isArray(v2) && Array.isArray(cur)) {
-        s(() => n(() => {
-          let i2 = 0, l2 = v2.length, vals = values2[key];
-          for (; i2 < l2; i2++)
-            cur[i2] = vals[i2] = v2[i2];
-          cur.length = l2;
-        }));
-      } else {
-        s2.value = createState(values2[key] = v2);
-      }
-      if (_len && key >= _len.peek())
-        _len.value = signals.length = values2.length = Number(key) + 1;
-      return true;
-    },
-    deleteProperty(values2, key) {
-      signals[key]?._del?.(), delete signals[key], delete values2[key];
-      return true;
-    }
-  });
-  for (let key in values)
-    signals[key] = initSignals?.[key] ?? initSignal(key);
-  function initSignal(key) {
-    if (values.hasOwnProperty(key)) {
-      const desc = Object.getOwnPropertyDescriptor(values, key);
-      if (desc?.get) {
-        (signals[key] = p(desc.get.bind(state)))._set = desc.set?.bind(state);
-        return signals[key];
-      }
-      return signals[key] = desc.value?.peek ? desc.value : a(createState(desc.value));
-    }
-  }
-  return state;
-}
+// node_modules/sube/sube.js
+Symbol.observable ||= Symbol("observable");
+var registry = new FinalizationRegistry((unsub) => unsub.call?.());
 
 // src/util.js
 var queueMicrotask = Promise.prototype.then.bind(Promise.resolve());
+
+// node_modules/swapdom/swap-inflate.js
+var swap = (parent, a2, b2, end = null) => {
+  let i2 = 0, cur, next, bi, n2 = b2.length, m = a2.length, { remove, same, insert, replace } = swap;
+  while (i2 < n2 && i2 < m && same(a2[i2], b2[i2]))
+    i2++;
+  while (i2 < n2 && i2 < m && same(b2[n2 - 1], a2[m - 1]))
+    end = b2[--m, --n2];
+  if (i2 == m)
+    while (i2 < n2)
+      insert(end, b2[i2++], parent);
+  else {
+    cur = a2[i2];
+    while (i2 < n2) {
+      bi = b2[i2++], next = cur ? cur.nextSibling : end;
+      if (same(cur, bi))
+        cur = next;
+      else if (i2 < n2 && same(b2[i2], next))
+        replace(cur, bi, parent), cur = next;
+      else
+        insert(cur, bi, parent);
+    }
+    while (!same(cur, end))
+      next = cur.nextSibling, remove(cur, parent), cur = next;
+  }
+  return b2;
+};
+swap.same = (a2, b2) => a2 == b2;
+swap.replace = (a2, b2, parent) => parent.replaceChild(b2, a2);
+swap.insert = (a2, b2, parent) => parent.insertBefore(b2, a2);
+swap.remove = (a2, parent) => parent.removeChild(a2);
+var swap_inflate_default = swap;
 
 // src/directives.js
 var primary = {};
@@ -527,12 +451,12 @@ primary["if"] = (el, expr, state) => {
   }
   el.replaceWith(cur = holder);
   const dispose = O(() => {
-    let i2 = clauses.findIndex((f2) => f2(state));
+    let i2 = clauses.findIndex((evaluate) => evaluate(state.value)?.valueOf());
     if (els[i2] != cur) {
       ;
       (cur[_each] || cur).replaceWith(cur = els[i2] || holder);
-      sprae(cur, state);
     }
+    sprae(cur, state.value);
   });
   return () => {
     for (const el2 of els)
@@ -541,6 +465,7 @@ primary["if"] = (el, expr, state) => {
   };
 };
 var _each = Symbol(":each");
+var _scope = Symbol(":scope");
 primary["each"] = (tpl, expr, state) => {
   let each = parseForExpression(expr);
   if (!each)
@@ -549,69 +474,50 @@ primary["each"] = (tpl, expr, state) => {
   const holder = tpl[_each] = document.createTextNode("");
   tpl.replaceWith(holder);
   const evaluate = parseExpr(tpl, itemsExpr, ":each");
-  let items, prevl = 0, keys2;
+  let cache = {}, curEls = [];
   O(() => {
-    let newItems = evaluate(state);
+    let values = state.value, newItems = evaluate(values).valueOf(), keys2;
     if (!newItems)
-      newItems = [];
-    else if (typeof newItems === "number") {
-      newItems = Array.from({ length: newItems }, (_2, i2) => i2);
-    } else if (Array.isArray(newItems))
-      ;
-    else if (typeof newItems === "object") {
-      keys2 = Object.keys(newItems);
-      newItems = Object.values(newItems);
-    } else {
+      newItems = keys2 = [];
+    else if (typeof newItems === "number")
+      newItems = keys2 = Array.from({ length: newItems }).map((_2, i2) => i2);
+    else if (Array.isArray(newItems))
+      keys2 = newItems.map((item, i2) => i2);
+    else if (typeof newItems === "object")
+      keys2 = Object.keys(newItems), newItems = Object.values(newItems);
+    else
       exprError(Error("Bad items value"), tpl, expr, ":each", newItems);
-    }
-    s(() => n(() => {
-      if (!items?.[_signals][0]?.peek) {
-        for (let i2 = 0, signals = items?.[_signals]; i2 < prevl; i2++)
-          signals[i2]?._del();
-        items = newItems, items[_signals] ||= {};
-      } else {
-        let newl = newItems.length, i2 = 0;
-        for (; i2 < newl; i2++)
-          items[i2] = newItems[i2];
-        items.length = newl;
+    const newEls = [];
+    for (let item of newItems) {
+      let key = item?.key || item?.id;
+      let el = key != null && cache[key];
+      if (!el) {
+        el = tpl.cloneNode(true);
+        if (key != null)
+          cache[key] = el;
       }
-    }));
-    return O(() => {
-      let newl = newItems.length;
-      if (prevl !== newl)
-        s(() => n(() => {
-          const signals = items[_signals];
-          for (let i2 = prevl; i2 < newl; i2++) {
-            items[i2];
-            const el = tpl.cloneNode(true), scope = createState({
-              [itemVar]: signals[i2] ?? items[i2],
-              [idxVar]: keys2?.[i2] ?? i2
-            }, state);
-            holder.before(el);
-            sprae(el, scope);
-            const { _del } = signals[i2] ||= {};
-            signals[i2]._del = () => {
-              delete signals[i2];
-              _del?.();
-              el[_dispose](), el.remove(), delete items[i2];
-            };
-          }
-          prevl = newl;
-        }));
-    });
+      newEls.push(el);
+    }
+    swap_inflate_default(holder.parentNode, curEls, newEls, holder);
+    curEls = newEls;
+    for (let i2 = 0, l2 = newEls.length; i2 < l2; i2++)
+      sprae(newEls[i2], Object.assign(Object.create(values || {}), { [itemVar]: newItems[i2], [idxVar]: keys2[i2] }));
   });
   return () => n(() => {
-    for (let _i of items[_signals])
-      _i?._del();
-    items.length = 0;
+    for (let el of curEls)
+      el[_dispose]?.();
+    cache = curEls = null;
   });
 };
-primary["with"] = (el, expr, rootState) => {
+primary["with"] = (el, expr, state) => {
   let evaluate = parseExpr(el, expr, ":with");
-  const localState = evaluate(rootState);
-  let state = createState(localState, rootState);
-  sprae(el, state);
-  return el[_dispose];
+  return O(() => {
+    const values = state.value, subvalues = evaluate(values)?.valueOf();
+    for (let k in values)
+      if (!subvalues.hasOwnProperty(k))
+        subvalues[k] = values[k];
+    sprae(el, subvalues);
+  });
 };
 primary["ref"] = (el, expr, state) => {
   state[expr] = el;
@@ -635,32 +541,31 @@ function parseForExpression(expression) {
   return [item, "", items];
 }
 secondary["render"] = (el, expr, state) => {
-  let evaluate = parseExpr(el, expr, ":render"), tpl = evaluate(state);
+  let evaluate = parseExpr(el, expr, ":render"), tpl = evaluate(state.value)?.valueOf();
   if (!tpl)
     exprError(new Error("Template not found"), el, expr, ":render");
   let content = tpl.content.cloneNode(true);
   el.replaceChildren(content);
-  sprae(el, state);
-  return el[_dispose];
+  return sprae(el, state);
 };
 secondary["id"] = (el, expr, state) => {
   let evaluate = parseExpr(el, expr, ":id");
   const update = (v2) => el.id = v2 || v2 === 0 ? v2 : "";
-  return O(() => update(evaluate(state)));
+  return O(() => update(evaluate(state.value)?.valueOf()));
 };
 secondary["class"] = (el, expr, state) => {
   let evaluate = parseExpr(el, expr, ":class");
   let initClassName = el.getAttribute("class");
   return O(() => {
-    let v2 = evaluate(state);
+    let v2 = evaluate(state.value)?.valueOf();
     let className = [initClassName];
     if (v2) {
       if (typeof v2 === "string")
         className.push(v2);
       else if (Array.isArray(v2))
-        className.push(...v2);
+        className.push(...v2.map((v3) => v3?.valueOf()));
       else
-        className.push(...Object.entries(v2).map(([k, v3]) => v3 ? k : ""));
+        className.push(...Object.entries(v2).map(([k, v3]) => v3?.valueOf() ? k : ""));
     }
     if (className = className.filter(Boolean).join(" "))
       el.setAttribute("class", className);
@@ -674,7 +579,7 @@ secondary["style"] = (el, expr, state) => {
   if (!initStyle.endsWith(";"))
     initStyle += "; ";
   return O(() => {
-    let v2 = evaluate(state);
+    let v2 = evaluate(state.value)?.valueOf();
     if (typeof v2 === "string")
       el.setAttribute("style", initStyle + v2);
     else {
@@ -690,7 +595,7 @@ secondary["style"] = (el, expr, state) => {
 secondary["text"] = (el, expr, state) => {
   let evaluate = parseExpr(el, expr, ":text");
   return O(() => {
-    let value = evaluate(state);
+    let value = evaluate(state.value)?.valueOf();
     el.textContent = value == null ? "" : value;
   });
 };
@@ -698,7 +603,7 @@ secondary[""] = (el, expr, state) => {
   let evaluate = parseExpr(el, expr, ":");
   if (evaluate)
     return O(() => {
-      let value = evaluate(state);
+      let value = evaluate(state.value)?.valueOf();
       for (let key in value)
         attr(el, dashcase(key), value[key]);
     });
@@ -713,7 +618,7 @@ secondary["value"] = (el, expr, state) => {
     el.selectedOptions[0]?.setAttribute("selected", "");
   } : (value) => el.value = value;
   return O(() => {
-    update(evaluate(state));
+    update(evaluate(state.value)?.valueOf());
   });
 };
 var directives_default = (el, expr, state, name) => {
@@ -725,14 +630,14 @@ var directives_default = (el, expr, state, name) => {
     let off, dispose = O(() => {
       if (off)
         off(), off = null;
-      let value = evaluate(state);
+      let value = evaluate(state.value)?.valueOf();
       if (value)
         off = on(el, evt, value);
     });
     return () => (off?.(), dispose());
   }
   return O(() => {
-    attr(el, name, evaluate(state));
+    attr(el, name, evaluate(state.value)?.valueOf());
   });
 };
 var on = (el, e2, fn) => {
@@ -789,10 +694,10 @@ var mods = {
     return true;
   },
   self: (ctx) => (e2) => e2.target === ctx.target,
-  ctrl: (ctx, ...param) => (e2) => keys.ctrl(e2) && param.every((p2) => keys[p2] ? keys[p2](e2) : e2.key === p2),
-  shift: (ctx, ...param) => (e2) => keys.shift(e2) && param.every((p2) => keys[p2] ? keys[p2](e2) : e2.key === p2),
-  alt: (ctx, ...param) => (e2) => keys.alt(e2) && param.every((p2) => keys[p2] ? keys[p2](e2) : e2.key === p2),
-  meta: (ctx, ...param) => (e2) => keys.meta(e2) && param.every((p2) => keys[p2] ? keys[p2](e2) : e2.key === p2),
+  ctrl: (ctx, ...param) => (e2) => keys.ctrl(e2) && param.every((p) => keys[p] ? keys[p](e2) : e2.key === p),
+  shift: (ctx, ...param) => (e2) => keys.shift(e2) && param.every((p) => keys[p] ? keys[p](e2) : e2.key === p),
+  alt: (ctx, ...param) => (e2) => keys.alt(e2) && param.every((p) => keys[p] ? keys[p](e2) : e2.key === p),
+  meta: (ctx, ...param) => (e2) => keys.meta(e2) && param.every((p) => keys[p] ? keys[p](e2) : e2.key === p),
   arrow: (ctx) => keys.arrow,
   enter: (ctx) => keys.enter,
   escape: (ctx) => keys.escape,
@@ -857,7 +762,7 @@ function parseExpr(el, expression, dir) {
   let evaluate = evaluatorMemo[expression];
   if (!evaluate) {
     try {
-      evaluate = evaluatorMemo[expression] = new Function(`__scope`, `with (__scope) { let __; return ${expression.trim()} };`);
+      evaluate = evaluatorMemo[expression] = new Function(`__state={}`, `with (__state) { return ${expression.trim()} };`);
     } catch (e2) {
       return exprError(e2, el, expression, dir);
     }
@@ -888,15 +793,17 @@ function dashcase(str) {
 }
 
 // src/core.js
-sprae.globals = sandbox;
-var memo = /* @__PURE__ */ new WeakMap();
+var _state = Symbol("state");
+var _dispose = Symbol.dispose ||= Symbol("dispose");
 function sprae(container, values) {
   if (!container.children)
     return;
-  if (memo.has(container))
-    return n(() => Object.assign(memo.get(container), values));
-  const state = createState(values || {});
-  const disposes = [];
+  if (container[_state]) {
+    const state2 = container[_state], prev = state2.peek(), cur = values.valueOf();
+    n(() => (Object.assign(prev, cur), state2.value = null, state2.value = prev));
+    return container;
+  }
+  const disposes = [], state = values?.peek ? values : a(values);
   const init = (el, parent = el.parentNode) => {
     for (let name in primary) {
       let attrName = ":" + name;
@@ -904,7 +811,7 @@ function sprae(container, values) {
         let expr = el.getAttribute(attrName);
         el.removeAttribute(attrName);
         disposes.push(primary[name](el, expr, state, name));
-        if (memo.has(el))
+        if (el[_state])
           return;
         if (el.parentNode !== parent)
           return false;
@@ -932,18 +839,16 @@ function sprae(container, values) {
     }
   };
   init(container);
-  if (memo.has(container))
-    return state;
-  memo.set(container, state);
-  if (disposes.length)
-    Object.defineProperty(container, _dispose, {
-      value: () => {
-        while (disposes.length)
-          disposes.shift()?.();
-        memo.delete(container);
-      }
-    });
-  return state;
+  if (container[_dispose])
+    return container;
+  const dispose = () => {
+    while (disposes.length)
+      disposes.shift()?.();
+    container[_dispose] = container[_state] = null;
+  };
+  container[_dispose] = dispose;
+  container[_state] = state;
+  return container;
 }
 
 // src/index.js

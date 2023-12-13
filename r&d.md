@@ -532,7 +532,11 @@
     - `:id` is string, `:ref` is var name
   ? maybe id should have same signature
   ? should it be very similar mechanism to `:with="a=1,b=2"`
-  ~ ref must be possible as `:fx="x=this"`
+
+  ? ref must be possible as `:fx="x=this"`, or just as `:ref="a=this"`
+    - must have that ref available in state
+    - must return null to not create attribute
+
 
 ## [x] Event modifiers :ona.once, `:ona` -> let's try, there's a lot of use for both props and event
 
