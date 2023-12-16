@@ -4,7 +4,7 @@ import defaultDirective, { primary, secondary } from './directives.js';
 export const _state = Symbol('state'), _dispose = (Symbol.dispose ||= Symbol('dispose'))
 
 // sprae element: apply directives
-export default function sprae(container, values) {
+export default function sprae(container, values = {}) {
   // ignore non-element nodes
   if (!container.children) return
 

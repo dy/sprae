@@ -525,7 +525,7 @@
   + shorter and nicer syntax
   - possibly longer init
 
-## [ ] Better :ref
+## [x] Better :ref -> ok, it is meaningful as is now
 
   + :ref="`a-${1}`"
   + :id:ref="xyz"
@@ -618,7 +618,7 @@
   * [ ] :prop.class
     ? what's the use-case
   * [ ] :prop.next="" - run update after other DOM updates happen
-  * [ ] :prop.fx="" - run effect without changing property
+  * [ ] :prop.fx="" - run effect without changing property (return doesn't do anything)
   * [ ] :x.prop="xyz" - set element property, rather than attribute (following topic)
   * [ ] :x.raf="abc" - run regularly?
   * [ ] :x.watch-a-b-c - update by change of any of the deps

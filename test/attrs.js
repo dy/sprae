@@ -823,9 +823,9 @@ test(':render by ref', async () => {
 
 test(':render state', async () => {
   let a = h`<template :ref="abc"><div :text="text"></div></template><x :render="abc" />`
-  let state = sprae(a, { text: 'abc' })
+  let state = { text: signal('abc') }; sprae(a, state)
   is(a.outerHTML, `<template><div :text="text"></div></template><x><div>abc</div></x>`)
-  state.text = 'def'
+  state.text.value = 'def'
   await tick()
   is(a.outerHTML, `<template><div :text="text"></div></template><x><div>def</div></x>`)
 })
