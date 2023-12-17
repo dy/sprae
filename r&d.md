@@ -717,15 +717,21 @@
 
   - Parent state can dynamically obtain new signal, and nested states won't have access to that
 
-## [x] Ditch proxy-store in favor of preact/signals -> let's try
+## [x] Ditch proxy-store in favor of preact/signals -> ~~let's try~~ - doesn't give much effect
 
   + way less size
+    ~ 1kb
   + way easier internal logic/debugging
   + reactive values are explicitly kept
+    - creates more code & internal troubles
   + no duplication
+    ? what's that
   + state update can be done in proper batch-way `sprae(el, obj)`
+    - internally update forces update-all
   + sprae can return `dispose` function directly
+    ~ not such a big pro
   + better performance / memory metrics
+    - not the fact, trouble of clearing memory
   + simpler API: there's no notion of state
   - no Sandbox
     ~ it's sifting anyways
@@ -744,7 +750,7 @@
   + there's less point of holding autosprae
   - :disabled="!name" - too much hassle to create computed prop, no?
 
-### [ ] What's possible best way to indicate dependencies (w/o signals)
+### [x] ~~What's possible best way to indicate dependencies (w/o signals)~~
   ? :disabled~name="!name"
     - not valid attribute
   ? :disabled.-name
