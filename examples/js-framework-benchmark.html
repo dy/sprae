@@ -63,7 +63,7 @@
   </div>
 
   <script type="module">
-    import sprae from '../sprae.js'
+    import sprae, { signal, batch } from '../sprae.js'
 
     const adjectives = ['pretty', 'large', 'big', 'small', 'tall', 'short', 'long', 'handsome', 'plain', 'quaint', 'clean', 'elegant', 'easy', 'angry', 'crazy', 'helpful', 'mushy', 'odd', 'unsightly', 'adorable', 'important', 'inexpensive', 'cheap', 'expensive', 'fancy']
     const colours = ['red', 'yellow', 'blue', 'green', 'pink', 'brown', 'purple', 'brown', 'white', 'black', 'orange']
@@ -87,54 +87,62 @@
       return Math.round(Math.random() * 1000) % max
     }
 
-    sprae(document.getElementById('main'), {
-      rows: buildData(3),
-      selected: null,
+    const state = {
+      rows: signal(buildData(3)),
+      selected: signal(null),
 
       remove(item) {
-        const index = this.rows.findIndex(x => (x.id == item.id))
-        this.rows.splice(index, 1)
+        const rows = this.rows.value
+        const index = rows.findIndex(x => (x.id == item.id))
+        rows.splice(index, 1)
+        batch(() => (this.rows.value = null, this.rows.value = rows))
       },
 
       select(item) {
-        this.selected = item
+        this.selected.value = item
       },
 
       run() {
-        this.rows = buildData(1000)
-        this.selected = null
+        this.rows.value = buildData(1000)
+        this.selected.value = null
       },
 
       add() {
-        this.rows = this.rows.concat(buildData(1000))
-        this.selected = null
+        this.rows.value = this.rows.value.concat(buildData(1000))
+        this.selected.value = null
       },
 
       update() {
-        for (let i = 0; i < this.rows.length; i += 10) {
-          this.rows[i].label += ' !!!'
+        const rows = this.rows.value
+        for (let i = 0; i < rows.length; i += 10) {
+          rows[i].label += ' !!!'
         }
-        this.selected = null
+        this.selected.value = null
+        batch(() => (this.rows.value = null, this.rows.value = rows))
       },
 
       runLots() {
-        this.rows = buildData(10000)
-        this.selected = null
+        this.rows.value = buildData(10000)
+        this.selected.value = null
       },
 
       clear() {
-        this.rows = []
-        this.selected = null
+        this.rows.value = []
+        this.selected.value = null
       },
 
       swap() {
-        if (this.rows.length > 998) {
-          const a = this.rows[1]
-          this.rows[1] = this.rows[998]
-          this.rows[998] = a
+        const rows = this.rows.value
+        if (rows.length > 998) {
+          const a = rows[1]
+          rows[1] = rows[998]
+          rows[998] = a
         }
+        batch(() => (this.rows.value = null, this.rows.value = rows))
       }
-    })
+    }
+
+    sprae(document.getElementById('main'), state)
   </script>
 </body>
 

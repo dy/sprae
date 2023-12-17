@@ -297,6 +297,9 @@ Object.defineProperty(_.prototype, "value", { get: function() {
     throw this.v;
   return this.v;
 } });
+function p(i2) {
+  return new _(i2);
+}
 function g(i2) {
   var t2 = i2.u;
   i2.u = void 0;
@@ -396,6 +399,7 @@ var registry = new FinalizationRegistry((unsub) => unsub.call?.());
 
 // src/util.js
 var queueMicrotask = Promise.prototype.then.bind(Promise.resolve());
+var isPrimitive = (value) => value !== Object(value);
 
 // node_modules/swapdom/swap-inflate.js
 var swap = (parent, a2, b2, end = null) => {
@@ -520,7 +524,7 @@ primary["with"] = (el, expr, state) => {
   });
 };
 primary["ref"] = (el, expr, state) => {
-  state[expr] = el;
+  state.value[expr] = el;
 };
 function parseForExpression(expression) {
   let forIteratorRE = /,([^,\}\]]*)(?:,([^,\}\]]*))?$/;
@@ -694,10 +698,10 @@ var mods = {
     return true;
   },
   self: (ctx) => (e2) => e2.target === ctx.target,
-  ctrl: (ctx, ...param) => (e2) => keys.ctrl(e2) && param.every((p) => keys[p] ? keys[p](e2) : e2.key === p),
-  shift: (ctx, ...param) => (e2) => keys.shift(e2) && param.every((p) => keys[p] ? keys[p](e2) : e2.key === p),
-  alt: (ctx, ...param) => (e2) => keys.alt(e2) && param.every((p) => keys[p] ? keys[p](e2) : e2.key === p),
-  meta: (ctx, ...param) => (e2) => keys.meta(e2) && param.every((p) => keys[p] ? keys[p](e2) : e2.key === p),
+  ctrl: (ctx, ...param) => (e2) => keys.ctrl(e2) && param.every((p2) => keys[p2] ? keys[p2](e2) : e2.key === p2),
+  shift: (ctx, ...param) => (e2) => keys.shift(e2) && param.every((p2) => keys[p2] ? keys[p2](e2) : e2.key === p2),
+  alt: (ctx, ...param) => (e2) => keys.alt(e2) && param.every((p2) => keys[p2] ? keys[p2](e2) : e2.key === p2),
+  meta: (ctx, ...param) => (e2) => keys.meta(e2) && param.every((p2) => keys[p2] ? keys[p2](e2) : e2.key === p2),
   arrow: (ctx) => keys.arrow,
   enter: (ctx) => keys.enter,
   escape: (ctx) => keys.escape,
@@ -754,8 +758,8 @@ var debounce = (fn, wait) => {
 var attr = (el, name, v2) => {
   if (v2 == null || v2 === false)
     el.removeAttribute(name);
-  else
-    el.setAttribute(name, v2 === true ? "" : typeof v2 === "number" || typeof v2 === "string" ? v2 : "");
+  else if (isPrimitive(v2))
+    el.setAttribute(name, v2 === true ? "" : v2);
 };
 var evaluatorMemo = {};
 function parseExpr(el, expression, dir) {
@@ -795,7 +799,7 @@ function dashcase(str) {
 // src/core.js
 var _state = Symbol("state");
 var _dispose = Symbol.dispose ||= Symbol("dispose");
-function sprae(container, values) {
+function sprae(container, values = {}) {
   if (!container.children)
     return;
   if (container[_state]) {
@@ -856,5 +860,11 @@ var src_default = sprae;
 if (document.currentScript)
   sprae(document.documentElement);
 export {
-  src_default as default
+  d as Signal,
+  n as batch,
+  p as computed,
+  src_default as default,
+  O as effect,
+  a as signal,
+  s as untracked
 };
