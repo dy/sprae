@@ -110,7 +110,6 @@ primary['each'] = (tpl, expr, state) => {
         // init new items
         const signals = items[_signals]
         for (let i = prevl; i < newl; i++) {
-          items[i]; // touch item to create signal
           const el = tpl.cloneNode(true),
             // instead of substate we create inherited object (less memory & faster)
             scope = Object.create(state, {
