@@ -120,7 +120,7 @@ primary['each'] = (tpl, expr, state) => {
           holder.before(el)
           sprae(el, scope)
           const { _del } = (signals[i] ||= {});
-          signals[i]._del = () => { delete signals[i]; _del?.(); el[_dispose](), el.remove(), delete items[i] }
+          signals[i]._del = () => { delete items[i]; _del?.(); el[_dispose](), el.remove() }
         }
         prevl = newl
       }))

@@ -100,7 +100,14 @@ export default function createState(values, parent) {
       return true
     },
     deleteProperty(values, key) {
-      signals[key]?._del?.(), delete signals[key], delete values[key]
+      const s = signals[key]
+      if (s) {
+        const { _del } = s
+        delete s._del
+        delete signals[key]
+        _del?.()
+      }
+      delete values[key]
       return true
     }
   })

@@ -485,7 +485,14 @@
         return true;
       },
       deleteProperty(values2, key) {
-        signals[key]?._del?.(), delete signals[key], delete values2[key];
+        const s2 = signals[key];
+        if (s2) {
+          const { _del } = s2;
+          delete s2._del;
+          delete signals[key];
+          _del?.();
+        }
+        delete values2[key];
         return true;
       }
     });
@@ -587,7 +594,6 @@
           s(() => n(() => {
             const signals = items[_signals];
             for (let i2 = prevl; i2 < newl; i2++) {
-              items[i2];
               const el = tpl.cloneNode(true), scope = Object.create(state, {
                 [itemVar]: { get() {
                   return items[i2];
@@ -599,9 +605,9 @@
               sprae(el, scope);
               const { _del } = signals[i2] ||= {};
               signals[i2]._del = () => {
-                delete signals[i2];
+                delete items[i2];
                 _del?.();
-                el[_dispose](), el.remove(), delete items[i2];
+                el[_dispose](), el.remove();
               };
             }
             prevl = newl;
