@@ -430,6 +430,9 @@ function createState(values, parent) {
     return values;
   const initSignals = values[_signals];
   const _len = Array.isArray(values) && a((initSignals || values).length), signals = parent ? Object.create((parent = createState(parent))[_signals]) : Array.isArray(values) ? [] : {}, proto = signals.constructor.prototype;
+  if (parent)
+    for (let key in parent)
+      parent[key];
   const state = new Proxy(values, {
     has() {
       return true;
@@ -447,8 +450,6 @@ function createState(values, parent) {
       const s2 = signals[key] || initSignal(key);
       if (s2)
         return s2.value;
-      if (parent)
-        return parent[key];
       return sandbox[key];
     },
     set(values2, key, v2) {
@@ -546,6 +547,9 @@ primary["each"] = (tpl, expr, state) => {
   if (!each)
     return exprError(new Error(), tpl, expr, ":each");
   const [itemVar, idxVar, itemsExpr] = each;
+  const refName = tpl.getAttribute(":ref") || "";
+  if (refName)
+    tpl.removeAttribute(":ref");
   const holder = tpl[_each] = document.createTextNode("");
   tpl.replaceWith(holder);
   const evaluate = parseExpr(tpl, itemsExpr, ":each");
@@ -583,10 +587,13 @@ primary["each"] = (tpl, expr, state) => {
           const signals = items[_signals];
           for (let i2 = prevl; i2 < newl; i2++) {
             items[i2];
-            const el = tpl.cloneNode(true), scope = createState({
-              [itemVar]: signals[i2] ?? items[i2],
-              [idxVar]: keys2?.[i2] ?? i2
-            }, state);
+            const el = tpl.cloneNode(true), scope = Object.create(state, {
+              [itemVar]: { get() {
+                return items[i2];
+              } },
+              [idxVar]: { value: keys2?.[i2] ?? i2 },
+              [refName]: { value: el }
+            });
             holder.before(el);
             sprae(el, scope);
             const { _del } = signals[i2] ||= {};

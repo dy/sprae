@@ -43,6 +43,8 @@ export default function createState(values, parent) {
     signals = parent ? Object.create((parent = createState(parent))[_signals]) : Array.isArray(values) ? [] : {},
     proto = signals.constructor.prototype;
 
+  if (parent) for (let key in parent) parent[key] // touch parent keys
+
   // proxy conducts prop access to signals
   const state = new Proxy(values, {
     // sandbox everything
@@ -56,7 +58,6 @@ export default function createState(values, parent) {
       if (key === _signals) return signals
       const s = signals[key] || initSignal(key)
       if (s) return s.value // existing property
-      if (parent) return parent[key]; // touch parent
       return sandbox[key] // Array, window etc
     },
     set(values, key, v) {
