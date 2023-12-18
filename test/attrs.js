@@ -576,6 +576,12 @@ test.skip('each: keyed', async () => {
   // is(el.firstChild, first)
 })
 
+test.skip('each: perf', async () => {
+  console.time(1)
+  let state = sprae(h`<div><x :each="x in 100000" :text="x"></x></div>`)
+  console.timeEnd(1)
+})
+
 test('each: wrapped source', async () => {
   let el = h`<div><x :each="i in (x || 2)" :text="i"></x></div>`
   sprae(el, { x: 0 })
@@ -824,11 +830,12 @@ test('ref: base', async () => {
   is(state.a, a, 'Exposes to the state');
 })
 
-test('ref: with :each', () => {
+test('ref: with :each', async () => {
   let a = h`<y><x :ref="x" :each="item in items" :text="log.push(x), item"/></y>`
-  let state = sprae(a, { log: [], items: [1, 2] })
-  is(a.innerHTML, `<x>1</x><x>2</x>`)
+  let state = sprae(a, { log: [], items: [1, 2, 3] })
+  await tick()
   is(state.log, [...a.children])
+  is(a.innerHTML, `<x>1</x><x>2</x><x>3</x>`)
 })
 
 test(':: reactive values', async () => {

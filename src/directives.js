@@ -58,6 +58,10 @@ primary['each'] = (tpl, expr, state) => {
 
   const [itemVar, idxVar, itemsExpr] = each;
 
+  // we have to handle item :ref separately since we don't create substates
+  const refName = tpl.getAttribute(':ref') || ''
+  if (refName) tpl.removeAttribute(':ref')
+
   // we need :if to be able to replace holder instead of tpl for :if :each case
   const holder = tpl[_each] = document.createTextNode('')
   tpl.replaceWith(holder)
@@ -108,10 +112,12 @@ primary['each'] = (tpl, expr, state) => {
         for (let i = prevl; i < newl; i++) {
           items[i]; // touch item to create signal
           const el = tpl.cloneNode(true),
-            scope = createState({
-              [itemVar]: signals[i] ?? items[i],
-              [idxVar]: keys?.[i] ?? i
-            }, state)
+            // instead of substate we create inherited object (less memory & faster)
+            scope = Object.create(state, {
+              [itemVar]: { get() { return items[i] } },
+              [idxVar]: { value: keys?.[i] ?? i },
+              [refName]: { value: el },
+            })
           holder.before(el)
           sprae(el, scope)
           const { _del } = (signals[i] ||= {});
@@ -140,8 +146,6 @@ primary['with'] = (el, expr, rootState) => {
 
 // ref must be last within primaries, since that must be skipped by :each, but before secondaries
 primary['ref'] = (el, expr, state) => {
-  // FIXME: wait for complex ref use-case
-  // parseExpr(el, `__scope[${expr}]=this`, ':ref')(values)
   state[expr] = el;
 }
 
