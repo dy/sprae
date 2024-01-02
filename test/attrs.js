@@ -830,6 +830,18 @@ test('ref: base', async () => {
   is(state.a, a, 'Exposes to the state');
 })
 
+test('ref: signal', async () => {
+  let a = h`<a :ref="a" :text="b"></a>`
+  let state = sprae(a, { a: signal(), b: signal(1) })
+  await tick()
+  is(state.a, a)
+  is(a.outerHTML, `<a>1</a>`)
+  state.b = 2
+  await tick()
+  is(a.outerHTML, `<a>2</a>`)
+  is(state.a, a, 'Exposes to the state');
+})
+
 test('ref: with :each', async () => {
   let a = h`<y><x :ref="x" :each="item in items" :text="log.push(x), item"/></y>`
   let state = sprae(a, { log: [], items: [1, 2, 3] })

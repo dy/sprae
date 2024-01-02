@@ -525,7 +525,7 @@
   + shorter and nicer syntax
   - possibly longer init
 
-## [ ] Better :ref
+## [x] Better :ref
 
   + :ref="`a-${1}`"
   + :id:ref="xyz"
@@ -533,6 +533,8 @@
   ? maybe id should have same signature
   ? should it be very similar mechanism to `:with="a=1,b=2"`
   ~ ref must be possible as `:fx="x=this"`
+    - returning non-null sets effect prop
+  * ref can have predefined signal as value, then signal must be set, not directly prop
 
 ## [x] Event modifiers :ona.once, `:ona` -> let's try, there's a lot of use for both props and event
 
