@@ -714,3 +714,8 @@
 ## [x] Take over parent signals, rather than inherit?
 
   - Parent state can dynamically obtain new signal, and nested states won't have access to that
+
+## [ ] Is there a way to predefine state static / dynamic props via signals?
+
+  * Since exposing signals in templates didn't seem to have worked well, we can predefine state values instead of creating a proxy.
+  - props would need to be predefined in advance

@@ -1,7 +1,7 @@
 // directives & parsing
 import sprae from './core.js'
 import createState, { effect, computed, untracked, batch, _dispose, _signals } from './state.signals-proxy.js'
-import { queueMicrotask } from './util.js'
+import { getFirstProperty, queueMicrotask } from './util.js'
 
 // reserved directives - order matters!
 // primary initialized first by selector, secondary initialized by iterating attributes
@@ -69,37 +69,37 @@ primary['each'] = (tpl, expr, state) => {
   const evaluate = parseExpr(tpl, itemsExpr, ':each');
 
   // we re-create items any time new items are produced
-  let items, prevl = 0, keys
+  let curItems, prevl = 0, keys
   effect(() => {
-    let newItems = evaluate(state)
+    let srcItems = evaluate(state), newItems
 
     // convert items to array
-    if (!newItems) newItems = []
-    else if (typeof newItems === 'number') {
-      newItems = Array.from({ length: newItems }, (_, i) => i)
+    if (!srcItems) newItems = []
+    else if (typeof srcItems === 'number') {
+      newItems = Array.from({ length: srcItems }, (_, i) => i)
     }
-    else if (Array.isArray(newItems));
-    else if (typeof newItems === 'object') {
-      keys = Object.keys(newItems);
-      newItems = Object.values(newItems);
+    else if (Array.isArray(srcItems)) newItems = srcItems;
+    else if (typeof srcItems === 'object') {
+      keys = Object.keys(srcItems);
+      newItems = Object.values(srcItems);
     }
     else {
-      exprError(Error('Bad items value'), tpl, expr, ':each', newItems)
+      exprError(Error('Bad items value'), tpl, expr, ':each', srcItems)
     }
 
     untracked(() => batch(() => {
-      // init items
-      if (!items?.[_signals][0]?.peek) {
-        // manual dispose for plain arrays (not states) - _signals here is just fake holder for destructors
-        for (let i = 0, signals = items?.[_signals]; i < prevl; i++) signals[i]?._del()
-        // NOTE: new items are initialized in length effect below
-        items = newItems, items[_signals] ||= {}
+      // (re)init items
+      if (!curItems || !getFirstProperty(curItems[_signals])?.peek) {
+        // manual dispose for plain (non-state) arrays - _signals here is just fake holder for destructors
+        for (let i = 0, signals = curItems?.[_signals]; i < prevl; i++) signals[i]?._del()
+        // NOTE: new items are initialized in length effect below; we stub signals
+        curItems = newItems, curItems[_signals] ||= []
       }
       // patch existing items and insert new items - init happens in length effect
       else {
         let newl = newItems.length, i = 0
-        for (; i < newl; i++) items[i] = newItems[i]
-        items.length = newl // dispose tail (done internally in state)
+        for (; i < newl; i++) curItems[i] = newItems[i]
+        curItems.length = newl // dispose tail (done internally in state)
       }
     }))
 
@@ -107,20 +107,21 @@ primary['each'] = (tpl, expr, state) => {
     return effect(() => {
       let newl = newItems.length // indicate that we track it
       if (prevl !== newl) untracked(() => batch(() => {
+        const signals = curItems[_signals]
         // init new items
-        const signals = items[_signals]
         for (let i = prevl; i < newl; i++) {
+          const idx = keys?.[i] ?? i
           const el = tpl.cloneNode(true),
             // instead of substate we create inherited object (less memory & faster)
             scope = Object.create(state, {
-              [itemVar]: { get() { return items[i] } },
-              [idxVar]: { value: keys?.[i] ?? i },
+              [itemVar]: { get() { return curItems[i] } },
+              [idxVar]: { value: idx },
               [refName]: { value: el },
             })
           holder.before(el)
           sprae(el, scope)
           const { _del } = (signals[i] ||= {});
-          signals[i]._del = () => { delete items[i]; _del?.(); el[_dispose](), el.remove() }
+          signals[i]._del = () => { delete curItems[i]; _del?.(); el[_dispose](), el.remove() }
         }
         prevl = newl
       }))
@@ -128,8 +129,9 @@ primary['each'] = (tpl, expr, state) => {
   })
 
   return () => batch(() => {
-    for (let _i of items[_signals]) _i?._del()
-    items.length = 0
+    for (let _i of curItems[_signals]) _i?._del()
+    curItems[_signals].length = 0
+    curItems.length = 0
   })
 }
 
