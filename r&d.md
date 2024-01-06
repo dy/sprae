@@ -719,3 +719,4 @@
 
   * Since exposing signals in templates didn't seem to have worked well, we can predefine state values instead of creating a proxy.
   - props would need to be predefined in advance
+  + it must simplify tracking new props in object (we just prohibit that)

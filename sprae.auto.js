@@ -551,61 +551,58 @@
   };
   var _each = Symbol(":each");
   primary["each"] = (tpl, expr, state) => {
-    let each = parseForExpression(expr);
+    const each = parseForExpression(expr);
     if (!each)
       return exprError(new Error(), tpl, expr, ":each");
     const [itemVar, idxVar, itemsExpr] = each;
-    const refName = tpl.getAttribute(":ref") || "";
-    if (refName)
-      tpl.removeAttribute(":ref");
     const holder = tpl[_each] = document.createTextNode("");
     tpl.replaceWith(holder);
     const evaluate = parseExpr(tpl, itemsExpr, ":each");
-    let items, prevl = 0, keys2;
+    let curItems, signals;
     O(() => {
-      let newItems = evaluate(state);
-      if (!newItems)
+      let srcItems = evaluate(state), newItems, keys2;
+      let prevl = curItems?.length || 0;
+      if (!srcItems)
         newItems = [];
-      else if (typeof newItems === "number") {
-        newItems = Array.from({ length: newItems }, (_2, i2) => i2);
-      } else if (Array.isArray(newItems))
-        ;
-      else if (typeof newItems === "object") {
-        keys2 = Object.keys(newItems);
-        newItems = Object.values(newItems);
+      else if (typeof srcItems === "number") {
+        newItems = Array.from({ length: srcItems }, (_2, i2) => i2);
+      } else if (Array.isArray(srcItems))
+        newItems = srcItems;
+      else if (typeof srcItems === "object") {
+        keys2 = Object.keys(srcItems);
+        newItems = Object.values(srcItems);
       } else {
-        exprError(Error("Bad items value"), tpl, expr, ":each", newItems);
+        exprError(Error("Bad items value"), tpl, expr, ":each", srcItems);
       }
       s(() => n(() => {
-        if (!items?.[_signals][0]?.peek) {
-          for (let i2 = 0, signals = items?.[_signals]; i2 < prevl; i2++)
+        if (!curItems || !curItems[_signals]) {
+          for (let i2 = 0; i2 < prevl; i2++)
             signals[i2]?._del();
-          items = newItems, items[_signals] ||= {};
+          curItems = newItems, signals = curItems[_signals] || [];
+          if (keys2)
+            prevl = 0;
         } else {
           let newl = newItems.length, i2 = 0;
           for (; i2 < newl; i2++)
-            items[i2] = newItems[i2];
-          items.length = newl;
+            curItems[i2] = newItems[i2];
+          curItems.length = newl;
         }
       }));
       return O(() => {
         let newl = newItems.length;
         if (prevl !== newl)
           s(() => n(() => {
-            const signals = items[_signals];
             for (let i2 = prevl; i2 < newl; i2++) {
-              const el = tpl.cloneNode(true), scope = Object.create(state, {
-                [itemVar]: { get() {
-                  return items[i2];
-                } },
-                [idxVar]: { value: keys2?.[i2] ?? i2 },
-                [refName]: { value: el }
-              });
+              const idx = keys2?.[i2] ?? i2;
+              const el = tpl.cloneNode(true), scope = createState({
+                [itemVar]: signals[i2] ?? curItems[i2],
+                [idxVar]: idx
+              }, state);
               holder.before(el);
               sprae(el, scope);
               const { _del } = signals[i2] ||= {};
               signals[i2]._del = () => {
-                delete items[i2];
+                delete curItems[i2];
                 _del?.();
                 el[_dispose](), el.remove();
               };
@@ -615,9 +612,10 @@
       });
     });
     return () => n(() => {
-      for (let _i of items[_signals])
+      for (let _i of signals)
         _i?._del();
-      items.length = 0;
+      signals.length = 0;
+      curItems.length = 0;
     });
   };
   primary["with"] = (el, expr, rootState) => {

@@ -72,6 +72,7 @@ primary['each'] = (tpl, expr, state) => {
   let curItems, signals
   effect(() => {
     let srcItems = evaluate(state), newItems, keys
+    let prevl = curItems?.length || 0
 
     // convert items to array
     if (!srcItems) newItems = []
@@ -87,8 +88,6 @@ primary['each'] = (tpl, expr, state) => {
       exprError(Error('Bad items value'), tpl, expr, ':each', srcItems)
     }
 
-    let prevl = curItems?.length || 0
-
     untracked(() => batch(() => {
       // (re)init items (if plain array/obj passed instead of proxy-state)
       if (!curItems || !curItems[_signals]) {
@@ -96,6 +95,7 @@ primary['each'] = (tpl, expr, state) => {
         for (let i = 0; i < prevl; i++) signals[i]?._del()
         // NOTE: new items are initialized in length effect below;
         curItems = newItems, signals = curItems[_signals] || []
+        if (keys) prevl = 0 // NOTE: objects regenerate full list each time instead of subscription
       }
       // patch existing items and insert new items - init happens in length effect
       else {
@@ -107,7 +107,7 @@ primary['each'] = (tpl, expr, state) => {
 
     // length change effect
     return effect(() => {
-      let newl = newItems.length // indicate that we track it
+      let newl = newItems.length // indicate that we track length
       if (prevl !== newl) untracked(() => batch(() => {
         // init new items
         for (let i = prevl; i < newl; i++) {

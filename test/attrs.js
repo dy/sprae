@@ -390,7 +390,7 @@ test('each: array shift, pop', async () => {
   is(el.innerHTML, '<span>1</span>')
 })
 
-test.only('each: object', async () => {
+test('each: object', async () => {
   let el = h`<p>
     <span :each="x,key in b" :text="[key,x]"></span>
   </p>`
@@ -411,7 +411,7 @@ test.only('each: object', async () => {
   is(el.innerHTML, '')
 })
 
-test.only('each: #12 - changing internal object prop', async () => {
+test('each: #12 - changing internal object prop', async () => {
   let el = h`<div>
     <x :each="o in obj" :text="o"></x>
   </div>`
@@ -421,9 +421,11 @@ test.only('each: #12 - changing internal object prop', async () => {
   console.log('-----set a')
   state.obj.a = 'newvala' // :each not working after this
   is(el.outerHTML, `<div><x>newvala</x><x>b</x></div>`)
+  // state.obj.c = 1
+  // is(el.outerHTML, `<div><x>newvala</x><x>b</x><x>c</x></div>`)
 })
 
-test.only('each: #12 - changing internal array prop', async () => {
+test('each: #12a - changing internal array prop', async () => {
   let el = h`<div>
     <x :each="o of arr" :text="o"></x>
   </div>`
@@ -433,7 +435,10 @@ test.only('each: #12 - changing internal array prop', async () => {
   console.log('-----set a')
   state.arr[0] = 'newvala' // :each not working after this
   is(el.outerHTML, `<div><x>newvala</x><x>b</x></div>`)
+  state.arr[2] = 'c' // :each not working after this
+  is(el.outerHTML, `<div><x>newvala</x><x>b</x><x>c</x></div>`)
 })
+
 
 
 
@@ -460,7 +465,7 @@ test('each: loop within loop', async () => {
   // is(el.innerHTML, '')
 })
 
-test.only('each: reactive values', async () => {
+test('each: reactive values', async () => {
   let el = h`<p>
     <span :each="a in b" :text="a"></span>
   </p>`
