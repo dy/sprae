@@ -59,8 +59,8 @@ primary['each'] = (tpl, expr, state) => {
   const [itemVar, idxVar, itemsExpr] = each;
 
   // we have to handle item :ref separately since we don't create substates
-  const refName = tpl.getAttribute(':ref') || ''
-  if (refName) tpl.removeAttribute(':ref')
+  // const refName = tpl.getAttribute(':ref') || ''
+  // if (refName) tpl.removeAttribute(':ref')
 
   // we need :if to be able to replace holder instead of tpl for :if :each case
   const holder = tpl[_each] = document.createTextNode('')
@@ -69,7 +69,7 @@ primary['each'] = (tpl, expr, state) => {
   const evaluate = parseExpr(tpl, itemsExpr, ':each');
 
   // we re-create items any time new items are produced
-  let curItems, prevl = 0, keys, signals
+  let curItems, keys, signals
   effect(() => {
     let srcItems = evaluate(state), newItems
 
@@ -87,10 +87,12 @@ primary['each'] = (tpl, expr, state) => {
       exprError(Error('Bad items value'), tpl, expr, ':each', srcItems)
     }
 
+    let prevl = curItems?.length || 0
+
     untracked(() => batch(() => {
       // (re)init items
       // FIXME: maybe instead of storing signals on items we can store fake signals outside and curItems would be actual srcItems?
-      if (!curItems || !getFirstProperty(curItems[_signals])?.peek) {
+      if (!curItems || !getFirstProperty(signals)?.peek) {
         // manual dispose for plain (non-state) arrays - _signals here is just fake holder for destructors
         for (let i = 0; i < prevl; i++) signals[i]?._del()
         // NOTE: new items are initialized in length effect below; we stub signals
@@ -110,14 +112,19 @@ primary['each'] = (tpl, expr, state) => {
       if (prevl !== newl) untracked(() => batch(() => {
         // init new items
         for (let i = prevl; i < newl; i++) {
+          // curItems[i]; touch item to create a signal
           const idx = keys?.[i] ?? i
           const el = tpl.cloneNode(true),
-            // instead of substate we create inherited object (less memory & faster)
-            scope = Object.create(state, {
-              [itemVar]: { get() { return curItems[i] } },
-              [idxVar]: { value: idx },
-              [refName]: { value: el },
-            })
+            // inherited object instead of substate (less memory & faster)
+            // scope = Object.create(state, {
+            //   [itemVar]: { get() { return curItems[i] } },
+            //   [idxVar]: { value: idx },
+            //   [refName]: { value: el },
+            // })
+            scope = createState({
+              [itemVar]: signals[i] ?? curItems[i],
+              [idxVar]: idx
+            }, state)
           holder.before(el)
           sprae(el, scope)
           const { _del } = (signals[i] ||= {});
