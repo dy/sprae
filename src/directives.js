@@ -90,13 +90,12 @@ primary['each'] = (tpl, expr, state) => {
     let prevl = curItems?.length || 0
 
     untracked(() => batch(() => {
-      // (re)init items
-      // FIXME: maybe instead of storing signals on items we can store fake signals outside and curItems would be actual srcItems?
-      if (!curItems || !getFirstProperty(signals)?.peek) {
-        // manual dispose for plain (non-state) arrays - _signals here is just fake holder for destructors
+      // (re)init items (if plain array/obj passed instead of proxy-state)
+      if (!curItems || !curItems[_signals]) {
+        // manual dispose for plain (non-state) arrays - signals here is just holder for destructors
         for (let i = 0; i < prevl; i++) signals[i]?._del()
-        // NOTE: new items are initialized in length effect below; we stub signals
-        curItems = newItems, signals = (curItems[_signals] ||= [])
+        // NOTE: new items are initialized in length effect below;
+        curItems = newItems, signals = curItems[_signals] || []
       }
       // patch existing items and insert new items - init happens in length effect
       else {
@@ -112,7 +111,6 @@ primary['each'] = (tpl, expr, state) => {
       if (prevl !== newl) untracked(() => batch(() => {
         // init new items
         for (let i = prevl; i < newl; i++) {
-          // curItems[i]; touch item to create a signal
           const idx = keys?.[i] ?? i
           const el = tpl.cloneNode(true),
             // inherited object instead of substate (less memory & faster)

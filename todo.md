@@ -66,3 +66,4 @@
 * [x] Fix multiple `.push` cycle problem
 * [x] ~~Make regular proxy state not causing infinite recursion~~ we don't hold to own proxy now
 * [x] All FIXMEs
+* [ ] Avoid creating signals for static values
