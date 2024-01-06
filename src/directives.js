@@ -69,7 +69,7 @@ primary['each'] = (tpl, expr, state) => {
   const evaluate = parseExpr(tpl, itemsExpr, ':each');
 
   // we re-create items any time new items are produced
-  let curItems, prevl = 0, keys
+  let curItems, prevl = 0, keys, signals
   effect(() => {
     let srcItems = evaluate(state), newItems
 
@@ -89,11 +89,12 @@ primary['each'] = (tpl, expr, state) => {
 
     untracked(() => batch(() => {
       // (re)init items
+      // FIXME: maybe instead of storing signals on items we can store fake signals outside and curItems would be actual srcItems?
       if (!curItems || !getFirstProperty(curItems[_signals])?.peek) {
         // manual dispose for plain (non-state) arrays - _signals here is just fake holder for destructors
-        for (let i = 0, signals = curItems?.[_signals]; i < prevl; i++) signals[i]?._del()
+        for (let i = 0; i < prevl; i++) signals[i]?._del()
         // NOTE: new items are initialized in length effect below; we stub signals
-        curItems = newItems, curItems[_signals] ||= []
+        curItems = newItems, signals = (curItems[_signals] ||= [])
       }
       // patch existing items and insert new items - init happens in length effect
       else {
@@ -107,7 +108,6 @@ primary['each'] = (tpl, expr, state) => {
     return effect(() => {
       let newl = newItems.length // indicate that we track it
       if (prevl !== newl) untracked(() => batch(() => {
-        const signals = curItems[_signals]
         // init new items
         for (let i = prevl; i < newl; i++) {
           const idx = keys?.[i] ?? i
@@ -129,8 +129,8 @@ primary['each'] = (tpl, expr, state) => {
   })
 
   return () => batch(() => {
-    for (let _i of curItems[_signals]) _i?._del()
-    curItems[_signals].length = 0
+    for (let _i of signals) _i?._del()
+    signals.length = 0
     curItems.length = 0
   })
 }
