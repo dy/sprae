@@ -273,7 +273,7 @@ t('state: object patch', async () => {
   is(s.o, { y: 2 })
 })
 
-t.todo('state: set element as prop', () => {
+t('state: set element as prop', () => {
   const a = document.createElement('a')
   let s = state({ a })
   s.b = a
@@ -281,7 +281,7 @@ t.todo('state: set element as prop', () => {
   is(s.b, a)
 })
 
-t.skip('state: arrays retain reference', () => {
+t('state: arrays retain reference', () => {
   // NOTE: not sure if we need it
   // arrays retain reference
   let list = [1, 2, 3]
@@ -365,6 +365,12 @@ t('state: inheritance does not change root', () => {
   const root = state({ x: 1, y: 2 })
   const s = state({ x: 2 }, root)
   is(root.x, 1)
+})
+
+t.todo('state: adding new props to object triggers effect', () => {
+  const s = state({ x: 1, y: 2 }), log = []
+  fx(() => (log.push(s)))
+  is()
 })
 
 t('state: bench', async () => {

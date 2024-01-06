@@ -1,6 +1,6 @@
 // directives & parsing
 import sprae from './core.js'
-import createState, { effect, computed, untracked, batch, _dispose, _signals } from './state.signals-proxy.js'
+import createState, { effect, computed, untracked, batch, _dispose, _signals, _change } from './state.signals-proxy.js'
 import { getFirstProperty, queueMicrotask } from './util.js'
 
 // reserved directives - order matters!
@@ -83,6 +83,7 @@ primary['each'] = (tpl, expr, state) => {
     else if (typeof srcItems === 'object') {
       keys = Object.keys(srcItems);
       newItems = Object.values(srcItems);
+      srcItems[_change]; // subscribe to object new props changes
     }
     else {
       exprError(Error('Bad items value'), tpl, expr, ':each', srcItems)
@@ -107,7 +108,7 @@ primary['each'] = (tpl, expr, state) => {
 
     // length change effect
     return effect(() => {
-      let newl = newItems.length // indicate that we track length
+      let newl = newItems.length; // indicate that we track length
       if (prevl !== newl) untracked(() => batch(() => {
         // init new items
         for (let i = prevl; i < newl; i++) {

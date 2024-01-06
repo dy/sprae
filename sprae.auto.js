@@ -397,6 +397,7 @@
   // src/state.signals-proxy.js
   var _dispose = Symbol.dispose ||= Symbol("dispose");
   var _signals = Symbol("signals");
+  var _change = Symbol("length");
   var sandbox = {
     Array,
     Object,
@@ -430,7 +431,7 @@
     if (values[_signals] && !parent)
       return values;
     const initSignals = values[_signals];
-    const _len = Array.isArray(values) && a((initSignals || values).length), signals = parent ? Object.create((parent = createState(parent))[_signals]) : Array.isArray(values) ? [] : {}, proto = signals.constructor.prototype;
+    const isArr = Array.isArray(values), _len = a(Object.values(values).length), signals = parent ? Object.create((parent = createState(parent))[_signals]) : Array.isArray(values) ? [] : {}, proto = signals.constructor.prototype;
     if (parent)
       for (let key in parent)
         parent[key];
@@ -439,7 +440,7 @@
         return true;
       },
       get(values2, key) {
-        if (_len)
+        if (isArr)
           if (key === "length")
             return proto[lastProp] ? _len.peek() : _len.value;
           else
@@ -448,13 +449,15 @@
           return proto[key];
         if (key === _signals)
           return signals;
+        if (key === _change)
+          return _len.value;
         const s2 = signals[key] || initSignal(key);
         if (s2)
           return s2.value;
         return sandbox[key];
       },
       set(values2, key, v2) {
-        if (_len) {
+        if (isArr) {
           if (key === "length") {
             n(() => {
               for (let i2 = v2, l2 = signals.length; i2 < l2; i2++)
@@ -464,7 +467,8 @@
             return true;
           }
         }
-        const s2 = signals[key] || initSignal(key, v2) || a();
+        let newProp = false;
+        const s2 = signals[key] || initSignal(key, v2) || (newProp = true, a());
         const cur = s2.peek();
         if (v2 === cur)
           ;
@@ -480,8 +484,12 @@
         } else {
           s2.value = createState(values2[key] = v2);
         }
-        if (_len && key >= _len.peek())
-          _len.value = signals.length = values2.length = Number(key) + 1;
+        if (isArr) {
+          if (key >= _len.peek())
+            _len.value = signals.length = values2.length = Number(key) + 1;
+        } else if (newProp) {
+          _len.value++;
+        }
         return true;
       },
       deleteProperty(values2, key) {
@@ -493,6 +501,8 @@
           _del?.();
         }
         delete values2[key];
+        if (!isArr)
+          _len.value--;
         return true;
       }
     });
@@ -571,6 +581,7 @@
       else if (typeof srcItems === "object") {
         keys2 = Object.keys(srcItems);
         newItems = Object.values(srcItems);
+        srcItems[_change];
       } else {
         exprError(Error("Bad items value"), tpl, expr, ":each", srcItems);
       }

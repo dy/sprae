@@ -14,7 +14,7 @@ import { signal, computed, effect, batch, untracked } from '@preact/signals-core
 export { effect, computed, batch, untracked }
 
 export const _dispose = (Symbol.dispose ||= Symbol('dispose'));
-export const _signals = Symbol('signals');
+export const _signals = Symbol('signals'), _change = Symbol('length');
 
 
 // default root sandbox
@@ -33,12 +33,14 @@ let lastProp
 
 export default function createState(values, parent) {
   if (!isObject(values) && !Array.isArray(values)) return values;
+
   // ignore existing state as argument
   if (values[_signals] && !parent) return values;
   const initSignals = values[_signals]
 
-  // .length signal is stored outside, since cannot be replaced
-  const _len = Array.isArray(values) && signal((initSignals || values).length),
+  // .length signal is stored outside, since it cannot be replaced
+  // _len stores total values length (for objects as well)
+  const isArr = Array.isArray(values), _len = signal(Object.values(values).length),
     // dict with signals storing values
     signals = parent ? Object.create((parent = createState(parent))[_signals]) : Array.isArray(values) ? [] : {},
     proto = signals.constructor.prototype;
@@ -49,19 +51,22 @@ export default function createState(values, parent) {
   const state = new Proxy(values, {
     // sandbox everything
     has() { return true },
+
     get(values, key) {
       // if .length is read within .push/etc - peek signal (don't subscribe)
-      if (_len)
+      if (isArr)
         if (key === 'length') return (proto[lastProp]) ? _len.peek() : _len.value;
         else lastProp = key;
       if (proto[key]) return proto[key]
       if (key === _signals) return signals
+      if (key === _change) return _len.value
       const s = signals[key] || initSignal(key)
       if (s) return s.value // existing property
       return sandbox[key] // Array, window etc
     },
+
     set(values, key, v) {
-      if (_len) {
+      if (isArr) {
         // .length
         if (key === 'length') {
           batch(() => {
@@ -73,7 +78,8 @@ export default function createState(values, parent) {
         }
       }
 
-      const s = signals[key] || initSignal(key, v) || signal()
+      let newProp = false
+      const s = signals[key] || initSignal(key, v) || (newProp = true, signal())
       const cur = s.peek()
 
       // skip unchanged (although can be handled by last condition - we skip a few checks this way)
@@ -95,10 +101,17 @@ export default function createState(values, parent) {
       }
 
       // force changing length, if eg. a=[]; a[1]=1 - need to come after setting the item
-      if (_len && key >= _len.peek()) _len.value = signals.length = values.length = Number(key) + 1
+      if (isArr) {
+        if (key >= _len.peek()) _len.value = signals.length = values.length = Number(key) + 1
+      }
+      // bump _change for object
+      else if (newProp) {
+        _len.value++
+      }
 
       return true
     },
+
     deleteProperty(values, key) {
       const s = signals[key]
       if (s) {
@@ -108,6 +121,7 @@ export default function createState(values, parent) {
         _del?.()
       }
       delete values[key]
+      if (!isArr) _len.value--
       return true
     }
   })

@@ -421,8 +421,8 @@ test('each: #12 - changing internal object prop', async () => {
   console.log('-----set a')
   state.obj.a = 'newvala' // :each not working after this
   is(el.outerHTML, `<div><x>newvala</x><x>b</x></div>`)
-  // state.obj.c = 1
-  // is(el.outerHTML, `<div><x>newvala</x><x>b</x><x>c</x></div>`)
+  state.obj.c = 'c'
+  is(el.outerHTML, `<div><x>newvala</x><x>b</x><x>c</x></div>`)
 })
 
 test('each: #12a - changing internal array prop', async () => {
