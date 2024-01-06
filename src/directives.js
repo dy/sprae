@@ -53,12 +53,12 @@ const _each = Symbol(':each')
 
 // :each must init before :ref, :id or any others, since it defines scope
 primary['each'] = (tpl, expr, state) => {
-  let each = parseForExpression(expr);
+  const each = parseForExpression(expr);
   if (!each) return exprError(new Error, tpl, expr, ':each');
 
   const [itemVar, idxVar, itemsExpr] = each;
 
-  // we have to handle item :ref separately since we don't create substates
+  // we have to handle item :ref separately if don't create substates
   // const refName = tpl.getAttribute(':ref') || ''
   // if (refName) tpl.removeAttribute(':ref')
 
@@ -69,9 +69,9 @@ primary['each'] = (tpl, expr, state) => {
   const evaluate = parseExpr(tpl, itemsExpr, ':each');
 
   // we re-create items any time new items are produced
-  let curItems, keys, signals
+  let curItems, signals
   effect(() => {
-    let srcItems = evaluate(state), newItems
+    let srcItems = evaluate(state), newItems, keys
 
     // convert items to array
     if (!srcItems) newItems = []
