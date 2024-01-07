@@ -40,7 +40,7 @@ export default function createState(values, parent) {
 
   // .length signal is stored outside, since it cannot be replaced
   // _len stores total values length (for objects as well)
-  const isArr = Array.isArray(values), _len = signal(Object.values(values).length),
+  const isArr = Array.isArray(values), _len = signal(isArr ? values.length : Object.values(values).length),
     // dict with signals storing values
     signals = parent ? Object.create((parent = createState(parent))[_signals]) : Array.isArray(values) ? [] : {},
     proto = signals.constructor.prototype;

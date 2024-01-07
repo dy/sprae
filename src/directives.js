@@ -76,9 +76,7 @@ primary['each'] = (tpl, expr, state) => {
 
     // convert items to array
     if (!srcItems) newItems = []
-    else if (typeof srcItems === 'number') {
-      newItems = Array.from({ length: srcItems }, (_, i) => i)
-    }
+    else if (typeof srcItems === 'number') newItems = Array.from({ length: srcItems }, (_, i) => i)
     else if (Array.isArray(srcItems)) newItems = srcItems;
     else if (typeof srcItems === 'object') {
       keys = Object.keys(srcItems);

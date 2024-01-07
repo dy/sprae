@@ -431,7 +431,7 @@
     if (values[_signals] && !parent)
       return values;
     const initSignals = values[_signals];
-    const isArr = Array.isArray(values), _len = a(Object.values(values).length), signals = parent ? Object.create((parent = createState(parent))[_signals]) : Array.isArray(values) ? [] : {}, proto = signals.constructor.prototype;
+    const isArr = Array.isArray(values), _len = a(isArr ? values.length : Object.values(values).length), signals = parent ? Object.create((parent = createState(parent))[_signals]) : Array.isArray(values) ? [] : {}, proto = signals.constructor.prototype;
     if (parent)
       for (let key in parent)
         parent[key];
@@ -574,9 +574,9 @@
       let prevl = curItems?.length || 0;
       if (!srcItems)
         newItems = [];
-      else if (typeof srcItems === "number") {
+      else if (typeof srcItems === "number")
         newItems = Array.from({ length: srcItems }, (_2, i2) => i2);
-      } else if (Array.isArray(srcItems))
+      else if (Array.isArray(srcItems))
         newItems = srcItems;
       else if (typeof srcItems === "object") {
         keys2 = Object.keys(srcItems);
