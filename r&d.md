@@ -465,6 +465,7 @@
     + we anyways enforce full-update for object changes
 
 
+
 ## [x] :each over/undersubscription -> proxy-signals store solves that
 
 * we must subscribe to each item from the list - it should update itself only, not the whole list. How?
@@ -756,4 +757,14 @@
   + anyways updating every prop reflects DOM update immediately, there doesn't seem to be a big win
   + multiple props can be combined into computed signal or called manually via batch
 
-## [ ] CSP warni
+## [ ] 9.0
+  * subscript-based parsing
+    + see subscript-based store analysis, mainly CSP, justin limits, better access to source, better internal JS
+  * :with -> :scope
+    + with has bad associations
+    + :scope potentially allows for `$template` property
+    + :scope is alpine, vue compatible
+  * Get rid of `:on` events - attributes are no-fn expressions
+  * Get rid of sprae.auto
+  * No-batch
+  * No store, directly signals
