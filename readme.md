@@ -50,6 +50,8 @@ Sprae creates reactive state that mirrors current DOM values.<br/>
 It is based on [signals](https://github.com/preactjs/signals) and can take them as inputs.
 
 ```js
+import { signal } from '@preact/signals-core'
+
 const version = signal('alpha')
 
 // Sprae container with initial state values
