@@ -2,10 +2,10 @@
 
 > DOM tree hydration with reactivity.
 
-_Sprae_ is compact ergonomic[*](#justification--alternatives) progressive enhancement framework.<br/>
+_Sprae_ is compact ergonomic progressive enhancement framework.<br/>
 It provides reactive `:`-attributes that enable simple markup logic without need for complex scripts.<br/>
 Perfect for small-scale websites, prototypes or UI logic.<br/>
-It is tiny and performant alternative to [alpine](https://github.com/alpinejs/alpine), [petite-vue](https://github.com/vuejs/petite-vue) or [template-parts](https://github.com/github/template-parts).
+It is tiny, performant and open-philosophy alternative to [alpine](https://github.com/alpinejs/alpine), [petite-vue](https://github.com/vuejs/petite-vue) or [template-parts](https://github.com/github/template-parts).
 
 ## Usage
 
@@ -284,6 +284,8 @@ To destroy state and detach sprae handlers, call `element[Symbol.dispose]()`.
 
 See [js-framework-benchmark](https://krausest.github.io/js-framework-benchmark/current.html#eyJmcmFtZXdvcmtzIjpbIm5vbi1rZXllZC9wZXRpdGUtdnVlIiwibm9uLWtleWVkL3NwcmFlIl0sImJlbmNobWFya3MiOlsiMDFfcnVuMWsiLCIwMl9yZXBsYWNlMWsiLCIwM191cGRhdGUxMHRoMWtfeDE2IiwiMDRfc2VsZWN0MWsiLCIwNV9zd2FwMWsiLCIwNl9yZW1vdmUtb25lLTFrIiwiMDdfY3JlYXRlMTBrIiwiMDhfY3JlYXRlMWstYWZ0ZXIxa194MiIsIjA5X2NsZWFyMWtfeDgiLCIyMV9yZWFkeS1tZW1vcnkiLCIyMl9ydW4tbWVtb3J5IiwiMjNfdXBkYXRlNS1tZW1vcnkiLCIyNV9ydW4tY2xlYXItbWVtb3J5IiwiMjZfcnVuLTEway1tZW1vcnkiLCIzMV9zdGFydHVwLWNpIiwiMzRfc3RhcnR1cC10b3RhbGJ5dGVzIiwiNDFfc2l6ZS11bmNvbXByZXNzZWQiLCI0Ml9zaXplLWNvbXByZXNzZWQiXSwiZGlzcGxheU1vZGUiOjF9).
 
+![Benchmark](./bench.png)
+
 <details>
 <summary>How to run</summary>
 
@@ -294,7 +296,7 @@ npm run install-server
 npm start
 
 # build
-cd frameworks/keyed/sprae
+cd frameworks/non-keyed/sprae
 npm ci
 npm run build-prod
 
