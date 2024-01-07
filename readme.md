@@ -14,7 +14,7 @@ It is tiny, performant and open alternative to [alpine](https://github.com/alpin
 To autoinit document, include [`sprae.auto.js`](./sprae.auto.js):
 
 ```html
-<!-- <script src="https://cdn.jsdelivr.net/npm/sprae/sprae.auto.js" defer></script> -->
+<!-- <script src="https://cdn.jsdelivr.net/npm/sprae/dist/sprae.auto.js" defer></script> -->
 <script defer src="./path/to/sprae.auto.js"></script>
 
 <ul>
@@ -34,7 +34,7 @@ To init manually as module, import [`sprae.js`](./sprae.js):
 </div>
 
 <script type="module">
-  // import sprae from 'https://cdn.jsdelivr.net/npm/sprae/sprae.js';
+  // import sprae from 'https://cdn.jsdelivr.net/npm/sprae/dist/sprae.js';
   import sprae from './path/to/sprae.js';
 
   const state = sprae(container, { user: { name: 'Dmitry Ivanov' } });
