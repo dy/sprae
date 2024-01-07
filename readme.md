@@ -47,10 +47,10 @@ Sprae evaluates `:`-attributes and evaporates them.<br/>
 ## State
 
 Sprae creates reactive state that mirrors current DOM values.<br/>
-It is based on [signals](https://github.com/preactjs/signals) and can take them as inputs.
+It is based on [@preact/signals](https://github.com/preactjs/signals) and can take them as inputs.
 
 ```js
-import { signal } from '@preact/signals-core'
+import { signal } from  'sprae' // or '@preact/signals-core'
 
 const version = signal('alpha')
 
@@ -62,9 +62,6 @@ state.foo = 'baz'
 
 // Update the version signal, which also triggers a DOM refresh
 version.value = 'beta'
-
-// For batch update, re-sprae with new state values
-sprae(container, { foo: 'qux', version: 'gamma' })
 ```
 
 ## Attributes

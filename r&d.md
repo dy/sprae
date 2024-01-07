@@ -352,15 +352,23 @@
   + that "unlimits" returned struct, so that any property can be added/deleted.
   - doesn't really save from `new (()=>{}).constructor` hack: we gotta substitute objects too.
     ~ Proxy doesn't save from that either
+    ~+ we can prohibit `new` and braces/functions in general, straight fn bodies
   + allows easier handle of `:with="a=1,b=2,c=3"` - we just naturally get local variables without messup with global
     + we can even define locals without `let`...
   - not having "comfy" compatible JS at hand: cognitive load of whole language "layer" in-between
     ~ `:each` is not js anyways
+    + it's unsafe feeling (also CSP) having JS straight in attributes
+    + there's certain hacks and limitations to JS anyways (we can't use let,const,var)
+    + there's some established convention for jessie, justin, jsep etc.
+    + not having full JS can be a good practice and protection agains unnecessary stuff
+    + that can be a very common syntax
   + allows `let a = 1; a;` case instead of `let a = 1; return a;`
   - we can't identify dynamic parts like `x[y]`, whereas Proxy subscribe dynamically
     ~ we can detect dynamic parts and handle them on proxy
+    + at least we know about dynamic reads
   + subscript allows subscriptions to async functions, unlike signals
   +? we can detect `array.length`, not sure what for
+  * SO that can be a simplified subset of JS, like Jessie or Jason
 
 -> We can benchmark if updating set of known dependencies is faster than using preact subscriptions.
   + it seems more logical min-ground to know in advance what we depend on, rather than detect by-call as signals do.
@@ -404,7 +412,7 @@
 - no comfy js at hand
 - doesn't detect dynamic subs like `calc().length`
 
-## [x] Store: strategies -> 3. seems the most balanced for now
+## [x] Store: strategies -> signals-proxy seems the most balanced for now
 
 1. Signals struct
   + fastest
@@ -412,6 +420,8 @@
   + seals object
   + no circular update trouble
   - doesn't handle arrays
+  -~ no sandboxing
+  -~ no dynamic props
 
 2. Proxy
   + any-prop access, including not-existing
@@ -437,9 +447,23 @@
     + hi-quality though
   - doesn't solve recursive .length out of the box
     ~ alleviated by tracking
-  - store looks ugly, some proxies over signals objects
 
 4. Subscript-based something
+  * Eg. we pass simple object, not store.
+    * Subscript wraps prop access into reading `.valueOf()`, so we don't have to deal with signals in templates
+    * Or we can even expose signals as-is, since they cast to their value in expressions and whatnot
+  + that solves issue of CSP
+  + that detects globals in-advance
+  + that gives anticipated store schema
+  ~ there's no update via proxy, reactivity is only via signals
+    + fits web-components case
+  -~ problems of subscript above
+  - doesn't solve live arrays: they can only be signals
+    ~+ which can be more explicit of what's going on
+  ~ implies swapdom since full-array gets updated every time
+    ~ can be better for updates than full-update as it is now
+    + we anyways enforce full-update for object changes
+
 
 ## [x] :each over/undersubscription -> proxy-signals store solves that
 
@@ -702,6 +726,11 @@
     3. There's too many ways to implement fetching - ideally we leave that concern out and focus only on including content
     4. The approach is almost ready declarative custom element. `<template>` is standard part of it - adds to 1.
 
+  6. :scope="{$template:xxx}"
+
+  + like petite-vue
+  - some special prop is needed
+
 ## [x] Remove non-essential directives -> yep, less API friction
   * :aria - can be defined via plain attributes
   * :data - confusable with :scope, doesn't provide much value, can be used as `:data-x=""` etc
@@ -720,3 +749,11 @@
   * Since exposing signals in templates didn't seem to have worked well, we can predefine state values instead of creating a proxy.
   - props would need to be predefined in advance
   + it must simplify tracking new props in object (we just prohibit that)
+
+## [x] No batch? -> let's try
+
+  + less API
+  + anyways updating every prop reflects DOM update immediately, there doesn't seem to be a big win
+  + multiple props can be combined into computed signal or called manually via batch
+
+## [ ] CSP warni
