@@ -24,7 +24,8 @@ Sprae evaluates `:`-attributes and evaporates them.<br/>
 
 ## Reactivity
 
-Sprae can provide reactivity via [preact signals](https://github.com/preactjs/signals). If attribute receives reactive value, it automatically subscribes to it.
+Sprae can provide reactivity via [preact signals](https://github.com/preactjs/signals).
+If attribute receives reactive value, it automatically subscribes to it.
 
 ```html
 <div id="container" :if="user">
@@ -33,16 +34,16 @@ Sprae can provide reactivity via [preact signals](https://github.com/preactjs/si
 
 <script type="module">
   import sprae from 'sprae';
-  import {signal} from '@preact/signals-core';
+  import { signal } from '@preact/signals-core';
 
   const state = { user: { name: signal('Dmitry Ivanov') } };
 
-  sprae(container, state);
+  const unsprae = sprae(container, state);
   state.user.name.value = 'Dhira Kanta'; // update
+
+  unsprae(); // sidpose sprayed logic
 </script>
 ```
-
-Unsubscription happens automatically once target is garbage collected.
 
 ## Attributes
 
@@ -126,20 +127,20 @@ Set value of an input, textarea or select. Takes handle of `checked` and `select
 </select>
 ```
 
-#### `:with="data"`
+#### `:scope="data"`
 
 Define or extend data scope for a subtree.
 
 ```html
 <!-- Inline data -->
-<x :with="{ foo: 'bar' }" :text="foo"></x>
+<x :scope="{ foo: 'bar' }" :text="foo"></x>
 
 <!-- External data -->
-<y :with="data"></y>
+<y :scope="data"></y>
 
 <!-- Extend scope -->
-<x :with="{ foo: 'bar' }">
-  <y :with="{ baz: 'qux' }" :text="foo + baz"></y>
+<x :scope="{ foo: 'bar' }">
+  <y :scope="{ baz: 'qux' }" :text="foo + baz"></y>
 </x>
 ```
 
@@ -156,9 +157,6 @@ Set any attribute value or run an effect.
 
 <!-- Effect - returns undefined, triggers any time bar changes -->
 <div :fx="void bar()" ></div>
-
-<!-- Raw event listener (see events) -->
-<div :onclick="e=>e.preventDefault()"></div>
 ```
 
 #### `:="props?"`
@@ -180,8 +178,8 @@ Expose element to current data scope with the `id`:
 
 <!-- iterable items -->
 <ul>
-  <li :each="item in items" :ref="item">
-    <input @focus="item.classList.add('editing')" @blur="item.classList.remove('editing')"/>
+  <li :each="item in items" :ref="el">
+    <input @focus="el.classList.add('editing')" @blur="el.classList.remove('editing')"/>
   </li>
 </ul>
 ```
