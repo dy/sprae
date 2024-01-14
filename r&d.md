@@ -97,7 +97,7 @@
 
 -> possibly we have to just subscribe via mechanism of signals-like deps, and :with just initializes subtree with extended object
 
-## [x] :with? -> let's use `:with="{x:1,y:2,z:3}"` for now
+## [ ] :with? -> ~~let's use `:with="{x:1,y:2,z:3}"` for now~~ :with is poor shim for componentization
 
   1. Get rid of :with
     + with is bad JS practice/association
@@ -119,6 +119,10 @@
       * eg. `<span class="preloader" :with="{str: ''}" :init="setTimeout(() => str+='.', 500)" :text="str" />`
       * that plays role of watch that doesn't require to be outside of local component state.
     - `:with` allows local component state not cluttering global state. There's really no way to define local state that doesn't affect global state.
+      ~- imagine components rendered within :each or :template, every of them may have internal state
+        +~ that seems more like a component concern, :with seems to provide a whacky hack to create scope/shadow
+    - `:with` is main way to provide `auto` entry
+      ~ we can sacrifice `auto`
   1.1 Slim `:with="{a,b,c}"` - just initializes vars
     - Doesn't give easy init syntax
     + Convevtional and not hard to implement
@@ -132,6 +136,7 @@
     ? how to extend state
   3. `:with.x="1", :with.y="2"`
     + easier to parse, since init code can be _messy_
+    - against paradigm
 
 ## [x] Should we inherit values from `init` in `sprae(el, init)`, instead of creating a snapshot of reactive values in `init`? -> nah, nice idea but too little use. Better create signals struct.
 
@@ -159,12 +164,16 @@
 -> so that directive updator gets invoked only when any of expr dependencies change
 -> gotta solve via signal-struct
 
-## [x] Replace :else-if with :else :if -> not ideal technically, but done
+## [x] Replace :else-if with :else :if -> no
 
 + `:else :if=""` is meaningful expansion of both directives
 + `:else :if` is coming from JS
 + `:else :if` doesn't throw error in JSDOM tests
-- less resemblance with vue: who cares, we already remotely resemble it
+- less resemblance with vue
+  ~ we don't care as_much, alpine doesn't even have that
+- loses indicator that it's single token, it's still parsed in-relation
+  ~ it should be separate tokens, like :else [do rest]
+- it can confuse `:if :else` for `:else :if` which is wrong
 
 ## [x] Keep className marker of directive or not? -> no
 
@@ -230,7 +239,7 @@
   + useful for :if, :each
   + useful to dispose listeners via :onunmount (opposed to hidden symbols)
   - doesn't really solve disposal: if element is attached again, it would need to reattach removed listeners
-    -> can be dolved via teardowns returned from updators
+    -> can be solved via teardowns returned from updators
     -> nah, event listeners don't need collection, just make sure no refs to element remain
   + can be useful for lazy-loadings
 
@@ -286,13 +295,20 @@
 
 ## [ ] Plugins
 
-* ~~@sprae/tailwind: `<x :tw="mt-1 mx-2"></x>` - separate tailwind utility classes from main ones; allow conditional setters.~~
-* @sprae/item: `<x :item="{type:a, scope:b}"` – provide microdata
-  - can be solved naturally, unless there's special meaning
-* @sprae/hcodes: `<x :hcode=""` – provide microformats
-* @sprae/onvisible?
-  - can be solved externally
-* @sprae/onintersects
+  * ~~@sprae/tailwind: `<x :tw="mt-1 mx-2"></x>` - separate tailwind utility classes from main ones; allow conditional setters.~~
+  * @sprae/item: `<x :item="{type:a, scope:b}"` – provide microdata
+    - can be solved naturally, unless there's special meaning
+  * @sprae/hcodes: `<x :hcode=""` – provide microformats
+  * @sprae/visible?
+    - can be solved externally
+  * @sprae/intersect
+  * @sprae/aria
+  * @sprae/data
+  * @sprae/persists - mb for signals?
+  * @sprae/mount
+  * @sprae/use?
+  * @sprae/input - for input values
+  * @sprae/
 
 ## [x] Write any-attributes via `:<prop>? -> yep`
 
@@ -465,7 +481,6 @@
     + we anyways enforce full-update for object changes
 
 
-
 ## [x] :each over/undersubscription -> proxy-signals store solves that
 
 * we must subscribe to each item from the list - it should update itself only, not the whole list. How?
@@ -560,6 +575,7 @@
   ~ ref must be possible as `:fx="x=this"`
     - returning non-null sets effect prop
   * ref can have predefined signal as value, then signal must be set, not directly prop
+  * it can be generalized as `:set="x=this"` or `:with="{x:this}"`
 
 ## [x] Event modifiers :ona.once, `:ona` -> let's try, there's a lot of use for both props and event
 
@@ -750,6 +766,7 @@
   * Since exposing signals in templates didn't seem to have worked well, we can predefine state values instead of creating a proxy.
   - props would need to be predefined in advance
   + it must simplify tracking new props in object (we just prohibit that)
+  * see no-state branch
 
 ## [x] No batch? -> let's try
 
@@ -759,12 +776,32 @@
 
 ## [ ] 9.0
   * subscript-based parsing
-    + see subscript-based store analysis, mainly CSP, justin limits, better access to source, better internal JS
+    + see subscript-based store: mainly CSP & no-store eval
   * :with -> :scope
-    + with has bad associations
-    + :scope potentially allows for `$template` property
-    + :scope is alpine, vue compatible
   * Get rid of `:on` events - attributes are no-fn expressions
   * Get rid of sprae.auto
   * No-batch
   * No store, directly signals
+  * Plugins?
+  * Rewrite with `nadi`: sprae becomes just a form of hypd + nadi, one of nadis essentially
+
+## [ ] Imagine dom-signals. What would be redundant in sprae?
+  * :text, :class, :style, :value, :prop, :props, :render/:html - just simple writer signals
+    * `elText = text(el, 'init'); elText.value=123`, `elClass = cl(el, init)`, `elContent = html(el, init)`
+  * :if, :each - can be controllable too, more complicated since act in-context
+    * `items = each(placeholder, (item,i)=>el, items)`, `cond = if(el, el2?, cond); cur = select([el1,el2,el3], 0)`
+  * :ref, :with/:scope, :set act in-context, modify data for nested levels
+    * :ref is questionable, but do we really need scope? let's try to answer once again.
+    * the main purpose of :with from examples is component scope, like shadow.
+    * secondary purpose is defining per-item property not belonging outside.
+    * in other words, it's cheap componentization (in react done as separate component).
+      * instead of :with, we can use `template = :render(el, data, template?)`
+        + that would enforce good practice of obvious scope
+        * which is essentially `sprae(el, data, template?)` - with template, content is replaced; without template content is hydrated.
+          * `with(el, data)` === `sprae(el, data)` in terms of signals
+      * alternatively (ideally) we just pass props to another custom element and let it handle internals
+
+  * splitting off such signals would
+    + make lightweight hyperf implementation (no fear of heavy stuff), signals: html`${a}`, str`${a}+${b}`
+    + make controllable element dom-signals
+    -> let's call that project nadi

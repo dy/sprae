@@ -10,42 +10,40 @@ export const primary = {}, secondary = {}
 // :if is interchangeable with :each depending on order, :if :each or :each :if have different meanings
 // as for :if :with - :if must init first, since it is lazy, to avoid initializing component ahead of time by :with
 // we consider :with={x} :if={x} case insignificant
-primary['if'] = (el, expr, state) => {
+const _else = Symbol('else')
+primary['if'] = (ifEl, expr, state) => {
   let holder = document.createTextNode(''),
-    clauses = [parseExpr(el, expr, ':if')],
-    els = [el], cur = el
+    check = parseExpr(ifEl, expr, ':if'),
+    cur, elseEl = ifEl.nextElementSibling, prevPass = ifEl[_else],
+    pass = computed(() => check(state))
 
-  // consume all following siblings with :else, :if into a single group
-  while (cur = el.nextElementSibling) {
-    if (cur.hasAttribute(':else')) {
-      cur.removeAttribute(':else');
-      if (expr = cur.getAttribute(':if')) {
-        cur.removeAttribute(':if'), cur.remove();
-        els.push(cur); clauses.push(parseExpr(el, expr, ':else :if'));
-      }
-      else {
-        cur.remove(); els.push(cur); clauses.push(() => 1);
-      }
+  ifEl.replaceWith(cur = holder)
+
+  if (elseEl?.hasAttribute(':else')) {
+    elseEl.removeAttribute(':else');
+    // if next is :else :if - delegate it to own :if handler
+    if (elseEl.hasAttribute(':if')) {
+      elseEl[_else] = pass
+      elseEl = null
     }
-    else break;
+    else {
+      elseEl.remove();
+    }
   }
-
-  el.replaceWith(cur = holder)
+  else elseEl = null
 
   const dispose = effect(() => {
-    // find matched clause (re-evaluates any time any clause updates)
-    let i = clauses.findIndex(f => f(state))
-    if (els[i] != cur) {
-      ; (cur[_each] || cur).replaceWith(cur = els[i] || holder);
-      // NOTE: it lazily initializes elements on insertion, it's safe to sprae multiple times
-      // but :if must come first to avoid preliminary caching
-      sprae(cur, state);
+    const el = prevPass?.value ? holder : pass.value ? ifEl : elseEl
+    if (cur != el) {
+      (cur[_each] || cur).replaceWith(cur = el || holder);
+      if (cur !== holder) sprae(cur, state);
     }
   })
 
   return () => {
-    for (const el of els) el[_dispose]?.() // dispose all internal spraes
-    dispose() // dispose subscription
+    ifEl[_dispose]?.()
+    elseEl?.[_dispose]?.()
+    dispose() // dispose effect
   }
 }
 
