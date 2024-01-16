@@ -67,3 +67,16 @@
 * [x] ~~Make regular proxy state not causing infinite recursion~~ we don't hold to own proxy now
 * [x] All FIXMEs
 * [ ] Avoid creating signals for static values
+
+### [ ] v9
+
+* [ ] subscript-based eval
+* [ ] no store
+* [ ] switching hooks
+* [ ] plugins structure
+* [ ] comparison table: CSP, plugins, no-deps, size, performance, event/modifiers,
+* [ ] Get rid of `:on` events - attributes are no-fn expressions
+* [ ] nadis
+* [ ] remove :with?
+* [ ] `items = each(el, (items)=>children)`, `cond = if(el, cond);`
+* [ ] try direct directives without primary/secondary

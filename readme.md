@@ -9,25 +9,6 @@ It is tiny, performant and open alternative to [alpine](https://github.com/alpin
 
 ## Usage
 
-### Autoinit
-
-To autoinit document, include [`sprae.auto.js`](./sprae.auto.js):
-
-```html
-<!-- <script src="https://cdn.jsdelivr.net/npm/sprae/dist/sprae.auto.js" defer></script> -->
-<script defer src="./path/to/sprae.auto.js"></script>
-
-<ul>
-  <li :each="item in ['apple', 'bananas', 'citrus']"">
-    <a :href="`#${item}`" :text="item" />
-  </li>
-</ul>
-```
-
-### Manual init
-
-To init manually as module, import [`sprae.js`](./sprae.js):
-
 ```html
 <div id="container" :if="user">
   Logged in as <span :text="user.name">Guest.</span>
@@ -47,18 +28,15 @@ Sprae evaluates `:`-attributes and evaporates them.<br/>
 ## State
 
 Sprae creates reactive state that mirrors current DOM values.<br/>
-It is based on [@preact/signals](https://github.com/preactjs/signals) and can take them as inputs.
+It is based on [signals](https://github.com/preactjs/signals) and can take them as inputs.
 
 ```js
-import { signal } from  'sprae' // or '@preact/signals-core'
+import { signal }, sprae from  'sprae'
 
 const version = signal('alpha')
 
 // Sprae container with initial state values
 const state = sprae(container, { foo: 'bar', version })
-
-// Modify state property 'foo', triggering a DOM update
-state.foo = 'baz'
 
 // Update the version signal, which also triggers a DOM refresh
 version.value = 'beta'
@@ -146,23 +124,6 @@ Set value of an input, textarea or select. Takes handle of `checked` and `select
 </select>
 ```
 
-#### `:with="data"`
-
-Define or extend data scope for a subtree.
-
-```html
-<!-- Inline data -->
-<x :with="{ foo: 'bar' }" :text="foo"></x>
-
-<!-- External data -->
-<y :with="data"></y>
-
-<!-- Extend scope -->
-<x :with="{ foo: 'bar' }">
-  <y :with="{ baz: 'qux' }" :text="foo + baz"></y>
-</x>
-```
-
 #### `:<prop>="value?"`
 
 Set any attribute value or run an effect.
@@ -187,6 +148,23 @@ Spread multiple attibures.
 
 ```html
 <input :="{ id: name, name, type:'text', value }" />
+```
+
+#### `:scope="data"`
+
+Define or extend data scope for a subtree.
+
+```html
+<!-- Inline data -->
+<x :scope="{ foo: 'bar' }" :text="foo"></x>
+
+<!-- External data -->
+<y :scope="data"></y>
+
+<!-- Extend scope -->
+<x :scope="{ foo: 'bar' }">
+  <y :scope="{ baz: 'qux' }" :text="foo + baz"></y>
+</x>
 ```
 
 #### `:ref="id"`

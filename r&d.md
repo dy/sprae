@@ -664,6 +664,7 @@
   * [ ] :x.always - update by _any_ dep change
   * [ ] :class.active="active"
   * [ ] :x.persist="v"
+    - solvable via nadis
 
 ## [x] Writing props on elements (like ones in :each) -> nah, just use `:x="this.x=abc"`
 
@@ -761,7 +762,7 @@
 
   - Parent state can dynamically obtain new signal, and nested states won't have access to that
 
-## [ ] Is there a way to predefine state static / dynamic props via signals?
+## [x] Is there a way to predefine state static / dynamic props via signals? -> let's try no-store
 
   * Since exposing signals in templates didn't seem to have worked well, we can predefine state values instead of creating a proxy.
   - props would need to be predefined in advance
@@ -780,16 +781,19 @@
   * :with -> :scope
   * Get rid of `:on` events - attributes are no-fn expressions
   * Get rid of sprae.auto
-  * No-batch
+  * No-batch: updating signals updates target nadis
   * No store, directly signals
-  * Plugins?
+  * Plugins
   * Rewrite with `nadi`: sprae becomes just a form of hypd + nadi, one of nadis essentially
+
+## [ ] What should we do with `this` in case of subscript?
+  * It doesn't ship keywords by default
 
 ## [ ] Imagine dom-signals. What would be redundant in sprae?
   * :text, :class, :style, :value, :prop, :props, :render/:html - just simple writer signals
     * `elText = text(el, 'init'); elText.value=123`, `elClass = cl(el, init)`, `elContent = html(el, init)`
   * :if, :each - can be controllable too, more complicated since act in-context
-    * `items = each(placeholder, (item,i)=>el, items)`, `cond = if(el, el2?, cond); cur = select([el1,el2,el3], 0)`
+    * `items = each(el, (items)=>children)`, `cond = if(el, cond); cur = select([el1,el2,el3], 0)`
   * :ref, :with/:scope, :set act in-context, modify data for nested levels
     * :ref is questionable, but do we really need scope? let's try to answer once again.
     * the main purpose of :with from examples is component scope, like shadow.
@@ -804,4 +808,5 @@
   * splitting off such signals would
     + make lightweight hyperf implementation (no fear of heavy stuff), signals: html`${a}`, str`${a}+${b}`
     + make controllable element dom-signals
+    + allow plugin system
     -> let's call that project nadi

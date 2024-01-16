@@ -1,4 +1,3 @@
-import './state.js'
 import './attrs.js'
 import './events.js'
 

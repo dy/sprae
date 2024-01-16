@@ -2,6 +2,7 @@
 import sprae from './core.js'
 import createState, { effect, computed, untracked, batch, _dispose, _signals, _change } from './state.signals-proxy.js'
 import { getFirstProperty, queueMicrotask } from './util.js'
+import compile from './compile.js'
 
 // reserved directives - order matters!
 // primary initialized first by selector, secondary initialized by iterating attributes
@@ -203,7 +204,9 @@ secondary['class'] = (el, expr, state) => {
     if (v) {
       if (typeof v === 'string') className.push(v)
       else if (Array.isArray(v)) className.push(...v)
-      else className.push(...Object.entries(v).map(([k, v]) => v ? k : ''))
+      else {
+        className.push(...Object.entries(v).map(([k, v]) => v ? k : ''))
+      }
     }
     if (className = className.filter(Boolean).join(' ')) el.setAttribute('class', className);
     else el.removeAttribute('class')
@@ -285,7 +288,9 @@ export default (el, expr, state, name) => {
     return () => (off?.(), dispose())
   }
 
-  return effect(() => { attr(el, name, evaluate(state)) })
+  return effect(() => {
+    attr(el, name, evaluate(state))
+  })
 }
 
 // bind event to a target
@@ -419,7 +424,8 @@ function parseExpr(el, expression, dir) {
 
   if (!evaluate) {
     try {
-      evaluate = evaluatorMemo[expression] = new Function(`__scope`, `with (__scope) { let __; return ${expression.trim()} };`)
+      // evaluate = evaluatorMemo[expression] = new Function(`__scope`, `with (__scope) { let __; return ${expression.trim()} };`)
+      evaluate = evaluatorMemo[expression] = compile(expression)
     } catch (e) {
       return exprError(e, el, expression, dir)
     }

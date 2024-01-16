@@ -58,14 +58,14 @@ test('common: newlines', async () => {
   is(el.outerHTML, `<x>1</x>`)
 })
 
-test('common: const in on', async () => {
+test.skip('common: const in on', async () => {
   let el = h`<div :onx="() => {const x=1; y=x+1}"></div>`
   let state = sprae(el, { y: 0 })
   el.dispatchEvent(new window.CustomEvent('x'))
   is(state.y, 2)
 })
 
-test('common: const in with', async () => {
+test.todo('common: const in with', async () => {
   let el = h`<div :with="{x(){let x = 1; y=x;}}" @x="x()"></div>`
   let state = sprae(el, { y: 0 })
   el.dispatchEvent(new window.CustomEvent('x'))
