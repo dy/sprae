@@ -288,6 +288,9 @@ export default (el, expr, state, name) => {
     return () => (off?.(), dispose())
   }
 
+  // FIXME: generalize
+  state = Object.create(state, { this: { value: el } })
+
   return effect(() => {
     attr(el, name, evaluate(state))
   })
