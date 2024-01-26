@@ -270,7 +270,7 @@ To avoid _flash of unstyled content_, you can hide sprae attribute or add a cust
 
 ```html
 <div :hidden></div>
-<style>[:each],[:hidden] {visibility: hidden}</style>
+<style>[:each],[:if],[:else],[:hidden] {visibility: hidden}</style>
 ```
 
 ## Dispose
