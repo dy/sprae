@@ -5,7 +5,20 @@
 _Sprae_ is compact ergonomic progressive enhancement framework.<br/>
 It provides reactive `:`-attributes that enable simple markup logic without need for complex scripts.<br/>
 Perfect for small-scale websites, prototypes or UI logic.<br/>
-It is tiny, performant and open alternative to [alpine](https://github.com/alpinejs/alpine), [petite-vue](https://github.com/vuejs/petite-vue) or [template-parts](https://github.com/github/template-parts).
+It is tiny, performant, safe and open alternative to [alpine](https://github.com/alpinejs/alpine), [petite-vue](https://github.com/vuejs/petite-vue) or [template-parts](https://github.com/github/template-parts).
+
+
+| Feature/Aspect        | AlpineJS          | Petite-Vue        | Sprae            |
+|-----------------------|-------------------|-------------------|------------------|
+| **Performance**       | Good              | Very Good         | Best             |
+| **Memory Usage**      | Low               | Low               | Lowest           |
+| **Bundle Size**       | ~10KB             | ~6KB              | ~5KB             |
+| **CSP Compatibility** | No                | No                | Yes              |
+| **Reactivity**        | Implicit          | Vue/reactive      | @preact/signals  |
+| **Sandboxing**        | No                | No                | Yes              |
+| **Extensibility**     | Moderate          | Good              | Excellent        |
+| **SSR**               | Limited           | Yes               | Full             |
+
 
 ## Usage
 
@@ -16,31 +29,16 @@ It is tiny, performant and open alternative to [alpine](https://github.com/alpin
 
 <script type="module">
   // import sprae from 'https://cdn.jsdelivr.net/npm/sprae/dist/sprae.js';
-  import sprae from './path/to/sprae.js';
+  import sprae, { signal } from './path/to/sprae.js';
 
-  const state = sprae(container, { user: { name: 'Dmitry Ivanov' } });
-  state.user.name = 'dy'; // updates DOM
+  const state = { user: { name: signal('Dmitry Iv.') } }
+  sprae(container, state);
+  state.user.name.value = 'dy'; // updates DOM
 </script>
 ```
 
 Sprae evaluates `:`-attributes and evaporates them.<br/>
-
-## State
-
-Sprae creates reactive state that mirrors current DOM values.<br/>
-It is based on [signals](https://github.com/preactjs/signals) and can take them as inputs.
-
-```js
-import { signal }, sprae from  'sprae'
-
-const version = signal('alpha')
-
-// Sprae container with initial state values
-const state = sprae(container, { foo: 'bar', version })
-
-// Update the version signal, which also triggers a DOM refresh
-version.value = 'beta'
-```
+Sprae takes init state that may contain plain values or [signals](https://github.com/preactjs/signals).
 
 ## Attributes
 
@@ -52,6 +50,11 @@ Control flow of elements.
 <span :if="foo">foo</span>
 <span :else :if="bar">bar</span>
 <span :else>baz</span>
+
+<!-- fragment -->
+<template :if="foo">
+  foo <span>bar</span> baz
+</template>
 ```
 
 #### `:each="item, index in items"`
@@ -59,24 +62,36 @@ Control flow of elements.
 Multiply element.
 
 ```html
-<ul><li :each="item in items" :text="item"></ul>
+<ul><li :each="item in items" :text="item"/></ul>
 
-<!-- Cases -->
+<!-- cases -->
 <li :each="item, idx in list" />
 <li :each="val, key in obj" />
 <li :each="idx in number" />
 
-<!-- Loop by condition -->
+<!-- loop by condition -->
 <li :if="items" :each="item in items" :text="item" />
 <li :else>Empty list</li>
+
+<!-- loop fragment -->
+<template :each="item in items">
+  <dt :text="item.term"/>
+  <dd :text="item.definition"/>
+</template>
+
+<!-- to prevent FOUC, add to head -->
+<style>[:each] {visibility: hidden}</style>
 ```
 
-#### `:text="value"`
+#### `:text="value"`, `:html="value"`
 
-Set text content of an element. Default text can be used as fallback:
+Set text or html content of an element. Default text can be used as fallback:
 
 ```html
 Welcome, <span :text="user.name">Guest</span>.
+
+<!-- fragment -->
+<template :text="user.name">Guest</template>
 ```
 
 #### `:class="value"`
@@ -84,14 +99,14 @@ Welcome, <span :text="user.name">Guest</span>.
 Set class value from either a string, array or object.
 
 ```html
-<!-- set from string -->
-<div :class="`foo ${bar}`"></div>
+<!-- set from string (insert fields as $<bar>) -->
+<div :class="'foo $<bar>'"></div>
 
 <!-- extends existing class as "foo bar" -->
-<div class="foo" :class="`bar`"></div>
+<div class="foo" :class="'bar'"></div>
 
-<!-- clsx: object / list -->
-<div :class="[foo && 'foo', {bar: bar}]"></div>
+<!-- clsx: list -->
+<div :class="['foo', bar]"></div>
 ```
 
 #### `:style="value"`
@@ -100,7 +115,7 @@ Set style value from an object or a string. Extends existing `style` attribute, 
 
 ```html
 <!-- from string -->
-<div :style="`foo: ${bar}`"></div>
+<div :style="'foo: $<bar>'"></div>
 
 <!-- from object -->
 <div :style="{foo: 'bar'}"></div>
@@ -124,77 +139,37 @@ Set value of an input, textarea or select. Takes handle of `checked` and `select
 </select>
 ```
 
-#### `:<prop>="value?"`
+#### `:<prop>="value"`
 
-Set any attribute value or run an effect.
+Set any attribute value.
 
 ```html
-<!-- Single property -->
+<!-- Single attr -->
 <label :for="name" :text="name" />
 
-<!-- Multiple properties -->
+<!-- Multiple attribs -->
 <input :id:name="name" />
 
-<!-- Effect - returns undefined, triggers any time bar changes -->
-<div :fx="void bar()" ></div>
-
 <!-- Raw event listener (see events) -->
-<div :onclick="e=>e.preventDefault()"></div>
+<div :onclick="e => ()"></div>
 ```
 
-#### `:="props?"`
+#### `:="expr"`
 
-Spread multiple attibures.
-
-```html
-<input :="{ id: name, name, type:'text', value }" />
-```
-
-#### `:scope="data"`
-
-Define or extend data scope for a subtree.
+Run effect.
 
 ```html
-<!-- Inline data -->
-<x :scope="{ foo: 'bar' }" :text="foo"></x>
+<!-- multiple effects -->
+<div :="bar()" :="baz()"></div>
 
-<!-- External data -->
-<y :scope="data"></y>
+<!-- declare var -->
+<div :="x=123">
+  <div :text="x"/>
+</div>
 
-<!-- Extend scope -->
-<x :scope="{ foo: 'bar' }">
-  <y :scope="{ baz: 'qux' }" :text="foo + baz"></y>
-</x>
-```
-
-#### `:ref="id"`
-
-Expose element to current data scope with the `id`:
-
-```html
-<!-- single item -->
-<textarea :ref="text" placeholder="Enter text..."></textarea>
+<!-- ref -->
+<textarea :="text=this" placeholder="Enter text..."></textarea>
 <span :text="text.value"></span>
-
-<!-- iterable items -->
-<ul>
-  <li :each="item in items" :ref="item">
-    <input @focus="item.classList.add('editing')" @blur="item.classList.remove('editing')"/>
-  </li>
-</ul>
-```
-
-#### `:render="ref"`
-
-Include template as element content.
-
-```html
-<!-- assign template element to foo variable -->
-<template :ref="foo"><span :text="foo"></span></template>
-
-<!-- rended template as content -->
-<div :render="foo" :with="{foo:'bar'}">...inserted here...</div>
-<div :render="foo" :with="{foo:'baz'}">...inserted here...</div>
 ```
 
 
@@ -226,30 +201,29 @@ Attach event(s) listener with possible modifiers. `event` variable holds current
 * `.*` – any other modifier has no effect, but allows binding multiple handlers to same event (like jQuery event classes).
 
 
-## Sandbox
+## Expressions
 
-Expressions are sandboxed, ie. don't access global/window scope by default (since sprae can be run in server environment).
+Expressions use [justin](https://github.com/dy/subscript?tab=readme-ov-file#justin), a minimal subset of JS:<br/>
 
-```html
-<div :x="scrollY"></div>
-<!-- scrollY is undefined -->
+```js
+a.b, a[b];                          // prop access
+a++, a--, !a, -a, +a, --a, ++a;     // unaries
+a ** b, a * b, a / b, a % b;        // mult / div
+a + b, a - b;                       // arithmetics
+a < b, a <= b, a > b, a >= b;       // comparisons
+a == b, a != b, a === b, a !== b;   // equality
+a && b, a || b;                     // logic
+a << b, a >> b, a >>> b;            // shifts
+a & b, a ^ b, a | b, ~a;            // binary ops
+a = b, a ? b : c, a?.b, a ?? b;     // assignment, conditions
+(foo) => (bar, baz);                // arrow functions
+[a, b]; { a: b };                   // objects, arrays
+"abc", 'abc $<def>';                // strings (with interpolation)
+1, 0xabcd, .01, -1.2e+.5;           // numbers
+true, false, null, undefined, NaN;  // keywords
 ```
 
-Default sandbox provides most popular global objects: _Array_, _Object_, _Number_, _String_, _Boolean_, _Date_,
-  _console_, _window_, _document_, _history_, _navigator_, _location_, _screen_, _localStorage_, _sessionStorage_,
-  _alert_, _prompt_, _confirm_, _fetch_, _performance_,
-  _setTimeout_, _setInterval_, _requestAnimationFrame_.
-
-Sandbox can be extended as `Object.assign(sprae.globals, { BigInt })`.
-
-## FOUC
-
-To avoid _flash of unstyled content_, you can hide sprae attribute or add a custom effect, eg. `:hidden` - that will be removed once sprae is initialized:
-
-```html
-<div :hidden></div>
-<style>[:each],[:hidden] {visibility: hidden}</style>
-```
+Expressions are fully sandboxed and have access only to provided variables.<br/>
 
 ## Dispose
 
@@ -320,6 +294,7 @@ _Sprae_ takes idea of _templize_ / _alpine_ / _vue_ attributes and builds simple
 * Elements / data API is open and enable easy interop.
 
 It is reminiscent of [XSLT](https://www.w3schools.com/xml/xsl_intro.asp), considered a [buried treasure](https://github.com/bahrus/be-restated) by web-connoisseurs.
+
 
 ## Alternatives
 
