@@ -4,8 +4,7 @@
 
 _Sprae_ is compact ergonomic progressive enhancement framework.<br/>
 It provides reactive `:`-attributes that enable simple markup logic without complex scripts.<br/>
-Perfect for small-scale websites, prototypes or UI logic.<br/>
-It is tiny, performant, safe and open alternative to [alpine](https://github.com/alpinejs/alpine), [petite-vue](https://github.com/vuejs/petite-vue) or [template-parts](https://github.com/github/template-parts).
+Perfect for small-scale websites, prototypes or UI logic. It is tiny, performant, safe and open alternative to [alpine](https://github.com/alpinejs/alpine), [petite-vue](https://github.com/vuejs/petite-vue) or [template-parts](https://github.com/github/template-parts).
 
 ## Usage
 
@@ -28,6 +27,7 @@ It is tiny, performant, safe and open alternative to [alpine](https://github.com
 ```
 
 Sprae evaluates `:`/`@`-directives and evaporates them.<br/>
+Directives support [justin syntax](#expressions) and may take reactive values.
 
 
 ## Directives
@@ -192,7 +192,7 @@ Attach event(s) listener with possible modifiers. `event` variable holds current
 
 ## Expressions
 
-Expressions use minimal subset of JS ([justin](https://github.com/dy/subscript?tab=readme-ov-file#justin)):<br/>
+Expressions use [justin](https://github.com/dy/subscript?tab=readme-ov-file#justin) syntax, a minimal subset of JS:<br/>
 
 ```js
 a.b, a[b];                          // prop access
@@ -212,9 +212,10 @@ a = b, a ? b : c, a?.b, a ?? b;     // assignment, conditions
 true, false, null, undefined, NaN;  // keywords
 ```
 
+Expressions are async and await for each statement.
+
 Expressions are sandboxed and have no access to globals, only to provided variables.<br/>
 You may pass required objects eg. _console_, _window_, _setTimeout_, _fetch_ etc. (Caution: _setTimeout_ may act as eval).<br/>
-Expressions are async and await for each statement.<br/>
 
 ## Reactivity
 
@@ -238,6 +239,13 @@ Object.assign(sprae, preact); // use @preact/signals
 ## Dispose
 
 To destroy state and detach sprae handlers, call `element[Symbol.dispose]()`.
+
+## Examples
+
+* TODO MVC: [demo](https://dy.github.io/sprae/examples/todomvc), [code](https://github.com/dy/sprae/blob/main/examples/todomvc.html)
+* JS Framework Benchmark: [demo](https://dy.github.io/sprae/examples/js-framework-benchmark), [code](https://github.com/dy/sprae/blob/main/examples/js-framework-benchmark.html)
+* Wavearea: [demo](https://dy.github.io/wavearea?src=//cdn.freesound.org/previews/586/586281_2332564-lq.mp3), [code](https://github.com/dy/wavearea)
+* Prostogreen [demo](http://web-being.org/prostogreen/), [code](https://github.com/web-being/prostogreen/)
 
 ## Benchmark
 
@@ -280,20 +288,17 @@ npm run results
 ```
 </details>
 
-## Examples
-
-* TODO MVC: [demo](https://dy.github.io/sprae/examples/todomvc), [code](https://github.com/dy/sprae/blob/main/examples/todomvc.html)
-* JS Framework Benchmark: [demo](https://dy.github.io/sprae/examples/js-framework-benchmark), [code](https://github.com/dy/sprae/blob/main/examples/js-framework-benchmark.html)
-* Wavearea: [demo](https://dy.github.io/wavearea?src=//cdn.freesound.org/previews/586/586281_2332564-lq.mp3), [code](https://github.com/dy/wavearea)
-* Prostogreen [demo](http://web-being.org/prostogreen/), [code](https://github.com/web-being/prostogreen/)
-
 ## Justification
 
 * [Template-parts](https://github.com/dy/template-parts) / [templize](https://github.com/dy/templize) is progressive, but is stuck with native HTML quirks ([parsing table](https://github.com/github/template-parts/issues/24), [SVG attributes](https://github.com/github/template-parts/issues/25), [liquid syntax](https://shopify.github.io/liquid/tags/template/#raw) conflict etc).
 * [Alpine](https://github.com/alpinejs/alpine) / [petite-vue](https://github.com/vuejs/petite-vue) / [lucia](https://github.com/aidenyabi/lucia) escape native HTML quirks, but the API is not so elegant and [self-encapsulated](https://github.com/alpinejs/alpine/discussions/3223).
 
-<details>
-<summary>See comparison</summary>
+_Sprae_ takes idea of _templize_ / _alpine_ / _vue_ directives with [_signals_](https://ghub.io/@preact/signals) reactivity & [_subscript_](https://github.com/dy/subscript) safe eval.
+
+* It shows static html markup when uninitialized (SSR).
+* It doesn't enforce SPA nor JSX (unlike reacts), which enables island hydration.
+* It reserves minimal syntax/API space.
+* It enables CSP via Justin syntax.
 
 |                       | AlpineJS          | Petite-Vue        | Sprae            |
 |-----------------------|-------------------|-------------------|------------------|
@@ -306,14 +311,6 @@ npm run results
 | _Sandboxing_        | No                | No                | Yes              |
 | _API_               | `x-`, `:`, `@`, `$magic`, `Alpine.*` | `v-`, `@`, `{{}}`   | `:`, `@`, `sprae` |
 
-</details>
-
-_Sprae_ takes idea of _templize_ / _alpine_ / _vue_ directives with [_signals_](https://ghub.io/@preact/signals) reactivity & [_subscript_](https://github.com/dy/subscript) safe eval.
-
-* It shows static html markup when uninitialized (SSR).
-* It doesn't enforce SPA nor JSX (unlike reacts), which enables island hydration.
-* It reserves minimal syntax/API space.
-* It enables CSP via Justin syntax.
 
 ## Alternatives
 
