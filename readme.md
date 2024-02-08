@@ -209,10 +209,10 @@ a = b, a ? b : c, a?.b, a ?? b;     // assignment, conditions
 true, false, null, undefined, NaN;  // keywords
 ```
 
-Expressions are async and await for each statement.
-
 Expressions are sandboxed and have no access to globals, only to provided variables.<br/>
 You may pass required objects eg. _console_, _window_, _setTimeout_, _fetch_ etc. (Caution: _setTimeout_ may act as eval).<br/>
+
+Expressions are async, so await each statement.
 
 ## Reactivity
 
