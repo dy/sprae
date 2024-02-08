@@ -7,22 +7,6 @@ It provides reactive `:`-attributes that enable simple markup logic without comp
 Perfect for small-scale websites, prototypes or UI logic.<br/>
 It is tiny, performant, safe and open alternative to [alpine](https://github.com/alpinejs/alpine), [petite-vue](https://github.com/vuejs/petite-vue) or [template-parts](https://github.com/github/template-parts).
 
-<details>
-<summary>Comparison</summary>
-
-|                       | AlpineJS          | Petite-Vue        | Sprae            |
-|-----------------------|-------------------|-------------------|------------------|
-| _Performance_       | Good              | Very Good         | Best             |
-| _Memory_            | Low               | Low               | Lowest           |
-| _Size_              | ~10KB             | ~6KB              | ~5KB             |
-| _CSP_               | No                | No                | Yes              |
-| _Evaluation_        | [`new AsyncFunction`](https://github.com/alpinejs/alpine/blob/main/packages/alpinejs/src/evaluator.js#L81) | [`new Function`](https://github.com/vuejs/petite-vue/blob/main/src/eval.ts#L20) | [justin](https://github.com/dy/subscript)           |
-| _Reactivity_        | `Alpine.store`    | _@vue/reactivity_   | _@preact/signals_ or any signals |
-| _Sandboxing_        | No                | No                | Yes              |
-| _API_               | `x-`, `:`, `@`, `$magic`, `Alpine.*` | `v-`, `@`, `{{}}`   | `:`, `@`, `sprae` |
-
-</details>
-
 ## Usage
 
 ```html
@@ -43,10 +27,10 @@ It is tiny, performant, safe and open alternative to [alpine](https://github.com
 </script>
 ```
 
-Sprae evaluates `:`-attributes and evaporates them.<br/>
+Sprae evaluates `:`/`@`-directives and evaporates them.<br/>
 
 
-## Attributes
+## Directives
 
 #### `:if="condition"`, `:else`
 
@@ -175,7 +159,6 @@ Run effect.
 
 <!-- ref -->
 <textarea :="text=this" placeholder="Enter text..."></textarea>
-<span :text="text.value"></span>
 ```
 
 
@@ -183,7 +166,7 @@ Run effect.
 
 #### `@<event>="handle"`, `@<foo>@<bar>.<baz>="handle"`
 
-Attach event(s) listener with possible modifiers. `event` variable holds current event. Allows async handlers.
+Attach event(s) listener with possible modifiers. `event` variable holds current event.
 
 ```html
 <!-- Single event -->
@@ -209,7 +192,7 @@ Attach event(s) listener with possible modifiers. `event` variable holds current
 
 ## Expressions
 
-Expressions use [justin](https://github.com/dy/subscript?tab=readme-ov-file#justin), a minimal subset of JS:<br/>
+Expressions use minimal subset of JS ([justin](https://github.com/dy/subscript?tab=readme-ov-file#justin)):<br/>
 
 ```js
 a.b, a[b];                          // prop access
@@ -229,7 +212,28 @@ a = b, a ? b : c, a?.b, a ?? b;     // assignment, conditions
 true, false, null, undefined, NaN;  // keywords
 ```
 
-Expressions are fully sandboxed and have access only to provided variables.<br/>
+Expressions are sandboxed and have no access to globals, only to provided variables.<br/>
+You may pass required objects eg. _console_, _window_, _setTimeout_, _fetch_ etc. (Caution: _setTimeout_ may act as eval).<br/>
+Expressions are async and await for each statement.<br/>
+
+## Reactivity
+
+Sprae uses _@preact/signals-core_ for reactivity, but it can be switched to any other provider:
+
+* `@preact/signals-core` (default)
+* `@preact/signals`
+* `@preact/signals-react`
+* `usignal`
+* `@webreflection/signal`
+* `value-ref`
+
+To switch your signals provider, just do:
+
+```js
+import * as preact from '@preact/signals';
+import sprae, { signal, computed, effect, batch } from 'sprae';
+Object.assign(sprae, preact); // use @preact/signals
+```
 
 ## Dispose
 
@@ -286,22 +290,30 @@ npm run results
 ## Justification
 
 * [Template-parts](https://github.com/dy/template-parts) / [templize](https://github.com/dy/templize) is progressive, but is stuck with native HTML quirks ([parsing table](https://github.com/github/template-parts/issues/24), [SVG attributes](https://github.com/github/template-parts/issues/25), [liquid syntax](https://shopify.github.io/liquid/tags/template/#raw) conflict etc).
-* [Alpine](https://github.com/alpinejs/alpine) / [petite-vue](https://github.com/vuejs/petite-vue) / [lucia](https://github.com/aidenyabi/lucia) escape native HTML quirks, but the syntax space (`:attr`, `v-*`,`x-*`, `l-*` `@evt`, `{{}}`) is too broad, as well as functionality. Perfection is when there's nothing to take away, not add (c). Also they tend to [self-encapsulate](https://github.com/alpinejs/alpine/discussions/3223) making interop hard, invent own tooling or complex reactivity.
-* React / [preact](https://ghub.io/preact) does the job wiring up JS to HTML, but with an extreme of migrating HTML to JSX and enforcing SPA, which is not organic for HTML. Also it doesn't support reactive fields (needs render call).
+* [Alpine](https://github.com/alpinejs/alpine) / [petite-vue](https://github.com/vuejs/petite-vue) / [lucia](https://github.com/aidenyabi/lucia) escape native HTML quirks, but the API is not so elegant and [self-encapsulated](https://github.com/alpinejs/alpine/discussions/3223).
 
-_Sprae_ takes idea of _templize_ / _alpine_ / _vue_ attributes and builds simple reactive state based on [_@preact/signals_](https://ghub.io/@preact/signals).
+<details>
+<summary>See comparison</summary>
 
-* It doesn't break or modify static html markup.
-* It falls back to element content if uninitialized.
-* It doesn't enforce SPA nor JSX.
-* It enables island hydration.
-* It reserves minimal syntax space as `:` convention (keeping tree neatly decorated, not scattered).
-* Expressions are naturally reactive and incur minimal updates.
-* Elements / data API is open and enable easy interop.
-* It avoids CSP violation via Justin syntax
+|                       | AlpineJS          | Petite-Vue        | Sprae            |
+|-----------------------|-------------------|-------------------|------------------|
+| _Performance_       | Good              | Very Good         | Best             |
+| _Memory_            | Low               | Low               | Lowest           |
+| _Size_              | ~10KB             | ~6KB              | ~5KB             |
+| _CSP_               | No                | No                | Yes              |
+| _Evaluation_        | [`new AsyncFunction`](https://github.com/alpinejs/alpine/blob/main/packages/alpinejs/src/evaluator.js#L81) | [`new Function`](https://github.com/vuejs/petite-vue/blob/main/src/eval.ts#L20) | [justin](https://github.com/dy/subscript)           |
+| _Reactivity_        | `Alpine.store`    | _@vue/reactivity_   | _@preact/signals_ or any signals |
+| _Sandboxing_        | No                | No                | Yes              |
+| _API_               | `x-`, `:`, `@`, `$magic`, `Alpine.*` | `v-`, `@`, `{{}}`   | `:`, `@`, `sprae` |
 
-It is reminiscent of [XSLT](https://www.w3schools.com/xml/xsl_intro.asp), considered a [buried treasure](https://github.com/bahrus/be-restated) by web-connoisseurs.
+</details>
 
+_Sprae_ takes idea of _templize_ / _alpine_ / _vue_ directives with [_signals_](https://ghub.io/@preact/signals) reactivity & [_subscript_](https://github.com/dy/subscript) safe eval.
+
+* It shows static html markup when uninitialized (SSR).
+* It doesn't enforce SPA nor JSX (unlike reacts), which enables island hydration.
+* It reserves minimal syntax/API space.
+* It enables CSP via Justin syntax.
 
 ## Alternatives
 
