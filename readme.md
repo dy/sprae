@@ -24,11 +24,12 @@ Perfect for small-scale websites, prototypes, or UI logic – as tiny, performan
 </script>
 ```
 
-Sprae evaluates `:`/`@`-directives and evaporates them.<br/>
-Directives support [justin syntax](#expressions) and may take [signals values](#reactivity).
+Sprae evaluates `:`/`@`-directives and evaporates them.
 
 
 ## Directives
+
+Directives support [justin syntax](#expressions) and may take [signals values](#reactivity).
 
 #### `:if="condition"`, `:else`
 
