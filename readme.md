@@ -320,4 +320,4 @@ _Sprae_ takes idea of _templize_ / _alpine_ / _vue_ directives with [_signals_](
 * [nuejs](https://github.com/nuejs/nuejs)
 -->
 
-<p align="center"><a href="https://github.com/krsnzd/license/">🕉</a></p>
+<p align="center"><a href="https://github.com/krsnzd/license/">🕉 Om Tat Sat</a></p>
