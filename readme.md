@@ -8,16 +8,18 @@ Perfect for small-scale websites, prototypes or UI logic.<br/>
 It is tiny, performant, safe and open alternative to [alpine](https://github.com/alpinejs/alpine), [petite-vue](https://github.com/vuejs/petite-vue) or [template-parts](https://github.com/github/template-parts).
 
 
-| Feature/Aspect        | AlpineJS          | Petite-Vue        | Sprae            |
+|                       | AlpineJS          | Petite-Vue        | Sprae            |
 |-----------------------|-------------------|-------------------|------------------|
 | **Performance**       | Good              | Very Good         | Best             |
-| **Memory Usage**      | Low               | Low               | Lowest           |
-| **Bundle Size**       | ~10KB             | ~6KB              | ~5KB             |
-| **CSP Compatibility** | No                | No                | Yes              |
-| **Reactivity**        | Implicit          | Vue/reactive      | @preact/signals  |
+| **Memory**            | Low               | Low               | Lowest           |
+| **Size**              | ~10KB             | ~6KB              | ~5KB             |
+| **CSP**               | No                | No                | Yes              |
+| **Evaluation**        | [`new AsyncFunction`](https://github.com/alpinejs/alpine/blob/main/packages/alpinejs/src/evaluator.js#L81) | [`new Function`](https://github.com/vuejs/petite-vue/blob/main/src/eval.ts#L20) | [justin](https://github.com/dy/subscript)           |
+| **Reactivity**        | `Alpine.store`    | @vue/reactivity   | @preact/signals or any signals |
+| **API**               | Implicit          | Closed            | Open             |
 | **Sandboxing**        | No                | No                | Yes              |
-| **Extensibility**     | Moderate          | Good              | Excellent        |
-| **SSR**               | Limited           | Yes               | Full             |
+| **Magic**             | Yes               | Yes               | No               |
+| **Extensibility**     | directives, magic | No                | directives       |
 
 
 ## Usage
