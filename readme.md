@@ -29,8 +29,6 @@ Sprae evaluates `:`/`@`-directives and evaporates them.
 
 ## Directives
 
-Directives support [justin syntax](#expressions) and may take [signals values](#reactivity).
-
 #### `:if="condition"`, `:else`
 
 Control flow of elements.
@@ -218,19 +216,10 @@ You may pass required objects eg. _console_, _window_, _setTimeout_, _fetch_ etc
 
 ## Reactivity
 
-Sprae uses _@preact/signals-core_ for reactivity, but it can be switched to any other provider:
-
-* `@preact/signals-core` (default)
-* `@preact/signals`
-* `@preact/signals-react`
-* `usignal`
-* `@webreflection/signal`
-* `value-ref`
-
-To switch your signals provider, just do:
+Sprae uses _@preact/signals-core_ for reactivity, but it can be switched to any other provider as:
 
 ```js
-import * as preact from '@preact/signals';
+import * as preact from '@preact/signals'; // @preact/signals-preact, usignal or @webreflection/signal
 import sprae, { signal, computed, effect, batch } from 'sprae';
 Object.assign(sprae, preact); // use @preact/signals
 ```
