@@ -300,7 +300,7 @@ _Sprae_ takes idea of _templize_ / _alpine_ / _vue_ directives with [_signals_](
 * It reserves minimal syntax/API space.
 * It enables CSP via Justin syntax.
 
-|                       | AlpineJS          | Petite-Vue        | Sprae            |
+|                       | [AlpineJS](https://github.com/alpinejs/alpine)          | [Petite-Vue](https://github.com/vuejs/petite-vue)        | Sprae            |
 |-----------------------|-------------------|-------------------|------------------|
 | _Performance_       | Good              | Very Good         | Best             |
 | _Memory_            | Low               | Low               | Lowest           |
@@ -311,12 +311,13 @@ _Sprae_ takes idea of _templize_ / _alpine_ / _vue_ directives with [_signals_](
 | _Sandboxing_        | No                | No                | Yes              |
 | _API_               | `x-`, `:`, `@`, `$magic`, `Alpine.*` | `v-`, `@`, `{{}}`   | `:`, `@`, `sprae` |
 
-
+<!--
 ## Alternatives
 
 * [Alpine](https://github.com/alpinejs/alpine)
 * ~~[Lucia](https://github.com/aidenybai/lucia)~~ deprecated
 * [Petite-vue](https://github.com/vuejs/petite-vue)
 * [nuejs](https://github.com/nuejs/nuejs)
+-->
 
 <p align="center"><a href="https://github.com/krsnzd/license/">🕉</a></p>
