@@ -5,7 +5,7 @@
 _Sprae_ is compact ergonomic progressive enhancement framework.<br/>
 It provides reactive `:`-attributes that enable simple markup logic without complex scripts.<br/>
 Perfect for small-scale websites, prototypes or UI logic.<br/>
-It is tiny, performant, safe and open alternative to [alpine](https://github.com/alpinejs/alpine) and [petite-vue](https://github.com/vuejs/petite-vue).
+It is tiny, performant, safe and open alternative to [alpine](https://github.com/alpinejs/alpine), [petite-vue](https://github.com/vuejs/petite-vue) or [template-parts](https://github.com/github/template-parts).
 
 <details>
 <summary>Comparison</summary>
@@ -17,9 +17,9 @@ It is tiny, performant, safe and open alternative to [alpine](https://github.com
 | _Size_              | ~10KB             | ~6KB              | ~5KB             |
 | _CSP_               | No                | No                | Yes              |
 | _Evaluation_        | [`new AsyncFunction`](https://github.com/alpinejs/alpine/blob/main/packages/alpinejs/src/evaluator.js#L81) | [`new Function`](https://github.com/vuejs/petite-vue/blob/main/src/eval.ts#L20) | [justin](https://github.com/dy/subscript)           |
-| _Reactivity_        | `Alpine.store`    | @vue/reactivity   | @preact/signals, any signals |
+| _Reactivity_        | `Alpine.store`    | _@vue/reactivity_   | _@preact/signals_ or any signals |
 | _Sandboxing_        | No                | No                | Yes              |
-| _Magic_             | Yes               | Yes               | No               |
+| _API_               | `x-`, `:`, `@`, `$magic`, `Alpine.*` | `v-`, `@`, `{{}}`   | `:`, `@`, `sprae` |
 
 </details>
 
