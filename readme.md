@@ -5,7 +5,20 @@
 _Sprae_ is compact ergonomic progressive enhancement framework.<br/>
 It provides reactive `:`-attributes that enable simple markup logic without complex scripts.<br/>
 Perfect for small-scale websites, prototypes or UI logic.<br/>
-It is tiny, performant, safe and open alternative to [alpine](https://github.com/alpinejs/alpine) and [petite-vue](https://github.com/vuejs/petite-vue) (see [comparison](#comparison)).
+It is tiny, performant, safe and open alternative to [alpine](https://github.com/alpinejs/alpine) and [petite-vue](https://github.com/vuejs/petite-vue).
+
+
+|                       | AlpineJS          | Petite-Vue        | Sprae            |
+|-----------------------|-------------------|-------------------|------------------|
+| Performance       | Good              | Very Good         | Best             |
+| Memory            | Low               | Low               | Lowest           |
+| Size              | ~10KB             | ~6KB              | ~5KB             |
+| CSP               | No                | No                | Yes              |
+| Evaluation        | [`new AsyncFunction`](https://github.com/alpinejs/alpine/blob/main/packages/alpinejs/src/evaluator.js#L81) | [`new Function`](https://github.com/vuejs/petite-vue/blob/main/src/eval.ts#L20) | [justin](https://github.com/dy/subscript)           |
+| Reactivity        | `Alpine.store`    | @vue/reactivity   | @preact/signals, any signals |
+| Sandboxing        | No                | No                | Yes              |
+| Magic             | Yes               | Yes               | No               |
+
 
 
 ## Usage
@@ -19,14 +32,17 @@ It is tiny, performant, safe and open alternative to [alpine](https://github.com
   // import sprae from 'https://cdn.jsdelivr.net/npm/sprae/dist/sprae.js';
   import sprae, { signal } from './path/to/sprae.js';
 
+  // init
   const state = { user: { name: signal('Dmitry Iv.') } }
   sprae(container, state);
-  state.user.name.value = 'dy'; // updates DOM
+
+  // update
+  state.user.name.value = 'dy';
 </script>
 ```
 
 Sprae evaluates `:`-attributes and evaporates them.<br/>
-Sprae takes init state that may contain plain values or [signals](https://github.com/preactjs/signals).
+
 
 ## Attributes
 
@@ -283,20 +299,6 @@ _Sprae_ takes idea of _templize_ / _alpine_ / _vue_ attributes and builds simple
 * It avoids CSP violation via Justin syntax
 
 It is reminiscent of [XSLT](https://www.w3schools.com/xml/xsl_intro.asp), considered a [buried treasure](https://github.com/bahrus/be-restated) by web-connoisseurs.
-
-
-## Comparison
-
-|                       | AlpineJS          | Petite-Vue        | Sprae            |
-|-----------------------|-------------------|-------------------|------------------|
-| **Performance**       | Good              | Very Good         | Best             |
-| **Memory**            | Low               | Low               | Lowest           |
-| **Size**              | ~10KB             | ~6KB              | ~5KB             |
-| **CSP**               | No                | No                | Yes              |
-| **Evaluation**        | [`new AsyncFunction`](https://github.com/alpinejs/alpine/blob/main/packages/alpinejs/src/evaluator.js#L81) | [`new Function`](https://github.com/vuejs/petite-vue/blob/main/src/eval.ts#L20) | [justin](https://github.com/dy/subscript)           |
-| **Reactivity**        | `Alpine.store`    | @vue/reactivity   | @preact/signals, any signals |
-| **Sandboxing**        | No                | No                | Yes              |
-| **Magic**             | Yes               | Yes               | No               |
 
 
 ## Alternatives
