@@ -266,6 +266,12 @@ _Sprae_ takes idea of _templize_ / _alpine_ / _vue_ directives with [_signals_](
 * It reserves minimal syntax/API space.
 * It enables CSP via Justin syntax.
 
+## Comparisons
+
+<details>
+
+<summary>Features</summary>
+
 |                       | [AlpineJS](https://github.com/alpinejs/alpine)          | [Petite-Vue](https://github.com/vuejs/petite-vue)        | Sprae            |
 |-----------------------|-------------------|-------------------|------------------|
 | _Performance_       | Good              | Very Good         | Best             |
@@ -278,16 +284,17 @@ _Sprae_ takes idea of _templize_ / _alpine_ / _vue_ directives with [_signals_](
 | _API_               | `x-`, `:`, `@`, `$magic`, `Alpine.*` | `v-`, `@`, `{{}}`   | `:`, `@`, `sprae` |
 
 
-## Benchmark
-
-See [js-framework-benchmark](https://krausest.github.io/js-framework-benchmark/current.html#eyJmcmFtZXdvcmtzIjpbIm5vbi1rZXllZC9wZXRpdGUtdnVlIiwibm9uLWtleWVkL3NwcmFlIl0sImJlbmNobWFya3MiOlsiMDFfcnVuMWsiLCIwMl9yZXBsYWNlMWsiLCIwM191cGRhdGUxMHRoMWtfeDE2IiwiMDRfc2VsZWN0MWsiLCIwNV9zd2FwMWsiLCIwNl9yZW1vdmUtb25lLTFrIiwiMDdfY3JlYXRlMTBrIiwiMDhfY3JlYXRlMWstYWZ0ZXIxa194MiIsIjA5X2NsZWFyMWtfeDgiLCIyMV9yZWFkeS1tZW1vcnkiLCIyMl9ydW4tbWVtb3J5IiwiMjNfdXBkYXRlNS1tZW1vcnkiLCIyNV9ydW4tY2xlYXItbWVtb3J5IiwiMjZfcnVuLTEway1tZW1vcnkiLCIzMV9zdGFydHVwLWNpIiwiMzRfc3RhcnR1cC10b3RhbGJ5dGVzIiwiNDFfc2l6ZS11bmNvbXByZXNzZWQiLCI0Ml9zaXplLWNvbXByZXNzZWQiXSwiZGlzcGxheU1vZGUiOjF9).
+</details>
 
 <details>
-<summary>Results table</summary>
+<summary>Benchmark</summary>
+
+See [js-framework-benchmark](https://krausest.github.io/js-framework-benchmark/current.html#eyJmcmFtZXdvcmtzIjpbIm5vbi1rZXllZC9wZXRpdGUtdnVlIiwibm9uLWtleWVkL3NwcmFlIl0sImJlbmNobWFya3MiOlsiMDFfcnVuMWsiLCIwMl9yZXBsYWNlMWsiLCIwM191cGRhdGUxMHRoMWtfeDE2IiwiMDRfc2VsZWN0MWsiLCIwNV9zd2FwMWsiLCIwNl9yZW1vdmUtb25lLTFrIiwiMDdfY3JlYXRlMTBrIiwiMDhfY3JlYXRlMWstYWZ0ZXIxa194MiIsIjA5X2NsZWFyMWtfeDgiLCIyMV9yZWFkeS1tZW1vcnkiLCIyMl9ydW4tbWVtb3J5IiwiMjNfdXBkYXRlNS1tZW1vcnkiLCIyNV9ydW4tY2xlYXItbWVtb3J5IiwiMjZfcnVuLTEway1tZW1vcnkiLCIzMV9zdGFydHVwLWNpIiwiMzRfc3RhcnR1cC10b3RhbGJ5dGVzIiwiNDFfc2l6ZS11bmNvbXByZXNzZWQiLCI0Ml9zaXplLWNvbXByZXNzZWQiXSwiZGlzcGxheU1vZGUiOjF9).
 
 ![Benchmark](./bench.png)
 </details>
 
+<!--
 <details>
 <summary>How to run</summary>
 
@@ -318,14 +325,14 @@ cd webdriver-ts
 npm run results
 ```
 </details>
+-->
 
-<!--
 ## Alternatives
 
 * [Alpine](https://github.com/alpinejs/alpine)
 * ~~[Lucia](https://github.com/aidenybai/lucia)~~ deprecated
 * [Petite-vue](https://github.com/vuejs/petite-vue)
 * [nuejs](https://github.com/nuejs/nuejs)
--->
+
 
 <p align="center"><a href="https://github.com/krsnzd/license/">🕉 Om Tat Sat</a></p>
