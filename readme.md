@@ -230,7 +230,7 @@ To destroy state and detach sprae handlers, call `element[Symbol.dispose]()`. --
 
 ## Plugins
 
-Sprae directives can be simply extended as `sprae.directive.name = (el, expr, state) => {}`.
+Sprae directives can be extended as `sprae.directive.name = (el, expr, state) => {}`.
 
 <!-- Official plugins are:
 
@@ -252,6 +252,31 @@ Sprae directives can be simply extended as `sprae.directive.name = (el, expr, st
 * JS Framework Benchmark: [demo](https://dy.github.io/sprae/examples/js-framework-benchmark), [code](https://github.com/dy/sprae/blob/main/examples/js-framework-benchmark.html)
 * Wavearea: [demo](https://dy.github.io/wavearea?src=//cdn.freesound.org/previews/586/586281_2332564-lq.mp3), [code](https://github.com/dy/wavearea)
 * Prostogreen [demo](http://web-being.org/prostogreen/), [code](https://github.com/web-being/prostogreen/)
+
+
+## Justification
+
+* [Template-parts](https://github.com/dy/template-parts) / [templize](https://github.com/dy/templize) is progressive, but is stuck with native HTML quirks ([parsing table](https://github.com/github/template-parts/issues/24), [SVG attributes](https://github.com/github/template-parts/issues/25), [liquid syntax](https://shopify.github.io/liquid/tags/template/#raw) conflict etc).
+* [Alpine](https://github.com/alpinejs/alpine) / [petite-vue](https://github.com/vuejs/petite-vue) / [lucia](https://github.com/aidenyabi/lucia) escape native HTML quirks, but the API is not so elegant and [self-encapsulated](https://github.com/alpinejs/alpine/discussions/3223).
+
+_Sprae_ takes idea of _templize_ / _alpine_ / _vue_ directives with [_signals_](https://ghub.io/@preact/signals) reactivity & [_subscript_](https://github.com/dy/subscript) safe eval.
+
+* It shows static html markup when uninitialized (SSR).
+* It doesn't enforce SPA nor JSX (unlike reacts), which enables island hydration.
+* It reserves minimal syntax/API space.
+* It enables CSP via Justin syntax.
+
+|                       | [AlpineJS](https://github.com/alpinejs/alpine)          | [Petite-Vue](https://github.com/vuejs/petite-vue)        | Sprae            |
+|-----------------------|-------------------|-------------------|------------------|
+| _Performance_       | Good              | Very Good         | Best             |
+| _Memory_            | Low               | Low               | Lowest           |
+| _Size_              | ~10KB             | ~6KB              | ~5KB             |
+| _CSP_               | No                | No                | Yes              |
+| _Evaluation_        | [`new AsyncFunction`](https://github.com/alpinejs/alpine/blob/main/packages/alpinejs/src/evaluator.js#L81) | [`new Function`](https://github.com/vuejs/petite-vue/blob/main/src/eval.ts#L20) | [justin](https://github.com/dy/subscript)           |
+| _Reactivity_        | `Alpine.store`    | _@vue/reactivity_   | _@preact/signals_ or any signals |
+| _Sandboxing_        | No                | No                | Yes              |
+| _API_               | `x-`, `:`, `@`, `$magic`, `Alpine.*` | `v-`, `@`, `{{}}`   | `:`, `@`, `sprae` |
+
 
 ## Benchmark
 
@@ -293,29 +318,6 @@ cd webdriver-ts
 npm run results
 ```
 </details>
-
-## Justification
-
-* [Template-parts](https://github.com/dy/template-parts) / [templize](https://github.com/dy/templize) is progressive, but is stuck with native HTML quirks ([parsing table](https://github.com/github/template-parts/issues/24), [SVG attributes](https://github.com/github/template-parts/issues/25), [liquid syntax](https://shopify.github.io/liquid/tags/template/#raw) conflict etc).
-* [Alpine](https://github.com/alpinejs/alpine) / [petite-vue](https://github.com/vuejs/petite-vue) / [lucia](https://github.com/aidenyabi/lucia) escape native HTML quirks, but the API is not so elegant and [self-encapsulated](https://github.com/alpinejs/alpine/discussions/3223).
-
-_Sprae_ takes idea of _templize_ / _alpine_ / _vue_ directives with [_signals_](https://ghub.io/@preact/signals) reactivity & [_subscript_](https://github.com/dy/subscript) safe eval.
-
-* It shows static html markup when uninitialized (SSR).
-* It doesn't enforce SPA nor JSX (unlike reacts), which enables island hydration.
-* It reserves minimal syntax/API space.
-* It enables CSP via Justin syntax.
-
-|                       | [AlpineJS](https://github.com/alpinejs/alpine)          | [Petite-Vue](https://github.com/vuejs/petite-vue)        | Sprae            |
-|-----------------------|-------------------|-------------------|------------------|
-| _Performance_       | Good              | Very Good         | Best             |
-| _Memory_            | Low               | Low               | Lowest           |
-| _Size_              | ~10KB             | ~6KB              | ~5KB             |
-| _CSP_               | No                | No                | Yes              |
-| _Evaluation_        | [`new AsyncFunction`](https://github.com/alpinejs/alpine/blob/main/packages/alpinejs/src/evaluator.js#L81) | [`new Function`](https://github.com/vuejs/petite-vue/blob/main/src/eval.ts#L20) | [justin](https://github.com/dy/subscript)           |
-| _Reactivity_        | `Alpine.store`    | _@vue/reactivity_   | _@preact/signals_ or any signals |
-| _Sandboxing_        | No                | No                | Yes              |
-| _API_               | `x-`, `:`, `@`, `$magic`, `Alpine.*` | `v-`, `@`, `{{}}`   | `:`, `@`, `sprae` |
 
 <!--
 ## Alternatives
