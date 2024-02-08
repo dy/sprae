@@ -3,23 +3,9 @@
 > DOM tree hydration with reactivity.
 
 _Sprae_ is compact ergonomic progressive enhancement framework.<br/>
-It provides reactive `:`-attributes that enable simple markup logic without need for complex scripts.<br/>
+It provides reactive `:`-attributes that enable simple markup logic without complex scripts.<br/>
 Perfect for small-scale websites, prototypes or UI logic.<br/>
-It is tiny, performant, safe and open alternative to [alpine](https://github.com/alpinejs/alpine), [petite-vue](https://github.com/vuejs/petite-vue) or [template-parts](https://github.com/github/template-parts).
-
-
-|                       | AlpineJS          | Petite-Vue        | Sprae            |
-|-----------------------|-------------------|-------------------|------------------|
-| **Performance**       | Good              | Very Good         | Best             |
-| **Memory**            | Low               | Low               | Lowest           |
-| **Size**              | ~10KB             | ~6KB              | ~5KB             |
-| **CSP**               | No                | No                | Yes              |
-| **Evaluation**        | [`new AsyncFunction`](https://github.com/alpinejs/alpine/blob/main/packages/alpinejs/src/evaluator.js#L81) | [`new Function`](https://github.com/vuejs/petite-vue/blob/main/src/eval.ts#L20) | [justin](https://github.com/dy/subscript)           |
-| **Reactivity**        | `Alpine.store`    | @vue/reactivity   | @preact/signals or any signals |
-| **API**               | Implicit          | Closed            | Open             |
-| **Sandboxing**        | No                | No                | Yes              |
-| **Magic**             | Yes               | Yes               | No               |
-| **Extensibility**     | directives, magic | No                | directives       |
+It is tiny, performant, safe and open alternative to [alpine](https://github.com/alpinejs/alpine) and [petite-vue](https://github.com/vuejs/petite-vue) (see [comparison](#comparison)).
 
 
 ## Usage
@@ -281,8 +267,8 @@ npm run results
 
 ## Justification
 
-* [Template-parts](https://github.com/dy/template-parts) / [templize](https://github.com/dy/templize) is progressive, but is stuck with native HTML quirks ([parsing table](https://github.com/github/template-parts/issues/24), [SVG attributes](https://github.com/github/template-parts/issues/25), [liquid syntax](https://shopify.github.io/liquid/tags/template/#raw) conflict etc). Also ergonomics of `attr="{{}}"` is inferior to `:attr=""` since it creates flash of uninitialized values. Also it's just nice to keep `{{}}` generic, regardless of markup, and attributes as part of markup.
-* [Alpine](https://github.com/alpinejs/alpine) / [vue](https://github.com/vuejs/petite-vue) / [lit](https://github.com/lit/lit/tree/main/packages/lit-html) escape native HTML quirks, but the syntax space (`:attr`, `v-*`,`x-*`, `l-*` `@evt`, `{{}}`) is too broad, as well as functionality. Perfection is when there's nothing to take away, not add (c). Also they tend to [self-encapsulate](https://github.com/alpinejs/alpine/discussions/3223) making interop hard, invent own tooling or complex reactivity.
+* [Template-parts](https://github.com/dy/template-parts) / [templize](https://github.com/dy/templize) is progressive, but is stuck with native HTML quirks ([parsing table](https://github.com/github/template-parts/issues/24), [SVG attributes](https://github.com/github/template-parts/issues/25), [liquid syntax](https://shopify.github.io/liquid/tags/template/#raw) conflict etc).
+* [Alpine](https://github.com/alpinejs/alpine) / [petite-vue](https://github.com/vuejs/petite-vue) / [lucia](https://github.com/aidenyabi/lucia) escape native HTML quirks, but the syntax space (`:attr`, `v-*`,`x-*`, `l-*` `@evt`, `{{}}`) is too broad, as well as functionality. Perfection is when there's nothing to take away, not add (c). Also they tend to [self-encapsulate](https://github.com/alpinejs/alpine/discussions/3223) making interop hard, invent own tooling or complex reactivity.
 * React / [preact](https://ghub.io/preact) does the job wiring up JS to HTML, but with an extreme of migrating HTML to JSX and enforcing SPA, which is not organic for HTML. Also it doesn't support reactive fields (needs render call).
 
 _Sprae_ takes idea of _templize_ / _alpine_ / _vue_ attributes and builds simple reactive state based on [_@preact/signals_](https://ghub.io/@preact/signals).
@@ -294,8 +280,23 @@ _Sprae_ takes idea of _templize_ / _alpine_ / _vue_ attributes and builds simple
 * It reserves minimal syntax space as `:` convention (keeping tree neatly decorated, not scattered).
 * Expressions are naturally reactive and incur minimal updates.
 * Elements / data API is open and enable easy interop.
+* It avoids CSP violation via Justin syntax
 
 It is reminiscent of [XSLT](https://www.w3schools.com/xml/xsl_intro.asp), considered a [buried treasure](https://github.com/bahrus/be-restated) by web-connoisseurs.
+
+
+## Comparison
+
+|                       | AlpineJS          | Petite-Vue        | Sprae            |
+|-----------------------|-------------------|-------------------|------------------|
+| **Performance**       | Good              | Very Good         | Best             |
+| **Memory**            | Low               | Low               | Lowest           |
+| **Size**              | ~10KB             | ~6KB              | ~5KB             |
+| **CSP**               | No                | No                | Yes              |
+| **Evaluation**        | [`new AsyncFunction`](https://github.com/alpinejs/alpine/blob/main/packages/alpinejs/src/evaluator.js#L81) | [`new Function`](https://github.com/vuejs/petite-vue/blob/main/src/eval.ts#L20) | [justin](https://github.com/dy/subscript)           |
+| **Reactivity**        | `Alpine.store`    | @vue/reactivity   | @preact/signals, any signals |
+| **Sandboxing**        | No                | No                | Yes              |
+| **Magic**             | Yes               | Yes               | No               |
 
 
 ## Alternatives
