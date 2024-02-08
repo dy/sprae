@@ -27,7 +27,7 @@ Perfect for small-scale websites, prototypes or UI logic. It is tiny, performant
 ```
 
 Sprae evaluates `:`/`@`-directives and evaporates them.<br/>
-Directives support [justin syntax](#expressions) and may take reactive values.
+Directives support [justin syntax](#expressions) and may take [signals values](#reactivity).
 
 
 ## Directives
@@ -236,9 +236,27 @@ import sprae, { signal, computed, effect, batch } from 'sprae';
 Object.assign(sprae, preact); // use @preact/signals
 ```
 
-## Dispose
+<!-- ## Dispose
 
-To destroy state and detach sprae handlers, call `element[Symbol.dispose]()`.
+To destroy state and detach sprae handlers, call `element[Symbol.dispose]()`. -->
+
+## Plugins
+
+Sprae directives can be simply extended as `sprae.directive.name = (el, expr, state) => {}`.
+
+<!-- Official plugins are:
+
+* @sprae/aria – `:aria="props"` aria-roles
+* @sprae/data - `:data="props"` for dataseet
+* @sprae/item: `<x :item="{type:a, scope:b}"` – data schema -->
+<!-- * @sprae/hcodes: `<x :hcode=""` – provide microformats
+* @sprae/visible? - can be solved externally
+* @sprae/intersect
+* @sprae/persists - mb for signals?
+* @sprae/mount
+* @sprae/use?
+* @sprae/input - for input values
+* @sprae/ -->
 
 ## Examples
 
