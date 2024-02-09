@@ -192,17 +192,10 @@ Attach event(s) listener with possible modifiers. `event` variable holds current
 Expressions use [justin](https://github.com/dy/subscript?tab=readme-ov-file#justin) syntax, a minimal subset of JS:<br/>
 
 ```js
-a.b, a[b];                          // prop access
-a++, a--, !a, -a, +a, --a, ++a;     // unaries
-a ** b, a * b, a / b, a % b;        // mult / div
-a + b, a - b;                       // arithmetics
-a < b, a <= b, a > b, a >= b;       // comparisons
-a == b, a != b, a === b, a !== b;   // equality
-a && b, a || b;                     // logic
-a << b, a >> b, a >>> b;            // shifts
-a & b, a ^ b, a | b, ~a;            // binary ops
-a = b, a ? b : c, a?.b, a ?? b;     // assignment, conditions
-(foo) => (bar, baz);                // arrow functions
+++ -- ! - + -- ++ ** * / %          // operators
+< <= > >= == != === !== && || ??
+<< >> >>> & ^ | ~ = ?: . ?. []
+(a, b) => (c, d);                   // arrow functions
 [a, b]; { a: b };                   // objects, arrays
 "abc", 'abc $<def>';                // strings (with interpolation)
 1, 0xabcd, .01, -1.2e+.5;           // numbers
