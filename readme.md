@@ -2,7 +2,8 @@
 
 _Sprae_ is compact & ergonomic progressive enhancement framework.<br/>
 It provides reactive `:`-attributes for simple markup logic without complex scripts.<br/>
-Perfect for small-scale websites, prototypes, or UI logic – as tiny, performant, safe & open alternative to [alpine](https://github.com/alpinejs/alpine), [petite-vue](https://github.com/vuejs/petite-vue) or [template-parts](https://github.com/github/template-parts).
+Perfect for small-scale websites, prototypes, or UI logic.<br/>
+It is tiny, performant, open & safe alternative to [alpine](https://github.com/alpinejs/alpine), [petite-vue](https://github.com/vuejs/petite-vue) or [template-parts](https://github.com/github/template-parts).
 
 ## Usage
 
