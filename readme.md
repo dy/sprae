@@ -213,9 +213,11 @@ Expressions are async, so await each statement.
 Sprae uses _@preact/signals-core_ for reactivity, but it can be switched to any other provider as:
 
 ```js
-import * as preact from '@preact/signals'; // @preact/signals-preact, usignal or @webreflection/signal
+// eg. '@preact/signals-react', 'usignal' or @webreflection/signal
+import * as preact from '@preact/signals';
 import sprae, { signal, computed, effect, batch } from 'sprae';
-Object.assign(sprae, preact); // use @preact/signals
+
+sprae.signals(preact);
 ```
 
 <!-- ## Dispose
