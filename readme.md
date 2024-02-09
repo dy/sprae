@@ -193,9 +193,9 @@ Attach event(s) listener with possible modifiers. `event` variable holds current
 Expressions use [justin](https://github.com/dy/subscript?tab=readme-ov-file#justin) syntax, a minimal subset of JS:<br/>
 
 ```js
-++ -- ! - + -- ++ ** * / %          // operators
-< <= > >= == != === !== && || ??
-<< >> >>> & ^ | ~ = ?: . ?. []
+++ -- ! - + ** * / %  && || ??      // operators
+= < <= > >= == != === !==
+<< >> >>> & ^ | ~ ?: . ?. []
 (a, b) => (c, d);                   // arrow functions
 [a, b]; { a: b };                   // objects, arrays
 "abc", 'abc $<def>';                // strings (with interpolation)
