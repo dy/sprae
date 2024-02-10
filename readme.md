@@ -1,7 +1,7 @@
 # ∴ spræ [![tests](https://github.com/dy/sprae/actions/workflows/node.js.yml/badge.svg)](https://github.com/dy/sprae/actions/workflows/node.js.yml) [![size](https://img.shields.io/bundlephobia/minzip/sprae?label=size)](https://bundlephobia.com/result?p=sprae) [![npm](https://img.shields.io/npm/v/sprae?color=orange)](https://npmjs.org/sprae)
 
 _Sprae_ is compact & ergonomic progressive enhancement framework.<br/>
-It provides reactive `:`-attributes for simple markup logic without complex scripts.<br/>
+It provides reactive `:`-attributes for simple html logic without complex scripts.<br/>
 Perfect for small-scale websites, prototypes, or UI logic.<br/>
 It is tiny, performant, open & safe alternative to [alpine](https://github.com/alpinejs/alpine), [petite-vue](https://github.com/vuejs/petite-vue) or [template-parts](https://github.com/github/template-parts).
 
@@ -71,7 +71,7 @@ Multiply element.
 <style>[:each] {visibility: hidden}</style>
 ```
 
-#### `:text="value"`, `:html="value"`
+#### `:text="value"`
 
 Set text or html content of an element. Default text can be used as fallback:
 
@@ -142,9 +142,9 @@ Set any attribute value.
 <div :onclick="e => ()"></div>
 ```
 
-#### `:="expr"`
+#### `:="<effect>"`
 
-Run effect.
+Run effect(s).
 
 ```html
 <!-- multiple effects -->
@@ -155,29 +155,29 @@ Run effect.
   <div :text="x"/>
 </div>
 
-<!-- ref -->
+<!-- element ref -->
 <textarea :="text=this" placeholder="Enter text..."></textarea>
 ```
 
 
 ## Events
 
-#### `@<event>="handle"`, `@<foo>@<bar>.<baz>="handle"`
+#### `@<event>.<modifier>="callback;"`
 
 Attach event(s) listener with possible modifiers. `event` variable holds current event.
 
 ```html
-<!-- Single event -->
+<!-- single event -->
 <input type="checkbox" @change="isChecked = event.target.value">
 
-<!-- Multiple events -->
+<!-- multiple events -->
 <input :value="text" @input@change="text = event.target.value">
 
-<!-- Event modifiers -->
+<!-- event modifiers -->
 <button @click.throttle-500="handler(event)">Not too often</button>
 ```
 
-##### Event modifiers
+##### Modifiers
 
 * `.once`, `.passive`, `.capture` – listener [options](https://developer.mozilla.org/en-US/docs/Web/API/EventTarget/addEventListener#options).
 * `.prevent`, `.stop` – prevent default or stop propagation.
@@ -190,31 +190,31 @@ Attach event(s) listener with possible modifiers. `event` variable holds current
 
 ## Expressions
 
-Expressions use [justin](https://github.com/dy/subscript?tab=readme-ov-file#justin) syntax, a minimal subset of JS:<br/>
+Sprae uses [justin](https://github.com/dy/subscript?tab=readme-ov-file#justin) for expressions, a minimal subset of JS:<br/>
 
 ```js
-++ -- ! - + ** * / %  && || ??      // operators
+++ -- ! - + ** * / %  && || ??      // standard operators
 = < <= > >= == != === !==
 << >> >>> & ^ | ~ ?: . ?. []
 (a, b) => (c, d);                   // arrow functions
 [a, b]; { a: b };                   // objects, arrays
 "abc", 'abc $<def>';                // strings (with interpolation)
-1, 0xabcd, .01, -1.2e+.5;           // numbers
+1, .01, -1.2e+.5, 0xabcd, 0b01;           // numbers
 true, false, null, undefined, NaN;  // keywords
 ```
 
-Expressions are sandboxed and have no access to globals, only to provided variables.<br/>
-You may pass required objects eg. _console_, _window_, _setTimeout_, _fetch_ etc. (Caution: _setTimeout_ may act as eval).<br/>
+Expressions are fully sandboxed and have no access to globals.<br/>
+You may pass required objects (eg. _console_, _window_, _setTimeout_, _fetch_) manually.<br/>
+(Caution: _setTimeout_ may act as eval).<br/>
+Expressions are async, so automatically await each statement.
 
-Expressions are async, so await each statement.
 
 ## Reactivity
 
-Sprae uses _@preact/signals-core_ for reactivity, but it can be switched to any other provider as:
+Sprae uses _usignal_ for reactivity, but it can be switched to any other signals provider:
 
 ```js
-// eg. '@preact/signals-react', 'usignal' or @webreflection/signal
-import * as preact from '@preact/signals';
+import * as preact from '@preact/signals-core';
 import sprae, { signal, computed, effect, batch } from 'sprae';
 
 sprae.signals(preact);
@@ -224,9 +224,11 @@ sprae.signals(preact);
 
 To destroy state and detach sprae handlers, call `element[Symbol.dispose]()`. -->
 
+
 ## Plugins
 
 Sprae directives can be extended as `sprae.directive.name = (el, expr, state) => {}`.
+Also see [nadi](https://github.com/dy/nadi) - collection of various DOM/etc interfaces with signals API.
 
 <!-- Official plugins are:
 
@@ -241,6 +243,7 @@ Sprae directives can be extended as `sprae.directive.name = (el, expr, state) =>
 * @sprae/use?
 * @sprae/input - for input values
 * @sprae/ -->
+
 
 ## Examples
 
@@ -262,28 +265,24 @@ _Sprae_ takes idea of _templize_ / _alpine_ / _vue_ directives with [_signals_](
 * It reserves minimal syntax/API space.
 * It enables CSP via Justin syntax.
 
-## Comparisons
-
 <details>
 
-<summary>Features</summary>
+<summary><strong>Features</strong></summary>
 
 |                       | [AlpineJS](https://github.com/alpinejs/alpine)          | [Petite-Vue](https://github.com/vuejs/petite-vue)        | Sprae            |
 |-----------------------|-------------------|-------------------|------------------|
-| _Performance_       | Good              | Very Good         | Best             |
-| _Memory_            | Low               | Low               | Lowest           |
 | _Size_              | ~10KB             | ~6KB              | ~5KB             |
 | _CSP_               | No                | No                | Yes              |
 | _Evaluation_        | [`new AsyncFunction`](https://github.com/alpinejs/alpine/blob/main/packages/alpinejs/src/evaluator.js#L81) | [`new Function`](https://github.com/vuejs/petite-vue/blob/main/src/eval.ts#L20) | [justin](https://github.com/dy/subscript)           |
-| _Reactivity_        | `Alpine.store`    | _@vue/reactivity_   | _@preact/signals_ or any signals |
+| _Reactivity_        | `Alpine.store`    | _@vue/reactivity_   | any signals |
 | _Sandboxing_        | No                | No                | Yes              |
-| _API_               | `x-`, `:`, `@`, `$magic`, `Alpine.*` | `v-`, `@`, `{{}}`   | `:`, `@`, `sprae` |
+| _Magic_               | Yes | Yes   | No |
 
 
 </details>
 
 <details>
-<summary>Benchmark</summary>
+<summary><strong>Benchmark</strong></summary>
 
 See [js-framework-benchmark](https://krausest.github.io/js-framework-benchmark/current.html#eyJmcmFtZXdvcmtzIjpbIm5vbi1rZXllZC9wZXRpdGUtdnVlIiwibm9uLWtleWVkL3NwcmFlIl0sImJlbmNobWFya3MiOlsiMDFfcnVuMWsiLCIwMl9yZXBsYWNlMWsiLCIwM191cGRhdGUxMHRoMWtfeDE2IiwiMDRfc2VsZWN0MWsiLCIwNV9zd2FwMWsiLCIwNl9yZW1vdmUtb25lLTFrIiwiMDdfY3JlYXRlMTBrIiwiMDhfY3JlYXRlMWstYWZ0ZXIxa194MiIsIjA5X2NsZWFyMWtfeDgiLCIyMV9yZWFkeS1tZW1vcnkiLCIyMl9ydW4tbWVtb3J5IiwiMjNfdXBkYXRlNS1tZW1vcnkiLCIyNV9ydW4tY2xlYXItbWVtb3J5IiwiMjZfcnVuLTEway1tZW1vcnkiLCIzMV9zdGFydHVwLWNpIiwiMzRfc3RhcnR1cC10b3RhbGJ5dGVzIiwiNDFfc2l6ZS11bmNvbXByZXNzZWQiLCI0Ml9zaXplLWNvbXByZXNzZWQiXSwiZGlzcGxheU1vZGUiOjF9).
 
