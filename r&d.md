@@ -97,7 +97,7 @@
 
 -> possibly we have to just subscribe via mechanism of signals-like deps, and :with just initializes subtree with extended object
 
-## [ ] :with? -> ~~let's use `:with="{x:1,y:2,z:3}"` for now~~ :with is poor shim for componentization
+## [x] :with? -> ~~let's use `:with="{x:1,y:2,z:3}"` for now~~ :with is poor shim for componentization; can be just ` :="foo=bar"`
 
   1. Get rid of :with
     + with is bad JS practice/association
@@ -123,6 +123,7 @@
         +~ that seems more like a component concern, :with seems to provide a whacky hack to create scope/shadow
     - `:with` is main way to provide `auto` entry
       ~ we can sacrifice `auto`
+    + can be replaced with `:='x=123'`
   1.1 Slim `:with="{a,b,c}"` - just initializes vars
     - Doesn't give easy init syntax
     + Convevtional and not hard to implement
@@ -164,7 +165,7 @@
 -> so that directive updator gets invoked only when any of expr dependencies change
 -> gotta solve via signal-struct
 
-## [x] Replace :else-if with :else :if -> no
+## [x] Replace :else-if with :else :if -> no, logically different
 
 + `:else :if=""` is meaningful expansion of both directives
 + `:else :if` is coming from JS
@@ -776,9 +777,10 @@
   + multiple props can be combined into computed signal or called manually via batch
 
 ## [ ] 9.0
+
   * subscript-based parsing
     + see subscript-based store: mainly CSP & no-store eval
-  * :with -> :scope
+  * no :with, :scope
   * Get rid of `:on` events - attributes are no-fn expressions
   * Get rid of sprae.auto
   * No-batch: updating signals updates target nadis
@@ -786,10 +788,77 @@
   * Plugins
   * Rewrite with `nadi`: sprae becomes just a form of hypd + nadi, one of nadis essentially
 
-## [ ] What should we do with `this` in case of subscript?
+### [x] What should we do with `this` in case of subscript? -> detect statically, provide in context
   * It doesn't ship keywords by default
+  1. We can do Object.create(state, {this:{value:el}})
+    - created for each effect - too much
+    - bloats memory
+    + we need it anyways for setting variables within context
+  2. ~~We can call subscript function with `this` in context~~ we can't, subscript reads from context
+  3. We can statically detect `this` and define handlers for it (it can be only read/set props)
 
-## [ ] Imagine dom-signals. What would be redundant in sprae?
+### [x] Should we include functions? -> yes, without them is hard, also arrow fns are no-keywords
+  + Allows array ops like `Array.from({length:1}, (_,i)=>i*2).join('')`
+    ~ there's an opinion this code is too complex
+  - makes directives more complex, wonder if that complexity is better done via JS (too complex scripts are unwelcomed)
+  - opens doubts for `:on="()=>{}"`
+    - not allowing functions would prohibit setting `:on` attributes
+  * let's hold on with them until need like air
+  * We need them for mainly array methods `(items.every(item => item.done))`
+    - iterating over arrays is prone to perf problems, better expose state
+  * For `setInterval()`
+    - opens unsafe eval
+      ~ we don't seem to be able to stop it.
+    - usually it means separate scope is needed (component)
+  + Can be better alternative to iterator proposals
+  - opens gateway to eval like `new ((()=>()).constructor)('arbitrary JS')`
+    ~ unless we prohibit `new` operator
+    - `setTimeout('string')` does either
+
+### [x] How do we handle @a@b? Is that some special attribute kind? -> we have arrow fns, keep as is
+  1. Register attributes with full name, eg. `directives['@xx']=...`
+    - we are supposed to register any-events
+  2. We can follow the convention that `@` is `addEventListener` fn body, `:` is prop
+
+### [x] Should we include async/await? -> make all functions async and all calls await
+  + it allows naturally to await promises etc
+  - there's an opinion that async/await is a mistake: use signals
+
+### [x] What should we do with tagged strings :id="`item-${id}`"? -> keep strings `'item-' + id` with placeholders `'item-$<id>'`
+  1. Prohibit
+    * `:class="['a', b, 'c']"`
+      + built-in clsx
+    * `:id="['item-',id].join('')"`
+    * `:class='"foo " + bar + " baz"'`
+      + classic JS
+      + more-or-less cross-lang
+      - not so easy to read
+  2. Invent alternative
+    * `"foo $bar baz"` (Bash, Perl, Kotlin, PHP)
+    * `"foo %s baz" % bar` (Python, Go)
+      - nah, learning new synax is no-go
+  3. Prefixed directive `$class="foo {bar} baz"`
+    - nah
+  4. regex.replace-like `:class="'a $<name> b'"`
+    + implementable as `values.join('|').replace(attr)`
+    - doesn't allow complex expressions inside of `$<>`
+  5. Register directive similar to :ref as `class="a {b} c"`
+    - That's natural advantage of template-parts
+  6. Implement via subscript...
+
+### [x] Should we allow var, let, const? -> no, write to scope instead -> we may need scope defined per-element
+  + we have fn body in handlers
+  * `const all = todos.every(item => item.done)
+    save(todos = todos.map(item => (item.done = !all, item)))``
+  1. Can do `this._x = ...`
+    - needs `this`
+  2. Can do `x = ...` - writing to local state instance
+    + allows `this`
+    - enforces local state
+  3. Can do `x = ...` - writing to global state
+    + enabled already
+
+## [x] Imagine dom-signals. What would be redundant in sprae? -> let's try using nadis + subscript
   * :text, :class, :style, :value, :prop, :props, :render/:html - just simple writer signals
     * `elText = text(el, 'init'); elText.value=123`, `elClass = cl(el, init)`, `elContent = html(el, init)`
   * :if, :each - can be controllable too, more complicated since act in-context
@@ -810,3 +879,16 @@
     + make controllable element dom-signals
     + allow plugin system
     -> let's call that project nadi
+
+## [x] Template syntax -> nice research, but outside of sprae scope, see define-element r&d
+
+1. `attr={{value}}`
+2. `:attr="value"`
+3. `attr="{value}"`
+
+## [x] #14: Should we introduce fragments rendering via template directives `<template :if="..."` -> yes, that's meaningful scope delineation: :if, :each, :scope etc
+  * That seems to be in-line with `<tempalte :each="...">` - logically these both create placeholder element
+  * `<template :define` can be implemented as plugin
+    * generally we have to carefully design plugins system
+  + template is used as immediate/fragment in declarative shadow dom and custom elements proposals
+  ? other uses might be: `:scoped` to run template in isolated (iframe) context

@@ -427,7 +427,6 @@ function parseExpr(el, expression, dir) {
 
   if (!evaluate) {
     try {
-      // evaluate = evaluatorMemo[expression] = new Function(`__scope`, `with (__scope) { let __; return ${expression.trim()} };`)
       evaluate = evaluatorMemo[expression] = compile(expression)
     } catch (e) {
       return exprError(e, el, expression, dir)

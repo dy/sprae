@@ -66,17 +66,21 @@
 * [x] Fix multiple `.push` cycle problem
 * [x] ~~Make regular proxy state not causing infinite recursion~~ we don't hold to own proxy now
 * [x] All FIXMEs
-* [ ] Avoid creating signals for static values
+* [x] ~~Avoid creating signals for static values~~ -> v9 avoids that
+* [ ] Figure out `arr.push()` - do we need to ever have calls as signals?
 
 ### [ ] v9
 
 * [ ] subscript-based eval
 * [ ] no store
 * [ ] switching hooks
-* [ ] plugins structure
-* [ ] comparison table: CSP, plugins, no-deps, size, performance, event/modifiers,
-* [ ] Get rid of `:on` events - attributes are no-fn expressions
-* [ ] nadis
-* [ ] remove :with?
-* [ ] `items = each(el, (items)=>children)`, `cond = if(el, cond);`
+* [ ] plugins: extensible directives
+* [x] comparison table: CSP, plugins, no-deps, size, performance, event/modifiers,
+* [ ] remove :with
+  * [ ] remove unused directives
+* [ ] :=fx
+* [ ] `items = each(el, (items)=>children)`, `cond = if(el, cond);` (nadis)
 * [ ] try direct directives without primary/secondary
+* [ ] fix all examples
+* [ ] use usignal
+* [ ] treeshake, minimize bundle

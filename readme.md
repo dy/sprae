@@ -190,17 +190,17 @@ Attach event(s) listener with possible modifiers. `event` variable holds current
 
 ## Expressions
 
-Sprae uses [justin](https://github.com/dy/subscript?tab=readme-ov-file#justin) for expressions, a minimal subset of JS:<br/>
+Sprae uses [justin](https://github.com/dy/subscript?tab=readme-ov-file#justin) for expressions, a minimal subset of JS - JSON with expressions:<br/>
 
 ```js
 ++ -- ! - + ** * / %  && || ??      // standard operators
-= < <= > >= == != === !==
+= < <= > >= == !=
 << >> >>> & ^ | ~ ?: . ?. []
-(a, b) => (c, d);                   // arrow functions
+a => b; (a, b) => {c; d};           // arrow functions
 [a, b]; { a: b };                   // objects, arrays
 "abc", 'abc $<def>';                // strings (with interpolation)
-1, .01, -1.2e+.5, 0xabcd, 0b01;           // numbers
-true, false, null, undefined, NaN;  // keywords
+1, .01, -1.2e+.5, 0xabcd, 0b01;     // numbers
+true, false, null;                  // primitives
 ```
 
 Expressions are fully sandboxed and have no access to globals.<br/>
@@ -277,6 +277,8 @@ _Sprae_ takes idea of _templize_ / _alpine_ / _vue_ directives with [_signals_](
 | _Reactivity_        | `Alpine.store`    | _@vue/reactivity_   | any signals |
 | _Sandboxing_        | No                | No                | Yes              |
 | _Magic_               | Yes | Yes   | No |
+| _Plugins_ | Yes | No | Yes |
+| _Modifiers_ | Yes | No | Yes|
 
 
 </details>

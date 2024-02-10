@@ -146,16 +146,16 @@ test('props: multiprop', async () => {
 })
 
 test('props: calculation', async () => {
-  let el = h`<x :x="(()=>{ let a = 5; return Array.from({length: x}, (_,i)=>i).join('') })()"></x>`
-  let state = sprae(el, { x: 3 });
+  let el = h`<x :x="a = 5; Array.from({length: x}, (_,i) => (i)).join('')"></x>`
+  let state = sprae(el, { x: 3, console });
   is(el.outerHTML, `<x x="012"></x>`)
   state.x = 4
   await tick()
   is(el.outerHTML, `<x x="0123"></x>`)
 })
 
-test.todo('props: semicols in expression', async () => {
-  let el = h`<x :x="0; return Array.from({length: x}, (_,i)=>i).join('')"></x>`
+test('props: semicols in expression', async () => {
+  let el = h`<x :x="0; Array.from({length: x}, (_,i)=>i).join('')"></x>`
   let state = sprae(el, { x: 3 });
   is(el.outerHTML, `<x x="012"></x>`)
   state.x = 4
