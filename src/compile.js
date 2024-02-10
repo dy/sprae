@@ -10,11 +10,12 @@ operator('=>', (a, b) => {
 
   b = compile(b[0] === '{' ? b[1] : b) // `=> {x}` -> `=> x`
 
-  return ctx => (
-    ctx = Object.create({ ...ctx }),
-    (...args) => (a.map((a, i) => ctx[a] = args[i]), b(ctx))
-  )
+  return function (ctx, el) {
+    ctx = Object.create({ ...ctx, this: this })
+    return (...args) => (a.map((a, i) => ctx[a] = args[i]), b(ctx))
+  }
 })
+
 export default (src) => {
   let tree = parse(src)
 

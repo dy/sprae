@@ -84,3 +84,4 @@
 * [ ] fix all examples
 * [ ] use usignal
 * [ ] treeshake, minimize bundle
+* [ ] all FIXMEs

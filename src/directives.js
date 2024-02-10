@@ -282,8 +282,8 @@ export default (el, expr, state, name) => {
     let off, dispose = effect(() => {
       if (off) off(), off = null
       // we need anonymous callback to enable modifiers like prevent
-      let value = evaluate(state)
-      if (value) off = on(el, evt, value)
+      let cb = evaluate(state)
+      if (cb) off = on(el, evt, cb)
     })
     return () => (off?.(), dispose())
   }

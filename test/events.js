@@ -1,7 +1,7 @@
 // import { signal } from 'usignal/sync'
 import test, { is, any, throws } from 'tst'
 import { tick, time } from 'wait-please'
-import sprae from '../src/index.js'
+import sprae, { signal } from '../src/index.js'
 import h from 'hyperf'
 
 test('events: async', async e => {
@@ -39,14 +39,15 @@ test('events: multiple events', e => {
   is(state.log, ['click', 'scroll', 'x'])
 })
 
-test('events: once', e => {
+test.only('events: once', e => {
   // NOTE: if callback updates it's still rebound
-  let el = h`<x @x.once="(x&&log.push(this))" ></x>`
+  let el = h`<x @x.once="(x && log.push(this))" ></x>`
   let s = sprae(el, { log: [], x: 1 })
   el.dispatchEvent(new window.Event('x'));
   is(s.log, [el])
   el.dispatchEvent(new window.Event('x'));
   is(s.log, [el])
+  console.log('--- x=2')
   s.x = 2
   el.dispatchEvent(new window.Event('x'));
   el.dispatchEvent(new window.Event('x'));

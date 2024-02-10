@@ -40,6 +40,7 @@ export default function sprae(container, values) {
 
         if (prefix === ':' || prefix === '@') {
           el.removeAttribute(attr.name)
+          // FIXME: do we need to wrap into {} here?
           let expr = prefix === '@' ? `${attr.value.includes('await') ? 'async' : ''} event=>{${attr.value}}` : attr.value,
             names = attr.name.slice(1).split(prefix)
 
