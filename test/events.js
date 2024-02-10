@@ -40,13 +40,13 @@ test('events: multiple events', e => {
 })
 
 test.only('events: once', e => {
-  // NOTE: if callback updates it's still rebound
   let el = h`<x @x.once="(x && log.push(this))" ></x>`
   let s = sprae(el, { log: [], x: 1 })
   el.dispatchEvent(new window.Event('x'));
   is(s.log, [el])
   el.dispatchEvent(new window.Event('x'));
   is(s.log, [el])
+  // should not react on changes signals from outside
   console.log('--- x=2')
   s.x = 2
   el.dispatchEvent(new window.Event('x'));
