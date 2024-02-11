@@ -11,7 +11,7 @@
   ],
   "dependencies": {
     "@preact/signals-core": "^1.5.0",
-    "subscript": "^7.5.5"
+    "subscript": "^7.6.2"
   },
   "devDependencies": {
     "@preact/signals": "^1.1.3",

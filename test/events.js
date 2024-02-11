@@ -5,14 +5,14 @@ import sprae, { signal } from '../src/index.js'
 import h from 'hyperf'
 
 test('events: async', async e => {
-  let el = h`<div @x="v = await 1; log.push(v);"></div>`
+  let el = h`<div @x="v = 1; log.push(v);"></div>`
   let state = sprae(el, { log: [] })
   el.dispatchEvent(new window.Event('x'));
   is(state.log, [])
   await tick(1);
   is(state.log, [1])
 
-  let el2 = h`<div @x="log.push(await 1);"></div>`
+  let el2 = h`<div @x="1; log.push(1);"></div>`
   let state2 = sprae(el2, { log: [] })
   el2.dispatchEvent(new window.Event('x'));
   is(state2.log, [])
@@ -39,7 +39,7 @@ test('events: multiple events', e => {
   is(state.log, ['click', 'scroll', 'x'])
 })
 
-test.only('events: once', e => {
+test('events: once', e => {
   let el = h`<x @x.once="(x && log.push(this))" ></x>`
   let s = sprae(el, { log: [], x: 1 })
   el.dispatchEvent(new window.Event('x'));

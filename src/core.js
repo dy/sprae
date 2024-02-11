@@ -13,7 +13,7 @@ export default function sprae(container, values) {
   if (memo.has(container)) return batch(() => Object.assign(memo.get(container), values))
 
   // take over existing state instead of creating clone
-  const state = createState(values || {});
+  const state = values || {};
   const disposes = []
 
   // init directives on element
@@ -41,7 +41,7 @@ export default function sprae(container, values) {
         if (prefix === ':' || prefix === '@') {
           el.removeAttribute(attr.name)
           // FIXME: do we need to wrap into {} here?
-          let expr = prefix === '@' ? `${attr.value.includes('await') ? 'async' : ''} event=>{${attr.value}}` : attr.value,
+          let expr = prefix === '@' ? `event=>{${attr.value}}` : attr.value,
             names = attr.name.slice(1).split(prefix)
 
           // multiple attributes like :id:for="" or @click@touchstart

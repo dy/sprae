@@ -1,26 +1,37 @@
-import { compile, parse, binary, token, expr, operator } from 'subscript/justin.js'
+import { compile, parse, binary, token, expr, operator, set } from 'subscript/justin.js'
 
 // to enable array methods we have to enable functions
 binary('=>', 2)
-operator('=>', (a, b) => {
-  a = a[0] === '(' ? a[1] : a,
-    a = a == '' ? [] : // () =>
-      a[0] === ',' ? (a = a.slice(1)) : // (a,c) =>
-        (a = [a]) // a =>
+operator('=>',
+  (a, b) => {
+    a = a[0] === '(' ? a[1] : a,
+      a = a == '' ? [] : // () =>
+        a[0] === ',' ? (a = a.slice(1)) : // (a,c) =>
+          (a = [a]) // a =>
 
-  b = compile(b[0] === '{' ? b[1] : b) // `=> {x}` -> `=> x`
+    b = compile(b[0] === '{' ? b[1] : b) // `=> {x}` -> `=> x`
 
-  return function (ctx, el) {
-    ctx = Object.create({ ...ctx, this: this })
-    return (...args) => (a.map((a, i) => ctx[a] = args[i]), b(ctx))
+    return function (ctx, el) {
+      ctx = Object.create({ ...ctx, this: this })
+      return (...args) => (a.map((a, i) => ctx[a] = args[i]), b(ctx))
+    }
   }
-})
+)
+
+// we make all statements automatically awaitable
+operator(';', (...args) => (args = args.filter(Boolean).map(compile), async (ctx, result) => {
+  for (let arg of args) result = await arg(ctx)
+  return result
+}))
 
 export default (src) => {
   let tree = parse(src)
 
   // convert values access to signals subscription
   const t = (node) => {
+    // a;;;
+    if (!node) return node
+
     // a -> a?.valueOf(), a.b.c -> a.b.c?.valueOf(), a.b[c] -> a.b[c]?.valueOf()
     // FIXME: why empty string as 2nd arg?
     if (!Array.isArray(node) || node[0] === '.' || (node[0] === '[' && node.length > 2)) return ['(', ['?.', node, 'valueOf'], '']

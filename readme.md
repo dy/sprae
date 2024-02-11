@@ -206,7 +206,8 @@ true, false, null;                  // primitives
 Expressions are fully sandboxed and have no access to globals.<br/>
 You may pass required objects (eg. _console_, _window_, _setTimeout_, _fetch_) manually.<br/>
 (Caution: _setTimeout_ may act as eval).<br/>
-Expressions are async, so automatically await each statement.
+Expressions are async and statements are awaited automatically.<br/>
+Also - `undefined`, `NaN`, `===`, `!==` are excluded.
 
 
 ## Reactivity
