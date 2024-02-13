@@ -245,6 +245,19 @@ Also see [nadi](https://github.com/dy/nadi) - collection of various DOM/etc inte
 * @sprae/input - for input values
 * @sprae/ -->
 
+<!--
+Migration to v9
+
+* No sandboxing defaults: provide necessary globals as `Object.assign(Object.create({console, window}), {state})`
+* `:=<props>` is not available anymore, use plugin?
+* Templates use justin syntax
+* Tagged literals -> `:class="'abc $<def>'"`
+* `:with={x:foo}` -> `:="x=foo"` (no scoping)
+* `:ref='abc'` -> `:="abc=this"`
+* `:render="tpl"` -> `:html="tpl"`
+* no autoinit
+* reactivity via signals, store is not reactive anymore
+ -->
 
 ## Examples
 

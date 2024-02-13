@@ -292,6 +292,7 @@ export default (el, expr, state, name) => {
   state = Object.create(state, { this: { value: el } })
 
   return effect(() => {
+    // console.log(evaluate(state))
     attr(el, name, evaluate(state))
   })
 }

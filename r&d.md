@@ -781,12 +781,12 @@
   * subscript-based parsing
     + see subscript-based store: mainly CSP & no-store eval
   * no :with, :scope
-  * Get rid of `:on` events - attributes are no-fn expressions
+  * ~~Get rid of `:on` events - attributes are no-fn expressions~~ -> ok to keep arrow functions
   * Get rid of sprae.auto
   * No-batch: updating signals updates target nadis
   * No store, directly signals
   * Plugins
-  * Rewrite with `nadi`: sprae becomes just a form of hypd + nadi, one of nadis essentially
+  * ~~Rewrite with `nadi`: sprae becomes just a form of hypd + nadi, one of nadis essentially~~ -> nadi is extension, not base
 
 ### [x] What should we do with `this` in case of subscript? -> detect statically, provide in context
   * It doesn't ship keywords by default
@@ -820,9 +820,10 @@
     - we are supposed to register any-events
   2. We can follow the convention that `@` is `addEventListener` fn body, `:` is prop
 
-### [x] Should we include async/await? -> make all functions async and all calls await
+### [x] Should we include async/await? -> ~~make all functions async and all calls await~~ no, that's a sign cb should be external
   + it allows naturally to await promises etc
   - there's an opinion that async/await is a mistake: use signals
+  * likely async is an indicator that code must be organized via JS, templates are not for heavy async logic
 
 ### [x] What should we do with tagged strings :id="`item-${id}`"? -> keep strings `'item-' + id` with placeholders `'item-$<id>'`
   1. Prohibit

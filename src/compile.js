@@ -18,12 +18,6 @@ operator('=>',
   }
 )
 
-// we make all statements automatically awaitable
-operator(';', (...args) => (args = args.filter(Boolean).map(compile), async (ctx, result) => {
-  for (let arg of args) result = await arg(ctx)
-  return result
-}))
-
 export default (src) => {
   let tree = parse(src)
 

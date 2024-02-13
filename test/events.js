@@ -4,8 +4,8 @@ import { tick, time } from 'wait-please'
 import sprae, { signal } from '../src/index.js'
 import h from 'hyperf'
 
-test('events: async', async e => {
-  let el = h`<div @x="v = 1; log.push(v);"></div>`
+test.skip('events: async', async e => {
+  let el = h`<div @x="await v = 1; log.push(v);"></div>`
   let state = sprae(el, { log: [] })
   el.dispatchEvent(new window.Event('x'));
   is(state.log, [])
