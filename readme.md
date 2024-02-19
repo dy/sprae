@@ -255,7 +255,9 @@ Migration to v9
 * `:with={x:foo}` -> `:="x=foo"` (no scoping)
 * `:ref='abc'` -> `:="abc=this"`
 * `:render="tpl"` -> `:html="tpl"`
-* no autoinit
+* no autoinit, use manual init
+* array length subscription -> `nadi/array`
+* getters subscription -> `nadi/object`
 * reactivity via signals, store is not reactive anymore
  -->
 

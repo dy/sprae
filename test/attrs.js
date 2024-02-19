@@ -755,53 +755,50 @@ test('each: subscribe to modifying list', async () => {
   is(el.outerHTML, `<ul></ul>`)
 })
 
-test('with: inline', async () => {
-  let el = h`<x :with="{foo:'bar'}"><y :text="foo + baz"></y></x>`
-  let state = sprae(el, { baz: 'qux' })
+test(': inline assign', async () => {
+  let el = h`<x :="foo='bar'"><y :text="foo + baz"></y></x>`
+  let state = sprae(el, { baz: signal('qux') })
   is(el.innerHTML, `<y>barqux</y>`)
-  state.baz = 'quux'
+  state.baz.value = 'quux'
   await tick()
   is(el.innerHTML, `<y>barquux</y>`)
 })
-test('with: inline reactive', () => {
-  let el = h`<x :with="{foo:'bar'}"><y :text="foo + baz"></y></x>`
+test(': inline assign reactive', () => {
+  let el = h`<x :="foo='bar'"><y :text="foo + baz"></y></x>`
   let baz = signal('qux')
   sprae(el, { baz })
   is(el.innerHTML, `<y>barqux</y>`)
   baz.value = 'quux'
   is(el.innerHTML, `<y>barquux</y>`)
 })
-test('with: data', async () => {
-  let el = h`<x :with="x"><y :text="foo"></y></x>`
-  let state = sprae(el, { x: { foo: 'bar' } })
+test(': assign data', async () => {
+  let el = h`<x :="foo=x.foo"><y :text="foo"></y></x>`
+  let state = sprae(el, { console, x: { foo: signal('bar') } })
   is(el.innerHTML, `<y>bar</y>`)
-  console.log('update', state.x)
-  state.x.foo = 'baz'
+  state.x.foo.value = 'baz'
   await tick()
   // Object.assign(state, { x: { foo: 'baz' } })
   is(el.innerHTML, `<y>baz</y>`)
 })
-test('with: transparency', async () => {
-  // NOTE: y:text initializes through directive, not through parent
-  // therefore by default :text uses parent's state, not defined by element itself
-  let el = h`<x :with="{foo:'foo'}"><y :with="b" :text="foo+bar"></y></x>`
-  let params = sprae(el, { b: { bar: 'bar' } })
+test(': assign transparency', async () => {
+  let el = h`<x :="foo='foo'"><y :="bar=b.bar" :text="foo+bar"></y></x>`
+  let params = sprae(el, { b: { bar: signal('bar') } })
   is(el.innerHTML, `<y>foobar</y>`)
-  params.b.bar = 'baz'
+  params.b.bar.value = 'baz'
   await tick()
   is(el.innerHTML, `<y>foobaz</y>`)
 })
-test('with: reactive transparency', () => {
-  let el = h`<x :with="{foo:1}"><y :with="b.c" :text="foo+bar"></y></x>`
+test(': reactive transparency', () => {
+  let el = h`<x :="foo=1"><y :="bar=b.c.bar" :text="foo+bar"></y></x>`
   const bar = signal('2')
   sprae(el, { b: { c: { bar } } })
   is(el.innerHTML, `<y>12</y>`)
   bar.value = '3'
   is(el.innerHTML, `<y>13</y>`)
 })
-test('with: writes to state', async () => {
-  let a = h`<x :with="{a:1}"><y :onx="e=>a++" :text="a"></y></x>`
-  sprae(a)
+test(': writes to state', async () => {
+  let a = h`<x :="a=1"><y :onx="e=>(a+=1)" :text="a"></y></x>`
+  sprae(a, { console })
   is(a.innerHTML, `<y>1</y>`)
   a.firstChild.dispatchEvent(new window.Event('x'))
   await tick()
@@ -816,13 +813,13 @@ test('with: one of children (internal number of iterations, cant see the result 
   is(a.innerHTML, `<x>1</x><x>2</x><x>3</x>`)
 })
 
-test(':render by ref', async () => {
+test('render: by ref', async () => {
   let a = h`<template :ref="abc"><div :text="123"></div></template><x :render="abc">456</x>`
   sprae(a)
   is(a.outerHTML, `<template><div :text="123"></div></template><x><div>123</div></x>`)
 })
 
-test(':render state', async () => {
+test('render: state', async () => {
   let a = h`<template :ref="abc"><div :text="text"></div></template><x :render="abc" />`
   let state = sprae(a, { text: 'abc' })
   is(a.outerHTML, `<template><div :text="text"></div></template><x><div>abc</div></x>`)
@@ -831,19 +828,19 @@ test(':render state', async () => {
   is(a.outerHTML, `<template><div :text="text"></div></template><x><div>def</div></x>`)
 })
 
-test(':render :with', async () => {
+test('render: :with', async () => {
   let a = h`<template :ref="tpl"><div :text="text"></div></template><x :render="tpl" :with="{text:'abc'}" />`
   let state = sprae(a)
   is(a.outerHTML, `<template><div :text="text"></div></template><x><div>abc</div></x>`)
 })
 
-test(':render nested items', async () => {
+test('render: nested items', async () => {
   let el = h`<template :ref="tpl"><div :each="item in items" :text="item.id"></div></template><x :render="tpl" :with="{items:[{id:'a'},{id:'b'}]}" />`
   let state = sprae(el)
   is(el.outerHTML, `<template><div :each="item in items" :text="item.id"></div></template><x><div>a</div><div>b</div></x>`)
 })
 
-test.todo(':render template after use', async () => {
+test.todo('render: template after use', async () => {
   let a = h`<x :render="tpl" :with="{text:'abc'}" /><template :ref="tpl"><div :text="text"></div></template>`
   let state = sprae(a)
   is(a.outerHTML, `<x><div>abc</div></x><template><div :text="text"></div></template>`)
@@ -894,19 +891,19 @@ test(':: reactive values', async () => {
   is(el.outerHTML, `<x>2</x>`)
 })
 
-test(':: null result does nothing', async () => {
+test(': null result does nothing', async () => {
   let a = h`<x :="undefined"></x>`
   sprae(a)
   is(a.outerHTML, `<x></x>`)
 })
 
-test(':: scope refers to current element', async () => {
+test(': this refers to current element', async () => {
   let el = h`<x :text="log.push(this)"></x>`
   let state = sprae(el, { log: [] })
   is(state.log, [el])
 })
 
-test(':: scope directives must come first', async () => {
+test(': scope directives must come first', async () => {
   // NOTE: we init attributes in order of definition
   let a = h`<x :text="y" :with="{y:1}" :ref="x"></x>`
   sprae(a, {})
@@ -922,10 +919,11 @@ test.todo('immediate scope', async () => {
   is(el.outerHTML, `<x>1</x>`)
 })
 
-test('getters', async () => {
+test.todo('getters', async () => {
+  // FIXME: do via nadi/store
   let x = h`<h2 :text="doubledCount >= 1 ? 1 : 0"></h2>`
   let state = sprae(x, {
-    count: 0,
+    count: signal(0),
     get doubledCount() { return this.count * 2 }
   })
   is(x.outerHTML, `<h2>0</h2>`)
@@ -950,7 +948,8 @@ test('sandbox', async () => {
   is(s.log, [window, console, undefined, undefined])
 })
 
-test('subscribe to array length', async () => {
+test.todo('subscribe to array length', async () => {
+  // FIXME: do via nadi/list
   let el = h`<div :with="{likes:[]}"><x :onx="e=>(likes.push(1))"></x><y :text="likes.length"></y></div>`
   sprae(el)
   is(el.innerHTML, `<x></x><y>0</y>`)

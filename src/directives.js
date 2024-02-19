@@ -4,6 +4,9 @@ import createState, { effect, computed, untracked, batch, _dispose, _signals, _c
 import { getFirstProperty, queueMicrotask } from './util.js'
 import compile from './compile.js'
 
+
+
+
 // reserved directives - order matters!
 // primary initialized first by selector, secondary initialized by iterating attributes
 export const primary = {}, secondary = {}
@@ -156,6 +159,7 @@ primary['ref'] = (el, expr, state) => {
 
 // This was taken AlpineJS, former VueJS 2.* core. Thanks Alpine & Vue!
 // takes instruction like `item in list`, returns ['item', '', 'list']
+// FIXME: use subscript way
 function parseForExpression(expression) {
   let forIteratorRE = /,([^,\}\]]*)(?:,([^,\}\]]*))?$/
   let stripParensRE = /^\s*\(|\)\s*$/g
@@ -237,13 +241,10 @@ secondary['text'] = (el, expr, state) => {
   })
 }
 
-// set props in-bulk or run effect
+// run effect
 secondary[''] = (el, expr, state) => {
   let evaluate = parseExpr(el, expr, ':')
-  if (evaluate) return effect(() => {
-    let value = evaluate(state)
-    for (let key in value) attr(el, dashcase(key), value[key]);
-  })
+  if (evaluate) return effect(() => { evaluate(state) })
 }
 
 // connect expr to element value

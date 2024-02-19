@@ -11,7 +11,7 @@ import { signal, computed, effect, batch, untracked } from '@preact/signals-core
 // import { signal, computed } from 'usignal/sync'
 // import { signal, computed } from '@webreflection/signal'
 
-export { effect, computed, batch, untracked }
+export { signal, effect, computed, batch, untracked }
 
 export const _dispose = (Symbol.dispose ||= Symbol('dispose'));
 export const _signals = Symbol('signals'), _change = Symbol('length');
