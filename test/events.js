@@ -20,8 +20,9 @@ test.skip('events: async', async e => {
   is(state2.log, [1])
 })
 
-test('events: this context', e => {
-  let el = h`<div @x="log.push(this)"></div>`
+test('events: t̵h̵i̵s̵ ̵c̵o̵n̵t̵e̵x̵t̵ event target', e => {
+  // NOTE: we disregard this context, since we can obtain it from event target
+  let el = h`<div @x="log.push(event.target)"></div>`
   let state = sprae(el, { log: [] })
   el.dispatchEvent(new window.Event('x'));
   is(state.log, [el])
@@ -40,18 +41,18 @@ test('events: multiple events', e => {
 })
 
 test('events: once', e => {
-  let el = h`<x @x.once="(x && log.push(this))" ></x>`
+  let el = h`<x @x.once="(x && log.push(x))" ></x>`
   let s = sprae(el, { log: [], x: 1 })
   el.dispatchEvent(new window.Event('x'));
-  is(s.log, [el])
+  is(s.log, [1])
   el.dispatchEvent(new window.Event('x'));
-  is(s.log, [el])
+  is(s.log, [1])
   // should not react on changes signals from outside
   console.log('--- x=2')
   s.x = 2
   el.dispatchEvent(new window.Event('x'));
   el.dispatchEvent(new window.Event('x'));
-  is(s.log, [el])
+  is(s.log, [1])
 })
 
 test('events: capture, stop, prevent', e => {

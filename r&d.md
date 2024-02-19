@@ -796,6 +796,8 @@
     + we need it anyways for setting variables within context
   2. ~~We can call subscript function with `this` in context~~ we can't, subscript reads from context
   3. We can statically detect `this` and define handlers for it (it can be only read/set props)
+  4. Is there a way to get access to element somehow otherwise?
+    - `this` as well as `event` is most conventional way.
 
 ### [x] Should we include functions? -> yes, without them is hard, also arrow fns are no-keywords
   + Allows array ops like `Array.from({length:1}, (_,i)=>i*2).join('')`
