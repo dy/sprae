@@ -848,7 +848,7 @@ test.todo('render: template after use', async () => {
 
 // FIXME: state.proxy gets into max callstack here
 test('ref: base', async () => {
-  let a = h`<a :ref="a" :init="log.push(a), null" :text="b"></a>`
+  let a = h`<a :="a=this" :init="log.push(a), null" :text="b"></a>`
   let state = sprae(a, { log: [], b: 1 })
   await tick()
   is(state.log[0], a)
@@ -860,7 +860,7 @@ test('ref: base', async () => {
 })
 
 test('ref: signal', async () => {
-  let a = h`<a :ref="a" :text="b"></a>`
+  let a = h`<a :="a=this" :text="b"></a>`
   let state = sprae(a, { a: signal(), b: signal(1) })
   await tick()
   is(state.a, a)
@@ -872,7 +872,7 @@ test('ref: signal', async () => {
 })
 
 test('ref: with :each', async () => {
-  let a = h`<y><x :ref="x" :each="item in items" :text="log.push(x), item"/></y>`
+  let a = h`<y><x :="x=this" :each="item in items" :text="log.push(x), item"/></y>`
   let state = sprae(a, { log: [], items: [1, 2, 3] })
   await tick()
   is(state.log, [...a.children])

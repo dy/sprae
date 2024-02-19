@@ -73,13 +73,30 @@ Multiply element.
 
 #### `:text="value"`
 
-Set text or html content of an element. Default text can be used as fallback:
+Set text content of an element.
 
 ```html
 Welcome, <span :text="user.name">Guest</span>.
 
 <!-- fragment -->
 <template :text="user.name">Guest</template>
+```
+
+#### `:html="value"`
+
+Inject element or instantiate template as content.
+
+```html
+<div :ref="label">home</div>
+
+Hello, <span :html="label">work</span>!
+
+<!-- fragment -->
+<template :html="user.name">Guest</template>
+
+<!-- use template -->
+<template :ref="tpl"><span :text="foo"></span></template>
+<div :html="tpl" :scope="{foo:'bar'}">...inserted here...</div>
 ```
 
 #### `:class="value"`
@@ -127,6 +144,40 @@ Set value of an input, textarea or select. Takes handle of `checked` and `select
 </select>
 ```
 
+#### `:ref="id"`
+
+Expose element to current data scope with the `id`.
+
+```html
+<textarea :ref="text" placeholder="Enter text..."></textarea>
+<span :text="text.value"></span>
+
+<!-- iterable items -->
+<ul>
+  <li :each="item in items" :ref="item">
+    <input @focus="item.classList.add('editing')" @blur="item.classList.remove('editing')"/>
+  </li>
+</ul>
+```
+
+#### `:scope="data"`
+
+Define or extend data scope for a subtree.
+
+```html
+<!-- Inline data -->
+<x :scope="{ foo: 'bar' }" :text="foo"></x>
+
+<!-- External data -->
+<y :scope="data"></y>
+
+<!-- Extend scope -->
+<x :scope="{ foo: 'bar' }">
+  <y :scope="{ baz: 'qux' }" :text="foo + baz"></y>
+</x>
+```
+
+
 #### `:<prop>="value"`
 
 Set any attribute value.
@@ -139,7 +190,7 @@ Set any attribute value.
 <input :id:name="name" />
 
 <!-- Raw event listener (see events) -->
-<div :onclick="e => ()"></div>
+<div :onclick="e => {}"></div>
 ```
 
 #### `:="<effect>"`

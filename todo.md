@@ -71,13 +71,16 @@
 
 ### [ ] v9
 
-* [ ] subscript-based eval
+* [x] subscript-based eval
+  * [ ] make `a in b` via subscript
 * [ ] no store
 * [ ] switching hooks
 * [ ] plugins: extensible directives
+* [ ] compile expressions outside of directives
+  * [ ] detect `this` along the way
 * [x] comparison table: CSP, plugins, no-deps, size, performance, event/modifiers,
-* [ ] remove :with
-  * [ ] remove unused directives
+* [ ] remove unused directives :with, :ref, :render, since we don't redirect sub-rendering
+* [ ] add :html directive as replacement for :render
 * [ ] :=fx
 * [ ] `items = each(el, (items)=>children)`, `cond = if(el, cond);` (nadis)
 * [ ] try direct directives without primary/secondary

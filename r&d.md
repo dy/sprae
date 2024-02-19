@@ -182,10 +182,11 @@
 -> Second, there's easier way to just "evaporate" directive = not initialize twice;
 -> Third, there's too much pollution with class markers
 
-## [x] :html? ->  Nope: can be implemented via any prop
+## [ ] :html? ->  ~~Nope: can be implemented via any prop~~ -> let's try elements
 
   - introduces malign hole of including sprae inside of html
   - nah: can easily be done manually as `:html="this.innerHTML = abc"`. Just need passing context
+  + we may need non-strings, like DOM elements, templates, or just injecting element at particular place
 
 ## [x] :fx? -> nah, already works. Just return `null` in any attr, that's it.
 
@@ -566,7 +567,7 @@
   + shorter and nicer syntax
   - possibly longer init
 
-## [x] Better :ref
+## [ ] Better :ref
 
   + :ref="`a-${1}`"
   + :id:ref="xyz"
@@ -693,7 +694,7 @@
   5. `:x="this.x=value"`
     + yepyepyep
 
-## [x] Insert content by reusing the node/template -> use `:render="ref" :with="data"`
+## [x] Insert content by reusing the node/template -> use ~~`:render="ref" :with="data"`~~ `:html="ref" :scope="{}"`
 
   * Makes easy use of repeatable fragments, instead of web-components
   + sort-of "detached" for-each
@@ -780,7 +781,7 @@
 
   * subscript-based parsing
     + see subscript-based store: mainly CSP & no-store eval
-  * no :with, :scope
+  * rename :with to :scope
   * ~~Get rid of `:on` events - attributes are no-fn expressions~~ -> ok to keep arrow functions
   * Get rid of sprae.auto
   * No-batch: updating signals updates target nadis
@@ -788,7 +789,7 @@
   * Plugins
   * ~~Rewrite with `nadi`: sprae becomes just a form of hypd + nadi, one of nadis essentially~~ -> nadi is extension, not base
 
-### [x] What should we do with `this` in case of subscript? -> detect statically, provide in context
+### [x] What should we do with `this` in case of subscript? -> we get rid of that and use `:ref`
   * It doesn't ship keywords by default
   1. We can do Object.create(state, {this:{value:el}})
     - created for each effect - too much
@@ -798,6 +799,14 @@
   3. We can statically detect `this` and define handlers for it (it can be only read/set props)
   4. Is there a way to get access to element somehow otherwise?
     - `this` as well as `event` is most conventional way.
+    - `this` literally points to _this element_.
+  4.1 ~~! Should we introduce unary `#ref` for immediately querying element by id?~~ nah, messy
+    + `<div :html="#tpl"/>` - render external template
+    + `<li :x="item=#"/>` - ref
+    - `:html="#my-element"` is not valid js
+    ~ same can be done as `:html="$('tpl')"` but it's messy
+  5. Should we keep `:ref`, which allows us to avoid implicit `this`?
+    - it has implicit assignment, we can maybe rename it to `:as`
 
 ### [x] Should we include functions? -> yes, without them is hard, also arrow fns are no-keywords
   + Allows array ops like `Array.from({length:1}, (_,i)=>i*2).join('')`
@@ -849,7 +858,7 @@
     - That's natural advantage of template-parts
   6. Implement via subscript...
 
-### [x] Should we allow var, let, const? -> no, write to scope instead -> we may need scope defined per-element
+### [x] Should we allow var, let, const? -> no, write to scope instead -> ~~we may need scope defined per-element~~ we keep :scope
   + we have fn body in handlers
   * `const all = todos.every(item => item.done)
     save(todos = todos.map(item => (item.done = !all, item)))``
