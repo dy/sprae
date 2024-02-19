@@ -1,8 +1,8 @@
 # ∴ spræ [![tests](https://github.com/dy/sprae/actions/workflows/node.js.yml/badge.svg)](https://github.com/dy/sprae/actions/workflows/node.js.yml) [![size](https://img.shields.io/bundlephobia/minzip/sprae?label=size)](https://bundlephobia.com/result?p=sprae) [![npm](https://img.shields.io/npm/v/sprae?color=orange)](https://npmjs.org/sprae)
 
 _Sprae_ is compact & ergonomic progressive enhancement framework.<br/>
-It provides reactive `:`-attributes for simple html logic without complex scripts.<br/>
-Perfect for small-scale websites, prototypes, or UI logic.<br/>
+It provides reactive `:`-attributes for markup logic without complex scripts.<br/>
+Perfect for small-scale websites, prototypes, or self-descriptive UI pieces.<br/>
 It is tiny, performant, open & safe alternative to [alpine](https://github.com/alpinejs/alpine), [petite-vue](https://github.com/vuejs/petite-vue) or [template-parts](https://github.com/github/template-parts).
 
 ## Usage
