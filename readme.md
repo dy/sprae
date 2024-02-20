@@ -346,6 +346,8 @@ _Sprae_ takes idea of _templize_ / _alpine_ / _vue_ directives with [_signals_](
 |                       | [AlpineJS](https://github.com/alpinejs/alpine)          | [Petite-Vue](https://github.com/vuejs/petite-vue)        | Sprae            |
 |-----------------------|-------------------|-------------------|------------------|
 | _Size_              | ~10KB             | ~6KB              | ~5KB             |
+| _Memory_            | 5.05             | 3.16              | 2.78             |
+| _Performance_       | 2.64             | 2.43              | 1.76             |
 | _CSP_               | No                | No                | Yes              |
 | _Evaluation_        | [`new AsyncFunction`](https://github.com/alpinejs/alpine/blob/main/packages/alpinejs/src/evaluator.js#L81) | [`new Function`](https://github.com/vuejs/petite-vue/blob/main/src/eval.ts#L20) | [justin](https://github.com/dy/subscript)           |
 | _Reactivity_        | `Alpine.store`    | _@vue/reactivity_   | any signals |
