@@ -354,7 +354,9 @@ _Sprae_ takes idea of _templize_ / _alpine_ / _vue_ directives with [_signals_](
 | _Sandboxing_        | No                | No                | Yes              |
 | _Magic_               | Yes | Yes   | No |
 | _Plugins_ | Yes | No | Yes |
-| _Modifiers_ | Yes | No | Yes|
+| _Modifiers_ | Yes | No | Yes |
+| _Directives_ | `:`, `x-`, `{}` | `:`, `v-`, `@`, `{}` | `:` |
+| _Fragments_ | Yes | No | Yes |
 
 
 <details>
