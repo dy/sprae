@@ -82,14 +82,14 @@ Welcome, <span :text="user.name">Guest</span>.
 <template :text="user.name">Guest</template>
 ```
 
-#### `:html="value"`
+#### `:html="element"`
 
 Inject element or instantiate template as content.
 
 ```html
-<div :ref="label">home</div>
+<div :ref="place">home</div>
 
-Hello, <span :html="label">work</span>!
+Hello, <span :html="place">work</span>!
 
 <!-- fragment -->
 <template :html="user.name">Guest</template>
@@ -144,9 +144,9 @@ Set value of an input, textarea or select. Takes handle of `checked` and `select
 </select>
 ```
 
-#### `:ref="id"`
+#### `:ref="name"`
 
-Expose element to current data scope with the `id`.
+Expose element to current data scope under `name`.
 
 ```html
 <textarea :ref="text" placeholder="Enter text..."></textarea>
@@ -241,29 +241,26 @@ Attach event(s) listener with possible modifiers. `event` variable holds current
 
 ## Expressions
 
-Sprae uses [justin](https://github.com/dy/subscript?tab=readme-ov-file#justin) for expressions, a minimal subset of JS - JSON with expressions:<br/>
+Sprae uses [justin](https://github.com/dy/subscript?tab=readme-ov-file#justin) for expressions, a minimal subset of JS:
 
 ```js
-++ -- ! - + ** * / %  && || ??      // standard operators
+++ -- ! - + ** * / %  && || ??        // standard operators
 = < <= > >= == !=
-<< >> >>> & ^ | ~ ?: . ?. []
-a => b; (a, b) => {c; d};           // arrow functions
-[a, b]; { a: b };                   // objects, arrays
-"abc", 'abc $<def>';                // strings (with interpolation)
-1, .01, -1.2e+.5, 0xabcd, 0b01;     // numbers
-true, false, null;                  // primitives
+<< >> & ^ | ~ ?: . ?. []
+() => {}                              // arrow functions
+[] {} "" ''                           // primitives
+1 2.34 -5e6 0x7a
+true false null
 ```
 
-Expressions are fully sandboxed and have no access to globals.<br/>
-You may pass required objects (eg. _console_, _window_, _setTimeout_, _fetch_) manually.<br/>
-(Caution: _setTimeout_ may act as eval).<br/>
-Expressions are async and statements are awaited automatically.<br/>
+Expressions are sandboxed - have no access to globals.<br/>
+Pass required objects (eg. _console_, _window_, _setTimeout_, _fetch_) manually. (Caution: _setTimeout_ may act as eval).<br/>
 Also - `undefined`, `NaN`, `===`, `!==` are excluded.
 
 
 ## Reactivity
 
-Sprae uses _usignal_ for reactivity, but it can be switched to any other signals provider:
+Sprae uses any signals for reactivity, signals provider can be switched as:
 
 ```js
 import * as preact from '@preact/signals-core';
