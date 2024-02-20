@@ -1,8 +1,9 @@
 # ∴ spræ [![tests](https://github.com/dy/sprae/actions/workflows/node.js.yml/badge.svg)](https://github.com/dy/sprae/actions/workflows/node.js.yml) [![size](https://img.shields.io/bundlephobia/minzip/sprae?label=size)](https://bundlephobia.com/result?p=sprae) [![npm](https://img.shields.io/npm/v/sprae?color=orange)](https://npmjs.org/sprae)
 
-_Sprae_ is compact & ergonomic progressive enhancement framework.<br/>
-It provides reactive `:`-attributes for markup logic without complex scripts.<br/>
-Perfect for small-scale websites, prototypes, or self-descriptive UI pieces.<br/>
+_Sprae_ is compact & ergonomic progressive enhancement framework.
+It provides `:`-attributes for inline markup logic without complex scripts.
+Perfect for small-scale websites, prototypes, or UI.
+
 It is tiny, performant, open & safe alternative to [alpine](https://github.com/alpinejs/alpine), [petite-vue](https://github.com/vuejs/petite-vue) or [template-parts](https://github.com/github/template-parts).
 
 ## Usage
@@ -79,12 +80,12 @@ Set text content of an element.
 Welcome, <span :text="user.name">Guest</span>.
 
 <!-- fragment -->
-<template :text="user.name">Guest</template>
+Welcome, <template :text="user.name">Guest</template>
 ```
 
 #### `:html="element"`
 
-Inject element or instantiate template as content.
+Set html element content.
 
 ```html
 <div :ref="place">home</div>
@@ -94,7 +95,7 @@ Hello, <span :html="place">work</span>!
 <!-- fragment -->
 <template :html="user.name">Guest</template>
 
-<!-- use template -->
+<!-- instantiate template -->
 <template :ref="tpl"><span :text="foo"></span></template>
 <div :html="tpl" :scope="{foo:'bar'}">...inserted here...</div>
 ```
@@ -146,11 +147,10 @@ Set value of an input, textarea or select. Takes handle of `checked` and `select
 
 #### `:ref="name"`
 
-Expose element to current data scope under `name`.
+Expose element to current scope as `name`.
 
 ```html
 <textarea :ref="text" placeholder="Enter text..."></textarea>
-<span :text="text.value"></span>
 
 <!-- iterable items -->
 <ul>
@@ -193,21 +193,25 @@ Set any attribute value.
 <div :onclick="e => {}"></div>
 ```
 
-#### `:="<effect>"`
+#### `:="props"`
+
+Set multiple attributes.
+
+```html
+```
+
+#### `:fx="<effect>"`
 
 Run effect(s).
 
 ```html
 <!-- multiple effects -->
-<div :="bar()" :="baz()"></div>
+<div :fx="bar()" :fx="baz()"></div>
 
 <!-- declare var -->
-<div :="x=123">
+<div :fx="x=123">
   <div :text="x"/>
 </div>
-
-<!-- element ref -->
-<textarea :="text=this" placeholder="Enter text..."></textarea>
 ```
 
 
@@ -244,10 +248,10 @@ Attach event(s) listener with possible modifiers. `event` variable holds current
 Sprae uses [justin](https://github.com/dy/subscript?tab=readme-ov-file#justin) for expressions, a minimal subset of JS:
 
 ```js
-++ -- ! - + ** * / %  && || ??        // standard operators
+++ -- ! - + ** * / %  && || ??        // operators
 = < <= > >= == !=
 << >> & ^ | ~ ?: . ?. []
-() => {}                              // arrow functions
+() => {}
 [] {} "" ''                           // primitives
 1 2.34 -5e6 0x7a
 true false null
