@@ -330,7 +330,9 @@ Migration to v9
 
 ## Justification
 
-[Template-parts](https://github.com/dy/template-parts) / [templize](https://github.com/dy/templize) is progressive, but is stuck with native HTML quirks ([parsing table](https://github.com/github/template-parts/issues/24), [SVG attributes](https://github.com/github/template-parts/issues/25), [liquid syntax](https://shopify.github.io/liquid/tags/template/#raw) conflict etc). [Alpine](https://github.com/alpinejs/alpine) / [petite-vue](https://github.com/vuejs/petite-vue) / [lucia](https://github.com/aidenyabi/lucia) escape native HTML quirks, but the API is excessive and [self-encapsulated](https://github.com/alpinejs/alpine/discussions/3223).
+[Template-parts](https://github.com/dy/template-parts) / [templize](https://github.com/dy/templize) is progressive, but is stuck with native HTML quirks ([parsing table](https://github.com/github/template-parts/issues/24), [SVG attributes](https://github.com/github/template-parts/issues/25), [liquid syntax](https://shopify.github.io/liquid/tags/template/#raw) conflict etc).
+
+[Alpine](https://github.com/alpinejs/alpine) / [petite-vue](https://github.com/vuejs/petite-vue) / [lucia](https://github.com/aidenyabi/lucia) escape native HTML quirks, but the API is excessive and [self-encapsulated](https://github.com/alpinejs/alpine/discussions/3223).
 
 _Sprae_ takes idea of _templize_ / _alpine_ / _vue_ directives with [_signals_](https://ghub.io/@preact/signals) reactivity & [_subscript_](https://github.com/dy/subscript) for evaluation.
 
@@ -339,9 +341,7 @@ _Sprae_ takes idea of _templize_ / _alpine_ / _vue_ directives with [_signals_](
 * It reserves minimal syntax/API space.
 * It enables CSP.
 
-<details>
-
-<summary><strong>Features</strong></summary>
+##### Features
 
 |                       | [AlpineJS](https://github.com/alpinejs/alpine)          | [Petite-Vue](https://github.com/vuejs/petite-vue)        | Sprae            |
 |-----------------------|-------------------|-------------------|------------------|
@@ -354,8 +354,6 @@ _Sprae_ takes idea of _templize_ / _alpine_ / _vue_ directives with [_signals_](
 | _Plugins_ | Yes | No | Yes |
 | _Modifiers_ | Yes | No | Yes|
 
-
-</details>
 
 <details>
 <summary><strong>Benchmark</strong></summary>
