@@ -536,7 +536,7 @@
   - `:onclick.toggle="play"`
     ~ `:onclick.toggle="play()"`
 
-## [x] Should we introduce `@click` for short-notation events? -> let's keep `:onx` for raw events, `@x` for normal events
+## [x] Should we introduce `@click` for short-notation events? -> let's keep `:onx` only ~~for raw events, `@x` for normal events~~
   + gives shorter code for majority of cases
   + separates event reaction from prop reaction
   + compatible with all frameworks (vue, alpine, lucia, lit)
@@ -559,6 +559,8 @@
   + overall less code
     - unless user prefers `:onclick="e=>()"`
   - just a synonym to `:onclick="e=>()"` which doesn't bring own value
+  - `:onclick=e=()` is self-obvious (more obvious)
+  - `@click="something, e => somethingOut"` is weird code and makes implicit event explicit
 
 ## [x] Multiple chain events resolution -> redirect to main event for now
   * Consider

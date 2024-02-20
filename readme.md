@@ -26,7 +26,7 @@ It is tiny, performant, open & safe alternative to [alpine](https://github.com/a
 </script>
 ```
 
-Sprae evaluates `:`/`@`-directives and evaporates them.
+Sprae evaluates `:`-directives and evaporates them.
 
 
 ## Directives
@@ -193,7 +193,7 @@ Expose element to current scope under `name`.
 <!-- iterable items -->
 <ul>
   <li :each="item in items" :ref="item">
-    <input @focus="item.classList.add('editing')" @blur="item.classList.remove('editing')"/>
+    <input :onfocus..onblur=="e => (item.classList.add('editing'), e => item.classList.remove('editing'))"/>
   </li>
 </ul>
 ```
@@ -212,22 +212,22 @@ Run effect(s).
 </div>
 ```
 
+#### `:on<event>.<modifier>="handler", :on<in>..on<out>="handler"`
 
-## Events
-
-#### `@<event>.<modifier>="callback;"`
-
-Attach event(s) listener with possible modifiers. `event` variable holds current event.
+Attach event(s) listener with possible modifiers or events chain.
 
 ```html
 <!-- single event -->
-<input type="checkbox" @change="isChecked = event.target.value">
+<input type="checkbox" :onchange="e => isChecked = e.target.value">
 
 <!-- multiple events -->
-<input :value="text" @input@change="text = event.target.value">
+<input :value="text" :oninput:onchange="e => text = e.target.value">
+
+<!-- events sequence -->
+<button :onfocus..onblur="e => ( /* onfocus */ e => ( /* onblur */ ))">
 
 <!-- event modifiers -->
-<button @click.throttle-500="handler(event)">Not too often</button>
+<button :onclick.throttle-500="handler">Not too often</button>
 ```
 
 ##### Modifiers
