@@ -80,20 +80,18 @@ Set text content of an element.
 Welcome, <span :text="user.name">Guest</span>.
 
 <!-- fragment -->
-Welcome, <template :text="user.name">Guest</template>
+Welcome, <template :text="user.name">Guest</template>.
 ```
 
 #### `:html="element"`
 
-Set html element content.
+Set html content of an element or instantiate template.
 
 ```html
-<div :ref="place">home</div>
-
-Hello, <span :html="place">work</span>!
+Hello, <span :html="userElement">Guest</span>.
 
 <!-- fragment -->
-<template :html="user.name">Guest</template>
+Hello, <template :html="user.name">Guest</template>.
 
 <!-- instantiate template -->
 <template :ref="tpl"><span :text="foo"></span></template>
@@ -145,19 +143,27 @@ Set value of an input, textarea or select. Takes handle of `checked` and `select
 </select>
 ```
 
-#### `:ref="name"`
+#### `:<prop>="value"`
 
-Expose element to current scope as `name`.
+Set any attribute value.
 
 ```html
-<textarea :ref="text" placeholder="Enter text..."></textarea>
+<!-- Single attr -->
+<label :for="name" :text="name" />
 
-<!-- iterable items -->
-<ul>
-  <li :each="item in items" :ref="item">
-    <input @focus="item.classList.add('editing')" @blur="item.classList.remove('editing')"/>
-  </li>
-</ul>
+<!-- Multiple attribs -->
+<input :id:name="name" />
+
+<!-- Raw event listener (see events) -->
+<div :onclick="e => {}"></div>
+```
+
+#### `:="props"`
+
+Spread multiple attributes.
+
+```html
+<input :="{ id: name, name, type: 'text', value }" />
 ```
 
 #### `:scope="data"`
@@ -177,27 +183,19 @@ Define or extend data scope for a subtree.
 </x>
 ```
 
+#### `:ref="name"`
 
-#### `:<prop>="value"`
-
-Set any attribute value.
-
-```html
-<!-- Single attr -->
-<label :for="name" :text="name" />
-
-<!-- Multiple attribs -->
-<input :id:name="name" />
-
-<!-- Raw event listener (see events) -->
-<div :onclick="e => {}"></div>
-```
-
-#### `:="props"`
-
-Set multiple attributes.
+Expose element to current scope under `name`.
 
 ```html
+<textarea :ref="text" placeholder="Enter text..."></textarea>
+
+<!-- iterable items -->
+<ul>
+  <li :each="item in items" :ref="item">
+    <input @focus="item.classList.add('editing')" @blur="item.classList.remove('editing')"/>
+  </li>
+</ul>
 ```
 
 #### `:fx="<effect>"`
@@ -247,12 +245,19 @@ Attach event(s) listener with possible modifiers. `event` variable holds current
 
 Sprae uses [justin](https://github.com/dy/subscript?tab=readme-ov-file#justin) for expressions, a minimal subset of JS:
 
-```js
-++ -- ! - + ** * / %  && || ??        // operators
+##### Operators:
+
+```
+++ -- ! - + ** * / %  && || ??
 = < <= > >= == !=
 << >> & ^ | ~ ?: . ?. []
 () => {}
-[] {} "" ''                           // primitives
+```
+
+##### Primitives:
+
+```
+[] {} "" ''
 1 2.34 -5e6 0x7a
 true false null
 ```
@@ -264,7 +269,8 @@ Also - `undefined`, `NaN`, `===`, `!==` are excluded.
 
 ## Reactivity
 
-Sprae uses any signals for reactivity, signals provider can be switched as:
+Sprae uses signals for reactivity (based on [usignal](https://ghub.io/usignal)).<br/>
+Signals provider can be configured as:
 
 ```js
 import * as preact from '@preact/signals-core';
@@ -281,6 +287,7 @@ To destroy state and detach sprae handlers, call `element[Symbol.dispose]()`. --
 ## Plugins
 
 Sprae directives can be extended as `sprae.directive.name = (el, expr, state) => {}`.
+
 Also see [nadi](https://github.com/dy/nadi) - collection of various DOM/etc interfaces with signals API.
 
 <!-- Official plugins are:
@@ -323,15 +330,14 @@ Migration to v9
 
 ## Justification
 
-* [Template-parts](https://github.com/dy/template-parts) / [templize](https://github.com/dy/templize) is progressive, but is stuck with native HTML quirks ([parsing table](https://github.com/github/template-parts/issues/24), [SVG attributes](https://github.com/github/template-parts/issues/25), [liquid syntax](https://shopify.github.io/liquid/tags/template/#raw) conflict etc).
-* [Alpine](https://github.com/alpinejs/alpine) / [petite-vue](https://github.com/vuejs/petite-vue) / [lucia](https://github.com/aidenyabi/lucia) escape native HTML quirks, but the API is not so elegant and [self-encapsulated](https://github.com/alpinejs/alpine/discussions/3223).
+[Template-parts](https://github.com/dy/template-parts) / [templize](https://github.com/dy/templize) is progressive, but is stuck with native HTML quirks ([parsing table](https://github.com/github/template-parts/issues/24), [SVG attributes](https://github.com/github/template-parts/issues/25), [liquid syntax](https://shopify.github.io/liquid/tags/template/#raw) conflict etc). [Alpine](https://github.com/alpinejs/alpine) / [petite-vue](https://github.com/vuejs/petite-vue) / [lucia](https://github.com/aidenyabi/lucia) escape native HTML quirks, but the API is excessive and [self-encapsulated](https://github.com/alpinejs/alpine/discussions/3223).
 
-_Sprae_ takes idea of _templize_ / _alpine_ / _vue_ directives with [_signals_](https://ghub.io/@preact/signals) reactivity & [_subscript_](https://github.com/dy/subscript) safe eval.
+_Sprae_ takes idea of _templize_ / _alpine_ / _vue_ directives with [_signals_](https://ghub.io/@preact/signals) reactivity & [_subscript_](https://github.com/dy/subscript) for evaluation.
 
 * It shows static html markup when uninitialized (SSR).
 * It doesn't enforce SPA nor JSX (unlike reacts), which enables island hydration.
 * It reserves minimal syntax/API space.
-* It enables CSP via Justin syntax.
+* It enables CSP.
 
 <details>
 
@@ -392,12 +398,15 @@ npm run results
 </details>
 -->
 
+<!-- ## See also -->
+
+<!--
 ## Alternatives
 
 * [Alpine](https://github.com/alpinejs/alpine)
 * ~~[Lucia](https://github.com/aidenybai/lucia)~~ deprecated
 * [Petite-vue](https://github.com/vuejs/petite-vue)
 * [nuejs](https://github.com/nuejs/nuejs)
+ -->
 
-
-<p align="center"><a href="https://github.com/krsnzd/license/">🕉 Om Tat Sat</a></p>
+<p align="center"><a href="https://github.com/krsnzd/license/">🕉</a></p>

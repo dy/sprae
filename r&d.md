@@ -73,6 +73,18 @@
 - We can use `:="{data}"` fro sprae autoinit, since scope has confusing name: `:scope={}`, `:sprae={}`, `:with={}`
 -> let's use :prop= for now, since `:={}` can have multiple interpretations
 
+## [ ] What's a use-case for `:={props}` - do we need it? -> likely yes
+
+* {...props} is useful in react components to pass down all unmentioned or unknown props to children
+  - but sprae is not about componentization
+~+ some function returning spraed element `return sprae(el, props)` (external integration)
+  - there props are not necessarily unlimited, is it ok to hard-define them?
+~+ some web-component passing all attributes to children
+  - web-components have hard-defined attributes
+~+ say we render an `<input id="xyz" :="props"/>` - different type of input may have different set of props, would be insane to define all possible conditions in each prop
+~+ passing props for various conditions, without if-else statements
+
+
 ## [x] Scopes mechanism: prototype inheritance chain vs multiple `with` wrappers -> init subtrees, no need for explicit mechanism
 
 - prototype inheritance chain causes deps update difficulties
@@ -97,7 +109,7 @@
 
 -> possibly we have to just subscribe via mechanism of signals-like deps, and :with just initializes subtree with extended object
 
-## [x] :with? -> ~~let's use `:with="{x:1,y:2,z:3}"` for now~~ :with is poor shim for componentization; can be just ` :="foo=bar"`
+## [x] :with? -> ~~let's use `:with="{x:1,y:2,z:3}"` for now~~ ~~:with is poor shim for componentization; ~~ -> :scope is needed for local evals, to prevent leaking values, also we need it for :each anyways
 
   1. Get rid of :with
     + with is bad JS practice/association
@@ -526,7 +538,7 @@
 
 ## [x] Should we introduce `@click` for short-notation events? -> let's keep `:onx` for raw events, `@x` for normal events
   + gives shorter code for majority of cases
-  + can be non-conflicting
+  + separates event reaction from prop reaction
   + compatible with all frameworks (vue, alpine, lucia, lit)
   + gives better meaning to modifiers - moves them outside of `:` attribute
   - multiple events `@input@change="code"` is not nice
@@ -540,11 +552,13 @@
           . the state is better reflected in data scope, rather than by initiator event.
           ? what about temporaries like `@a..@b="id=setTimeout(),()=>clearTimeout(id)"` or `@a.toggle="stop=play(),stop"`
             . use `:with={id:null} @a="id=setTimeout()" @b="clearTimeout(id)"`
-  - introduces illicit `event` variable ~ although compatible with standard, still obscure
+  - imposes illicit `event` variable ~ although compatible with standard, still obscure
   - `@` prefix is unchangeable ~ can be removed, not set, but still on the verge.
   - `@click.toggle="code"` has same problem as `@a..@b` - how can we make code separation in attribute?
     + remove toggle
   + overall less code
+    - unless user prefers `:onclick="e=>()"`
+  - just a synonym to `:onclick="e=>()"` which doesn't bring own value
 
 ## [x] Multiple chain events resolution -> redirect to main event for now
   * Consider
@@ -751,7 +765,7 @@
   + like petite-vue
   - some special prop is needed
 
-## [x] Remove non-essential directives -> yep, less API friction
+## [x] Remove non-essential directives :aria, :data -> yep, less API friction
   * :aria - can be defined via plain attributes
   * :data - confusable with :scope, doesn't provide much value, can be used as `:data-x=""` etc
   * :={} - what's the meaning? Can be replaced with multiple attributes, no? No: no easy way to spread attributes.
