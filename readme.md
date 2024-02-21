@@ -101,7 +101,7 @@ Hello, <template :html="user.name">Guest</template>.
 
 #### `:class="value"`
 
-Set class value from either a string, array or object.
+Set class value from either a string or array.
 
 ```html
 <!-- set from string (insert fields as $<bar>) -->
@@ -149,19 +149,16 @@ Set value of an input, textarea or select. Takes handle of `checked` and `select
 Set any attribute value.
 
 ```html
-<!-- Single attr -->
+<!-- Single attribute -->
 <label :for="name" :text="name" />
 
-<!-- Multiple attribs -->
+<!-- Multiple attributes -->
 <input :id:name="name" />
-
-<!-- Raw event listener (see events) -->
-<div :onclick="e => {}"></div>
 ```
 
 #### `:="props"`
 
-Spread multiple attributes.
+Set multiple attributes.
 
 ```html
 <input :="{ id: name, name, type: 'text', value }" />
@@ -206,16 +203,11 @@ Run effect(s).
 ```html
 <!-- multiple effects -->
 <div :fx="bar()" :fx="baz()"></div>
-
-<!-- declare var -->
-<div :fx="x=123">
-  <div :text="x"/>
-</div>
 ```
 
-#### `:on<event>.<modifier>="handler", :on<in>..on<out>="handler"`
+#### `:on<event>.<modifier>="handler"`, `:on<in>..on<out>="handler"`
 
-Attach event(s) listener with possible modifiers or events chain.
+Attach event(s) listener with possible modifiers.
 
 ```html
 <!-- single event -->
@@ -225,7 +217,7 @@ Attach event(s) listener with possible modifiers or events chain.
 <input :value="text" :oninput:onchange="e => text = e.target.value">
 
 <!-- events sequence -->
-<button :onfocus..onblur="e => ( /* onfocus */ e => ( /* onblur */ ))">
+<button :onfocus..onblur="e => ( handleFocus(), e => handleBlur())">
 
 <!-- event modifiers -->
 <button :onclick.throttle-500="handler">Not too often</button>

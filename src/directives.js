@@ -12,8 +12,8 @@ import compile from './compile.js'
 export const primary = {}, secondary = {}
 
 // :if is interchangeable with :each depending on order, :if :each or :each :if have different meanings
-// as for :if :with - :if must init first, since it is lazy, to avoid initializing component ahead of time by :with
-// we consider :with={x} :if={x} case insignificant
+// as for :if :scope - :if must init first, since it is lazy, to avoid initializing component ahead of time by :scope
+// we consider :scope={x} :if={x} case insignificant
 const _else = Symbol('else')
 primary['if'] = (ifEl, expr, state) => {
   let holder = document.createTextNode(''),
@@ -142,9 +142,9 @@ primary['each'] = (tpl, expr, state) => {
 }
 
 // `:each` can redefine scope as `:each="a in {myScope}"`,
-// same time per-item scope as `:each="..." :with="{collapsed:true}"` is useful
-primary['with'] = (el, expr, rootState) => {
-  let evaluate = parseExpr(el, expr, ':with')
+// same time per-item scope as `:each="..." :scope="{collapsed:true}"` is useful
+primary['scope'] = (el, expr, rootState) => {
+  let evaluate = parseExpr(el, expr, ':scope')
   const localState = evaluate(rootState)
   let state = createState(localState, rootState)
   sprae(el, state)
@@ -233,6 +233,7 @@ secondary['style'] = (el, expr, state) => {
   })
 }
 
+// set text content
 secondary['text'] = (el, expr, state) => {
   let evaluate = parseExpr(el, expr, ':text')
   return effect(() => {
@@ -241,8 +242,16 @@ secondary['text'] = (el, expr, state) => {
   })
 }
 
-// run effect
+// spread props
 secondary[''] = (el, expr, state) => {
+  let evaluate = parseExpr(el, expr, ':')
+  if (evaluate) return effect(() => {
+    let value = evaluate(state)
+    for (let key in value) attr(el, dashcase(key), value[key]);
+  })
+}
+
+secondary['fx'] = (el, expr, state) => {
   let evaluate = parseExpr(el, expr, ':')
   if (evaluate) return effect(() => { evaluate(state) })
 }
@@ -283,8 +292,7 @@ export default (el, expr, state, name) => {
     let off, dispose = effect(() => {
       if (off) off(), off = null
       // we need anonymous callback to enable modifiers like prevent
-      let cb = evaluate(state)
-      if (cb) off = on(el, evt, cb)
+      off = on(el, evt, evaluate(state))
     })
     return () => (off?.(), dispose())
   }
@@ -299,9 +307,7 @@ export default (el, expr, state, name) => {
 }
 
 // bind event to a target
-const on = (el, e, fn) => {
-  if (!fn) return
-
+const on = (el, e, fn = () => { }) => {
   const ctx = { evt: '', target: el, test: () => true };
 
   // onevt.debounce-108 -> evt.debounce-108

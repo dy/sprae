@@ -75,7 +75,7 @@
   * [ ] make `a in b` via subscript
 * [ ] no store
 * [ ] switching hooks
-* [ ] get rid of `@` events
+* [x] get rid of `@` events
 * [ ] plugins: extensible directives
 * [ ] compile expressions outside of directives
   * [ ] detect `this` along the way

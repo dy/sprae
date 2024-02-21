@@ -5,14 +5,14 @@ import sprae, { signal } from '../src/index.js'
 import h from 'hyperf'
 
 test.skip('events: async', async e => {
-  let el = h`<div @x="await v = 1; log.push(v);"></div>`
+  let el = h`<div :onx="e => {await v = 1; log.push(v);}"></div>`
   let state = sprae(el, { log: [] })
   el.dispatchEvent(new window.Event('x'));
   is(state.log, [])
   await tick(1);
   is(state.log, [1])
 
-  let el2 = h`<div @x="1; log.push(1);"></div>`
+  let el2 = h`<div :onx="e => {1; log.push(1);}"></div>`
   let state2 = sprae(el2, { log: [] })
   el2.dispatchEvent(new window.Event('x'));
   is(state2.log, [])
@@ -22,14 +22,14 @@ test.skip('events: async', async e => {
 
 test('events: t̵h̵i̵s̵ ̵c̵o̵n̵t̵e̵x̵t̵ event target', e => {
   // NOTE: we disregard this context, since we can obtain it from event target
-  let el = h`<div @x="log.push(event.target)"></div>`
+  let el = h`<div :onx="event => log.push(event.target)"></div>`
   let state = sprae(el, { log: [] })
   el.dispatchEvent(new window.Event('x'));
   is(state.log, [el])
 })
 
 test('events: multiple events', e => {
-  let el = h`<div @scroll@click@x="log.push(event.type)"></div>`
+  let el = h`<div :onscroll:onclick:onx="event=>log.push(event.type)"></div>`
   let state = sprae(el, { log: [] })
 
   el.dispatchEvent(new window.Event('click'));
@@ -41,7 +41,7 @@ test('events: multiple events', e => {
 })
 
 test('events: once', e => {
-  let el = h`<x @x.once="(x && log.push(x))" ></x>`
+  let el = h`<x :onx.once="e => (x && log.push(x))" ></x>`
   let s = sprae(el, { log: [], x: 1 })
   el.dispatchEvent(new window.Event('x'));
   is(s.log, [1])
@@ -56,19 +56,19 @@ test('events: once', e => {
 })
 
 test('events: capture, stop, prevent', e => {
-  let el = h`<x @x.capture="log.push(1)"><y @x="log.push(2)"></y></x>`
+  let el = h`<x :onx.capture="e => log.push(1)"><y :onx="e => log.push(2)"></y></x>`
   let state = sprae(el, { log: [] })
   el.firstChild.dispatchEvent(new window.Event('x', { bubbles: true }));
   is(state.log, [1, 2])
 
-  let el2 = h`<x @x="log.push(1)"><y @x.stop="log.push(2)"></y></x>`
+  let el2 = h`<x :onx="e => log.push(1)"><y :onx.stop="e => log.push(2)"></y></x>`
   let state2 = sprae(el2, { log: [] })
   el2.firstChild.dispatchEvent(new window.Event('x', { bubbles: true }));
   is(state2.log, [2])
 })
 
 test('events: window, self', e => {
-  let el = h`<x @x.self="log.push(1)"><y @x.window="log.push(2)"></y></x>`
+  let el = h`<x :onx.self="e => log.push(1)"><y :onx.window="e => log.push(2)"></y></x>`
   let state = sprae(el, { log: [] })
   el.firstChild.dispatchEvent(new window.Event('x', { bubbles: true }));
   is(state.log, [])
@@ -79,7 +79,7 @@ test('events: window, self', e => {
 })
 
 test('events: keys', e => {
-  let el = h`<x @keydown.enter="log.push(1)"></x>`
+  let el = h`<x :onkeydown.enter="e => log.push(1)"></x>`
   let state = sprae(el, { log: [] })
   el.dispatchEvent(new window.KeyboardEvent('keydown', { key: '' }));
   is(state.log, [])
@@ -91,7 +91,7 @@ test('events: keys', e => {
 })
 
 test('events: key combinations', e => {
-  let el = h`<x @keydown.ctrl-enter="log.push(1)"></x>`
+  let el = h`<x :onkeydown.ctrl-enter="e => log.push(1)"></x>`
   let state = sprae(el, { log: [] })
   el.dispatchEvent(new window.KeyboardEvent('keydown', { key: '' }));
   is(state.log, [])
@@ -104,11 +104,11 @@ test('events: key combinations', e => {
   el.dispatchEvent(new window.KeyboardEvent('keydown', { key: 'Enter' }));
   el.dispatchEvent(new window.KeyboardEvent('keydown', { key: 'Enter', ctrlKey: true }));
   is(state.log, [1, 1])
-  let el2 = h`<x @keydown.ctrl-alt-enter="log.push(1)"></x>`
+  let el2 = h`<x :onkeydown.ctrl-alt-enter="e=>log.push(1)"></x>`
 })
 
 test('events: keys with prevent', e => {
-  let el = h`<y @keydown="log.push(event.key)"><x :ref="x" @keydown.enter.stop></x></y>`
+  let el = h`<y :onkeydown="event => log.push(event.key)"><x :ref="x" :onkeydown.enter.stop></x></y>`
   let state = sprae(el, { log: [] })
   state.x.dispatchEvent(new window.KeyboardEvent('keydown', { key: 'x', bubbles: true }));
   console.log('enter')
@@ -117,7 +117,7 @@ test('events: keys with prevent', e => {
 })
 
 test('events: debounce', async e => {
-  let el = h`<x @keydown.debounce-1="log.push(event.key)"></x>`
+  let el = h`<x :onkeydown.debounce-1="event => log.push(event.key)"></x>`
   let state = sprae(el, { log: [] })
   el.dispatchEvent(new window.KeyboardEvent('keydown', { key: 'x', bubbles: true }));
   is(state.log, [])
@@ -126,7 +126,7 @@ test('events: debounce', async e => {
 })
 
 test('events: debounce 0', async e => {
-  let el = h`<x @keydown.debounce-0="log.push(event.key)"></x>`
+  let el = h`<x :onkeydown.debounce-0="e => log.push(e.key)"></x>`
   let state = sprae(el, { log: [] })
   el.dispatchEvent(new window.KeyboardEvent('keydown', { key: 'x', bubbles: true }));
   is(state.log, [])
@@ -135,7 +135,7 @@ test('events: debounce 0', async e => {
 })
 
 test('events: throttle', async e => {
-  let el = h`<x @keydown.throttle-10="log.push(event.key)"></x>`
+  let el = h`<x :onkeydown.throttle-10="event => log.push(event.key)"></x>`
   let state = sprae(el, { log: [] })
   el.dispatchEvent(new window.KeyboardEvent('keydown', { key: 'x', bubbles: true }));
   el.dispatchEvent(new window.KeyboardEvent('keydown', { key: 'x', bubbles: true }));

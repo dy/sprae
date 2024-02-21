@@ -38,15 +38,12 @@ export default function sprae(container, values) {
       for (let i = 0; i < el.attributes.length;) {
         let attr = el.attributes[i], prefix = attr.name[0]
 
-        if (prefix === ':' || prefix === '@') {
+        if (prefix === ':') {
           el.removeAttribute(attr.name)
-          let expr = prefix === '@' ? `event=>{${attr.value}}` : attr.value,
-            names = attr.name.slice(1).split(prefix)
+          let expr = attr.value, names = attr.name.slice(1).split(prefix)
 
           // multiple attributes like :id:for="" or @click@touchstart
           for (let name of names) {
-            // @click forwards to :onclick=event=>{...inline}
-            if (prefix === '@') name = `on` + name
             let dir = secondary[name] || defaultDirective;
             disposes.push(dir(el, expr, state, name));
             // NOTE: secondary directives don't stop flow nor extend state, so no need to check

@@ -66,7 +66,7 @@ test.skip('common: const in on', async () => {
 })
 
 test.todo('common: const in with', async () => {
-  let el = h`<div :with="{x(){let x = 1; y=x;}}" @x="x()"></div>`
+  let el = h`<div :scope="{x(){let x = 1; y=x;}}" @x="x()"></div>`
   let state = sprae(el, { y: 0 })
   el.dispatchEvent(new window.CustomEvent('x'))
   await tick()
@@ -293,8 +293,8 @@ test('if: (#3) subsequent content is not abandoned', async () => {
   is(x.outerHTML, `<x><z>123</z></x>`)
 })
 
-test('if: + :with doesnt prevent secondary effects from happening', async () => {
-  let el = h`<div><x :if="x" :with="{}" :text="x"></x></div>`
+test('if: + :scope doesnt prevent secondary effects from happening', async () => {
+  let el = h`<div><x :if="x" :scope="{}" :text="x"></x></div>`
   let state = sprae(el, { x: '' })
   is(el.innerHTML, ``)
   console.log('state.x=123')
@@ -303,7 +303,7 @@ test('if: + :with doesnt prevent secondary effects from happening', async () => 
   is(el.innerHTML, `<x>123</x>`)
 
   // NOTE: we ignore this case
-  // let el2 = h`<div><x :if="x" :with="{x:cond}" :text="x"></x></div>`
+  // let el2 = h`<div><x :if="x" :scope="{x:cond}" :text="x"></x></div>`
   // let state2 = sprae(el, {cond:''})
   // is(el2.innerHTML, ``)
   // state2.cond = '123'
@@ -734,8 +734,8 @@ test('each: swapping', () => {
   is(el.outerHTML, `<table><tr>1</tr><tr>4</tr><tr>3</tr><tr>2</tr><tr>5</tr></table>`)
 })
 
-test('each: with :with', () => {
-  let el = h`<ul><li :each="i in 3" :with="{x:i}" :text="x"></li></ul>`
+test('each: with :scope', () => {
+  let el = h`<ul><li :each="i in 3" :scope="{x:i}" :text="x"></li></ul>`
   sprae(el)
   is(el.outerHTML, `<ul><li>0</li><li>1</li><li>2</li></ul>`)
 })
@@ -755,24 +755,24 @@ test('each: subscribe to modifying list', async () => {
   is(el.outerHTML, `<ul></ul>`)
 })
 
-test(': inline assign', async () => {
-  let el = h`<x :="foo='bar'"><y :text="foo + baz"></y></x>`
+test('scope: inline assign', async () => {
+  let el = h`<x :scope="{foo:'bar'}"><y :text="foo + baz"></y></x>`
   let state = sprae(el, { baz: signal('qux') })
   is(el.innerHTML, `<y>barqux</y>`)
   state.baz.value = 'quux'
   await tick()
   is(el.innerHTML, `<y>barquux</y>`)
 })
-test(': inline assign reactive', () => {
-  let el = h`<x :="foo='bar'"><y :text="foo + baz"></y></x>`
+test('scope: inline assign reactive', () => {
+  let el = h`<x :scope="{foo:'bar'}"><y :text="foo + baz"></y></x>`
   let baz = signal('qux')
   sprae(el, { baz })
   is(el.innerHTML, `<y>barqux</y>`)
   baz.value = 'quux'
   is(el.innerHTML, `<y>barquux</y>`)
 })
-test(': assign data', async () => {
-  let el = h`<x :="foo=x.foo"><y :text="foo"></y></x>`
+test('scope: assign data', async () => {
+  let el = h`<x :scope="{foo:x.foo}"><y :text="foo"></y></x>`
   let state = sprae(el, { console, x: { foo: signal('bar') } })
   is(el.innerHTML, `<y>bar</y>`)
   state.x.foo.value = 'baz'
@@ -780,24 +780,24 @@ test(': assign data', async () => {
   // Object.assign(state, { x: { foo: 'baz' } })
   is(el.innerHTML, `<y>baz</y>`)
 })
-test(': assign transparency', async () => {
-  let el = h`<x :="foo='foo'"><y :="bar=b.bar" :text="foo+bar"></y></x>`
+test('scope: assign transparency', async () => {
+  let el = h`<x :scope="{foo:'foo'}"><y :scope="{bar:b.bar}" :text="foo+bar"></y></x>`
   let params = sprae(el, { b: { bar: signal('bar') } })
   is(el.innerHTML, `<y>foobar</y>`)
   params.b.bar.value = 'baz'
   await tick()
   is(el.innerHTML, `<y>foobaz</y>`)
 })
-test(': reactive transparency', () => {
-  let el = h`<x :="foo=1"><y :="bar=b.c.bar" :text="foo+bar"></y></x>`
+test('scope: reactive transparency', () => {
+  let el = h`<x :scope="{foo:1}"><y :scope="{bar:b.c.bar}" :text="foo+bar"></y></x>`
   const bar = signal('2')
   sprae(el, { b: { c: { bar } } })
   is(el.innerHTML, `<y>12</y>`)
   bar.value = '3'
   is(el.innerHTML, `<y>13</y>`)
 })
-test(': writes to state', async () => {
-  let a = h`<x :="a=1"><y :onx="e=>(a+=1)" :text="a"></y></x>`
+test('scope: writes to state', async () => {
+  let a = h`<x :scope="{a:1}"><y :onx="e=>(a+=1)" :text="a"></y></x>`
   sprae(a, { console })
   is(a.innerHTML, `<y>1</y>`)
   a.firstChild.dispatchEvent(new window.Event('x'))
@@ -807,8 +807,8 @@ test(': writes to state', async () => {
   await tick()
   is(a.innerHTML, `<y>3</y>`)
 })
-test('with: one of children (internal number of iterations, cant see the result here)', async () => {
-  let a = h`<div><x :text="x"></x><x :with={x:2} :text="x"></x><x :text="y">3</x></div>`
+test('scope: one of children (internal number of iterations, cant see the result here)', async () => {
+  let a = h`<div><x :text="x"></x><x :scope={x:2} :text="x"></x><x :text="y">3</x></div>`
   sprae(a, { x: 1, y: 3 })
   is(a.innerHTML, `<x>1</x><x>2</x><x>3</x>`)
 })
@@ -828,20 +828,20 @@ test('render: state', async () => {
   is(a.outerHTML, `<template><div :text="text"></div></template><x><div>def</div></x>`)
 })
 
-test('render: :with', async () => {
-  let a = h`<template :ref="tpl"><div :text="text"></div></template><x :render="tpl" :with="{text:'abc'}" />`
+test('render: :scope', async () => {
+  let a = h`<template :ref="tpl"><div :text="text"></div></template><x :render="tpl" :scope="{text:'abc'}" />`
   let state = sprae(a)
   is(a.outerHTML, `<template><div :text="text"></div></template><x><div>abc</div></x>`)
 })
 
 test('render: nested items', async () => {
-  let el = h`<template :ref="tpl"><div :each="item in items" :text="item.id"></div></template><x :render="tpl" :with="{items:[{id:'a'},{id:'b'}]}" />`
+  let el = h`<template :ref="tpl"><div :each="item in items" :text="item.id"></div></template><x :render="tpl" :scope="{items:[{id:'a'},{id:'b'}]}" />`
   let state = sprae(el)
   is(el.outerHTML, `<template><div :each="item in items" :text="item.id"></div></template><x><div>a</div><div>b</div></x>`)
 })
 
 test.todo('render: template after use', async () => {
-  let a = h`<x :render="tpl" :with="{text:'abc'}" /><template :ref="tpl"><div :text="text"></div></template>`
+  let a = h`<x :render="tpl" :scope="{text:'abc'}" /><template :ref="tpl"><div :text="text"></div></template>`
   let state = sprae(a)
   is(a.outerHTML, `<x><div>abc</div></x><template><div :text="text"></div></template>`)
 })
@@ -905,13 +905,13 @@ test(': this refers to current element', async () => {
 
 test(': scope directives must come first', async () => {
   // NOTE: we init attributes in order of definition
-  let a = h`<x :text="y" :with="{y:1}" :ref="x"></x>`
+  let a = h`<x :text="y" :scope="{y:1}" :ref="x"></x>`
   sprae(a, {})
   is(a.outerHTML, `<x>1</x>`)
 })
 
 test.todo('immediate scope', async () => {
-  let el = h`<x :with="{arr:[], inc(){ arr.push(1) }}" :onx="e=>inc()" :text="arr[0]"></x>`
+  let el = h`<x :scope="{arr:[], inc(){ arr.push(1) }}" :onx="e=>inc()" :text="arr[0]"></x>`
   sprae(el)
   is(el.outerHTML, `<x></x>`)
   el.dispatchEvent(new window.CustomEvent('x'))
@@ -950,7 +950,7 @@ test('sandbox', async () => {
 
 test.todo('subscribe to array length', async () => {
   // FIXME: do via nadi/list
-  let el = h`<div :with="{likes:[]}"><x :onx="e=>(likes.push(1))"></x><y :text="likes.length"></y></div>`
+  let el = h`<div :scope="{likes:[]}"><x :onx="e=>(likes.push(1))"></x><y :text="likes.length"></y></div>`
   sprae(el)
   is(el.innerHTML, `<x></x><y>0</y>`)
   el.firstChild.dispatchEvent(new window.CustomEvent('x'))
