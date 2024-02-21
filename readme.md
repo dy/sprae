@@ -27,7 +27,7 @@ It is tiny, performant, open & safe alternative to [alpine](https://github.com/a
 </script>
 ```
 
-Sprae evaluates `:`-attributes and evaporates them.
+Sprae evaluates `:`-directives and evaporates them.
 
 
 ## Directives
