@@ -79,13 +79,13 @@
 * [ ] plugins: extensible directives
 * [ ] compile expressions outside of directives
 * [x] comparison table: CSP, plugins, no-deps, size, performance, event/modifiers,
-* [ ] add :html directive as replacement for :render
+* [~] add :html directive as replacement for :render, with tests
 * [x] rename :with to :scope
 * [x] :fx=fx
-* [ ] `items = each(el, (items)=>children)`, `cond = if(el, cond);` (nadis)
 * [ ] try direct directives without primary/secondary
 * [ ] fix all examples
 * [ ] use usignal
 * [ ] treeshake, minimize bundle
 * [ ] all FIXMEs
 * [ ] move proxy state into own project / part of signal struct (with tests from here)
+* [ ] should we convert initial store to signals?

@@ -920,3 +920,10 @@
     * generally we have to carefully design plugins system
   + template is used as immediate/fragment in declarative shadow dom and custom elements proposals
   ? other uses might be: `:scoped` to run template in isolated (iframe) context
+
+## [ ] Should we convert input init state to signals?
+
++ unified output state API
++ makes sense of returning modified state
+- doesn't modify initial state
+- performance hit: not everything needs to be a signal, also slows down rendering

@@ -166,7 +166,7 @@ Set multiple attributes.
 
 #### `:scope="data"`
 
-Define or extend data scope for a subtree.
+Define or extend data scope for a subtree. Extended values are reactive.
 
 ```html
 <!-- Inline data -->
@@ -236,15 +236,16 @@ Attach event(s) listener with possible modifiers.
 
 ## Expressions
 
-Sprae uses [justin](https://github.com/dy/subscript?tab=readme-ov-file#justin) for expressions, a minimal subset of JS:
+Sprae uses [justin](https://github.com/dy/subscript?tab=readme-ov-file#justin) for expressions, a no-keywords subset of JS:
 
 ##### Operators:
 
 ```
 ++ -- ! - + ** * / %  && || ??
-= < <= > >= == !=
+= < <= > >= == != === !==
 << >> & ^ | ~ ?: . ?. []
 () => {}
+in
 ```
 
 ##### Primitives:
@@ -252,12 +253,11 @@ Sprae uses [justin](https://github.com/dy/subscript?tab=readme-ov-file#justin) f
 ```
 [] {} "" ''
 1 2.34 -5e6 0x7a
-true false null
+true false null undefined NaN
 ```
 
 Expressions are sandboxed - have no access to globals.<br/>
 Pass required objects (eg. _console_, _window_, _setTimeout_, _fetch_) manually. (Caution: _setTimeout_ may act as eval).<br/>
-Also - `undefined`, `NaN`, `===`, `!==` are excluded.
 
 
 ## Reactivity
