@@ -1,7 +1,7 @@
 // directives & parsing
 import sprae from './core.js'
-import createState, { effect, computed, untracked, batch, _dispose, _signals, _change } from './state.signals-proxy.js'
-import { getFirstProperty, queueMicrotask } from './util.js'
+import createState, { signal, effect, computed, untracked, batch, _dispose, _signals, _change } from './state.signals-proxy.js'
+import { queueMicrotask } from './util.js'
 import compile from './compile.js'
 
 
@@ -146,10 +146,21 @@ primary['each'] = (tpl, expr, state) => {
 primary['scope'] = (el, expr, rootState) => {
   let evaluate = parseExpr(el, expr, ':scope')
   const localState = evaluate(rootState)
-  let state = createState(localState, rootState)
+  // we convert all local values to signals, since we may want to update them reactively
+  const state = Object.assign(Object.create(rootState), toSignal(localState))
   sprae(el, state)
   return el[_dispose];
 }
+const toSignal = (state) => {
+  for (let key in state) {
+    let v = state[key]
+    if (v?.peek || typeof v === 'function');
+    else if (isPlainObject(v)) toSignal(v)
+    else state[key] = signal(v)
+  }
+  return state
+}
+const isPlainObject = value => !!value && typeof value === 'object' && value.constructor === Object;
 
 // ref must be last within primaries, since that must be skipped by :each, but before secondaries
 primary['ref'] = (el, expr, state) => {

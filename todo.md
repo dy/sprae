@@ -78,14 +78,14 @@
 * [x] get rid of `@` events
 * [ ] plugins: extensible directives
 * [ ] compile expressions outside of directives
-  * [ ] detect `this` along the way
 * [x] comparison table: CSP, plugins, no-deps, size, performance, event/modifiers,
-* [ ] remove unused directives :with, :ref, :render, since we don't redirect sub-rendering
 * [ ] add :html directive as replacement for :render
-* [ ] :=fx
+* [x] rename :with to :scope
+* [x] :fx=fx
 * [ ] `items = each(el, (items)=>children)`, `cond = if(el, cond);` (nadis)
 * [ ] try direct directives without primary/secondary
 * [ ] fix all examples
 * [ ] use usignal
 * [ ] treeshake, minimize bundle
 * [ ] all FIXMEs
+* [ ] move proxy state into own project / part of signal struct (with tests from here)
