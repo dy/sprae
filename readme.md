@@ -1,7 +1,8 @@
 # ∴ spræ [![tests](https://github.com/dy/sprae/actions/workflows/node.js.yml/badge.svg)](https://github.com/dy/sprae/actions/workflows/node.js.yml) [![size](https://img.shields.io/bundlephobia/minzip/sprae?label=size)](https://bundlephobia.com/result?p=sprae) [![npm](https://img.shields.io/npm/v/sprae?color=orange)](https://npmjs.org/sprae)
 
-> _Sprae_ is compact & ergonomic progressive enhancement framework.
-> 
+> DOM tree microhydration
+
+_Sprae_ is compact & ergonomic progressive enhancement framework.<br/>
 It provides `:`-attributes for inline markup logic without complex scripts.
 Perfect for small-scale websites, prototypes, or UI.<br/>
 It is tiny, performant, open & safe alternative to [alpine](https://github.com/alpinejs/alpine), [petite-vue](https://github.com/vuejs/petite-vue) or [template-parts](https://github.com/github/template-parts).
