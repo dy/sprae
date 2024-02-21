@@ -3,7 +3,7 @@
 > DOM tree microhydration
 
 _Sprae_ is compact & ergonomic progressive enhancement framework.<br/>
-It provides `:`-attributes for inline markup logic without complex scripts.
+It provides `:`-attributes for inline markup logic without complex scripts.<br/>
 Perfect for small-scale websites, prototypes, or UI.<br/>
 It is tiny, performant, open & safe alternative to [alpine](https://github.com/alpinejs/alpine), [petite-vue](https://github.com/vuejs/petite-vue) or [template-parts](https://github.com/github/template-parts).
 
