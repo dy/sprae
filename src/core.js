@@ -67,7 +67,7 @@ export default function sprae(container, values) {
 
   init(container);
 
-  // if element was spraed by :with or :each instruction - skip
+  // if element was spraed by :scope or :each instruction - skip
   if (memo.has(container)) return state; //memo.get(container)
 
   // save
