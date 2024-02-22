@@ -10,7 +10,6 @@ import {
   _signals,
   _change,
 } from "./state.signals-proxy.js";
-import { queueMicrotask } from "./util.js";
 import compileJustin, { compile, parse } from "./compile.js";
 import swapdom from "swapdom/swap-inflate";
 
@@ -63,14 +62,9 @@ const _each = Symbol(":each");
 
 // :each must init before :ref, :id or any others, since it defines scope
 primary["each"] = (tpl, expr, state) => {
-  // a in c
-  let idxVar = "",
-    [op, itemVar, itemsExpr] = parse(expr);
-  // a, b in c
-  if (itemsExpr.map) [op, idxVar, itemsExpr] = itemsExpr;
+  let [leftSide, itemsExpr] = expr.split(/\s+in\s+/);
+  let [itemVar, idxVar = ""] = leftSide.split(/\s*,\s*/);
 
-  // a of c -> err
-  if (op !== "in") return exprError(new Error(), tpl, expr, ":each");
   // we have to handle item :ref separately since don't create substates
   // const refName = tpl.getAttribute(':ref') || ''
   // if (refName) tpl.removeAttribute(':ref')
@@ -88,6 +82,7 @@ primary["each"] = (tpl, expr, state) => {
       els = [];
     if (typeof items === "number")
       items = Array.from({ length: items }, (_, i) => i);
+
     for (let idx in items) {
       let el = tpl.cloneNode(true),
         substate = Object.create(state, {
@@ -98,6 +93,7 @@ primary["each"] = (tpl, expr, state) => {
       untracked(() => sprae(el, substate));
       els.push(el);
     }
+
     swapdom(holder.parentNode, cur, els, holder);
     cur = els;
   });
@@ -434,9 +430,7 @@ const attr = (el, name, v) => {
     );
 };
 
-// borrowed from alpine with improvements https://github.com/alpinejs/alpine/blob/main/packages/alpinejs/src/evaluator.js#L61
-// it seems to be more robust than subscript
-let evaluatorMemo = {};
+const evaluatorMemo = {};
 function parseExpr(el, expression, dir) {
   // guard static-time eval errors
   let evaluate = evaluatorMemo[expression];
@@ -467,9 +461,7 @@ function exprError(error, element, expression, directive) {
     `∴ ${error.message}\n\n${directive}=${expression ? `"${expression}"\n\n` : ""}`,
     element,
   );
-  queueMicrotask(() => {
-    throw error;
-  }, 0);
+  throw error;
 }
 
 function dashcase(str) {

@@ -445,13 +445,15 @@ test("each: #12 - changing internal object prop", async () => {
   let el = h`<div>
     <x :each="o in obj" :text="o"></x>
   </div>`;
-  const state = sprae(el, { obj: { a: "a", b: "b" } });
+  const state = sprae(el, { obj: signal({ a: "a", b: "b" }) });
   // console.log(el.outerHTML)
   is(el.outerHTML, `<div><x>a</x><x>b</x></div>`);
   console.log("-----set a");
-  state.obj.a = "newvala"; // :each not working after this
+  state.obj.value.a = "newvala"; // :each not working after this
+  bump(state.obj);
   is(el.outerHTML, `<div><x>newvala</x><x>b</x></div>`);
-  state.obj.c = "c";
+  state.obj.value.c = "c";
+  bump(state.obj);
   is(el.outerHTML, `<div><x>newvala</x><x>b</x><x>c</x></div>`);
 });
 
@@ -607,7 +609,7 @@ test("each: condition within loop", async () => {
 
 test('each: next items have own "this", not single one', async () => {
   // FIXME: fragment init like let el = h`<x :each="x in 3"></x>`
-  let el = h`<div><x :each="x in 3" :data-x="x" :x="log.push(x, this.dataset.x)"></x></div>`;
+  let el = h`<div><x :each="x in 3" :data-x="x" :ref="el" :x="log.push(x, el.dataset.x)"></x></div>`;
   let log = [];
   let state = sprae(el, { log });
   is(state.log, [0, "0", 1, "1", 2, "2"]);
@@ -664,20 +666,21 @@ test("each: unmounted elements remove listeners", async () => {
 
 test("each: internal children get updated by state update, also: update by running again", async () => {
   let el = h`<><x :each="item, idx in items" :text="item" :key="idx"></x></>`;
-  let state = sprae(el, { items: [1, 2, 3] });
+  let state = sprae(el, { items: signal([1, 2, 3]) });
   is(el.textContent, "123");
-  state.items = [2, 2, 3];
+  state.items.value = [2, 2, 3];
   await tick();
   is(el.textContent, "223");
   console.log("items = [0, 2, 3]");
-  // state.items = [0, 2, 3]
-  state = sprae(el, { items: [0, 2, 3] });
+  state.items.value = [0, 2, 3];
+  // state = sprae(el, { items: [0, 2, 3] });
   await tick();
   is(el.textContent, "023");
   // NOTE: this doesn't update items, since they're new array
   console.log("state.items[0] = 1");
   console.log(state.items);
-  state.items[0] = 1;
+  state.items.value[0] = 1;
+  bump(state.items);
   // state.items = [...state.items]
   await tick();
   is(el.textContent, "123");
@@ -711,13 +714,14 @@ test("each: remove last", () => {
   </table>
   `;
 
-  const rows = [{ id: 1 }, { id: 2 }, { id: 3 }, { id: 4 }, { id: 5 }];
+  const rows = signal([{ id: 1 }, { id: 2 }, { id: 3 }, { id: 4 }, { id: 5 }]);
 
   let s = sprae(el, {
     rows,
     remove(item) {
-      const index = this.rows.findIndex((x) => x.id == item.id);
-      this.rows.splice(index, 1);
+      const index = this.rows.value.findIndex((x) => x.id == item.id);
+      this.rows.value.splice(index, 1);
+      bump(this.rows);
     },
   });
 
@@ -736,13 +740,14 @@ test("each: remove first", () => {
   </table>
   `;
 
-  const rows = [{ id: 1 }, { id: 2 }, { id: 3 }, { id: 4 }, { id: 5 }];
+  const rows = signal([{ id: 1 }, { id: 2 }, { id: 3 }, { id: 4 }, { id: 5 }]);
 
   let s = sprae(el, {
     rows,
     remove(item) {
-      const index = this.rows.findIndex((x) => x.id == item.id);
-      this.rows.splice(index, 1);
+      const index = this.rows.value.findIndex((x) => x.id == item.id);
+      this.rows.value.splice(index, 1);
+      bump(this.rows);
     },
   });
 
@@ -760,16 +765,17 @@ test("each: swapping", () => {
     <tr :each="item in rows" :text="item.id" />
   </table>`;
 
-  const rows = [{ id: 1 }, { id: 2 }, { id: 3 }, { id: 4 }, { id: 5 }];
+  const rows = signal([{ id: 1 }, { id: 2 }, { id: 3 }, { id: 4 }, { id: 5 }]);
 
   let s = sprae(el, {
     rows,
     swap() {
-      const a = this.rows[1];
+      const a = this.rows.value[1];
       console.log(`[1]=[4]`);
-      this.rows[1] = this.rows[this.rows.length - 2];
+      this.rows.value[1] = this.rows.value[this.rows.value.length - 2];
       console.log(`[4]=[1]`);
-      this.rows[this.rows.length - 2] = a;
+      this.rows.value[this.rows.value.length - 2] = a;
+      bump(this.rows);
     },
   });
 
@@ -792,13 +798,13 @@ test("each: with :scope", () => {
 
 test("each: subscribe to modifying list", async () => {
   let el = h`<ul>
-    <li :each="item in rows" :text="item" :onremove="remove(item)">
+    <li :each="item in rows" :text="item" :onremove="e=>remove(item)">
     </li>
   </ul>`;
   const state = sprae(el, {
-    rows: [1],
+    rows: signal([1]),
     remove() {
-      this.rows = [];
+      this.rows.value = [];
     },
   });
   is(el.outerHTML, `<ul><li>1</li></ul>`);
@@ -950,7 +956,7 @@ test("ref: signal", async () => {
 });
 
 test("ref: with :each", async () => {
-  let a = h`<y><x :="x=this" :each="item in items" :text="log.push(x), item"/></y>`;
+  let a = h`<y><x :ref="x" :each="item in items" :text="log.push(x), item"/></y>`;
   let state = sprae(a, { log: [], items: [1, 2, 3] });
   await tick();
   is(state.log, [...a.children]);
