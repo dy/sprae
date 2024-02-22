@@ -72,8 +72,8 @@
 ### [ ] v9
 
 * [x] subscript-based eval
-  * [ ] make `a in b` via subscript
-* [ ] no store
+  * [x] make `a in b` via subscript
+* [x] no store
 * [ ] switching hooks
 * [x] get rid of `@` events
 * [ ] plugins: extensible directives
@@ -89,3 +89,4 @@
 * [ ] all FIXMEs
 * [ ] move proxy state into own project / part of signal struct (with tests from here)
 * [ ] should we convert initial store to signals?
+* [ ] optimize each so that updating keeps elements

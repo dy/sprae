@@ -1,16 +1,7 @@
 // directives & parsing
 import sprae from "./core.js";
-import {
-  signal,
-  effect,
-  computed,
-  untracked,
-  batch,
-  _dispose,
-  _signals,
-  _change,
-} from "./state.signals-proxy.js";
-import compileJustin, { compile, parse } from "./compile.js";
+import { signal, effect, computed, untracked, _dispose } from "./core.js";
+import compileJustin from "./compile.js";
 import swapdom from "swapdom/swap-inflate";
 
 // reserved directives - order matters!

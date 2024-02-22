@@ -1,7 +1,7 @@
-import sprae from './core.js';
-import './directives.js';
+import sprae from "./core.js";
+import "./directives.js";
 export default sprae;
-export * from '@preact/signals-core';
+export * from "./core.js";
 
 // autoinit
-if (document.currentScript) sprae(document.documentElement)
+if (document.currentScript) sprae(document.documentElement);
