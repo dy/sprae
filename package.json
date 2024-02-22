@@ -22,14 +22,13 @@
     "jsdom": "^21.1.0",
     "terser": "^5.15.1",
     "tst": "^7.1.1",
-    "usignal": "^0.8.9",
+    "usignal": "^0.9.0",
     "wait-please": "^3.1.0"
   },
   "scripts": {
     "test": "node -r ./test/register.cjs test/test.js",
-    "build": "npm run build-esm && npm run build-iife && npm run min",
+    "build": "npm run build-esm && npm run min",
     "build-esm": "esbuild --bundle ./src/index.js --outfile=./dist/sprae.js --format=esm",
-    "build-iife": "esbuild --bundle ./src/index.js --outfile=./dist/sprae.auto.js --format=iife",
     "watch": "esbuild --bundle ./src/index.js --outfile=./dist/sprae.js --format=esm --sourcemap --watch",
     "min": "terser ./dist/sprae.js -o ./dist/sprae.min.js --module -c passes=3 -m && terser ./dist/sprae.auto.js -o ./dist/sprae.auto.min.js --module -c passes=3 -m"
   },

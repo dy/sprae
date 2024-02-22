@@ -1,8 +1,12 @@
 import defaultDirective, { primary, secondary } from "./directives.js";
 
-// import { signal, computed } from 'usignal/sync'
-// import { signal, computed } from '@webreflection/signal'
-export * from "@preact/signals-core";
+import { signal, effect, computed, batch } from "@preact/signals-core";
+// import { signal, effect, computed, batch } from '@webreflection/signal'
+// import { signal, effect, computed, batch } from "usignal";
+
+const untracked = (fn) => computed(fn).peek();
+export { signal, effect, computed, batch, untracked };
+
 export const _dispose = (Symbol.dispose ||= Symbol("dispose"));
 
 // sprae element: apply directives
