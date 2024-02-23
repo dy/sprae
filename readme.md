@@ -236,7 +236,7 @@ Attach event(s) listener with possible modifiers.
 
 ## Expressions
 
-Sprae uses [minimal subset of JS](https://github.com/dy/subscript?tab=readme-ov-file#justin)) for expressions syntax:
+Sprae uses [minimal subset of JS](https://github.com/dy/subscript?tab=readme-ov-file#justin) for expressions syntax:
 
 ##### Operators:
 
