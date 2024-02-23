@@ -256,7 +256,7 @@ in
 true false null undefined NaN
 ```
 
-Expressions are sandboxed and have no access to globals, so pass them manually.<br/>
+Expressions are sandboxed and have no access to globals (_console_, _setTimeout_, _window_ etc), so pass manually if required.<br/>
 
 
 ## Reactivity
