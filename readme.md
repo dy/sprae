@@ -236,7 +236,7 @@ Attach event(s) listener with possible modifiers.
 
 ## Expressions
 
-Sprae uses [justin](https://github.com/dy/subscript?tab=readme-ov-file#justin) for expressions, a no-keywords subset of JS:
+Sprae uses [minimal subset of JS](https://github.com/dy/subscript?tab=readme-ov-file#justin)) for expressions syntax:
 
 ##### Operators:
 
@@ -256,8 +256,7 @@ in
 true false null undefined NaN
 ```
 
-Expressions are sandboxed - have no access to globals.<br/>
-Pass required objects (eg. _console_, _window_, _setTimeout_, _fetch_) manually. (Caution: _setTimeout_ may act as eval).<br/>
+Expressions are sandboxed and have no access to globals, so pass them manually.<br/>
 
 
 ## Reactivity
@@ -269,7 +268,7 @@ Signals provider can be configured as:
 import * as preact from '@preact/signals-core';
 import sprae, { signal, computed, effect, batch } from 'sprae';
 
-sprae.signals(preact);
+Object.assign(sprae, preact);
 ```
 
 <!-- ## Dispose
