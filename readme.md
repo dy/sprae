@@ -16,14 +16,14 @@ Perfect for small-scale websites, prototypes, or UI.<br/>
 <script type="module">
   import sprae, { signal } from './path/to/sprae.js'; // '//unpkg.com/sprae'
 
-  const name = signal('Rama')
+  const name = signal('Gopala')
   sprae(container, { user: { name } }); // init
 
   name.value = 'Krishna'; // update
 </script>
 ```
 
-Sprae evaluates `:`-directives and evaporates them, attaching signals to html.
+Sprae evaluates `:`-directives and evaporates them, attaching values/signals to html.
 
 ## Directives
 
@@ -374,7 +374,7 @@ npm run results
 
 * Pass necessary globals manually to state (`console`, `setTimeout` etc).
 * Templates use _justin_ syntax (no keywords JS).
-* ``class="`abc ${def}`"`` → `:class="'abc $<def>'"`
+* ``:class="`abc ${def}`"`` → `:class="'abc $<def>'"`
 * `:with={x:foo}` → `:scope={x:foo}`
 * `:render="tpl"` → `:html="tpl"`
 * No autoinit → use manual init.
