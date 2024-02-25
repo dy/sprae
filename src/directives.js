@@ -1,8 +1,9 @@
 // directives & parsing
-import sprae from "./core.js";
-import { signal, effect, computed, untracked, _dispose } from "./core.js";
+import sprae, { _dispose } from "./core.js";
+import { signal, effect, computed, untracked } from "./signal.js";
 import compileJustin from "./compile.js";
-import swapdom from "swapdom/swap-inflate";
+import swapdom from "swapdom/swap-inflate.js";
+
 
 // reserved directives - order matters!
 // primary initialized first by selector, secondary initialized by iterating attributes
@@ -56,10 +57,6 @@ primary["each"] = (tpl, expr, state) => {
   let [leftSide, itemsExpr] = expr.split(/\s+in\s+/);
   let [itemVar, idxVar = ""] = leftSide.split(/\s*,\s*/);
 
-  // we have to handle item :ref separately since don't create substates
-  // const refName = tpl.getAttribute(':ref') || ''
-  // if (refName) tpl.removeAttribute(':ref')
-
   // we need :if to be able to replace holder instead of tpl for :if :each case
   const holder = (tpl[_each] = document.createTextNode(""));
   tpl.replaceWith(holder);
@@ -71,15 +68,13 @@ primary["each"] = (tpl, expr, state) => {
     // naive approach: whenever items change we replace full list
     let items = evaluate(state),
       els = [];
-    if (typeof items === "number")
-      items = Array.from({ length: items }, (_, i) => i);
+    if (typeof items === "number") items = Array.from({ length: items }, (_, i) => i);
 
     for (let idx in items) {
       let el = tpl.cloneNode(true),
         substate = Object.create(state, {
           [itemVar]: { value: items[idx] },
           [idxVar]: { value: idx },
-          // [refName]: { value: el },
         });
       untracked(() => sprae(el, substate));
       els.push(el);
@@ -109,8 +104,7 @@ const toSignal = (state) => {
   }
   return state;
 };
-const isPlainObject = (value) =>
-  !!value && typeof value === "object" && value.constructor === Object;
+const isPlainObject = (value) => !!value && typeof value === "object" && value.constructor === Object;
 
 // ref must be last within primaries, since that must be skipped by :each, but before secondaries
 primary["ref"] = (el, expr, state) => {
@@ -148,8 +142,7 @@ secondary["class"] = (el, expr, state) => {
         className.push(...Object.entries(v).map(([k, v]) => (v ? k : "")));
       }
     }
-    if ((className = className.filter(Boolean).join(" ")))
-      el.setAttribute("class", className);
+    if ((className = className.filter(Boolean).join(" "))) el.setAttribute("class", className);
     else el.removeAttribute("class");
   });
 };
@@ -164,8 +157,7 @@ secondary["style"] = (el, expr, state) => {
     else {
       untracked(() => {
         el.setAttribute("style", initStyle);
-        for (let k in v)
-          if (typeof v[k] !== "symbol") el.style.setProperty(k, v[k]);
+        for (let k in v) if (typeof v[k] !== "symbol") el.style.setProperty(k, v[k]);
       });
     }
   });
@@ -205,28 +197,24 @@ secondary["value"] = (el, expr, state) => {
   let from, to;
   let update =
     el.type === "text" || el.type === ""
-      ? (value) =>
-          el.setAttribute("value", (el.value = value == null ? "" : value))
+      ? (value) => el.setAttribute("value", (el.value = value == null ? "" : value))
       : el.tagName === "TEXTAREA" || el.type === "text" || el.type === ""
         ? (value) =>
-            (
-              // we retain selection in input
-              (from = el.selectionStart),
-              (to = el.selectionEnd),
-              el.setAttribute("value", (el.value = value == null ? "" : value)),
-              from && el.setSelectionRange(from, to)
-            )
+        (
+          // we retain selection in input
+          (from = el.selectionStart),
+          (to = el.selectionEnd),
+          el.setAttribute("value", (el.value = value == null ? "" : value)),
+          from && el.setSelectionRange(from, to)
+        )
         : el.type === "checkbox"
-          ? (value) => (
-              (el.value = value ? "on" : ""), attr(el, "checked", value)
-            )
+          ? (value) => ((el.value = value ? "on" : ""), attr(el, "checked", value))
           : el.type === "select-one"
             ? (value) => {
-                for (let option in el.options)
-                  option.removeAttribute("selected");
-                el.value = value;
-                el.selectedOptions[0]?.setAttribute("selected", "");
-              }
+              for (let option in el.options) option.removeAttribute("selected");
+              el.value = value;
+              el.selectedOptions[0]?.setAttribute("selected", "");
+            }
             : (value) => (el.value = value);
 
   return effect(() => {
@@ -261,15 +249,13 @@ export default (el, expr, state, name) => {
 };
 
 // bind event to a target
-const on = (el, e, fn = () => {}) => {
+const on = (el, e, fn = () => { }) => {
   const ctx = { evt: "", target: el, test: () => true };
 
   // onevt.debounce-108 -> evt.debounce-108
   ctx.evt = (e.startsWith("on") ? e.slice(2) : e).replace(
     /\.(\w+)?-?([-\w]+)?/g,
-    (match, mod, param = "") => (
-      (ctx.test = mods[mod]?.(ctx, ...param.split("-")) || ctx.test), ""
-    ),
+    (match, mod, param = "") => ((ctx.test = mods[mod]?.(ctx, ...param.split("-")) || ctx.test), ""),
   );
 
   // add listener applying the context
@@ -278,10 +264,7 @@ const on = (el, e, fn = () => {}) => {
   if (defer) fn = defer(fn);
 
   const cb = (e) =>
-    test(e) &&
-    (stop && e.stopPropagation(),
-    prevent && e.preventDefault(),
-    fn.call(target, e));
+    test(e) && (stop && e.stopPropagation(), prevent && e.preventDefault(), fn.call(target, e));
 
   target.addEventListener(evt, cb, opts);
 
@@ -338,20 +321,20 @@ const mods = {
   // keyboard
   ctrl:
     (ctx, ...param) =>
-    (e) =>
-      keys.ctrl(e) && param.every((p) => (keys[p] ? keys[p](e) : e.key === p)),
+      (e) =>
+        keys.ctrl(e) && param.every((p) => (keys[p] ? keys[p](e) : e.key === p)),
   shift:
     (ctx, ...param) =>
-    (e) =>
-      keys.shift(e) && param.every((p) => (keys[p] ? keys[p](e) : e.key === p)),
+      (e) =>
+        keys.shift(e) && param.every((p) => (keys[p] ? keys[p](e) : e.key === p)),
   alt:
     (ctx, ...param) =>
-    (e) =>
-      keys.alt(e) && param.every((p) => (keys[p] ? keys[p](e) : e.key === p)),
+      (e) =>
+        keys.alt(e) && param.every((p) => (keys[p] ? keys[p](e) : e.key === p)),
   meta:
     (ctx, ...param) =>
-    (e) =>
-      keys.meta(e) && param.every((p) => (keys[p] ? keys[p](e) : e.key === p)),
+      (e) =>
+        keys.meta(e) && param.every((p) => (keys[p] ? keys[p](e) : e.key === p)),
   arrow: (ctx) => keys.arrow,
   enter: (ctx) => keys.enter,
   escape: (ctx) => keys.escape,
@@ -414,11 +397,7 @@ const debounce = (fn, wait) => {
 // set attr
 const attr = (el, name, v) => {
   if (v == null || v === false) el.removeAttribute(name);
-  else
-    el.setAttribute(
-      name,
-      v === true ? "" : typeof v === "number" || typeof v === "string" ? v : "",
-    );
+  else el.setAttribute(name, v === true ? "" : typeof v === "number" || typeof v === "string" ? v : "");
 };
 
 const evaluatorMemo = {};
@@ -448,16 +427,10 @@ function parseExpr(el, expression, dir) {
 
 function exprError(error, element, expression, directive) {
   Object.assign(error, { element, expression });
-  console.warn(
-    `∴ ${error.message}\n\n${directive}=${expression ? `"${expression}"\n\n` : ""}`,
-    element,
-  );
+  console.warn(`∴ ${error.message}\n\n${directive}=${expression ? `"${expression}"\n\n` : ""}`, element);
   throw error;
 }
 
 function dashcase(str) {
-  return str.replace(
-    /[A-Z\u00C0-\u00D6\u00D8-\u00DE]/g,
-    (match) => "-" + match.toLowerCase(),
-  );
+  return str.replace(/[A-Z\u00C0-\u00D6\u00D8-\u00DE]/g, (match) => "-" + match.toLowerCase());
 }

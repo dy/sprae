@@ -1,11 +1,6 @@
 import defaultDirective, { primary, secondary } from "./directives.js";
 
-import { signal, effect, computed, batch } from "@preact/signals-core";
-// import { signal, effect, computed, batch } from '@webreflection/signal'
-// import { signal, effect, computed, batch } from "usignal";
-
-const untracked = (fn) => computed(fn).peek();
-export { signal, effect, computed, batch, untracked };
+export * from './signal.js'
 
 export const _dispose = (Symbol.dispose ||= Symbol("dispose"));
 
@@ -40,7 +35,7 @@ export default function sprae(container, values) {
 
     // catch other attributes as secondary
     if (el.attributes) {
-      for (let i = 0; i < el.attributes.length; ) {
+      for (let i = 0; i < el.attributes.length;) {
         let attr = el.attributes[i],
           prefix = attr.name[0];
 

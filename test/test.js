@@ -1,27 +1,20 @@
 // import { signal } from 'usignal/sync'
-import { signal, effect, untracked, batch } from "@preact/signals-core";
 import test, { is, any, throws } from "tst";
 import { tick, time } from "wait-please";
-import sprae from "../src/index.js";
+import sprae, { signal, effect, untracked, batch, computed } from "../src/index.js";
 import h from "hyperf";
 
 Object.defineProperty(DocumentFragment.prototype, "outerHTML", {
   get() {
     let s = "";
     this.childNodes.forEach((n) => {
-      s +=
-        n.nodeType === 3
-          ? n.textContent
-          : n.outerHTML != null
-            ? n.outerHTML
-            : "";
+      s += n.nodeType === 3 ? n.textContent : n.outerHTML != null ? n.outerHTML : "";
     });
     return s;
   },
 });
 // bump signal value (trigger update without updating)
-const bump = (s) =>
-  batch((_) => ((_ = s.value), (s.value = null), (s.value = _)));
+const bump = (s) => batch((_) => ((_ = s.value), (s.value = null), (s.value = _)));
 
 test("hidden: core", async () => {
   let el = h`<div :hidden="hidden"></div>`;
@@ -118,16 +111,10 @@ test("class", async () => {
   let el = h`<x class="base" :class="a"></x><y :class="[b, c]"></y><z :class="{b:true, c:d}"></z>`;
   const c = signal("z");
   let params = sprae(el, { a: "x", b: "y", c, d: signal(false) });
-  is(
-    el.outerHTML,
-    `<x class="base x"></x><y class="y z"></y><z class="b"></z>`,
-  );
+  is(el.outerHTML, `<x class="base x"></x><y class="y z"></y><z class="b"></z>`);
   params.d.value = true;
   await tick();
-  is(
-    el.outerHTML,
-    `<x class="base x"></x><y class="y z"></y><z class="b c"></z>`,
-  );
+  is(el.outerHTML, `<x class="base x"></x><y class="y z"></y><z class="b c"></z>`);
   // c.value = 'w'
   // is(el.outerHTML, `<x class="base x"></x><y class="y w"></y><z class="b c"></z>`);
 });
@@ -153,10 +140,7 @@ test("class: old svg fun", async () => {
 test("props: base", async () => {
   let el = h`<input :id="0" :="{for:1, title:2, help:3, type:4, placeholder: 5, value: 6, aB: 8}" :value="7"/>`;
   let params = sprae(el);
-  is(
-    el.outerHTML,
-    `<input id="0" for="1" title="2" help="3" type="4" placeholder="5" value="7" a-b="8">`,
-  );
+  is(el.outerHTML, `<input id="0" for="1" title="2" help="3" type="4" placeholder="5" value="7" a-b="8">`);
 });
 
 test("props: sets prop", async () => {
@@ -634,15 +618,15 @@ test("each: unkeyed", async () => {
 test.skip("each: keyed", async () => {
   // keyed
   let el = h`<div><x :each="x in xs" :text="x" :key="x"></x></div>`;
-  let state = sprae(el, { xs: [1, 2, 3] });
+  let state = sprae(el, { xs: signal([1, 2, 3]) });
   is(el.children.length, 3);
   is(el.textContent, "123");
   let first = el.firstChild;
-  state.xs = [1, 3, 2];
+  state.xs.value = [1, 3, 2];
   await tick();
   is(el.firstChild, first);
   is(el.textContent, "132");
-  state.xs = [3, 3, 3];
+  state.xs.value = [3, 3, 3];
   await tick();
   is(el.textContent, "3");
   // is(el.firstChild, first)
@@ -725,10 +709,7 @@ test("each: remove last", () => {
     },
   });
 
-  is(
-    el.outerHTML,
-    `<table><tr>1</tr><tr>2</tr><tr>3</tr><tr>4</tr><tr>5</tr></table>`,
-  );
+  is(el.outerHTML, `<table><tr>1</tr><tr>2</tr><tr>3</tr><tr>4</tr><tr>5</tr></table>`);
   console.log("Remove id 5");
   s.remove({ id: 5 });
   is(el.outerHTML, `<table><tr>1</tr><tr>2</tr><tr>3</tr><tr>4</tr></table>`);
@@ -751,10 +732,7 @@ test("each: remove first", () => {
     },
   });
 
-  is(
-    el.outerHTML,
-    `<table><tr>1</tr><tr>2</tr><tr>3</tr><tr>4</tr><tr>5</tr></table>`,
-  );
+  is(el.outerHTML, `<table><tr>1</tr><tr>2</tr><tr>3</tr><tr>4</tr><tr>5</tr></table>`);
   console.log("Remove id 1");
   s.remove({ id: 1 });
   is(el.outerHTML, `<table><tr>2</tr><tr>3</tr><tr>4</tr><tr>5</tr></table>`);
@@ -779,15 +757,9 @@ test("each: swapping", () => {
     },
   });
 
-  is(
-    el.outerHTML,
-    `<table><tr>1</tr><tr>2</tr><tr>3</tr><tr>4</tr><tr>5</tr></table>`,
-  );
+  is(el.outerHTML, `<table><tr>1</tr><tr>2</tr><tr>3</tr><tr>4</tr><tr>5</tr></table>`);
   s.swap();
-  is(
-    el.outerHTML,
-    `<table><tr>1</tr><tr>4</tr><tr>3</tr><tr>2</tr><tr>5</tr></table>`,
-  );
+  is(el.outerHTML, `<table><tr>1</tr><tr>4</tr><tr>3</tr><tr>2</tr><tr>5</tr></table>`);
 });
 
 test("each: with :scope", () => {
@@ -883,34 +855,22 @@ test("scope: scope directives must come first", async () => {
 test("html: by ref", async () => {
   let a = h`<template :ref="abc"><div :text="123"></div></template><x :html="abc">456</x>`;
   sprae(a);
-  is(
-    a.outerHTML,
-    `<template><div :text="123"></div></template><x><div>123</div></x>`,
-  );
+  is(a.outerHTML, `<template><div :text="123"></div></template><x><div>123</div></x>`);
 });
 
 test("html: state", async () => {
   let a = h`<template :ref="abc"><div :text="text"></div></template><x :html="abc" />`;
   let state = sprae(a, { text: signal("abc") });
-  is(
-    a.outerHTML,
-    `<template><div :text="text"></div></template><x><div>abc</div></x>`,
-  );
+  is(a.outerHTML, `<template><div :text="text"></div></template><x><div>abc</div></x>`);
   state.text.value = "def";
   await tick();
-  is(
-    a.outerHTML,
-    `<template><div :text="text"></div></template><x><div>def</div></x>`,
-  );
+  is(a.outerHTML, `<template><div :text="text"></div></template><x><div>def</div></x>`);
 });
 
 test("html: :scope", async () => {
   let a = h`<template :ref="tpl"><div :text="text"></div></template><x :html="tpl" :scope="{text:'abc'}" />`;
   let state = sprae(a);
-  is(
-    a.outerHTML,
-    `<template><div :text="text"></div></template><x><div>abc</div></x>`,
-  );
+  is(a.outerHTML, `<template><div :text="text"></div></template><x><div>abc</div></x>`);
 });
 
 test("html: nested items", async () => {
@@ -925,10 +885,7 @@ test("html: nested items", async () => {
 test.todo("html: template after use", async () => {
   let a = h`<x :html="tpl" :scope="{text:'abc'}" /><template :ref="tpl"><div :text="text"></div></template>`;
   let state = sprae(a);
-  is(
-    a.outerHTML,
-    `<x><div>abc</div></x><template><div :text="text"></div></template>`,
-  );
+  is(a.outerHTML, `<x><div>abc</div></x><template><div :text="text"></div></template>`);
 });
 
 test("ref: base", async () => {
@@ -1137,15 +1094,11 @@ test("events: key combinations", (e) => {
   el.dispatchEvent(new window.KeyboardEvent("keydown", { key: "Enter" }));
   el.dispatchEvent(new window.KeyboardEvent("keydown", { key: "" }));
   is(state.log, []);
-  el.dispatchEvent(
-    new window.KeyboardEvent("keydown", { key: "Enter", ctrlKey: true }),
-  );
+  el.dispatchEvent(new window.KeyboardEvent("keydown", { key: "Enter", ctrlKey: true }));
   el.dispatchEvent(new window.KeyboardEvent("keydown", { key: "Enter" }));
   is(state.log, [1]);
   el.dispatchEvent(new window.KeyboardEvent("keydown", { key: "Enter" }));
-  el.dispatchEvent(
-    new window.KeyboardEvent("keydown", { key: "Enter", ctrlKey: true }),
-  );
+  el.dispatchEvent(new window.KeyboardEvent("keydown", { key: "Enter", ctrlKey: true }));
   is(state.log, [1, 1]);
   let el2 = h`<x :onkeydown.ctrl-alt-enter="e=>log.push(1)"></x>`;
 });
@@ -1153,22 +1106,16 @@ test("events: key combinations", (e) => {
 test("events: keys with prevent", (e) => {
   let el = h`<y :onkeydown="event => log.push(event.key)"><x :ref="x" :onkeydown.enter.stop></x></y>`;
   let state = sprae(el, { log: [] });
-  state.x.dispatchEvent(
-    new window.KeyboardEvent("keydown", { key: "x", bubbles: true }),
-  );
+  state.x.dispatchEvent(new window.KeyboardEvent("keydown", { key: "x", bubbles: true }));
   console.log("enter");
-  state.x.dispatchEvent(
-    new window.KeyboardEvent("keydown", { key: "Enter", bubbles: true }),
-  );
+  state.x.dispatchEvent(new window.KeyboardEvent("keydown", { key: "Enter", bubbles: true }));
   is(state.log, ["x"]);
 });
 
 test("events: debounce", async (e) => {
   let el = h`<x :onkeydown.debounce-1="event => log.push(event.key)"></x>`;
   let state = sprae(el, { log: [] });
-  el.dispatchEvent(
-    new window.KeyboardEvent("keydown", { key: "x", bubbles: true }),
-  );
+  el.dispatchEvent(new window.KeyboardEvent("keydown", { key: "x", bubbles: true }));
   is(state.log, []);
   await time(2);
   is(state.log, ["x"]);
@@ -1177,9 +1124,7 @@ test("events: debounce", async (e) => {
 test("events: debounce 0", async (e) => {
   let el = h`<x :onkeydown.debounce-0="e => log.push(e.key)"></x>`;
   let state = sprae(el, { log: [] });
-  el.dispatchEvent(
-    new window.KeyboardEvent("keydown", { key: "x", bubbles: true }),
-  );
+  el.dispatchEvent(new window.KeyboardEvent("keydown", { key: "x", bubbles: true }));
   is(state.log, []);
   await time(2);
   is(state.log, ["x"]);
@@ -1188,24 +1133,16 @@ test("events: debounce 0", async (e) => {
 test("events: throttle", async (e) => {
   let el = h`<x :onkeydown.throttle-10="event => log.push(event.key)"></x>`;
   let state = sprae(el, { log: [] });
-  el.dispatchEvent(
-    new window.KeyboardEvent("keydown", { key: "x", bubbles: true }),
-  );
-  el.dispatchEvent(
-    new window.KeyboardEvent("keydown", { key: "x", bubbles: true }),
-  );
+  el.dispatchEvent(new window.KeyboardEvent("keydown", { key: "x", bubbles: true }));
+  el.dispatchEvent(new window.KeyboardEvent("keydown", { key: "x", bubbles: true }));
   is(state.log, ["x"]);
   await time(5);
-  el.dispatchEvent(
-    new window.KeyboardEvent("keydown", { key: "x", bubbles: true }),
-  );
+  el.dispatchEvent(new window.KeyboardEvent("keydown", { key: "x", bubbles: true }));
   is(state.log, ["x"]);
   await time(10);
   is(state.log, ["x", "x"]);
   await time(10);
   is(state.log, ["x", "x"]);
-  el.dispatchEvent(
-    new window.KeyboardEvent("keydown", { key: "x", bubbles: true }),
-  );
+  el.dispatchEvent(new window.KeyboardEvent("keydown", { key: "x", bubbles: true }));
   is(state.log, ["x", "x", "x"]);
 });
