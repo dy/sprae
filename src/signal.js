@@ -1,8 +1,3 @@
-// import { signal, effect, computed, batch, untracked } from "@preact/signals-core";
-// import { signal, effect, computed, batch } from "@webreflection/signal";
-// import { signal, effect, computed, batch } from "usignal";
-
-
 // Bare minimum signals
 
 let current // current fx
@@ -14,20 +9,15 @@ export const batch = (fn) => fn()
 export const signal = v => {
   let obs = new Set, s = {
     get value() {
-      // subscribe current effect to this signal
-      current?.add(s);
+      current?.add(s); // subscribe current effect to this signal
       return v
     },
     set value(val) {
       v = val
-      // notify effects (clear old effects since will be rebound)
-      let entries = [...obs]; obs.clear()
-      for (let sub of entries) sub(val)
+      for (let sub of obs) sub(val) // notify effects
     },
 
     peek() { return v },
-
-    [Symbol.observable ||= Symbol.for('observable')]() { return s },
 
     subscribe(fn) {
       obs.add(fn);
@@ -58,8 +48,6 @@ export const computed = (fn) => {
   return {
     subscribe: s.subscribe,
     dispose: effect(() => s.value = fn()),
-    get value() {
-      return s.value
-    }
+    get value() { return s.value }
   }
 };
