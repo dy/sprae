@@ -268,11 +268,11 @@ sprae(el, { name: signal('Krishna') })
 To destroy state and detach sprae handlers, call `element[Symbol.dispose]()`. -->
 
 
-## Plugins
+<!-- ## Plugins
 
 _Sprae_ directives can be extended as `sprae.directive.name = (el, expr, state) => {}`.
 
-Also see [nadi](https://github.com/dy/nadi) - collection of various DOM/etc interfaces with signals API.
+Also see [nadi](https://github.com/dy/nadi) - collection of various DOM/etc interfaces with signals API. -->
 
 <!-- Official plugins are:
 
@@ -286,16 +286,6 @@ Also see [nadi](https://github.com/dy/nadi) - collection of various DOM/etc inte
 -->
 
 
-## Migration to v9
-
-* Pass necessary globals to state (`console`, `setTimeout` etc).
-* Templates use justin syntax
-* Tagged literals -> `:class="'abc $<def>'"`
-* `:with={x:foo}` -> `:scope={x:foo}`
-* `:render="tpl"` -> `:html="tpl"`
-* no autoinit, use manual init
-* store -> make reactive values signals, or use signal-store
-
 ## Examples
 
 * TODO MVC: [demo](https://dy.github.io/sprae/examples/todomvc), [code](https://github.com/dy/sprae/blob/main/examples/todomvc.html)
@@ -308,7 +298,7 @@ Also see [nadi](https://github.com/dy/nadi) - collection of various DOM/etc inte
 
 [Template-parts](https://github.com/dy/template-parts) / [templize](https://github.com/dy/templize) is progressive, but is stuck with native HTML quirks ([parsing table](https://github.com/github/template-parts/issues/24), [SVG attributes](https://github.com/github/template-parts/issues/25), [liquid syntax](https://shopify.github.io/liquid/tags/template/#raw) conflict etc). [Alpine](https://github.com/alpinejs/alpine) / [petite-vue](https://github.com/vuejs/petite-vue) / [lucia](https://github.com/aidenyabi/lucia) escape native HTML quirks, but the API is excessive and [self-encapsulated](https://github.com/alpinejs/alpine/discussions/3223).
 
-_Sprae_ takes idea of _templize_ / _alpine_ / _vue_ directives with [_signals_](https://ghub.io/@preact/signals) reactivity & [_subscript_](https://github.com/dy/subscript) for evaluation.
+_Sprae_ mixes _templize_ / _alpine_ / _vue_ directives with _signals_ reactivity & _no-keywords_ evaluation.
 
 * It shows static html markup when uninitialized (SSR).
 * It doesn't enforce SPA nor JSX (unlike reacts), which enables island hydration.
@@ -384,5 +374,17 @@ npm run results
 * [Petite-vue](https://github.com/vuejs/petite-vue)
 * [nuejs](https://github.com/nuejs/nuejs)
  -->
+
+## Migration to v9
+
+* Pass necessary globals manually to state (`console`, `setTimeout` etc).
+* Templates use _justin_ syntax (no keywords JS).
+* Tagged literals -> `:class="'abc $<def>'"`
+* `:with={x:foo}` -> `:scope={x:foo}`
+* `:render="tpl"` -> `:html="tpl"`
+* No autoinit -> use manual init.
+* No reactive store -> use signals for reactive values.
+* `@click="event.target"` -> `:onclick="event => event.target"`
+* Async props / events are prohibited, pass async functions via state.
 
 <p align="center"><a href="https://github.com/krsnzd/license/">🕉</a></p>
