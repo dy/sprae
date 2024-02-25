@@ -65,7 +65,7 @@ Multiply element.
 </template>
 ```
 
-**Prevent FOUC**: add this to `<head>`:
+##### Prevent FOUC:
 
 ```html
 <style>[:each] {visibility: hidden}</style>
