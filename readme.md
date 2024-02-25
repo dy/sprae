@@ -10,13 +10,13 @@ Perfect for small-scale websites, prototypes, or UI.<br/>
 
 ```html
 <div id="container" :if="user">
-  Logged in as <span :text="user.name">Guest.</span>
+  Hello <span :text="user.name">guest</span>!
 </div>
 
 <script type="module">
   import sprae, { signal } from './path/to/sprae.js'; // '//unpkg.com/sprae'
 
-  const name = signal('Gopala')
+  const name = signal('boatman')
   sprae(container, { user: { name } }); // init
 
   name.value = 'Krishna'; // update

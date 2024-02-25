@@ -1,5 +1,7 @@
 import defaultDirective, { primary, secondary } from "./directives.js";
 import * as signals from './signal.js'
+// import * as signals from '@webreflection/signal'
+// import * as signals from '@preact/signals-core'
 
 export const _dispose = (Symbol.dispose ||= Symbol("dispose"));
 
@@ -80,13 +82,14 @@ export default function sprae(container, values) {
   return state;
 }
 
+export let signal, effect, computed, batch, untracked
+
 // configure sprae signals
 sprae.use = (s) => (
   signal = s.signal,
   effect = s.effect,
   computed = s.computed,
   batch = s.batch,
-  untracked = s.untracked
+  untracked = s.untracked || ((fn) => fn())
 )
-
-export let { signal, effect, computed, batch, untracked } = signals
+sprae.use(signals)

@@ -1,6 +1,6 @@
 // directives & parsing
 import sprae, { _dispose } from "./core.js";
-import { signal, effect, computed, untracked } from "./core.js";
+import { signal, effect, computed } from "./core.js";
 import justin from "./compile.js";
 import swapdom from "swapdom/swap-inflate.js";
 
@@ -65,19 +65,22 @@ primary["each"] = (tpl, expr, state) => {
   let cur = [];
   return effect(() => {
     // naive approach: whenever items change we replace full list
-    let items = evaluate(state),
-      els = [];
+    let items = evaluate(state), els = [];
     if (typeof items === "number") items = Array.from({ length: items }, (_, i) => i);
 
+    // FIXME: keep prev items (avoid reinit)
+    // FIXME: nadi fail here without untracked
+    // untracked(() => {
     for (let idx in items) {
       let el = tpl.cloneNode(true),
         substate = Object.create(state, {
           [itemVar]: { value: items[idx] },
           [idxVar]: { value: idx },
         });
-      untracked(() => sprae(el, substate));
+      sprae(el, substate);
       els.push(el);
     }
+    // })
 
     swapdom(holder.parentNode, cur, els, holder);
     cur = els;
@@ -97,7 +100,7 @@ primary["scope"] = (el, expr, rootState) => {
 const toSignal = (state) => {
   for (let key in state) {
     let v = state[key];
-    if (Object(v) === v) 'value' in v ? toSignal(v) : null;
+    if (Object(v) === v) !v.peek ? toSignal(v) : null;
     else state[key] = signal(v);
   }
   return state;
@@ -152,10 +155,10 @@ secondary["style"] = (el, expr, state) => {
     let v = evaluate(state);
     if (typeof v === "string") el.setAttribute("style", initStyle + v);
     else {
-      untracked(() => {
-        el.setAttribute("style", initStyle);
-        for (let k in v) if (typeof v[k] !== "symbol") el.style.setProperty(k, v[k]);
-      });
+      // untracked(() => {
+      el.setAttribute("style", initStyle);
+      for (let k in v) if (typeof v[k] !== "symbol") el.style.setProperty(k, v[k]);
+      // });
     }
   });
 };

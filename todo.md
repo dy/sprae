@@ -81,10 +81,11 @@
 * [~] add :html directive as replacement for :render, with tests
 * [x] rename :with to :scope
 * [x] :fx=fx
+* [ ] make signals tests (nested effects)
+* [ ] each that keeps elements
+* [ ] template test (:text, :html, :if, :each)
 * [ ] try direct directives without primary/secondary
-* [ ] fix all examples
-* [ ] treeshake, minimize bundle
+* [ ] fix examples
 * [ ] all FIXMEs
 * [ ] move proxy state into own project / part of signal struct (with tests from here)
-* [ ] optimize each so that updating keeps elements
 * [ ] interpolatable strings
