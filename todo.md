@@ -77,14 +77,12 @@
 * [x] switching signals
 * [x] get rid of `@` events
 * [ ] plugins: extensible directives
-* [ ] compile expressions outside of directives
 * [x] comparison table: CSP, plugins, no-deps, size, performance, event/modifiers,
 * [~] add :html directive as replacement for :render, with tests
 * [x] rename :with to :scope
 * [x] :fx=fx
 * [ ] try direct directives without primary/secondary
 * [ ] fix all examples
-* [ ] use ulive
 * [ ] treeshake, minimize bundle
 * [ ] all FIXMEs
 * [ ] move proxy state into own project / part of signal struct (with tests from here)
