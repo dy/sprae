@@ -19,11 +19,11 @@ It is tiny, performant, open & safe alternative to [alpine](https://github.com/a
   import sprae, { signal } from './path/to/sprae.js';
 
   // init
-  const state = { user: { name: signal('Dmitry Iv.') } }
+  const state = { user: { name: signal('Rama') } }
   sprae(container, state);
 
   // update
-  state.user.name.value = 'dy';
+  state.user.name.value = 'Krishna';
 </script>
 ```
 
@@ -59,11 +59,11 @@ Multiply element.
 <li :each="val, key in obj" />
 <li :each="idx in number" />
 
-<!-- loop by condition -->
+<!-- by condition -->
 <li :if="items" :each="item in items" :text="item" />
 <li :else>Empty list</li>
 
-<!-- loop fragment -->
+<!-- fragment -->
 <template :each="item in items">
   <dt :text="item.term"/>
   <dd :text="item.definition"/>
@@ -101,31 +101,28 @@ Hello, <template :html="user.name">Guest</template>.
 
 #### `:class="value"`
 
-Set class value from either a string or array.
+Set class value, extends existing `class`.
 
 ```html
-<!-- set from string (insert fields as $<bar>) -->
+<!-- string with interpolation -->
 <div :class="'foo $<bar>'"></div>
 
-<!-- extends existing class as "foo bar" -->
-<div class="foo" :class="'bar'"></div>
-
-<!-- clsx: list -->
+<!-- array a-la clsx -->
 <div :class="['foo', bar]"></div>
 ```
 
 #### `:style="value"`
 
-Set style value from an object or a string. Extends existing `style` attribute, if any.
+Set style value, extends existing `style`.
 
 ```html
-<!-- from string -->
+<!-- string with interpolation -->
 <div :style="'foo: $<bar>'"></div>
 
-<!-- from object -->
+<!-- object -->
 <div :style="{foo: 'bar'}"></div>
 
-<!-- set CSS variable -->
+<!-- CSS variable -->
 <div :style="{'--baz': qux}"></div>
 ```
 
@@ -134,7 +131,6 @@ Set style value from an object or a string. Extends existing `style` attribute, 
 Set value of an input, textarea or select. Takes handle of `checked` and `selected` attributes.
 
 ```html
-<!-- set from value -->
 <input :value="value" />
 <textarea :value="value" />
 
@@ -146,19 +142,18 @@ Set value of an input, textarea or select. Takes handle of `checked` and `select
 
 #### `:<prop>="value"`
 
-Set any attribute value.
+Set any other attribute.
 
 ```html
-<!-- Single attribute -->
 <label :for="name" :text="name" />
 
-<!-- Multiple attributes -->
+<!-- multiple attributes -->
 <input :id:name="name" />
 ```
 
 #### `:="props"`
 
-Set multiple attributes.
+Set (spread) multiple attributes.
 
 ```html
 <input :="{ id: name, name, type: 'text', value }" />
@@ -169,31 +164,23 @@ Set multiple attributes.
 Define or extend data scope for a subtree. Extended values are reactive.
 
 ```html
-<!-- Inline data -->
-<x :scope="{ foo: 'bar' }" :text="foo"></x>
-
-<!-- External data -->
-<y :scope="data"></y>
-
-<!-- Extend scope -->
 <x :scope="{ foo: 'bar' }">
+  <!-- extends parent scope -->
   <y :scope="{ baz: 'qux' }" :text="foo + baz"></y>
 </x>
 ```
 
 #### `:ref="name"`
 
-Expose element to current scope under `name`.
+Expose element to current scope with `name`.
 
 ```html
 <textarea :ref="text" placeholder="Enter text..."></textarea>
 
 <!-- iterable items -->
-<ul>
-  <li :each="item in items" :ref="item">
-    <input :onfocus..onblur=="e => (item.classList.add('editing'), e => item.classList.remove('editing'))"/>
-  </li>
-</ul>
+<li :each="item in items" :ref="item">
+  <input :onfocus..onblur=="e => (item.classList.add('editing'), e => item.classList.remove('editing'))"/>
+</li>
 ```
 
 #### `:fx="<effect>"`
@@ -210,7 +197,6 @@ Run effect(s).
 Attach event(s) listener with possible modifiers.
 
 ```html
-<!-- single event -->
 <input type="checkbox" :onchange="e => isChecked = e.target.value">
 
 <!-- multiple events -->
@@ -236,7 +222,7 @@ Attach event(s) listener with possible modifiers.
 
 ## Expressions
 
-Sprae uses [minimal subset of JS](https://github.com/dy/subscript?tab=readme-ov-file#justin) for expressions syntax:
+_Sprae_ uses [minimal subset of JS](https://github.com/dy/subscript?tab=readme-ov-file#justin) for expressions syntax:
 
 ##### Operators:
 
@@ -261,15 +247,22 @@ Expressions are sandboxed and have no access to globals (like _console_, _setTim
 
 ## Reactivity
 
-Sprae uses signals for reactivity (based on [usignal](https://ghub.io/usignal)).<br/>
-Signals provider can be configured as:
+_Sprae_ uses signals for reactivity. Signals provider can be configured as:
 
 ```js
 import * as preact from '@preact/signals-core';
 import sprae, { signal, computed, effect, batch } from 'sprae';
 
 Object.assign(sprae, preact);
+
+sprae(el, { name: signal('Krishna') })
 ```
+
+##### Signal providers:
+
+* `@preact/signals` – +2Kb, best performance, good for complex states (10+ deps).
+* `@webreflection/signal` – +1Kb, good performance/size, good for average states (<10 deps).
+* `ulive` (default) - smallest size, ok for simple purposes (direct deps).
 
 <!-- ## Dispose
 
@@ -278,7 +271,7 @@ To destroy state and detach sprae handlers, call `element[Symbol.dispose]()`. --
 
 ## Plugins
 
-Sprae directives can be extended as `sprae.directive.name = (el, expr, state) => {}`.
+_Sprae_ directives can be extended as `sprae.directive.name = (el, expr, state) => {}`.
 
 Also see [nadi](https://github.com/dy/nadi) - collection of various DOM/etc interfaces with signals API.
 
@@ -286,31 +279,23 @@ Also see [nadi](https://github.com/dy/nadi) - collection of various DOM/etc inte
 
 * @sprae/aria – `:aria="props"` aria-roles
 * @sprae/data - `:data="props"` for dataseet
-* @sprae/item: `<x :item="{type:a, scope:b}"` – data schema -->
-<!-- * @sprae/hcodes: `<x :hcode=""` – provide microformats
-* @sprae/visible? - can be solved externally
-* @sprae/intersect
-* @sprae/persists - mb for signals?
-* @sprae/mount
-* @sprae/use?
-* @sprae/input - for input values
-* @sprae/ -->
+* @sprae/item: `<x :item="{type:a, scope:b}"` – data schema
+* @sprae/visible - `:onvisible..oninvisible="e => e => {}"`
+* @sprae/intersect - `:onin..onout="e => e => {}"`
+* @sprae/mount - `:onmount..onunmount="e => e => {}"`
 
-<!--
-Migration to v9
+-->
 
-* No sandboxing defaults: provide necessary globals as `Object.assign(Object.create({console, window}), {state})`
-* `:=<props>` is not available anymore, use plugin?
+
+## Migration to v9
+
+* Pass necessary globals to state (`console`, `setTimeout` etc).
 * Templates use justin syntax
 * Tagged literals -> `:class="'abc $<def>'"`
-* `:with={x:foo}` -> `:="x=foo"` (no scoping)
-* `:ref='abc'` -> `:="abc=this"`
+* `:with={x:foo}` -> `:scope={x:foo}`
 * `:render="tpl"` -> `:html="tpl"`
 * no autoinit, use manual init
-* array length subscription -> `nadi/array`
-* getters subscription -> `nadi/object`
-* reactivity via signals, store is not reactive anymore
- -->
+* store -> make reactive values signals, or use signal-store
 
 ## Examples
 
