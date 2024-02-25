@@ -300,11 +300,6 @@ Also see [nadi](https://github.com/dy/nadi) - collection of various DOM/etc inte
 
 _Sprae_ mixes _templize_ / _alpine_ / _vue_ directives with _signals_ reactivity & _no-keywords_ evaluation.
 
-* It shows static html markup when uninitialized (SSR).
-* It doesn't enforce SPA nor JSX (unlike reacts), which enables island hydration.
-* It reserves minimal syntax/API space.
-* It enables CSP.
-
 #### Features
 
 |                       | [AlpineJS](https://github.com/alpinejs/alpine)          | [Petite-Vue](https://github.com/vuejs/petite-vue)        | Sprae            |
@@ -313,6 +308,7 @@ _Sprae_ mixes _templize_ / _alpine_ / _vue_ directives with _signals_ reactivity
 | _Memory_            | 5.05             | 3.16              | 2.78             |
 | _Performance_       | 2.64             | 2.43              | 1.76             |
 | _CSP_               | No                | No                | Yes              |
+| _SSR_ | No | No | No |
 | _Evaluation_        | [`new AsyncFunction`](https://github.com/alpinejs/alpine/blob/main/packages/alpinejs/src/evaluator.js#L81) | [`new Function`](https://github.com/vuejs/petite-vue/blob/main/src/eval.ts#L20) | [justin](https://github.com/dy/subscript)           |
 | _Reactivity_        | `Alpine.store`    | _@vue/reactivity_   | any signals |
 | _Sandboxing_        | No                | No                | Yes              |
