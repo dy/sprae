@@ -30,7 +30,7 @@
     "build": "npm run build-esm && npm run min",
     "build-esm": "esbuild --bundle ./src/index.js --outfile=./dist/sprae.js --format=esm",
     "watch": "esbuild --bundle ./src/index.js --outfile=./dist/sprae.js --format=esm --sourcemap --watch",
-    "min": "terser ./dist/sprae.js -o ./dist/sprae.min.js --module -c passes=3 -m && terser ./dist/sprae.auto.js -o ./dist/sprae.auto.min.js --module -c passes=3 -m"
+    "min": "terser ./dist/sprae.js -o ./dist/sprae.min.js --module -c passes=3 -m"
   },
   "repository": {
     "type": "git",
