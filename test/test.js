@@ -944,10 +944,12 @@ test(":: null result does nothing", async () => {
   is(a.outerHTML, `<x></x>`);
 });
 
-test("fx: result does nothing", async () => {
-  let el = h`<x :fx="123"></x>`;
-  let state = sprae(el, {});
+test(":: effects", async () => {
+  let el = h`<x :fx="log.push(1); log.push(2)"></x>`;
+  let log = []
+  let state = sprae(el, { log });
   is(el.outerHTML, `<x></x>`);
+  is(log, [1, 2])
 });
 
 test.todo("immediate scope", async () => {
@@ -992,7 +994,7 @@ test("sandbox", async () => {
 
 test("switch signals", async () => {
   const preact = await import('@preact/signals-core')
-  sprae.config({ signals: preact })
+  sprae.use(preact)
 
   let el = h`<div :text="x"/>`
   let state = sprae(el, { x: preact.signal(1) })

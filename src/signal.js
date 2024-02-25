@@ -1,15 +1,17 @@
 // Bare minimum signals impl
+// (sorry for being a smart ass)
 
-let current // current fx
+let current
 
 export const untracked = (fn, prev) => (prev = current, current = null, fn(), current = prev)
 
 export const batch = (fn) => fn()
 
-export const signal = v => {
-  let obs = new Set, s = {
+export const signal = (v, obs, s) => (
+  obs = new Set,
+  s = {
     get value() {
-      current?.add(s); // subscribe current effect to this signal
+      if (current) current.add(obs.add(current.f)) // subscribe current fx
       return v
     },
     set value(val) {
@@ -18,36 +20,26 @@ export const signal = v => {
     },
 
     peek() { return v },
+  },
+  s.toJSON = s.then = s.toString = s.valueOf = () => s.value,
+  s
+)
 
-    subscribe(fn) {
-      obs.add(fn);
-      if (!current) fn(v) // immediate invoke only if not in effect
-      return () => obs.delete(fn)
+export const effect = (fn, teardown, deps) => (
+  ((deps = new Set).f = (prev) => {
+    teardown?.call?.()
+    prev = current, current = deps
+    try { teardown = fn() } finally { current = prev }
+  })(),
+  () => { for (let obs of deps) obs.delete(deps.f) }
+)
+
+export const computed = (fn, s, e, init) => (
+  s = signal(), init = () => e = effect(() => s.value = fn()),
+  {
+    get value() {
+      if (!e) init()
+      return s.value
     }
   }
-  s.toJSON = s.then = s.toString = s.valueOf = () => s.value;
-  return s
-};
-
-export const effect = fn => {
-  let deps = new Set, teardown, prev,
-    run = () => {
-      if (teardown?.call) teardown()
-      prev = current, current = deps
-      teardown = fn()
-      for (let s of deps) s.subscribe(run)
-      current = prev
-    }
-
-  run()
-  return () => { for (let dep of deps) dep.delete(run) }
-}
-
-export const computed = (fn) => {
-  let s = signal()
-  return {
-    subscribe: s.subscribe,
-    dispose: effect(() => s.value = fn()),
-    get value() { return s.value }
-  }
-};
+);

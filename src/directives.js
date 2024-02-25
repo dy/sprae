@@ -7,8 +7,7 @@ import swapdom from "swapdom/swap-inflate.js";
 
 // reserved directives - order matters!
 // primary initialized first by selector, secondary initialized by iterating attributes
-export const primary = {},
-  secondary = {};
+export const primary = {}, secondary = {};
 
 // :if is interchangeable with :each depending on order, :if :each or :each :if have different meanings
 // as for :if :scope - :if must init first, since it is lazy, to avoid initializing component ahead of time by :scope

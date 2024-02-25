@@ -921,9 +921,30 @@
   + template is used as immediate/fragment in declarative shadow dom and custom elements proposals
   ? other uses might be: `:scoped` to run template in isolated (iframe) context
 
-## [ ] Should we convert input init state to signals?
+## [x] Should we convert input init state to signals? -> no, only internal scopes
 
 + unified output state API
 + makes sense of returning modified state
 - doesn't modify initial state
 - performance hit: not everything needs to be a signal, also slows down rendering
+
+## [x] Init signals: how? -> `sprae.use(signals)`
+
+1. `sprae.config({signals})`, `sprae.setup({signals})`
+  + universal
+  + allows other configs: async, compare, compiler etc.
+    - some choices can be made beforehead (async, compare, compiler)
+  + points at 1-time call
+  - not optimal in terms of size
+
+2. `sprae.signals(signals)`
+  + short
+  + likely we're not going to need to configure anything else
+  - duplicate name `signals(signals)`
+
+3. `sprae.set({signals})`, `sprae.use(signals)`
+  + mocha, express
+  + short
+  - doesn't work with other params like `sprae.use({async:true})`
+
+4. `sprae.signals = signals`

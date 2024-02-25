@@ -183,11 +183,10 @@ Expose element to current scope with `name`.
 
 #### `:fx="<effect>"`
 
-Run effect(s).
+Run side-effect not affecting prop.
 
 ```html
-<!-- multiple effects -->
-<div :fx="bar()" :fx="baz()"></div>
+<div :fx="foo(); bar()"></div>
 ```
 
 #### `:on<event>.<modifier>="handler"`, `:on<in>..on<out>="handler"`
@@ -252,15 +251,16 @@ _Sprae_ uses signals for reactivity. Signals provider can be configured as:
 import * as signals from '@preact/signals-core';
 import sprae, { signal, computed, effect, batch } from 'sprae';
 
-sprae.config({ signals: preact })
+sprae.use(preact)
 
 sprae(el, { name: signal('Krishna') })
 ```
 
 ##### Signal providers:
 
-* [`@preact/signals-core`](https://ghub.io/@preact/signals-core) – +2Kb, best performance, good for complex states (10+ deps).
-* [`@webreflection/signal`](https://ghib.io/@webreflection/signal) – +1Kb, good performance/size, good for average states (<10 deps).
+* [`sprae/signal`](./src/signal.js) (default) – 0Kb, basic performance, good for simple states (<10 deps).
+* [`@webreflection/signal`](https://ghib.io/@webreflection/signal) – +1Kb, good performance, good for average states (<20 deps).
+* [`@preact/signals-core`](https://ghub.io/@preact/signals-core) – +4Kb, best performance, good for complex states.
 
 <!-- ## Dispose
 

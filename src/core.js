@@ -9,8 +9,8 @@ const memo = new WeakMap();
 export default function sprae(container, values) {
   if (!container.children) return; // ignore what?
 
-  // if (memo.has(container))
-  //   return batch(() => Object.assign(memo.get(container), values));
+  if (memo.has(container))
+    return batch(() => Object.assign(memo.get(container), values));
 
   // take over existing state instead of creating clone
   const state = values || {};
@@ -80,15 +80,13 @@ export default function sprae(container, values) {
   return state;
 }
 
-// configure sprae behavior: signals, compiler, async, compare etc
-sprae.config = ({ signals }) => {
-  if (signals) {
-    signal = signals.signal,
-      effect = signals.effect,
-      computed = signals.computed,
-      batch = signals.batch,
-      untracked = signals.untracked
-  }
-}
+// configure sprae signals
+sprae.use = (s) => (
+  signal = s.signal,
+  effect = s.effect,
+  computed = s.computed,
+  batch = s.batch,
+  untracked = s.untracked
+)
 
 export let { signal, effect, computed, batch, untracked } = signals
