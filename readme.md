@@ -14,20 +14,16 @@ Perfect for small-scale websites, prototypes, or UI.<br/>
 </div>
 
 <script type="module">
-  // import sprae from 'https://cdn.jsdelivr.net/npm/sprae/dist/sprae.js';
-  import sprae, { signal } from './path/to/sprae.js';
+  import sprae, { signal } from './path/to/sprae.js'; // '//unpkg.com/sprae'
 
-  // init
-  const state = { user: { name: signal('Rama') } }
-  sprae(container, state);
+  const name = signal('Rama')
+  sprae(container, { user: { name } }); // init
 
-  // update
-  state.user.name.value = 'Krishna';
+  name.value = 'Krishna'; // update
 </script>
 ```
 
-Sprae evaluates `:`-directives and evaporates them.
-
+Sprae evaluates `:`-directives and evaporates them, attaching signals to html.
 
 ## Directives
 
@@ -67,8 +63,11 @@ Multiply element.
   <dt :text="item.term"/>
   <dd :text="item.definition"/>
 </template>
+```
 
-<!-- to prevent FOUC, add to head -->
+**Prevent FOUC**: add this to `<head>`:
+
+```html
 <style>[:each] {visibility: hidden}</style>
 ```
 
@@ -286,14 +285,6 @@ Also see [nadi](https://github.com/dy/nadi) - collection of various DOM/etc inte
 -->
 
 
-## Examples
-
-* TODO MVC: [demo](https://dy.github.io/sprae/examples/todomvc), [code](https://github.com/dy/sprae/blob/main/examples/todomvc.html)
-* JS Framework Benchmark: [demo](https://dy.github.io/sprae/examples/js-framework-benchmark), [code](https://github.com/dy/sprae/blob/main/examples/js-framework-benchmark.html)
-* Wavearea: [demo](https://dy.github.io/wavearea?src=//cdn.freesound.org/previews/586/586281_2332564-lq.mp3), [code](https://github.com/dy/wavearea)
-* Prostogreen [demo](http://web-being.org/prostogreen/), [code](https://github.com/web-being/prostogreen/)
-
-
 ## Justification
 
 [Template-parts](https://github.com/dy/template-parts) / [templize](https://github.com/dy/templize) is progressive, but is stuck with native HTML quirks ([parsing table](https://github.com/github/template-parts/issues/24), [SVG attributes](https://github.com/github/template-parts/issues/25), [liquid syntax](https://shopify.github.io/liquid/tags/template/#raw) conflict etc). [Alpine](https://github.com/alpinejs/alpine) / [petite-vue](https://github.com/vuejs/petite-vue) / [lucia](https://github.com/aidenyabi/lucia) escape native HTML quirks, but the API is excessive and [self-encapsulated](https://github.com/alpinejs/alpine/discussions/3223).
@@ -310,13 +301,13 @@ _Sprae_ mixes _templize_ / _alpine_ / _vue_ directives with _signals_ reactivity
 | _CSP_               | No                | No                | Yes              |
 | _SSR_ | No | No | No |
 | _Evaluation_        | [`new AsyncFunction`](https://github.com/alpinejs/alpine/blob/main/packages/alpinejs/src/evaluator.js#L81) | [`new Function`](https://github.com/vuejs/petite-vue/blob/main/src/eval.ts#L20) | [justin](https://github.com/dy/subscript)           |
-| _Reactivity_        | `Alpine.store`    | _@vue/reactivity_   | any signals |
+| _Reactivity_        | `Alpine.store`    | _@vue/reactivity_   | _signals_ |
 | _Sandboxing_        | No                | No                | Yes              |
-| _Magic_               | Yes | Yes   | No |
+| _Directives_ | `:`, `x-`, `{}` | `:`, `v-`, `@`, `{}` | `:` |
+| _Magic_               | `$data` | `$app`   | - |
+| _Fragments_ | Yes | No | Yes |
 | _Plugins_ | Yes | No | Yes |
 | _Modifiers_ | Yes | No | Yes |
-| _Directives_ | `:`, `x-`, `{}` | `:`, `v-`, `@`, `{}` | `:` |
-| _Fragments_ | Yes | No | Yes |
 
 
 <details>
@@ -370,6 +361,14 @@ npm run results
 * [Petite-vue](https://github.com/vuejs/petite-vue)
 * [nuejs](https://github.com/nuejs/nuejs)
  -->
+
+## Examples
+
+* TODO MVC: [demo](https://dy.github.io/sprae/examples/todomvc), [code](https://github.com/dy/sprae/blob/main/examples/todomvc.html)
+* JS Framework Benchmark: [demo](https://dy.github.io/sprae/examples/js-framework-benchmark), [code](https://github.com/dy/sprae/blob/main/examples/js-framework-benchmark.html)
+* Wavearea: [demo](https://dy.github.io/wavearea?src=//cdn.freesound.org/previews/586/586281_2332564-lq.mp3), [code](https://github.com/dy/wavearea)
+* Prostogreen [demo](http://web-being.org/prostogreen/), [code](https://github.com/web-being/prostogreen/)
+
 
 ## Migration to v9
 
