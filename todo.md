@@ -81,7 +81,7 @@
 * [~] add :html directive as replacement for :render, with tests
 * [x] rename :with to :scope
 * [x] :fx=fx
-* [ ] make signals tests (nested effects)
+* [x] make signals tests (nested effects)
 * [ ] each that keeps elements
 * [ ] template test (:text, :html, :if, :each)
 * [ ] try direct directives without primary/secondary
