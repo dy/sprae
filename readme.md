@@ -249,19 +249,18 @@ That enables CSP.
 _Sprae_ uses signals for reactivity. Signals provider can be configured as:
 
 ```js
-import * as preact from '@preact/signals-core';
+import * as signals from '@preact/signals-core';
 import sprae, { signal, computed, effect, batch } from 'sprae';
 
-Object.assign(sprae, preact);
+sprae.config({ signals: preact })
 
 sprae(el, { name: signal('Krishna') })
 ```
 
 ##### Signal providers:
 
-* `@preact/signals` – +2Kb, best performance, good for complex states (10+ deps).
-* `@webreflection/signal` – +1Kb, good performance/size, good for average states (<10 deps).
-* `ulive` (default) - smallest size, ok for simple purposes (direct deps).
+* [`@preact/signals-core`](https://ghub.io/@preact/signals-core) – +2Kb, best performance, good for complex states (10+ deps).
+* [`@webreflection/signal`](https://ghib.io/@webreflection/signal) – +1Kb, good performance/size, good for average states (<10 deps).
 
 <!-- ## Dispose
 

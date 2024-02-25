@@ -1,6 +1,6 @@
 // directives & parsing
 import sprae, { _dispose } from "./core.js";
-import { signal, effect, computed, untracked } from "./signal.js";
+import { signal, effect, computed, untracked } from "./core.js";
 import justin from "./compile.js";
 import swapdom from "swapdom/swap-inflate.js";
 

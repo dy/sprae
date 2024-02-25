@@ -1,5 +1,5 @@
 import justin, { compile, operator, prop, parse } from "subscript/justin.js";
-import { signal } from "./signal.js";
+import { signal } from "./core.js";
 
 // define context id getter to handle signals
 compile.id = (id) => (ctx) => ctx[id]?.valueOf();
@@ -38,6 +38,14 @@ operator(
 operator(
   "%=",
   assign.bind(0, (obj, path, value) => (obj[path] %= value)),
+);
+operator(
+  "||=",
+  assign.bind(0, (obj, path, value) => (obj[path] ||= value)),
+);
+operator(
+  "??=",
+  assign.bind(0, (obj, path, value) => (obj[path] ??= value)),
 );
 
 export { parse, compile };

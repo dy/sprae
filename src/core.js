@@ -1,9 +1,11 @@
 import defaultDirective, { primary, secondary } from "./directives.js";
+import * as signals from './signal.js'
 
 export const _dispose = (Symbol.dispose ||= Symbol("dispose"));
 
 // sprae element: apply directives
 const memo = new WeakMap();
+
 export default function sprae(container, values) {
   if (!container.children) return; // ignore what?
 
@@ -77,3 +79,16 @@ export default function sprae(container, values) {
 
   return state;
 }
+
+// configure sprae behavior: signals, compiler, async, compare etc
+sprae.config = ({ signals }) => {
+  if (signals) {
+    signal = signals.signal,
+      effect = signals.effect,
+      computed = signals.computed,
+      batch = signals.batch,
+      untracked = signals.untracked
+  }
+}
+
+export let { signal, effect, computed, batch, untracked } = signals

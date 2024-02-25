@@ -1,7 +1,7 @@
 // import { signal } from 'usignal/sync'
 import test, { is, any, throws } from "tst";
 import { tick, time } from "wait-please";
-import sprae, { signal, effect, untracked, batch, computed } from "../src/index.js";
+import sprae, { signal, effect, untracked, batch, computed } from "../src/core.js";
 import h from "hyperf";
 
 Object.defineProperty(DocumentFragment.prototype, "outerHTML", {
@@ -989,6 +989,17 @@ test("sandbox", async () => {
   sprae(el.cloneNode(), state);
   is(s.log, [window, console, undefined, undefined]);
 });
+
+test("switch signals", async () => {
+  const preact = await import('@preact/signals-core')
+  sprae.config({ signals: preact })
+
+  let el = h`<div :text="x"/>`
+  let state = sprae(el, { x: preact.signal(1) })
+  is(el.innerHTML, '1')
+  state.x.value = 2
+  is(el.innerHTML, '2')
+})
 
 test.todo("subscribe to array length", async () => {
   // FIXME: do via nadi/list

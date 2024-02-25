@@ -74,7 +74,7 @@
 * [x] subscript-based eval
   * [x] make `a in b` via subscript
 * [x] no store
-* [ ] switching hooks
+* [x] switching signals
 * [x] get rid of `@` events
 * [ ] plugins: extensible directives
 * [ ] compile expressions outside of directives
@@ -84,9 +84,9 @@
 * [x] :fx=fx
 * [ ] try direct directives without primary/secondary
 * [ ] fix all examples
-* [ ] use usignal
+* [ ] use ulive
 * [ ] treeshake, minimize bundle
 * [ ] all FIXMEs
 * [ ] move proxy state into own project / part of signal struct (with tests from here)
-* [ ] should we convert initial store to signals?
 * [ ] optimize each so that updating keeps elements
+* [ ] interpolatable strings
