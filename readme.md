@@ -239,8 +239,8 @@ in
 true false null undefined NaN
 ```
 
-Expressions are sandboxed and have no access to globals (like _console_, _setTimeout_, _window_ etc.).<br/>
-That enables CSP (⚠️ _setTimeout_ may act as eval).
+Expressions are sandboxed and have no access to globals (like _console_, _setTimeout_, _window_ etc.)<br/>
+That enables CSP.
 
 
 ## Reactivity
@@ -374,12 +374,12 @@ npm run results
 
 * Pass necessary globals manually to state (`console`, `setTimeout` etc).
 * Templates use _justin_ syntax (no keywords JS).
-* Tagged literals -> `:class="'abc $<def>'"`
-* `:with={x:foo}` -> `:scope={x:foo}`
-* `:render="tpl"` -> `:html="tpl"`
-* No autoinit -> use manual init.
-* No reactive store -> use signals for reactive values.
-* `@click="event.target"` -> `:onclick="event => event.target"`
+* <code>:class="`abc ${def}`"</code> → `:class="'abc $<def>'"`
+* `:with={x:foo}` → `:scope={x:foo}`
+* `:render="tpl"` → `:html="tpl"`
+* No autoinit → use manual init.
+* No reactive store → use signals for reactive values.
+* `@click="event.target"` → `:onclick="event => event.target"`
 * Async props / events are prohibited, pass async functions via state.
 
 <p align="center"><a href="https://github.com/krsnzd/license/">🕉</a></p>
