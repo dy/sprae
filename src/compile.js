@@ -1,5 +1,5 @@
 import justin, { compile, operator, prop, parse } from "subscript/justin.js";
-import { signal } from "./core.js";
+import { signal } from "./signal.js";
 
 // define context id getter to handle signals
 compile.id = (id) => (ctx) => ctx[id]?.valueOf();

@@ -1,7 +1,7 @@
 // directives & parsing
 import sprae, { _dispose } from "./core.js";
 import { signal, effect, computed, untracked } from "./signal.js";
-import compileJustin from "./compile.js";
+import justin from "./compile.js";
 import swapdom from "swapdom/swap-inflate.js";
 
 
@@ -98,13 +98,11 @@ primary["scope"] = (el, expr, rootState) => {
 const toSignal = (state) => {
   for (let key in state) {
     let v = state[key];
-    if (v?.peek || typeof v === "function");
-    else if (isPlainObject(v)) toSignal(v);
+    if (Object(v) === v) 'value' in v ? toSignal(v) : null;
     else state[key] = signal(v);
   }
   return state;
 };
-const isPlainObject = (value) => !!value && typeof value === "object" && value.constructor === Object;
 
 // ref must be last within primaries, since that must be skipped by :each, but before secondaries
 primary["ref"] = (el, expr, state) => {
@@ -115,7 +113,7 @@ secondary["html"] = (el, expr, state) => {
   let evaluate = parseExpr(el, expr, ":html"),
     tpl = evaluate(state);
 
-  if (!tpl) exprError(new Error("Template not found"), el, expr, ":html");
+  if (!tpl) err(new Error("Template not found"), el, expr, ":html");
 
   let content = tpl.content.cloneNode(true);
   el.replaceChildren(content);
@@ -195,27 +193,26 @@ secondary["value"] = (el, expr, state) => {
   let evaluate = parseExpr(el, expr, ":value");
 
   let from, to;
-  let update =
-    el.type === "text" || el.type === ""
-      ? (value) => el.setAttribute("value", (el.value = value == null ? "" : value))
-      : el.tagName === "TEXTAREA" || el.type === "text" || el.type === ""
-        ? (value) =>
-        (
-          // we retain selection in input
-          (from = el.selectionStart),
-          (to = el.selectionEnd),
-          el.setAttribute("value", (el.value = value == null ? "" : value)),
-          from && el.setSelectionRange(from, to)
-        )
-        : el.type === "checkbox"
-          ? (value) => ((el.value = value ? "on" : ""), attr(el, "checked", value))
-          : el.type === "select-one"
-            ? (value) => {
-              for (let option in el.options) option.removeAttribute("selected");
-              el.value = value;
-              el.selectedOptions[0]?.setAttribute("selected", "");
-            }
-            : (value) => (el.value = value);
+  let update = el.type === "text" || el.type === ""
+    ? (value) => el.setAttribute("value", (el.value = value == null ? "" : value))
+    : el.tagName === "TEXTAREA" || el.type === "text" || el.type === ""
+      ? (value) =>
+      (
+        // we retain selection in input
+        (from = el.selectionStart),
+        (to = el.selectionEnd),
+        el.setAttribute("value", (el.value = value == null ? "" : value)),
+        from && el.setSelectionRange(from, to)
+      )
+      : el.type === "checkbox"
+        ? (value) => ((el.value = value ? "on" : ""), attr(el, "checked", value))
+        : el.type === "select-one"
+          ? (value) => {
+            for (let option in el.options) option.removeAttribute("selected");
+            el.value = value;
+            el.selectedOptions[0]?.setAttribute("selected", "");
+          }
+          : (value) => (el.value = value);
 
   return effect(() => {
     update(evaluate(state));
@@ -239,11 +236,7 @@ export default (el, expr, state, name) => {
     return () => (off?.(), dispose());
   }
 
-  // FIXME: generalize
-  state = Object.create(state, { this: { value: el } });
-
   return effect(() => {
-    // console.log(evaluate(state))
     attr(el, name, evaluate(state));
   });
 };
@@ -253,7 +246,7 @@ const on = (el, e, fn = () => { }) => {
   const ctx = { evt: "", target: el, test: () => true };
 
   // onevt.debounce-108 -> evt.debounce-108
-  ctx.evt = (e.startsWith("on") ? e.slice(2) : e).replace(
+  ctx.evt = e.replace(
     /\.(\w+)?-?([-\w]+)?/g,
     (match, mod, param = "") => ((ctx.test = mods[mod]?.(ctx, ...param.split("-")) || ctx.test), ""),
   );
@@ -335,16 +328,16 @@ const mods = {
     (ctx, ...param) =>
       (e) =>
         keys.meta(e) && param.every((p) => (keys[p] ? keys[p](e) : e.key === p)),
-  arrow: (ctx) => keys.arrow,
-  enter: (ctx) => keys.enter,
-  escape: (ctx) => keys.escape,
-  tab: (ctx) => keys.tab,
-  space: (ctx) => keys.space,
-  backspace: (ctx) => keys.backspace,
-  delete: (ctx) => keys.delete,
-  digit: (ctx) => keys.digit,
-  letter: (ctx) => keys.letter,
-  character: (ctx) => keys.character,
+  arrow: () => keys.arrow,
+  enter: () => keys.enter,
+  escape: () => keys.escape,
+  tab: () => keys.tab,
+  space: () => keys.space,
+  backspace: () => keys.backspace,
+  delete: () => keys.delete,
+  digit: () => keys.digit,
+  letter: () => keys.letter,
+  character: () => keys.character,
 };
 
 // key testers
@@ -407,9 +400,9 @@ function parseExpr(el, expression, dir) {
 
   if (!evaluate) {
     try {
-      evaluate = evaluatorMemo[expression] = compileJustin(expression);
+      evaluate = evaluatorMemo[expression] = justin(expression);
     } catch (e) {
-      return exprError(e, el, expression, dir);
+      return err(e, el, expression, dir);
     }
   }
 
@@ -417,15 +410,15 @@ function parseExpr(el, expression, dir) {
   return (state) => {
     let result;
     try {
-      result = evaluate.call(el, state);
+      result = evaluate(state);
     } catch (e) {
-      return exprError(e, el, expression, dir);
+      return err(e, el, expression, dir);
     }
     return result;
   };
 }
 
-function exprError(error, element, expression, directive) {
+function err(error, element, expression, directive) {
   Object.assign(error, { element, expression });
   console.warn(`∴ ${error.message}\n\n${directive}=${expression ? `"${expression}"\n\n` : ""}`, element);
   throw error;

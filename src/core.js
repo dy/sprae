@@ -1,7 +1,5 @@
 import defaultDirective, { primary, secondary } from "./directives.js";
 
-export * from './signal.js'
-
 export const _dispose = (Symbol.dispose ||= Symbol("dispose"));
 
 // sprae element: apply directives
