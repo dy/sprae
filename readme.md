@@ -374,7 +374,7 @@ npm run results
 
 * Pass necessary globals manually to state (`console`, `setTimeout` etc).
 * Templates use _justin_ syntax (no keywords JS).
-* <code>:class="`abc ${def}`"</code> → `:class="'abc $<def>'"`
+* ``class="`abc ${def}`"`` → `:class="'abc $<def>'"`
 * `:with={x:foo}` → `:scope={x:foo}`
 * `:render="tpl"` → `:html="tpl"`
 * No autoinit → use manual init.
