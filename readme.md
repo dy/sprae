@@ -240,7 +240,8 @@ in
 true false null undefined NaN
 ```
 
-Expressions are sandboxed and have no access to globals (like _console_, _setTimeout_, _window_ etc.), which enables CSP.<br/>
+Expressions are sandboxed and have no access to globals (like _console_, _setTimeout_, _window_ etc.).<br/>
+That enables CSP.
 
 
 ## Reactivity
