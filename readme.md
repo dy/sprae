@@ -189,7 +189,7 @@ Attach event(s) listener with possible modifiers.
 
 ## Extra Directives
 
-Not shipped by default, can be plugged in as:
+The following directives aren't shipped by default, can be plugged in as:
 
 ```js
 import sprae from 'sprae'
@@ -257,8 +257,8 @@ Also see [nadi](https://github.com/dy/nadi) - collection of various DOM/etc inte
 
 ## Reactivity
 
-_Sprae_ uses [signals](https://preactjs.com/guide/v10/signals/) for reactivity.
-By default it ships [minimorum signals](./src/signal.js), but it can be reconfigured to another lib:
+_Sprae_ uses signals for reactivity.
+By default it ships [minimorum signals](./src/signal.js), but it can be reconfigured to any other signals lib:
 
 ```js
 import sprae, { signal, computed, effect, batch } from 'sprae';
@@ -269,7 +269,7 @@ sprae.use(preact)
 sprae(el, { name: signal('Kitty') })
 ```
 
-##### Signals providers:
+###### Signals providers:
 
 * [`sprae/signal`](./src/signal.js) (default) – 0Kb, basic performance, good for simple states (<10 deps).
 * [`@webreflection/signal`](https://ghib.io/@webreflection/signal) – +1Kb, good performance, good for average states (10-20 deps).
