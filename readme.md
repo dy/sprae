@@ -2,8 +2,8 @@
 
 > DOM tree microhydration
 
-_Sprae_ is a modern, compact, and ergonomic progressive enhancement framework, based on signals.<br/>
-It provides `:`-attributes for markup logic without complex scripts.<br/>
+_Sprae_ is a modern, compact, and ergonomic progressive enhancement framework.<br/>
+It provides `:`-attributes for markup logic based on signals.<br/>
 Perfect for small-scale websites, prototypes, or lightweight UI.<br/>
 
 ## Usage
@@ -23,8 +23,8 @@ Perfect for small-scale websites, prototypes, or lightweight UI.<br/>
 </script>
 ```
 
-Add [_directives_](#directives) with [_expressions_](#expressions) to your markup, provide state with [_signals_](#reactivity) and run _sprae_.<br/>
-Sprae evaluates `:`-directives and evaporates them, attaching state to html.
+Add [_directives_](#directives) with [_expressions_](#expressions) to your markup, provide state with [_signals_](#reactivity) or values and run _sprae_.<br/>
+Sprae evaluates `:`-attributes as directives and evaporates them, attaching state to html.
 
 ## Directives
 
