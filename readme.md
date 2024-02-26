@@ -96,17 +96,6 @@ Set value of an input, textarea or select. Takes handle of `checked` and `select
 </select>
 ```
 
-#### `:<prop>="value"`
-
-Set any other attribute.
-
-```html
-<label :for="name" :text="name" />
-
-<!-- multiple attributes -->
-<input :id:name="name" />
-```
-
 #### `:scope="data"`
 
 Define or extend data scope for a subtree.
@@ -150,6 +139,17 @@ Attach event(s) listener with possible modifiers.
 <button :onclick.throttle-500="handler">Not too often</button>
 ```
 
+#### `:<prop>="value"`
+
+Set any other attribute.
+
+```html
+<label :for="name" :text="name" />
+
+<!-- multiple attributes -->
+<input :id:name="name" />
+```
+
 ##### Modifiers
 
 * `.once`, `.passive`, `.capture` – listener [options](https://developer.mozilla.org/en-US/docs/Web/API/EventTarget/addEventListener#options).
@@ -161,17 +161,16 @@ Attach event(s) listener with possible modifiers.
 * `.*` – any other modifier has no effect, but allows binding multiple handlers to same event (like jQuery event classes).
 
 
-## Addon directives
+## Additional Directives
 
-Additional directives can be plugged in as:
+The following directives are not shipped out of box and can be plugged in:
 
 ```js
 import sprae from 'sprae'
-import 'sprae/directive/each'
 import 'sprae/directive/*'
 ```
 
-#### `:each="item, index in items"`
+#### `:each="item, index in items"` from `'sprae/directive/each.js'`
 
 Multiply element.
 
@@ -197,7 +196,7 @@ Multiply element.
 <style>[:each] {visibility: hidden}</style>
 ```
 
-#### `:html="element"`
+#### `:html="element"` from `'sprae/directive/html.js'`
 
 Set html content of an element or instantiate template.
 
@@ -212,9 +211,7 @@ Hello, <template :html="user.name">Guest</template>.
 <div :html="tpl" :scope="{foo:'bar'}">...inserted here...</div>
 ```
 
-#### `:prop="props"`
-
-> `import 'sprae/directive/data'`
+#### `:prop="props"` from `'sprae/directive/prop.js'`
 
 Set multiple attributes (spread).
 
@@ -222,9 +219,7 @@ Set multiple attributes (spread).
 <input :prop="{ id: name, name, type: 'text', value }" />
 ```
 
-#### `:data="values"`
-
-> `import 'sprae/directive/data'`
+#### `:data="values"` from `'sprae/directive/data.js'`
 
 Set `data-*` attributes. CamelCase is converted to dash-case.
 
@@ -232,9 +227,7 @@ Set `data-*` attributes. CamelCase is converted to dash-case.
 <input :data="{foo: 1, barBaz: true}" />
 ```
 
-#### `:aria="values"`
-
-> `import 'sprae/directive/aria'`
+#### `:aria="values"` from `'sprae/directive/aria.js'`
 
 Set `aria-*` attributes. Boolean values are stringified.
 
