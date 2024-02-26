@@ -139,6 +139,16 @@ Attach event(s) listener with possible modifiers.
 <button :onclick.throttle-500="handler">Not too often</button>
 ```
 
+##### Modifiers
+
+* `.once`, `.passive`, `.capture` – listener [options](https://developer.mozilla.org/en-US/docs/Web/API/EventTarget/addEventListener#options).
+* `.prevent`, `.stop` – prevent default or stop propagation.
+* `.window`, `.document`, `.outside`, `.self` – specify event target.
+* `.throttle-<ms>`, `.debounce-<ms>` – defer function call with one of the methods.
+* `.ctrl`, `.shift`, `.alt`, `.meta`, `.arrow`, `.enter`, `.escape`, `.tab`, `.space`, `.backspace`, `.delete`, `.digit`, `.letter`, `.character` – filter by [`event.key`](https://developer.mozilla.org/en-US/docs/Web/API/UI_Events/Keyboard_event_key_values).
+* `.ctrl-<key>, .alt-<key>, .meta-<key>, .shift-<key>` – key combinations, eg. `.ctrl-alt-delete` or `.meta-x`.
+* `.*` – any other modifier has no effect, but allows binding multiple handlers to same event (like jQuery event classes).
+
 #### `:<prop>="value"`
 
 Set any other attribute.
@@ -150,17 +160,6 @@ Set any other attribute.
 <input :id:name="name" />
 ```
 
-##### Modifiers
-
-* `.once`, `.passive`, `.capture` – listener [options](https://developer.mozilla.org/en-US/docs/Web/API/EventTarget/addEventListener#options).
-* `.prevent`, `.stop` – prevent default or stop propagation.
-* `.window`, `.document`, `.outside`, `.self` – specify event target.
-* `.throttle-<ms>`, `.debounce-<ms>` – defer function call with one of the methods.
-* `.ctrl`, `.shift`, `.alt`, `.meta`, `.arrow`, `.enter`, `.escape`, `.tab`, `.space`, `.backspace`, `.delete`, `.digit`, `.letter`, `.character` – filter by [`event.key`](https://developer.mozilla.org/en-US/docs/Web/API/UI_Events/Keyboard_event_key_values).
-* `.ctrl-<key>, .alt-<key>, .meta-<key>, .shift-<key>` – key combinations, eg. `.ctrl-alt-delete` or `.meta-x`.
-* `.*` – any other modifier has no effect, but allows binding multiple handlers to same event (like jQuery event classes).
-
-
 ## Additional Directives
 
 The following directives are not shipped out of box and can be plugged in:
@@ -170,7 +169,7 @@ import sprae from 'sprae'
 import 'sprae/directive/*'
 ```
 
-#### `:each="item, index in items"` from `'sprae/directive/each.js'`
+#### `:each="item, index in items"`
 
 Multiply element.
 
@@ -196,7 +195,7 @@ Multiply element.
 <style>[:each] {visibility: hidden}</style>
 ```
 
-#### `:html="element"` from `'sprae/directive/html.js'`
+#### `:html="element"`
 
 Set html content of an element or instantiate template.
 
@@ -211,7 +210,7 @@ Hello, <template :html="user.name">Guest</template>.
 <div :html="tpl" :scope="{foo:'bar'}">...inserted here...</div>
 ```
 
-#### `:prop="props"` from `'sprae/directive/prop.js'`
+#### `:prop="props"`
 
 Set multiple attributes (spread).
 
@@ -219,7 +218,7 @@ Set multiple attributes (spread).
 <input :prop="{ id: name, name, type: 'text', value }" />
 ```
 
-#### `:data="values"` from `'sprae/directive/data.js'`
+#### `:data="values"`
 
 Set `data-*` attributes. CamelCase is converted to dash-case.
 
@@ -227,7 +226,7 @@ Set `data-*` attributes. CamelCase is converted to dash-case.
 <input :data="{foo: 1, barBaz: true}" />
 ```
 
-#### `:aria="values"` from `'sprae/directive/aria.js'`
+#### `:aria="values"`
 
 Set `aria-*` attributes. Boolean values are stringified.
 
