@@ -2,8 +2,8 @@
 
 > DOM tree microhydration
 
-_Sprae_ is a modern, compact, and ergonomic progressive enhancement framework.<br/>
-It provides `:`-attributes for markup logic based on signals.<br/>
+_Sprae_ is a modern, compact, and ergonomic progressive enhancement framework based on signals.<br/>
+It provides `:`-attributes for inline markup logic.<br/>
 Perfect for small-scale websites, prototypes, or lightweight UI.<br/>
 
 ## Usage
@@ -23,7 +23,6 @@ Perfect for small-scale websites, prototypes, or lightweight UI.<br/>
 </script>
 ```
 
-Add [_directives_](#directives) with [_expressions_](#expressions) to your markup, provide state with [_signals_](#reactivity) or values and run _sprae_.<br/>
 Sprae evaluates `:`-attributes as directives and evaporates them, attaching state to html.
 
 ## Directives
@@ -149,7 +148,7 @@ Set any other attribute.
 
 #### `:="props"`
 
-Set (spread) multiple attributes.
+Run effect or assign multiple attributes
 
 ```html
 <input :="{ id: name, name, type: 'text', value }" />
@@ -157,7 +156,7 @@ Set (spread) multiple attributes.
 
 #### `:scope="data"`
 
-Define or extend data scope for a subtree. Extended values are reactive.
+Define or extend data scope for a subtree.
 
 ```html
 <x :scope="{ foo: 'bar' }">
@@ -165,6 +164,8 @@ Define or extend data scope for a subtree. Extended values are reactive.
   <y :scope="{ baz: 'qux' }" :text="foo + baz"></y>
 </x>
 ```
+
+You may need to pass `signal` to make reactive values.
 
 #### `:ref="name"`
 
@@ -177,14 +178,6 @@ Expose element to current scope with `name`.
 <li :each="item in items" :ref="item">
   <input :onfocus..onblur=="e => (item.classList.add('editing'), e => item.classList.remove('editing'))"/>
 </li>
-```
-
-#### `:fx="effect"`
-
-Run side-effect not affecting prop.
-
-```html
-<div :fx="foo(); bar()"></div>
 ```
 
 #### `:on<event>.<modifier>="handler"`, `:on<in>..on<out>="handler"`
@@ -214,11 +207,10 @@ Attach event(s) listener with possible modifiers.
 * `.ctrl-<key>, .alt-<key>, .meta-<key>, .shift-<key>` – key combinations, eg. `.ctrl-alt-delete` or `.meta-x`.
 * `.*` – any other modifier has no effect, but allows binding multiple handlers to same event (like jQuery event classes).
 
-### Addons
-
-Extra directives are pluggable as follows: `import 'sprae/directive/*'`.
 
 #### `:data="values"`
+
+> `import 'sprae/directive/data'`
 
 Set `data-*` attributes. CamelCase is converted to dash-case.
 
@@ -227,6 +219,8 @@ Set `data-*` attributes. CamelCase is converted to dash-case.
 ```
 
 #### `:aria="values"`
+
+> `import 'sprae/directive/aria'`
 
 Set `aria-*` attributes. Boolean values are stringified.
 
@@ -239,6 +233,7 @@ Set `aria-*` attributes. Boolean values are stringified.
   activedescendant: ''
 }" />
 ```
+
 
 <!--
 _Sprae_ directives can be extended as `sprae.directive.name = (el, expr, state) => {}`.
@@ -253,58 +248,54 @@ Also see [nadi](https://github.com/dy/nadi) - collection of various DOM/etc inte
 * @sprae/mount - `:onmount..onunmount="e => e => {}"`
 -->
 
-## Expressions
 
-_Sprae_ provides 2 ways to
+## Signals
 
-uses [minimal subset of JS](https://github.com/dy/subscript?tab=readme-ov-file#justin) for expressions syntax:
-
-##### Operators:
-
-```
-++ -- ! - + ** * / %  && || ??
-= < <= > >= == != === !==
-<< >> & ^ | ~ ?: . ?. []
-() => {}
-in
-```
-
-##### Primitives:
-
-```
-[] {} "" ''
-1 2.34 -5e6 0x7a
-true false null undefined NaN
-```
-
-Expressions are sandboxed and have no access to globals (like _console_, _setTimeout_, _window_ etc.)<br/>
-That enables CSP.
-
-
-## Reactivity
-
-_Sprae_ uses signals for reactivity. Signals provider can be configured as:
+_Sprae_ allows switching signals provider to better meet project scale/stack:
 
 ```js
-import * as signals from '@preact/signals-core';
 import sprae, { signal, computed, effect, batch } from 'sprae';
+import * as signals from '@preact/signals-core';
 
 sprae.use(preact)
 
-sprae(el, { name: signal('Krishna') })
+sprae(el, { name: signal('Kitty') })
 ```
 
-##### Signal providers:
+##### Providers:
 
 * [`sprae/signal`](./src/signal.js) (default) – 0Kb, basic performance, good for simple states (<10 deps).
 * [`@webreflection/signal`](https://ghib.io/@webreflection/signal) – +1Kb, good performance, good for average states (<20 deps).
 * [`@preact/signals-core`](https://ghub.io/@preact/signals-core) – +4Kb, best performance, good for complex states.
 
+
+### CSP
+
+_Sprae_ evaluates expressions via `new Function`, which is simple, compact and performant way.<br/>
+It gives full JS syntax support. But it violates "unsafe-eval" policy and allows unrestricted access to globals (no sandboxing).
+
+In order to accomodate "unsafe-eval" policy, `sprae/csp` build provides safe eval & sandbox at price of more restrictive syntax and +2kb to bundle size.
+
+`sprae/csp` uses _Justin_, a [minimal subset of JS](https://github.com/dy/subscript?tab=readme-ov-file#justin) for expressions:
+
+```
+// operators
+++ -- ! - + ** * / %  && || ??
+= < <= > >= == != === !==
+<< >> & ^ | ~ ?: . ?. []
+() => {}
+in
+
+// primitives
+[] {} "" ''
+1 2.34 -5e6 0x7a
+true false null undefined NaN
+```
+
+
 <!-- ## Dispose
 
 To destroy state and detach sprae handlers, call `element[Symbol.dispose]()`. -->
-
-
 
 
 ## Justification
@@ -312,8 +303,6 @@ To destroy state and detach sprae handlers, call `element[Symbol.dispose]()`. --
 [Template-parts](https://github.com/dy/template-parts) / [templize](https://github.com/dy/templize) is progressive, but is stuck with native HTML quirks ([parsing table](https://github.com/github/template-parts/issues/24), [SVG attributes](https://github.com/github/template-parts/issues/25), [liquid syntax](https://shopify.github.io/liquid/tags/template/#raw) conflict etc). [Alpine](https://github.com/alpinejs/alpine) / [petite-vue](https://github.com/vuejs/petite-vue) / [lucia](https://github.com/aidenyabi/lucia) escape native HTML quirks, but the API is excessive and [self-encapsulated](https://github.com/alpinejs/alpine/discussions/3223).
 
 _Sprae_ mixes _templize_ / _alpine_ / _vue_ directives with _signals_ reactivity & _no-keywords_ evaluation.
-
-#### Features
 
 |                       | [AlpineJS](https://github.com/alpinejs/alpine)          | [Petite-Vue](https://github.com/vuejs/petite-vue)        | Sprae            |
 |-----------------------|-------------------|-------------------|------------------|
@@ -331,7 +320,7 @@ _Sprae_ mixes _templize_ / _alpine_ / _vue_ directives with _signals_ reactivity
 | _Plugins_ | Yes | No | Yes |
 | _Modifiers_ | Yes | No | Yes |
 
-
+<!--
 <details>
 <summary><strong>Benchmark</strong></summary>
 
@@ -339,6 +328,7 @@ See [js-framework-benchmark](https://krausest.github.io/js-framework-benchmark/c
 
 ![Benchmark](./bench.png)
 </details>
+-->
 
 <!--
 <details>
@@ -403,5 +393,6 @@ npm run results
 * No reactive store → use signals for reactive values.
 * `@click="event.target"` → `:onclick="event => event.target"`
 * Async props / events are prohibited, pass async functions via state.
+* Directives order matters, eg. `<a :if :each :scope />` !== `<a :scope :each :if />`
 
 <p align="center"><a href="https://github.com/krsnzd/license/">🕉</a></p>
