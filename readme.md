@@ -2,28 +2,29 @@
 
 > DOM tree microhydration
 
-_Sprae_ is compact & ergonomic progressive enhancement framework.<br/>
-It provides `:`-attributes for inline markup logic without complex scripts.<br/>
-Perfect for small-scale websites, prototypes, or UI.<br/>
+_Sprae_ is a modern, compact, and ergonomic progressive enhancement framework, based on signals.<br/>
+It provides `:`-attributes for markup logic without complex scripts.<br/>
+Perfect for small-scale websites, prototypes, or lightweight UI.<br/>
 
 ## Usage
 
 ```html
 <div id="container" :if="user">
-  Hello <span :text="user.name">guest</span>!
+  Hello <span :text="user.name">World</span>.
 </div>
 
 <script type="module">
-  import sprae, { signal } from './path/to/sprae.js'; // '//unpkg.com/sprae'
+  import sprae, { signal } from '//unpkg.com/sprae'
 
-  const name = signal('boatman')
+  const name = signal('Kitty')
   sprae(container, { user: { name } }); // init
 
-  name.value = 'Krishna'; // update
+  name.value = 'Dolly'; // update
 </script>
 ```
 
-Sprae evaluates `:`-directives and evaporates them, attaching values/signals to html.
+Add [_directives_](#directives) with [_expressions_](#expressions) to your markup, provide state with [_signals_](#reactivity) and run _sprae_.<br/>
+Sprae evaluates `:`-directives and evaporates them, attaching state to html.
 
 ## Directives
 
@@ -63,11 +64,8 @@ Multiply element.
   <dt :text="item.term"/>
   <dd :text="item.definition"/>
 </template>
-```
 
-##### Prevent FOUC:
-
-```html
+<!-- prevent FOUC -->
 <style>[:each] {visibility: hidden}</style>
 ```
 
@@ -181,7 +179,7 @@ Expose element to current scope with `name`.
 </li>
 ```
 
-#### `:fx="<effect>"`
+#### `:fx="effect"`
 
 Run side-effect not affecting prop.
 
@@ -216,10 +214,50 @@ Attach event(s) listener with possible modifiers.
 * `.ctrl-<key>, .alt-<key>, .meta-<key>, .shift-<key>` – key combinations, eg. `.ctrl-alt-delete` or `.meta-x`.
 * `.*` – any other modifier has no effect, but allows binding multiple handlers to same event (like jQuery event classes).
 
+### Addons
+
+Extra directives are pluggable as follows: `import 'sprae/directive/*'`.
+
+#### `:data="values"`
+
+Set `data-*` attributes. CamelCase is converted to dash-case.
+
+```html
+<input :data="{foo: 1, barBaz: true}" />
+```
+
+#### `:aria="values"`
+
+Set `aria-*` attributes. Boolean values are stringified.
+
+```html
+<input role="combobox" :aria="{
+  controls: 'joketypes',
+  autocomplete: 'list',
+  expanded: false,
+  activeOption: 'item1',
+  activedescendant: ''
+}" />
+```
+
+<!--
+_Sprae_ directives can be extended as `sprae.directive.name = (el, expr, state) => {}`.
+
+Also see [nadi](https://github.com/dy/nadi) - collection of various DOM/etc interfaces with signals API. -->
+
+<!-- Official plugins are:
+
+* @sprae/item: `<x :item="{type:a, scope:b}"` – data schema
+* @sprae/visible - `:onvisible..oninvisible="e => e => {}"`
+* @sprae/intersect - `:onin..onout="e => e => {}"`
+* @sprae/mount - `:onmount..onunmount="e => e => {}"`
+-->
 
 ## Expressions
 
-_Sprae_ uses [minimal subset of JS](https://github.com/dy/subscript?tab=readme-ov-file#justin) for expressions syntax:
+_Sprae_ provides 2 ways to
+
+uses [minimal subset of JS](https://github.com/dy/subscript?tab=readme-ov-file#justin) for expressions syntax:
 
 ##### Operators:
 
@@ -267,22 +305,6 @@ sprae(el, { name: signal('Krishna') })
 To destroy state and detach sprae handlers, call `element[Symbol.dispose]()`. -->
 
 
-<!-- ## Plugins
-
-_Sprae_ directives can be extended as `sprae.directive.name = (el, expr, state) => {}`.
-
-Also see [nadi](https://github.com/dy/nadi) - collection of various DOM/etc interfaces with signals API. -->
-
-<!-- Official plugins are:
-
-* @sprae/aria – `:aria="props"` aria-roles
-* @sprae/data - `:data="props"` for dataseet
-* @sprae/item: `<x :item="{type:a, scope:b}"` – data schema
-* @sprae/visible - `:onvisible..oninvisible="e => e => {}"`
-* @sprae/intersect - `:onin..onout="e => e => {}"`
-* @sprae/mount - `:onmount..onunmount="e => e => {}"`
-
--->
 
 
 ## Justification
