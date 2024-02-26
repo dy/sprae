@@ -1,4 +1,4 @@
-import justin, { compile, operator, prop, parse } from "subscript/justin.js";
+import justin, { compile, operator, prop } from "subscript/justin.js";
 import { signal } from "./core.js";
 
 // define context id getter to handle signals
@@ -15,38 +15,13 @@ const assign = (fn, a, b) => (
       : fn(obj, path, path in obj ? b(ctx) : signal(b(ctx))),
   )
 );
-operator(
-  "=",
-  assign.bind(0, (obj, path, value) => (obj[path] = value)),
-);
-operator(
-  "+=",
-  assign.bind(0, (obj, path, value) => (obj[path] += value)),
-);
-operator(
-  "-=",
-  assign.bind(0, (obj, path, value) => (obj[path] -= value)),
-);
-operator(
-  "*=",
-  assign.bind(0, (obj, path, value) => (obj[path] *= value)),
-);
-operator(
-  "/=",
-  assign.bind(0, (obj, path, value) => (obj[path] /= value)),
-);
-operator(
-  "%=",
-  assign.bind(0, (obj, path, value) => (obj[path] %= value)),
-);
-operator(
-  "||=",
-  assign.bind(0, (obj, path, value) => (obj[path] ||= value)),
-);
-operator(
-  "??=",
-  assign.bind(0, (obj, path, value) => (obj[path] ??= value)),
-);
+operator("=", assign.bind(0, (obj, path, value) => (obj[path] = value)));
+operator("+=", assign.bind(0, (obj, path, value) => (obj[path] += value)));
+operator("-=", assign.bind(0, (obj, path, value) => (obj[path] -= value)));
+operator("*=", assign.bind(0, (obj, path, value) => (obj[path] *= value)));
+operator("/=", assign.bind(0, (obj, path, value) => (obj[path] /= value)));
+operator("%=", assign.bind(0, (obj, path, value) => (obj[path] %= value)));
+operator("||=", assign.bind(0, (obj, path, value) => (obj[path] ||= value)));
+operator("??=", assign.bind(0, (obj, path, value) => (obj[path] ??= value)));
 
-export { parse, compile };
 export default justin;

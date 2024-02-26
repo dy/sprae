@@ -82,10 +82,11 @@
 * [x] rename :with to :scope
 * [x] :fx=fx
 * [x] make signals tests (nested effects)
+* [x] try direct directives without primary/secondary
+* [ ] split directives
 * [ ] each that keeps elements
+* [ ] interpolatable strings
 * [ ] template test (:text, :html, :if, :each)
-* [ ] try direct directives without primary/secondary
 * [ ] fix examples
 * [ ] all FIXMEs
 * [ ] move proxy state into own project / part of signal struct (with tests from here)
-* [ ] interpolatable strings

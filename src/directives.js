@@ -5,17 +5,39 @@ import justin from "./compile.js";
 import swapdom from "swapdom/swap-inflate.js";
 
 
+// any unknown (default) directive
+export default (el, expr, state, name) => {
+  let evt = name.startsWith("on") && name.slice(2);
+  let evaluate = parse(el, expr, ":" + name);
+
+  if (!evaluate) return;
+
+  if (evt) {
+    let off,
+      dispose = effect(() => {
+        if (off) off(), (off = null);
+        // we need anonymous callback to enable modifiers like prevent
+        off = on(el, evt, evaluate(state));
+      });
+    return () => (off?.(), dispose());
+  }
+
+  return effect(() => {
+    attr(el, name, evaluate(state));
+  });
+};
+
 // reserved directives - order matters!
 // primary initialized first by selector, secondary initialized by iterating attributes
-export const primary = {}, secondary = {};
+export const directive = {};
 
 // :if is interchangeable with :each depending on order, :if :each or :each :if have different meanings
 // as for :if :scope - :if must init first, since it is lazy, to avoid initializing component ahead of time by :scope
 // we consider :scope={x} :if={x} case insignificant
 const _else = Symbol("else");
-primary["if"] = (ifEl, expr, state) => {
+directive.if = (ifEl, expr, state, name) => {
   let holder = document.createTextNode(""),
-    check = parseExpr(ifEl, expr, ":if"),
+    check = parse(ifEl, expr, name),
     cur,
     elseEl = ifEl.nextElementSibling,
     prevPass = ifEl[_else],
@@ -52,7 +74,7 @@ primary["if"] = (ifEl, expr, state) => {
 const _each = Symbol(":each");
 
 // :each must init before :ref, :id or any others, since it defines scope
-primary["each"] = (tpl, expr, state) => {
+directive.each = (tpl, expr, state, name) => {
   let [leftSide, itemsExpr] = expr.split(/\s+in\s+/);
   let [itemVar, idxVar = ""] = leftSide.split(/\s*,\s*/);
 
@@ -60,7 +82,7 @@ primary["each"] = (tpl, expr, state) => {
   const holder = (tpl[_each] = document.createTextNode(""));
   tpl.replaceWith(holder);
 
-  const evaluate = parseExpr(tpl, itemsExpr, ":each");
+  const evaluate = parse(tpl, itemsExpr, name);
 
   let cur = [];
   return effect(() => {
@@ -89,8 +111,8 @@ primary["each"] = (tpl, expr, state) => {
 
 // `:each` can redefine scope as `:each="a in {myScope}"`,
 // same time per-item scope as `:each="..." :scope="{collapsed:true}"` is useful
-primary["scope"] = (el, expr, rootState) => {
-  let evaluate = parseExpr(el, expr, ":scope");
+directive.scope = (el, expr, rootState, name) => {
+  let evaluate = parse(el, expr, name);
   const localState = evaluate(rootState);
   // we convert all local values to signals, since we may want to update them reactively
   const state = Object.assign(Object.create(rootState), toSignal(localState));
@@ -107,15 +129,14 @@ const toSignal = (state) => {
 };
 
 // ref must be last within primaries, since that must be skipped by :each, but before secondaries
-primary["ref"] = (el, expr, state) => {
+directive.ref = (el, expr, state) => {
   state[expr] = el;
 };
 
-secondary["html"] = (el, expr, state) => {
-  let evaluate = parseExpr(el, expr, ":html"),
-    tpl = evaluate(state);
+directive.html = (el, expr, state, name) => {
+  let evaluate = parse(el, expr, name), tpl = evaluate(state);
 
-  if (!tpl) err(new Error("Template not found"), el, expr, ":html");
+  if (!tpl) err(new Error("Template not found"), el, expr, name);
 
   let content = tpl.content.cloneNode(true);
   el.replaceChildren(content);
@@ -123,15 +144,15 @@ secondary["html"] = (el, expr, state) => {
   return el[_dispose];
 };
 
-secondary["id"] = (el, expr, state) => {
-  let evaluate = parseExpr(el, expr, ":id");
+directive.id = (el, expr, state, name) => {
+  let evaluate = parse(el, expr, name);
   const update = (v) => (el.id = v || v === 0 ? v : "");
   return effect(() => update(evaluate(state)));
 };
 
-secondary["class"] = (el, expr, state) => {
-  let evaluate = parseExpr(el, expr, ":class");
-  let initClassName = el.getAttribute("class");
+directive.class = (el, expr, state, name) => {
+  let evaluate = parse(el, expr, name);
+  let initClassName = el.getAttribute("class"); // .className can be SVGAnimatedString da heck
   return effect(() => {
     let v = evaluate(state);
     let className = [initClassName];
@@ -147,25 +168,23 @@ secondary["class"] = (el, expr, state) => {
   });
 };
 
-secondary["style"] = (el, expr, state) => {
-  let evaluate = parseExpr(el, expr, ":style");
+directive.style = (el, expr, state, name) => {
+  let evaluate = parse(el, expr, name);
   let initStyle = el.getAttribute("style") || "";
   if (!initStyle.endsWith(";")) initStyle += "; ";
   return effect(() => {
     let v = evaluate(state);
     if (typeof v === "string") el.setAttribute("style", initStyle + v);
     else {
-      // untracked(() => {
       el.setAttribute("style", initStyle);
-      for (let k in v) if (typeof v[k] !== "symbol") el.style.setProperty(k, v[k]);
-      // });
+      for (let k in v) el.style.setProperty(k, v[k]);
     }
   });
 };
 
 // set text content
-secondary["text"] = (el, expr, state) => {
-  let evaluate = parseExpr(el, expr, ":text");
+directive.text = (el, expr, state, name) => {
+  let evaluate = parse(el, expr, name);
   return effect(() => {
     let value = evaluate(state);
     el.textContent = value == null ? "" : value;
@@ -173,8 +192,8 @@ secondary["text"] = (el, expr, state) => {
 };
 
 // spread props
-secondary[""] = (el, expr, state) => {
-  let evaluate = parseExpr(el, expr, ":");
+directive[''] = (el, expr, state) => {
+  let evaluate = parse(el, expr);
   if (evaluate)
     return effect(() => {
       let value = evaluate(state);
@@ -182,8 +201,8 @@ secondary[""] = (el, expr, state) => {
     });
 };
 
-secondary["fx"] = (el, expr, state) => {
-  let evaluate = parseExpr(el, expr, ":");
+directive.fx = (el, expr, state, name) => {
+  let evaluate = parse(el, expr, name);
   if (evaluate)
     return effect(() => {
       evaluate(state);
@@ -191,8 +210,8 @@ secondary["fx"] = (el, expr, state) => {
 };
 
 // connect expr to element value
-secondary["value"] = (el, expr, state) => {
-  let evaluate = parseExpr(el, expr, ":value");
+directive.value = (el, expr, state, name) => {
+  let evaluate = parse(el, expr, name);
 
   let from, to;
   let update = el.type === "text" || el.type === ""
@@ -218,28 +237,6 @@ secondary["value"] = (el, expr, state) => {
 
   return effect(() => {
     update(evaluate(state));
-  });
-};
-
-// any unknown directive
-export default (el, expr, state, name) => {
-  let evt = name.startsWith("on") && name.slice(2);
-  let evaluate = parseExpr(el, expr, ":" + name);
-
-  if (!evaluate) return;
-
-  if (evt) {
-    let off,
-      dispose = effect(() => {
-        if (off) off(), (off = null);
-        // we need anonymous callback to enable modifiers like prevent
-        off = on(el, evt, evaluate(state));
-      });
-    return () => (off?.(), dispose());
-  }
-
-  return effect(() => {
-    attr(el, name, evaluate(state));
   });
 };
 
@@ -396,7 +393,7 @@ const attr = (el, name, v) => {
 };
 
 const evaluatorMemo = {};
-function parseExpr(el, expression, dir) {
+function parse(el, expression, dir) {
   // guard static-time eval errors
   let evaluate = evaluatorMemo[expression];
 

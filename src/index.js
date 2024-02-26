@@ -1,7 +1,3 @@
-import sprae from "./core.js";
-import "./directives.js";
-export default sprae;
+export { default } from "./core.js";
 export * from "./core.js";
-
-// autoinit
-if (document.currentScript) sprae(document.documentElement);
+export { directive } from "./directives.js";
