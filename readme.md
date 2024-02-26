@@ -44,6 +44,32 @@ Control flow of elements.
 </template>
 ```
 
+#### `:each="item, index in items"`
+
+Multiply element.
+
+```html
+<ul><li :each="item in items" :text="item"/></ul>
+
+<!-- cases -->
+<li :each="item, idx in list" />
+<li :each="val, key in obj" />
+<li :each="idx in number" />
+
+<!-- by condition -->
+<li :if="items" :each="item in items" :text="item" />
+<li :else>Empty list</li>
+
+<!-- fragment -->
+<template :each="item in items">
+  <dt :text="item.term"/>
+  <dd :text="item.definition"/>
+</template>
+
+<!-- prevent FOUC -->
+<style>[:each] {visibility: hidden}</style>
+```
+
 #### `:text="value"`
 
 Set text content of an element.
@@ -160,39 +186,13 @@ Set any other attribute.
 <input :id:name="name" />
 ```
 
-## Additional Directives
+## Extra Directives
 
-The following directives are not shipped out of box and can be plugged in:
+Not shipped by default, can be plugged in as:
 
 ```js
 import sprae from 'sprae'
 import 'sprae/directive/*'
-```
-
-#### `:each="item, index in items"`
-
-Multiply element.
-
-```html
-<ul><li :each="item in items" :text="item"/></ul>
-
-<!-- cases -->
-<li :each="item, idx in list" />
-<li :each="val, key in obj" />
-<li :each="idx in number" />
-
-<!-- by condition -->
-<li :if="items" :each="item in items" :text="item" />
-<li :else>Empty list</li>
-
-<!-- fragment -->
-<template :each="item in items">
-  <dt :text="item.term"/>
-  <dd :text="item.definition"/>
-</template>
-
-<!-- prevent FOUC -->
-<style>[:each] {visibility: hidden}</style>
 ```
 
 #### `:html="element"`
@@ -256,8 +256,8 @@ Also see [nadi](https://github.com/dy/nadi) - collection of various DOM/etc inte
 
 ## Reactivity
 
-_Sprae_ utilizes [signals](https://preactjs.com/guide/v10/signals/) for reactivity.<br/>
-By default it ships [minimorum signals](./src/signal.js), but it can be reconfigured to use another signals to better meet project scale/stack:
+_Sprae_ uses [signals](https://preactjs.com/guide/v10/signals/) for reactivity.
+By default it ships [minimorum signals](./src/signal.js), but it can be reconfigured to another lib:
 
 ```js
 import sprae, { signal, computed, effect, batch } from 'sprae';
@@ -276,12 +276,16 @@ sprae(el, { name: signal('Kitty') })
 * [`@preact/signals-core`](https://ghub.io/@preact/signals-core) – +4Kb, best performance, good for complex states.
 
 
-### CSP
+## CSP
 
 _Sprae_ evaluates expressions via `new Function`, which is simple, compact and performant way.<br/>
-It gives full JS syntax support, but violates "unsafe-eval" policy and allows unrestricted access to globals (no sandboxing).
+It supports full JS syntax, but violates "unsafe-eval" policy and allows unrestricted access to globals (no sandboxing).
 
-`sprae/csp` build provides safe eval & sandbox at price of more restrictive syntax and +2kb to bundle size.
+[`sprae.csp.js`](./sprae.csp.js) provides safe eval & sandbox at price of more restrictive syntax and +2kb to bundle size.
+
+```js
+import sprae from './sprae.csp.js'
+```
 
 Expressions use _justin_ language, a [minimal subset of JS](https://github.com/dy/subscript?tab=readme-ov-file#justin):
 
@@ -300,7 +304,6 @@ in
 1 2.34 -5e6 0x7a
 true false null undefined NaN
 ```
-
 
 <!-- ## Dispose
 
@@ -385,7 +388,7 @@ npm run results
 
 ## Examples
 
-* TODO MVC: [demo](https://dy.github.io/sprae/examples/todomvc), [code](https://github.com/dy/sprae/blob/main/examples/todomvc.html)
+* ToDo MVC: [demo](https://dy.github.io/sprae/examples/todomvc), [code](https://github.com/dy/sprae/blob/main/examples/todomvc.html)
 * JS Framework Benchmark: [demo](https://dy.github.io/sprae/examples/js-framework-benchmark), [code](https://github.com/dy/sprae/blob/main/examples/js-framework-benchmark.html)
 * Wavearea: [demo](https://dy.github.io/wavearea?src=//cdn.freesound.org/previews/586/586281_2332564-lq.mp3), [code](https://github.com/dy/wavearea)
 * Prostogreen [demo](http://web-being.org/prostogreen/), [code](https://github.com/web-being/prostogreen/)
@@ -393,8 +396,7 @@ npm run results
 
 ## Migration to v9
 
-* Pass necessary globals manually to state (`console`, `setTimeout` etc).
-* Templates use _justin_ syntax (no keywords JS).
+* No default globals: provide manually to state (`console`, `setTimeout` etc).
 * ``:class="`abc ${def}`"`` → `:class="'abc $<def>'"`
 * `:with={x:foo}` → `:scope={x:foo}`
 * `:render="tpl"` → `:html="tpl"`
