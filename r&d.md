@@ -200,11 +200,12 @@
   - nah: can easily be done manually as `:html="this.innerHTML = abc"`. Just need passing context
   + we may need non-strings, like DOM elements, templates, or just injecting element at particular place
 
-## [x] :fx? -> nah, already works. Just return `null` in any attr, that's it.
+## [x] :fx - to be or not to be? -> nah, already works. Just return `null` in any attr, that's it.
 
   * let's wait for use-case
-  - doesn't necessarily useful, since any directive is already an effect
-  + works already out of box, just creates `fx` attribute if value is returned
+  + allows avoiding `void` in justin
+  - any directive is already an effect
+  - works already out of box, just creates `fx` attribute if value is returned
 
 ## [x] :init? -> same as :fx="initCode", but let's have :oninit event.
 
@@ -928,7 +929,7 @@
 - doesn't modify initial state
 - performance hit: not everything needs to be a signal, also slows down rendering
 
-## [x] Init signals: how? -> `sprae.use(signals)`
+## [x] Init signals: how? -> `sprae.use(signals)`, but internally
 
 1. `sprae.config({signals})`, `sprae.setup({signals})`
   + universal

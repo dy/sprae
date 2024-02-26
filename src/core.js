@@ -1,9 +1,7 @@
-import genericDirective, { directive } from "./directives.js";
-import * as signals from './signal.js'
-// import * as signals from '@webreflection/signal'
-// import * as signals from '@preact/signals-core'
+const _dispose = (Symbol.dispose ||= Symbol("dispose"));
 
-export const _dispose = (Symbol.dispose ||= Symbol("dispose"));
+// reserved directives - order matters!
+export const directive = {};
 
 // sprae element: apply directives
 const memo = new WeakMap();
@@ -19,31 +17,23 @@ export default function sprae(container, values) {
 
   // init directives on element
   const init = (el, parent = el.parentNode) => {
-    const { attributes } = el
-    if (attributes) {
-      // init registered directives first
-      for (let name in directive) {
-        let attr = attributes[':' + name]
-        if (attr) {
+    if (el.attributes) {
+      // init generic-name attributes second
+      for (let i = 0; i < el.attributes.length;) {
+        let attr = el.attributes[i];
+
+        if (attr.name[0] === ':') {
           el.removeAttribute(attr.name);
-          disposes.push(directive[name](el, attr.value, state, name));
+
+          // multiple attributes like :id:for=""
+          let names = attr.name.slice(1).split(':')
+
+          // NOTE: secondary directives don't stop flow nor extend state, so no need to check
+          for (let name of names) disposes.push((directive[name] || directive.default)(el, attr.value, state, name));
 
           // stop if element was spraed by directive or skipped (detached) like in case of :if or :each
           if (memo.has(el)) return;
           if (el.parentNode !== parent) return false;
-        }
-      }
-
-      // init generic-name attributes second
-      for (let i = 0; i < attributes.length;) {
-        let attr = attributes[i], prefix = attr.name[0];
-
-        if (prefix === ":") {
-          el.removeAttribute(attr.name);
-          // multiple attributes like :id:for=""
-          let names = attr.name.slice(1).split(prefix)
-          // NOTE: secondary directives don't stop flow nor extend state, so no need to check
-          for (let name of names) disposes.push(genericDirective(el, attr.value, state, name));
         } else i++;
       }
     }
@@ -63,7 +53,7 @@ export default function sprae(container, values) {
   memo.set(container, state);
 
   // expose dispose
-  if (disposes.length) container[_dispose] = (d) => {
+  if (disposes.length) container[_dispose] = () => {
     while (disposes.length) disposes.pop()?.();
     memo.delete(container);
   }
@@ -71,14 +61,40 @@ export default function sprae(container, values) {
   return state;
 }
 
-export let signal, effect, computed, batch, untracked
+// default compiler
+export let compile = (src) => new Function(`__scope`, `with (__scope) { let __; return ${src} };`),
+  setCompiler = c => compile = c
 
-// configure sprae signals
-sprae.use = (s) => (
-  signal = s.signal,
-  effect = s.effect,
-  computed = s.computed,
-  batch = s.batch,
-  untracked = s.untracked || ((fn) => fn())
-)
-sprae.use(signals)
+const evalMemo = {};
+
+// create evaluator for the expression
+// FIXME: passing that amount of props is excessive
+export const parse = (el, expression, dir) => {
+  let evaluate = evalMemo[expression = expression.trim()];
+
+  // guard static-time eval errors
+  if (!evaluate) {
+    try {
+      evaluate = evalMemo[expression] = compile(expression);
+    } catch (e) {
+      return err(e, el, expression, dir);
+    }
+  }
+
+  // guard runtime eval errors
+  return (state, result) => {
+    try {
+      result = evaluate(state);
+    } catch (e) {
+      return err(e, el, expression, dir);
+    }
+    return result;
+  };
+}
+
+// throw branded error
+export const err = (error, element, expr, directive) => {
+  Object.assign(error, { element, expr });
+  console.warn(`∴ ${error.message}\n\n${directive}=${expr ? `"${expr}"\n\n` : ""}`, element);
+  throw error;
+}

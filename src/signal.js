@@ -1,46 +1,47 @@
 // Bare minimum signals impl
-
-let current // current fx
-
-export const untracked = (fn, prev) => (prev = current, current = null, fn(), current = prev)
-
-export const batch = (fn) => fn()
-
-export const signal = (v, s, obs = new Set) => (
-  s = {
-    get value() {
-      current?.deps.push(obs.add(current));
-      return v
+export let current,
+  signal = (v, s, obs = new Set) => (
+    s = {
+      get value() {
+        current?.deps.push(obs.add(current));
+        return v
+      },
+      set value(val) {
+        v = val
+        for (let sub of obs) sub(val) // notify effects
+      },
+      peek() { return v },
     },
-    set value(val) {
-      v = val
-      for (let sub of obs) sub(val) // notify effects
+    s.toJSON = s.then = s.toString = s.valueOf = () => s.value,
+    s
+  ),
+  effect = (fn, teardown, run, deps) => (
+    run = (prev) => {
+      if (teardown?.call) teardown()
+      prev = current, current = run
+      try { teardown = fn() } finally { current = prev }
     },
-    peek() { return v },
-  },
-  s.toJSON = s.then = s.toString = s.valueOf = () => s.value,
-  s
-);
+    deps = run.deps = [],
 
-export const effect = (fn, teardown, run, deps) => (
-  run = (prev) => {
-    if (teardown?.call) teardown()
-    prev = current, current = run
-    try { teardown = fn() } finally { current = prev }
-  },
-  deps = run.deps = [],
-
-  run(),
-  (dep) => { while (dep = deps.pop()) dep.delete(run) }
-)
-
-export const computed = (fn, s = signal(), c, e) => (
-  c = {
-    get value() {
-      e ||= effect(() => s.value = fn())
-      return s.value
-    }
-  },
-  c.toJSON = c.then = c.toString = c.valueOf = () => c.value,
-  c
-);
+    run(),
+    (dep) => { while (dep = deps.pop()) dep.delete(run) }
+  ),
+  computed = (fn, s = signal(), c, e) => (
+    c = {
+      get value() {
+        e ||= effect(() => s.value = fn())
+        return s.value
+      }
+    },
+    c.toJSON = c.then = c.toString = c.valueOf = () => c.value,
+    c
+  ),
+  batch = (fn) => fn(),
+  untracked = (fn, prev) => (prev = current, current = null, fn(), current = prev),
+  use = (s) => (
+    signal = s.signal,
+    effect = s.effect,
+    computed = s.computed,
+    batch = s.batch,
+    untracked = s.untracked
+  )
