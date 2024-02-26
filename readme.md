@@ -122,6 +122,17 @@ Set value of an input, textarea or select. Takes handle of `checked` and `select
 </select>
 ```
 
+#### `:<prop>="value"`
+
+Set any other attribute.
+
+```html
+<label :for="name" :text="name" />
+
+<!-- multiple attributes -->
+<input :id:name="name" />
+```
+
 #### `:scope="data"`
 
 Define or extend data scope for a subtree.
@@ -165,7 +176,7 @@ Attach event(s) listener with possible modifiers.
 <button :onclick.throttle-500="handler">Not too often</button>
 ```
 
-##### Modifiers
+###### Modifiers:
 
 * `.once`, `.passive`, `.capture` – listener [options](https://developer.mozilla.org/en-US/docs/Web/API/EventTarget/addEventListener#options).
 * `.prevent`, `.stop` – prevent default or stop propagation.
@@ -175,16 +186,6 @@ Attach event(s) listener with possible modifiers.
 * `.ctrl-<key>, .alt-<key>, .meta-<key>, .shift-<key>` – key combinations, eg. `.ctrl-alt-delete` or `.meta-x`.
 * `.*` – any other modifier has no effect, but allows binding multiple handlers to same event (like jQuery event classes).
 
-#### `:<prop>="value"`
-
-Set any other attribute.
-
-```html
-<label :for="name" :text="name" />
-
-<!-- multiple attributes -->
-<input :id:name="name" />
-```
 
 ## Extra Directives
 
