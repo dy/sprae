@@ -2,8 +2,8 @@
 
 > DOM tree microhydration
 
-_Sprae_ is a modern, compact, and ergonomic progressive enhancement framework based on signals.<br/>
-It provides `:`-attributes for inline markup logic.<br/>
+_Sprae_ is a compact & ergonomic progressive enhancement framework.<br/>
+It provides `:`-attributes for inline markup logic based on signals.<br/>
 Perfect for small-scale websites, prototypes, or lightweight UI.<br/>
 
 ## Usage
