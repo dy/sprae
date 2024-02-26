@@ -38,6 +38,7 @@ export let current,
   ),
   batch = (fn) => fn(),
   untracked = (fn, prev) => (prev = current, current = null, fn(), current = prev),
+
   use = (s) => (
     signal = s.signal,
     effect = s.effect,

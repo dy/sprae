@@ -23,9 +23,11 @@ Perfect for small-scale websites, prototypes, or lightweight UI.<br/>
 </script>
 ```
 
-Sprae evaluates `:`-attributes as directives and evaporates them, attaching state to html.
+Sprae evaluates `:`-directives and evaporates them, attaching state to html.
 
 ## Directives
+
+Following directives are shipped by default.
 
 #### `:if="condition"`, `:else`
 
@@ -42,32 +44,6 @@ Control flow of elements.
 </template>
 ```
 
-#### `:each="item, index in items"`
-
-Multiply element.
-
-```html
-<ul><li :each="item in items" :text="item"/></ul>
-
-<!-- cases -->
-<li :each="item, idx in list" />
-<li :each="val, key in obj" />
-<li :each="idx in number" />
-
-<!-- by condition -->
-<li :if="items" :each="item in items" :text="item" />
-<li :else>Empty list</li>
-
-<!-- fragment -->
-<template :each="item in items">
-  <dt :text="item.term"/>
-  <dd :text="item.definition"/>
-</template>
-
-<!-- prevent FOUC -->
-<style>[:each] {visibility: hidden}</style>
-```
-
 #### `:text="value"`
 
 Set text content of an element.
@@ -77,21 +53,6 @@ Welcome, <span :text="user.name">Guest</span>.
 
 <!-- fragment -->
 Welcome, <template :text="user.name">Guest</template>.
-```
-
-#### `:html="element"`
-
-Set html content of an element or instantiate template.
-
-```html
-Hello, <span :html="userElement">Guest</span>.
-
-<!-- fragment -->
-Hello, <template :html="user.name">Guest</template>.
-
-<!-- instantiate template -->
-<template :ref="tpl"><span :text="foo"></span></template>
-<div :html="tpl" :scope="{foo:'bar'}">...inserted here...</div>
 ```
 
 #### `:class="value"`
@@ -144,14 +105,6 @@ Set any other attribute.
 
 <!-- multiple attributes -->
 <input :id:name="name" />
-```
-
-#### `:="props"`
-
-Run effect or assign multiple attributes
-
-```html
-<input :="{ id: name, name, type: 'text', value }" />
 ```
 
 #### `:scope="data"`
@@ -208,6 +161,67 @@ Attach event(s) listener with possible modifiers.
 * `.*` – any other modifier has no effect, but allows binding multiple handlers to same event (like jQuery event classes).
 
 
+## Addon directives
+
+Additional directives can be plugged in as:
+
+```js
+import sprae from 'sprae'
+import 'sprae/directive/each'
+import 'sprae/directive/*'
+```
+
+#### `:each="item, index in items"`
+
+Multiply element.
+
+```html
+<ul><li :each="item in items" :text="item"/></ul>
+
+<!-- cases -->
+<li :each="item, idx in list" />
+<li :each="val, key in obj" />
+<li :each="idx in number" />
+
+<!-- by condition -->
+<li :if="items" :each="item in items" :text="item" />
+<li :else>Empty list</li>
+
+<!-- fragment -->
+<template :each="item in items">
+  <dt :text="item.term"/>
+  <dd :text="item.definition"/>
+</template>
+
+<!-- prevent FOUC -->
+<style>[:each] {visibility: hidden}</style>
+```
+
+#### `:html="element"`
+
+Set html content of an element or instantiate template.
+
+```html
+Hello, <span :html="userElement">Guest</span>.
+
+<!-- fragment -->
+Hello, <template :html="user.name">Guest</template>.
+
+<!-- instantiate template -->
+<template :ref="tpl"><span :text="foo"></span></template>
+<div :html="tpl" :scope="{foo:'bar'}">...inserted here...</div>
+```
+
+#### `:prop="props"`
+
+> `import 'sprae/directive/data'`
+
+Set multiple attributes (spread).
+
+```html
+<input :prop="{ id: name, name, type: 'text', value }" />
+```
+
 #### `:data="values"`
 
 > `import 'sprae/directive/data'`
@@ -234,7 +248,6 @@ Set `aria-*` attributes. Boolean values are stringified.
 }" />
 ```
 
-
 <!--
 _Sprae_ directives can be extended as `sprae.directive.name = (el, expr, state) => {}`.
 
@@ -249,9 +262,10 @@ Also see [nadi](https://github.com/dy/nadi) - collection of various DOM/etc inte
 -->
 
 
-## Signals
+## Reactivity
 
-_Sprae_ allows switching signals provider to better meet project scale/stack:
+_Sprae_ utilizes [signals](https://preactjs.com/guide/v10/signals/) for reactivity.<br/>
+By default it ships [minimorum signals](./src/signal.js), but it can be reconfigured to use another signals to better meet project scale/stack:
 
 ```js
 import sprae, { signal, computed, effect, batch } from 'sprae';
@@ -262,31 +276,34 @@ sprae.use(preact)
 sprae(el, { name: signal('Kitty') })
 ```
 
-##### Providers:
+##### Signals providers:
 
 * [`sprae/signal`](./src/signal.js) (default) – 0Kb, basic performance, good for simple states (<10 deps).
-* [`@webreflection/signal`](https://ghib.io/@webreflection/signal) – +1Kb, good performance, good for average states (<20 deps).
+* [`@webreflection/signal`](https://ghib.io/@webreflection/signal) – +1Kb, good performance, good for average states (10-20 deps).
+* [`usignal`](https://ghib.io/usignal) – +1.8Kb, better performance, good for average states (20-50 deps).
 * [`@preact/signals-core`](https://ghub.io/@preact/signals-core) – +4Kb, best performance, good for complex states.
 
 
 ### CSP
 
 _Sprae_ evaluates expressions via `new Function`, which is simple, compact and performant way.<br/>
-It gives full JS syntax support. But it violates "unsafe-eval" policy and allows unrestricted access to globals (no sandboxing).
+It gives full JS syntax support, but violates "unsafe-eval" policy and allows unrestricted access to globals (no sandboxing).
 
-In order to accomodate "unsafe-eval" policy, `sprae/csp` build provides safe eval & sandbox at price of more restrictive syntax and +2kb to bundle size.
+`sprae/csp` build provides safe eval & sandbox at price of more restrictive syntax and +2kb to bundle size.
 
-`sprae/csp` uses _Justin_, a [minimal subset of JS](https://github.com/dy/subscript?tab=readme-ov-file#justin) for expressions:
+Expressions use _justin_ language, a [minimal subset of JS](https://github.com/dy/subscript?tab=readme-ov-file#justin):
 
+###### Operators:
 ```
-// operators
 ++ -- ! - + ** * / %  && || ??
 = < <= > >= == != === !==
 << >> & ^ | ~ ?: . ?. []
 () => {}
 in
+```
 
-// primitives
+###### Primitives:
+```
 [] {} "" ''
 1 2.34 -5e6 0x7a
 true false null undefined NaN
