@@ -1,5 +1,4 @@
-export { default } from './src/core.js'
-export { signal, effect, computed, batch } from './src/signal.js'
+export { default, signal, effect, computed, untracked, batch } from './src/core.js'
 
 import './directive/if.js'
 import './directive/each.js'
@@ -10,4 +9,5 @@ import './directive/text.js'
 import './directive/class.js'
 import './directive/style.js'
 import './directive/value.js'
+import './directive/fx.js'
 import './directive/default.js'

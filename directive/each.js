@@ -1,6 +1,5 @@
 import swapdom from "swapdom/swap-inflate.js";
-import sprae, { directive, parse } from "../src/core.js";
-import { effect } from '../src/signal.js'
+import sprae, { directive, parse, effect } from "../src/core.js";
 
 
 export const _each = Symbol(":each");

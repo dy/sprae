@@ -1,6 +1,9 @@
-import { use, batch } from './signal.js'
+import * as signals from './signal.js'
 
-const _dispose = (Symbol.dispose ||= Symbol("dispose"));
+// signals impl
+export let signal, effect, batch, computed, untracked;
+
+(Symbol.dispose ||= Symbol("dispose"));
 
 // reserved directives - order matters!
 export const directive = {};
@@ -54,7 +57,7 @@ export default function sprae(container, values) {
   memo.set(container, state);
 
   // expose dispose
-  if (disposes.length) container[_dispose] = () => {
+  if (disposes.length) container[Symbol.dispose] = () => {
     while (disposes.length) disposes.pop()?.();
     memo.delete(container);
   }
@@ -63,7 +66,14 @@ export default function sprae(container, values) {
 }
 
 // configure signals
-sprae.use = use
+(sprae.use = s => (
+  signal = s.signal,
+  effect = s.effect,
+  computed = s.computed,
+  batch = s.batch,
+  untracked = s.untracked
+))(signals)
+
 
 // default compiler
 sprae.compile = (src) => new Function(`__scope`, `with (__scope) { return ${src} };`)

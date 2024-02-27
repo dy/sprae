@@ -1,5 +1,4 @@
-import sprae, { directive, parse } from "../src/core.js";
-import { effect, computed } from '../src/signal.js'
+import sprae, { directive, parse, effect, computed } from "../src/core.js";
 import { _each } from './each.js'
 
 // :if is interchangeable with :each depending on order, :if :each or :each :if have different meanings

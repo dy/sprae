@@ -1,5 +1,4 @@
-import { directive, parse } from "../src/core.js";
-import { effect } from '../src/signal.js'
+import { directive, parse, effect } from "../src/core.js";
 
 // set text content
 directive.text = (el, expr, state) => {

@@ -1,5 +1,4 @@
-import { directive, parse } from "../src/core.js";
-import { effect } from '../src/signal.js'
+import { directive, parse, effect } from "../src/core.js";
 
 // connect expr to element value
 directive.value = (el, expr, state) => {

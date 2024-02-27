@@ -83,11 +83,12 @@
 * [x] :fx=fx
 * [x] make signals tests (nested effects)
 * [x] try direct directives without primary/secondary
-* [ ] split directives
+* [x] split directives
+* [x] switchable compiler
+* [ ] clear exports (no parse, err) - make sense of `compile` function as exported
 * [ ] :each that keeps elements
 * [ ] template test (:text, :html, :if, :each)
 * [ ] interpolatable strings
-* [ ] switchable compiler
 * [ ] Plugins
   * [ ] :aria
   * [ ] :data

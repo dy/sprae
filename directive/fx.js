@@ -1,4 +1,4 @@
-import { directive } from "../src/core.js";
+import { directive, parse, effect } from "../src/core.js";
 
 directive.fx = (el, expr, state) => {
   let evaluate = parse(el, expr, 'fx');

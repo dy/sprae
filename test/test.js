@@ -515,7 +515,7 @@ test("each: loop with condition", async () => {
   // also it creates confusion with :else directive
   // prohibiting that allows in-order directives init
   let el = h`<p>
-  <span :each="a in b" :text="a" :if="c"></span>
+  <span :if="c" :each="a in b" :text="a"></span>
   </p>`;
 
   const params = sprae(el, { b: signal([1, 2]), c: signal(false) });
@@ -674,7 +674,7 @@ test("each: internal children get updated by state update, also: update by runni
 });
 
 test("each: :id and others must receive value from context", () => {
-  let el = h`<div><x :id="idx" :each="item, idx in items"></x></div>`;
+  let el = h`<div><x :each="item, idx in items" :id="idx"></x></div>`;
   sprae(el, { items: [1, 2, 3] });
   is(el.innerHTML, `<x id="0"></x><x id="1"></x><x id="2"></x>`);
 });
@@ -833,8 +833,8 @@ test("scope: reactive transparency", () => {
   is(el.innerHTML, `<y>13</y>`);
 });
 test("scope: writes to state", async () => {
-  let a = h`<x :scope="{a:1}"><y :onx="e=>(a+=1)" :text="a"></y></x>`;
-  sprae(a, { console });
+  let a = h`<x :scope="{a:signal(1)}"><y :onx="e=>(a.value+=1)" :text="a"></y></x>`;
+  sprae(a, { console, signal });
   is(a.innerHTML, `<y>1</y>`);
   a.firstChild.dispatchEvent(new window.Event("x"));
   await tick();
@@ -850,7 +850,7 @@ test("scope: one of children (internal number of iterations, cant see the result
 });
 test("scope: scope directives must come first", async () => {
   // NOTE: we init attributes in order of definition
-  let a = h`<x :text="y" :scope="{y:1}" :ref="x"></x>`;
+  let a = h`<x :scope="{y:1}" :text="y" :ref="x"></x>`;
   sprae(a, {});
   is(a.outerHTML, `<x>1</x>`);
 });
@@ -916,7 +916,7 @@ test("ref: signal", async () => {
 });
 
 test("ref: with :each", async () => {
-  let a = h`<y><x :ref="x" :each="item in items" :text="log.push(x), item"/></y>`;
+  let a = h`<y><x :each="item in items" :ref="x" :text="log.push(x), item"/></y>`;
   let state = sprae(a, { log: [], items: [1, 2, 3] });
   await tick();
   is(state.log, [...a.children]);
@@ -947,8 +947,8 @@ test(":: null result does nothing", async () => {
   is(a.outerHTML, `<x></x>`);
 });
 
-test(":: effects", async () => {
-  let el = h`<x :fx="log.push(1); log.push(2)"></x>`;
+test("fx: effects", async () => {
+  let el = h`<x :fx="log.push(1), log.push(2)"></x>`;
   let log = []
   let state = sprae(el, { log });
   is(el.outerHTML, `<x></x>`);
@@ -979,7 +979,8 @@ test.todo("getters", async () => {
   is(x.outerHTML, `<h2>1</h2>`);
 });
 
-test("sandbox", async () => {
+test("csp: sandbox", async () => {
+  const { default: sprae } = await import('../sprae.csp.js')
   const globals = { console };
   const state = Object.assign(Object.create(globals), { log: [] });
 

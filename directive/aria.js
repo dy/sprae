@@ -1,5 +1,4 @@
 import { directive, parse } from "../src/core.js";
-import { effect } from '../src/signal.js'
 
 directive['aria'] = (el, expr) => {
   let evaluate = parseExpr(el, expr, ':aria')

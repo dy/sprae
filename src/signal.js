@@ -1,4 +1,4 @@
-// Minimorum signals impl
+// Minimorum signals impl (almost like ulive but smaller)
 export let current,
   signal = (v, s, obs = new Set) => (
     s = {
@@ -37,13 +37,4 @@ export let current,
     c
   ),
   batch = (fn) => fn(),
-  untracked = (fn, prev) => (prev = current, current = null, fn(), current = prev),
-
-  // configure signals
-  use = s => (
-    signal = s.signal,
-    effect = s.effect,
-    computed = s.computed,
-    batch = s.batch,
-    untracked = s.untracked
-  )
+  untracked = (fn, prev, v) => (prev = current, current = null, v = fn(), current = prev, v)

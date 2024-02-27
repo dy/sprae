@@ -124,7 +124,7 @@ Set value of an input, textarea or select. Takes handle of `checked` and `select
 
 #### `:<prop>="value"`, `:="values"`
 
-Set any other attribute.
+Set attribute(s).
 
 ```html
 <label :for="name" :text="name" />
