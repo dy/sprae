@@ -18,7 +18,9 @@ directive.default = (el, expr, state, name) => {
   }
 
   return effect(() => {
-    attr(el, name, evaluate(state))
+    let value = evaluate(state);
+    if (name) attr(el, name, evaluate(state))
+    else for (let key in value) attr(el, dashcase(key), value[key]);
   });
 };
 
@@ -144,3 +146,7 @@ const debounce = (fn, wait) => {
     }, wait);
   };
 };
+
+export const dashcase = (str) => {
+  return str.replace(/[A-Z\u00C0-\u00D6\u00D8-\u00DE]/g, (match) => "-" + match.toLowerCase());
+}

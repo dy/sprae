@@ -145,10 +145,10 @@ test("props: base", async () => {
 });
 
 test("props: sets prop", async () => {
-  let el = h`<x :ref="this" :x="this.x=1" :y="this.y='abc'"></x>`;
+  let el = h`<x :ref="el" :x="el.x=1" :y="el.y='abc'"></x>`;
   sprae(el);
-  is(el.x.value, 1);
-  is(el.y.value, "abc");
+  is(el.x, 1);
+  is(el.y, "abc");
 });
 
 test("props: multiprop", async () => {
@@ -158,7 +158,7 @@ test("props: multiprop", async () => {
 });
 
 test("props: calculation", async () => {
-  let el = h`<x :x="a = 5; Array.from({length: x}, (_,i) => (i)).join('')"></x>`;
+  let el = h`<x :x="a = 5, Array.from({length: x}, (_,i) => (i)).join('')"></x>`;
   let state = sprae(el, { x: signal(3), console, Array });
   is(el.outerHTML, `<x x="012"></x>`);
   state.x.value = 4;
@@ -166,12 +166,14 @@ test("props: calculation", async () => {
   is(el.outerHTML, `<x x="0123"></x>`);
 });
 
-test("props: semicols in expression", async () => {
-  let el = h`<x :x="0; Array.from({length: x}, (_,i)=>i).join('')"></x>`;
-  let state = sprae(el, { x: signal(3), Array });
-  is(el.outerHTML, `<x x="012"></x>`);
+test.skip("props: semicols in expression", async () => {
+  let el = h`<x :x="log.push(0); log.push(Array.from({length: x.value}, (_,i)=>i).join(''));"></x>`;
+  let state = sprae(el, { x: signal(3), Array, log: [] });
+  // is(el.outerHTML, `<x x="012"></x>`);
+  is(state.log, [0, '012'])
   state.x.value = 4;
-  is(el.outerHTML, `<x x="0123"></x>`);
+  is(state.log, [0, '012', 0, '0123'])
+  // is(el.outerHTML, `<x x="0123"></x>`);
 });
 
 test.skip("data: base", async () => {

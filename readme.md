@@ -122,7 +122,7 @@ Set value of an input, textarea or select. Takes handle of `checked` and `select
 </select>
 ```
 
-#### `:<prop>="value"`
+#### `:<prop>="value"`, `:="values"`
 
 Set any other attribute.
 
@@ -131,38 +131,9 @@ Set any other attribute.
 
 <!-- multiple attributes -->
 <input :id:name="name" />
-```
 
-#### `:="effect"`
-
-Run effect.
-
-```html
-<div :="foo.value ? bar() : baz();" />
-```
-
-#### `:scope="data"`
-
-Define or extend data scope for a subtree.
-
-```html
-<x :scope="{ foo: signal('bar') }">
-  <!-- extends parent scope -->
-  <y :scope="{ baz: 'qux' }" :text="foo + baz"></y>
-</x>
-```
-
-#### `:ref="name"`
-
-Expose element to current scope with `name`.
-
-```html
-<textarea :ref="text" placeholder="Enter text..."></textarea>
-
-<!-- iterable items -->
-<li :each="item in items" :ref="item">
-  <input :onfocus..onblur=="e => (item.classList.add('editing'), e => item.classList.remove('editing'))"/>
-</li>
+<!-- spread attributes -->
+<input :="{ id: name, name, type: 'text', value }" />
 ```
 
 #### `:on<event>.<modifier>="handler"`, `:on<in>..on<out>="handler"`
@@ -193,6 +164,39 @@ Attach event(s) listener with possible modifiers.
 * `.*` – any other modifier has no effect, but allows binding multiple handlers to same event (like jQuery event classes).
 
 
+#### `:fx="values"`
+
+Run effect.
+
+```html
+<div :fx="foo.value ? bar() : baz();" />
+```
+
+#### `:scope="data"`
+
+Define or extend data scope for a subtree.
+
+```html
+<x :scope="{ foo: signal('bar') }">
+  <!-- extends parent scope -->
+  <y :scope="{ baz: 'qux' }" :text="foo + baz"></y>
+</x>
+```
+
+#### `:ref="name"`
+
+Expose element to current scope with `name`.
+
+```html
+<textarea :ref="text" placeholder="Enter text..."></textarea>
+
+<!-- iterable items -->
+<li :each="item in items" :ref="item">
+  <input :onfocus..onblur=="e => (item.classList.add('editing'), e => item.classList.remove('editing'))"/>
+</li>
+```
+
+
 ## Additional Directives
 
 The following directives aren't shipped by default, and can be plugged in as:
@@ -215,14 +219,6 @@ Hello, <template :html="user.name">Guest</template>.
 <!-- instantiate template -->
 <template :ref="tpl"><span :text="foo"></span></template>
 <div :html="tpl" :scope="{foo:'bar'}">...inserted here...</div>
-```
-
-#### `:prop="props"`
-
-Set multiple attributes (spread).
-
-```html
-<input :prop="{ id: name, name, type: 'text', value }" />
 ```
 
 #### `:data="values"`

@@ -1,4 +1,4 @@
-import { use } from './signal.js'
+import { use, batch } from './signal.js'
 
 const _dispose = (Symbol.dispose ||= Symbol("dispose"));
 
@@ -66,7 +66,7 @@ export default function sprae(container, values) {
 sprae.use = use
 
 // default compiler
-sprae.compile = (src) => new Function(`__scope`, `with (__scope) { let __; return ${src} };`)
+sprae.compile = (src) => new Function(`__scope`, `with (__scope) { return ${src} };`)
 
 const evalMemo = {};
 

@@ -1,9 +1,9 @@
 import swapdom from "swapdom/swap-inflate.js";
-import { directive, parse } from "../src/core.js";
+import sprae, { directive, parse } from "../src/core.js";
 import { effect } from '../src/signal.js'
 
 
-const _each = Symbol(":each");
+export const _each = Symbol(":each");
 
 // :each must init before :ref, :id or any others, since it defines scope
 directive.each = (tpl, expr, state) => {

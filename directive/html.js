@@ -1,4 +1,4 @@
-import { directive, parse } from "../src/core.js";
+import sprae, { directive, parse } from "../src/core.js";
 import { effect } from '../src/signal.js'
 
 directive.html = (el, expr, state) => {
@@ -9,5 +9,5 @@ directive.html = (el, expr, state) => {
   let content = tpl.content.cloneNode(true);
   el.replaceChildren(content);
   sprae(el, state);
-  return el[_dispose];
+  return el[Symbol.dispose];
 };
