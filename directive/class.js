@@ -1,4 +1,5 @@
-import { directive } from "../src/core.js";
+import { directive, parse } from "../src/core.js";
+import { effect } from '../src/signal.js'
 
 directive.class = (el, expr, state) => {
   let evaluate = parse(el, expr, 'class');
@@ -9,9 +10,6 @@ directive.class = (el, expr, state) => {
     if (v) {
       if (typeof v === "string") className.push(v);
       else if (Array.isArray(v)) className.push(...v);
-      else {
-        className.push(...Object.entries(v).map(([k, v]) => (v ? k : "")));
-      }
     }
     if ((className = className.filter(Boolean).join(" "))) el.setAttribute("class", className);
     else el.removeAttribute("class");

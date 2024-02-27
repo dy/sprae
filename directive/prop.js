@@ -1,4 +1,5 @@
-import { directive } from "../src/core.js";
+import { directive, parse } from "../src/core.js";
+import { effect } from '../src/signal.js'
 
 // spread props
 directive[''] = (el, expr, state) => {

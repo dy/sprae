@@ -109,7 +109,7 @@ test("style", async () => {
 });
 
 test("class", async () => {
-  let el = h`<x class="base" :class="a"></x><y :class="[b, c]"></y><z :class="{b:true, c:d}"></z>`;
+  let el = h`<x class="base" :class="a"></x><y :class="[b, c]"></y><z :class="['b', d.value && 'c']"></z>`;
   const c = signal("z");
   let params = sprae(el, { a: "x", b: "y", c, d: signal(false) });
   is(el.outerHTML, `<x class="base x"></x><y class="y z"></y><z class="b"></z>`);
@@ -129,7 +129,7 @@ test("class: undefined value", async () => {
 test("class: old svg fun", async () => {
   // raw html creates svganimatedstring
   let el = document.createElement("div");
-  el.innerHTML = `<svg class="foo" :class="a ? 'x' : 'y'"></svg>`;
+  el.innerHTML = `<svg class="foo" :class="a.value ? 'x' : 'y'"></svg>`;
 
   let s = sprae(el, { a: signal(true) });
   is(el.innerHTML, `<svg class="foo x"></svg>`);

@@ -2,12 +2,11 @@
   "name": "sprae",
   "description": "DOM microhydration.",
   "version": "8.1.3",
-  "main": "./src/sprae.js",
-  "module": "./src/sprae.js",
+  "main": "./sprae.js",
+  "module": "./sprae.js",
   "type": "module",
   "files": [
     "src",
-    "dist",
     "directive"
   ],
   "dependencies": {
@@ -29,7 +28,7 @@
   "scripts": {
     "test": "node -r ./test/register.cjs test/test.js",
     "build": "npm run bundle && npm run min",
-    "bundle": "esbuild --bundle ./src/sprae.js ./src/sprae.csp.js --outdir=dist --format=esm",
+    "bundle": "esbuild --bundle ./sprae.js ./sprae.csp.js --outdir=dist --format=esm",
     "min": "terser ./dist/sprae.js -o ./dist/sprae.min.js --module -c passes=3 -m && terser ./dist/sprae.csp.js -o ./dist/sprae.csp.min.js --module -c passes=3 -m"
   },
   "repository": {

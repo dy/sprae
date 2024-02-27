@@ -18,7 +18,7 @@ directive.default = (el, expr, state, name) => {
   }
 
   return effect(() => {
-    attr(el, name, evaluate(state)?.valueOf())
+    attr(el, name, evaluate(state))
   });
 };
 

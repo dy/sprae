@@ -1,4 +1,5 @@
-import { directive } from "../src/core.js";
+import { directive, parse } from "../src/core.js";
+import { effect, computed } from '../src/signal.js'
 
 // :if is interchangeable with :each depending on order, :if :each or :each :if have different meanings
 // as for :if :scope - :if must init first, since it is lazy, to avoid initializing component ahead of time by :scope

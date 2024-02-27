@@ -84,9 +84,15 @@
 * [x] make signals tests (nested effects)
 * [x] try direct directives without primary/secondary
 * [ ] split directives
-* [ ] each that keeps elements
-* [ ] interpolatable strings
+* [ ] :each that keeps elements
 * [ ] template test (:text, :html, :if, :each)
+* [ ] interpolatable strings
+* [ ] switchable compiler
+* [ ] Plugins
+  * [ ] :aria
+  * [ ] :data
+  * [ ] :item
 * [ ] fix examples
 * [ ] all FIXMEs
 * [ ] move proxy state into own project / part of signal struct (with tests from here)
+* [ ] make cross-version testing: sprae, csp, signals variations

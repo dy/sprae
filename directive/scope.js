@@ -1,4 +1,5 @@
-import { directive } from "../src/core.js";
+import { directive, parse } from "../src/core.js";
+import { effect } from '../src/signal.js'
 
 // `:each` can redefine scope as `:each="a in {myScope}"`,
 // same time per-item scope as `:each="..." :scope="{collapsed:true}"` is useful

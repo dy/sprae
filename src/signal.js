@@ -1,4 +1,4 @@
-// Bare minimum signals impl
+// Minimorum signals impl
 export let current,
   signal = (v, s, obs = new Set) => (
     s = {
@@ -39,7 +39,8 @@ export let current,
   batch = (fn) => fn(),
   untracked = (fn, prev) => (prev = current, current = null, fn(), current = prev),
 
-  use = (s) => (
+  // configure signals
+  use = s => (
     signal = s.signal,
     effect = s.effect,
     computed = s.computed,

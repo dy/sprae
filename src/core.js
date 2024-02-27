@@ -1,3 +1,5 @@
+import { use } from './signal.js'
+
 const _dispose = (Symbol.dispose ||= Symbol("dispose"));
 
 // reserved directives - order matters!
@@ -5,7 +7,6 @@ export const directive = {};
 
 // sprae element: apply directives
 const memo = new WeakMap();
-
 export default function sprae(container, values) {
   // repeated call can be caused by :each with new objects with old keys needs an update
   if (memo.has(container))
@@ -61,9 +62,11 @@ export default function sprae(container, values) {
   return state;
 }
 
+// configure signals
+sprae.use = use
+
 // default compiler
-export let compile = (src) => new Function(`__scope`, `with (__scope) { let __; return ${src} };`),
-  setCompiler = c => compile = c
+sprae.compile = (src) => new Function(`__scope`, `with (__scope) { let __; return ${src} };`)
 
 const evalMemo = {};
 
@@ -75,7 +78,7 @@ export const parse = (el, expression, dir) => {
   // guard static-time eval errors
   if (!evaluate) {
     try {
-      evaluate = evalMemo[expression] = compile(expression);
+      evaluate = evalMemo[expression] = sprae.compile(expression);
     } catch (e) {
       return err(e, el, expression, dir);
     }
@@ -88,7 +91,7 @@ export const parse = (el, expression, dir) => {
     } catch (e) {
       return err(e, el, expression, dir);
     }
-    return result;
+    return result?.valueOf();
   };
 }
 

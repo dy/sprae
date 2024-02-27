@@ -1,6 +1,11 @@
-import { directive } from "../src/core.js";
+import { directive, parse } from "../src/core.js";
+import { effect } from '../src/signal.js'
 
+directive['data'] = (el, expr, state) => {
+  let evaluate = parse(el, expr, 'data')
 
-const dashcase = (str) => {
-  return str.replace(/[A-Z\u00C0-\u00D6\u00D8-\u00DE]/g, (match) => "-" + match.toLowerCase());
+  return ((state) => {
+    let value = evaluate(state)
+    for (let key in value) el.dataset[key] = value[key];
+  })
 }

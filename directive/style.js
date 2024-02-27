@@ -1,9 +1,11 @@
-import { directive } from "../src/core.js";
+import { directive, parse } from "../src/core.js";
+import { effect } from '../src/signal.js'
 
 directive.style = (el, expr, state) => {
   let evaluate = parse(el, expr, 'style');
   let initStyle = el.getAttribute("style") || "";
   if (!initStyle.endsWith(";")) initStyle += "; ";
+
   return effect(() => {
     let v = evaluate(state);
     if (typeof v === "string") el.setAttribute("style", initStyle + v);

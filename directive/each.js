@@ -1,5 +1,6 @@
 import swapdom from "swapdom/swap-inflate.js";
-import { directive } from "../src/core.js";
+import { directive, parse } from "../src/core.js";
+import { effect } from '../src/signal.js'
 
 
 const _each = Symbol(":each");
