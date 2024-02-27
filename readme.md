@@ -195,7 +195,7 @@ Attach event(s) listener with possible modifiers.
 
 ## Additional Directives
 
-The following directives aren't shipped by default, but can be plugged in as:
+The following directives aren't shipped by default, and can be plugged in as:
 
 ```js
 import sprae from 'sprae'
@@ -217,7 +217,7 @@ Hello, <template :html="user.name">Guest</template>.
 <div :html="tpl" :scope="{foo:'bar'}">...inserted here...</div>
 ```
 
-#### `:...="props"`
+#### `:prop="props"`
 
 Set multiple attributes (spread).
 
@@ -247,17 +247,25 @@ Set `aria-*` attributes. Boolean values are stringified.
 }" />
 ```
 
+#### `:item="values"`
+
+Set data schema values:
+
+```html
+<div :item="{type:a, scope:b}"/>
+```
+
+#### `:onvisible..oninvisible="e => e => {}"`
+
+Trigger when element is in/out of the screen.
+
+#### `:onmount..onunmount="e => e => {}"`
+
+Trigger when element is connected / disconnected from DOM.
+
+
 <!--
 _Sprae_ directives can be extended as `sprae.directive.name = (el, expr, state) => {}`.
-
-Also see [nadi](https://github.com/dy/nadi) - collection of various DOM/etc interfaces with signals API. -->
-
-<!-- Official plugins are:
-
-* @sprae/item: `<x :item="{type:a, scope:b}"` – data schema
-* @sprae/visible - `:onvisible..oninvisible="e => e => {}"`
-* @sprae/intersect - `:onin..onout="e => e => {}"`
-* @sprae/mount - `:onmount..onunmount="e => e => {}"`
 -->
 
 
@@ -315,6 +323,19 @@ true false null undefined NaN
 <!-- ## Dispose
 
 To destroy state and detach sprae handlers, call `element[Symbol.dispose]()`. -->
+
+
+## Migration to v9
+
+* No default globals: provide manually to state (`console`, `setTimeout` etc).
+* ``:class="`abc ${def}`"`` → `:class="'abc $<def>'"`
+* `:with={x:foo}` → `:scope={x:foo}`
+* `:render="tpl"` → `:html="tpl"`
+* No autoinit → use manual init.
+* No reactive store → use signals for reactive values, read `a.value` where applicable.
+* `@click="event.target"` → `:onclick="event => event.target"`
+* Async props / events are prohibited, pass async functions via state.
+* Directives order matters, eg. `<a :if :each :scope />` !== `<a :scope :each :if />`
 
 
 ## Justification
@@ -393,6 +414,7 @@ npm run results
 * [nuejs](https://github.com/nuejs/nuejs)
  -->
 
+
 ## Examples
 
 * ToDo MVC: [demo](https://dy.github.io/sprae/examples/todomvc), [code](https://github.com/dy/sprae/blob/main/examples/todomvc.html)
@@ -400,17 +422,9 @@ npm run results
 * Wavearea: [demo](https://dy.github.io/wavearea?src=//cdn.freesound.org/previews/586/586281_2332564-lq.mp3), [code](https://github.com/dy/wavearea)
 * Prostogreen [demo](http://web-being.org/prostogreen/), [code](https://github.com/web-being/prostogreen/)
 
+## See Also
 
-## Migration to v9
+* [nadi](https://github.com/dy/nadi) - DOM signals.
 
-* No default globals: provide manually to state (`console`, `setTimeout` etc).
-* ``:class="`abc ${def}`"`` → `:class="'abc $<def>'"`
-* `:with={x:foo}` → `:scope={x:foo}`
-* `:render="tpl"` → `:html="tpl"`
-* No autoinit → use manual init.
-* No reactive store → use signals for reactive values, read `a.value` where applicable.
-* `@click="event.target"` → `:onclick="event => event.target"`
-* Async props / events are prohibited, pass async functions via state.
-* Directives order matters, eg. `<a :if :each :scope />` !== `<a :scope :each :if />`
 
 <p align="center"><a href="https://github.com/krsnzd/license/">🕉</a></p>
