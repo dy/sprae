@@ -164,14 +164,6 @@ Attach event(s) listener with possible modifiers.
 * `.*` – any other modifier has no effect, but allows binding multiple handlers to same event (like jQuery event classes).
 
 
-#### `:fx="values"`
-
-Run effect.
-
-```html
-<div :fx="foo.value ? bar() : baz();" />
-```
-
 #### `:scope="data"`
 
 Define or extend data scope for a subtree.
@@ -195,6 +187,16 @@ Expose element to current scope with `name`.
   <input :onfocus..onblur=="e => (item.classList.add('editing'), e => item.classList.remove('editing'))"/>
 </li>
 ```
+
+
+#### `:fx="values"`
+
+Run effect.
+
+```html
+<div :fx="foo.value ? bar() : baz();" />
+```
+
 
 
 ## Additional Directives
@@ -420,7 +422,7 @@ npm run results
 
 ## See Also
 
-* [nadi](https://github.com/dy/nadi) - DOM signals.
+* [nadi](https://github.com/dy/nadi) - 101 signals.
 
 
 <p align="center"><a href="https://github.com/krsnzd/license/">🕉</a></p>
