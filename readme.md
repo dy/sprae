@@ -3,7 +3,7 @@
 > DOM tree microhydration
 
 _Sprae_ is a compact & ergonomic progressive enhancement framework.<br/>
-It provides `:`-attributes for inline markup logic based on signals.<br/>
+It provides `:`-attributes for inline markup logic based on _signals_.<br/>
 Perfect for small-scale websites, prototypes, or lightweight UI.<br/>
 
 ## Usage
@@ -133,18 +133,24 @@ Set any other attribute.
 <input :id:name="name" />
 ```
 
+#### `:="effect"`
+
+Run effect.
+
+```html
+<div :="foo.value ? bar() : baz();" />
+```
+
 #### `:scope="data"`
 
 Define or extend data scope for a subtree.
 
 ```html
-<x :scope="{ foo: 'bar' }">
+<x :scope="{ foo: signal('bar') }">
   <!-- extends parent scope -->
   <y :scope="{ baz: 'qux' }" :text="foo + baz"></y>
 </x>
 ```
-
-You may need to pass `signal` to make reactive values.
 
 #### `:ref="name"`
 
@@ -187,18 +193,18 @@ Attach event(s) listener with possible modifiers.
 * `.*` – any other modifier has no effect, but allows binding multiple handlers to same event (like jQuery event classes).
 
 
-## Extra Directives
+## Additional Directives
 
-The following directives aren't shipped by default, can be plugged in as:
+The following directives aren't shipped by default, but can be plugged in as:
 
 ```js
 import sprae from 'sprae'
-import 'sprae/directive/*'
+import 'sprae/directive/<directive>'
 ```
 
 #### `:html="element"`
 
-Set html content of an element or instantiate template.
+Set html content of an element or instantiate a template.
 
 ```html
 Hello, <span :html="userElement">Guest</span>.
@@ -211,7 +217,7 @@ Hello, <template :html="user.name">Guest</template>.
 <div :html="tpl" :scope="{foo:'bar'}">...inserted here...</div>
 ```
 
-#### `:prop="props"`
+#### `:...="props"`
 
 Set multiple attributes (spread).
 
@@ -402,7 +408,7 @@ npm run results
 * `:with={x:foo}` → `:scope={x:foo}`
 * `:render="tpl"` → `:html="tpl"`
 * No autoinit → use manual init.
-* No reactive store → use signals for reactive values.
+* No reactive store → use signals for reactive values, read `a.value` where applicable.
 * `@click="event.target"` → `:onclick="event => event.target"`
 * Async props / events are prohibited, pass async functions via state.
 * Directives order matters, eg. `<a :if :each :scope />` !== `<a :scope :each :if />`
