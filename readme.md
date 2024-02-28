@@ -309,6 +309,7 @@ sprae(el, { name: signal('Kitty') });
 * [`usignal`](https://ghib.io/usignal) – 1.8Kb, better performance, good for average states (20-50 deps).
 * [`@preact/signals-core`](https://ghub.io/@preact/signals-core) – 4Kb, best performance, good for complex states.
 
+See [benchmark](https://github.com/WebReflection/usignal?tab=readme-ov-file#benchmark).
 
 ## Expressions
 
@@ -321,7 +322,7 @@ For safer eval _sprae_ can be configured to an alternative evaluator. For exampl
 import sprae from 'sprae';
 import compile from "subscript/justin";
 
-sprae.compile = compile;
+sprae.use({compile});
 ```
 
 _Justin_ covers a minimal subset of JS without keywords:
@@ -348,19 +349,22 @@ To destroy state and detach sprae handlers, call `element[Symbol.dispose]()`. --
 
 ## DOM diffing
 
-_Sprae_ uses full nodes replace for DOM diffing, but can be reconfigured to custom differs:
+_Sprae_ uses vaive DOM differ, but can be configured to custom one:
 
 ```js
 import sprae from 'sprae'
-import domdiff from 'udomdiff
+import domdiff from 'udomdiff'
 
-sprae.swapdom = domdiff
+sprae.use({domdiff})
 ```
 
 ###### DOM differs:
 
-* [swapdom]() – minimal DOM differ, average performance
-* [udomdiff]() – performant DOM differ
+* [swapdom](https://github.com/dy/swapdom) – 208b, most minimal DOM differ
+* [udomdiff](https://github.com/WebReflection/udomdiff) – 388b, performant DOM differ
+* [list-difference](https://github.com/paldepind/list-difference/) - 281b, balanced size/perf
+
+See [benchmark](https://github.com/luwes/js-diff-benchmark).
 
 
 ## Custom Build

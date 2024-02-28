@@ -1,5 +1,5 @@
 import swap from "swapdom";
-import sprae, { directive, effect, computed } from "../core.js";
+import sprae, { directive, effect, computed, compile } from "../core.js";
 import { _each } from './each.js'
 
 // :if is interchangeable with :each depending on order, :if :each or :each :if have different meanings
@@ -11,7 +11,7 @@ directive.if = (ifEl, expr, state) => {
     next = ifEl.nextElementSibling,
     holder = document.createTextNode(''),
 
-    evaluate = sprae.compile(expr, 'if'),
+    evaluate = compile(expr, 'if'),
     prevPass = ifEl[_prevIf],
     pass = computed(() => evaluate(state)),
 

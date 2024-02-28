@@ -1,6 +1,6 @@
 import sprae from './core.js'
 import * as signals from 'ulive'
 
-Object.assign(sprae, signals)
+sprae.use(signals)
 
 export * from 'ulive';

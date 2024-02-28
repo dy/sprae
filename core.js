@@ -68,7 +68,7 @@ export default function sprae(container, values) {
 // default compiler
 const evalMemo = {};
 
-sprae.compile = (expr, dir, evaluate) => {
+export let compile = (expr, dir, evaluate) => {
   if (evaluate = evalMemo[expr = expr.trim()]) return evaluate
 
   // static-time errors
@@ -78,3 +78,16 @@ sprae.compile = (expr, dir, evaluate) => {
   // runtime errors
   return evalMemo[expr] = (state) => evaluate(state)?.valueOf();
 }
+
+// configure signals/compiler/differ
+// it's more compact than using sprae.signal = signal etc.
+sprae.use = s => (
+  s.signal && (
+    signal = s.signal,
+    effect = s.effect,
+    computed = s.computed
+  ),
+  s.batch && (batch = s.batch),
+  s.untracked && (untracked = s.untracked),
+  s.compile && (compile = s.compile)
+)

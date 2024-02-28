@@ -950,7 +950,7 @@
 
 4. `sprae.signals = signals`
 
-## [x] How to export signals? -> `sprae/signal` seems to be most meaningful
+## [x] How to export signals? -> `sprae/signal` seems to be most meaningful, but keep .use
 
 1. `import sprae, {signal, effect} from 'sprae'`
 
@@ -958,6 +958,8 @@
 - enforces signal exports
 - enforces `sprae.use` to switch signals
   - which is also not small
+    + requiring / calling `sprae.signal` everywhere is more to size than once-assigning
+    + `sprae.use` is more obvious than `sprae.signal = xxx`
 
 2. `import sprae from 'sprae'; import { signal, effect } from 'sprae/signal'`
 
