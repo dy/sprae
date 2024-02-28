@@ -523,15 +523,15 @@ test("each: loop within loop", async () => {
   // is(el.innerHTML, '')
 });
 
-test("each: reactive values", async () => {
+test("each: fragments single", async () => {
   let el = h`<p>
-    <span :each="a in b" :text="a"></span>
+    <template :each="a in b"><span :text="a"/></template>
   </p>`;
 
-  const b = signal([]);
+  const b = signal([1]);
   const params = sprae(el, { b });
 
-  is(el.innerHTML, "");
+  is(el.innerHTML, "<span>1</span>");
   b.value = [1, 2];
   is(el.innerHTML, "<span>1</span><span>2</span>");
   console.log("b.value=[]");
@@ -540,6 +540,43 @@ test("each: reactive values", async () => {
   params.b = null;
   is(el.innerHTML, "");
 });
+
+test("each: fragments multiple", async () => {
+  let el = h`<p>
+    <template :each="v, i in b"><x :text="i"/><x :text="v"/></template>
+  </p>`;
+
+  const b = signal([1]);
+  const params = sprae(el, { b });
+
+  is(el.innerHTML, "<x>0</x><x>1</x>");
+  b.value = [1, 2];
+  is(el.innerHTML, "<x>0</x><x>1</x><x>1</x><x>2</x>");
+  console.log("b.value=[]");
+  b.value = [];
+  is(el.innerHTML, "");
+  params.b = null;
+  is(el.innerHTML, "");
+});
+
+test.skip("each: fragments text", async () => {
+  let el = h`<p>
+    <template :each="a in b" :text="a"></template>
+  </p>`;
+
+  const b = signal([1]);
+  const params = sprae(el, { b });
+
+  is(el.innerHTML, "<span>1</span>");
+  b.value = [1, 2];
+  is(el.innerHTML, "<span>1</span><span>2</span>");
+  console.log("b.value=[]");
+  b.value = [];
+  is(el.innerHTML, "");
+  params.b = null;
+  is(el.innerHTML, "");
+});
+
 
 test("each: loop with condition", async () => {
   // NOTE: there doesn't seem to be much value in exactly that
@@ -564,7 +601,7 @@ test("each: loop with condition", async () => {
   is(el.innerHTML, "");
 });
 
-test.only("each: condition with loop", async () => {
+test("each: condition with loop", async () => {
   let el = h`<p>
   <span :if="c" :each="a in b" :text="a"></span>
   <span :else :text="c"></span>

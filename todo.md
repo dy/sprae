@@ -86,7 +86,7 @@
 * [x] split directives
 * [x] switchable compiler
 * [x] clear exports (no parse, err) - make sense of `compile` function as exported
-* [ ] template test (:text, :html, :if, :each)
+* [x] template test (:text, :html, :if, :each)
 * [ ] flatten API, API to docs: `./core` (custom build), `./sprae` (default entry)
   * [ ] make CSP a docs config, not entry
 * [ ] customizable swapper

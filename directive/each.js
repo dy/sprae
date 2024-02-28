@@ -12,6 +12,9 @@ directive.each = (tpl, expr, state) => {
   const holder = (tpl[_each] = document.createTextNode(""));
   tpl.replaceWith(holder);
 
+  // <template>
+  if (tpl.content) tpl = tpl.content
+
   const evaluate = compile(itemsExpr, 'each');
 
   let cur = [];
@@ -21,8 +24,6 @@ directive.each = (tpl, expr, state) => {
     if (typeof items === "number") items = Array.from({ length: items }, (_, i) => i);
 
     // FIXME: keep prev items (avoid reinit)
-    // FIXME: nadi fail here without untracked
-    // untracked(() => {
     for (let idx in items) {
       let el = tpl.cloneNode(true),
         substate = Object.create(state, {
@@ -30,9 +31,8 @@ directive.each = (tpl, expr, state) => {
           [idxVar]: { value: idx },
         });
       sprae(el, substate);
-      els.push(el);
+      el.nodeType === 11 ? els.push(...el.childNodes) : els.push(el);
     }
-    // })
 
     swapdom(holder.parentNode, cur, els, holder);
     cur = els;
