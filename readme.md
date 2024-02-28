@@ -29,8 +29,6 @@ Sprae evaluates `:`-directives and evaporates them, attaching state to html.
 
 ## Directives
 
-Following directives are shipped by default.
-
 #### `:if="condition"`, `:else`
 
 Control flow of elements.
