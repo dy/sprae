@@ -228,6 +228,15 @@ test("text: core", async () => {
   is(el.outerHTML, `<div></div>`);
 });
 
+test("text: fragment", async () => {
+  let el = h`a<template :text="text"/>`;
+  let params = sprae(el, { text: signal("b") });
+  is(el.outerHTML, `ab`);
+  params.text.value = 'bc';
+  await tick();
+  is(el.outerHTML, `abc`);
+});
+
 test("if: base", async () => {
   let el = h`<p>
     <span :if="a==1">a</span>

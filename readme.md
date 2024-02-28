@@ -80,7 +80,7 @@ Set text content of an element.
 Welcome, <span :text="user.name">Guest</span>.
 
 <!-- fragment -->
-Welcome, <template :text="user.name">Guest</template>.
+Welcome, <template :text="user.name" />.
 ```
 
 #### `:class="value"`
