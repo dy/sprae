@@ -162,10 +162,13 @@ Expose element to current scope with `name`.
 
 #### `:fx="values"`
 
-Run effect, not changing any attribute.
+Run effect, not changing any attribute. Optional cleanup is called in-between effect calls or on disposal.
 
 ```html
-<div :fx="foo.value ? bar() : baz();" />
+<div :fx="a.value ? foo() : bar()" />
+
+<!-- cleanup function -->
+<div :fx="id = setInterval(tick, interval), () => clearInterval(tick)" />
 ```
 
 

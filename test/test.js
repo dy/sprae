@@ -1016,11 +1016,16 @@ test(":: null result does nothing", async () => {
 });
 
 test("fx: effects", async () => {
-  let el = h`<x :fx="log.push(1), log.push(2)"></x>`;
-  let log = []
-  let state = sprae(el, { log });
+  let el = h`<x :fx="log.push(x.value), () => log.push('out')"></x>`;
+  let log = [], x = signal(1)
+  let state = sprae(el, { log, x });
   is(el.outerHTML, `<x></x>`);
-  is(log, [1, 2])
+  is(log, [1])
+  x.value = 2
+  is(el.outerHTML, `<x></x>`);
+  is(log, [1, 'out', 2])
+  el[Symbol.dispose]()
+  is(log, [1, 'out', 2, 'out'])
 });
 
 test.todo("immediate scope", async () => {
