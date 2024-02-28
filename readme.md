@@ -136,34 +136,6 @@ Set attribute(s).
 <input :="{ id: name, name, type: 'text', value }" />
 ```
 
-#### `:on<event>.<modifier>="handler"`, `:on<in>..on<out>="handler"`
-
-Attach event(s) listener with possible modifiers.
-
-```html
-<input type="checkbox" :onchange="e => isChecked = e.target.value">
-
-<!-- multiple events -->
-<input :value="text" :oninput:onchange="e => text = e.target.value">
-
-<!-- events sequence -->
-<button :onfocus..onblur="e => ( handleFocus(), e => handleBlur())">
-
-<!-- event modifiers -->
-<button :onclick.throttle-500="handler">Not too often</button>
-```
-
-###### Modifiers:
-
-* `.once`, `.passive`, `.capture` – listener [options](https://developer.mozilla.org/en-US/docs/Web/API/EventTarget/addEventListener#options).
-* `.prevent`, `.stop` – prevent default or stop propagation.
-* `.window`, `.document`, `.outside`, `.self` – specify event target.
-* `.throttle-<ms>`, `.debounce-<ms>` – defer function call with one of the methods.
-* `.ctrl`, `.shift`, `.alt`, `.meta`, `.arrow`, `.enter`, `.escape`, `.tab`, `.space`, `.backspace`, `.delete`, `.digit`, `.letter`, `.character` – filter by [`event.key`](https://developer.mozilla.org/en-US/docs/Web/API/UI_Events/Keyboard_event_key_values).
-* `.ctrl-<key>, .alt-<key>, .meta-<key>, .shift-<key>` – key combinations, eg. `.ctrl-alt-delete` or `.meta-x`.
-* `.*` – any other modifier has no effect, but allows binding multiple handlers to same event (like jQuery event classes).
-
-
 #### `:scope="data"`
 
 Define or extend data scope for a subtree.
@@ -195,6 +167,35 @@ Run effect.
 ```html
 <div :fx="foo.value ? bar() : baz();" />
 ```
+
+
+#### `:on<event>.<modifier>="handler"`, `:on<in>..on<out>="handler"`
+
+Attach event(s) listener with possible modifiers.
+
+```html
+<input type="checkbox" :onchange="e => isChecked = e.target.value">
+
+<!-- multiple events -->
+<input :value="text" :oninput:onchange="e => text = e.target.value">
+
+<!-- events sequence -->
+<button :onfocus..onblur="e => ( handleFocus(), e => handleBlur())">
+
+<!-- event modifiers -->
+<button :onclick.throttle-500="handler">Not too often</button>
+```
+
+###### Modifiers:
+
+* `.once`, `.passive`, `.capture` – listener [options](https://developer.mozilla.org/en-US/docs/Web/API/EventTarget/addEventListener#options).
+* `.prevent`, `.stop` – prevent default or stop propagation.
+* `.window`, `.document`, `.outside`, `.self` – specify event target.
+* `.throttle-<ms>`, `.debounce-<ms>` – defer function call with one of the methods.
+* `.ctrl`, `.shift`, `.alt`, `.meta`, `.arrow`, `.enter`, `.escape`, `.tab`, `.space`, `.backspace`, `.delete`, `.digit`, `.letter`, `.character` – filter by [`event.key`](https://developer.mozilla.org/en-US/docs/Web/API/UI_Events/Keyboard_event_key_values).
+* `.ctrl-<key>, .alt-<key>, .meta-<key>, .shift-<key>` – key combinations, eg. `.ctrl-alt-delete` or `.meta-x`.
+* `.*` – any other modifier has no effect, but allows binding multiple handlers to same event (like jQuery event classes).
+
 
 
 
