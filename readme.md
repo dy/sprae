@@ -6,6 +6,7 @@ _Sprae_ is a compact & ergonomic progressive enhancement framework.<br/>
 It provides `:`-attributes for inline markup logic based on _signals_.<br/>
 Perfect for small-scale websites, prototypes, or lightweight UI.<br/>
 
+
 ## Usage
 
 ```html
@@ -24,6 +25,7 @@ Perfect for small-scale websites, prototypes, or lightweight UI.<br/>
 ```
 
 Sprae evaluates `:`-directives and evaporates them, attaching state to html.
+
 
 ## Directives
 
@@ -188,7 +190,6 @@ Expose element to current scope with `name`.
 </li>
 ```
 
-
 #### `:fx="values"`
 
 Run effect.
@@ -294,7 +295,7 @@ sprae(el, { name: signal('Kitty') })
 _Sprae_ evaluates expressions via `new Function`, which is simple, compact and performant way.<br/>
 It supports full JS syntax, but violates "unsafe-eval" policy and allows unrestricted access to globals (no sandboxing).
 
-[`sprae.csp.js`](./sprae.csp.js) provides safe eval & sandbox at price of more restrictive syntax and +2kb to bundle size.
+[`sprae.csp.js`](./sprae.csp.js) provides safer eval & sandbox at price of more restrictive syntax and +2kb to bundle size.
 
 ```js
 import sprae from './sprae.csp.js'
@@ -317,6 +318,8 @@ in
 1 2.34 -5e6 0x7a
 true false null undefined NaN
 ```
+
+Technically any other compiler can be configured as `sprae.use({compile})`.
 
 <!-- ## Dispose
 
@@ -419,6 +422,7 @@ npm run results
 * JS Framework Benchmark: [demo](https://dy.github.io/sprae/examples/js-framework-benchmark), [code](https://github.com/dy/sprae/blob/main/examples/js-framework-benchmark.html)
 * Wavearea: [demo](https://dy.github.io/wavearea?src=//cdn.freesound.org/previews/586/586281_2332564-lq.mp3), [code](https://github.com/dy/wavearea)
 * Prostogreen [demo](http://web-being.org/prostogreen/), [code](https://github.com/web-being/prostogreen/)
+
 
 ## See Also
 

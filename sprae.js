@@ -1,4 +1,5 @@
-export { default, signal, effect, computed, untracked, batch } from './src/core.js'
+export * from './src/core.js'
+export { default } from './src/core.js'
 
 import './directive/if.js'
 import './directive/each.js'

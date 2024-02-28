@@ -1,7 +1,7 @@
-import { directive, parse, effect } from "../src/core.js";
+import { directive, compile, effect } from "../src/core.js";
 
 directive.class = (el, expr, state) => {
-  let evaluate = parse(el, expr, 'class');
+  let evaluate = compile(expr, 'class');
   let initClassName = el.getAttribute("class"); // .className can be SVGAnimatedString da heck
   return effect(() => {
     let v = evaluate(state);

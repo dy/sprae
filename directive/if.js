@@ -1,4 +1,4 @@
-import sprae, { directive, parse, effect, computed } from "../src/core.js";
+import sprae, { directive, compile, effect, computed } from "../src/core.js";
 import { _each } from './each.js'
 
 // :if is interchangeable with :each depending on order, :if :each or :each :if have different meanings
@@ -7,7 +7,7 @@ import { _each } from './each.js'
 const _else = Symbol("else");
 directive.if = (ifEl, expr, state) => {
   let holder = document.createTextNode(""),
-    check = parse(ifEl, expr, 'if'),
+    check = compile(expr, 'if'),
     cur,
     elseEl = ifEl.nextElementSibling,
     prevPass = ifEl[_else],
@@ -35,8 +35,8 @@ directive.if = (ifEl, expr, state) => {
   });
 
   return () => {
-    ifEl[_dispose]?.();
-    elseEl?.[_dispose]?.();
+    ifEl[Symbol.dispose]?.();
+    elseEl?.[Symbol.dispose]?.();
     dispose(); // dispose effect
   };
 };

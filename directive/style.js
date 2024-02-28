@@ -1,7 +1,7 @@
-import { directive, parse, effect } from "../src/core.js";
+import { directive, compile, effect } from "../src/core.js";
 
 directive.style = (el, expr, state) => {
-  let evaluate = parse(el, expr, 'style');
+  let evaluate = compile(expr, 'style');
   let initStyle = el.getAttribute("style") || "";
   if (!initStyle.endsWith(";")) initStyle += "; ";
 

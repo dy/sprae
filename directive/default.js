@@ -1,9 +1,9 @@
-import { directive, parse, effect } from "../src/core.js";
+import { directive, compile, effect } from "../src/core.js";
 
 // set generic property directive
 directive.default = (el, expr, state, name) => {
   let evt = name.startsWith("on") && name.slice(2);
-  let evaluate = parse(el, expr, ":" + name);
+  let evaluate = compile(expr, name);
 
   if (!evaluate) return; // FIXME: do we need this?
 

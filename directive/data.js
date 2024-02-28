@@ -1,7 +1,7 @@
-import { directive, parse, effect } from "../src/core.js";
+import { directive, compile, effect } from "../src/core.js";
 
 directive['data'] = (el, expr, state) => {
-  let evaluate = parse(el, expr, 'data')
+  let evaluate = compile(expr, 'data')
 
   return ((state) => {
     let value = evaluate(state)

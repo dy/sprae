@@ -85,7 +85,7 @@
 * [x] try direct directives without primary/secondary
 * [x] split directives
 * [x] switchable compiler
-* [ ] clear exports (no parse, err) - make sense of `compile` function as exported
+* [x] clear exports (no parse, err) - make sense of `compile` function as exported
 * [ ] :each that keeps elements
 * [ ] template test (:text, :html, :if, :each)
 * [ ] interpolatable strings

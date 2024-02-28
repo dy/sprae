@@ -1,7 +1,7 @@
-import sprae, { directive, parse } from "../src/core.js";
+import sprae, { directive, compile } from "../src/core.js";
 
 directive.html = (el, expr, state) => {
-  let evaluate = parse(el, expr, 'html'), tpl = evaluate(state);
+  let evaluate = compile(expr, 'html'), tpl = evaluate(state);
 
   if (!tpl) err(new Error("Template not found"), el, expr, 'html');
 

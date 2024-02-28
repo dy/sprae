@@ -65,49 +65,28 @@ export default function sprae(container, values) {
   return state;
 }
 
-// configure signals
-(sprae.use = s => (
-  signal = s.signal,
-  effect = s.effect,
-  computed = s.computed,
-  batch = s.batch,
-  untracked = s.untracked
-))(signals)
-
-
 // default compiler
-sprae.compile = (src) => new Function(`__scope`, `with (__scope) { return ${src} };`)
-
 const evalMemo = {};
 
-// create evaluator for the expression
-// FIXME: passing that amount of props is excessive
-export const parse = (el, expression, dir) => {
-  let evaluate = evalMemo[expression = expression.trim()];
+export let compile = (expr, dir, evaluate) => {
+  if (evaluate = evalMemo[expr = expr.trim()]) return evaluate
 
-  // guard static-time eval errors
-  if (!evaluate) {
-    try {
-      evaluate = evalMemo[expression] = sprae.compile(expression);
-    } catch (e) {
-      return err(e, el, expression, dir);
-    }
-  }
+  // static-time errors
+  try { evaluate = new Function(`__scope`, `with (__scope) { return ${expr} };`); }
+  catch (e) { throw Object.assign(e, { message: `∴ ${e.message}\n\n${dir}${expr ? `="${expr}"\n\n` : ""}`, expr }) }
 
-  // guard runtime eval errors
-  return (state, result) => {
-    try {
-      result = evaluate(state);
-    } catch (e) {
-      return err(e, el, expression, dir);
-    }
-    return result?.valueOf();
-  };
+  // runtime errors
+  return evalMemo[expr] = (state) => evaluate(state)?.valueOf();
 }
 
-// throw branded error
-export const err = (error, element, expr, directive) => {
-  Object.assign(error, { element, expr });
-  console.warn(`∴ ${error.message}\n\n${directive}=${expr ? `"${expr}"\n\n` : ""}`, element);
-  throw error;
-}
+// configure signals/compiler
+(sprae.use = s => (
+  s.signal && (
+    signal = s.signal,
+    effect = s.effect,
+    computed = s.computed,
+    batch = s.batch,
+    untracked = s.untracked
+  ),
+  s.compile && (compile = s.compile)
+))(signals)

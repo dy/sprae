@@ -1,6 +1,5 @@
 import swapdom from "swapdom/swap-inflate.js";
-import sprae, { directive, parse, effect } from "../src/core.js";
-
+import sprae, { directive, compile, effect } from "../src/core.js";
 
 export const _each = Symbol(":each");
 
@@ -13,7 +12,7 @@ directive.each = (tpl, expr, state) => {
   const holder = (tpl[_each] = document.createTextNode(""));
   tpl.replaceWith(holder);
 
-  const evaluate = parse(tpl, itemsExpr, 'each');
+  const evaluate = compile(itemsExpr, 'each');
 
   let cur = [];
   return effect(() => {

@@ -1,8 +1,8 @@
-import { directive, parse, effect } from "../src/core.js";
+import { directive, compile, effect } from "../src/core.js";
 
 // connect expr to element value
 directive.value = (el, expr, state) => {
-  let evaluate = parse(el, expr, 'value');
+  let evaluate = compile(expr, 'value');
 
   let from, to;
   let update = el.type === "text" || el.type === ""
