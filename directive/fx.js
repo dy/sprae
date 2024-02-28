@@ -1,4 +1,4 @@
-import { directive, compile, effect } from "../src/core.js";
+import { directive, compile, effect } from "../core.js";
 
 directive.fx = (el, expr, state) => {
   let evaluate = compile(expr, 'fx');

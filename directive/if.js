@@ -1,5 +1,5 @@
 import swap from "swapdom";
-import sprae, { directive, compile, effect, computed } from "../src/core.js";
+import sprae, { directive, compile, effect, computed } from "../core.js";
 import { _each } from './each.js'
 
 // :if is interchangeable with :each depending on order, :if :each or :each :if have different meanings

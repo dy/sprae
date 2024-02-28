@@ -1,4 +1,4 @@
-import { directive, compile, effect } from "../src/core.js";
+import { directive, compile, effect } from "../core.js";
 
 // set text content
 directive.text = (el, expr, state) => {

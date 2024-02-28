@@ -6,8 +6,11 @@
   "module": "./sprae.js",
   "type": "module",
   "files": [
-    "src",
-    "directive"
+    "core.js",
+    "sprae.js",
+    "signal.js",
+    "directive",
+    "dist"
   ],
   "dependencies": {
     "subscript": "^8.2.2",

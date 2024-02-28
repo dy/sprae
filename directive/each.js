@@ -1,5 +1,5 @@
 import swapdom from "swapdom";
-import sprae, { directive, compile, effect } from "../src/core.js";
+import sprae, { directive, compile, effect } from "../core.js";
 
 export const _each = Symbol(":each");
 

@@ -3,7 +3,7 @@
 > DOM tree microhydration
 
 _Sprae_ is a compact & ergonomic progressive enhancement framework.<br/>
-It provides `:`-attributes for inline markup logic based on _signals_.<br/>
+It provides `:`-attributes for inline markup logic with _signals_-based reactivity.<br/>
 Perfect for small-scale websites, prototypes, or lightweight UI.<br/>
 
 
@@ -15,12 +15,13 @@ Perfect for small-scale websites, prototypes, or lightweight UI.<br/>
 </div>
 
 <script type="module">
-  import sprae, { signal } from '//unpkg.com/sprae'
+  import sprae from 'sprae'
+  import { signal } from 'sprae/signal'
 
   const name = signal('Kitty')
-  sprae(container, { user: { name } }); // init
+  sprae(container, { user: { name } }) // init
 
-  name.value = 'Dolly'; // update
+  name.value = 'Dolly' // update
 </script>
 ```
 
@@ -200,11 +201,9 @@ Attach event(s) listener with possible modifiers.
 * `.*` – any other modifier has no effect, but allows binding multiple handlers to same event (like jQuery event classes).
 
 
-
-
 ## Additional Directives
 
-The following directives aren't shipped by default, can be optionally plugged in as:
+The following directives aren't shipped by default, and can be optionally plugged in as:
 
 ```js
 import sprae from 'sprae'
@@ -290,40 +289,42 @@ _Sprae_ directives can be extended as `sprae.directive.name = (el, expr, state) 
 -->
 
 
-## Reactivity
+## Signals
 
-_Sprae_ uses signals for reactivity.
-By default it ships [minimorum signals](./src/signal.js), but it can be reconfigured to any other signals lib:
+_Sprae_ uses signals for reactivity and can be configured to any signals lib:
 
 ```js
-import sprae, { signal, computed, effect, batch, untracked } from 'sprae';
-import * as preactSignals from '@preact/signals-core';
+import sprae from 'sprae';
+import { signal, computed, effect, batch, untracked } from '@preact/signals-core';
 
-sprae.use(preactSignals)
+Object.assign(sprae, { signal, computed, effect, batch, untracked });
 
-sprae(el, { name: signal('Kitty') })
+sprae(el, { name: signal('Kitty') });
 ```
 
 ###### Signals providers:
 
-* [`sprae/signal`](./src/signal.js) (default) – 0Kb, basic performance, good for simple states (<10 deps).
-* [`@webreflection/signal`](https://ghib.io/@webreflection/signal) – +1Kb, good performance, good for average states (10-20 deps).
-* [`usignal`](https://ghib.io/usignal) – +1.8Kb, better performance, good for average states (20-50 deps).
-* [`@preact/signals-core`](https://ghub.io/@preact/signals-core) – +4Kb, best performance, good for complex states.
+* [`ulive`](https://ghub.io/ulive) (default) – 320b, basic performance, good for simple states (<10 deps).
+* [`@webreflection/signal`](https://ghib.io/@webreflection/signal) – 1Kb, good performance, good for average states (10-20 deps).
+* [`usignal`](https://ghib.io/usignal) – 1.8Kb, better performance, good for average states (20-50 deps).
+* [`@preact/signals-core`](https://ghub.io/@preact/signals-core) – 4Kb, best performance, good for complex states.
 
 
-## CSP
+## Expressions
 
 _Sprae_ evaluates expressions via `new Function`, which is simple, compact and performant way.<br/>
 It supports full JS syntax, but violates "unsafe-eval" policy and allows unrestricted access to globals (no sandboxing).
 
-[`sprae.csp.js`](./sprae.csp.js) provides safer eval & sandbox at price of more restrictive syntax and +2kb to bundle size.
+For safer eval _sprae_ can be configured to an alternative evaluator. For example, [_Justin_](https://github.com/dy/subscript?tab=readme-ov-file#justin) accomodates for "unsafe-eval" CSP and provides sandboxing at price of more restrictive syntax and +2kb to bundle size.
 
 ```js
-import sprae from './sprae.csp.js'
+import sprae from 'sprae';
+import compile from "subscript/justin";
+
+sprae.compile = compile;
 ```
 
-Expressions use _justin_ language, a [minimal subset of JS](https://github.com/dy/subscript?tab=readme-ov-file#justin):
+_Justin_ covers a minimal subset of JS without keywords:
 
 ###### Operators:
 ```
@@ -341,11 +342,44 @@ in
 true false null undefined NaN
 ```
 
-<!-- Technically any other compiler can be configured as `sprae.use({compile})`. -->
-
 <!-- ## Dispose
 
 To destroy state and detach sprae handlers, call `element[Symbol.dispose]()`. -->
+
+## DOM diffing
+
+_Sprae_ uses full nodes replace for DOM diffing, but can be reconfigured to custom differs:
+
+```js
+import sprae from 'sprae'
+import domdiff from 'udomdiff
+
+sprae.swapdom = domdiff
+```
+
+###### DOM differs:
+
+* [swapdom]() – minimal DOM differ, average performance
+* [udomdiff]() – performant DOM differ
+
+
+## Custom Build
+
+_Sprae_ can be customly configured to your project needs via `sprae/core`, which gives bare-bones engine without directives:
+
+```js
+import sprae from 'sprae/core'
+
+// include only required directives
+import 'sprae/directive/if'
+import 'sprae/directive/text'
+
+// register signals provider
+import {signal, effect} from 'usignal'
+sprae.signal = signal, sprae.effect = effect
+```
+
+This may let limiting functionality or minimizing bundle size.
 
 
 ## Migration to v9

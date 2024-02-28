@@ -949,3 +949,23 @@
   - doesn't work with other params like `sprae.use({async:true})`
 
 4. `sprae.signals = signals`
+
+## [x] How to export signals? -> `sprae/signal` seems to be most meaningful
+
+1. `import sprae, {signal, effect} from 'sprae'`
+
+- not clear which signals are these
+- enforces signal exports
+- enforces `sprae.use` to switch signals
+  - which is also not small
+
+2. `import sprae from 'sprae'; import { signal, effect } from 'sprae/signal'`
+
+- separate import entry
++ signal is automatically registered & coupled with sprae
++ doesn't enforce `sprae.use` / `Object.assign(sprae, signals)`
+
+3. `import sprae from 'sprae'; import * as ulive from 'ulive'; Object.assign(sprae, ulive); const {signal} = ulive;`
+
+- very verbose
+- no convenient destructuring

@@ -1,4 +1,4 @@
-import { directive, compile, effect } from "../src/core.js";
+import { directive, compile, effect } from "../core.js";
 
 // connect expr to element value
 directive.value = (el, expr, state) => {

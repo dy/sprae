@@ -1,5 +1,5 @@
-export * from './src/core.js'
-export { default } from './src/core.js'
+export * from './core.js'
+export { default } from './core.js'
 
 import './directive/if.js'
 import './directive/each.js'

@@ -1,5 +1,3 @@
-import * as signals from './signal.js'
-
 // signals impl
 export let signal, effect, batch, computed, untracked;
 
@@ -70,7 +68,7 @@ export default function sprae(container, values) {
 // default compiler
 const evalMemo = {};
 
-export let compile = (expr, dir, evaluate) => {
+sprae.compile = (expr, dir, evaluate) => {
   if (evaluate = evalMemo[expr = expr.trim()]) return evaluate
 
   // static-time errors
@@ -80,15 +78,3 @@ export let compile = (expr, dir, evaluate) => {
   // runtime errors
   return evalMemo[expr] = (state) => evaluate(state)?.valueOf();
 }
-
-// configure signals/compiler
-(sprae.use = s => (
-  s.signal && (
-    signal = s.signal,
-    effect = s.effect,
-    computed = s.computed,
-    batch = s.batch,
-    untracked = s.untracked
-  ),
-  s.compile && (compile = s.compile)
-))(signals)

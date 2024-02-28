@@ -1,4 +1,4 @@
-import sprae, { directive, compile } from "../src/core.js";
+import sprae, { directive, compile } from "../core.js";
 
 // `:each` can redefine scope as `:each="a in {myScope}"`,
 // same time per-item scope as `:each="..." :scope="{collapsed:true}"` is useful

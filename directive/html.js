@@ -1,4 +1,4 @@
-import sprae, { directive, compile } from "../src/core.js";
+import sprae, { directive, compile } from "../core.js";
 
 directive.html = (el, expr, state) => {
   let evaluate = compile(expr, 'html'), tpl = evaluate(state);
