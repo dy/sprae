@@ -360,9 +360,9 @@ To destroy state and detach sprae handlers, call `element[Symbol.dispose]()`. --
 
 ## Justification
 
-[Template-parts](https://github.com/dy/template-parts) / [templize](https://github.com/dy/templize) is progressive, but is stuck with native HTML quirks ([parsing table](https://github.com/github/template-parts/issues/24), [SVG attributes](https://github.com/github/template-parts/issues/25), [liquid syntax](https://shopify.github.io/liquid/tags/template/#raw) conflict etc). [Alpine](https://github.com/alpinejs/alpine) / [petite-vue](https://github.com/vuejs/petite-vue) / [lucia](https://github.com/aidenyabi/lucia) escape native HTML quirks, but the API is excessive (`:`, `x-`, `{}`, `@`, `$`), [self-encapsulated](https://github.com/alpinejs/alpine/discussions/3223) (own reactivity, no access to data), and unsafe.
+[Template-parts](https://github.com/dy/template-parts) / [templize](https://github.com/dy/templize) is progressive, but is stuck with native HTML quirks ([parsing table](https://github.com/github/template-parts/issues/24), [SVG attributes](https://github.com/github/template-parts/issues/25), [liquid syntax](https://shopify.github.io/liquid/tags/template/#raw) conflict etc). [Alpine](https://github.com/alpinejs/alpine) / [petite-vue](https://github.com/vuejs/petite-vue) / [lucia](https://github.com/aidenyabi/lucia) escape native HTML quirks, but the API is excessive (`:`, `x-`, `{}`, `@`, `$`), [self-encapsulated](https://github.com/alpinejs/alpine/discussions/3223) (no access to data, own reactivity, own expressions, own domdiffer), and unsafe.
 
-_Sprae_ mixes _`:`-directives_ with _signals_ reactivity – a minimal, open & streamlined approach.
+_Sprae_ holds to open & minimalistic philosophy, taking _`:`-directives_ with _signals_ for reactivity.
 
 <!--
 |                       | [AlpineJS](https://github.com/alpinejs/alpine)          | [Petite-Vue](https://github.com/vuejs/petite-vue)        | Sprae            |

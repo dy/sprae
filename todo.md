@@ -86,8 +86,15 @@
 * [x] split directives
 * [x] switchable compiler
 * [x] clear exports (no parse, err) - make sense of `compile` function as exported
-* [ ] :each that keeps elements
 * [ ] template test (:text, :html, :if, :each)
+* [ ] flatten API, API to docs: `./core` (custom build), `./sprae` (default entry)
+  * [ ] make CSP a docs config, not entry
+* [ ] customizable swapper
+* [ ] fx teardown
+* [ ] `sprae.*` instead of `.use`, extending docs: directive, compile, swap, signals
+  * [ ] no-signals (signals are pluggable): better teardown flow; returns dispose fn, not state; pluggable ulive; signals from original source, not sprae
+* [ ] 0-code sandbox (stub props)
+* [ ] :each that keeps elements
 * [ ] interpolatable strings
 * [ ] Plugins
   * [ ] :aria

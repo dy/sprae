@@ -1,4 +1,4 @@
-// Minimorum signals impl (almost like ulive but smaller)
+// Minimorum signals impl
 export let current,
   signal = (v, s, obs = new Set) => (
     s = {
@@ -17,14 +17,14 @@ export let current,
   ),
   effect = (fn, teardown, run, deps) => (
     run = (prev) => {
-      if (teardown?.call) teardown()
+      teardown?.call?.()
       prev = current, current = run
       try { teardown = fn() } finally { current = prev }
     },
     deps = run.deps = [],
 
     run(),
-    (dep) => { while (dep = deps.pop()) dep.delete(run) }
+    (dep) => { teardown?.call?.(); while (dep = deps.pop()) dep.delete(run) }
   ),
   computed = (fn, s = signal(), c, e) => (
     c = {
