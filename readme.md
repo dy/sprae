@@ -257,10 +257,17 @@ Set data schema values:
 
 Trigger when element is in/out of the screen.
 
+```html
+<div :onvisible..oninvisible="e => (e.target.classList.add('visible'), e => e.target.classlist.remove('visible'))"/>
+```
+
 #### `:onmount..onunmount="e => e => {}"`
 
 Trigger when element is connected / disconnected from DOM.
 
+```html
+<div :onmount..onunmount="e => (dispose = init(), e => dispose())"/>
+```
 
 <!--
 _Sprae_ directives can be extended as `sprae.directive.name = (el, expr, state) => {}`.
@@ -318,7 +325,7 @@ in
 true false null undefined NaN
 ```
 
-Technically any other compiler can be configured as `sprae.use({compile})`.
+<!-- Technically any other compiler can be configured as `sprae.use({compile})`. -->
 
 <!-- ## Dispose
 
