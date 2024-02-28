@@ -124,7 +124,7 @@ Set value of an input, textarea or select. Takes handle of `checked` and `select
 
 #### `:<prop>="value"`, `:="values"`
 
-Set attribute(s).
+Set any attribute(s).
 
 ```html
 <label :for="name" :text="name" />
@@ -162,7 +162,7 @@ Expose element to current scope with `name`.
 
 #### `:fx="values"`
 
-Run effect.
+Run effect, not changing any attribute.
 
 ```html
 <div :fx="foo.value ? bar() : baz();" />
@@ -201,7 +201,7 @@ Attach event(s) listener with possible modifiers.
 
 ## Additional Directives
 
-The following directives aren't shipped by default, and can be plugged in as:
+The following directives aren't shipped by default, can be optionally plugged in as:
 
 ```js
 import sprae from 'sprae'
@@ -229,6 +229,7 @@ Set `data-*` attributes. CamelCase is converted to dash-case.
 
 ```html
 <input :data="{foo: 1, barBaz: true}" />
+<!-- <input data-foo="1" data-bar-baz /> -->
 ```
 
 #### `:aria="values"`
@@ -243,6 +244,8 @@ Set `aria-*` attributes. Boolean values are stringified.
   activeOption: 'item1',
   activedescendant: ''
 }" />
+<!-- <input role="combobox" aria-controls="joketypes" aria-autocomplete="list" aria-expanded="false" aria-active-option="item1" aria-activedescendant>
+-->
 ```
 
 #### `:item="values"`
@@ -250,7 +253,14 @@ Set `aria-*` attributes. Boolean values are stringified.
 Set data schema values:
 
 ```html
-<div :item="{type:a, scope:b}"/>
+<div :item="{type:'Person'}">
+  <span :item="{prop:'name'}">Jane Doe</span>
+</div>
+<!--
+<div itemscope itemtype="http://schema.org/Person">
+  <span itemprop="name">Jane Doe</span>
+</div>
+-->
 ```
 
 #### `:onvisible..oninvisible="e => e => {}"`
@@ -283,10 +293,10 @@ _Sprae_ uses signals for reactivity.
 By default it ships [minimorum signals](./src/signal.js), but it can be reconfigured to any other signals lib:
 
 ```js
-import sprae, { signal, computed, effect, batch } from 'sprae';
-import * as signals from '@preact/signals-core';
+import sprae, { signal, computed, effect, batch, untracked } from 'sprae';
+import * as preactSignals from '@preact/signals-core';
 
-sprae.use(preact)
+sprae.use(preactSignals)
 
 sprae(el, { name: signal('Kitty') })
 ```
@@ -350,9 +360,9 @@ To destroy state and detach sprae handlers, call `element[Symbol.dispose]()`. --
 
 ## Justification
 
-[Template-parts](https://github.com/dy/template-parts) / [templize](https://github.com/dy/templize) is progressive, but is stuck with native HTML quirks ([parsing table](https://github.com/github/template-parts/issues/24), [SVG attributes](https://github.com/github/template-parts/issues/25), [liquid syntax](https://shopify.github.io/liquid/tags/template/#raw) conflict etc). [Alpine](https://github.com/alpinejs/alpine) / [petite-vue](https://github.com/vuejs/petite-vue) / [lucia](https://github.com/aidenyabi/lucia) escape native HTML quirks, but the API is excessive and [self-encapsulated](https://github.com/alpinejs/alpine/discussions/3223).
+[Template-parts](https://github.com/dy/template-parts) / [templize](https://github.com/dy/templize) is progressive, but is stuck with native HTML quirks ([parsing table](https://github.com/github/template-parts/issues/24), [SVG attributes](https://github.com/github/template-parts/issues/25), [liquid syntax](https://shopify.github.io/liquid/tags/template/#raw) conflict etc). [Alpine](https://github.com/alpinejs/alpine) / [petite-vue](https://github.com/vuejs/petite-vue) / [lucia](https://github.com/aidenyabi/lucia) escape native HTML quirks, but the API is excessive (`:`, `x-`, `{}`, `@`, `$`), [self-encapsulated](https://github.com/alpinejs/alpine/discussions/3223) (own reactivity, no access to data), and unsafe.
 
-_Sprae_ mixes _templize_ / _alpine_ / _vue_ directives with _signals_ reactivity.
+_Sprae_ takes minimal, open & standard approach – mixes _`:`-directives_ with _signals_ reactivity.
 
 <!--
 |                       | [AlpineJS](https://github.com/alpinejs/alpine)          | [Petite-Vue](https://github.com/vuejs/petite-vue)        | Sprae            |
