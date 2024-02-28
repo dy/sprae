@@ -2,7 +2,7 @@
 import test, { is, any, throws } from "tst";
 import { tick, time } from "wait-please";
 import sprae from '../sprae.js'
-import { signal, effect, untracked, batch, computed } from "../src/signal.js";
+import { signal, effect, untracked, batch, computed } from "../signal.js";
 import h from "hyperf";
 
 Object.defineProperty(DocumentFragment.prototype, "outerHTML", {

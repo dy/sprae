@@ -1,5 +1,5 @@
 import swapdom from "swapdom";
-import sprae, { directive, compile, effect } from "../core.js";
+import sprae, { directive, effect } from "../core.js";
 
 export const _each = Symbol(":each");
 
@@ -15,7 +15,7 @@ directive.each = (tpl, expr, state) => {
   // <template>
   if (tpl.content) tpl = tpl.content
 
-  const evaluate = compile(itemsExpr, 'each');
+  const evaluate = sprae.compile(itemsExpr, 'each');
 
   let cur = [];
   return effect(() => {
