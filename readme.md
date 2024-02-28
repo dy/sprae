@@ -258,7 +258,10 @@ Set data schema values:
 Trigger when element is in/out of the screen.
 
 ```html
-<div :onvisible..oninvisible="e => (e.target.classList.add('visible'), e => e.target.classlist.remove('visible'))"/>
+<div :onvisible..oninvisible="e => (
+  e.target.classList.add('visible'),
+  e => e.target.classlist.remove('visible')
+)"/>
 ```
 
 #### `:onmount..onunmount="e => e => {}"`
@@ -349,16 +352,17 @@ To destroy state and detach sprae handlers, call `element[Symbol.dispose]()`. --
 
 [Template-parts](https://github.com/dy/template-parts) / [templize](https://github.com/dy/templize) is progressive, but is stuck with native HTML quirks ([parsing table](https://github.com/github/template-parts/issues/24), [SVG attributes](https://github.com/github/template-parts/issues/25), [liquid syntax](https://shopify.github.io/liquid/tags/template/#raw) conflict etc). [Alpine](https://github.com/alpinejs/alpine) / [petite-vue](https://github.com/vuejs/petite-vue) / [lucia](https://github.com/aidenyabi/lucia) escape native HTML quirks, but the API is excessive and [self-encapsulated](https://github.com/alpinejs/alpine/discussions/3223).
 
-_Sprae_ mixes _templize_ / _alpine_ / _vue_ directives with _signals_ reactivity & _no-keywords_ evaluation.
+_Sprae_ mixes _templize_ / _alpine_ / _vue_ directives with _signals_ reactivity.
 
+<!--
 |                       | [AlpineJS](https://github.com/alpinejs/alpine)          | [Petite-Vue](https://github.com/vuejs/petite-vue)        | Sprae            |
 |-----------------------|-------------------|-------------------|------------------|
 | _Size_              | ~10KB             | ~6KB              | ~5KB             |
 | _Memory_            | 5.05             | 3.16              | 2.78             |
 | _Performance_       | 2.64             | 2.43              | 1.76             |
-| _CSP_               | No                | No                | Yes              |
+| _CSP_               | Limited                | No                | Yes              |
 | _SSR_ | No | No | No |
-| _Evaluation_        | [`new AsyncFunction`](https://github.com/alpinejs/alpine/blob/main/packages/alpinejs/src/evaluator.js#L81) | [`new Function`](https://github.com/vuejs/petite-vue/blob/main/src/eval.ts#L20) | [justin](https://github.com/dy/subscript)           |
+| _Evaluation_        | [`new AsyncFunction`](https://github.com/alpinejs/alpine/blob/main/packages/alpinejs/src/evaluator.js#L81) | [`new Function`](https://github.com/vuejs/petite-vue/blob/main/src/eval.ts#L20) | [`new Function`]() / [justin](https://github.com/dy/subscript)           |
 | _Reactivity_        | `Alpine.store`    | _@vue/reactivity_   | _signals_ |
 | _Sandboxing_        | No                | No                | Yes              |
 | _Directives_ | `:`, `x-`, `{}` | `:`, `v-`, `@`, `{}` | `:` |
@@ -366,6 +370,7 @@ _Sprae_ mixes _templize_ / _alpine_ / _vue_ directives with _signals_ reactivity
 | _Fragments_ | Yes | No | Yes |
 | _Plugins_ | Yes | No | Yes |
 | _Modifiers_ | Yes | No | Yes |
+-->
 
 <!--
 <details>
