@@ -1,4 +1,4 @@
-import swapdom from "swapdom/swap-inflate.js";
+import swapdom from "swapdom";
 import sprae, { directive, compile, effect } from "../src/core.js";
 
 export const _each = Symbol(":each");

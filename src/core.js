@@ -11,6 +11,8 @@ export const directive = {};
 // sprae element: apply directives
 const memo = new WeakMap();
 export default function sprae(container, values) {
+  if (!container.children) return // text nodes, comments etc
+
   // repeated call can be caused by :each with new objects with old keys needs an update
   if (memo.has(container))
     return batch(() => Object.assign(memo.get(container), values));

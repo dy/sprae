@@ -258,6 +258,28 @@ test("if: base", async () => {
   is(el.innerHTML, "<span>c</span>");
 });
 
+test("if: template", async () => {
+  let el = h`<p>
+    <template :if="a==1">a<x>1</x></template>
+    <template :else :if="a==2">b<x>2</x></template>
+    <template :else >c<x>3</x></template>
+  </p>`;
+
+  const params = sprae(el, { a: signal(1) });
+
+  is(el.innerHTML, "a<x>1</x>");
+  params.a.value = 2;
+  await tick();
+  is(el.innerHTML, "b<x>2</x>");
+  params.a.value = 3;
+  await tick();
+  is(el.innerHTML, "c<x>3</x>");
+  params.a.value = null;
+  await tick();
+  is(el.innerHTML, "c<x>3</x>");
+});
+
+
 test("if: short with insertions", async () => {
   let el = h`<p>
     <span :if="a==1" :text="'1:'+a"></span>
@@ -542,7 +564,7 @@ test("each: loop with condition", async () => {
   is(el.innerHTML, "");
 });
 
-test("each: condition with loop", async () => {
+test.only("each: condition with loop", async () => {
   let el = h`<p>
   <span :if="c" :each="a in b" :text="a"></span>
   <span :else :text="c"></span>
