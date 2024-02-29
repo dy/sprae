@@ -300,7 +300,7 @@ sprae.use(signals);
 sprae(el, { name: signal('Kitty') });
 ```
 
-##### Libraries:
+###### Signal providers:
 
 [`ulive`](https://ghub.io/ulive), [`@webreflection/signal`](https://ghib.io/@webreflection/signal), [`usignal`](https://ghib.io/usignal), [`@preact/signals-core`](https://ghub.io/@preact/signals-core), [etc](https://github.com/WebReflection/usignal?tab=readme-ov-file#benchmark).
 
@@ -321,13 +321,13 @@ sprae.use({ compile: justin });
 
 _Justin_ covers a minimal subset of JS without keywords:
 
-##### Operators:
+###### Operators:
 
 `++ -- ! - + ** * / %  && || ??`<br/>
 `= < <= > >= == != === !==`<br/>
 `<< >> & ^ | ~ ?: . ?. [] ()=>{} in`
 
-##### Primitives:
+###### Primitives:
 
 `[] {} "" ''`<br/>
 `1 2.34 -5e6 0x7a`<br/>
@@ -346,7 +346,7 @@ import domdiff from 'list-difference';
 sprae.use({ swap: domdiff });
 ```
 
-##### DOM differs:
+###### DOM differs:
 
 [swapdom](https://github.com/dy/swapdom), [list-difference](https://github.com/paldepind/list-difference/), [udomdiff](https://github.com/WebReflection/udomdiff), [domdiff](https://github.com/WebReflection/domdiff), [etc](https://github.com/luwes/js-diff-benchmark).
 
