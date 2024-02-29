@@ -300,7 +300,7 @@ sprae(el, { name: signal('Kitty') });
 
 ### Expressions
 
-Evaluator can be configured [_justin_](https://github.com/dy/subscript?tab=readme-ov-file#justin), which resolves "unsafe-eval" **CSP** and provides sandboxing, but has more restrictive syntax:
+Evaluator can be configured to [_justin_](https://github.com/dy/subscript?tab=readme-ov-file#justin): it resolves "unsafe-eval" **CSP** and provides sandboxing, but has restricted syntax:
 
 ```js
 import sprae from 'sprae';
@@ -324,8 +324,7 @@ sprae.use({ compile: justin });
 
 ### DOM diffing
 
-DOM differ can be reconfigured to
-[swapdom](https://github.com/dy/swapdom), [list-difference](https://github.com/paldepind/list-difference/), [udomdiff](https://github.com/WebReflection/udomdiff), [domdiff](https://github.com/WebReflection/domdiff), [etc](https://github.com/luwes/js-diff-benchmark) as:
+DOM differ uses [swapdom](https://github.com/dy/swapdom), can be reconfigured to [list-difference](https://github.com/paldepind/list-difference/), [udomdiff](https://github.com/WebReflection/udomdiff), [domdiff](https://github.com/WebReflection/domdiff), [etc](https://github.com/luwes/js-diff-benchmark):
 
 ```js
 import sprae from 'sprae';
