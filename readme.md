@@ -337,7 +337,7 @@ To destroy state and detach sprae handlers, call `element[Symbol.dispose]()`. --
 
 ## DOM diffing
 
-_Sprae_ can be configured to use custom DOM diffing library:
+_Sprae_ can be configured to use custom DOM diffing library as well:
 
 ```js
 import sprae from 'sprae'
@@ -348,8 +348,8 @@ sprae.use({domdiff})
 
 ##### DOM differs:
 
-* [swapdom](https://github.com/dy/swapdom) – 208b, most minimal DOM differ.
-* [udomdiff](https://github.com/WebReflection/udomdiff) – 388b, most performant DOM differ.
+* [swapdom](https://github.com/dy/swapdom) – 208b, minimal DOM differ.
+* [udomdiff](https://github.com/WebReflection/udomdiff) – 388b, performant DOM differ.
 * [list-difference](https://github.com/paldepind/list-difference/) - 281b, balanced size/performance.
 
 <!-- See [benchmark](https://github.com/luwes/js-diff-benchmark). -->
@@ -357,21 +357,15 @@ sprae.use({domdiff})
 
 ## Custom Build
 
-_Sprae_ can be customly configured to your project needs via `sprae/core`, which gives bare-bones engine without directives:
+`sprae/core` provides bare-bones engine without directives, which allows tailoring build as:
 
 ```js
 import sprae from 'sprae/core'
 
-// include only required directives
+// include required directives
 import 'sprae/directive/if'
 import 'sprae/directive/text'
-
-// register signals provider
-import {signal, effect} from 'usignal'
-sprae.signal = signal, sprae.effect = effect
 ```
-
-This may let limiting functionality or minimizing bundle size.
 
 
 ## Migration to v9
