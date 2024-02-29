@@ -291,7 +291,7 @@ _Sprae_ directives can be extended as `sprae.directive.name = (el, expr, state) 
 
 ## Signals
 
-`sprae/signal` provides [_signals_](https://github.com/preactjs/signals?tab=readme-ov-file#guide--api) based on _ulive_. It can be switched to any other lib as:
+`sprae/signal` provides minimal _signals_ for reactivity (see [preact-signals](https://github.com/preactjs/signals?tab=readme-ov-file#guide--api)). It can be switched to any other lib as:
 
 ```js
 import sprae from 'sprae';
@@ -308,8 +308,7 @@ sprae(el, { name: signal('Kitty') });
 * [`@webreflection/signal`](https://ghib.io/@webreflection/signal) – 1Kb, good performance, good for average states (10-20 deps).
 * [`usignal`](https://ghib.io/usignal) – 1.8Kb, better performance, good for average states (20-50 deps).
 * [`@preact/signals-core`](https://ghub.io/@preact/signals-core) – 4Kb, best performance, good for complex states.
-
-<!-- See [benchmark](https://github.com/WebReflection/usignal?tab=readme-ov-file#benchmark). -->
+* [any library](https://github.com/WebReflection/usignal?tab=readme-ov-file#benchmark) that supports `{signal, effect, computed, batch?}`
 
 ## Expressions evaluation / CSP
 
@@ -320,9 +319,9 @@ For safer eval _sprae_ can be configured to use [_justin_](https://github.com/dy
 
 ```js
 import sprae from 'sprae';
-import compile from "subscript/justin";
+import justin from 'subscript/justin';
 
-sprae.use({compile});
+sprae.use({ compile: justin });
 ```
 
 _Justin_ covers a minimal subset of JS without keywords:
@@ -349,23 +348,22 @@ To destroy state and detach sprae handlers, call `element[Symbol.dispose]()`. --
 
 ## DOM diffing
 
-_Sprae_ can be configured to use DOM diffing library:
+_Sprae_ can be configured to use custom DOM differ for content directives (`:if`, `:each`):
 
 ```js
-import sprae from 'sprae'
-import domdiff from 'udomdiff'
+import sprae from 'sprae';
+import domdiff from 'domdiff';
 
-sprae.use({domdiff})
+sprae.use({ swap: domdiff });
 ```
 
 ##### DOM differs:
 
-* [swapdom](https://github.com/dy/swapdom) – 208b, minimal DOM differ.
-* [udomdiff](https://github.com/WebReflection/udomdiff) – 388b, performant DOM differ.
+* [swapdom](https://github.com/dy/swapdom) (default) – 248b, minimal DOM differ.
 * [list-difference](https://github.com/paldepind/list-difference/) - 281b, balanced size/performance.
-
-<!-- See [benchmark](https://github.com/luwes/js-diff-benchmark). -->
-
+* [udomdiff](https://github.com/WebReflection/udomdiff) – 457b, performant DOM differ.
+* [domdiff](https://github.com/WebReflection/domdiff) – 1.4Kb, advanced differ.
+* [any differ](https://github.com/luwes/js-diff-benchmark) with `swap(parentNode, prevEls, newEls)`-like signature
 
 ## Custom Build
 

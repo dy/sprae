@@ -1,3 +1,5 @@
+import swapdom from 'swapdom'
+
 // signals impl
 export let signal, effect, batch, computed, untracked;
 
@@ -79,15 +81,23 @@ export let compile = (expr, dir, evaluate) => {
   return evalMemo[expr] = (state) => evaluate(state)?.valueOf();
 }
 
+// naive swapper
+// export let swap = (parent, prev, cur, end) => {
+//   for (let el of prev) parent.removeChild(el)
+//   for (let el of cur) parent.insertBefore(el, end)
+// }
+export let swap = swapdom
+
 // configure signals/compiler/differ
 // it's more compact than using sprae.signal = signal etc.
-sprae.use = s => (
+sprae.use = s => {
   s.signal && (
     signal = s.signal,
     effect = s.effect,
-    computed = s.computed
-  ),
-  s.batch && (batch = s.batch),
-  s.untracked && (untracked = s.untracked),
-  s.compile && (compile = s.compile)
-)
+    computed = s.computed,
+    batch = s.batch || (fn => fn()),
+    untracked = s.untracked || batch
+  );
+  s.compile && (compile = s.compile);
+  s.swap && (swap = s.swap)
+}

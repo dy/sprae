@@ -1,5 +1,4 @@
-import swapdom from "swapdom";
-import sprae, { directive, effect, compile } from "../core.js";
+import sprae, { directive, effect, compile, swap } from "../core.js";
 
 export const _each = Symbol(":each");
 
@@ -34,7 +33,7 @@ directive.each = (tpl, expr, state) => {
       el.nodeType === 11 ? els.push(...el.childNodes) : els.push(el);
     }
 
-    swapdom(holder.parentNode, cur, els, holder);
+    swap(holder.parentNode, cur, els, holder);
     cur = els;
   });
 };
