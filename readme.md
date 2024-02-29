@@ -190,7 +190,7 @@ Attach event(s) listener with possible modifiers.
 <button :onclick.throttle-500="handler">Not too often</button>
 ```
 
-###### Modifiers:
+##### Modifiers:
 
 * `.once`, `.passive`, `.capture` – listener [options](https://developer.mozilla.org/en-US/docs/Web/API/EventTarget/addEventListener#options).
 * `.prevent`, `.stop` – prevent default or stop propagation.
@@ -291,35 +291,31 @@ _Sprae_ directives can be extended as `sprae.directive.name = (el, expr, state) 
 
 ## Signals
 
-_Sprae_ can use _signals_ for reactivity via `sprae/signal`, which has [preact-signals](https://github.com/preactjs/signals?tab=readme-ov-file#guide--api) API surface:<br/>
+_Sprae_ can use _signals_ for reactivity via `sprae/signal`, which has identical with [preact-signals](https://github.com/preactjs/signals?tab=readme-ov-file#guide--api) API:<br/>
 
 ```js
 import { signal, effect, computed, batch, untracked } from 'sprae/signal'
-
-let s = signal(1)
-effect(() => console.log(s.value)) // 1
-s.value++ // 2
 ```
 
-By default it uses minimorum signals implementation based on _ulive_, but can be switched to any other signals lib:
+Default implementation is based on _ulive_, but can be switched to any other signals lib:
 
 ```js
 import sprae from 'sprae';
 import { signal, computed, effect, batch, untracked } from '@preact/signals-core';
 
-Object.assign(sprae, { signal, computed, effect, batch, untracked });
+sprae.use({ signal, computed, effect, batch, untracked });
 
 sprae(el, { name: signal('Kitty') });
 ```
 
-###### Signals providers:
+##### Signals providers:
 
 * [`ulive`](https://ghub.io/ulive) (default) – 320b, basic performance, good for simple states (<10 deps).
 * [`@webreflection/signal`](https://ghib.io/@webreflection/signal) – 1Kb, good performance, good for average states (10-20 deps).
 * [`usignal`](https://ghib.io/usignal) – 1.8Kb, better performance, good for average states (20-50 deps).
 * [`@preact/signals-core`](https://ghub.io/@preact/signals-core) – 4Kb, best performance, good for complex states.
 
-See [benchmark](https://github.com/WebReflection/usignal?tab=readme-ov-file#benchmark).
+<!-- See [benchmark](https://github.com/WebReflection/usignal?tab=readme-ov-file#benchmark). -->
 
 ## Expressions
 
@@ -337,21 +333,11 @@ sprae.use({compile});
 
 _Justin_ covers a minimal subset of JS without keywords:
 
-###### Operators:
-```
-++ -- ! - + ** * / %  && || ??
-= < <= > >= == != === !==
-<< >> & ^ | ~ ?: . ?. []
-() => {}
-in
-```
+Operators | Primitives
+---|---
+`++ -- ! - + ** * / %  && || ?? = < <= > >= == != === !== << >> & ^ | ~ ?: . ?. [] () => {} in` | `[] {} "" '' 1 2.34 -5e6 0x7a true false null undefined NaN`
 
-###### Primitives:
-```
-[] {} "" ''
-1 2.34 -5e6 0x7a
-true false null undefined NaN
-```
+
 
 <!-- ## Dispose
 
@@ -359,7 +345,7 @@ To destroy state and detach sprae handlers, call `element[Symbol.dispose]()`. --
 
 ## DOM diffing
 
-_Sprae_ uses vaive DOM differ, but can be configured to custom one:
+_Sprae_ can be configured to use custom DOM diffing library:
 
 ```js
 import sprae from 'sprae'
@@ -368,13 +354,13 @@ import domdiff from 'udomdiff'
 sprae.use({domdiff})
 ```
 
-###### DOM differs:
+##### DOM differs:
 
-* [swapdom](https://github.com/dy/swapdom) – 208b, most minimal DOM differ
-* [udomdiff](https://github.com/WebReflection/udomdiff) – 388b, performant DOM differ
-* [list-difference](https://github.com/paldepind/list-difference/) - 281b, balanced size/perf
+* [swapdom](https://github.com/dy/swapdom) – 208b, most minimal DOM differ.
+* [udomdiff](https://github.com/WebReflection/udomdiff) – 388b, most performant DOM differ.
+* [list-difference](https://github.com/paldepind/list-difference/) - 281b, balanced size/performance.
 
-See [benchmark](https://github.com/luwes/js-diff-benchmark).
+<!-- See [benchmark](https://github.com/luwes/js-diff-benchmark). -->
 
 
 ## Custom Build
