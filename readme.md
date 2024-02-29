@@ -335,7 +335,7 @@ _Justin_ covers a minimal subset of JS without keywords:
 
 Operators | Primitives
 ---|---
-`++ -- ! - + ** * / %  && || ?? = < <= > >= == != === !== << >> & ^ | ~ ?: . ?. [] () => {} in` | `[] {} "" '' 1 2.34 -5e6 0x7a true false null undefined NaN`
+<code>++ -- ! - + ** * / %  && || ?? = < <= > >= == != === !== << >> & ^ | ~ ?: . ?. [] () => {} in</code> | <code>[] {} "" '' 1 2.34 -5e6 0x7a true false null undefined NaN</code>
 
 
 
