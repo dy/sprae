@@ -289,7 +289,7 @@ _Sprae_ allows reconfiguring its internals via `sprae.use`.
 
 ### Signals
 
-Default signals are based on [`ulive`](https://ghub.io/ulive), can be switched to [`@webreflection/signal`](https://ghib.io/@webreflection/signal), [`usignal`](https://ghib.io/usignal), [`@preact/signals-core`](https://ghub.io/@preact/signals-core), [etc](https://github.com/WebReflection/usignal?tab=readme-ov-file#benchmark) as:
+Default signals are based on [`ulive`](https://ghub.io/ulive), can be switched to [`@webreflection/signal`](https://ghib.io/@webreflection/signal), [`usignal`](https://ghib.io/usignal), [`@preact/signals-core`](https://ghub.io/@preact/signals-core), [etc](https://github.com/WebReflection/usignal?tab=readme-ov-file#benchmark):
 
 ```js
 import sprae, { signal, computed, effect, batch, untracked } from 'sprae';
@@ -300,14 +300,9 @@ sprae.use(signals);
 sprae(el, { name: signal('Kitty') });
 ```
 
-
-
 ### Expressions
 
-Expressions evaluate as `new Function`, which is simple, compact and performant way.<br/>
-It gives full JS syntax, but violates "unsafe-eval" policy and allows unrestricted access to globals (no sandboxing).
-
-For safer eval use [_justin_](https://github.com/dy/subscript?tab=readme-ov-file#justin), which resolves "unsafe-eval" **CSP** and provides sandboxing at price of more restrictive syntax and +2kb to bundle size.
+Evaluator can be configured [_justin_](https://github.com/dy/subscript?tab=readme-ov-file#justin), which resolves "unsafe-eval" **CSP** and provides sandboxing:
 
 ```js
 import sprae from 'sprae';
