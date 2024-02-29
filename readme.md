@@ -15,8 +15,7 @@ Perfect for small-scale websites, prototypes, or lightweight UI.<br/>
 </div>
 
 <script type="module">
-  import sprae from 'sprae'
-  import { signal } from 'sprae/signal'
+  import sprae, {signal} from 'sprae'
 
   const name = signal('Kitty')
   sprae(container, { user: { name } }) // init
@@ -284,20 +283,20 @@ Trigger when element is connected / disconnected from DOM.
 <div :onmount..onunmount="e => (dispose = init(), e => dispose())"/>
 ```
 
-<!--
-_Sprae_ directives can be extended as `sprae.directive.name = (el, expr, state) => {}`.
--->
+## Customization
+
+_Sprae_ allows reconfiguring its internals: signals provider, expressions evaluator, DOM differ or custom directives, via `sprae.use()`.
 
 
-## Signals
+### Signals
 
-`sprae/signal` provides minimal _signals_ for reactivity (see [preact-signals](https://github.com/preactjs/signals?tab=readme-ov-file#guide--api)). It can be switched to any other lib as:
+Default signals are based on _ulive_, can be switched to any lib as:
 
 ```js
-import sprae from 'sprae';
-import { signal, computed, effect, batch, untracked } from '@preact/signals-core';
+import sprae, { signal, computed, effect, batch, untracked } from 'sprae';
+import * as signals from '@preact/signals-core';
 
-sprae.use({ signal, computed, effect, batch, untracked });
+sprae.use(signals);
 
 sprae(el, { name: signal('Kitty') });
 ```
@@ -310,12 +309,13 @@ sprae(el, { name: signal('Kitty') });
 * [`@preact/signals-core`](https://ghub.io/@preact/signals-core) – 4Kb, best performance, good for complex states.
 * [any library](https://github.com/WebReflection/usignal?tab=readme-ov-file#benchmark) that supports `{signal, effect, computed, batch?}`
 
-## Expressions
 
-_Sprae_ evaluates expressions via `new Function`, which is simple, compact and performant way.<br/>
-It supports full JS syntax, but violates "unsafe-eval" policy and allows unrestricted access to globals (no sandboxing).
+### Expressions
 
-For safer eval _sprae_ can be configured to use [_justin_](https://github.com/dy/subscript?tab=readme-ov-file#justin) evaluator, which resolves "unsafe-eval" CSP and provides sandboxing at price of more restrictive syntax and +2kb to bundle size.
+Expressions evaluate as `new Function`, which is simple, compact and performant way.<br/>
+It gives full JS syntax, but violates "unsafe-eval" policy and allows unrestricted access to globals (no sandboxing).
+
+For safer eval use [_justin_](https://github.com/dy/subscript?tab=readme-ov-file#justin), which resolves "unsafe-eval" CSP and provides sandboxing at price of more restrictive syntax and +2kb to bundle size.
 
 ```js
 import sprae from 'sprae';
@@ -326,33 +326,27 @@ sprae.use({ compile: justin });
 
 _Justin_ covers a minimal subset of JS without keywords:
 
-###### Operators:
 ```
+// operators
 ++ -- ! - + ** * / %  && || ??
 = < <= > >= == != === !==
 << >> & ^ | ~ ?: . ?. []
 () => {}
 in
-```
 
-###### Primitives:
-```
+// primitives
 [] {} "" ''
 1 2.34 -5e6 0x7a
 true false null undefined NaN
 ```
 
-<!-- ## Dispose
+### DOM diffing
 
-To destroy state and detach sprae handlers, call `element[Symbol.dispose]()`. -->
-
-## Diffing
-
-_Sprae_ uses basic DOM diffing for content directives, it can be configured to custom DOM differ:
+DOM diffing can be reconfigured as:
 
 ```js
 import sprae from 'sprae';
-import domdiff from 'domdiff';
+import domdiff from 'list-difference';
 
 sprae.use({ swap: domdiff });
 ```
@@ -365,17 +359,39 @@ sprae.use({ swap: domdiff });
 * [domdiff](https://github.com/WebReflection/domdiff) – 1.4Kb, advanced differ.
 * [any differ](https://github.com/luwes/js-diff-benchmark) with `swap(parentNode, prevEls, newEls)`-like signature
 
-## Custom Build
 
-`sprae/core` provides bare-bones engine without directives, which allows tailoring build as:
+### Custom Build
+
+`sprae/core` provides bare-bones engine without directives, which allows tailoring build:
 
 ```js
-import sprae from 'sprae/core'
+import sprae, { directive, effect } from 'sprae/core'
 
 // include required directives
 import 'sprae/directive/if'
 import 'sprae/directive/text'
 ```
+
+### Custom Directives
+
+Additional directives can be added as:
+
+```js
+import sprae, { directive, effect, compile } from 'sprae/core'
+
+// <a :id="'item' + a.value" />
+directive.id = (el, expr, state) => {
+  // expression string -> evaluator
+  const evaluate = compile(state)
+
+  // subscribe to signals in evaluator
+  effect(() => el.id = evaluate(state))
+}
+```
+
+<!-- ## Dispose
+
+To destroy state and detach sprae handlers, call `element[Symbol.dispose]()`. -->
 
 
 ## Migration to v9

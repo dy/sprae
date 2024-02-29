@@ -950,7 +950,7 @@
 
 4. `sprae.signals = signals`
 
-## [x] How to export signals? -> `sprae/signal` seems to be most meaningful, but keep .use
+## [x] How to export signals? -> ~~`sprae/signal` seems to be most meaningful~~, but keep .use, import sprae, {signal}
 
 1. `import sprae, {signal, effect} from 'sprae'`
 
@@ -966,6 +966,8 @@
 - separate import entry
 + signal is automatically registered & coupled with sprae
 + doesn't enforce `sprae.use` / `Object.assign(sprae, signals)`
+  - `sprae.use` is more compact than `sprae.signal` everywhere
+- directives depend on signals, we cannot throw them away = we don't need `sprae/signal` entry
 
 3. `import sprae from 'sprae'; import * as ulive from 'ulive'; Object.assign(sprae, ulive); const {signal} = ulive;`
 

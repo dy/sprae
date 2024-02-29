@@ -88,10 +88,10 @@
 * [x] clear exports (no parse, err) - make sense of `compile` function as exported
 * [x] template test (:text, :html, :if, :each)
 * [x] fx teardown
-* [ ] flatten API, API to docs: `./core` (custom build), `./sprae` (default entry)
-  * [ ] make CSP a docs config, not entry
-* [ ] customizable swapper
-* [ ] `sprae.*` instead of `.use`, extending docs: directive, compile, swap, signals
+* [x] flatten API, API to docs: `./core` (custom build), `./sprae` (default entry)
+  * [x] make CSP a docs config, not entry
+* [x] customizable swapper
+* [x] ~~`sprae.*` instead of `.use`, extending docs: directive, compile, swap, signals~~ `.use` is more compact
   * [ ] no-signals (signals are pluggable): better teardown flow; returns dispose fn, not state; pluggable ulive; signals from original source, not sprae
 * [ ] 0-code sandbox (stub props)
 * [ ] :each that keeps elements
