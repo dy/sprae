@@ -302,7 +302,7 @@ sprae(el, { name: signal('Kitty') });
 
 ### Expressions
 
-Evaluator can be configured [_justin_](https://github.com/dy/subscript?tab=readme-ov-file#justin), which resolves "unsafe-eval" **CSP** and provides sandboxing:
+Evaluator can be configured [_justin_](https://github.com/dy/subscript?tab=readme-ov-file#justin), which resolves "unsafe-eval" **CSP** and provides sandboxing, but has more restrictive syntax:
 
 ```js
 import sprae from 'sprae';
@@ -310,8 +310,6 @@ import justin from 'subscript/justin';
 
 sprae.use({ compile: justin });
 ```
-
-_Justin_ covers a minimal subset of JS without keywords:
 
 ###### Operators:
 
