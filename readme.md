@@ -291,7 +291,7 @@ _Sprae_ directives can be extended as `sprae.directive.name = (el, expr, state) 
 
 ## Signals
 
-`sprae/signal` provides [_signals_](https://github.com/preactjs/signals?tab=readme-ov-file#guide--api) based on _ulive_, but can be switched to any other lib:
+`sprae/signal` provides [_signals_](https://github.com/preactjs/signals?tab=readme-ov-file#guide--api) based on _ulive_. It can be switched to any other lib as:
 
 ```js
 import sprae from 'sprae';
@@ -311,12 +311,12 @@ sprae(el, { name: signal('Kitty') });
 
 <!-- See [benchmark](https://github.com/WebReflection/usignal?tab=readme-ov-file#benchmark). -->
 
-## Expressions
+## Expressions evaluation / CSP
 
 _Sprae_ evaluates expressions via `new Function`, which is simple, compact and performant way.<br/>
 It supports full JS syntax, but violates "unsafe-eval" policy and allows unrestricted access to globals (no sandboxing).
 
-For safer eval _sprae_ can be configured to an alternative evaluator. For example, [_Justin_](https://github.com/dy/subscript?tab=readme-ov-file#justin) accomodates for "unsafe-eval" CSP and provides sandboxing at price of more restrictive syntax and +2kb to bundle size.
+For safer eval _sprae_ can be configured to use [_justin_](https://github.com/dy/subscript?tab=readme-ov-file#justin) evaluator, which resolves "unsafe-eval" CSP and provides sandboxing at price of more restrictive syntax and +2kb to bundle size.
 
 ```js
 import sprae from 'sprae';
@@ -327,9 +327,21 @@ sprae.use({compile});
 
 _Justin_ covers a minimal subset of JS without keywords:
 
-| Operators | Primitives |
-|-----------|------------|
-| `++ -- ! - + ** * / % && \|\| ?? = < <= > >= == != === !== << >> & ^ \|\ ~ ?: . ?. [] () => {} in` | `[] {} "" '' 1 2.34 -5e6 0x7a true false null undefined NaN` |
+###### Operators:
+```
+++ -- ! - + ** * / %  && || ??
+= < <= > >= == != === !==
+<< >> & ^ | ~ ?: . ?. []
+() => {}
+in
+```
+
+###### Primitives:
+```
+[] {} "" ''
+1 2.34 -5e6 0x7a
+true false null undefined NaN
+```
 
 <!-- ## Dispose
 
