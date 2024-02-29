@@ -300,7 +300,7 @@ sprae(el, { name: signal('Kitty') });
 
 ### Expressions
 
-Evaluator can be configured to [_justin_](https://github.com/dy/subscript?tab=readme-ov-file#justin): it resolves "unsafe-eval" **CSP** and provides sandboxing, but has restricted syntax:
+Evaluator can be configured to [_justin_](https://github.com/dy/subscript?tab=readme-ov-file#justin), which resolves "unsafe-eval" **CSP** and provides sandboxing, but has restricted syntax:
 
 ```js
 import sprae from 'sprae';
@@ -359,6 +359,8 @@ directive.id = (el, expr, state) => {
   effect(() => el.id = evaluate(state)) // subscribe to signals in expression
 }
 ```
+
+See [sprae/direvite](./directive/) for examples.
 
 <!-- ## Dispose
 
