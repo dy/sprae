@@ -349,7 +349,7 @@ To destroy state and detach sprae handlers, call `element[Symbol.dispose]()`. --
 
 ## DOM diffing
 
-_Sprae_ can be configured to use custom DOM diffing library as well:
+_Sprae_ can be configured to use DOM diffing library:
 
 ```js
 import sprae from 'sprae'
@@ -479,10 +479,10 @@ npm run results
 * Wavearea: [demo](https://dy.github.io/wavearea?src=//cdn.freesound.org/previews/586/586281_2332564-lq.mp3), [code](https://github.com/dy/wavearea)
 * Prostogreen [demo](http://web-being.org/prostogreen/), [code](https://github.com/web-being/prostogreen/)
 
-
+<!--
 ## See Also
 
-* [nadi](https://github.com/dy/nadi) - 101 signals.
+* [nadi](https://github.com/dy/nadi) - 101 signals. -->
 
 
 <p align="center"><a href="https://github.com/krsnzd/license/">🕉</a></p>
