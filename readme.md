@@ -289,7 +289,7 @@ _Sprae_ allows reconfiguring its internals via `sprae.use`.
 
 ### Signals
 
-Default signals are based on _ulive_, can be switched to any lib as:
+Default signals are based on _ulive_, can be switched to [`ulive`](https://ghub.io/ulive), [`@webreflection/signal`](https://ghib.io/@webreflection/signal), [`usignal`](https://ghib.io/usignal), [`@preact/signals-core`](https://ghub.io/@preact/signals-core), [etc](https://github.com/WebReflection/usignal?tab=readme-ov-file#benchmark) as:
 
 ```js
 import sprae, { signal, computed, effect, batch, untracked } from 'sprae';
@@ -300,9 +300,6 @@ sprae.use(signals);
 sprae(el, { name: signal('Kitty') });
 ```
 
-###### Signal providers:
-
-[`ulive`](https://ghub.io/ulive), [`@webreflection/signal`](https://ghib.io/@webreflection/signal), [`usignal`](https://ghib.io/usignal), [`@preact/signals-core`](https://ghub.io/@preact/signals-core), [etc](https://github.com/WebReflection/usignal?tab=readme-ov-file#benchmark).
 
 
 ### Expressions
@@ -336,7 +333,8 @@ _Justin_ covers a minimal subset of JS without keywords:
 
 ### DOM diffing
 
-DOM differ can be reconfigured as:
+DOM differ can be reconfigured to
+[swapdom](https://github.com/dy/swapdom), [list-difference](https://github.com/paldepind/list-difference/), [udomdiff](https://github.com/WebReflection/udomdiff), [domdiff](https://github.com/WebReflection/domdiff), [etc](https://github.com/luwes/js-diff-benchmark) as:
 
 ```js
 import sprae from 'sprae';
@@ -345,10 +343,6 @@ import domdiff from 'list-difference';
 // swap(parentNode, prevEls, newEls, endNode?)
 sprae.use({ swap: domdiff });
 ```
-
-###### DOM differs:
-
-[swapdom](https://github.com/dy/swapdom), [list-difference](https://github.com/paldepind/list-difference/), [udomdiff](https://github.com/WebReflection/udomdiff), [domdiff](https://github.com/WebReflection/domdiff), [etc](https://github.com/luwes/js-diff-benchmark).
 
 
 ### Custom Build
