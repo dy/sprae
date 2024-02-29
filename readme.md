@@ -285,8 +285,7 @@ Trigger when element is connected / disconnected from DOM.
 
 ## Customization
 
-_Sprae_ allows reconfiguring its internals: signals provider, expressions evaluator, DOM differ or custom directives, via `sprae.use()`.
-
+_Sprae_ allows reconfiguring its internals via `sprae.use`.
 
 ### Signals
 
@@ -301,7 +300,7 @@ sprae.use(signals);
 sprae(el, { name: signal('Kitty') });
 ```
 
-**Signals providers**: [`ulive`](https://ghub.io/ulive) (default) 320b, [`@webreflection/signal`](https://ghib.io/@webreflection/signal) 1Kb, [`usignal`](https://ghib.io/usignal) 1.8Kb, [`@preact/signals-core`](https://ghub.io/@preact/signals-core) 4Kb, [etc](https://github.com/WebReflection/usignal?tab=readme-ov-file#benchmark).
+**Libraries**: [`ulive`](https://ghub.io/ulive) (default), [`@webreflection/signal`](https://ghib.io/@webreflection/signal), [`usignal`](https://ghib.io/usignal), [`@preact/signals-core`](https://ghub.io/@preact/signals-core), [etc](https://github.com/WebReflection/usignal?tab=readme-ov-file#benchmark).
 
 
 ### Expressions
@@ -320,8 +319,7 @@ sprae.use({ compile: justin });
 
 _Justin_ covers a minimal subset of JS without keywords:
 
-**Operators**: `++ -- ! - + ** * / %  && || ?? = < <= > >= == != === !== << >> & ^ | ~ ?: . ?. [] () => {} in`
-
+**Operators**: `++ -- ! - + ** * / %  && || ?? = < <= > >= == != === !== << >> & ^ | ~ ?: . ?. [] () => {} in`<br/>
 **Primitives**: `[] {} "" '' 1 2.34 -5e6 0x7a true false null undefined NaN`
 
 ### DOM diffing
@@ -336,7 +334,7 @@ import domdiff from 'list-difference';
 sprae.use({ swap: domdiff });
 ```
 
-**DOM differs**: [swapdom](https://github.com/dy/swapdom) 248b (default), [list-difference](https://github.com/paldepind/list-difference/) 281b, [udomdiff](https://github.com/WebReflection/udomdiff) 457b, [domdiff](https://github.com/WebReflection/domdiff) 1.4Kb, [etc](https://github.com/luwes/js-diff-benchmark).
+**DOM differs**: [swapdom](https://github.com/dy/swapdom)(default), [list-difference](https://github.com/paldepind/list-difference/) 281b, [udomdiff](https://github.com/WebReflection/udomdiff), [domdiff](https://github.com/WebReflection/domdiff), [etc](https://github.com/luwes/js-diff-benchmark).
 
 
 ### Custom Build
