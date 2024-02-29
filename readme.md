@@ -321,6 +321,7 @@ sprae.use({ compile: justin });
 _Justin_ covers a minimal subset of JS without keywords:
 
 **Operators**: `++ -- ! - + ** * / %  && || ?? = < <= > >= == != === !== << >> & ^ | ~ ?: . ?. [] () => {} in`
+
 **Primitives**: `[] {} "" '' 1 2.34 -5e6 0x7a true false null undefined NaN`
 
 ### DOM diffing
