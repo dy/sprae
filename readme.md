@@ -310,7 +310,7 @@ sprae(el, { name: signal('Kitty') });
 * [`@preact/signals-core`](https://ghub.io/@preact/signals-core) – 4Kb, best performance, good for complex states.
 * [any library](https://github.com/WebReflection/usignal?tab=readme-ov-file#benchmark) that supports `{signal, effect, computed, batch?}`
 
-## Expressions evaluation / CSP
+## Expressions
 
 _Sprae_ evaluates expressions via `new Function`, which is simple, compact and performant way.<br/>
 It supports full JS syntax, but violates "unsafe-eval" policy and allows unrestricted access to globals (no sandboxing).
@@ -346,9 +346,9 @@ true false null undefined NaN
 
 To destroy state and detach sprae handlers, call `element[Symbol.dispose]()`. -->
 
-## DOM diffing
+## Diffing
 
-_Sprae_ can be configured to use custom DOM differ for content directives (`:if`, `:each`):
+_Sprae_ uses basic DOM diffing for content directives, it can be configured to custom DOM differ:
 
 ```js
 import sprae from 'sprae';
