@@ -163,7 +163,7 @@ Expose element to current scope with `name`.
 
 #### `:fx="values"`
 
-Run effect, not changing any attribute. Optional cleanup is called in-between effect calls or on disposal.
+Run effect, not changing any attribute.<br/>Optional cleanup is called in-between effect calls or on disposal.
 
 ```html
 <div :fx="a.value ? foo() : bar()" />
@@ -291,7 +291,17 @@ _Sprae_ directives can be extended as `sprae.directive.name = (el, expr, state) 
 
 ## Signals
 
-_Sprae_ uses signals for reactivity and can be configured to any signals lib:
+_Sprae_ can use _signals_ for reactivity via `sprae/signal`, which has [preact-signals](https://github.com/preactjs/signals?tab=readme-ov-file#guide--api) API surface:<br/>
+
+```js
+import { signal, effect, computed, batch, untracked } from 'sprae/signal'
+
+let s = signal(1)
+effect(() => console.log(s.value)) // 1
+s.value++ // 2
+```
+
+By default it uses minimorum signals implementation based on _ulive_, but can be switched to any other signals lib:
 
 ```js
 import sprae from 'sprae';
