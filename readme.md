@@ -285,8 +285,6 @@ Trigger when element is connected / disconnected from DOM.
 
 ## Customization
 
-_Sprae_ allows reconfiguring its internals via `sprae.use`.
-
 ### Signals
 
 Default signals are based on [`ulive`](https://ghub.io/ulive), can be switched to [`@webreflection/signal`](https://ghib.io/@webreflection/signal), [`usignal`](https://ghib.io/usignal), [`@preact/signals-core`](https://ghub.io/@preact/signals-core), [etc](https://github.com/WebReflection/usignal?tab=readme-ov-file#benchmark):
