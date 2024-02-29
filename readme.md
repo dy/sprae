@@ -291,13 +291,13 @@ _Sprae_ directives can be extended as `sprae.directive.name = (el, expr, state) 
 
 ## Signals
 
-_Sprae_ can use _signals_ for reactivity via `sprae/signal`, which has identical with [preact-signals](https://github.com/preactjs/signals?tab=readme-ov-file#guide--api) API:<br/>
+`sprae/signal` provides _signals_ based on minimal implementation _ulive_, with [preact-signals](https://github.com/preactjs/signals?tab=readme-ov-file#guide--api) API:<br/>
 
 ```js
 import { signal, effect, computed, batch, untracked } from 'sprae/signal'
 ```
 
-Default implementation is based on _ulive_, but can be switched to any other signals lib:
+Signals can be switched to any other lib:
 
 ```js
 import sprae from 'sprae';
