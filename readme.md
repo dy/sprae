@@ -301,13 +301,7 @@ sprae.use(signals);
 sprae(el, { name: signal('Kitty') });
 ```
 
-##### Signals providers:
-
-* [`ulive`](https://ghub.io/ulive) (default) – 320b, basic performance, good for simple states (<10 deps).
-* [`@webreflection/signal`](https://ghib.io/@webreflection/signal) – 1Kb, good performance, good for average states (10-20 deps).
-* [`usignal`](https://ghib.io/usignal) – 1.8Kb, better performance, good for average states (20-50 deps).
-* [`@preact/signals-core`](https://ghub.io/@preact/signals-core) – 4Kb, best performance, good for complex states.
-* [any library](https://github.com/WebReflection/usignal?tab=readme-ov-file#benchmark) that supports `{signal, effect, computed, batch?}`
+**Signals providers**: [`ulive`](https://ghub.io/ulive) (default) 320b, [`@webreflection/signal`](https://ghib.io/@webreflection/signal) 1Kb, [`usignal`](https://ghib.io/usignal) 1.8Kb, [`@preact/signals-core`](https://ghub.io/@preact/signals-core) 4Kb, [etc](https://github.com/WebReflection/usignal?tab=readme-ov-file#benchmark).
 
 
 ### Expressions
@@ -315,7 +309,7 @@ sprae(el, { name: signal('Kitty') });
 Expressions evaluate as `new Function`, which is simple, compact and performant way.<br/>
 It gives full JS syntax, but violates "unsafe-eval" policy and allows unrestricted access to globals (no sandboxing).
 
-For safer eval use [_justin_](https://github.com/dy/subscript?tab=readme-ov-file#justin), which resolves "unsafe-eval" CSP and provides sandboxing at price of more restrictive syntax and +2kb to bundle size.
+For safer eval use [_justin_](https://github.com/dy/subscript?tab=readme-ov-file#justin), which resolves "unsafe-eval" **CSP** and provides sandboxing at price of more restrictive syntax and +2kb to bundle size.
 
 ```js
 import sprae from 'sprae';
@@ -326,43 +320,27 @@ sprae.use({ compile: justin });
 
 _Justin_ covers a minimal subset of JS without keywords:
 
-```
-// operators
-++ -- ! - + ** * / %  && || ??
-= < <= > >= == != === !==
-<< >> & ^ | ~ ?: . ?. []
-() => {}
-in
-
-// primitives
-[] {} "" ''
-1 2.34 -5e6 0x7a
-true false null undefined NaN
-```
+**Operators**: `++ -- ! - + ** * / %  && || ?? = < <= > >= == != === !== << >> & ^ | ~ ?: . ?. [] () => {} in`
+**Primitives**: `[] {} "" '' 1 2.34 -5e6 0x7a true false null undefined NaN`
 
 ### DOM diffing
 
-DOM diffing can be reconfigured as:
+DOM differ can be reconfigured as:
 
 ```js
 import sprae from 'sprae';
 import domdiff from 'list-difference';
 
+// swap(parentNode, prevEls, newEls, endNode?)
 sprae.use({ swap: domdiff });
 ```
 
-##### DOM differs:
-
-* [swapdom](https://github.com/dy/swapdom) (default) – 248b, minimal DOM differ.
-* [list-difference](https://github.com/paldepind/list-difference/) - 281b, balanced size/performance.
-* [udomdiff](https://github.com/WebReflection/udomdiff) – 457b, performant DOM differ.
-* [domdiff](https://github.com/WebReflection/domdiff) – 1.4Kb, advanced differ.
-* [any differ](https://github.com/luwes/js-diff-benchmark) with `swap(parentNode, prevEls, newEls)`-like signature
+**DOM differs**: [swapdom](https://github.com/dy/swapdom) 248b (default), [list-difference](https://github.com/paldepind/list-difference/) 281b, [udomdiff](https://github.com/WebReflection/udomdiff) 457b, [domdiff](https://github.com/WebReflection/domdiff) 1.4Kb, [etc](https://github.com/luwes/js-diff-benchmark).
 
 
 ### Custom Build
 
-`sprae/core` provides bare-bones engine without directives, which allows tailoring build:
+`sprae/core` exports bare-bones engine without directives, which allows tailoring build:
 
 ```js
 import sprae, { directive, effect } from 'sprae/core'
@@ -379,13 +357,9 @@ Additional directives can be added as:
 ```js
 import sprae, { directive, effect, compile } from 'sprae/core'
 
-// <a :id="'item' + a.value" />
 directive.id = (el, expr, state) => {
-  // expression string -> evaluator
-  const evaluate = compile(state)
-
-  // subscribe to signals in evaluator
-  effect(() => el.id = evaluate(state))
+  const evaluate = compile(state)       // expression string -> evaluator
+  effect(() => el.id = evaluate(state)) // subscribe to signals in expression
 }
 ```
 
