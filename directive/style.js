@@ -1,4 +1,4 @@
-import { directive, compile, effect } from "../core.js";
+import { directive, compile, effect, ipol } from "../core.js";
 
 directive.style = (el, expr, state) => {
   let evaluate = compile(expr, 'style');
@@ -7,10 +7,10 @@ directive.style = (el, expr, state) => {
 
   return effect(() => {
     let v = evaluate(state);
-    if (typeof v === "string") el.setAttribute("style", initStyle + v);
+    if (typeof v === "string") el.setAttribute("style", initStyle + ipol(v, state));
     else {
       el.setAttribute("style", initStyle);
-      for (let k in v) el.style.setProperty(k, v[k]);
+      for (let k in v) el.style.setProperty(k, ipol(v[k], state));
     }
   });
 };

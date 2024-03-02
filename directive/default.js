@@ -1,4 +1,4 @@
-import { directive, compile, effect } from "../core.js";
+import { directive, compile, effect, ipol } from "../core.js";
 
 // set generic property directive
 directive.default = (el, expr, state, name) => {
@@ -18,8 +18,8 @@ directive.default = (el, expr, state, name) => {
 
   return effect(() => {
     let value = evaluate(state);
-    if (name) attr(el, name, value)
-    else for (let key in value) attr(el, dashcase(key), value[key]);
+    if (name) attr(el, name, ipol(value, state))
+    else for (let key in value) attr(el, dashcase(key), ipol(value[key], state));
   });
 };
 

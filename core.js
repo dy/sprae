@@ -86,6 +86,11 @@ export let compile = (expr, dir, evaluate) => {
 // DOM swapper
 export let swap = swapdom
 
+// interpolate a$<b> fields from context
+export const ipol = (v, state) => {
+  return v?.replace ? v.replace(/\$<([^>]+)>/g, (match, field) => state[field]?.valueOf?.() ?? '') : v
+};
+
 // configure signals/compiler/differ
 // it's more compact than using sprae.signal = signal etc.
 sprae.use = s => {

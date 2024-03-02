@@ -137,7 +137,7 @@ test("class: old svg fun", async () => {
   is(el.innerHTML, `<svg class="foo y"></svg>`);
 });
 
-test.only("class: interpolation", async () => {
+test("class: interpolation", async () => {
   let el = h`<x :class="'a $<b> c-$<c>'"></x>`;
   sprae(el, { a: 'a', b: 'b', c: 0 });
   is(el.outerHTML, `<x class="a b c-0"></x>`);
