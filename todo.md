@@ -92,7 +92,7 @@
   * [x] make CSP a docs config, not entry
 * [x] customizable swapper
 * [x] ~~`sprae.*` instead of `.use`, extending docs: directive, compile, swap, signals~~ `.use` is more compact
-  * [ ] no-signals (signals are pluggable): better teardown flow; returns dispose fn, not state; pluggable ulive; signals from original source, not sprae
+  * [x] ~~no-signals (signals are pluggable): better teardown flow; returns dispose fn, not state; pluggable ulive; signals from original source, not sprae~~ can't avoid effect, the codebase is tiny
 * [ ] 0-code sandbox (stub props)
 * [ ] :each that keeps elements
 * [ ] interpolatable strings

@@ -202,7 +202,7 @@ Attach event(s) listener with possible modifiers.
 
 ## Additional Directives
 
-The following directives aren't shipped by default, and can be optionally plugged in as:
+The following directives can be plugged in optionally as:
 
 ```js
 import sprae from 'sprae'
@@ -287,7 +287,7 @@ Trigger when element is connected / disconnected from DOM.
 
 ### Signals
 
-Default signals are based on [`ulive`](https://ghub.io/ulive), can be switched to [`@webreflection/signal`](https://ghib.io/@webreflection/signal), [`usignal`](https://ghib.io/usignal), [`@preact/signals-core`](https://ghub.io/@preact/signals-core), [etc](https://github.com/WebReflection/usignal?tab=readme-ov-file#benchmark):
+Default signals are based on [`ulive`](https://ghub.io/ulive), can be switched to [`@preact/signals-core`](https://ghub.io/@preact/signals-core), [`@webreflection/signal`](https://ghib.io/@webreflection/signal), [`usignal`](https://ghib.io/usignal), [etc](https://github.com/WebReflection/usignal?tab=readme-ov-file#benchmark):
 
 ```js
 import sprae, { signal, computed, effect, batch, untracked } from 'sprae';
@@ -300,7 +300,7 @@ sprae(el, { name: signal('Kitty') });
 
 ### Expressions
 
-Evaluator can be configured to [_justin_](https://github.com/dy/subscript?tab=readme-ov-file#justin), which resolves "unsafe-eval" **CSP** and provides sandboxing, but has restricted syntax:
+Default evaluator is based on `new Function`, can be configured to [_justin_](https://github.com/dy/subscript?tab=readme-ov-file#justin), which resolves "unsafe-eval" CSP and provides sandboxing, but has restricted syntax:
 
 ```js
 import sprae from 'sprae';
@@ -360,7 +360,7 @@ directive.id = (el, expr, state) => {
 }
 ```
 
-See [sprae/direvite](./directive/) for examples.
+See [sprae/directive](./directive/) for examples.
 
 <!-- ## Dispose
 
@@ -382,9 +382,9 @@ To destroy state and detach sprae handlers, call `element[Symbol.dispose]()`. --
 
 ## Justification
 
-[Template-parts](https://github.com/dy/template-parts) / [templize](https://github.com/dy/templize) is progressive, but is stuck with native HTML quirks ([parsing table](https://github.com/github/template-parts/issues/24), [SVG attributes](https://github.com/github/template-parts/issues/25), [liquid syntax](https://shopify.github.io/liquid/tags/template/#raw) conflict etc). [Alpine](https://github.com/alpinejs/alpine) / [petite-vue](https://github.com/vuejs/petite-vue) / [lucia](https://github.com/aidenyabi/lucia) escape native HTML quirks, but the API is excessive (`:`, `x-`, `{}`, `@`, `$`), [self-encapsulated](https://github.com/alpinejs/alpine/discussions/3223) (no access to data, own reactivity, own expressions, own domdiffer), and unsafe.
+[Template-parts](https://github.com/dy/template-parts) / [templize](https://github.com/dy/templize) is progressive, but is stuck with native HTML quirks ([parsing table](https://github.com/github/template-parts/issues/24), [SVG attributes](https://github.com/github/template-parts/issues/25), [liquid syntax](https://shopify.github.io/liquid/tags/template/#raw) conflict etc). [Alpine](https://github.com/alpinejs/alpine) / [petite-vue](https://github.com/vuejs/petite-vue) / [lucia](https://github.com/aidenyabi/lucia) escape native HTML quirks, but have excessive API (`:`, `x-`, `{}`, `@`, `$`) and tend to [self-encapsulate](https://github.com/alpinejs/alpine/discussions/3223) (no access to data, own reactivity, own expressions, own domdiffer).
 
-_Sprae_ holds to open & minimalistic philosophy, taking _`:`-directives_ with _signals_ for reactivity.
+_Sprae_ holds to open & minimalistic philosophy, combining _`:`-directives_ with _signals_.
 
 <!--
 |                       | [AlpineJS](https://github.com/alpinejs/alpine)          | [Petite-Vue](https://github.com/vuejs/petite-vue)        | Sprae            |
