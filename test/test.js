@@ -1,8 +1,7 @@
 // import { signal } from 'usignal/sync'
 import test, { is, any, throws } from "tst";
 import { tick, time } from "wait-please";
-import sprae from '../sprae.js'
-import { signal, effect, untracked, batch, computed } from "../signal.js";
+import sprae, { signal, effect, untracked, batch, computed } from '../sprae.js'
 import h from "hyperf";
 
 Object.defineProperty(DocumentFragment.prototype, "outerHTML", {

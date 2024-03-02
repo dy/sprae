@@ -1,9 +1,11 @@
 import swapdom from 'swapdom'
+import * as signals from 'ulive'
+
+// polyfill
+(Symbol.dispose ||= Symbol("dispose"));
 
 // signals impl
-export let signal, effect, batch, computed, untracked;
-
-(Symbol.dispose ||= Symbol("dispose"));
+export let { signal, effect, batch, computed, untracked } = signals;
 
 // reserved directives - order matters!
 export const directive = {};
@@ -81,11 +83,7 @@ export let compile = (expr, dir, evaluate) => {
   return evalMemo[expr] = (state) => evaluate(state)?.valueOf();
 }
 
-// naive swapper
-// export let swap = (parent, prev, cur, end) => {
-//   for (let el of prev) parent.removeChild(el)
-//   for (let el of cur) parent.insertBefore(el, end)
-// }
+// DOM swapper
 export let swap = swapdom
 
 // configure signals/compiler/differ
