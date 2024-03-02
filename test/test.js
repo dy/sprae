@@ -565,7 +565,7 @@ test("each: fragments multiple", async () => {
   is(el.innerHTML, "");
 });
 
-test.skip("each: fragments text", async () => {
+test.todo("each: fragments text", async () => {
   let el = h`<p>
     <template :each="a in b" :text="a"></template>
   </p>`;
@@ -692,22 +692,30 @@ test("each: unkeyed", async () => {
   // is(el.firstChild, first)
 });
 
-test.skip("each: keyed", async () => {
-  // keyed
-  let el = h`<div><x :each="x in xs" :text="x" :key="x"></x></div>`;
+test("each: keyed flat list", async () => {
+  let el = h`<div><x :each="x in xs" :text="x"></x></div>`;
   let state = sprae(el, { xs: signal([1, 2, 3]) });
   is(el.children.length, 3);
   is(el.textContent, "123");
-  let first = el.firstChild;
+  let [first, second, third] = el.childNodes;
+
   state.xs.value = [1, 3, 2];
   await tick();
-  is(el.firstChild, first);
   is(el.textContent, "132");
+  is(el.childNodes[0], first, 'firstChild === first');
+  is(el.childNodes[2], second, 'lastChild === second');
+  is(el.childNodes[1], third);
+
   state.xs.value = [3, 3, 3];
   await tick();
-  is(el.textContent, "3");
-  // is(el.firstChild, first)
+  is(el.textContent, "333");
+  is(el.childNodes[0], third);
+  // FIXME: test if it disposes memory here after destroying
 });
+
+test.todo('each: keyed list item.id')
+test.todo('each: keyed oblect')
+test.todo('each: keyed number')
 
 test.skip("each: perf", async () => {
   console.time(1);

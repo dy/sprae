@@ -94,7 +94,7 @@
 * [x] ~~`sprae.*` instead of `.use`, extending docs: directive, compile, swap, signals~~ `.use` is more compact
   * [x] ~~no-signals (signals are pluggable): better teardown flow; returns dispose fn, not state; pluggable ulive; signals from original source, not sprae~~ can't avoid effect, the codebase is tiny
 * [x] ~~0-code sandbox (stub props)~~ - unnecessary `Object.create`
-* [ ] interpolatable strings
+* [x] interpolatable strings
 * [ ] :each that keeps elements
 * [ ] Plugins
   * [ ] :aria

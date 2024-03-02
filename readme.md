@@ -46,7 +46,7 @@ Control flow of elements.
 
 #### `:each="item, index in items"`
 
-Multiply element.
+Multiply element. Element is identified by `item.id` or by `item` itself.
 
 ```html
 <ul><li :each="item in items" :text="item"/></ul>
@@ -69,6 +69,7 @@ Multiply element.
 <!-- prevent FOUC -->
 <style>[:each] {visibility: hidden}</style>
 ```
+
 
 #### `:text="value"`
 
