@@ -3,6 +3,7 @@ import sprae, { directive, effect, compile, swap } from "../core.js";
 export const _each = Symbol(":each");
 
 const keys = {}; // boxed primitives pool
+const weakify = key => Object(key) !== key ? Object[key] : key
 
 // :each must init before :ref, :id or any others, since it defines scope
 directive.each = (tpl, expr, state) => {
@@ -13,38 +14,41 @@ directive.each = (tpl, expr, state) => {
   const holder = (tpl[_each] = document.createTextNode(""));
   tpl.replaceWith(holder);
 
-  // <template>
-  if (tpl.content) tpl = tpl.content
-
   const evaluate = compile(itemsExpr, 'each');
   const memo = new WeakMap;
 
   let cur = [];
   return effect(() => {
     // naive approach: whenever items change we replace full list
-    let items = evaluate(state), els = [];
+    let items = evaluate(state), els = new Set;
     if (typeof items === "number") items = Array.from({ length: items }, (_, i) => i);
 
-    const count = {}
-    for (let idx in items) {
-      let item = items[idx], _,
-        // key is either item.id / item itself for non-primitive case,
-        key = Object(item) === item ? item?.id ?? item :
-          // item itself by number for primitive cases
-          keys[_ = item + '-' + (count[item] = (count[item] || 0) + 1)] ||= Object(_);
+    const getKey = (i, c) => {
+      if (Object(i) !== i) i = (keys[i] ||= Object(i))
+      return i
+    }
 
-      let el = memo.get(key) || memo.set(key, tpl.cloneNode(true)).get(key),
-        substate = Object.create(state, {
-          [itemVar]: { value: items[idx] },
-          [idxVar]: { value: idx },
-        });
+    for (let idx in items) {
+      let item = items[idx], key, substate;
+
+      // key is either item.id / item itself for non-primitive case, item itself otherwise
+      key = getKey(item?.id ?? item);
+
+      let el = memo.get(key) || memo.set(key, tpl.cloneNode(true)).get(key)
+      if (els.has(el)) el = el.cloneNode(true) // avoid dupes
+      if (el.content) el = el.content.cloneNode(true) // <template>
+
+      substate = Object.create(state, {
+        [itemVar]: { value: items[idx] },
+        [idxVar]: { value: idx },
+      });
       sprae(el, substate);
 
       // document fragment
-      el.nodeType === 11 ? els.push(...el.childNodes) : els.push(el);
+      if (el.nodeType === 11) [...el.childNodes].map(el => els.add(el));
+      else els.add(el);
     }
 
-    swap(holder.parentNode, cur, els, holder);
-    cur = els;
+    swap(holder.parentNode, cur, cur = [...els], holder);
   });
 };

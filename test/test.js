@@ -565,7 +565,7 @@ test("each: fragments multiple", async () => {
   is(el.innerHTML, "");
 });
 
-test.todo("each: fragments text", async () => {
+test.only("each: fragments text", async () => {
   let el = h`<p>
     <template :each="a in b" :text="a"></template>
   </p>`;
