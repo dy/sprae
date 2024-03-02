@@ -137,6 +137,13 @@ test("class: old svg fun", async () => {
   is(el.innerHTML, `<svg class="foo y"></svg>`);
 });
 
+test.only("class: interpolation", async () => {
+  let el = h`<x :class="'a $<b> c-$<c>'"></x>`;
+  sprae(el, { a: 'a', b: 'b', c: 0 });
+  is(el.outerHTML, `<x class="a b c-0"></x>`);
+});
+
+
 test("props: base", async () => {
   let el = h`<input :id="0" :="{for:1, title:2, help:3, type:4, placeholder: 5, value: 6, aB: 8}" :value="7"/>`;
   let params = sprae(el);

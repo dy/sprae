@@ -6,6 +6,8 @@ directive.class = (el, expr, state) => {
   return effect(() => {
     let v = evaluate(state);
     let className = [initClassName];
+    // interpolate $<> fields
+    v = v.replace(/\$<([^>]+)>/g, (match, field) => state[field] ?? '');
     if (v) {
       if (typeof v === "string") className.push(v);
       else if (Array.isArray(v)) className.push(...v);
