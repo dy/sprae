@@ -46,10 +46,10 @@ Control flow of elements.
 
 #### `:each="item, index in items"`
 
-Multiply element. Element is identified by `item.id` or by `item` itself.
+Multiply element. `:key` can identify element for persistent updates.
 
 ```html
-<ul><li :each="item in items" :text="item"/></ul>
+<ul><li :each="item in items" :text="item" :key="item.id"/></ul>
 
 <!-- cases -->
 <li :each="item, idx in list" />
@@ -203,7 +203,7 @@ Attach event(s) listener with possible modifiers.
 
 ## Optional Directives
 
-The following directives can be additionally plugged in as:
+The following directives can be plugged in as:
 
 ```js
 import sprae from 'sprae'
@@ -250,6 +250,7 @@ Set `aria-*` attributes. Boolean values are stringified.
 -->
 ```
 
+<!--
 #### `:onvisible..oninvisible="e => e => {}"`
 
 Trigger when element is in/out of the screen.
@@ -268,6 +269,7 @@ Trigger when element is connected / disconnected from DOM.
 ```html
 <div :onmount..onunmount="e => (dispose = init(), e => dispose())"/>
 ```
+-->
 
 ## Customization
 

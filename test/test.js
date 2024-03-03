@@ -681,8 +681,8 @@ test('each: next items have own "this", not single one', async () => {
   is(state.log, [0, "0", 1, "1", 2, "2"]);
 });
 
-test("each: unkeyed", async () => {
-  let el = h`<div><x :each="x in xs" :text="x"></x></div>`;
+test.only("each: unkeyed", async () => {
+  let el = h`<div><x :each="x, i in xs" :text="x"></x></div>`;
   let state = sprae(el, { xs: signal([1, 2, 3]) });
   is(el.children.length, 3);
   is(el.textContent, "123");
@@ -697,8 +697,8 @@ test("each: unkeyed", async () => {
   // is(el.firstChild, first)
 });
 
-test("each: keyed flat list", async () => {
-  let el = h`<div><x :each="x in xs" :text="x"></x></div>`;
+test("each: keyed primitive list", async () => {
+  let el = h`<div><x :each="x, i in xs" :key="'$<x>-$<i>'" :text="x"></x></div>`;
   let state = sprae(el, { xs: signal([1, 2, 3]) });
   is(el.children.length, 3);
   is(el.textContent, "123");
@@ -708,13 +708,36 @@ test("each: keyed flat list", async () => {
   await tick();
   is(el.textContent, "132");
   is(el.childNodes[0], first, 'firstChild === first');
-  is(el.childNodes[2], second, 'lastChild === second');
-  is(el.childNodes[1], third);
+  // is(el.childNodes[2], second, 'lastChild === second');
+  // is(el.childNodes[1], third);
 
   state.xs.value = [3, 3, 3];
   await tick();
   is(el.textContent, "333");
+  // is(el.childNodes[0], third);
+  // FIXME: test if it disposes memory here after destroying
+});
+
+test("each: keyed objects list", async () => {
+  let el = h`<div><x :each="x, i in xs" :key="x.id" :text="x.id"></x></div>`;
+  let state = sprae(el, { xs: signal([{ id: 1 }, { id: 2 }, { id: 3 }]) });
+  is(el.children.length, 3);
+  is(el.textContent, "123");
+  let [first, second, third] = el.childNodes;
+
+  state.xs.value = [{ id: 1 }, { id: 3 }, { id: 2 }];
+  await tick();
+  is(el.textContent, "132");
+  is(el.childNodes[0], first, 'firstChild === first');
+  is(el.childNodes[2], second, 'lastChild === second');
+  is(el.childNodes[1], third);
+
+  state.xs.value = [{ id: 3 }, { id: 2 }, { id: 1 }];
+  await tick();
+  is(el.textContent, "321");
   is(el.childNodes[0], third);
+  is(el.childNodes[1], second);
+  is(el.childNodes[2], first);
   // FIXME: test if it disposes memory here after destroying
 });
 

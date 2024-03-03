@@ -32,8 +32,8 @@
   "scripts": {
     "test": "node -r ./test/register.cjs test/test.js",
     "build": "npm run bundle && npm run min",
-    "bundle": "esbuild --bundle ./sprae.js ./sprae.csp.js --outdir=dist --format=esm",
-    "min": "terser ./dist/sprae.js -o ./dist/sprae.min.js --module -c passes=3 -m && terser ./dist/sprae.csp.js -o ./dist/sprae.csp.min.js --module -c passes=3 -m"
+    "bundle": "esbuild --bundle ./sprae.js --outdir=dist --format=esm",
+    "min": "terser ./dist/sprae.js -o ./dist/sprae.min.js --module -c passes=3 -m"
   },
   "repository": {
     "type": "git",

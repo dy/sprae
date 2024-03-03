@@ -96,10 +96,12 @@
 * [x] ~~0-code sandbox (stub props)~~ - unnecessary `Object.create`
 * [x] interpolatable strings
 * [x] :each that keeps elements
-* [ ] Plugins
+* [x] Plugins
   * [x] :aria
   * [x] :data
   * [x] ~~:item~~
+* [ ] :onvisible..oninvisible
+* [ ] :onmount..onunmount
 * [ ] fix examples
 * [ ] all FIXMEs
 * [ ] move proxy state into own project / part of signal struct (with tests from here)

@@ -17,7 +17,9 @@ export default function sprae(container, values) {
 
   // repeated call can be caused by :each with new objects with old keys needs an update
   if (memo.has(container))
-    return batch(() => Object.assign(memo.get(container), values));
+    return batch(() => {
+      Object.assign(memo.get(container), values)
+    });
 
   // take over existing state instead of creating clone
   const state = values || {};
@@ -77,10 +79,15 @@ export let compile = (expr, dir, evaluate) => {
 
   // static-time errors
   try { evaluate = new Function(`__scope`, `with (__scope) { return ${expr} };`); }
-  catch (e) { throw Object.assign(e, { message: `∴ ${e.message}\n\n${dir}${expr ? `="${expr}"\n\n` : ""}`, expr }) }
+  catch (e) { err(e) }
+
+  const err = e => { throw Object.assign(e, { message: `∴ ${e.message}\n\n${dir}${expr ? `="${expr}"\n\n` : ""}`, expr }) }
 
   // runtime errors
-  return evalMemo[expr] = (state) => evaluate(state);
+  return evalMemo[expr] = (state, result) => {
+    try { result = evaluate(state) } catch (e) { err(e) }
+    return result
+  };
 }
 
 // DOM swapper
