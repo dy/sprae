@@ -1,10 +1,10 @@
-import { directive, compile, effect } from "../src/core.js";
+import { directive, compile, effect } from "../core.js";
 
 directive['data'] = (el, expr, state) => {
   let evaluate = compile(expr, 'data')
 
-  return ((state) => {
-    let value = evaluate(state)
+  return effect((state) => {
+    let value = evaluate(state)?.valueOf()
     for (let key in value) el.dataset[key] = value[key];
   })
 }

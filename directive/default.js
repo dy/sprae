@@ -112,7 +112,7 @@ const keys = {
 };
 
 // set attr
-const attr = (el, name, v) => {
+export const attr = (el, name, v) => {
   if (v == null || v === false) el.removeAttribute(name);
   else el.setAttribute(name, v === true ? "" : typeof v === "number" || typeof v === "string" ? v : "");
 }

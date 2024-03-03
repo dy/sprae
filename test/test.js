@@ -2,6 +2,8 @@
 import test, { is, any, throws } from "tst";
 import { tick, time } from "wait-please";
 import sprae, { signal, effect, untracked, batch, computed } from '../sprae.js'
+import '../directive/aria.js'
+import '../directive/data.js'
 import h from "hyperf";
 import justin from 'subscript/justin.js'
 
@@ -185,13 +187,13 @@ test.skip("props: semicols in expression", async () => {
   // is(el.outerHTML, `<x x="0123"></x>`);
 });
 
-test.skip("data: base", async () => {
+test("data: base", async () => {
   let el = h`<input :data="{a:1, fooBar:2}"/>`;
   let params = sprae(el);
   is(el.outerHTML, `<input data-a="1" data-foo-bar="2">`);
 });
 
-test.skip("aria: base", async () => {
+test("aria: base", async () => {
   let el = h`<input type="text" id="jokes" role="combobox" :aria="{controls:'joketypes', autocomplete:'list', expanded:false, activeOption:'item1', activedescendant:'', xxx:null}"/>`;
   sprae(el);
   is(

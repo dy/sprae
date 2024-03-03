@@ -201,9 +201,9 @@ Attach event(s) listener with possible modifiers.
 * `.*` – any other modifier has no effect, but allows binding multiple handlers to same event (like jQuery event classes).
 
 
-## Additional Directives
+## Optional Directives
 
-The following directives can be plugged in optionally as:
+The following directives can be additionally plugged in as:
 
 ```js
 import sprae from 'sprae'
@@ -247,21 +247,6 @@ Set `aria-*` attributes. Boolean values are stringified.
   activedescendant: ''
 }" />
 <!-- <input role="combobox" aria-controls="joketypes" aria-autocomplete="list" aria-expanded="false" aria-active-option="item1" aria-activedescendant>
--->
-```
-
-#### `:item="values"`
-
-Set data schema values:
-
-```html
-<div :item="{type:'Person'}">
-  <span :item="{prop:'name'}">Jane Doe</span>
-</div>
-<!--
-<div itemscope itemtype="http://schema.org/Person">
-  <span itemprop="name">Jane Doe</span>
-</div>
 -->
 ```
 
