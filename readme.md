@@ -372,10 +372,10 @@ To destroy state and detach sprae handlers, call `element[Symbol.dispose]()`. --
 
 * No default globals: provide manually to state (`console`, `setTimeout` etc).
 * ``:class="`abc ${def}`"`` → `:class="'abc $<def>'"`
-* `:scope={x:foo}` is not reactive,
+* `:with={x:'y'}` -> `:scope={x:'y'}`, `x` is not reactive, init signals manually.
 * `:render="tpl"` → `:html="tpl"`
-* No autoinit → use manual init.
-* No reactive store → use signals for reactive values, read `a.value` where applicable.
+* No autoinit → use manual init via `import sprae from 'sprae'`.
+* No reactive store → use signals for reactive values, read `.value` in template where applicable.
 * `@click="event.target"` → `:onclick="event => event.target"`
 * Async props / events are prohibited, pass async functions via state.
 * Directives order matters, eg. `<a :if :each :scope />` !== `<a :scope :each :if />`
