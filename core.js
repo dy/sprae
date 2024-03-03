@@ -80,7 +80,7 @@ export let compile = (expr, dir, evaluate) => {
   catch (e) { throw Object.assign(e, { message: `∴ ${e.message}\n\n${dir}${expr ? `="${expr}"\n\n` : ""}`, expr }) }
 
   // runtime errors
-  return evalMemo[expr] = (state) => evaluate(state)?.valueOf();
+  return evalMemo[expr] = (state) => evaluate(state);
 }
 
 // DOM swapper

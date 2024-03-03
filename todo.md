@@ -95,7 +95,7 @@
   * [x] ~~no-signals (signals are pluggable): better teardown flow; returns dispose fn, not state; pluggable ulive; signals from original source, not sprae~~ can't avoid effect, the codebase is tiny
 * [x] ~~0-code sandbox (stub props)~~ - unnecessary `Object.create`
 * [x] interpolatable strings
-* [ ] :each that keeps elements
+* [x] :each that keeps elements
 * [ ] Plugins
   * [ ] :aria
   * [ ] :data
@@ -103,4 +103,4 @@
 * [ ] fix examples
 * [ ] all FIXMEs
 * [ ] move proxy state into own project / part of signal struct (with tests from here)
-* [ ] make cross-version testing: sprae, csp, signals variations
+* [x] ~~make cross-version testing: sprae, csp, signals variations~~ justin default is enough

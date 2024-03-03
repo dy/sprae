@@ -17,7 +17,7 @@ directive.default = (el, expr, state, name) => {
   }
 
   return effect(() => {
-    let value = evaluate(state);
+    let value = evaluate(state)?.valueOf();
     if (name) attr(el, name, ipol(value, state))
     else for (let key in value) attr(el, dashcase(key), ipol(value[key], state));
   });

@@ -3,7 +3,6 @@ import sprae, { directive, effect, compile, swap } from "../core.js";
 export const _each = Symbol(":each");
 
 const keys = {}; // boxed primitives pool
-const weakify = key => Object(key) !== key ? Object[key] : key
 
 // :each must init before :ref, :id or any others, since it defines scope
 directive.each = (tpl, expr, state) => {
@@ -20,13 +19,10 @@ directive.each = (tpl, expr, state) => {
   let cur = [];
   return effect(() => {
     // naive approach: whenever items change we replace full list
-    let items = evaluate(state), els = new Set;
+    let items = evaluate(state)?.valueOf(), els = new Set;
     if (typeof items === "number") items = Array.from({ length: items }, (_, i) => i);
 
-    const getKey = (i, c) => {
-      if (Object(i) !== i) i = (keys[i] ||= Object(i))
-      return i
-    }
+    const getKey = (i) => (Object(i) !== i) ? (keys[i] ||= Object(i)) : i
 
     for (let idx in items) {
       let item = items[idx], key, substate;

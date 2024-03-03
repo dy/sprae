@@ -368,17 +368,18 @@ See [sprae/directive](./directive/) for examples.
 To destroy state and detach sprae handlers, call `element[Symbol.dispose]()`. -->
 
 
-## Migration to v9
+## v9 changes
 
 * No default globals: provide manually to state (`console`, `setTimeout` etc).
 * ``:class="`abc ${def}`"`` → `:class="'abc $<def>'"`
-* `:with={x:foo}` → `:scope={x:foo}`
+* `:scope={x:foo}` is not reactive,
 * `:render="tpl"` → `:html="tpl"`
 * No autoinit → use manual init.
 * No reactive store → use signals for reactive values, read `a.value` where applicable.
 * `@click="event.target"` → `:onclick="event => event.target"`
 * Async props / events are prohibited, pass async functions via state.
 * Directives order matters, eg. `<a :if :each :scope />` !== `<a :scope :each :if />`
+* Only one directive per `<template>` is allowed, eg. `<template :each />`, not `<template :if :each/>`
 
 
 ## Justification

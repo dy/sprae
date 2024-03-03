@@ -1,5 +1,5 @@
-import sprae, { directive, effect, computed, compile, swap } from "../core.js";
-import { _each } from './each.js'
+import sprae, { compile, computed, directive, effect, swap } from "../core.js";
+import { _each } from './each.js';
 
 // :if is interchangeable with :each depending on order, :if :each or :each :if have different meanings
 // as for :if :scope - :if must init first, since it is lazy, to avoid initializing component ahead of time by :scope
@@ -12,7 +12,7 @@ directive.if = (ifEl, expr, state) => {
 
     evaluate = compile(expr, 'if'),
     prevPass = ifEl[_prevIf],
-    pass = computed(() => evaluate(state)),
+    pass = computed(() => evaluate(state)?.valueOf()),
 
     // actual replaceable els (takes <template>)
     cur, ifs, elses;
@@ -32,9 +32,8 @@ directive.if = (ifEl, expr, state) => {
   const dispose = effect(() => {
     const newEls = prevPass?.value ? [] : pass.value ? ifs : elses;
     if (cur != newEls) {
-      // FIXME: :if :each fails here
-      // (cur[_each] || cur).replaceWith(cur = el);
-      // console.log(cur, newEls)
+      // :if :each
+      if (cur[0]?.[_each]) cur = [cur[0][_each]]
       swap(parent, cur, cur = newEls, holder);
       for (let el of cur) sprae(el, state);
     }

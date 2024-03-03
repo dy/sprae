@@ -3,6 +3,9 @@ import test, { is, any, throws } from "tst";
 import { tick, time } from "wait-please";
 import sprae, { signal, effect, untracked, batch, computed } from '../sprae.js'
 import h from "hyperf";
+import justin from 'subscript/justin.js'
+
+sprae.use({ compile: justin })
 
 Object.defineProperty(DocumentFragment.prototype, "outerHTML", {
   get() {
@@ -565,7 +568,7 @@ test("each: fragments multiple", async () => {
   is(el.innerHTML, "");
 });
 
-test.only("each: fragments text", async () => {
+test.todo("each: fragments text", async () => {
   let el = h`<p>
     <template :each="a in b" :text="a"></template>
   </p>`;
@@ -1067,7 +1070,7 @@ test.todo("getters", async () => {
 });
 
 test("csp: sandbox", async () => {
-  const { default: sprae } = await import('../sprae.csp.js')
+  // const { default: sprae } = await import('../sprae.csp.js')
   const globals = { console };
   const state = Object.assign(Object.create(globals), { log: [] });
 
