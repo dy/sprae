@@ -4,7 +4,8 @@ import * as signals from 'ulive'
 // polyfill
 (Symbol.dispose ||= Symbol("dispose"));
 
-export const _version = Symbol('v')
+// provides facility to trigger updates for states
+export const states = new WeakMap
 
 // signals impl
 export let { signal, effect, batch, computed, untracked } = signals;
@@ -22,13 +23,14 @@ export default function sprae(container, values) {
     return batch(() => {
       let state = memo.get(container)
       // FIXME: do we need to update signals instead of rewrite?
-      Object.assign(state, values)
-      state[_version].value++
+      states.get(Object.assign(state, values)).value++
     });
 
   // take over existing state instead of creating clone
   const state = values || {};
-  state[_version] = signal(0); // to bump state in directives that depend on that
+  const version = signal(0);
+  states.set(state, version); // to bump state in directives
+
   const disposes = [];
 
   // init directives on element
@@ -47,7 +49,7 @@ export default function sprae(container, values) {
           // NOTE: secondary directives don't stop flow nor extend state, so no need to check
           for (let name of names) {
             let dirDispose, update = (directive[name] || directive.default)(el, attr.value, state, name)
-            let effectDispose = effect(() => { state[_version].value; dirDispose = update() })
+            let effectDispose = effect(() => { version.value; dirDispose = update() })
             disposes.push(() => (dirDispose?.call?.(), effectDispose()))
           }
 

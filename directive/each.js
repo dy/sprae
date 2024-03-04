@@ -26,29 +26,28 @@ directive.each = (tpl, expr, state) => {
     let items = evaluate(state)?.valueOf(), els = [];
     if (typeof items === "number") items = Array.from({ length: items }, (_, i) => i);
 
-    untracked(() => {
-      for (let idx in items) {
-        let substate = Object.assign(Object.create(state), {
-          [itemVar]: items[idx],
-          [idxVar]: idx,
-        }),
-          key = ipol(getKey(substate), substate);
+    for (let idx in items) {
+      let substate = {
+        ...state,
+        [itemVar]: items[idx],
+        [idxVar]: idx,
+      },
+        key = ipol(getKey(substate), substate);
 
-        // make sure key is object
-        if (Object(key) !== key) key = (keys[key] ||= Object(key))
+      // make sure key is object
+      if (Object(key) !== key) key = (keys[key] ||= Object(key))
 
-        let el = memo.get(key) || memo.set(key, tpl.cloneNode(true)).get(key)
-        // if (els.has(el)) el = el.cloneNode(true) // avoid dupes
-        if (el.content) el = el.content.cloneNode(true) // <template>
+      let el = memo.get(key) || memo.set(key, tpl.cloneNode(true)).get(key)
+      // if (els.has(el)) el = el.cloneNode(true) // avoid dupes
+      if (el.content) el = el.content.cloneNode(true) // <template>
 
-        sprae(el, substate);
+      untracked(() => sprae(el, substate))
 
-        // document fragment
-        if (el.nodeType === 11) els.push(...el.childNodes);
-        else els.push(el);
-      }
+      // document fragment
+      if (el.nodeType === 11) els.push(...el.childNodes);
+      else els.push(el);
+    }
 
-      swap(holder.parentNode, cur, cur = els, holder);
-    })
+    swap(holder.parentNode, cur, cur = els, holder);
   };
 };
