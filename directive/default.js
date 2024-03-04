@@ -1,4 +1,4 @@
-import { directive, compile, effect, ipol } from "../core.js";
+import { directive, compile, ipol } from "../core.js";
 
 // set generic property directive
 directive.default = (el, expr, state, name) => {

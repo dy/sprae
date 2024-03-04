@@ -1,15 +1,15 @@
-import * as signals from '@preact/signals-core'
+// import * as signals from '@preact/signals-core'
 // import * as signals from '@webreflection/signal'
 import test, { is, any, throws } from "tst";
 import { tick, time } from "wait-please";
-import sprae, { signal, effect, untracked, batch, computed } from '../sprae.js'
+import sprae, { signal, batch } from '../sprae.js'
 import '../directive/aria.js'
 import '../directive/data.js'
 import h from "hyperf";
 import justin from 'subscript/justin.js'
 
 sprae.use({ compile: justin })
-sprae.use(signals)
+// sprae.use(signals)
 
 Object.defineProperty(DocumentFragment.prototype, "outerHTML", {
   get() {
@@ -252,24 +252,24 @@ test("text: fragment", async () => {
 
 test("if: base", async () => {
   let el = h`<p>
-    <span :if="a==1">a</span>
-    <span :else :if="a==2">b</span>
-    <span :else >c</span>
+    <if :if="a==1">a</if>
+    <elif :else :if="a==2">b</elif>
+    <else :else >c</else>
   </p>`;
 
   const params = sprae(el, { a: signal(1) });
 
-  is(el.innerHTML, "<span>a</span>");
+  is(el.innerHTML, "<if>a</if>");
   console.log('a.value = 2')
   params.a.value = 2;
   await tick();
-  is(el.innerHTML, "<span>b</span>");
+  is(el.innerHTML, "<elif>b</elif>");
   params.a.value = 3;
   await tick();
-  is(el.innerHTML, "<span>c</span>");
+  is(el.innerHTML, "<else>c</else>");
   params.a.value = null;
   await tick();
-  is(el.innerHTML, "<span>c</span>");
+  is(el.innerHTML, "<else>c</else>");
 });
 
 test("if: template", async () => {

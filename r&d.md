@@ -974,7 +974,7 @@
 - very verbose
 - no convenient destructuring
 
-## [ ] How do we organize updatable state?
+## [x] How do we organize updatable state? -> let's try to keep effects out of directives
 
 1. Make signals optional, update state via returned function
   + no signals = smaller

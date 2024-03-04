@@ -19,10 +19,13 @@ export default function sprae(container, values) {
   if (!container.children) return // text nodes, comments etc
 
   // repeated call can be caused by :each with new objects with old keys needs an update
-  if (memo.has(container)) return batch(() => {
-    // FIXME: do we need to update signals instead of rewrite?
-    Object.assign(memo.get(container), values)[_version].value++
-  });
+  if (memo.has(container)) return batch(() =>
+    // untracked prevents subsequent :each updates
+    untracked(() => {
+      // FIXME: do we need to update signals instead of rewrite?
+      Object.assign(memo.get(container), values)[_version].value++
+    })
+  );
 
   // take over existing state instead of creating clone
   const state = values || {};

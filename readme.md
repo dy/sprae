@@ -340,11 +340,11 @@ import 'sprae/directive/text'
 Additional directives can be added as:
 
 ```js
-import sprae, { directive, effect, compile } from 'sprae/core'
+import sprae, { directive, compile } from 'sprae/core'
 
 directive.id = (el, expr, state) => {
   const evaluate = compile(state)       // expression string -> evaluator
-  effect(() => el.id = evaluate(state)) // subscribe to signals in expression
+  return () => el.id = evaluate(state)  // return update function
 }
 ```
 

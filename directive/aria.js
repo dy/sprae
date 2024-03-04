@@ -1,4 +1,4 @@
-import { directive, compile, effect } from "../core.js";
+import { directive, compile } from "../core.js";
 import { attr, dashcase } from './default.js'
 
 directive['aria'] = (el, expr, state) => {

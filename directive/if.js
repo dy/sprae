@@ -1,4 +1,4 @@
-import sprae, { compile, computed, directive, swap, _version } from "../core.js";
+import sprae, { compile, directive, swap } from "../core.js";
 import { _each } from './each.js';
 
 // :if is interchangeable with :each depending on order, :if :each or :each :if have different meanings
@@ -11,8 +11,6 @@ directive.if = (ifEl, expr, state) => {
     holder = document.createTextNode(''),
 
     evaluate = compile(expr, 'if'),
-    prevPass = ifEl[_prevIf],
-    pass = computed(() => (state[_version].value, evaluate(state)?.valueOf())),
 
     // actual replaceable els (takes <template>)
     cur, ifs, elses, none = [];
@@ -25,7 +23,7 @@ directive.if = (ifEl, expr, state) => {
   if (next?.hasAttribute(":else")) {
     next.removeAttribute(":else");
     // if next is :else :if - leave it for its own :if handler
-    if (next.hasAttribute(":if")) elses = none, next[_prevIf] = pass;
+    if (next.hasAttribute(":if")) elses = none;
     else next.remove(), elses = next.content ? [...next.content.childNodes] : [next];
   } else elses = none
 
@@ -35,7 +33,8 @@ directive.if = (ifEl, expr, state) => {
   }
 
   return () => {
-    const newEls = prevPass?.value ? none : pass.value ? ifs : elses;
+    const newEls = evaluate(state)?.valueOf() ? ifs : ifEl[_prevIf] ? none : elses;
+    if (next) next[_prevIf] = newEls === ifs
     if (cur != newEls) {
       // :if :each
       if (cur[0]?.[_each]) cur = [cur[0][_each]]

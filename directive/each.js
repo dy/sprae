@@ -1,4 +1,4 @@
-import sprae, { directive, effect, compile, swap, untracked, ipol } from "../core.js";
+import sprae, { directive, compile, swap, ipol } from "../core.js";
 
 export const _each = Symbol(":each");
 
@@ -41,7 +41,7 @@ directive.each = (tpl, expr, state) => {
       // if (els.has(el)) el = el.cloneNode(true) // avoid dupes
       if (el.content) el = el.content.cloneNode(true) // <template>
 
-      untracked(() => sprae(el, substate))
+      sprae(el, substate)
 
       // document fragment
       if (el.nodeType === 11) els.push(...el.childNodes);
