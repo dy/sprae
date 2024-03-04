@@ -1,4 +1,4 @@
-import { directive, compile, effect } from "../core.js";
+import { directive, compile } from "../core.js";
 
 // set text content
 directive.text = (el, expr, state) => {
@@ -6,7 +6,7 @@ directive.text = (el, expr, state) => {
   if (el.content) el.replaceWith(el = document.createTextNode('')) // <template :text="abc"/>
 
   return () => {
-    let value = evaluate(state.value)?.valueOf();
+    let value = evaluate(state)?.valueOf();
     el.textContent = value == null ? "" : value;
   };
 };

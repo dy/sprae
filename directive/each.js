@@ -23,12 +23,12 @@ directive.each = (tpl, expr, state) => {
 
   return () => {
     // naive approach: whenever items change we replace full list
-    let items = evaluate(state.value)?.valueOf(), els = [];
+    let items = evaluate(state)?.valueOf(), els = [];
     if (typeof items === "number") items = Array.from({ length: items }, (_, i) => i);
 
     untracked(() => {
       for (let idx in items) {
-        let substate = Object.assign(Object.create(state.value), {
+        let substate = Object.assign(Object.create(state), {
           [itemVar]: items[idx],
           [idxVar]: idx,
         }),

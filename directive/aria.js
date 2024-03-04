@@ -7,6 +7,6 @@ directive['aria'] = (el, expr, state) => {
     for (let key in value) attr(el, 'aria-' + dashcase(key), value[key] == null ? null : value[key] + '');
   }
   return () => {
-    update(evaluate(state.value)?.valueOf())
+    update(evaluate(state)?.valueOf())
   }
 }

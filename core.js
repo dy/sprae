@@ -4,6 +4,8 @@ import * as signals from 'ulive'
 // polyfill
 (Symbol.dispose ||= Symbol("dispose"));
 
+export const _version = Symbol('v')
+
 // signals impl
 export let { signal, effect, batch, computed, untracked } = signals;
 
@@ -18,13 +20,15 @@ export default function sprae(container, values) {
   // repeated call can be caused by :each with new objects with old keys needs an update
   if (memo.has(container))
     return batch(() => {
-      let state = memo.get(container), prev = state.peek()
-      state.value = null
-      state.value = Object.assign(prev, values)
+      let state = memo.get(container)
+      // FIXME: do we need to update signals instead of rewrite?
+      Object.assign(state, values)
+      state[_version].value++
     });
 
   // take over existing state instead of creating clone
-  const state = signal(values || {});
+  const state = values || {};
+  state[_version] = signal(0); // to bump state in directives that depend on that
   const disposes = [];
 
   // init directives on element
@@ -43,7 +47,7 @@ export default function sprae(container, values) {
           // NOTE: secondary directives don't stop flow nor extend state, so no need to check
           for (let name of names) {
             let dirDispose, update = (directive[name] || directive.default)(el, attr.value, state, name)
-            let effectDispose = effect(() => { state.value != null && (dirDispose = update()) })
+            let effectDispose = effect(() => { state[_version].value; dirDispose = update() })
             disposes.push(() => (dirDispose?.call?.(), effectDispose()))
           }
 
@@ -63,7 +67,7 @@ export default function sprae(container, values) {
   init(container);
 
   // if element was spraed by :scope or :each instruction - skip
-  if (memo.has(container)) return state.value; //memo.get(container)
+  if (memo.has(container)) return state// memo.get(container)
 
   // save
   memo.set(container, state);
@@ -74,7 +78,7 @@ export default function sprae(container, values) {
     memo.delete(container);
   }
 
-  return state.value;
+  return state;
 }
 
 // default compiler

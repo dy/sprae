@@ -1,4 +1,4 @@
-import { directive, compile, effect } from "../core.js";
+import { directive, compile } from "../core.js";
 
 // connect expr to element value
 directive.value = (el, expr, state) => {
@@ -27,6 +27,6 @@ directive.value = (el, expr, state) => {
           : (value) => (el.value = value);
 
   return () => {
-    update(evaluate(state.value));
+    update(evaluate(state));
   };
 };

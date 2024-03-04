@@ -659,18 +659,18 @@ test("each: loop within condition", async () => {
 test("each: condition within loop", async () => {
   let el = h`<p>
     <x :each="a in b">
-      <y :if="a==1" :text="'1:'+a"></y>
-      <y :else :if="a==2" :text="'2:'+a"></y>
-      <y :else :text="a"></y>
+      <if :if="a==1" :text="'1:'+a"></if>
+      <elif :else :if="a==2" :text="'2:'+a"></elif>
+      <else :else :text="a"></else>
     </x>
   </p>`;
 
   const params = sprae(el, { b: signal([1, 2, 3]) });
 
-  is(el.innerHTML, "<x><y>1:1</y></x><x><y>2:2</y></x><x><y>3</y></x>");
+  is(el.innerHTML, "<x><if>1:1</if></x><x><elif>2:2</elif></x><x><else>3</else></x>");
   params.b.value = [2];
   await tick();
-  is(el.innerHTML, "<x><y>2:2</y></x>");
+  is(el.innerHTML, "<x><elif>2:2</elif></x>");
   params.b.value = null;
   await tick();
   is(el.innerHTML, "");

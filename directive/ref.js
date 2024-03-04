@@ -4,7 +4,7 @@ import { directive, ipol } from "../core.js";
 directive.ref = (el, expr, state) => {
   let prev;
   return () => {
-    if (prev) delete state.value[prev]
-    state.value[prev = ipol(expr, state.value)] = el;
+    if (prev) delete state[prev]
+    state[prev = ipol(expr, state)] = el;
   }
 };
