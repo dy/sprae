@@ -855,16 +855,16 @@
 
 ### [x] What should we do with tagged strings :id="`item-${id}`"? -> keep strings `'item-' + id` with placeholders `'item-$<id>'`
   1. Prohibit
-    * `:class="['a', b, 'c']"`
+    . `:class="['a', b, 'c']"`
       + built-in clsx
-    * `:id="['item-',id].join('')"`
-    * `:class='"foo " + bar + " baz"'`
+    . `:id="['item-',id].join('')"`
+    . `:class='"foo " + bar + " baz"'`
       + classic JS
       + more-or-less cross-lang
       - not so easy to read
   2. Invent alternative
-    * `"foo $bar baz"` (Bash, Perl, Kotlin, PHP)
-    * `"foo %s baz" % bar` (Python, Go)
+    . `"foo $bar baz"` (Bash, Perl, Kotlin, PHP)
+    . `"foo %s baz" % bar` (Python, Go)
       - nah, learning new synax is no-go
   3. Prefixed directive `$class="foo {bar} baz"`
     - nah
@@ -973,3 +973,27 @@
 
 - very verbose
 - no convenient destructuring
+
+## [ ] How do we organize updatable state?
+
+1. Make signals optional, update state via returned function
+  + no signals = smaller
+  - not clear how to organize the directives code: `effect` is still needed if we use signals
+  - enforcing signals config is too much, they must be available immediately
+2. Keep `state` as signal, register `state.value`
+  - harder dependence on signals
+  + solves issue
+  - a bit verbose: needs initializing with signal detection
+    - which adds to size
+  - it's also less clear: it causes some infinite loops hard to trace back
+    - generally understanding update dependency is harder
+3. we always return `effect` anyways: we can return `update` function instead and handle effect outside
+  + this way we'd be able to call update independent of effect
+
+
+## [ ] What should we return?
+
+1. state signal
+2. state.value
+3. dispose
+4. element itself

@@ -4,11 +4,10 @@ import sprae, { directive, compile, effect } from "../core.js";
 // same time per-item scope as `:each="..." :scope="{collapsed:true}"` is useful
 directive.scope = (el, expr, rootState) => {
   let evaluate = compile(expr, 'scope');
-  let state = Object.create(rootState)
+  let state = Object.create(rootState.value)
   // local state may contain signals that update, so we take them over
   const dispose = effect(() => {
-    state = Object.assign(state, evaluate(rootState)?.valueOf?.() || {});
-    sprae(el, state);
+    sprae(el, Object.assign(state, evaluate(rootState.value)?.valueOf?.() || {}));
   })
   return () => (el[Symbol.dispose]?.(), dispose());
 };

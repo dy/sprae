@@ -27,6 +27,6 @@ directive.value = (el, expr, state) => {
           : (value) => (el.value = value);
 
   return effect(() => {
-    update(evaluate(state));
+    update(evaluate(state.value));
   });
 };

@@ -11,15 +11,15 @@ directive.default = (el, expr, state, name) => {
     let off, dispose = effect(() => {
       if (off) off(), (off = null);
       // we need anonymous callback to enable modifiers like prevent
-      off = on(el, evt, evaluate(state));
+      off = on(el, evt, evaluate(state.value));
     });
     return () => (off?.(), dispose());
   }
 
   return effect(() => {
-    let value = evaluate(state)?.valueOf();
-    if (name) attr(el, name, ipol(value, state))
-    else for (let key in value) attr(el, dashcase(key), ipol(value[key], state));
+    let value = evaluate(state.value)?.valueOf();
+    if (name) attr(el, name, ipol(value, state.value))
+    else for (let key in value) attr(el, dashcase(key), ipol(value[key], state.value));
   });
 };
 

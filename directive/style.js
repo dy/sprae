@@ -6,11 +6,11 @@ directive.style = (el, expr, state) => {
   if (!initStyle.endsWith(";")) initStyle += "; ";
 
   return effect(() => {
-    let v = evaluate(state)?.valueOf();
-    if (typeof v === "string") el.setAttribute("style", initStyle + ipol(v, state));
+    let v = evaluate(state.value)?.valueOf();
+    if (typeof v === "string") el.setAttribute("style", initStyle + ipol(v, state.value));
     else {
       el.setAttribute("style", initStyle);
-      for (let k in v) el.style.setProperty(k, ipol(v[k], state));
+      for (let k in v) el.style.setProperty(k, ipol(v[k], state.value));
     }
   });
 };

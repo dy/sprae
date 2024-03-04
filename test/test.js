@@ -681,7 +681,7 @@ test('each: next items have own "this", not single one', async () => {
   is(state.log, [0, "0", 1, "1", 2, "2"]);
 });
 
-test.only("each: unkeyed", async () => {
+test("each: unkeyed", async () => {
   let el = h`<div><x :each="x, i in xs" :text="x"></x></div>`;
   let state = sprae(el, { xs: signal([1, 2, 3]) });
   is(el.children.length, 3);

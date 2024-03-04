@@ -1,13 +1,13 @@
 import sprae, { directive, compile } from "../core.js";
 
 directive.html = (el, expr, state) => {
-  let evaluate = compile(expr, 'html'), tpl = evaluate(state);
+  let evaluate = compile(expr, 'html'), tpl = evaluate(state.value);
 
   if (!tpl) return
 
   let content = (tpl.content || tpl).cloneNode(true);
   el.replaceChildren(content);
-  sprae(el, state);
+  sprae(el, state.value);
 
   return el[Symbol.dispose];
 };

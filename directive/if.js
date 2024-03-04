@@ -12,7 +12,7 @@ directive.if = (ifEl, expr, state) => {
 
     evaluate = compile(expr, 'if'),
     prevPass = ifEl[_prevIf],
-    pass = computed(() => evaluate(state)?.valueOf()),
+    pass = computed(() => evaluate(state.value)?.valueOf()),
 
     // actual replaceable els (takes <template>)
     cur, ifs, elses;
@@ -35,7 +35,7 @@ directive.if = (ifEl, expr, state) => {
       // :if :each
       if (cur[0]?.[_each]) cur = [cur[0][_each]]
       swap(parent, cur, cur = newEls, holder);
-      for (let el of cur) sprae(el, state);
+      for (let el of cur) sprae(el, state.value);
     }
   });
 

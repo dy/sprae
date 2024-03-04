@@ -18,11 +18,12 @@ export default function sprae(container, values) {
   // repeated call can be caused by :each with new objects with old keys needs an update
   if (memo.has(container))
     return batch(() => {
-      Object.assign(memo.get(container), values)
+      let signal = memo.get(container)
+      signal.value = Object.assign(signal.peek(), values)
     });
 
   // take over existing state instead of creating clone
-  const state = values || {};
+  const state = signal(values || {});
   const disposes = [];
 
   // init directives on element
@@ -57,7 +58,7 @@ export default function sprae(container, values) {
   init(container);
 
   // if element was spraed by :scope or :each instruction - skip
-  if (memo.has(container)) return state; //memo.get(container)
+  if (memo.has(container)) return state.value; //memo.get(container)
 
   // save
   memo.set(container, state);
@@ -68,7 +69,7 @@ export default function sprae(container, values) {
     memo.delete(container);
   }
 
-  return state;
+  return state.value;
 }
 
 // default compiler

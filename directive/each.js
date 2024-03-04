@@ -1,4 +1,4 @@
-import sprae, { directive, effect, compile, swap, ipol } from "../core.js";
+import sprae, { directive, effect, compile, swap, untracked, ipol } from "../core.js";
 
 export const _each = Symbol(":each");
 
@@ -22,30 +22,32 @@ directive.each = (tpl, expr, state) => {
   let cur = [];
   return effect(() => {
     // naive approach: whenever items change we replace full list
-    let items = evaluate(state)?.valueOf(), els = [];
+    let items = evaluate(state.value)?.valueOf(), els = [];
     if (typeof items === "number") items = Array.from({ length: items }, (_, i) => i);
 
-    for (let idx in items) {
-      let substate = Object.create(state, {
-        [itemVar]: { value: items[idx] },
-        [idxVar]: { value: idx },
-      }),
-        key = ipol(getKey(substate), substate);
+    untracked(() => {
+      for (let idx in items) {
+        let substate = Object.assign(Object.create(state.value), {
+          [itemVar]: items[idx],
+          [idxVar]: idx,
+        }),
+          key = ipol(getKey(substate), substate);
 
-      // make sure key is object
-      if (Object(key) !== key) key = (keys[key] ||= Object(key))
+        // make sure key is object
+        if (Object(key) !== key) key = (keys[key] ||= Object(key))
 
-      let el = memo.get(key) || memo.set(key, tpl.cloneNode(true)).get(key)
-      // if (els.has(el)) el = el.cloneNode(true) // avoid dupes
-      if (el.content) el = el.content.cloneNode(true) // <template>
+        let el = memo.get(key) || memo.set(key, tpl.cloneNode(true)).get(key)
+        // if (els.has(el)) el = el.cloneNode(true) // avoid dupes
+        if (el.content) el = el.content.cloneNode(true) // <template>
 
-      sprae(el, substate);
+        sprae(el, substate);
 
-      // document fragment
-      if (el.nodeType === 11) els.push(...el.childNodes);
-      else els.push(el);
-    }
+        // document fragment
+        if (el.nodeType === 11) els.push(...el.childNodes);
+        else els.push(el);
+      }
 
-    swap(holder.parentNode, cur, cur = els, holder);
+      swap(holder.parentNode, cur, cur = els, holder);
+    })
   });
 };
