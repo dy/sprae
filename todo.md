@@ -100,6 +100,7 @@
   * [x] :aria
   * [x] :data
   * [x] ~~:item~~
+* [ ] move effect out of directives, make signal-less state (ideally).
 * [ ] :onvisible..oninvisible
 * [ ] :onmount..onunmount
 * [ ] fix examples

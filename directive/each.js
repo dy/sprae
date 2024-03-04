@@ -20,7 +20,8 @@ directive.each = (tpl, expr, state) => {
   tpl.removeAttribute(':key')
 
   let cur = [];
-  return effect(() => {
+
+  return () => {
     // naive approach: whenever items change we replace full list
     let items = evaluate(state.value)?.valueOf(), els = [];
     if (typeof items === "number") items = Array.from({ length: items }, (_, i) => i);
@@ -49,5 +50,5 @@ directive.each = (tpl, expr, state) => {
 
       swap(holder.parentNode, cur, cur = els, holder);
     })
-  });
+  };
 };

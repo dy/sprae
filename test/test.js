@@ -1,4 +1,5 @@
-// import { signal } from 'usignal/sync'
+import * as signals from '@preact/signals-core'
+// import * as signals from '@webreflection/signal'
 import test, { is, any, throws } from "tst";
 import { tick, time } from "wait-please";
 import sprae, { signal, effect, untracked, batch, computed } from '../sprae.js'
@@ -8,6 +9,7 @@ import h from "hyperf";
 import justin from 'subscript/justin.js'
 
 sprae.use({ compile: justin })
+sprae.use(signals)
 
 Object.defineProperty(DocumentFragment.prototype, "outerHTML", {
   get() {
@@ -258,6 +260,7 @@ test("if: base", async () => {
   const params = sprae(el, { a: signal(1) });
 
   is(el.innerHTML, "<span>a</span>");
+  console.log('a.value = 2')
   params.a.value = 2;
   await tick();
   is(el.innerHTML, "<span>b</span>");

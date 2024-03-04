@@ -1,4 +1,4 @@
-import sprae, { compile, computed, directive, effect, swap } from "../core.js";
+import sprae, { compile, computed, directive, effect, untracked, swap } from "../core.js";
 import { _each } from './each.js';
 
 // :if is interchangeable with :each depending on order, :if :each or :each :if have different meanings
@@ -12,7 +12,7 @@ directive.if = (ifEl, expr, state) => {
 
     evaluate = compile(expr, 'if'),
     prevPass = ifEl[_prevIf],
-    pass = computed(() => evaluate(state.value)?.valueOf()),
+    pass = computed(() => (evaluate(state.value)?.valueOf())),
 
     // actual replaceable els (takes <template>)
     cur, ifs, elses;
@@ -29,7 +29,12 @@ directive.if = (ifEl, expr, state) => {
     else next.remove(), elses = next.content ? [...next.content.childNodes] : [next];
   } else elses = []
 
-  const dispose = effect(() => {
+  const dispose = () => {
+    for (let el of ifs) el[Symbol.dispose]?.()
+    for (let el of elses) el[Symbol.dispose]?.()
+  }
+
+  return () => {
     const newEls = prevPass?.value ? [] : pass.value ? ifs : elses;
     if (cur != newEls) {
       // :if :each
@@ -37,11 +42,6 @@ directive.if = (ifEl, expr, state) => {
       swap(parent, cur, cur = newEls, holder);
       for (let el of cur) sprae(el, state.value);
     }
-  });
-
-  return () => {
-    ifEl[Symbol.dispose]?.();
-    elseEl?.[Symbol.dispose]?.();
-    dispose(); // dispose effect
+    return dispose
   };
 };

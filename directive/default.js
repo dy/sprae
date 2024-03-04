@@ -8,19 +8,21 @@ directive.default = (el, expr, state, name) => {
   if (!evaluate) return; // FIXME: do we need this?
 
   if (evt) {
-    let off, dispose = effect(() => {
+    let off, dispose = () => (off?.())
+
+    return () => {
       if (off) off(), (off = null);
       // we need anonymous callback to enable modifiers like prevent
       off = on(el, evt, evaluate(state.value));
-    });
-    return () => (off?.(), dispose());
+      return dispose
+    };
   }
 
-  return effect(() => {
+  return () => {
     let value = evaluate(state.value)?.valueOf();
     if (name) attr(el, name, ipol(value, state.value))
     else for (let key in value) attr(el, dashcase(key), ipol(value[key], state.value));
-  });
+  };
 };
 
 

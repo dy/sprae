@@ -989,11 +989,18 @@
     - generally understanding update dependency is harder
 3. we always return `effect` anyways: we can return `update` function instead and handle effect outside
   + this way we'd be able to call update independent of effect
+  + we handle effect disposal in centralized way, not per-directive
 
 
-## [ ] What should we return?
+## [ ] What should we return from `sprae` call?
 
 1. state signal
+  - not clear what sort of signal is that
+  - no access to props: lame
 2. state.value
+  + actual state...
 3. dispose
+  + conventional
+  - no access to state
 4. element itself
+  + chaining

@@ -1,9 +1,9 @@
-import { directive, compile, effect, ipol } from "../core.js";
+import { directive, compile, ipol } from "../core.js";
 
 directive.class = (el, expr, state) => {
   let evaluate = compile(expr, 'class');
   let initClassName = el.getAttribute("class"); // .className can be SVGAnimatedString da heck
-  return effect(() => {
+  return () => {
     let v = evaluate(state.value);
     let className = [initClassName];
     if (v) {
@@ -12,5 +12,5 @@ directive.class = (el, expr, state) => {
     }
     if ((className = className.filter(Boolean).join(" "))) el.setAttribute("class", className);
     else el.removeAttribute("class");
-  });
+  };
 };

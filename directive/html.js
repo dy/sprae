@@ -9,5 +9,5 @@ directive.html = (el, expr, state) => {
   el.replaceChildren(content);
   sprae(el, state.value);
 
-  return el[Symbol.dispose];
+  return () => el[Symbol.dispose];
 };

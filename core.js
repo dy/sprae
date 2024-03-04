@@ -18,8 +18,9 @@ export default function sprae(container, values) {
   // repeated call can be caused by :each with new objects with old keys needs an update
   if (memo.has(container))
     return batch(() => {
-      let signal = memo.get(container)
-      signal.value = Object.assign(signal.peek(), values)
+      let state = memo.get(container), prev = state.peek()
+      state.value = null
+      state.value = Object.assign(prev, values)
     });
 
   // take over existing state instead of creating clone
@@ -40,7 +41,11 @@ export default function sprae(container, values) {
           let names = attr.name.slice(1).split(':')
 
           // NOTE: secondary directives don't stop flow nor extend state, so no need to check
-          for (let name of names) disposes.push((directive[name] || directive.default)(el, attr.value, state, name));
+          for (let name of names) {
+            let dirDispose, update = (directive[name] || directive.default)(el, attr.value, state, name)
+            let effectDispose = effect(() => { state.value != null && (dirDispose = update()) })
+            disposes.push(() => (dirDispose?.call?.(), effectDispose()))
+          }
 
           // stop if element was spraed by directive or skipped (detached) like in case of :if or :each
           if (memo.has(el)) return;

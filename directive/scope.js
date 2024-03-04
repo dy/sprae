@@ -6,8 +6,9 @@ directive.scope = (el, expr, rootState) => {
   let evaluate = compile(expr, 'scope');
   let state = Object.create(rootState.value)
   // local state may contain signals that update, so we take them over
-  const dispose = effect(() => {
+  const dispose = () => el[Symbol.dispose]?.()
+  return () => {
     sprae(el, Object.assign(state, evaluate(rootState.value)?.valueOf?.() || {}));
-  })
-  return () => (el[Symbol.dispose]?.(), dispose());
+    return dispose
+  }
 };
