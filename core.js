@@ -5,7 +5,7 @@ import * as signals from 'ulive'
 (Symbol.dispose ||= Symbol("dispose"));
 
 // provides facility to trigger updates for states
-export const states = new WeakMap
+export const _version = Symbol('v');
 
 // signals impl
 export let { signal, effect, batch, computed, untracked } = signals;
@@ -19,17 +19,15 @@ export default function sprae(container, values) {
   if (!container.children) return // text nodes, comments etc
 
   // repeated call can be caused by :each with new objects with old keys needs an update
-  if (memo.has(container))
-    return batch(() => {
-      let state = memo.get(container)
-      // FIXME: do we need to update signals instead of rewrite?
-      states.get(Object.assign(state, values)).value++
-    });
+  if (memo.has(container)) return batch(() => {
+    // FIXME: do we need to update signals instead of rewrite?
+    Object.assign(memo.get(container), values)[_version].value++
+  });
 
   // take over existing state instead of creating clone
   const state = values || {};
   const version = signal(0);
-  states.set(state, version); // to bump state in directives
+  if (!state[_version]) Object.defineProperty(state, _version, { value: version }) // to allow bumping state
 
   const disposes = [];
 

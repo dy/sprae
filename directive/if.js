@@ -1,4 +1,4 @@
-import sprae, { compile, computed, directive, states, swap } from "../core.js";
+import sprae, { compile, computed, directive, swap, _version } from "../core.js";
 import { _each } from './each.js';
 
 // :if is interchangeable with :each depending on order, :if :each or :each :if have different meanings
@@ -12,7 +12,7 @@ directive.if = (ifEl, expr, state) => {
 
     evaluate = compile(expr, 'if'),
     prevPass = ifEl[_prevIf],
-    pass = computed(() => (states.get(state).value, evaluate(state)?.valueOf())),
+    pass = computed(() => (state[_version].value, evaluate(state)?.valueOf())),
 
     // actual replaceable els (takes <template>)
     cur, ifs, elses, none = [];
