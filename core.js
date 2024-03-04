@@ -5,7 +5,7 @@ import * as signals from 'ulive'
 (Symbol.dispose ||= Symbol("dispose"));
 
 // provides facility to trigger updates for states
-export const _version = Symbol('v');
+const _version = Symbol('v');
 
 // signals impl
 export let { signal, effect, batch, computed, untracked } = signals;
