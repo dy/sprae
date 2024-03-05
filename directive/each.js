@@ -30,7 +30,7 @@ directive.each = (tpl, expr, state, name) => {
       let item = items[idx]
       // creating via prototype is faster in both creation time & reading time
       let substate = Object.create(state, { [idxVar]: { value: idx } });
-      state[itemVar] = item; // can be changed by subsequent updates, need to be writable
+      substate[itemVar] = item; // can be changed by subsequent updates, need to be writable
       let key = item.key ?? item.id;
       let el;
 
