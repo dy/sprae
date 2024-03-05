@@ -2,10 +2,10 @@ import swapdom from 'swapdom'
 import * as signals from 'ulive'
 
 // polyfill
-(Symbol.dispose ||= Symbol("dispose"));
+const _dispose = (Symbol.dispose ||= Symbol("dispose"));
 
-// provides facility to trigger updates for states
-const _version = Symbol('v');
+// mark
+const SPRAE = `∴`
 
 // signals impl
 export let { signal, effect, batch, computed, untracked } = signals;
@@ -19,20 +19,17 @@ export default function sprae(container, values) {
   if (!container.children) return // text nodes, comments etc
 
   // repeated call can be caused by :each with new objects with old keys needs an update
-  if (memo.has(container)) return batch(() =>
-    // untracked prevents subsequent :each updates
-    untracked(() => {
-      // FIXME: do we need to update signals instead of rewrite?
-      Object.assign(memo.get(container), values)[_version].value++
-    })
-  );
+  if (memo.has(container)) {
+    const [state, effects] = memo.get(container)
+    // we rewrite signals instead of update, because user should have what he provided
+    // console.log(container, state, values)
+    for (let k in values) state[k] = values[k]
+    for (let fx of effects) fx()
+  }
 
   // take over existing state instead of creating clone
   const state = values || {};
-  const version = signal(0);
-  if (!state[_version]) Object.defineProperty(state, _version, { value: version }) // to allow bumping state
-
-  const disposes = [];
+  const effects = [];
 
   // init directives on element
   const init = (el, parent = el.parentNode) => {
@@ -49,9 +46,11 @@ export default function sprae(container, values) {
 
           // NOTE: secondary directives don't stop flow nor extend state, so no need to check
           for (let name of names) {
-            let dirDispose, update = (directive[name] || directive.default)(el, attr.value, state, name)
-            let effectDispose = effect(() => { version.value; dirDispose = update() })
-            disposes.push(() => (dirDispose?.call?.(), effectDispose()))
+            let update = (directive[name] || directive.default)(el, attr.value, state, name);
+            if (update) {
+              update[_dispose] = effect(update);
+              effects.push(update);
+            }
           }
 
           // stop if element was spraed by directive or skipped (detached) like in case of :if or :each
@@ -73,12 +72,16 @@ export default function sprae(container, values) {
   if (memo.has(container)) return state// memo.get(container)
 
   // save
-  memo.set(container, state);
+  memo.set(container, [state, effects]);
+  container.classList?.add(SPRAE); // mark spraed element
 
   // expose dispose
-  if (disposes.length) container[Symbol.dispose] = () => {
-    while (disposes.length) disposes.pop()?.();
+  container[_dispose] = () => {
+    while (effects.length) effects.pop()[_dispose]();
+    container.classList.remove(SPRAE)
     memo.delete(container);
+    let els = container.getElementsByClassName(SPRAE);
+    while (els.length) els[0][_dispose]?.()
   }
 
   return state;
@@ -94,7 +97,7 @@ export let compile = (expr, dir, evaluate) => {
   try { evaluate = new Function(`__scope`, `with (__scope) { return ${expr} };`); }
   catch (e) { err(e) }
 
-  const err = e => { throw Object.assign(e, { message: `∴ ${e.message}\n\n${dir}${expr ? `="${expr}"\n\n` : ""}`, expr }) }
+  const err = e => { throw Object.assign(e, { message: `${SPRAE} ${e.message}\n\n${dir}${expr ? `="${expr}"\n\n` : ""}`, expr }) }
 
   // runtime errors
   return evalMemo[expr] = (state, result) => {

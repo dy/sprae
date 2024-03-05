@@ -46,10 +46,10 @@ Control flow of elements.
 
 #### `:each="item, index in items"`
 
-Multiply element. `:key` can identify element for persistent updates.
+Multiply element. Item is identified either by `item.id` or `item.key`.
 
 ```html
-<ul><li :each="item in items" :text="item" :key="item.id"/></ul>
+<ul><li :each="item in items" :text="item"/></ul>
 
 <!-- cases -->
 <li :each="item, idx in list" />

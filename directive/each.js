@@ -1,11 +1,11 @@
-import sprae, { directive, compile, swap, ipol } from "../core.js";
+import sprae, { directive, compile, swap } from "../core.js";
 
 export const _each = Symbol(":each");
 
 const keys = {}; // boxed primitives pool
 
 // :each must init before :ref, :id or any others, since it defines scope
-directive.each = (tpl, expr, state) => {
+directive.each = (tpl, expr, state, name) => {
   let [leftSide, itemsExpr] = expr.split(/\s+in\s+/);
   let [itemVar, idxVar = "_$"] = leftSide.split(/\s*,\s*/);
 
@@ -13,10 +13,9 @@ directive.each = (tpl, expr, state) => {
   const holder = (tpl[_each] = document.createTextNode(""));
   tpl.replaceWith(holder);
 
-  const evaluate = compile(itemsExpr, 'each');
+  const evaluate = compile(itemsExpr, name);
   const memo = new WeakMap;
 
-  const getKey = compile(tpl.getAttribute(':key') || idxVar);
   tpl.removeAttribute(':key')
 
   let cur = [];
@@ -26,19 +25,23 @@ directive.each = (tpl, expr, state) => {
     let items = evaluate(state)?.valueOf(), els = [];
     if (typeof items === "number") items = Array.from({ length: items }, (_, i) => i);
 
+    const count = new WeakSet
     for (let idx in items) {
-      let substate = {
-        ...state,
-        [itemVar]: items[idx],
-        [idxVar]: idx,
-      },
-        key = ipol(getKey(substate), substate);
+      let item = items[idx]
+      // creating via prototype is faster in both creation time & reading time
+      let substate = Object.create(state, { [idxVar]: { value: idx } });
+      state[itemVar] = item; // can be changed by subsequent updates, need to be writable
+      let key = item.key ?? item.id;
+      let el;
 
-      // make sure key is object
-      if (Object(key) !== key) key = (keys[key] ||= Object(key))
+      if (key == null) el = tpl.cloneNode(true)
+      else {
+        // make sure key is object
+        if (Object(key) !== key) key = (keys[key] ||= Object(key));
+        if (count.has(key)) console.warn('Duplicate key', key); else count.add(key);
+        el = memo.get(key) || memo.set(key, tpl.cloneNode(true)).get(key);
+      }
 
-      let el = memo.get(key) || memo.set(key, tpl.cloneNode(true)).get(key)
-      // if (els.has(el)) el = el.cloneNode(true) // avoid dupes
       if (el.content) el = el.content.cloneNode(true) // <template>
 
       sprae(el, substate)

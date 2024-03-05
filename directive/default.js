@@ -8,14 +8,11 @@ directive.default = (el, expr, state, name) => {
   if (!evaluate) return; // FIXME: do we need this?
 
   if (evt) {
-    let off, dispose = () => (off?.())
-
-    return () => {
-      if (off) off(), (off = null);
-      // we need anonymous callback to enable modifiers like prevent
-      off = on(el, evt, evaluate(state));
-      return dispose
-    };
+    let off
+    return () => (
+      off?.(), // intermediate teardown
+      off = on(el, evt, evaluate(state))
+    );
   }
 
   return () => {

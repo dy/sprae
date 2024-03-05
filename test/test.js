@@ -1,4 +1,4 @@
-// import * as signals from '@preact/signals-core'
+import * as signals from '@preact/signals-core'
 // import * as signals from '@webreflection/signal'
 import test, { is, any, throws } from "tst";
 import { tick, time } from "wait-please";
@@ -9,7 +9,7 @@ import h from "hyperf";
 import justin from 'subscript/justin.js'
 
 sprae.use({ compile: justin })
-// sprae.use(signals)
+sprae.use(signals)
 
 Object.defineProperty(DocumentFragment.prototype, "outerHTML", {
   get() {
@@ -20,8 +20,45 @@ Object.defineProperty(DocumentFragment.prototype, "outerHTML", {
     return s;
   },
 });
+
 // bump signal value (trigger update without updating)
 const bump = (s) => batch((_) => ((_ = s.value), (s.value = null), (s.value = _)));
+
+// redefine outerHTML/innerHTML to return unmarked code
+(function() {
+  const originalOuterHTMLDescriptor = Object.getOwnPropertyDescriptor(Element.prototype, 'outerHTML');
+  const originalInnerHTMLDescriptor = Object.getOwnPropertyDescriptor(Element.prototype, 'innerHTML');
+
+  function unmark(el) {
+    el.classList.remove(`∴`);
+    if (el.className === '') el.removeAttribute('class');
+    for (let subel of el.querySelectorAll(`.∴`)) {
+      subel.classList.remove(`∴`);
+      if (subel.className === '') subel.removeAttribute('class');
+    }
+    return el;
+  }
+
+  Object.defineProperties(HTMLElement.prototype, {
+    outerHTML: {
+      get() {
+        const clone = unmark(this.cloneNode(true));
+        return originalOuterHTMLDescriptor.get.call(clone);
+      },
+      configurable: true,
+      enumerable: true,
+    },
+    innerHTML: {
+      get() {
+        const clone = unmark(this.cloneNode(true));
+        return originalInnerHTMLDescriptor.get.call(clone);
+      },
+      set: originalInnerHTMLDescriptor.set,
+      configurable: true,
+      enumerable: true,
+    }
+  });
+})();
 
 test("hidden: core", async () => {
   let el = h`<div :hidden="hidden"></div>`;
@@ -386,7 +423,7 @@ test("each: array full", async () => {
 
   console.log("items[1]=3");
   params.b.value[1] = signal(3);
-  bump(params.b);
+  params.b.value = [...params.b.value]
   await tick();
   is(el.innerHTML, `<span>1</span><span>3</span>`);
 
@@ -429,26 +466,55 @@ test("each: array full", async () => {
   is(el.innerHTML, "");
 });
 
+test('each: array internal signal reassign', async () => {
+  let el = h`<p><span :each="a in b" :text="a"></span></p>`;
+
+  let s
+  const params = sprae(el, { b: signal([s = signal(0)]) });
+
+  is(el.innerHTML, "<span>0</span>", 'signal([signal(0)])');
+  params.b.value[0].value = 1;
+  is(el.innerHTML, "<span>1</span>", 'b.value[0].value = 1');
+
+  console.log('--------b.value=[signal(2)]')
+  // params.b.value[0] = signal(2);
+  // params.b.value = [...params.b.value]
+  params.b.value = [signal(2)];
+  await tick();
+  is(el.innerHTML, "<span>2</span>", 'b.value = [signal(2)]');
+
+  console.log("------b.value[0].value=3");
+  params.b.value[0].value = 3;
+  is(el.innerHTML, "<span>3</span>", 'b.value[0].value = 3');
+
+})
+
 test("each: array length ops", async () => {
   let el = h`<p><span :each="a in b" :text="a"></span></p>`;
   const params = sprae(el, { b: signal([0]) });
 
   is(el.innerHTML, "<span>0</span>");
+  console.log('b.value.length = 2')
   params.b.value.length = 2;
-  bump(params.b);
+  params.b.value = params.b.value.slice();
   is(el.innerHTML, "<span>0</span>");
+  console.log('b.value.pop()')
   params.b.value.pop();
-  bump(params.b);
+  params.b.value = params.b.value.slice();
   is(el.innerHTML, "<span>0</span>");
 
   params.b.value.shift();
-  bump(params.b);
+  params.b.value = params.b.value.slice();
   is(el.innerHTML, "");
+
+  console.log('b.value.push(1,2)')
   params.b.value.push(1, 2);
-  bump(params.b);
+  params.b.value = params.b.value.slice();
   is(el.innerHTML, "<span>1</span><span>2</span>");
+
+  console.log('b.value.pop()')
   params.b.value.pop();
-  bump(params.b);
+  params.b.value = params.b.value.slice();
   is(el.innerHTML, "<span>1</span>");
 });
 
@@ -701,20 +767,21 @@ test("each: unkeyed", async () => {
 });
 
 test("each: keyed primitive list", async () => {
-  let el = h`<div><x :each="x, i in xs" :key="'$<x>-$<i>'" :text="x"></x></div>`;
-  let state = sprae(el, { xs: signal([1, 2, 3]) });
+  let el = h`<div><x :each="x, i in xs" :text="x.id"></x></div>`;
+  let state = sprae(el, { xs: signal([{ id: 1 }, { id: 2 }, { id: 3 }]) });
   is(el.children.length, 3);
   is(el.textContent, "123");
   let [first, second, third] = el.childNodes;
 
-  state.xs.value = [1, 3, 2];
+  state.xs.value = [{ id: 1 }, { id: 3 }, { id: 2 }];
   await tick();
   is(el.textContent, "132");
   is(el.childNodes[0], first, 'firstChild === first');
-  // is(el.childNodes[2], second, 'lastChild === second');
-  // is(el.childNodes[1], third);
+  is(el.childNodes[2], second, 'lastChild === second');
+  is(el.childNodes[1], third);
 
-  state.xs.value = [3, 3, 3];
+  console.log('----')
+  state.xs.value = [{ id: 3, key: 1 }, { id: 3, key: 2 }, { id: 3, key: 3 }];
   await tick();
   is(el.textContent, "333");
   // is(el.childNodes[0], third);
@@ -1061,11 +1128,12 @@ test(":: null result does nothing", async () => {
 });
 
 test("fx: effects", async () => {
-  let el = h`<x :fx="log.push(x.value), () => log.push('out')"></x>`;
+  let el = h`<x :fx="(log.push(x.value), () => (log.push('out')))"></x>`;
   let log = [], x = signal(1)
-  let state = sprae(el, { log, x });
+  let state = sprae(el, { log, x, console });
   is(el.outerHTML, `<x></x>`);
   is(log, [1])
+  console.log('upd value')
   x.value = 2
   is(el.outerHTML, `<x></x>`);
   is(log, [1, 'out', 2])

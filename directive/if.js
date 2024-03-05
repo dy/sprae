@@ -5,12 +5,12 @@ import { _each } from './each.js';
 // as for :if :scope - :if must init first, since it is lazy, to avoid initializing component ahead of time by :scope
 // we consider :scope={x} :if={x} case insignificant
 const _prevIf = Symbol("if");
-directive.if = (ifEl, expr, state) => {
+directive.if = (ifEl, expr, state, name) => {
   let parent = ifEl.parentNode,
     next = ifEl.nextElementSibling,
     holder = document.createTextNode(''),
 
-    evaluate = compile(expr, 'if'),
+    evaluate = compile(expr, name),
 
     // actual replaceable els (takes <template>)
     cur, ifs, elses, none = [];
@@ -27,11 +27,6 @@ directive.if = (ifEl, expr, state) => {
     else next.remove(), elses = next.content ? [...next.content.childNodes] : [next];
   } else elses = none
 
-  const dispose = () => {
-    for (let el of ifs) el[Symbol.dispose]?.()
-    for (let el of elses) el[Symbol.dispose]?.()
-  }
-
   return () => {
     const newEls = evaluate(state)?.valueOf() ? ifs : ifEl[_prevIf] ? none : elses;
     if (next) next[_prevIf] = newEls === ifs
@@ -41,6 +36,5 @@ directive.if = (ifEl, expr, state) => {
       swap(parent, cur, cur = newEls, holder);
       for (let el of cur) sprae(el, state);
     }
-    return dispose
   };
 };
