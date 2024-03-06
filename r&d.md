@@ -1014,11 +1014,12 @@
   + subscript included as dependency
   - size (>5kb)
 2. Separate CSP entry
-  - maintaining separate entries
+  + similar to Alpine
   + ability to choose best option
-    ~ not sure if that's a value making user think
-  - risk of conflict / friction / non-identical code (discrepancies)
-3. Customizable compiler by user
+    ~ not sure if that's a value - making user think
+  - maintaining separate entries
+    - risk of conflict / friction / non-identical code (discrepancies of justin/js)
+3. ~~Customizable compiler by user~~
   + single CSP entry
   - formally non-CSP-enabled
   - even if CSP is configured, bundle can be detected as unsafe since it has `new Function`
