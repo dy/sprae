@@ -152,16 +152,27 @@ test("style", async () => {
 });
 
 test("class", async () => {
-  let el = h`<x class="base" :class="a"></x><y :class="[b, c]"></y><z :class="['b', d.value && 'c']"></z>`;
+  let el = h`<x class="base" :class="a"></x><y :class="[b, c]"></y><z :class="{c:d}"></z>`;
   const c = signal("z");
   let params = sprae(el, { a: "x", b: "y", c, d: signal(false) });
-  is(el.outerHTML, `<x class="base x"></x><y class="y z"></y><z class="b"></z>`);
+  is(el.outerHTML, `<x class="base x"></x><y class="y z"></y><z></z>`);
   params.d.value = true;
   await tick();
-  is(el.outerHTML, `<x class="base x"></x><y class="y z"></y><z class="b c"></z>`);
+  is(el.outerHTML, `<x class="base x"></x><y class="y z"></y><z class="c"></z>`);
   // c.value = 'w'
-  // is(el.outerHTML, `<x class="base x"></x><y class="y w"></y><z class="b c"></z>`);
+  // is(el.outerHTML, `<x class="base x"></x><y class="y w"></y><z class="c"></z>`);
 });
+
+test('class: maintains manually changed classes', () => {
+  let el = h`<x class="a" :class="['b',c]"></x>`
+  let c = signal('c')
+  sprae(el, { c })
+  is(el.outerHTML, `<x class="a b c"></x>`)
+  el.classList.add('d')
+  is(el.outerHTML, `<x class="a b c d"></x>`)
+  c.value = 'c1'
+  is(el.outerHTML, `<x class="a b d c1"></x>`)
+})
 
 test("class: undefined value", async () => {
   let el = h`<x :class="a"></x><y :class="[b]"></y><z :class="{c}"></z>`;
@@ -254,6 +265,13 @@ test("value: direct", async () => {
   el.value = 3;
   // el.dispatchEvent(new window.Event('change'))
   // is(state.a, '3')
+});
+
+test.todo("value: heep focus", async () => {
+  let el = h`<x :each="a in items"><input :value="a.value" :oninput="e => a.value = e.target.value" /></x>`;
+  document.body.appendChild(el)
+  let state = sprae(el, { items: signal([signal(1)]) });
+  // is(el.value, "1");
 });
 
 test("value: textarea", async () => {

@@ -994,7 +994,7 @@
 
 ## [ ] What should we return from `sprae` call?
 
-1. state signal
+1. ~~state signal~~
   - not clear what sort of signal is that
   - no access to props: lame
 2. state.value
@@ -1004,3 +1004,21 @@
   - no access to state
 4. element itself
   + chaining
+
+## [ ] CSP approaces
+
+1. Wired-in by default (non-customizable)
+  + easier
+  + less maintenance efforts: sandboxing & syntax out of the box, less docs
+  + CSP by default
+  + subscript included as dependency
+  - size (>5kb)
+2. Separate CSP entry
+  - maintaining separate entries
+  + ability to choose best option
+    ~ not sure if that's a value making user think
+  - risk of conflict / friction / non-identical code (discrepancies)
+3. Customizable compiler by user
+  + single CSP entry
+  - formally non-CSP-enabled
+  - even if CSP is configured, bundle can be detected as unsafe since it has `new Function`

@@ -93,17 +93,13 @@ const evalMemo = {};
 export let compile = (expr, dir, evaluate) => {
   if (evaluate = evalMemo[expr = expr.trim()]) return evaluate
 
+
   // static-time errors
   try { evaluate = new Function(`__scope`, `with (__scope) { return ${expr} };`); }
-  catch (e) { err(e) }
-
-  const err = e => { throw Object.assign(e, { message: `${SPRAE} ${e.message}\n\n${dir}${expr ? `="${expr}"\n\n` : ""}`, expr }) }
+  catch (e) { throw Object.assign(e, { message: `${SPRAE} ${e.message}\n\n${dir}${expr ? `="${expr}"\n\n` : ""}`, expr }) }
 
   // runtime errors
-  return evalMemo[expr] = (state, result) => {
-    try { result = evaluate(state) } catch (e) { err(e) }
-    return result
-  };
+  return evalMemo[expr] = evaluate
 }
 
 // DOM swapper

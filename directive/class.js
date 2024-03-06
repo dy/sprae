@@ -2,15 +2,16 @@ import { directive, compile, ipol } from "../core.js";
 
 directive.class = (el, expr, state) => {
   let evaluate = compile(expr, 'class');
-  let initClassName = el.getAttribute("class"); // .className can be SVGAnimatedString da heck
+  let cur = new Set
   return () => {
     let v = evaluate(state);
-    let className = [initClassName];
+    let clsx = new Set;
     if (v) {
-      if (typeof v === "string") className.push(ipol(v, state));
-      else if (Array.isArray(v)) className.push(...v.map(v => ipol(v, state)));
+      if (typeof v === "string") ipol(v?.valueOf?.(), state).split(' ').map(cls => clsx.add(cls));
+      else if (Array.isArray(v)) v.map(v => (v = ipol(v?.valueOf?.(), state)) && clsx.add(v));
+      else Object.entries(v).map(([k, v]) => v?.valueOf?.() && clsx.add(k));
     }
-    if ((className = className.filter(Boolean).join(" "))) el.setAttribute("class", className);
-    else el.removeAttribute("class");
+    for (let cls of cur) if (clsx.has(cls)) clsx.delete(cls); else el.classList.remove(cls);
+    for (let cls of cur = clsx) el.classList.add(cls)
   };
 };

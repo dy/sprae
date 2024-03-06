@@ -90,8 +90,8 @@ Set class value, extends existing `class`.
 <!-- string with interpolation -->
 <div :class="'foo $<bar>'"></div>
 
-<!-- array a-la clsx -->
-<div :class="['foo', bar]"></div>
+<!-- array/object a-la clsx -->
+<div :class="[foo && 'foo', {bar: bar}]"></div>
 ```
 
 #### `:style="value"`

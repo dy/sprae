@@ -76,7 +76,7 @@
 * [x] no store
 * [x] switching signals
 * [x] get rid of `@` events
-* [ ] plugins: extensible directives
+* [x] plugins: extensible directives
 * [x] comparison table: CSP, plugins, no-deps, size, performance, event/modifiers,
 * [~] add :html directive as replacement for :render, with tests
 * [x] rename :with to :scope
@@ -107,3 +107,4 @@
 * [ ] all FIXMEs
 * [ ] move proxy state into own project / part of signal struct (with tests from here)
 * [x] ~~make cross-version testing: sprae, csp, signals variations~~ justin default is enough
+* [ ] avoid triggering unchanged effects
