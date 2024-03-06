@@ -15,7 +15,7 @@ Perfect for small-scale websites, prototypes, or lightweight UI.<br/>
 </div>
 
 <script type="module">
-  import sprae, {signal} from 'sprae'
+  import sprae, { signal } from 'sprae'
 
   const name = signal('Kitty')
   sprae(container, { user: { name } }) // init
@@ -246,7 +246,8 @@ Set `aria-*` attributes. Boolean values are stringified.
   activeOption: 'item1',
   activedescendant: ''
 }" />
-<!-- <input role="combobox" aria-controls="joketypes" aria-autocomplete="list" aria-expanded="false" aria-active-option="item1" aria-activedescendant>
+<!--
+<input role="combobox" aria-controls="joketypes" aria-autocomplete="list" aria-expanded="false" aria-active-option="item1" aria-activedescendant>
 -->
 ```
 
@@ -275,7 +276,7 @@ Trigger when element is connected / disconnected from DOM.
 
 ### Signals
 
-Default signals are based on [`ulive`](https://ghub.io/ulive), can be switched to [`@preact/signals-core`](https://ghub.io/@preact/signals-core), [`@webreflection/signal`](https://ghib.io/@webreflection/signal), [`usignal`](https://ghib.io/usignal), [etc](https://github.com/WebReflection/usignal?tab=readme-ov-file#benchmark):
+Signals can be switched from [`ulive`](https://ghub.io/ulive) to [`@preact/signals-core`](https://ghub.io/@preact/signals-core), [`@webreflection/signal`](https://ghib.io/@webreflection/signal), [`usignal`](https://ghib.io/usignal), etc ([benchmark](https://github.com/WebReflection/usignal?tab=readme-ov-file#benchmark)):
 
 ```js
 import sprae, { signal, computed, effect, batch, untracked } from 'sprae';
@@ -309,7 +310,7 @@ sprae.use({ compile: justin });
 `1 2.34 -5e6 0x7a`<br/>
 `true false null undefined NaN`
 
-
+<!--
 ### DOM diffing
 
 DOM differ uses [swapdom](https://github.com/dy/swapdom), can be reconfigured to [list-difference](https://github.com/paldepind/list-difference/), [udomdiff](https://github.com/WebReflection/udomdiff), [domdiff](https://github.com/WebReflection/domdiff), [etc](https://github.com/luwes/js-diff-benchmark):
@@ -321,11 +322,11 @@ import domdiff from 'list-difference';
 // swap(parentNode, prevEls, newEls, endNode?)
 sprae.use({ swap: domdiff });
 ```
-
+-->
 
 ### Custom Build
 
-`sprae/core` exports bare-bones engine without directives, which allows tailoring build:
+`sprae/core` exports bare-bones engine without directives, which allows tailoring build to project needs:
 
 ```js
 import sprae, { directive, effect } from 'sprae/core'
@@ -357,12 +358,13 @@ To destroy state and detach sprae handlers, call `element[Symbol.dispose]()`. --
 
 ## v9 changes
 
-* No default globals: provide manually to state (`console`, `setTimeout` etc).
-* ``:class="`abc ${def}`"`` → `:class="'abc $<def>'"`
-* `:with={x:'y'}` -> `:scope={x:'y'}`, `x` is not reactive, init signals manually.
+* No autoinit → use manual init via `import sprae from 'sprae'; sprae(document.body, state)`.
+* No default globals (`console`, `setTimeout` etc) - pass to state if required.
+* ``:class="`abc ${def}`"`` → `:class="'abc $<def>'"` (_justin_)
+* `:with={x:'x'}` -> `:scope={x:'x'}`
+* Scope vars are not reactive -> use signals `:scope={x:signal('x')}`.
+* No reactive store → use signals for reactive values as `foo.value` in template.
 * `:render="tpl"` → `:html="tpl"`
-* No autoinit → use manual init via `import sprae from 'sprae'`.
-* No reactive store → use signals for reactive values, read `.value` in template where applicable.
 * `@click="event.target"` → `:onclick="event => event.target"`
 * Async props / events are prohibited, pass async functions via state.
 * Directives order matters, eg. `<a :if :each :scope />` !== `<a :scope :each :if />`
