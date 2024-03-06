@@ -292,7 +292,7 @@ Expressions use [_justin_](https://github.com/dy/subscript?tab=readme-ov-file#ju
 
 ## Signals
 
-Signals use [`ulive`](https://ghub.io/ulive), a minimal signals implementation. For large-scale states it can be switched to [`@preact/signals-core`](https://ghub.io/@preact/signals-core), [`@webreflection/signal`](https://ghib.io/@webreflection/signal), [`usignal`](https://ghib.io/usignal) etc:
+Sprae uses minimal signals based on [`ulive`](https://ghub.io/ulive). It can be switched to [`@preact/signals-core`](https://ghub.io/@preact/signals-core), [`@webreflection/signal`](https://ghib.io/@webreflection/signal), [`usignal`](https://ghib.io/usignal) etc:
 
 ```js
 import sprae, { signal, computed, effect, batch, untracked } from 'sprae';
