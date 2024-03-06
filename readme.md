@@ -29,6 +29,9 @@ Sprae evaluates `:`-directives and evaporates them, attaching state to html.
 
 ## Directives
 
+<details>
+<summary><strong>:if, :else</strong></summary>
+
 #### `:if="condition"`, `:else`
 
 Control flow of elements.
@@ -43,6 +46,10 @@ Control flow of elements.
   foo <span>bar</span> baz
 </template>
 ```
+</details>
+
+<details>
+<summary><strong>:each</strong></summary>
 
 #### `:each="item, index in items"`
 
@@ -69,7 +76,10 @@ Multiply element. Item is identified either by `item.id` or `item.key`.
 <!-- prevent FOUC -->
 <style>[:each] {visibility: hidden}</style>
 ```
+</details>
 
+<details>
+  <summary><strong>:text</strong></summary>
 
 #### `:text="value"`
 
@@ -82,6 +92,11 @@ Welcome, <span :text="user.name">Guest</span>.
 Welcome, <template :text="user.name" />.
 ```
 
+</details>
+
+<details>
+  <summary><strong>:class</strong></summary>
+  
 #### `:class="value"`
 
 Set class value, extends existing `class`.
@@ -93,7 +108,11 @@ Set class value, extends existing `class`.
 <!-- array/object a-la clsx -->
 <div :class="[foo && 'foo', {bar: bar}]"></div>
 ```
+</details>
 
+<details>
+  <summary><strong>:style</strong></summary>
+  
 #### `:style="value"`
 
 Set style value, extends existing `style`.
@@ -109,6 +128,11 @@ Set style value, extends existing `style`.
 <div :style="{'--baz': qux}"></div>
 ```
 
+</details>
+
+<details>
+  <summary><strong>:value</strong></summary>
+  
 #### `:value="value"`
 
 Set value of an input, textarea or select. Takes handle of `checked` and `selected` attributes.
@@ -122,8 +146,12 @@ Set value of an input, textarea or select. Takes handle of `checked` and `select
   <option :each="i in 5" :value="i" :text="i"></option>
 </select>
 ```
+</details>
 
-#### `:<prop>="value"`, `:="values"`
+<details>
+  <summary><strong>:*</strong></summary>
+  
+#### `:*="value"`, `:="values"`
 
 Set any attribute(s).
 
@@ -136,7 +164,11 @@ Set any attribute(s).
 <!-- spread attributes -->
 <input :="{ id: name, name, type: 'text', value }" />
 ```
+</details>
 
+<details>
+  <summary><strong>:scope</strong></summary>
+  
 #### `:scope="data"`
 
 Define or extend data scope for a subtree.
@@ -147,7 +179,11 @@ Define or extend data scope for a subtree.
   <y :scope="{ baz: 'qux' }" :text="foo + baz"></y>
 </x>
 ```
+</details>
 
+<details>
+  <summary><strong>:ref</strong></summary>
+  
 #### `:ref="name"`
 
 Expose element to current scope with `name`.
@@ -160,7 +196,11 @@ Expose element to current scope with `name`.
   <input :onfocus..onblur=="e => (item.classList.add('editing'), e => item.classList.remove('editing'))"/>
 </li>
 ```
+</details>
 
+<details>
+  <summary><strong>:fx</strong></summary>
+  
 #### `:fx="values"`
 
 Run effect, not changing any attribute.<br/>Optional cleanup is called in-between effect calls or on disposal.
@@ -171,8 +211,11 @@ Run effect, not changing any attribute.<br/>Optional cleanup is called in-betwee
 <!-- cleanup function -->
 <div :fx="id = setInterval(tick, interval), () => clearInterval(tick)" />
 ```
+</details>
 
-
+<details>
+  <summary><strong>:on*</strong></summary>
+  
 #### `:on<event>.<mod>="handler"`, `:on<in>..on<out>="handler"`
 
 Attach event(s) listener with possible modifiers.
@@ -200,17 +243,15 @@ Attach event(s) listener with possible modifiers.
 * `.ctrl-<key>, .alt-<key>, .meta-<key>, .shift-<key>` – key combinations, eg. `.ctrl-alt-delete` or `.meta-x`.
 * `.*` – any other modifier has no effect, but allows binding multiple handlers to same event (like jQuery event classes).
 
+</details>
 
-## Optional Directives
 
-The following directives can be plugged in as:
-
-```js
-import sprae from 'sprae'
-import 'sprae/directive/<directive>'
-```
-
+<details>
+  <summary><strong>:html</strong> 🔌</summary>
+  
 #### `:html="element"`
+
+> Include as `import 'sprae/directive/html'`.
 
 Set html content of an element or instantiate a template.
 
@@ -224,18 +265,30 @@ Hello, <template :html="user.name">Guest</template>.
 <template :ref="tpl"><span :text="foo"></span></template>
 <div :html="tpl" :scope="{foo:'bar'}">...inserted here...</div>
 ```
+</details>
 
+
+<details>
+  <summary><strong>:data</strong> 🔌</summary>
+  
 #### `:data="values"`
 
+Include as `import 'sprae/directive/data'`.<br/>
 Set `data-*` attributes. CamelCase is converted to dash-case.
 
 ```html
 <input :data="{foo: 1, barBaz: true}" />
 <!-- <input data-foo="1" data-bar-baz /> -->
 ```
+</details>
 
+
+<details>
+  <summary><strong>:aria</strong> 🔌</summary>
+  
 #### `:aria="values"`
 
+Include as `import 'sprae/directive/aria'`.<br/>
 Set `aria-*` attributes. Boolean values are stringified.
 
 ```html
@@ -250,6 +303,8 @@ Set `aria-*` attributes. Boolean values are stringified.
 <input role="combobox" aria-controls="joketypes" aria-autocomplete="list" aria-expanded="false" aria-active-option="item1" aria-activedescendant>
 -->
 ```
+
+</details>
 
 <!--
 #### `:onvisible..oninvisible="e => e => {}"`
