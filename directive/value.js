@@ -1,4 +1,5 @@
 import { directive, compile } from "../core.js";
+import { attr } from './default.js';
 
 // connect expr to element value
 directive.value = (el, expr, state) => {
@@ -17,7 +18,7 @@ directive.value = (el, expr, state) => {
         from && el.setSelectionRange(from, to)
       )
       : el.type === "checkbox"
-        ? (value) => ((el.value = value ? "on" : ""), attr(el, "checked", value))
+        ? (value) => (el.checked = value, attr(el, "checked", value))
         : el.type === "select-one"
           ? (value) => {
             for (let option in el.options) option.removeAttribute("selected");
@@ -26,5 +27,5 @@ directive.value = (el, expr, state) => {
           }
           : (value) => (el.value = value);
 
-  return () => (update(evaluate(state)));
+  return () => (update(evaluate(state)?.valueOf?.()));
 };

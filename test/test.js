@@ -267,11 +267,18 @@ test("value: direct", async () => {
   // is(state.a, '3')
 });
 
-test.todo("value: heep focus", async () => {
-  let el = h`<x :each="a in items"><input :value="a.value" :oninput="e => a.value = e.target.value" /></x>`;
-  document.body.appendChild(el)
-  let state = sprae(el, { items: signal([signal(1)]) });
-  // is(el.value, "1");
+test("value: checkbox", async () => {
+  let el = h`<input type="checkbox" :value="a" />`;
+  let state = sprae(el, { a: signal(true) });
+  is(el.value, 'on');
+  is(el.outerHTML, `<input type="checkbox" checked="">`);
+  is(el.checked, true);
+  state.a.value = false
+  is(el.checked, false);
+  is(el.outerHTML, `<input type="checkbox">`);
+
+  // el.dispatchEvent(new window.Event('change'))
+  // is(state.a, '3')
 });
 
 test("value: textarea", async () => {
