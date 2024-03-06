@@ -30,280 +30,277 @@ Sprae evaluates `:`-directives and evaporates them, attaching state to html.
 ## Directives
 
 <details>
-<summary><strong>:if, :else</strong></summary>
+  <summary><strong>:if, :else</strong></summary>
 
-#### `:if="condition"`, `:else`
+  #### `:if="condition"`, `:else`
 
-Control flow of elements.
+  Control flow of elements.
 
-```html
-<span :if="foo">foo</span>
-<span :else :if="bar">bar</span>
-<span :else>baz</span>
+  ```html
+  <span :if="foo">foo</span>
+  <span :else :if="bar">bar</span>
+  <span :else>baz</span>
 
-<!-- fragment -->
-<template :if="foo">
-  foo <span>bar</span> baz
-</template>
-```
+  <!-- fragment -->
+  <template :if="foo">
+    foo <span>bar</span> baz
+  </template>
+  ```
 </details>
 
 <details>
-<summary><strong>:each</strong></summary>
+  <summary><strong>:each</strong></summary>
 
-#### `:each="item, index in items"`
+  #### `:each="item, index in items"`
 
-Multiply element. Item is identified either by `item.id` or `item.key`.
+  Multiply element. Item is identified either by `item.id` or `item.key`.
 
-```html
-<ul><li :each="item in items" :text="item"/></ul>
+  ```html
+  <ul><li :each="item in items" :text="item"/></ul>
 
-<!-- cases -->
-<li :each="item, idx in list" />
-<li :each="val, key in obj" />
-<li :each="idx in number" />
+  <!-- cases -->
+  <li :each="item, idx in list" />
+  <li :each="val, key in obj" />
+  <li :each="idx in number" />
 
-<!-- by condition -->
-<li :if="items" :each="item in items" :text="item" />
-<li :else>Empty list</li>
+  <!-- by condition -->
+  <li :if="items" :each="item in items" :text="item" />
+  <li :else>Empty list</li>
 
-<!-- fragment -->
-<template :each="item in items">
-  <dt :text="item.term"/>
-  <dd :text="item.definition"/>
-</template>
+  <!-- fragment -->
+  <template :each="item in items">
+    <dt :text="item.term"/>
+    <dd :text="item.definition"/>
+  </template>
 
-<!-- prevent FOUC -->
-<style>[:each] {visibility: hidden}</style>
-```
+  <!-- prevent FOUC -->
+  <style>[:each] {visibility: hidden}</style>
+  ```
 </details>
 
 <details>
   <summary><strong>:text</strong></summary>
 
-#### `:text="value"`
+  #### `:text="value"`
 
-Set text content of an element.
+  Set text content of an element.
 
-```html
-Welcome, <span :text="user.name">Guest</span>.
+  ```html
+  Welcome, <span :text="user.name">Guest</span>.
 
-<!-- fragment -->
-Welcome, <template :text="user.name" />.
-```
-
+  <!-- fragment -->
+  Welcome, <template :text="user.name" />.
+  ```
 </details>
 
 <details>
   <summary><strong>:class</strong></summary>
-  
-#### `:class="value"`
 
-Set class value, extends existing `class`.
+  #### `:class="value"`
 
-```html
-<!-- string with interpolation -->
-<div :class="'foo $<bar>'"></div>
+  Set class value, extends existing `class`.
 
-<!-- array/object a-la clsx -->
-<div :class="[foo && 'foo', {bar: bar}]"></div>
-```
+  ```html
+  <!-- string with interpolation -->
+  <div :class="'foo $<bar>'"></div>
+
+  <!-- array/object a-la clsx -->
+  <div :class="[foo && 'foo', {bar: bar}]"></div>
+  ```
 </details>
 
 <details>
   <summary><strong>:style</strong></summary>
-  
-#### `:style="value"`
 
-Set style value, extends existing `style`.
+  #### `:style="value"`
 
-```html
-<!-- string with interpolation -->
-<div :style="'foo: $<bar>'"></div>
+  Set style value, extends existing `style`.
 
-<!-- object -->
-<div :style="{foo: 'bar'}"></div>
+  ```html
+  <!-- string with interpolation -->
+  <div :style="'foo: $<bar>'"></div>
 
-<!-- CSS variable -->
-<div :style="{'--baz': qux}"></div>
-```
+  <!-- object -->
+  <div :style="{foo: 'bar'}"></div>
 
+  <!-- CSS variable -->
+  <div :style="{'--baz': qux}"></div>
+  ```
 </details>
 
 <details>
   <summary><strong>:value</strong></summary>
-  
-#### `:value="value"`
 
-Set value of an input, textarea or select. Takes handle of `checked` and `selected` attributes.
+  #### `:value="value"`
 
-```html
-<input :value="value" />
-<textarea :value="value" />
+  Set value of an input, textarea or select. Takes handle of `checked` and `selected` attributes.
 
-<!-- selects right option -->
-<select :value="selected">
-  <option :each="i in 5" :value="i" :text="i"></option>
-</select>
-```
+  ```html
+  <input :value="value" />
+  <textarea :value="value" />
+
+  <!-- selects right option -->
+  <select :value="selected">
+    <option :each="i in 5" :value="i" :text="i"></option>
+  </select>
+  ```
 </details>
 
 <details>
   <summary><strong>:*</strong></summary>
-  
-#### `:*="value"`, `:="values"`
 
-Set any attribute(s).
+  #### `:*="value"`, `:="values"`
 
-```html
-<label :for="name" :text="name" />
+  Set any attribute(s).
 
-<!-- multiple attributes -->
-<input :id:name="name" />
+  ```html
+  <label :for="name" :text="name" />
 
-<!-- spread attributes -->
-<input :="{ id: name, name, type: 'text', value }" />
-```
+  <!-- multiple attributes -->
+  <input :id:name="name" />
+
+  <!-- spread attributes -->
+  <input :="{ id: name, name, type: 'text', value }" />
+  ```
 </details>
 
 <details>
   <summary><strong>:scope</strong></summary>
-  
-#### `:scope="data"`
 
-Define or extend data scope for a subtree.
+  #### `:scope="data"`
 
-```html
-<x :scope="{ foo: signal('bar') }">
-  <!-- extends parent scope -->
-  <y :scope="{ baz: 'qux' }" :text="foo + baz"></y>
-</x>
-```
+  Define or extend data scope for a subtree.
+
+  ```html
+  <x :scope="{ foo: signal('bar') }">
+    <!-- extends parent scope -->
+    <y :scope="{ baz: 'qux' }" :text="foo + baz"></y>
+  </x>
+  ```
 </details>
 
 <details>
   <summary><strong>:ref</strong></summary>
-  
-#### `:ref="name"`
 
-Expose element to current scope with `name`.
+  #### `:ref="name"`
 
-```html
-<textarea :ref="text" placeholder="Enter text..."></textarea>
+  Expose element to current scope with `name`.
 
-<!-- iterable items -->
-<li :each="item in items" :ref="item">
-  <input :onfocus..onblur=="e => (item.classList.add('editing'), e => item.classList.remove('editing'))"/>
-</li>
-```
+  ```html
+  <textarea :ref="text" placeholder="Enter text..."></textarea>
+
+  <!-- iterable items -->
+  <li :each="item in items" :ref="item">
+    <input :onfocus..onblur=="e => (item.classList.add('editing'), e => item.classList.remove('editing'))"/>
+  </li>
+  ```
 </details>
 
 <details>
   <summary><strong>:fx</strong></summary>
-  
-#### `:fx="values"`
 
-Run effect, not changing any attribute.<br/>Optional cleanup is called in-between effect calls or on disposal.
+  #### `:fx="values"`
 
-```html
-<div :fx="a.value ? foo() : bar()" />
+  Run effect, not changing any attribute.<br/>Optional cleanup is called in-between effect calls or on disposal.
 
-<!-- cleanup function -->
-<div :fx="id = setInterval(tick, interval), () => clearInterval(tick)" />
-```
+  ```html
+  <div :fx="a.value ? foo() : bar()" />
+
+  <!-- cleanup function -->
+  <div :fx="id = setInterval(tick, interval), () => clearInterval(tick)" />
+  ```
 </details>
 
 <details>
   <summary><strong>:on*</strong></summary>
-  
-#### `:on<event>.<mod>="handler"`, `:on<in>..on<out>="handler"`
 
-Attach event(s) listener with possible modifiers.
+  #### `:on<event>.<mod>="handler"`, `:on<in>..on<out>="handler"`
 
-```html
-<input type="checkbox" :onchange="e => isChecked = e.target.value">
+  Attach event(s) listener with possible modifiers.
 
-<!-- multiple events -->
-<input :value="text" :oninput:onchange="e => text = e.target.value">
+  ```html
+  <input type="checkbox" :onchange="e => isChecked = e.target.value">
 
-<!-- events sequence -->
-<button :onfocus..onblur="e => ( handleFocus(), e => handleBlur())">
+  <!-- multiple events -->
+  <input :value="text" :oninput:onchange="e => text = e.target.value">
 
-<!-- event modifiers -->
-<button :onclick.throttle-500="handler">Not too often</button>
-```
+  <!-- events sequence -->
+  <button :onfocus..onblur="e => ( handleFocus(), e => handleBlur())">
 
-##### Modifiers:
+  <!-- event modifiers -->
+  <button :onclick.throttle-500="handler">Not too often</button>
+  ```
 
-* `.once`, `.passive`, `.capture` – listener [options](https://developer.mozilla.org/en-US/docs/Web/API/EventTarget/addEventListener#options).
-* `.prevent`, `.stop` – prevent default or stop propagation.
-* `.window`, `.document`, `.outside`, `.self` – specify event target.
-* `.throttle-<ms>`, `.debounce-<ms>` – defer function call with one of the methods.
-* `.ctrl`, `.shift`, `.alt`, `.meta`, `.arrow`, `.enter`, `.escape`, `.tab`, `.space`, `.backspace`, `.delete`, `.digit`, `.letter`, `.character` – filter by [`event.key`](https://developer.mozilla.org/en-US/docs/Web/API/UI_Events/Keyboard_event_key_values).
-* `.ctrl-<key>, .alt-<key>, .meta-<key>, .shift-<key>` – key combinations, eg. `.ctrl-alt-delete` or `.meta-x`.
-* `.*` – any other modifier has no effect, but allows binding multiple handlers to same event (like jQuery event classes).
+  ##### Modifiers:
+
+  * `.once`, `.passive`, `.capture` – listener [options](https://developer.mozilla.org/en-US/docs/Web/API/EventTarget/addEventListener#options).
+  * `.prevent`, `.stop` – prevent default or stop propagation.
+  * `.window`, `.document`, `.outside`, `.self` – specify event target.
+  * `.throttle-<ms>`, `.debounce-<ms>` – defer function call with one of the methods.
+  * `.ctrl`, `.shift`, `.alt`, `.meta`, `.arrow`, `.enter`, `.escape`, `.tab`, `.space`, `.backspace`, `.delete`, `.digit`, `.letter`, `.character` – filter by [`event.key`](https://developer.mozilla.org/en-US/docs/Web/API/UI_Events/Keyboard_event_key_values).
+  * `.ctrl-<key>, .alt-<key>, .meta-<key>, .shift-<key>` – key combinations, eg. `.ctrl-alt-delete` or `.meta-x`.
+  * `.*` – any other modifier has no effect, but allows binding multiple handlers to same event (like jQuery event classes).
 
 </details>
 
 
 <details>
   <summary><strong>:html</strong> 🔌</summary>
-  
-#### `:html="element"`
 
-> Include as `import 'sprae/directive/html'`.
+  #### `:html="element"`
 
-Set html content of an element or instantiate a template.
+  > Include as `import 'sprae/directive/html'`.
 
-```html
-Hello, <span :html="userElement">Guest</span>.
+  Set html content of an element or instantiate a template.
 
-<!-- fragment -->
-Hello, <template :html="user.name">Guest</template>.
+  ```html
+  Hello, <span :html="userElement">Guest</span>.
 
-<!-- instantiate template -->
-<template :ref="tpl"><span :text="foo"></span></template>
-<div :html="tpl" :scope="{foo:'bar'}">...inserted here...</div>
-```
+  <!-- fragment -->
+  Hello, <template :html="user.name">Guest</template>.
+
+  <!-- instantiate template -->
+  <template :ref="tpl"><span :text="foo"></span></template>
+  <div :html="tpl" :scope="{foo:'bar'}">...inserted here...</div>
+  ```
 </details>
 
 
 <details>
   <summary><strong>:data</strong> 🔌</summary>
-  
-#### `:data="values"`
 
-Include as `import 'sprae/directive/data'`.<br/>
-Set `data-*` attributes. CamelCase is converted to dash-case.
+  #### `:data="values"`
 
-```html
-<input :data="{foo: 1, barBaz: true}" />
-<!-- <input data-foo="1" data-bar-baz /> -->
-```
+  Include as `import 'sprae/directive/data'`.<br/>
+  Set `data-*` attributes. CamelCase is converted to dash-case.
+
+  ```html
+  <input :data="{foo: 1, barBaz: true}" />
+  <!-- <input data-foo="1" data-bar-baz /> -->
+  ```
 </details>
 
 
 <details>
   <summary><strong>:aria</strong> 🔌</summary>
-  
-#### `:aria="values"`
 
-Include as `import 'sprae/directive/aria'`.<br/>
-Set `aria-*` attributes. Boolean values are stringified.
+  #### `:aria="values"`
 
-```html
-<input role="combobox" :aria="{
-  controls: 'joketypes',
-  autocomplete: 'list',
-  expanded: false,
-  activeOption: 'item1',
-  activedescendant: ''
-}" />
-<!--
-<input role="combobox" aria-controls="joketypes" aria-autocomplete="list" aria-expanded="false" aria-active-option="item1" aria-activedescendant>
--->
-```
+  Include as `import 'sprae/directive/aria'`.<br/>
+  Set `aria-*` attributes. Boolean values are stringified.
 
+  ```html
+  <input role="combobox" :aria="{
+    controls: 'joketypes',
+    autocomplete: 'list',
+    expanded: false,
+    activeOption: 'item1',
+    activedescendant: ''
+  }" />
+  <!--
+  <input role="combobox" aria-controls="joketypes" aria-autocomplete="list" aria-expanded="false" aria-active-option="item1" aria-activedescendant>
+  -->
+  ```
 </details>
 
 <!--
