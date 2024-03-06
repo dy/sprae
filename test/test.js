@@ -6,9 +6,7 @@ import sprae, { signal, batch } from '../sprae.js'
 import '../directive/aria.js'
 import '../directive/data.js'
 import h from "hyperf";
-import justin from 'subscript/justin.js'
 
-sprae.use({ compile: justin })
 sprae.use(signals)
 
 Object.defineProperty(DocumentFragment.prototype, "outerHTML", {

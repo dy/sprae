@@ -1005,14 +1005,15 @@
 4. element itself
   + chaining
 
-## [ ] CSP approaces
+## [x] CSP approaces -> let's use wired-in justin
 
 1. Wired-in by default (non-customizable)
   + easier
   + less maintenance efforts: sandboxing & syntax out of the box, less docs
   + CSP by default
   + subscript included as dependency
-  - size (>5kb)
+  + minimal style
+  - size (>5kb), ~5.4kb
 2. Separate CSP entry
   + similar to Alpine
   + ability to choose best option

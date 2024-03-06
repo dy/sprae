@@ -1,5 +1,6 @@
 import swapdom from 'swapdom'
 import * as signals from 'ulive'
+import justin from 'subscript/justin.js'
 
 // polyfill
 const _dispose = (Symbol.dispose ||= Symbol("dispose"));
@@ -93,9 +94,11 @@ const evalMemo = {};
 export let compile = (expr, dir, evaluate) => {
   if (evaluate = evalMemo[expr = expr.trim()]) return evaluate
 
-
   // static-time errors
-  try { evaluate = new Function(`__scope`, `with (__scope) { return ${expr} };`); }
+  try {
+    // evaluate = new Function(`__scope`, `with (__scope) { return ${expr} };`);
+    evaluate = justin(expr);
+  }
   catch (e) { throw Object.assign(e, { message: `${SPRAE} ${e.message}\n\n${dir}${expr ? `="${expr}"\n\n` : ""}`, expr }) }
 
   // runtime errors
@@ -120,6 +123,5 @@ sprae.use = s => {
     batch = s.batch || (fn => fn()),
     untracked = s.untracked || batch
   );
-  s.compile && (compile = s.compile);
   s.swap && (swap = s.swap)
 }

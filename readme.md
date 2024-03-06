@@ -289,14 +289,7 @@ sprae(el, { name: signal('Kitty') });
 
 ### Expressions
 
-Default evaluator is based on `new Function`, can be configured to [_justin_](https://github.com/dy/subscript?tab=readme-ov-file#justin), which resolves "unsafe-eval" CSP and provides sandboxing, but has restricted syntax:
-
-```js
-import sprae from 'sprae';
-import justin from 'subscript/justin';
-
-sprae.use({ compile: justin });
-```
+Expressions use [_justin_](https://github.com/dy/subscript?tab=readme-ov-file#justin), a minimal JS subset. It resolves "unsafe-eval" CSP and provides sandboxing.
 
 ###### Operators:
 
