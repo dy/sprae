@@ -271,7 +271,8 @@ Sprae evaluates `:`-directives and evaporates them, attaching state to html.
 
   #### `:data="values"`
 
-  Include as `import 'sprae/directive/data'`.<br/>
+  > Include as `import 'sprae/directive/data'`.
+
   Set `data-*` attributes. CamelCase is converted to dash-case.
 
   ```html
@@ -286,7 +287,8 @@ Sprae evaluates `:`-directives and evaporates them, attaching state to html.
 
   #### `:aria="values"`
 
-  Include as `import 'sprae/directive/aria'`.<br/>
+  > Include as `import 'sprae/directive/aria'`.
+
   Set `aria-*` attributes. Boolean values are stringified.
 
   ```html
@@ -344,7 +346,7 @@ Expressions use [_justin_](https://github.com/dy/subscript?tab=readme-ov-file#ju
 
 ## Signals
 
-Sprae uses minimal signals based on [`ulive`](https://ghub.io/ulive). It can be switched to [`@preact/signals-core`](https://ghub.io/@preact/signals-core), [`@webreflection/signal`](https://ghib.io/@webreflection/signal), [`usignal`](https://ghib.io/usignal) etc:
+Sprae uses minimal signals based on [`ulive`](https://ghub.io/ulive). It can be switched to [`@preact/signals-core`](https://ghub.io/@preact/signals-core), [`@webreflection/signal`](https://ghib.io/@webreflection/signal), [`usignal`](https://ghib.io/usignal), which are better for complex states:
 
 ```js
 import sprae, { signal, computed, effect, batch, untracked } from 'sprae';
