@@ -173,7 +173,7 @@ Run effect, not changing any attribute.<br/>Optional cleanup is called in-betwee
 ```
 
 
-#### `:on<event>.<modifier>="handler"`, `:on<in>..on<out>="handler"`
+#### `:on<event>.<mod>="handler"`, `:on<in>..on<out>="handler"`
 
 Attach event(s) listener with possible modifiers.
 
@@ -275,7 +275,7 @@ Trigger when element is connected / disconnected from DOM.
 
 ## Expressions
 
-Expressions use [_justin_](https://github.com/dy/subscript?tab=readme-ov-file#justin), a minimal JS subset. It resolves "unsafe-eval" CSP and provides sandboxing.
+Expressions use [_justin_](https://github.com/dy/subscript?tab=readme-ov-file#justin), a minimal JS subset. It avoids "unsafe-eval" CSP and provides sandboxing. Also it's _fast_.
 
 ###### Operators:
 
@@ -292,7 +292,7 @@ Expressions use [_justin_](https://github.com/dy/subscript?tab=readme-ov-file#ju
 
 ## Signals
 
-Signals use [`ulive`](https://ghub.io/ulive), a minimal signals implementation. For large-scale states can be switched to [`@preact/signals-core`](https://ghub.io/@preact/signals-core), [`@webreflection/signal`](https://ghib.io/@webreflection/signal), [`usignal`](https://ghib.io/usignal), see [benchmark](https://github.com/WebReflection/usignal?tab=readme-ov-file#benchmark):
+Signals use [`ulive`](https://ghub.io/ulive), a minimal signals implementation. For large-scale states it can be switched to [`@preact/signals-core`](https://ghub.io/@preact/signals-core), [`@webreflection/signal`](https://ghib.io/@webreflection/signal), [`usignal`](https://ghib.io/usignal) etc:
 
 ```js
 import sprae, { signal, computed, effect, batch, untracked } from 'sprae';
@@ -306,7 +306,7 @@ sprae(el, { name: signal('Kitty') });
 
 ## Customization
 
-Sprae can be configured to project needs via `sprae/core` and `sprae/directive/*`:
+Sprae build can be tailored to project needs via `sprae/core` and `sprae/directive/*`:
 
 ```js
 import sprae, { directive, compile } from 'sprae/core.js'

@@ -15,7 +15,7 @@
   "dependencies": {
     "subscript": "^8.2.2",
     "swapdom": "^1.1.1",
-    "ulive": "^1.0.0"
+    "ulive": "^1.0.1"
   },
   "devDependencies": {
     "@preact/signals": "^1.1.3",

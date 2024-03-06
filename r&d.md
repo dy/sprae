@@ -584,7 +584,7 @@
   + shorter and nicer syntax
   - possibly longer init
 
-## [ ] Better :ref
+## [x] Better :ref -> it's organical
 
   + :ref="`a-${1}`"
   + :id:ref="xyz"
@@ -794,17 +794,17 @@
   + anyways updating every prop reflects DOM update immediately, there doesn't seem to be a big win
   + multiple props can be combined into computed signal or called manually via batch
 
-## [ ] 9.0
+## [x] 9.0
 
-  * subscript-based parsing
+  * [x] subscript-based parsing
     + see subscript-based store: mainly CSP & no-store eval
-  * rename :with to :scope
+  * [x] rename :with to :scope
   * ~~Get rid of `:on` events - attributes are no-fn expressions~~ -> ok to keep arrow functions
-  * Get rid of sprae.auto
-  * No-batch: updating signals updates target nadis
-  * No store, directly signals
-  * Plugins
-  * ~~Rewrite with `nadi`: sprae becomes just a form of hypd + nadi, one of nadis essentially~~ -> nadi is extension, not base
+  * [x] Get rid of sprae.auto
+  * [x] No-batch: updating signals updates target nadis
+  * [x] No store, directly signals
+  * [x] Plugins
+  * [x]x ~~Rewrite with `nadi`: sprae becomes just a form of hypd + nadi, one of nadis essentially~~ -> nadi is extension, not base
 
 ### [x] What should we do with `this` in case of subscript? -> we get rid of that and use `:ref`
   * It doesn't ship keywords by default
@@ -1024,3 +1024,10 @@
   + single CSP entry
   - formally non-CSP-enabled
   - even if CSP is configured, bundle can be detected as unsafe since it has `new Function`
+
+## [ ] Should we autosubscribe to direct signal read?
+
++ That's what preact authors wanted & encourage
+  - it will become different from preact effects code
+- That makes syntax incompatible with JS compiler
+? is that obvious enough?

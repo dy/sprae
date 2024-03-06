@@ -110,4 +110,7 @@
 * [ ] move proxy state into own project / part of signal struct (with tests from here)
 * [x] ~~make cross-version testing: sprae, csp, signals variations~~ justin default is enough
 * [x] avoid triggering unchanged effects
-* [ ] since we use justin - make templates reactive
+* [x] ~~since we use justin - make templates reactive~~ nah, too much friction
+* [x] ~~replace class="∴" with just "∴" attribute (less interference/friction)~~ invalid attribute
+* [ ] collapse dirs into details
+* [ ] make item itself a key also
