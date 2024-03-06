@@ -112,5 +112,5 @@
 * [x] avoid triggering unchanged effects
 * [x] ~~since we use justin - make templates reactive~~ nah, too much friction
 * [x] ~~replace class="∴" with just "∴" attribute (less interference/friction)~~ invalid attribute
-* [ ] collapse dirs into details
-* [ ] make item itself a key also
+* [x] collapse dirs into details
+* [x] make item itself a key also

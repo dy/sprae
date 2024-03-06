@@ -32,15 +32,22 @@ directive.each = (tpl, expr, state, name) => {
       let substate = Object.create(state, { [idxVar]: { value: idx } });
       substate[itemVar] = item; // can be changed by subsequent updates, need to be writable
       item = item.peek?.() ?? item; // unwrap signal
-      let key = item.key ?? item.id;
+      let key = item.key ?? item.id ?? item;
       let el;
 
       if (key == null) el = tpl.cloneNode(true)
       else {
         // make sure key is object
         if (Object(key) !== key) key = (keys[key] ||= Object(key));
-        if (count.has(key)) console.warn('Duplicate key', key); else count.add(key);
-        el = memo.get(key) || memo.set(key, tpl.cloneNode(true)).get(key);
+
+        if (count.has(key)) {
+          console.warn('Duplicate key', key), el = tpl.cloneNode(true);
+        }
+        else {
+          console.log(key, count.has(key))
+          count.add(key);
+          el = memo.get(key) || memo.set(key, tpl.cloneNode(true)).get(key);
+        }
       }
 
       if (el.content) el = el.content.cloneNode(true) // <template>
