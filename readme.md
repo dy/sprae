@@ -272,22 +272,8 @@ Trigger when element is connected / disconnected from DOM.
 ```
 -->
 
-## Customization
 
-### Signals
-
-Signals can be switched from [`ulive`](https://ghub.io/ulive) to [`@preact/signals-core`](https://ghub.io/@preact/signals-core), [`@webreflection/signal`](https://ghib.io/@webreflection/signal), [`usignal`](https://ghib.io/usignal), etc ([benchmark](https://github.com/WebReflection/usignal?tab=readme-ov-file#benchmark)):
-
-```js
-import sprae, { signal, computed, effect, batch, untracked } from 'sprae';
-import * as signals from '@preact/signals-core';
-
-sprae.use(signals);
-
-sprae(el, { name: signal('Kitty') });
-```
-
-### Expressions
+## Expressions
 
 Expressions use [_justin_](https://github.com/dy/subscript?tab=readme-ov-file#justin), a minimal JS subset. It resolves "unsafe-eval" CSP and provides sandboxing.
 
@@ -303,6 +289,39 @@ Expressions use [_justin_](https://github.com/dy/subscript?tab=readme-ov-file#ju
 `1 2.34 -5e6 0x7a`<br/>
 `true false null undefined NaN`
 
+
+## Signals
+
+Signals use [`ulive`](https://ghub.io/ulive), a minimal signals implementation. For large-scale states can be switched to [`@preact/signals-core`](https://ghub.io/@preact/signals-core), [`@webreflection/signal`](https://ghib.io/@webreflection/signal), [`usignal`](https://ghib.io/usignal), see [benchmark](https://github.com/WebReflection/usignal?tab=readme-ov-file#benchmark):
+
+```js
+import sprae, { signal, computed, effect, batch, untracked } from 'sprae';
+import * as signals from '@preact/signals-core';
+
+sprae.use(signals);
+
+sprae(el, { name: signal('Kitty') });
+```
+
+
+## Customization
+
+Sprae can be configured to project needs via `sprae/core` and `sprae/directive/*`:
+
+```js
+import sprae, { directive, compile } from 'sprae/core.js'
+
+// include directives
+import 'sprae/directive/if.js';
+import 'sprae/directive/text.js';
+
+// define custom directive
+directive.id = (el, expr, state) => {
+  const evaluate = compile(state, 'id') // expression string -> evaluator
+  return () => el.id = evaluate(state)  // return update function
+}
+```
+
 <!--
 ### DOM diffing
 
@@ -317,6 +336,7 @@ sprae.use({ swap: domdiff });
 ```
 -->
 
+<!--
 ### Custom Build
 
 `sprae/core` exports bare-bones engine without directives, which allows tailoring build to project needs:
@@ -328,21 +348,8 @@ import sprae, { directive, effect } from 'sprae/core'
 import 'sprae/directive/if'
 import 'sprae/directive/text'
 ```
+-->
 
-### Custom Directives
-
-Additional directives can be added as:
-
-```js
-import sprae, { directive, compile } from 'sprae/core'
-
-directive.id = (el, expr, state) => {
-  const evaluate = compile(state)       // expression string -> evaluator
-  return () => el.id = evaluate(state)  // return update function
-}
-```
-
-See [sprae/directive](./directive/) for examples.
 
 <!-- ## Dispose
 
@@ -355,13 +362,12 @@ To destroy state and detach sprae handlers, call `element[Symbol.dispose]()`. --
 * No default globals (`console`, `setTimeout` etc) - pass to state if required.
 * ``:class="`abc ${def}`"`` → `:class="'abc $<def>'"` (_justin_)
 * `:with={x:'x'}` -> `:scope={x:'x'}`
-* Scope vars are not reactive -> use signals `:scope={x:signal('x')}`.
-* No reactive store → use signals for reactive values as `foo.value` in template.
+* No reactive store → use signals for reactive values.
 * `:render="tpl"` → `:html="tpl"`
 * `@click="event.target"` → `:onclick="event => event.target"`
-* Async props / events are prohibited, pass async functions via state.
+* Async props / events are not supported, pass async functions via state.
 * Directives order matters, eg. `<a :if :each :scope />` !== `<a :scope :each :if />`
-* Only one directive per `<template>` is allowed, eg. `<template :each />`, not `<template :if :each/>`
+* Only one directive per `<template>`, eg. `<template :each />`, not `<template :if :each/>`
 
 
 ## Justification
