@@ -1,70 +1,33 @@
 # ∴ spræ [![tests](https://github.com/dy/sprae/actions/workflows/node.js.yml/badge.svg)](https://github.com/dy/sprae/actions/workflows/node.js.yml) [![size](https://img.shields.io/bundlephobia/minzip/sprae?label=size)](https://bundlephobia.com/result?p=sprae) [![npm](https://img.shields.io/npm/v/sprae?color=orange)](https://npmjs.org/sprae)
 
-> DOM tree hydration with reactivity.
+> DOM tree microhydration
 
-_Sprae_ is compact ergonomic progressive enhancement framework.<br/>
-It provides reactive `:`-attributes that enable simple markup logic without need for complex scripts.<br/>
-Perfect for small-scale websites, prototypes or UI logic.<br/>
-It is tiny, performant and open alternative to [alpine](https://github.com/alpinejs/alpine), [petite-vue](https://github.com/vuejs/petite-vue) or [template-parts](https://github.com/github/template-parts).
+_Sprae_ is a compact & ergonomic progressive enhancement framework.<br/>
+It provides `:`-attributes for inline markup logic with _signals_-based reactivity.<br/>
+Perfect for small-scale websites, prototypes, or lightweight UI.<br/>
+
 
 ## Usage
 
-### Autoinit
-
-To autoinit document, include [`sprae.auto.js`](./sprae.auto.js):
-
-```html
-<!-- <script src="https://cdn.jsdelivr.net/npm/sprae/dist/sprae.auto.js" defer></script> -->
-<script defer src="./path/to/sprae.auto.js"></script>
-
-<ul>
-  <li :each="item in ['apple', 'bananas', 'citrus']"">
-    <a :href="`#${item}`" :text="item" />
-  </li>
-</ul>
-```
-
-### Manual init
-
-To init manually as module, import [`sprae.js`](./sprae.js):
-
 ```html
 <div id="container" :if="user">
-  Logged in as <span :text="user.name">Guest.</span>
+  Hello <span :text="user.name">World</span>.
 </div>
 
 <script type="module">
-  // import sprae from 'https://cdn.jsdelivr.net/npm/sprae/dist/sprae.js';
-  import sprae from './path/to/sprae.js';
+  import sprae, {signal} from 'sprae'
 
-  const state = sprae(container, { user: { name: 'Dmitry Ivanov' } });
-  state.user.name = 'dy'; // updates DOM
+  const name = signal('Kitty')
+  sprae(container, { user: { name } }) // init
+
+  name.value = 'Dolly' // update
 </script>
 ```
 
-Sprae evaluates `:`-attributes and evaporates them.<br/>
+Sprae evaluates `:`-directives and evaporates them, attaching state to html.
 
-## State
 
-Sprae creates reactive state that mirrors current DOM values.<br/>
-It is based on [@preact/signals](https://github.com/preactjs/signals) and can take them as inputs.
-
-```js
-import { signal } from  'sprae' // or '@preact/signals-core'
-
-const version = signal('alpha')
-
-// Sprae container with initial state values
-const state = sprae(container, { foo: 'bar', version })
-
-// Modify state property 'foo', triggering a DOM update
-state.foo = 'baz'
-
-// Update the version signal, which also triggers a DOM refresh
-version.value = 'beta'
-```
-
-## Attributes
+## Directives
 
 #### `:if="condition"`, `:else`
 
@@ -74,60 +37,75 @@ Control flow of elements.
 <span :if="foo">foo</span>
 <span :else :if="bar">bar</span>
 <span :else>baz</span>
+
+<!-- fragment -->
+<template :if="foo">
+  foo <span>bar</span> baz
+</template>
 ```
 
 #### `:each="item, index in items"`
 
-Multiply element.
+Multiply element. Item is identified either by `item.id` or `item.key`.
 
 ```html
-<ul><li :each="item in items" :text="item"></ul>
+<ul><li :each="item in items" :text="item"/></ul>
 
-<!-- Cases -->
+<!-- cases -->
 <li :each="item, idx in list" />
 <li :each="val, key in obj" />
 <li :each="idx in number" />
 
-<!-- Loop by condition -->
+<!-- by condition -->
 <li :if="items" :each="item in items" :text="item" />
 <li :else>Empty list</li>
+
+<!-- fragment -->
+<template :each="item in items">
+  <dt :text="item.term"/>
+  <dd :text="item.definition"/>
+</template>
+
+<!-- prevent FOUC -->
+<style>[:each] {visibility: hidden}</style>
 ```
+
 
 #### `:text="value"`
 
-Set text content of an element. Default text can be used as fallback:
+Set text content of an element.
 
 ```html
 Welcome, <span :text="user.name">Guest</span>.
+
+<!-- fragment -->
+Welcome, <template :text="user.name" />.
 ```
 
 #### `:class="value"`
 
-Set class value from either a string, array or object.
+Set class value, extends existing `class`.
 
 ```html
-<!-- set from string -->
-<div :class="`foo ${bar}`"></div>
+<!-- string with interpolation -->
+<div :class="'foo $<bar>'"></div>
 
-<!-- extends existing class as "foo bar" -->
-<div class="foo" :class="`bar`"></div>
-
-<!-- clsx: object / list -->
+<!-- array/object a-la clsx -->
 <div :class="[foo && 'foo', {bar: bar}]"></div>
 ```
 
 #### `:style="value"`
 
-Set style value from an object or a string. Extends existing `style` attribute, if any.
+Set style value, extends existing `style`.
 
 ```html
-<!-- from string -->
-<div :style="`foo: ${bar}`"></div>
+<!-- string with interpolation -->
+<div :style="'foo: $<bar>'"></div>
 
-<!-- from object -->
+<!-- object -->
 <div :style="{foo: 'bar'}"></div>
 
-<!-- set CSS variable -->
+<!-- CSS variable -->
 <div :style="{'--baz': qux}"></div>
 ```
 
@@ -136,7 +114,6 @@ Set style value from an object or a string. Extends existing `style` attribute, 
 Set value of an input, textarea or select. Takes handle of `checked` and `selected` attributes.
 
 ```html
-<!-- set from value -->
 <input :value="value" />
 <textarea :value="value" />
 
@@ -146,98 +123,74 @@ Set value of an input, textarea or select. Takes handle of `checked` and `select
 </select>
 ```
 
-#### `:with="data"`
+#### `:<prop>="value"`, `:="values"`
+
+Set any attribute(s).
+
+```html
+<label :for="name" :text="name" />
+
+<!-- multiple attributes -->
+<input :id:name="name" />
+
+<!-- spread attributes -->
+<input :="{ id: name, name, type: 'text', value }" />
+```
+
+#### `:scope="data"`
 
 Define or extend data scope for a subtree.
 
 ```html
-<!-- Inline data -->
-<x :with="{ foo: 'bar' }" :text="foo"></x>
-
-<!-- External data -->
-<y :with="data"></y>
-
-<!-- Extend scope -->
-<x :with="{ foo: 'bar' }">
-  <y :with="{ baz: 'qux' }" :text="foo + baz"></y>
+<x :scope="{ foo: signal('bar') }">
+  <!-- extends parent scope -->
+  <y :scope="{ baz: 'qux' }" :text="foo + baz"></y>
 </x>
 ```
 
-#### `:<prop>="value?"`
+#### `:ref="name"`
 
-Set any attribute value or run an effect.
-
-```html
-<!-- Single property -->
-<label :for="name" :text="name" />
-
-<!-- Multiple properties -->
-<input :id:name="name" />
-
-<!-- Effect - returns undefined, triggers any time bar changes -->
-<div :fx="void bar()" ></div>
-
-<!-- Raw event listener (see events) -->
-<div :onclick="e=>e.preventDefault()"></div>
-```
-
-#### `:="props?"`
-
-Spread multiple attibures.
+Expose element to current scope with `name`.
 
 ```html
-<input :="{ id: name, name, type:'text', value }" />
-```
-
-#### `:ref="id"`
-
-Expose element to current data scope with the `id`:
-
-```html
-<!-- single item -->
 <textarea :ref="text" placeholder="Enter text..."></textarea>
-<span :text="text.value"></span>
 
 <!-- iterable items -->
-<ul>
-  <li :each="item in items" :ref="item">
-    <input @focus="item.classList.add('editing')" @blur="item.classList.remove('editing')"/>
-  </li>
-</ul>
+<li :each="item in items" :ref="item">
+  <input :onfocus..onblur=="e => (item.classList.add('editing'), e => item.classList.remove('editing'))"/>
+</li>
 ```
 
-#### `:render="ref"`
+#### `:fx="values"`
 
-Include template as element content.
+Run effect, not changing any attribute.<br/>Optional cleanup is called in-between effect calls or on disposal.
 
 ```html
-<!-- assign template element to foo variable -->
-<template :ref="foo"><span :text="foo"></span></template>
+<div :fx="a.value ? foo() : bar()" />
 
-<!-- rended template as content -->
-<div :render="foo" :with="{foo:'bar'}">...inserted here...</div>
-<div :render="foo" :with="{foo:'baz'}">...inserted here...</div>
+<!-- cleanup function -->
+<div :fx="id = setInterval(tick, interval), () => clearInterval(tick)" />
 ```
 
 
-## Events
+#### `:on<event>.<modifier>="handler"`, `:on<in>..on<out>="handler"`
 
-#### `@<event>="handle"`, `@<foo>@<bar>.<baz>="handle"`
-
-Attach event(s) listener with possible modifiers. `event` variable holds current event. Allows async handlers.
+Attach event(s) listener with possible modifiers.
 
 ```html
-<!-- Single event -->
-<input type="checkbox" @change="isChecked = event.target.value">
+<input type="checkbox" :onchange="e => isChecked = e.target.value">
 
-<!-- Multiple events -->
-<input :value="text" @input@change="text = event.target.value">
+<!-- multiple events -->
+<input :value="text" :oninput:onchange="e => text = e.target.value">
 
-<!-- Event modifiers -->
-<button @click.throttle-500="handler(event)">Not too often</button>
+<!-- events sequence -->
+<button :onfocus..onblur="e => ( handleFocus(), e => handleBlur())">
+
+<!-- event modifiers -->
+<button :onclick.throttle-500="handler">Not too often</button>
 ```
 
-##### Event modifiers
+##### Modifiers:
 
 * `.once`, `.passive`, `.capture` – listener [options](https://developer.mozilla.org/en-US/docs/Web/API/EventTarget/addEventListener#options).
 * `.prevent`, `.stop` – prevent default or stop propagation.
@@ -248,45 +201,209 @@ Attach event(s) listener with possible modifiers. `event` variable holds current
 * `.*` – any other modifier has no effect, but allows binding multiple handlers to same event (like jQuery event classes).
 
 
-## Sandbox
+## Optional Directives
 
-Expressions are sandboxed, ie. don't access global/window scope by default (since sprae can be run in server environment).
+The following directives can be plugged in as:
 
-```html
-<div :x="scrollY"></div>
-<!-- scrollY is undefined -->
+```js
+import sprae from 'sprae'
+import 'sprae/directive/<directive>'
 ```
 
-Default sandbox provides most popular global objects: _Array_, _Object_, _Number_, _String_, _Boolean_, _Date_,
-  _console_, _window_, _document_, _history_, _navigator_, _location_, _screen_, _localStorage_, _sessionStorage_,
-  _alert_, _prompt_, _confirm_, _fetch_, _performance_,
-  _setTimeout_, _setInterval_, _requestAnimationFrame_.
+#### `:html="element"`
 
-Sandbox can be extended as `Object.assign(sprae.globals, { BigInt })`.
-
-## FOUC
-
-To avoid _flash of unstyled content_, you can hide sprae attribute or add a custom effect, eg. `:hidden` - that will be removed once sprae is initialized:
+Set html content of an element or instantiate a template.
 
 ```html
-<div :hidden></div>
-<style>[:each],[:if],[:else],[:hidden] {visibility: hidden}</style>
+Hello, <span :html="userElement">Guest</span>.
+
+<!-- fragment -->
+Hello, <template :html="user.name">Guest</template>.
+
+<!-- instantiate template -->
+<template :ref="tpl"><span :text="foo"></span></template>
+<div :html="tpl" :scope="{foo:'bar'}">...inserted here...</div>
 ```
 
-## Dispose
+#### `:data="values"`
 
-To destroy state and detach sprae handlers, call `element[Symbol.dispose]()`.
+Set `data-*` attributes. CamelCase is converted to dash-case.
 
-## Benchmark
+```html
+<input :data="{foo: 1, barBaz: true}" />
+<!-- <input data-foo="1" data-bar-baz /> -->
+```
+
+#### `:aria="values"`
+
+Set `aria-*` attributes. Boolean values are stringified.
+
+```html
+<input role="combobox" :aria="{
+  controls: 'joketypes',
+  autocomplete: 'list',
+  expanded: false,
+  activeOption: 'item1',
+  activedescendant: ''
+}" />
+<!-- <input role="combobox" aria-controls="joketypes" aria-autocomplete="list" aria-expanded="false" aria-active-option="item1" aria-activedescendant>
+-->
+```
+
+<!--
+#### `:onvisible..oninvisible="e => e => {}"`
+
+Trigger when element is in/out of the screen.
+
+```html
+<div :onvisible..oninvisible="e => (
+  e.target.classList.add('visible'),
+  e => e.target.classlist.remove('visible')
+)"/>
+```
+
+#### `:onmount..onunmount="e => e => {}"`
+
+Trigger when element is connected / disconnected from DOM.
+
+```html
+<div :onmount..onunmount="e => (dispose = init(), e => dispose())"/>
+```
+-->
+
+## Customization
+
+### Signals
+
+Default signals are based on [`ulive`](https://ghub.io/ulive), can be switched to [`@preact/signals-core`](https://ghub.io/@preact/signals-core), [`@webreflection/signal`](https://ghib.io/@webreflection/signal), [`usignal`](https://ghib.io/usignal), [etc](https://github.com/WebReflection/usignal?tab=readme-ov-file#benchmark):
+
+```js
+import sprae, { signal, computed, effect, batch, untracked } from 'sprae';
+import * as signals from '@preact/signals-core';
+
+sprae.use(signals);
+
+sprae(el, { name: signal('Kitty') });
+```
+
+### Expressions
+
+Default evaluator is based on `new Function`, can be configured to [_justin_](https://github.com/dy/subscript?tab=readme-ov-file#justin), which resolves "unsafe-eval" CSP and provides sandboxing, but has restricted syntax:
+
+```js
+import sprae from 'sprae';
+import justin from 'subscript/justin';
+
+sprae.use({ compile: justin });
+```
+
+###### Operators:
+
+`++ -- ! - + ** * / %  && || ??`<br/>
+`= < <= > >= == != === !==`<br/>
+`<< >> & ^ | ~ ?: . ?. [] ()=>{} in`
+
+###### Primitives:
+
+`[] {} "" ''`<br/>
+`1 2.34 -5e6 0x7a`<br/>
+`true false null undefined NaN`
+
+
+### DOM diffing
+
+DOM differ uses [swapdom](https://github.com/dy/swapdom), can be reconfigured to [list-difference](https://github.com/paldepind/list-difference/), [udomdiff](https://github.com/WebReflection/udomdiff), [domdiff](https://github.com/WebReflection/domdiff), [etc](https://github.com/luwes/js-diff-benchmark):
+
+```js
+import sprae from 'sprae';
+import domdiff from 'list-difference';
+
+// swap(parentNode, prevEls, newEls, endNode?)
+sprae.use({ swap: domdiff });
+```
+
+
+### Custom Build
+
+`sprae/core` exports bare-bones engine without directives, which allows tailoring build:
+
+```js
+import sprae, { directive, effect } from 'sprae/core'
+
+// include required directives
+import 'sprae/directive/if'
+import 'sprae/directive/text'
+```
+
+### Custom Directives
+
+Additional directives can be added as:
+
+```js
+import sprae, { directive, compile } from 'sprae/core'
+
+directive.id = (el, expr, state) => {
+  const evaluate = compile(state)       // expression string -> evaluator
+  return () => el.id = evaluate(state)  // return update function
+}
+```
+
+See [sprae/directive](./directive/) for examples.
+
+<!-- ## Dispose
+
+To destroy state and detach sprae handlers, call `element[Symbol.dispose]()`. -->
+
+
+## v9 changes
+
+* No default globals: provide manually to state (`console`, `setTimeout` etc).
+* ``:class="`abc ${def}`"`` → `:class="'abc $<def>'"`
+* `:with={x:'y'}` -> `:scope={x:'y'}`, `x` is not reactive, init signals manually.
+* `:render="tpl"` → `:html="tpl"`
+* No autoinit → use manual init via `import sprae from 'sprae'`.
+* No reactive store → use signals for reactive values, read `.value` in template where applicable.
+* `@click="event.target"` → `:onclick="event => event.target"`
+* Async props / events are prohibited, pass async functions via state.
+* Directives order matters, eg. `<a :if :each :scope />` !== `<a :scope :each :if />`
+* Only one directive per `<template>` is allowed, eg. `<template :each />`, not `<template :if :each/>`
+
+
+## Justification
+
+[Template-parts](https://github.com/dy/template-parts) / [templize](https://github.com/dy/templize) is progressive, but is stuck with native HTML quirks ([parsing table](https://github.com/github/template-parts/issues/24), [SVG attributes](https://github.com/github/template-parts/issues/25), [liquid syntax](https://shopify.github.io/liquid/tags/template/#raw) conflict etc). [Alpine](https://github.com/alpinejs/alpine) / [petite-vue](https://github.com/vuejs/petite-vue) / [lucia](https://github.com/aidenyabi/lucia) escape native HTML quirks, but have excessive API (`:`, `x-`, `{}`, `@`, `$`) and tend to [self-encapsulate](https://github.com/alpinejs/alpine/discussions/3223) (no access to data, own reactivity, own expressions, own domdiffer).
+
+_Sprae_ holds to open & minimalistic philosophy, combining _`:`-directives_ with _signals_.
+
+<!--
+|                       | [AlpineJS](https://github.com/alpinejs/alpine)          | [Petite-Vue](https://github.com/vuejs/petite-vue)        | Sprae            |
+|-----------------------|-------------------|-------------------|------------------|
+| _Size_              | ~10KB             | ~6KB              | ~5KB             |
+| _Memory_            | 5.05             | 3.16              | 2.78             |
+| _Performance_       | 2.64             | 2.43              | 1.76             |
+| _CSP_               | Limited                | No                | Yes              |
+| _SSR_ | No | No | No |
+| _Evaluation_        | [`new AsyncFunction`](https://github.com/alpinejs/alpine/blob/main/packages/alpinejs/src/evaluator.js#L81) | [`new Function`](https://github.com/vuejs/petite-vue/blob/main/src/eval.ts#L20) | [`new Function`]() / [justin](https://github.com/dy/subscript)           |
+| _Reactivity_        | `Alpine.store`    | _@vue/reactivity_   | _signals_ |
+| _Sandboxing_        | No                | No                | Yes              |
+| _Directives_ | `:`, `x-`, `{}` | `:`, `v-`, `@`, `{}` | `:` |
+| _Magic_               | `$data` | `$app`   | - |
+| _Fragments_ | Yes | No | Yes |
+| _Plugins_ | Yes | No | Yes |
+| _Modifiers_ | Yes | No | Yes |
+-->
+
+<!--
+<details>
+<summary><strong>Benchmark</strong></summary>
 
 See [js-framework-benchmark](https://krausest.github.io/js-framework-benchmark/current.html#eyJmcmFtZXdvcmtzIjpbIm5vbi1rZXllZC9wZXRpdGUtdnVlIiwibm9uLWtleWVkL3NwcmFlIl0sImJlbmNobWFya3MiOlsiMDFfcnVuMWsiLCIwMl9yZXBsYWNlMWsiLCIwM191cGRhdGUxMHRoMWtfeDE2IiwiMDRfc2VsZWN0MWsiLCIwNV9zd2FwMWsiLCIwNl9yZW1vdmUtb25lLTFrIiwiMDdfY3JlYXRlMTBrIiwiMDhfY3JlYXRlMWstYWZ0ZXIxa194MiIsIjA5X2NsZWFyMWtfeDgiLCIyMV9yZWFkeS1tZW1vcnkiLCIyMl9ydW4tbWVtb3J5IiwiMjNfdXBkYXRlNS1tZW1vcnkiLCIyNV9ydW4tY2xlYXItbWVtb3J5IiwiMjZfcnVuLTEway1tZW1vcnkiLCIzMV9zdGFydHVwLWNpIiwiMzRfc3RhcnR1cC10b3RhbGJ5dGVzIiwiNDFfc2l6ZS11bmNvbXByZXNzZWQiLCI0Ml9zaXplLWNvbXByZXNzZWQiXSwiZGlzcGxheU1vZGUiOjF9).
 
-<details>
-<summary>Results table</summary>
-
 ![Benchmark](./bench.png)
 </details>
+-->
 
+<!--
 <details>
 <summary>How to run</summary>
 
@@ -317,37 +434,31 @@ cd webdriver-ts
 npm run results
 ```
 </details>
+-->
 
-## Examples
+<!-- ## See also -->
 
-* TODO MVC: [demo](https://dy.github.io/sprae/examples/todomvc), [code](https://github.com/dy/sprae/blob/main/examples/todomvc.html)
-* JS Framework Benchmark: [demo](https://dy.github.io/sprae/examples/js-framework-benchmark), [code](https://github.com/dy/sprae/blob/main/examples/js-framework-benchmark.html)
-* Wavearea: [demo](https://dy.github.io/wavearea?src=//cdn.freesound.org/previews/586/586281_2332564-lq.mp3), [code](https://github.com/dy/wavearea)
-* Prostogreen [demo](http://web-being.org/prostogreen/), [code](https://github.com/web-being/prostogreen/)
-
-## Justification
-
-* [Template-parts](https://github.com/dy/template-parts) / [templize](https://github.com/dy/templize) is progressive, but is stuck with native HTML quirks ([parsing table](https://github.com/github/template-parts/issues/24), [SVG attributes](https://github.com/github/template-parts/issues/25), [liquid syntax](https://shopify.github.io/liquid/tags/template/#raw) conflict etc). Also ergonomics of `attr="{{}}"` is inferior to `:attr=""` since it creates flash of uninitialized values. Also it's just nice to keep `{{}}` generic, regardless of markup, and attributes as part of markup.
-* [Alpine](https://github.com/alpinejs/alpine) / [vue](https://github.com/vuejs/petite-vue) / [lit](https://github.com/lit/lit/tree/main/packages/lit-html) escape native HTML quirks, but the syntax space (`:attr`, `v-*`,`x-*`, `l-*` `@evt`, `{{}}`) is too broad, as well as functionality. Perfection is when there's nothing to take away, not add (c). Also they tend to [self-encapsulate](https://github.com/alpinejs/alpine/discussions/3223) making interop hard, invent own tooling or complex reactivity.
-* React / [preact](https://ghub.io/preact) does the job wiring up JS to HTML, but with an extreme of migrating HTML to JSX and enforcing SPA, which is not organic for HTML. Also it doesn't support reactive fields (needs render call).
-
-_Sprae_ takes idea of _templize_ / _alpine_ / _vue_ attributes and builds simple reactive state based on [_@preact/signals_](https://ghub.io/@preact/signals).
-
-* It doesn't break or modify static html markup.
-* It falls back to element content if uninitialized.
-* It doesn't enforce SPA nor JSX.
-* It enables island hydration.
-* It reserves minimal syntax space as `:` convention (keeping tree neatly decorated, not scattered).
-* Expressions are naturally reactive and incur minimal updates.
-* Elements / data API is open and enable easy interop.
-
-It is reminiscent of [XSLT](https://www.w3schools.com/xml/xsl_intro.asp), considered a [buried treasure](https://github.com/bahrus/be-restated) by web-connoisseurs.
-
+<!--
 ## Alternatives
 
 * [Alpine](https://github.com/alpinejs/alpine)
 * ~~[Lucia](https://github.com/aidenybai/lucia)~~ deprecated
 * [Petite-vue](https://github.com/vuejs/petite-vue)
 * [nuejs](https://github.com/nuejs/nuejs)
+ -->
+
+
+## Examples
+
+* ToDo MVC: [demo](https://dy.github.io/sprae/examples/todomvc), [code](https://github.com/dy/sprae/blob/main/examples/todomvc.html)
+* JS Framework Benchmark: [demo](https://dy.github.io/sprae/examples/js-framework-benchmark), [code](https://github.com/dy/sprae/blob/main/examples/js-framework-benchmark.html)
+* Wavearea: [demo](https://dy.github.io/wavearea?src=//cdn.freesound.org/previews/586/586281_2332564-lq.mp3), [code](https://github.com/dy/wavearea)
+* Prostogreen [demo](http://web-being.org/prostogreen/), [code](https://github.com/web-being/prostogreen/)
+
+<!--
+## See Also
+
+* [nadi](https://github.com/dy/nadi) - 101 signals. -->
+
 
 <p align="center"><a href="https://github.com/krsnzd/license/">🕉</a></p>

@@ -66,4 +66,46 @@
 * [x] Fix multiple `.push` cycle problem
 * [x] ~~Make regular proxy state not causing infinite recursion~~ we don't hold to own proxy now
 * [x] All FIXMEs
-* [ ] Avoid creating signals for static values
+* [x] ~~Avoid creating signals for static values~~ -> v9 avoids that
+* [ ] Figure out `arr.push()` - do we need to ever have calls as signals?
+
+### [ ] v9
+
+* [x] subscript-based eval
+  * [x] make `a in b` via subscript
+* [x] no store
+* [x] switching signals
+* [x] get rid of `@` events
+* [x] plugins: extensible directives
+* [x] comparison table: CSP, plugins, no-deps, size, performance, event/modifiers,
+* [~] add :html directive as replacement for :render, with tests
+* [x] rename :with to :scope
+* [x] :fx=fx
+* [x] make signals tests (nested effects)
+* [x] try direct directives without primary/secondary
+* [x] split directives
+* [x] switchable compiler
+* [x] clear exports (no parse, err) - make sense of `compile` function as exported
+* [x] template test (:text, :html, :if, :each)
+* [x] fx teardown
+* [x] flatten API, API to docs: `./core` (custom build), `./sprae` (default entry)
+  * [x] make CSP a docs config, not entry
+* [x] customizable swapper
+* [x] ~~`sprae.*` instead of `.use`, extending docs: directive, compile, swap, signals~~ `.use` is more compact
+  * [x] ~~no-signals (signals are pluggable): better teardown flow; returns dispose fn, not state; pluggable ulive; signals from original source, not sprae~~ can't avoid effect, the codebase is tiny
+* [x] ~~0-code sandbox (stub props)~~ - unnecessary `Object.create`
+* [x] interpolatable strings
+* [x] :each that keeps elements
+* [x] Plugins
+  * [x] :aria
+  * [x] :data
+  * [x] ~~:item~~
+* [x] move effect out of directives, make signal-less state (ideally).
+* [ ] :onvisible..oninvisible
+* [ ] :onmount..onunmount
+* [ ] fix ToDo
+* [ ] js-framework-bench
+* [ ] all FIXMEs
+* [ ] move proxy state into own project / part of signal struct (with tests from here)
+* [x] ~~make cross-version testing: sprae, csp, signals variations~~ justin default is enough
+* [ ] avoid triggering unchanged effects

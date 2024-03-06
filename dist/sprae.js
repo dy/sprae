@@ -1,3 +1,658 @@
+// node_modules/subscript/src/const.js
+var PERIOD = 46;
+var SPACE = 32;
+var COLON = 58;
+var DQUOTE = 34;
+var QUOTE = 39;
+var _0 = 48;
+var _9 = 57;
+var _E = 69;
+var _e = 101;
+var BSLASH = 92;
+var STAR = 42;
+var PREC_SEQ = 1;
+var PREC_ASSIGN = 2;
+var PREC_LOR = 3;
+var PREC_LAND = 4;
+var PREC_OR = 5;
+var PREC_XOR = 6;
+var PREC_AND = 7;
+var PREC_EQ = 8;
+var PREC_COMP = 9;
+var PREC_SHIFT = 10;
+var PREC_ADD = 11;
+var PREC_MULT = 12;
+var PREC_EXP = 13;
+var PREC_PREFIX = 14;
+var PREC_POSTFIX = 15;
+var PREC_ACCESS = 17;
+var PREC_TOKEN = 20;
+
+// node_modules/subscript/src/parse.js
+var idx;
+var cur;
+var parse = (s2) => (idx = 0, cur = s2, s2 = expr(), cur[idx] ? err2() : s2 || "");
+var err2 = (msg = "Bad syntax", lines = cur.slice(0, idx).split("\n"), last2 = lines.pop()) => {
+  let before = cur.slice(idx - 108, idx).split("\n").pop();
+  let after = cur.slice(idx, idx + 108).split("\n").shift();
+  throw EvalError(`${msg} at ${lines.length}:${last2.length} \`${idx >= 108 ? "\u2026" : ""}${before}\u25B6${after}\``, "font-weight: bold");
+};
+var skip = (is = 1, from = idx, l2) => {
+  if (typeof is == "number")
+    idx += is;
+  else
+    while (l2 = is(cur.charCodeAt(idx)))
+      idx += l2;
+  return cur.slice(from, idx);
+};
+var expr = (prec = 0, end, cc, token2, newNode, fn) => {
+  while ((cc = parse.space()) && (newNode = ((fn = lookup[cc]) && fn(token2, prec)) ?? (!token2 && parse.id())))
+    token2 = newNode;
+  if (end)
+    cc == end ? idx++ : err2();
+  return token2;
+};
+var isId = (c2) => c2 >= 48 && c2 <= 57 || c2 >= 65 && c2 <= 90 || c2 >= 97 && c2 <= 122 || c2 == 36 || c2 == 95 || c2 >= 192 && c2 != 215 && c2 != 247;
+var id = parse.id = () => skip(isId);
+var space = parse.space = (cc) => {
+  while ((cc = cur.charCodeAt(idx)) <= SPACE)
+    idx++;
+  return cc;
+};
+var lookup = [];
+var token = (op, prec = SPACE, map, c2 = op.charCodeAt(0), l2 = op.length, prev = lookup[c2], word = op.toUpperCase() !== op) => lookup[c2] = (a2, curPrec, from = idx) => curPrec < prec && (l2 < 2 || cur.substr(idx, l2) == op) && (!word || !isId(cur.charCodeAt(idx + l2))) && (idx += l2, map(a2, curPrec)) || (idx = from, prev?.(a2, curPrec));
+var binary = (op, prec, right = false) => token(op, prec, (a2, b2) => a2 && (b2 = expr(prec - (right ? 0.5 : 0))) && [op, a2, b2]);
+var unary = (op, prec, post) => token(op, prec, (a2) => post ? a2 && [op, a2] : !a2 && (a2 = expr(prec - 0.5)) && [op, a2]);
+var nary = (op, prec) => {
+  token(
+    op,
+    prec,
+    (a2, b2) => (b2 = expr(prec), (!a2 || a2[0] !== op) && (a2 = [op, a2]), a2.push(b2), a2)
+  );
+};
+var group = (op, prec) => token(op[0], prec, (a2) => !a2 && [op, expr(0, op.charCodeAt(1))]);
+var access = (op, prec) => token(op[0], prec, (a2) => a2 && [op[0], a2, expr(0, op.charCodeAt(1))]);
+var parse_default = parse;
+
+// node_modules/subscript/src/compile.js
+var compile = (node) => !Array.isArray(node) ? compile.id(node) : !node[0] ? () => node[1] : operators[node[0]](...node.slice(1));
+var id2 = compile.id = (name) => (ctx) => ctx?.[name];
+var operators = {};
+var operator = (op, fn, prev = operators[op]) => operators[op] = (...args) => fn(...args) || prev && prev(...args);
+var prop2 = (a2, fn, generic, obj, path) => a2[0] === "()" ? prop2(a2[1], fn, generic) : typeof a2 === "string" ? (ctx) => fn(ctx, a2, ctx) : a2[0] === "." ? (obj = compile(a2[1]), path = a2[2], (ctx) => fn(obj(ctx), path, ctx)) : a2[0] === "[" ? (obj = compile(a2[1]), path = compile(a2[2]), (ctx) => fn(obj(ctx), path(ctx), ctx)) : generic ? (a2 = compile(a2), (ctx) => fn([a2(ctx)], 0, ctx)) : () => err2("Bad left value");
+var compile_default = compile;
+
+// node_modules/subscript/feature/number.js
+var num = (a2) => a2 ? err2() : [, (a2 = +skip((c2) => c2 === PERIOD || c2 >= _0 && c2 <= _9 || (c2 === _E || c2 === _e ? 2 : 0))) != a2 ? err2() : a2];
+lookup[PERIOD] = (a2) => !a2 && num();
+for (let i2 = _0; i2 <= _9; i2++)
+  lookup[i2] = num;
+
+// node_modules/subscript/feature/string.js
+var escape = { n: "\n", r: "\r", t: "	", b: "\b", f: "\f", v: "\v" };
+var string = (q) => (qc, c2, str = "") => {
+  qc && err2("Unexpected string");
+  skip();
+  while (c2 = cur.charCodeAt(idx), c2 - q) {
+    if (c2 === BSLASH)
+      skip(), c2 = skip(), str += escape[c2] || c2;
+    else
+      str += skip();
+  }
+  skip() || err2("Bad string");
+  return [, str];
+};
+lookup[DQUOTE] = string(DQUOTE);
+lookup[QUOTE] = string(QUOTE);
+
+// node_modules/subscript/feature/call.js
+access("()", PREC_ACCESS);
+operator(
+  "(",
+  (a2, b2, args) => (args = !b2 ? () => [] : b2[0] === "," ? (b2 = b2.slice(1).map((b3) => !b3 ? err() : compile(b3)), (ctx) => b2.map((arg) => arg(ctx))) : (b2 = compile(b2), (ctx) => [b2(ctx)]), prop2(a2, (obj, path, ctx) => obj[path](...args(ctx)), true))
+);
+
+// node_modules/subscript/feature/access.js
+access("[]", PREC_ACCESS);
+operator("[", (a2, b2) => !b2 ? err() : (a2 = compile(a2), b2 = compile(b2), (ctx) => a2(ctx)[b2(ctx)]));
+binary(".", PREC_ACCESS);
+operator(".", (a2, b2) => (a2 = compile(a2), b2 = !b2[0] ? b2[1] : b2, (ctx) => a2(ctx)[b2]));
+
+// node_modules/subscript/feature/group.js
+group("()", PREC_ACCESS);
+operator("()", (a2) => (!a2 && err2("Empty ()"), compile(a2)));
+var last = (...args) => (args = args.map(compile), (ctx) => args.map((arg) => arg(ctx)).pop());
+nary(",", PREC_SEQ), operator(",", last);
+nary(";", PREC_SEQ, true), operator(";", last);
+
+// node_modules/subscript/feature/mult.js
+binary("*", PREC_MULT), operator("*", (a2, b2) => b2 && (a2 = compile(a2), b2 = compile(b2), (ctx) => a2(ctx) * b2(ctx)));
+binary("/", PREC_MULT), operator("/", (a2, b2) => b2 && (a2 = compile(a2), b2 = compile(b2), (ctx) => a2(ctx) / b2(ctx)));
+binary("%", PREC_MULT), operator("%", (a2, b2) => b2 && (a2 = compile(a2), b2 = compile(b2), (ctx) => a2(ctx) % b2(ctx)));
+binary("*=", PREC_ASSIGN, true);
+operator("*=", (a2, b2) => (b2 = compile(b2), prop2(a2, (container, path, ctx) => container[path] *= b2(ctx))));
+binary("/=", PREC_ASSIGN, true);
+operator("/=", (a2, b2) => (b2 = compile(b2), prop2(a2, (container, path, ctx) => container[path] /= b2(ctx))));
+binary("%=", PREC_ASSIGN, true);
+operator("%=", (a2, b2) => (b2 = compile(b2), prop2(a2, (container, path, ctx) => container[path] %= b2(ctx))));
+
+// node_modules/subscript/feature/add.js
+unary("+", PREC_PREFIX), operator("+", (a2, b2) => !b2 && (a2 = compile(a2), (ctx) => +a2(ctx)));
+unary("-", PREC_PREFIX), operator("-", (a2, b2) => !b2 && (a2 = compile(a2), (ctx) => -a2(ctx)));
+binary("+", PREC_ADD), operator("+", (a2, b2) => b2 && (a2 = compile(a2), b2 = compile(b2), (ctx) => a2(ctx) + b2(ctx)));
+binary("-", PREC_ADD), operator("-", (a2, b2) => b2 && (a2 = compile(a2), b2 = compile(b2), (ctx) => a2(ctx) - b2(ctx)));
+binary("+=", PREC_ASSIGN, true);
+operator("+=", (a2, b2) => (b2 = compile(b2), prop2(a2, (container, path, ctx) => container[path] += b2(ctx))));
+binary("-=", PREC_ASSIGN, true);
+operator("-=", (a2, b2) => (b2 = compile(b2), prop2(a2, (container, path, ctx) => container[path] -= b2(ctx))));
+
+// node_modules/subscript/feature/increment.js
+var inc;
+var dec;
+token("++", PREC_POSTFIX, (a2) => a2 ? ["++-", a2] : ["++", expr(PREC_POSTFIX - 1)]);
+operator("++", inc = (a2) => prop2(a2, (obj, path, ctx) => ++obj[path]));
+operator("++-", inc = (a2) => prop2(a2, (obj, path, ctx) => obj[path]++));
+token("--", PREC_POSTFIX, (a2) => a2 ? ["--+", a2] : ["--", expr(PREC_POSTFIX - 1)]);
+operator("--", dec = (a2) => prop2(a2, (obj, path, ctx) => --obj[path]));
+operator("--+", dec = (a2) => prop2(a2, (obj, path, ctx) => obj[path]--));
+
+// node_modules/subscript/feature/bitwise.js
+unary("~", PREC_PREFIX), operator("~", (a2, b2) => !b2 && (a2 = compile(a2), (ctx) => ~a2(ctx)));
+binary("|", PREC_OR), operator("|", (a2, b2) => b2 && (a2 = compile(a2), b2 = compile(b2), (ctx) => a2(ctx) | b2(ctx)));
+binary("&", PREC_AND), operator("&", (a2, b2) => b2 && (a2 = compile(a2), b2 = compile(b2), (ctx) => a2(ctx) & b2(ctx)));
+binary("^", PREC_XOR), operator("^", (a2, b2) => b2 && (a2 = compile(a2), b2 = compile(b2), (ctx) => a2(ctx) ^ b2(ctx)));
+binary(">>", PREC_SHIFT), operator(">>", (a2, b2) => b2 && (a2 = compile(a2), b2 = compile(b2), (ctx) => a2(ctx) >> b2(ctx)));
+binary("<<", PREC_SHIFT), operator("<<", (a2, b2) => b2 && (a2 = compile(a2), b2 = compile(b2), (ctx) => a2(ctx) << b2(ctx)));
+
+// node_modules/subscript/feature/compare.js
+binary("==", PREC_EQ), operator("==", (a2, b2) => b2 && (a2 = compile(a2), b2 = compile(b2), (ctx) => a2(ctx) == b2(ctx)));
+binary("!=", PREC_EQ), operator("!=", (a2, b2) => b2 && (a2 = compile(a2), b2 = compile(b2), (ctx) => a2(ctx) != b2(ctx)));
+binary(">", PREC_COMP), operator(">", (a2, b2) => b2 && (a2 = compile(a2), b2 = compile(b2), (ctx) => a2(ctx) > b2(ctx)));
+binary("<", PREC_COMP), operator("<", (a2, b2) => b2 && (a2 = compile(a2), b2 = compile(b2), (ctx) => a2(ctx) < b2(ctx)));
+binary(">=", PREC_COMP), operator(">=", (a2, b2) => b2 && (a2 = compile(a2), b2 = compile(b2), (ctx) => a2(ctx) >= b2(ctx)));
+binary("<=", PREC_COMP), operator("<=", (a2, b2) => b2 && (a2 = compile(a2), b2 = compile(b2), (ctx) => a2(ctx) <= b2(ctx)));
+
+// node_modules/subscript/feature/logic.js
+unary("!", PREC_PREFIX), operator("!", (a2, b2) => !b2 && (a2 = compile(a2), (ctx) => !a2(ctx)));
+binary("||", PREC_LOR);
+operator("||", (a2, b2) => (a2 = compile(a2), b2 = compile(b2), (ctx) => a2(ctx) || b2(ctx)));
+binary("&&", PREC_LAND);
+operator("&&", (a2, b2) => (a2 = compile(a2), b2 = compile(b2), (ctx) => a2(ctx) && b2(ctx)));
+
+// node_modules/subscript/feature/assign.js
+binary("=", PREC_ASSIGN, true);
+operator("=", (a2, b2) => (b2 = compile(b2), prop2(a2, (container, path, ctx) => container[path] = b2(ctx))));
+
+// node_modules/subscript/subscript.js
+var subscript_default = (s2) => compile_default(parse_default(s2));
+
+// node_modules/subscript/feature/comment.js
+token("/*", PREC_TOKEN, (a2, prec) => (skip((c2) => c2 !== STAR && cur.charCodeAt(idx + 1) !== 47), skip(2), a2 || expr(prec) || []));
+token("//", PREC_TOKEN, (a2, prec) => (skip((c2) => c2 >= SPACE), a2 || expr(prec) || [""]));
+
+// node_modules/subscript/feature/pow.js
+binary("**", PREC_EXP, true), operator("**", (a2, b2) => b2 && (a2 = compile(a2), b2 = compile(b2), (ctx) => a2(ctx) ** b2(ctx)));
+
+// node_modules/subscript/feature/ternary.js
+token("?", PREC_ASSIGN, (a2, b2, c2) => a2 && (b2 = expr(PREC_ASSIGN, COLON)) && (c2 = expr(PREC_ASSIGN + 1), ["?", a2, b2, c2]));
+operator("?", (a2, b2, c2) => (a2 = compile(a2), b2 = compile(b2), c2 = compile(c2), (ctx) => a2(ctx) ? b2(ctx) : c2(ctx)));
+
+// node_modules/subscript/feature/bool.js
+token("true", PREC_TOKEN, (a2) => a2 ? err() : [, true]);
+token("false", PREC_TOKEN, (a2) => a2 ? err() : [, false]);
+
+// node_modules/subscript/feature/array.js
+group("[]", PREC_TOKEN);
+operator("[]", (a2, b2) => !a2 ? () => [] : a2[0] === "," ? (a2 = a2.slice(1).map(compile), (ctx) => a2.map((a3) => a3(ctx))) : (a2 = compile(a2), (ctx) => [a2(ctx)]));
+
+// node_modules/subscript/feature/object.js
+group("{}", PREC_TOKEN);
+operator("{}", (a2, b2) => !a2 ? () => ({}) : a2[0] === "," ? (a2 = a2.slice(1).map(compile), (ctx) => Object.fromEntries(a2.map((a3) => a3(ctx)))) : a2[0] === ":" ? (a2 = compile(a2), (ctx) => Object.fromEntries([a2(ctx)])) : (b2 = compile(a2), (ctx) => ({ [a2]: b2(ctx) })));
+binary(":", PREC_ASSIGN, true);
+operator(":", (a2, b2) => (b2 = compile(b2), a2 = Array.isArray(a2) ? compile(a2) : ((a3) => a3).bind(0, a2), (ctx) => [a2(ctx), b2(ctx)]));
+
+// node_modules/subscript/feature/arrow.js
+binary("=>", PREC_ASSIGN, true);
+operator(
+  "=>",
+  (a2, b2) => (a2 = a2[0] === "()" ? a2[1] : a2, a2 = !a2 ? [] : a2[0] === "," ? a2 = a2.slice(1) : a2 = [a2], b2 = compile(b2[0] === "{}" ? b2[1] : b2), (ctx = null) => (ctx = Object.create(ctx), (...args) => (a2.map((a3, i2) => ctx[a3] = args[i2]), b2(ctx))))
+);
+binary("");
+
+// node_modules/subscript/feature/optional.js
+token("?.", PREC_ACCESS, (a2) => a2 && ["?.", a2]);
+operator("?.", (a2) => (a2 = compile(a2), (ctx) => a2(ctx) || (() => {
+})));
+token("?.", PREC_ACCESS, (a2, b2) => a2 && (b2 = expr(PREC_ACCESS), !b2?.map) && ["?.", a2, b2]);
+operator("?.", (a2, b2) => b2 && (a2 = compile(a2), (ctx) => a2(ctx)?.[b2]));
+operator("(", (a2, b2, container, args, path, optional) => a2[0] === "?." && (a2[2] || Array.isArray(a2[1])) && (args = !b2 ? () => [] : b2[0] === "," ? (b2 = b2.slice(1).map(compile), (ctx) => b2.map((a3) => a3(ctx))) : (b2 = compile(b2), (ctx) => [b2(ctx)]), !a2[2] && (optional = true, a2 = a2[1]), a2[0] === "[" ? path = compile(a2[2]) : path = () => a2[2], container = compile(a2[1]), optional ? (ctx) => container(ctx)?.[path(ctx)]?.(...args(ctx)) : (ctx) => container(ctx)?.[path(ctx)](...args(ctx))));
+
+// node_modules/subscript/justin.js
+binary("in", PREC_COMP), operator("in", (a2, b2) => b2 && (a2 = compile_default(a2), b2 = compile_default(b2), (ctx) => a2(ctx) in b2(ctx)));
+binary("===", PREC_EQ), binary("!==", 9);
+operator("===", (a2, b2) => (a2 = compile_default(a2), b2 = compile_default(b2), (ctx) => a2(ctx) === b2(ctx)));
+operator("===", (a2, b2) => (a2 = compile_default(a2), b2 = compile_default(b2), (ctx) => a2(ctx) !== b2(ctx)));
+binary("??", PREC_LOR);
+operator("??", (a2, b2) => b2 && (a2 = compile_default(a2), b2 = compile_default(b2), (ctx) => a2(ctx) ?? b2(ctx)));
+binary("??=", PREC_ASSIGN, true);
+operator("??=", (a2, b2) => (b2 = compile_default(b2), prop(a2, (obj, path, ctx) => obj[path] ??= b2(ctx))));
+binary("||=", PREC_ASSIGN, true);
+operator("||=", (a2, b2) => (b2 = compile_default(b2), prop(a2, (obj, path, ctx) => obj[path] ||= b2(ctx))));
+binary("&&=", PREC_ASSIGN, true);
+operator("&&=", (a2, b2) => (b2 = compile_default(b2), prop(a2, (obj, path, ctx) => obj[path] &&= b2(ctx))));
+token("undefined", 20, (a2) => a2 ? err2() : [, void 0]);
+token("NaN", 20, (a2) => a2 ? err2() : [, NaN]);
+token("null", 20, (a2) => a2 ? err2() : [, null]);
+var justin_default = subscript_default;
+
+// src/compile.js
+compile.id = (id3) => (ctx) => ctx[id3]?.valueOf();
+var assign = (fn, a2, b2) => (b2 = compile(b2), prop2(
+  a2,
+  (obj, path, ctx) => obj[path]?.peek ? fn(obj[path], "value", b2(ctx)) : fn(obj, path, path in obj ? b2(ctx) : a(b2(ctx)))
+));
+operator(
+  "=",
+  assign.bind(0, (obj, path, value) => obj[path] = value)
+);
+operator(
+  "+=",
+  assign.bind(0, (obj, path, value) => obj[path] += value)
+);
+operator(
+  "-=",
+  assign.bind(0, (obj, path, value) => obj[path] -= value)
+);
+operator(
+  "*=",
+  assign.bind(0, (obj, path, value) => obj[path] *= value)
+);
+operator(
+  "/=",
+  assign.bind(0, (obj, path, value) => obj[path] /= value)
+);
+operator(
+  "%=",
+  assign.bind(0, (obj, path, value) => obj[path] %= value)
+);
+var compile_default2 = justin_default;
+
+// node_modules/swapdom/swap-inflate.js
+var swap = (parent, a2, b2, end = null) => {
+  let i2 = 0, cur2, next, bi, n2 = b2.length, m = a2.length, { remove, same, insert, replace } = swap;
+  while (i2 < n2 && i2 < m && same(a2[i2], b2[i2]))
+    i2++;
+  while (i2 < n2 && i2 < m && same(b2[n2 - 1], a2[m - 1]))
+    end = b2[--m, --n2];
+  if (i2 == m)
+    while (i2 < n2)
+      insert(end, b2[i2++], parent);
+  else {
+    cur2 = a2[i2];
+    while (i2 < n2) {
+      bi = b2[i2++], next = cur2 ? cur2.nextSibling : end;
+      if (same(cur2, bi))
+        cur2 = next;
+      else if (i2 < n2 && same(b2[i2], next))
+        replace(cur2, bi, parent), cur2 = next;
+      else
+        insert(cur2, bi, parent);
+    }
+    while (!same(cur2, end))
+      next = cur2.nextSibling, remove(cur2, parent), cur2 = next;
+  }
+  return b2;
+};
+swap.same = (a2, b2) => a2 == b2;
+swap.replace = (a2, b2, parent) => parent.replaceChild(b2, a2);
+swap.insert = (a2, b2, parent) => parent.insertBefore(b2, a2);
+swap.remove = (a2, parent) => parent.removeChild(a2);
+var swap_inflate_default = swap;
+
+// src/directives.js
+var primary = {};
+var secondary = {};
+var _else = Symbol("else");
+primary["if"] = (ifEl, expr2, state) => {
+  let holder = document.createTextNode(""), check = parseExpr(ifEl, expr2, ":if"), cur2, elseEl = ifEl.nextElementSibling, prevPass = ifEl[_else], pass = p(() => check(state));
+  ifEl.replaceWith(cur2 = holder);
+  if (elseEl?.hasAttribute(":else")) {
+    elseEl.removeAttribute(":else");
+    if (elseEl.hasAttribute(":if")) {
+      elseEl[_else] = pass;
+      elseEl = null;
+    } else {
+      elseEl.remove();
+    }
+  } else
+    elseEl = null;
+  const dispose = O(() => {
+    const el = prevPass?.value ? holder : pass.value ? ifEl : elseEl;
+    if (cur2 != el) {
+      (cur2[_each] || cur2).replaceWith(cur2 = el || holder);
+      if (cur2 !== holder)
+        sprae(cur2, state);
+    }
+  });
+  return () => {
+    ifEl[_dispose]?.();
+    elseEl?.[_dispose]?.();
+    dispose();
+  };
+};
+var _each = Symbol(":each");
+primary["each"] = (tpl, expr2, state) => {
+  let [leftSide, itemsExpr] = expr2.split(/\s+in\s+/);
+  let [itemVar, idxVar = ""] = leftSide.split(/\s*,\s*/);
+  const holder = tpl[_each] = document.createTextNode("");
+  tpl.replaceWith(holder);
+  const evaluate = parseExpr(tpl, itemsExpr, ":each");
+  let cur2 = [];
+  return O(() => {
+    let items = evaluate(state), els = [];
+    if (typeof items === "number")
+      items = Array.from({ length: items }, (_2, i2) => i2);
+    for (let idx2 in items) {
+      let el = tpl.cloneNode(true), substate = Object.create(state, {
+        [itemVar]: { value: items[idx2] },
+        [idxVar]: { value: idx2 }
+      });
+      s(() => sprae(el, substate));
+      els.push(el);
+    }
+    swap_inflate_default(holder.parentNode, cur2, els, holder);
+    cur2 = els;
+  });
+};
+primary["scope"] = (el, expr2, rootState) => {
+  let evaluate = parseExpr(el, expr2, ":scope");
+  const localState = evaluate(rootState);
+  const state = Object.assign(Object.create(rootState), toSignal(localState));
+  sprae(el, state);
+  return el[_dispose];
+};
+var toSignal = (state) => {
+  for (let key in state) {
+    let v2 = state[key];
+    if (v2?.peek || typeof v2 === "function")
+      ;
+    else if (isPlainObject(v2))
+      toSignal(v2);
+    else
+      state[key] = a(v2);
+  }
+  return state;
+};
+var isPlainObject = (value) => !!value && typeof value === "object" && value.constructor === Object;
+primary["ref"] = (el, expr2, state) => {
+  state[expr2] = el;
+};
+secondary["html"] = (el, expr2, state) => {
+  let evaluate = parseExpr(el, expr2, ":html"), tpl = evaluate(state);
+  if (!tpl)
+    exprError(new Error("Template not found"), el, expr2, ":html");
+  let content = tpl.content.cloneNode(true);
+  el.replaceChildren(content);
+  sprae(el, state);
+  return el[_dispose];
+};
+secondary["id"] = (el, expr2, state) => {
+  let evaluate = parseExpr(el, expr2, ":id");
+  const update = (v2) => el.id = v2 || v2 === 0 ? v2 : "";
+  return O(() => update(evaluate(state)));
+};
+secondary["class"] = (el, expr2, state) => {
+  let evaluate = parseExpr(el, expr2, ":class");
+  let initClassName = el.getAttribute("class");
+  return O(() => {
+    let v2 = evaluate(state);
+    let className = [initClassName];
+    if (v2) {
+      if (typeof v2 === "string")
+        className.push(v2);
+      else if (Array.isArray(v2))
+        className.push(...v2);
+      else {
+        className.push(...Object.entries(v2).map(([k, v3]) => v3 ? k : ""));
+      }
+    }
+    if (className = className.filter(Boolean).join(" "))
+      el.setAttribute("class", className);
+    else
+      el.removeAttribute("class");
+  });
+};
+secondary["style"] = (el, expr2, state) => {
+  let evaluate = parseExpr(el, expr2, ":style");
+  let initStyle = el.getAttribute("style") || "";
+  if (!initStyle.endsWith(";"))
+    initStyle += "; ";
+  return O(() => {
+    let v2 = evaluate(state);
+    if (typeof v2 === "string")
+      el.setAttribute("style", initStyle + v2);
+    else {
+      s(() => {
+        el.setAttribute("style", initStyle);
+        for (let k in v2)
+          if (typeof v2[k] !== "symbol")
+            el.style.setProperty(k, v2[k]);
+      });
+    }
+  });
+};
+secondary["text"] = (el, expr2, state) => {
+  let evaluate = parseExpr(el, expr2, ":text");
+  return O(() => {
+    let value = evaluate(state);
+    el.textContent = value == null ? "" : value;
+  });
+};
+secondary[""] = (el, expr2, state) => {
+  let evaluate = parseExpr(el, expr2, ":");
+  if (evaluate)
+    return O(() => {
+      let value = evaluate(state);
+      for (let key in value)
+        attr(el, dashcase(key), value[key]);
+    });
+};
+secondary["fx"] = (el, expr2, state) => {
+  let evaluate = parseExpr(el, expr2, ":");
+  if (evaluate)
+    return O(() => {
+      evaluate(state);
+    });
+};
+secondary["value"] = (el, expr2, state) => {
+  let evaluate = parseExpr(el, expr2, ":value");
+  let from, to;
+  let update = el.type === "text" || el.type === "" ? (value) => el.setAttribute("value", el.value = value == null ? "" : value) : el.tagName === "TEXTAREA" || el.type === "text" || el.type === "" ? (value) => (from = el.selectionStart, to = el.selectionEnd, el.setAttribute("value", el.value = value == null ? "" : value), from && el.setSelectionRange(from, to)) : el.type === "checkbox" ? (value) => (el.value = value ? "on" : "", attr(el, "checked", value)) : el.type === "select-one" ? (value) => {
+    for (let option in el.options)
+      option.removeAttribute("selected");
+    el.value = value;
+    el.selectedOptions[0]?.setAttribute("selected", "");
+  } : (value) => el.value = value;
+  return O(() => {
+    update(evaluate(state));
+  });
+};
+var directives_default = (el, expr2, state, name) => {
+  let evt = name.startsWith("on") && name.slice(2);
+  let evaluate = parseExpr(el, expr2, ":" + name);
+  if (!evaluate)
+    return;
+  if (evt) {
+    let off, dispose = O(() => {
+      if (off)
+        off(), off = null;
+      off = on(el, evt, evaluate(state));
+    });
+    return () => (off?.(), dispose());
+  }
+  state = Object.create(state, { this: { value: el } });
+  return O(() => {
+    attr(el, name, evaluate(state));
+  });
+};
+var on = (el, e2, fn = () => {
+}) => {
+  const ctx = { evt: "", target: el, test: () => true };
+  ctx.evt = (e2.startsWith("on") ? e2.slice(2) : e2).replace(
+    /\.(\w+)?-?([-\w]+)?/g,
+    (match, mod, param = "") => (ctx.test = mods[mod]?.(ctx, ...param.split("-")) || ctx.test, "")
+  );
+  const { evt, target, test, defer, stop, prevent, ...opts } = ctx;
+  if (defer)
+    fn = defer(fn);
+  const cb = (e3) => test(e3) && (stop && e3.stopPropagation(), prevent && e3.preventDefault(), fn.call(target, e3));
+  target.addEventListener(evt, cb, opts);
+  return () => target.removeEventListener(evt, cb, opts);
+};
+var mods = {
+  prevent(ctx) {
+    ctx.prevent = true;
+  },
+  stop(ctx) {
+    ctx.stop = true;
+  },
+  once(ctx) {
+    ctx.once = true;
+  },
+  passive(ctx) {
+    ctx.passive = true;
+  },
+  capture(ctx) {
+    ctx.capture = true;
+  },
+  window(ctx) {
+    ctx.target = window;
+  },
+  document(ctx) {
+    ctx.target = document;
+  },
+  throttle(ctx, limit) {
+    ctx.defer = (fn) => throttle(fn, limit ? Number(limit) || 0 : 108);
+  },
+  debounce(ctx, wait) {
+    ctx.defer = (fn) => debounce(fn, wait ? Number(wait) || 0 : 108);
+  },
+  outside: (ctx) => (e2) => {
+    let target = ctx.target;
+    if (target.contains(e2.target))
+      return false;
+    if (e2.target.isConnected === false)
+      return false;
+    if (target.offsetWidth < 1 && target.offsetHeight < 1)
+      return false;
+    return true;
+  },
+  self: (ctx) => (e2) => e2.target === ctx.target,
+  ctrl: (ctx, ...param) => (e2) => keys.ctrl(e2) && param.every((p2) => keys[p2] ? keys[p2](e2) : e2.key === p2),
+  shift: (ctx, ...param) => (e2) => keys.shift(e2) && param.every((p2) => keys[p2] ? keys[p2](e2) : e2.key === p2),
+  alt: (ctx, ...param) => (e2) => keys.alt(e2) && param.every((p2) => keys[p2] ? keys[p2](e2) : e2.key === p2),
+  meta: (ctx, ...param) => (e2) => keys.meta(e2) && param.every((p2) => keys[p2] ? keys[p2](e2) : e2.key === p2),
+  arrow: (ctx) => keys.arrow,
+  enter: (ctx) => keys.enter,
+  escape: (ctx) => keys.escape,
+  tab: (ctx) => keys.tab,
+  space: (ctx) => keys.space,
+  backspace: (ctx) => keys.backspace,
+  delete: (ctx) => keys.delete,
+  digit: (ctx) => keys.digit,
+  letter: (ctx) => keys.letter,
+  character: (ctx) => keys.character
+};
+var keys = {
+  ctrl: (e2) => e2.ctrlKey || e2.key === "Control" || e2.key === "Ctrl",
+  shift: (e2) => e2.shiftKey || e2.key === "Shift",
+  alt: (e2) => e2.altKey || e2.key === "Alt",
+  meta: (e2) => e2.metaKey || e2.key === "Meta" || e2.key === "Command",
+  arrow: (e2) => e2.key.startsWith("Arrow"),
+  enter: (e2) => e2.key === "Enter",
+  escape: (e2) => e2.key.startsWith("Esc"),
+  tab: (e2) => e2.key === "Tab",
+  space: (e2) => e2.key === "\xA0" || e2.key === "Space" || e2.key === " ",
+  backspace: (e2) => e2.key === "Backspace",
+  delete: (e2) => e2.key === "Delete",
+  digit: (e2) => /^\d$/.test(e2.key),
+  letter: (e2) => /^[a-zA-Z]$/.test(e2.key),
+  character: (e2) => /^\S$/.test(e2.key)
+};
+var throttle = (fn, limit) => {
+  let pause, planned, block = (e2) => {
+    pause = true;
+    setTimeout(() => {
+      pause = false;
+      if (planned)
+        return planned = false, block(e2), fn(e2);
+    }, limit);
+  };
+  return (e2) => {
+    if (pause)
+      return planned = true;
+    block(e2);
+    return fn(e2);
+  };
+};
+var debounce = (fn, wait) => {
+  let timeout;
+  return (e2) => {
+    clearTimeout(timeout);
+    timeout = setTimeout(() => {
+      timeout = null;
+      fn(e2);
+    }, wait);
+  };
+};
+var attr = (el, name, v2) => {
+  if (v2 == null || v2 === false)
+    el.removeAttribute(name);
+  else
+    el.setAttribute(
+      name,
+      v2 === true ? "" : typeof v2 === "number" || typeof v2 === "string" ? v2 : ""
+    );
+};
+var evaluatorMemo = {};
+function parseExpr(el, expression, dir) {
+  let evaluate = evaluatorMemo[expression];
+  if (!evaluate) {
+    try {
+      evaluate = evaluatorMemo[expression] = compile_default2(expression);
+    } catch (e2) {
+      return exprError(e2, el, expression, dir);
+    }
+  }
+  return (state) => {
+    let result;
+    try {
+      result = evaluate.call(el, state);
+    } catch (e2) {
+      return exprError(e2, el, expression, dir);
+    }
+    return result;
+  };
+}
+function exprError(error, element, expression, directive) {
+  Object.assign(error, { element, expression });
+  console.warn(
+    `\u2234 ${error.message}
+
+${directive}=${expression ? `"${expression}"
+
+` : ""}`,
+    element
+  );
+  throw error;
+}
+function dashcase(str) {
+  return str.replace(
+    /[A-Z\u00C0-\u00D6\u00D8-\u00DE]/g,
+    (match) => "-" + match.toLowerCase()
+  );
+}
+
 // node_modules/@preact/signals-core/dist/signals-core.module.js
 function i() {
   throw new Error("Cycle detected");
@@ -393,539 +1048,21 @@ function O(i2) {
   return t2.d.bind(t2);
 }
 
-// src/state.signals-proxy.js
-var _dispose = Symbol.dispose ||= Symbol("dispose");
-var _signals = Symbol("signals");
-var _change = Symbol("length");
-var sandbox = {
-  Array,
-  Object,
-  Number,
-  String,
-  Boolean,
-  Date,
-  console,
-  window,
-  document,
-  history,
-  navigator,
-  location,
-  screen,
-  localStorage,
-  sessionStorage,
-  alert,
-  prompt,
-  confirm,
-  fetch,
-  performance,
-  setTimeout,
-  setInterval,
-  requestAnimationFrame
-};
-var isObject = (v2) => v2?.constructor === Object;
-var lastProp;
-function createState(values, parent) {
-  if (!isObject(values) && !Array.isArray(values))
-    return values;
-  if (values[_signals] && !parent)
-    return values;
-  const initSignals = values[_signals];
-  const isArr = Array.isArray(values), _len = a(isArr ? values.length : Object.values(values).length), signals = parent ? Object.create((parent = createState(parent))[_signals]) : Array.isArray(values) ? [] : {}, proto = signals.constructor.prototype;
-  if (parent)
-    for (let key in parent)
-      parent[key];
-  const state = new Proxy(values, {
-    has() {
-      return true;
-    },
-    get(values2, key) {
-      if (isArr)
-        if (key === "length")
-          return proto[lastProp] ? _len.peek() : _len.value;
-        else
-          lastProp = key;
-      if (proto[key])
-        return proto[key];
-      if (key === _signals)
-        return signals;
-      if (key === _change)
-        return _len.value;
-      const s2 = signals[key] || initSignal(key);
-      if (s2)
-        return s2.value;
-      return sandbox[key];
-    },
-    set(values2, key, v2) {
-      if (isArr) {
-        if (key === "length") {
-          n(() => {
-            for (let i2 = v2, l2 = signals.length; i2 < l2; i2++)
-              delete state[i2];
-            _len.value = signals.length = values2.length = v2;
-          });
-          return true;
-        }
-      }
-      let newProp = false;
-      const s2 = signals[key] || initSignal(key, v2) || (newProp = true, a());
-      const cur = s2.peek();
-      if (v2 === cur)
-        ;
-      else if (s2._set)
-        s2._set(v2);
-      else if (Array.isArray(v2) && Array.isArray(cur)) {
-        s(() => n(() => {
-          let i2 = 0, l2 = v2.length, vals = values2[key];
-          for (; i2 < l2; i2++)
-            cur[i2] = vals[i2] = v2[i2];
-          cur.length = l2;
-        }));
-      } else {
-        s2.value = createState(values2[key] = v2);
-      }
-      if (isArr) {
-        if (key >= _len.peek())
-          _len.value = signals.length = values2.length = Number(key) + 1;
-      } else if (newProp) {
-        _len.value++;
-      }
-      return true;
-    },
-    deleteProperty(values2, key) {
-      const s2 = signals[key];
-      if (s2) {
-        const { _del } = s2;
-        delete s2._del;
-        delete signals[key];
-        _del?.();
-      }
-      delete values2[key];
-      if (!isArr)
-        _len.value--;
-      return true;
-    }
-  });
-  for (let key in values)
-    signals[key] = initSignals?.[key] ?? initSignal(key);
-  function initSignal(key) {
-    if (values.hasOwnProperty(key)) {
-      const desc = Object.getOwnPropertyDescriptor(values, key);
-      if (desc?.get) {
-        (signals[key] = p(desc.get.bind(state)))._set = desc.set?.bind(state);
-        return signals[key];
-      }
-      return signals[key] = desc.value?.peek ? desc.value : a(createState(desc.value));
-    }
-  }
-  return state;
-}
-
-// src/util.js
-var queueMicrotask = Promise.prototype.then.bind(Promise.resolve());
-
-// src/directives.js
-var primary = {};
-var secondary = {};
-primary["if"] = (el, expr, state) => {
-  let holder = document.createTextNode(""), clauses = [parseExpr(el, expr, ":if")], els = [el], cur = el;
-  while (cur = el.nextElementSibling) {
-    if (cur.hasAttribute(":else")) {
-      cur.removeAttribute(":else");
-      if (expr = cur.getAttribute(":if")) {
-        cur.removeAttribute(":if"), cur.remove();
-        els.push(cur);
-        clauses.push(parseExpr(el, expr, ":else :if"));
-      } else {
-        cur.remove();
-        els.push(cur);
-        clauses.push(() => 1);
-      }
-    } else
-      break;
-  }
-  el.replaceWith(cur = holder);
-  const dispose = O(() => {
-    let i2 = clauses.findIndex((f2) => f2(state));
-    if (els[i2] != cur) {
-      ;
-      (cur[_each] || cur).replaceWith(cur = els[i2] || holder);
-      sprae(cur, state);
-    }
-  });
-  return () => {
-    for (const el2 of els)
-      el2[_dispose]?.();
-    dispose();
-  };
-};
-var _each = Symbol(":each");
-primary["each"] = (tpl, expr, state) => {
-  const each = parseForExpression(expr);
-  if (!each)
-    return exprError(new Error(), tpl, expr, ":each");
-  const [itemVar, idxVar, itemsExpr] = each;
-  const holder = tpl[_each] = document.createTextNode("");
-  tpl.replaceWith(holder);
-  const evaluate = parseExpr(tpl, itemsExpr, ":each");
-  let curItems, signals;
-  O(() => {
-    let srcItems = evaluate(state), newItems, keys2;
-    let prevl = curItems?.length || 0;
-    if (!srcItems)
-      newItems = [];
-    else if (typeof srcItems === "number")
-      newItems = Array.from({ length: srcItems }, (_2, i2) => i2);
-    else if (Array.isArray(srcItems))
-      newItems = srcItems;
-    else if (typeof srcItems === "object") {
-      keys2 = Object.keys(srcItems);
-      newItems = Object.values(srcItems);
-      srcItems[_change];
-    } else {
-      exprError(Error("Bad items value"), tpl, expr, ":each", srcItems);
-    }
-    s(() => n(() => {
-      if (!curItems || !curItems[_signals]) {
-        for (let i2 = 0; i2 < prevl; i2++)
-          signals[i2]?._del();
-        curItems = newItems, signals = curItems[_signals] || [];
-        if (keys2)
-          prevl = 0;
-      } else {
-        let newl = newItems.length, i2 = 0;
-        for (; i2 < newl; i2++)
-          curItems[i2] = newItems[i2];
-        curItems.length = newl;
-      }
-    }));
-    return O(() => {
-      let newl = newItems.length;
-      if (prevl !== newl)
-        s(() => n(() => {
-          for (let i2 = prevl; i2 < newl; i2++) {
-            const idx = keys2?.[i2] ?? i2;
-            const el = tpl.cloneNode(true), scope = createState({
-              [itemVar]: signals[i2] ?? curItems[i2],
-              [idxVar]: idx
-            }, state);
-            holder.before(el);
-            sprae(el, scope);
-            const { _del } = signals[i2] ||= {};
-            signals[i2]._del = () => {
-              delete curItems[i2];
-              _del?.();
-              el[_dispose](), el.remove();
-            };
-          }
-          prevl = newl;
-        }));
-    });
-  });
-  return () => n(() => {
-    for (let _i of signals)
-      _i?._del();
-    signals.length = 0;
-    curItems.length = 0;
-  });
-};
-primary["with"] = (el, expr, rootState) => {
-  let evaluate = parseExpr(el, expr, ":with");
-  const localState = evaluate(rootState);
-  let state = createState(localState, rootState);
-  sprae(el, state);
-  return el[_dispose];
-};
-primary["ref"] = (el, expr, state) => {
-  state[expr] = el;
-};
-function parseForExpression(expression) {
-  let forIteratorRE = /,([^,\}\]]*)(?:,([^,\}\]]*))?$/;
-  let stripParensRE = /^\s*\(|\)\s*$/g;
-  let forAliasRE = /([\s\S]*?)\s+(?:in|of)\s+([\s\S]*)/;
-  let inMatch = expression.match(forAliasRE);
-  if (!inMatch)
-    return;
-  let items = inMatch[2].trim();
-  let item = inMatch[1].replace(stripParensRE, "").trim();
-  let iteratorMatch = item.match(forIteratorRE);
-  if (iteratorMatch)
-    return [
-      item.replace(forIteratorRE, "").trim(),
-      iteratorMatch[1].trim(),
-      items
-    ];
-  return [item, "", items];
-}
-secondary["render"] = (el, expr, state) => {
-  let evaluate = parseExpr(el, expr, ":render"), tpl = evaluate(state);
-  if (!tpl)
-    exprError(new Error("Template not found"), el, expr, ":render");
-  let content = tpl.content.cloneNode(true);
-  el.replaceChildren(content);
-  sprae(el, state);
-  return el[_dispose];
-};
-secondary["id"] = (el, expr, state) => {
-  let evaluate = parseExpr(el, expr, ":id");
-  const update = (v2) => el.id = v2 || v2 === 0 ? v2 : "";
-  return O(() => update(evaluate(state)));
-};
-secondary["class"] = (el, expr, state) => {
-  let evaluate = parseExpr(el, expr, ":class");
-  let initClassName = el.getAttribute("class");
-  return O(() => {
-    let v2 = evaluate(state);
-    let className = [initClassName];
-    if (v2) {
-      if (typeof v2 === "string")
-        className.push(v2);
-      else if (Array.isArray(v2))
-        className.push(...v2);
-      else
-        className.push(...Object.entries(v2).map(([k, v3]) => v3 ? k : ""));
-    }
-    if (className = className.filter(Boolean).join(" "))
-      el.setAttribute("class", className);
-    else
-      el.removeAttribute("class");
-  });
-};
-secondary["style"] = (el, expr, state) => {
-  let evaluate = parseExpr(el, expr, ":style");
-  let initStyle = el.getAttribute("style") || "";
-  if (!initStyle.endsWith(";"))
-    initStyle += "; ";
-  return O(() => {
-    let v2 = evaluate(state);
-    if (typeof v2 === "string")
-      el.setAttribute("style", initStyle + v2);
-    else {
-      s(() => {
-        el.setAttribute("style", initStyle);
-        for (let k in v2)
-          if (typeof v2[k] !== "symbol")
-            el.style.setProperty(k, v2[k]);
-      });
-    }
-  });
-};
-secondary["text"] = (el, expr, state) => {
-  let evaluate = parseExpr(el, expr, ":text");
-  return O(() => {
-    let value = evaluate(state);
-    el.textContent = value == null ? "" : value;
-  });
-};
-secondary[""] = (el, expr, state) => {
-  let evaluate = parseExpr(el, expr, ":");
-  if (evaluate)
-    return O(() => {
-      let value = evaluate(state);
-      for (let key in value)
-        attr(el, dashcase(key), value[key]);
-    });
-};
-secondary["value"] = (el, expr, state) => {
-  let evaluate = parseExpr(el, expr, ":value");
-  let from, to;
-  let update = el.type === "text" || el.type === "" ? (value) => el.setAttribute("value", el.value = value == null ? "" : value) : el.tagName === "TEXTAREA" || el.type === "text" || el.type === "" ? (value) => (from = el.selectionStart, to = el.selectionEnd, el.setAttribute("value", el.value = value == null ? "" : value), from && el.setSelectionRange(from, to)) : el.type === "checkbox" ? (value) => (el.value = value ? "on" : "", attr(el, "checked", value)) : el.type === "select-one" ? (value) => {
-    for (let option in el.options)
-      option.removeAttribute("selected");
-    el.value = value;
-    el.selectedOptions[0]?.setAttribute("selected", "");
-  } : (value) => el.value = value;
-  return O(() => {
-    update(evaluate(state));
-  });
-};
-var directives_default = (el, expr, state, name) => {
-  let evt = name.startsWith("on") && name.slice(2);
-  let evaluate = parseExpr(el, expr, ":" + name);
-  if (!evaluate)
-    return;
-  if (evt) {
-    let off, dispose = O(() => {
-      if (off)
-        off(), off = null;
-      let value = evaluate(state);
-      if (value)
-        off = on(el, evt, value);
-    });
-    return () => (off?.(), dispose());
-  }
-  return O(() => {
-    attr(el, name, evaluate(state));
-  });
-};
-var on = (el, e2, fn) => {
-  if (!fn)
-    return;
-  const ctx = { evt: "", target: el, test: () => true };
-  ctx.evt = (e2.startsWith("on") ? e2.slice(2) : e2).replace(
-    /\.(\w+)?-?([-\w]+)?/g,
-    (match, mod, param = "") => (ctx.test = mods[mod]?.(ctx, ...param.split("-")) || ctx.test, "")
-  );
-  const { evt, target, test, defer, stop, prevent, ...opts } = ctx;
-  if (defer)
-    fn = defer(fn);
-  const cb = (e3) => test(e3) && (stop && e3.stopPropagation(), prevent && e3.preventDefault(), fn.call(target, e3));
-  target.addEventListener(evt, cb, opts);
-  return () => target.removeEventListener(evt, cb, opts);
-};
-var mods = {
-  prevent(ctx) {
-    ctx.prevent = true;
-  },
-  stop(ctx) {
-    ctx.stop = true;
-  },
-  once(ctx) {
-    ctx.once = true;
-  },
-  passive(ctx) {
-    ctx.passive = true;
-  },
-  capture(ctx) {
-    ctx.capture = true;
-  },
-  window(ctx) {
-    ctx.target = window;
-  },
-  document(ctx) {
-    ctx.target = document;
-  },
-  throttle(ctx, limit) {
-    ctx.defer = (fn) => throttle(fn, limit ? Number(limit) || 0 : 108);
-  },
-  debounce(ctx, wait) {
-    ctx.defer = (fn) => debounce(fn, wait ? Number(wait) || 0 : 108);
-  },
-  outside: (ctx) => (e2) => {
-    let target = ctx.target;
-    if (target.contains(e2.target))
-      return false;
-    if (e2.target.isConnected === false)
-      return false;
-    if (target.offsetWidth < 1 && target.offsetHeight < 1)
-      return false;
-    return true;
-  },
-  self: (ctx) => (e2) => e2.target === ctx.target,
-  ctrl: (ctx, ...param) => (e2) => keys.ctrl(e2) && param.every((p2) => keys[p2] ? keys[p2](e2) : e2.key === p2),
-  shift: (ctx, ...param) => (e2) => keys.shift(e2) && param.every((p2) => keys[p2] ? keys[p2](e2) : e2.key === p2),
-  alt: (ctx, ...param) => (e2) => keys.alt(e2) && param.every((p2) => keys[p2] ? keys[p2](e2) : e2.key === p2),
-  meta: (ctx, ...param) => (e2) => keys.meta(e2) && param.every((p2) => keys[p2] ? keys[p2](e2) : e2.key === p2),
-  arrow: (ctx) => keys.arrow,
-  enter: (ctx) => keys.enter,
-  escape: (ctx) => keys.escape,
-  tab: (ctx) => keys.tab,
-  space: (ctx) => keys.space,
-  backspace: (ctx) => keys.backspace,
-  delete: (ctx) => keys.delete,
-  digit: (ctx) => keys.digit,
-  letter: (ctx) => keys.letter,
-  character: (ctx) => keys.character
-};
-var keys = {
-  ctrl: (e2) => e2.ctrlKey || e2.key === "Control" || e2.key === "Ctrl",
-  shift: (e2) => e2.shiftKey || e2.key === "Shift",
-  alt: (e2) => e2.altKey || e2.key === "Alt",
-  meta: (e2) => e2.metaKey || e2.key === "Meta" || e2.key === "Command",
-  arrow: (e2) => e2.key.startsWith("Arrow"),
-  enter: (e2) => e2.key === "Enter",
-  escape: (e2) => e2.key.startsWith("Esc"),
-  tab: (e2) => e2.key === "Tab",
-  space: (e2) => e2.key === "\xA0" || e2.key === "Space" || e2.key === " ",
-  backspace: (e2) => e2.key === "Backspace",
-  delete: (e2) => e2.key === "Delete",
-  digit: (e2) => /^\d$/.test(e2.key),
-  letter: (e2) => /^[a-zA-Z]$/.test(e2.key),
-  character: (e2) => /^\S$/.test(e2.key)
-};
-var throttle = (fn, limit) => {
-  let pause, planned, block = (e2) => {
-    pause = true;
-    setTimeout(() => {
-      pause = false;
-      if (planned)
-        return planned = false, block(e2), fn(e2);
-    }, limit);
-  };
-  return (e2) => {
-    if (pause)
-      return planned = true;
-    block(e2);
-    return fn(e2);
-  };
-};
-var debounce = (fn, wait) => {
-  let timeout;
-  return (e2) => {
-    clearTimeout(timeout);
-    timeout = setTimeout(() => {
-      timeout = null;
-      fn(e2);
-    }, wait);
-  };
-};
-var attr = (el, name, v2) => {
-  if (v2 == null || v2 === false)
-    el.removeAttribute(name);
-  else
-    el.setAttribute(name, v2 === true ? "" : typeof v2 === "number" || typeof v2 === "string" ? v2 : "");
-};
-var evaluatorMemo = {};
-function parseExpr(el, expression, dir) {
-  let evaluate = evaluatorMemo[expression];
-  if (!evaluate) {
-    try {
-      evaluate = evaluatorMemo[expression] = new Function(`__scope`, `with (__scope) { let __; return ${expression.trim()} };`);
-    } catch (e2) {
-      return exprError(e2, el, expression, dir);
-    }
-  }
-  return (state) => {
-    let result;
-    try {
-      result = evaluate.call(el, state);
-    } catch (e2) {
-      return exprError(e2, el, expression, dir);
-    }
-    return result;
-  };
-}
-function exprError(error, element, expression, directive) {
-  Object.assign(error, { element, expression });
-  console.warn(`\u2234 ${error.message}
-
-${directive}=${expression ? `"${expression}"
-
-` : ""}`, element);
-  queueMicrotask(() => {
-    throw error;
-  }, 0);
-}
-function dashcase(str) {
-  return str.replace(/[A-Z\u00C0-\u00D6\u00D8-\u00DE]/g, (match) => "-" + match.toLowerCase());
-}
-
 // src/core.js
-sprae.globals = sandbox;
+var _dispose = Symbol.dispose ||= Symbol("dispose");
 var memo = /* @__PURE__ */ new WeakMap();
 function sprae(container, values) {
   if (!container.children)
     return;
-  if (memo.has(container))
-    return n(() => Object.assign(memo.get(container), values));
-  const state = createState(values || {});
+  const state = values || {};
   const disposes = [];
   const init = (el, parent = el.parentNode) => {
     for (let name in primary) {
       let attrName = ":" + name;
       if (el.hasAttribute?.(attrName)) {
-        let expr = el.getAttribute(attrName);
+        let expr2 = el.getAttribute(attrName);
         el.removeAttribute(attrName);
-        disposes.push(primary[name](el, expr, state, name));
+        disposes.push(primary[name](el, expr2, state, name));
         if (memo.has(el))
           return;
         if (el.parentNode !== parent)
@@ -935,14 +1072,12 @@ function sprae(container, values) {
     if (el.attributes) {
       for (let i2 = 0; i2 < el.attributes.length; ) {
         let attr2 = el.attributes[i2], prefix = attr2.name[0];
-        if (prefix === ":" || prefix === "@") {
+        if (prefix === ":") {
           el.removeAttribute(attr2.name);
-          let expr = prefix === "@" ? `${attr2.value.includes("await") ? "async" : ""} event=>{${attr2.value}}` : attr2.value, names = attr2.name.slice(1).split(prefix);
+          let expr2 = attr2.value, names = attr2.name.slice(1).split(prefix);
           for (let name of names) {
-            if (prefix === "@")
-              name = `on` + name;
             let dir = secondary[name] || directives_default;
-            disposes.push(dir(el, expr, state, name));
+            disposes.push(dir(el, expr2, state, name));
           }
         } else
           i2++;
@@ -973,5 +1108,12 @@ var src_default = sprae;
 if (document.currentScript)
   sprae(document.documentElement);
 export {
-  src_default as default
+  d as Signal,
+  _dispose,
+  n as batch,
+  p as computed,
+  src_default as default,
+  O as effect,
+  a as signal,
+  s as untracked
 };
