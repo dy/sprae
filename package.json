@@ -8,7 +8,6 @@
   "files": [
     "core.js",
     "sprae.js",
-    "signal.js",
     "directive",
     "dist"
   ],
@@ -50,7 +49,9 @@
     "templize",
     "alpinejs",
     "directives",
-    "templating"
+    "templating",
+    "progressive",
+    "progressive enhancement"
   ],
   "author": "Dmitry Iv <df.creative@gmail.com>",
   "license": "MIT",
