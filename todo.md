@@ -103,7 +103,8 @@
 * [x] move effect out of directives, make signal-less state (ideally).
 * [ ] :onvisible..oninvisible
 * [ ] :onmount..onunmount
-* [ ] fix examples
+* [ ] fix ToDo
+* [ ] js-framework-bench
 * [ ] all FIXMEs
 * [ ] move proxy state into own project / part of signal struct (with tests from here)
 * [x] ~~make cross-version testing: sprae, csp, signals variations~~ justin default is enough

@@ -30,22 +30,20 @@
             )">
             <label for="toggle-all">Mark all as complete</label>
             <ul class="todo-list">
-                <li :each="item in todos" :ref="li" :class="[item.value.done && 'completed']"
+                <li :each="item in todos" :ref="li" :class="{ completed: item.value.done }"
                     :hidden="hash.value === '#/active' ? item.value.done : hash.value === '#/completed' ? !item.value.done : false"
-                    :ondblclick="e => (
-                        li.querySelector('.edit').focus(),
-                        li.classList.add('editing')
-                    )">
+                    :ondblclick="e => ( edit.focus(), li.classList.add('editing') )">
                     <div class="view">
-                        <input class="toggle" type="checkbox" :checked="item.value.done"
+                        <input class="toggle" type="checkbox" :value="item.value.done"
                             :onchange="e => (item.value = {...item.value, done: !item.value.done}, save(todos.peek()))" />
                         <label :text="item.value.text"></label>
                         <button class="destroy"
                             :onclick="e => save(todos.value = todos.peek().filter(i => i.value.text !== item.value.text))"></button>
                     </div>
-                    <input class=edit :value="item.value.text"
-                        :oninput="e => (item.value = {...item.value, text:e.target.value}, save(todos.peek()))"
-                        :onblur="e => li.classList.remove('editing');" :onkeypress.enter="e => e.target.blur()" />
+                    <input :ref="edit" class="edit" :value="item.value.text" :oninput="e => (
+                            item.value = {...item.value, text:e.target.value},
+                            save(todos.peek())
+                        )" :onblur="e => (li.classList.remove('editing'));" :onkeypress.enter="e => e.target.blur()" />
                 </li>
             </ul>
         </section>
