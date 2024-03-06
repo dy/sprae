@@ -5,8 +5,6 @@ directive.default = (el, expr, state, name) => {
   let evt = name.startsWith("on") && name.slice(2);
   let evaluate = compile(expr, name);
 
-  if (!evaluate) return; // FIXME: do we need this?
-
   if (evt) {
     let off
     return () => (

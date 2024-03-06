@@ -108,4 +108,4 @@
 * [ ] all FIXMEs
 * [ ] move proxy state into own project / part of signal struct (with tests from here)
 * [x] ~~make cross-version testing: sprae, csp, signals variations~~ justin default is enough
-* [ ] avoid triggering unchanged effects
+* [x] avoid triggering unchanged effects

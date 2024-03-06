@@ -144,7 +144,7 @@ test("style", async () => {
   is(el.outerHTML, `<x style="left: 1px; top: 1px; bottom: 2px;"></x>`);
 
   params.style.value = { top: "2px", bottom: null };
-  // FIXME
+
   await tick();
   is(el.outerHTML, `<x style="left: 1px; top: 2px;"></x>`);
 });
@@ -765,7 +765,7 @@ test("each: condition within loop", async () => {
   is(el.innerHTML, "");
 });
 
-test('each: next items have own "this", not single one', async () => {
+test('each: items refer to current el', async () => {
   // FIXME: fragment init like let el = h`<x :each="x in 3"></x>`
   let el = h`<div><x :each="x in 3" :data-x="x" :ref="el" :x="log.push(x, el.dataset.x)"></x></div>`;
   let log = [];
