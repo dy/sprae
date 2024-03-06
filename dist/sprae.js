@@ -80,7 +80,8 @@ var computed = (fn, s = signal(), c, e) => (c = {
   get value() {
     e ||= effect(() => s.value = fn());
     return s.value;
-  }
+  },
+  peek: s.peek
 }, c.toJSON = c.then = c.toString = c.valueOf = () => c.value, c);
 var batch = (fn) => fn();
 var untracked = (fn, prev, v) => (prev = current, current = null, v = fn(), current = prev, v);
@@ -439,18 +440,20 @@ directive.each = (tpl, expr2, state, name) => {
       let substate = Object.create(state, { [idxVar]: { value: idx2 } });
       substate[itemVar] = item;
       item = item.peek?.() ?? item;
-      let key = item.key ?? item.id;
+      let key = item.key ?? item.id ?? item;
       let el;
       if (key == null)
         el = tpl.cloneNode(true);
       else {
         if (Object(key) !== key)
           key = keys[key] ||= Object(key);
-        if (count.has(key))
-          console.warn("Duplicate key", key);
-        else
+        if (count.has(key)) {
+          console.warn("Duplicate key", key), el = tpl.cloneNode(true);
+        } else {
+          console.log(key, count.has(key));
           count.add(key);
-        el = memo2.get(key) || memo2.set(key, tpl.cloneNode(true)).get(key);
+          el = memo2.get(key) || memo2.set(key, tpl.cloneNode(true)).get(key);
+        }
       }
       if (el.content)
         el = el.content.cloneNode(true);
@@ -581,8 +584,6 @@ directive.style = (el, expr2, state) => {
 directive.default = (el, expr2, state, name) => {
   let evt = name.startsWith("on") && name.slice(2);
   let evaluate = compile2(expr2, name);
-  if (!evaluate)
-    return;
   if (evt) {
     let off;
     return () => (off?.(), off = on(el, evt, evaluate(state)));

@@ -1005,7 +1005,7 @@
 4. element itself
   + chaining
 
-## [x] CSP approaces -> let's use wired-in justin
+## [x] CSP approaces -> let's use wired-in justin until otherwise needed
 
 1. Wired-in by default (non-customizable)
   + easier
@@ -1014,6 +1014,7 @@
   + subscript included as dependency
   + minimal style
   - size (>5kb), ~5.4kb
+  - doesn't really protect from constructor.constructor
 2. Separate CSP entry
   + similar to Alpine
   + ability to choose best option
@@ -1025,9 +1026,11 @@
   - formally non-CSP-enabled
   - even if CSP is configured, bundle can be detected as unsafe since it has `new Function`
 
-## [ ] Should we autosubscribe to direct signal read?
+## [x] Should we autosubscribe to direct signal read? -> nah, let's not create friction
 
 + That's what preact authors wanted & encourage
   - it will become different from preact effects code
 - That makes syntax incompatible with JS compiler
+- that blows up code a bit configuring subscript
+- that enforces writing signals too, we can't `a = value` anymore
 ? is that obvious enough?
