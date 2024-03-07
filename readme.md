@@ -29,281 +29,220 @@ Sprae evaluates `:`-directives and evaporates them, attaching state to html.
 
 ## Directives
 
-<details>
-  <summary><strong>:if, :else</strong></summary>
+#### `:if="condition"`, `:else`
 
-  #### `:if="condition"`, `:else`
+Control flow of elements.
 
-  Control flow of elements.
+```html
+<span :if="foo">foo</span>
+<span :else :if="bar">bar</span>
+<span :else>baz</span>
 
-  ```html
-  <span :if="foo">foo</span>
-  <span :else :if="bar">bar</span>
-  <span :else>baz</span>
+<!-- fragment -->
+<template :if="foo">foo <span>bar</span> baz</template>
+```
 
-  <!-- fragment -->
-  <template :if="foo">
-    foo <span>bar</span> baz
-  </template>
-  ```
-</details>
 
-<details>
-  <summary><strong>:each</strong></summary>
+#### `:each="item, index in items"`
 
-  #### `:each="item, index in items"`
+Multiply element. Item is identified either by `item.id`, `item.key` or `item` itself.
 
-  Multiply element. Item is identified either by `item.id` or `item.key`.
+```html
+<ul><li :each="item in items" :text="item"/></ul>
 
-  ```html
-  <ul><li :each="item in items" :text="item"/></ul>
+<!-- cases -->
+<li :each="item, idx in list" />
+<li :each="val, key in obj" />
+<li :each="idx in number" />
 
-  <!-- cases -->
-  <li :each="item, idx in list" />
-  <li :each="val, key in obj" />
-  <li :each="idx in number" />
+<!-- by condition -->
+<li :if="items" :each="item in items" :text="item" />
+<li :else>Empty list</li>
 
-  <!-- by condition -->
-  <li :if="items" :each="item in items" :text="item" />
-  <li :else>Empty list</li>
+<!-- fragment -->
+<template :each="item in items">
+  <dt :text="item.term"/>
+  <dd :text="item.definition"/>
+</template>
 
-  <!-- fragment -->
-  <template :each="item in items">
-    <dt :text="item.term"/>
-    <dd :text="item.definition"/>
-  </template>
+<!-- prevent FOUC -->
+<style>[:each] {visibility: hidden}</style>
+```
 
-  <!-- prevent FOUC -->
-  <style>[:each] {visibility: hidden}</style>
-  ```
-</details>
+#### `:text="value"`
 
-<details>
-  <summary><strong>:text</strong></summary>
+Set text content of an element.
 
-  #### `:text="value"`
+```html
+Welcome, <span :text="user.name">Guest</span>.
 
-  Set text content of an element.
+<!-- fragment -->
+Welcome, <template :text="user.name" />.
+```
 
-  ```html
-  Welcome, <span :text="user.name">Guest</span>.
+#### `:class="value"`
 
-  <!-- fragment -->
-  Welcome, <template :text="user.name" />.
-  ```
-</details>
+Set class value, extends existing `class`.
 
-<details>
-  <summary><strong>:class</strong></summary>
+```html
+<!-- string with interpolation -->
+<div :class="'foo $<bar>'"></div>
 
-  #### `:class="value"`
+<!-- array/object a-la clsx -->
+<div :class="[foo && 'foo', {bar: bar}]"></div>
+```
 
-  Set class value, extends existing `class`.
+#### `:style="value"`
 
-  ```html
-  <!-- string with interpolation -->
-  <div :class="'foo $<bar>'"></div>
+Set style value, extends existing `style`.
 
-  <!-- array/object a-la clsx -->
-  <div :class="[foo && 'foo', {bar: bar}]"></div>
-  ```
-</details>
+```html
+<!-- string with interpolation -->
+<div :style="'foo: $<bar>'"></div>
 
-<details>
-  <summary><strong>:style</strong></summary>
+<!-- object -->
+<div :style="{foo: 'bar'}"></div>
 
-  #### `:style="value"`
+<!-- CSS variable -->
+<div :style="{'--baz': qux}"></div>
+```
 
-  Set style value, extends existing `style`.
+#### `:value="value"`
 
-  ```html
-  <!-- string with interpolation -->
-  <div :style="'foo: $<bar>'"></div>
+Set value of an input, textarea or select. Takes handle of `checked` and `selected` attributes.
 
-  <!-- object -->
-  <div :style="{foo: 'bar'}"></div>
+```html
+<input :value="value" />
+<textarea :value="value" />
 
-  <!-- CSS variable -->
-  <div :style="{'--baz': qux}"></div>
-  ```
-</details>
+<!-- selects right option -->
+<select :value="selected">
+  <option :each="i in 5" :value="i" :text="i"></option>
+</select>
+```
 
-<details>
-  <summary><strong>:value</strong></summary>
+#### `:*="value"`, `:="values"`
 
-  #### `:value="value"`
+Set any attribute(s).
 
-  Set value of an input, textarea or select. Takes handle of `checked` and `selected` attributes.
+```html
+<label :for="name" :text="name" />
 
-  ```html
-  <input :value="value" />
-  <textarea :value="value" />
+<!-- multiple attributes -->
+<input :id:name="name" />
 
-  <!-- selects right option -->
-  <select :value="selected">
-    <option :each="i in 5" :value="i" :text="i"></option>
-  </select>
-  ```
-</details>
+<!-- spread attributes -->
+<input :="{ id: name, name, type: 'text', value }" />
+```
 
-<details>
-  <summary><strong>:*</strong></summary>
+#### `:scope="data"`
 
-  #### `:*="value"`, `:="values"`
+Define or extend data scope for a subtree.
 
-  Set any attribute(s).
+```html
+<x :scope="{ foo: signal('bar') }">
+  <!-- extends parent scope -->
+  <y :scope="{ baz: 'qux' }" :text="foo + baz"></y>
+</x>
+```
 
-  ```html
-  <label :for="name" :text="name" />
+#### `:ref="name"`
 
-  <!-- multiple attributes -->
-  <input :id:name="name" />
+Expose element to current scope with `name`.
 
-  <!-- spread attributes -->
-  <input :="{ id: name, name, type: 'text', value }" />
-  ```
-</details>
+```html
+<textarea :ref="text" placeholder="Enter text..."></textarea>
 
-<details>
-  <summary><strong>:scope</strong></summary>
+<!-- iterable items -->
+<li :each="item in items" :ref="item">
+  <input :onfocus..onblur=="e => (item.classList.add('editing'), e => item.classList.remove('editing'))"/>
+</li>
+```
 
-  #### `:scope="data"`
+#### `:fx="code"`
 
-  Define or extend data scope for a subtree.
+Run effect, not changing any attribute.<br/>Optional cleanup is called in-between effect calls or on disposal.
 
-  ```html
-  <x :scope="{ foo: signal('bar') }">
-    <!-- extends parent scope -->
-    <y :scope="{ baz: 'qux' }" :text="foo + baz"></y>
-  </x>
-  ```
-</details>
+```html
+<div :fx="a.value ? foo() : bar()" />
 
-<details>
-  <summary><strong>:ref</strong></summary>
+<!-- cleanup function -->
+<div :fx="id = setInterval(tick, interval), () => clearInterval(tick)" />
+```
 
-  #### `:ref="name"`
+#### `:on*="handler"`
 
-  Expose element to current scope with `name`.
+Attach event(s) listener with possible modifiers.
 
-  ```html
-  <textarea :ref="text" placeholder="Enter text..."></textarea>
+```html
+<input type="checkbox" :onchange="e => isChecked = e.target.value">
 
-  <!-- iterable items -->
-  <li :each="item in items" :ref="item">
-    <input :onfocus..onblur=="e => (item.classList.add('editing'), e => item.classList.remove('editing'))"/>
-  </li>
-  ```
-</details>
+<!-- multiple events -->
+<input :value="text" :oninput:onchange="e => text = e.target.value">
 
-<details>
-  <summary><strong>:fx</strong></summary>
+<!-- events sequence -->
+<button :onfocus..onblur="e => ( handleFocus(), e => handleBlur())">
 
-  #### `:fx="values"`
+<!-- event modifiers -->
+<button :onclick.throttle-500="handler">Not too often</button>
+```
 
-  Run effect, not changing any attribute.<br/>Optional cleanup is called in-between effect calls or on disposal.
+##### Modifiers:
 
-  ```html
-  <div :fx="a.value ? foo() : bar()" />
+* `.once`, `.passive`, `.capture` – listener [options](https://developer.mozilla.org/en-US/docs/Web/API/EventTarget/addEventListener#options).
+* `.prevent`, `.stop` – prevent default or stop propagation.
+* `.window`, `.document`, `.outside`, `.self` – specify event target.
+* `.throttle-<ms>`, `.debounce-<ms>` – defer function call with one of the methods.
+* `.ctrl`, `.shift`, `.alt`, `.meta`, `.arrow`, `.enter`, `.escape`, `.tab`, `.space`, `.backspace`, `.delete`, `.digit`, `.letter`, `.character` – filter by [`event.key`](https://developer.mozilla.org/en-US/docs/Web/API/UI_Events/Keyboard_event_key_values).
+* `.ctrl-<key>, .alt-<key>, .meta-<key>, .shift-<key>` – key combinations, eg. `.ctrl-alt-delete` or `.meta-x`.
+* `.*` – any other modifier has no effect, but allows binding multiple handlers to same event (like jQuery event classes).
 
-  <!-- cleanup function -->
-  <div :fx="id = setInterval(tick, interval), () => clearInterval(tick)" />
-  ```
-</details>
+#### `:html="element"` 🔌
 
-<details>
-  <summary><strong>:on*</strong></summary>
+> Include as `import 'sprae/directive/html'`.
 
-  #### `:on<event>.<mod>="handler"`, `:on<in>..on<out>="handler"`
+Set html content of an element or instantiate a template.
 
-  Attach event(s) listener with possible modifiers.
+```html
+Hello, <span :html="userElement">Guest</span>.
 
-  ```html
-  <input type="checkbox" :onchange="e => isChecked = e.target.value">
+<!-- fragment -->
+Hello, <template :html="user.name">Guest</template>.
 
-  <!-- multiple events -->
-  <input :value="text" :oninput:onchange="e => text = e.target.value">
+<!-- instantiate template -->
+<template :ref="tpl"><span :text="foo"></span></template>
+<div :html="tpl" :scope="{foo:'bar'}">...inserted here...</div>
+```
 
-  <!-- events sequence -->
-  <button :onfocus..onblur="e => ( handleFocus(), e => handleBlur())">
+#### `:data="values"` 🔌
 
-  <!-- event modifiers -->
-  <button :onclick.throttle-500="handler">Not too often</button>
-  ```
+> Include as `import 'sprae/directive/data'`.
 
-  ##### Modifiers:
+Set `data-*` attributes. CamelCase is converted to dash-case.
 
-  * `.once`, `.passive`, `.capture` – listener [options](https://developer.mozilla.org/en-US/docs/Web/API/EventTarget/addEventListener#options).
-  * `.prevent`, `.stop` – prevent default or stop propagation.
-  * `.window`, `.document`, `.outside`, `.self` – specify event target.
-  * `.throttle-<ms>`, `.debounce-<ms>` – defer function call with one of the methods.
-  * `.ctrl`, `.shift`, `.alt`, `.meta`, `.arrow`, `.enter`, `.escape`, `.tab`, `.space`, `.backspace`, `.delete`, `.digit`, `.letter`, `.character` – filter by [`event.key`](https://developer.mozilla.org/en-US/docs/Web/API/UI_Events/Keyboard_event_key_values).
-  * `.ctrl-<key>, .alt-<key>, .meta-<key>, .shift-<key>` – key combinations, eg. `.ctrl-alt-delete` or `.meta-x`.
-  * `.*` – any other modifier has no effect, but allows binding multiple handlers to same event (like jQuery event classes).
+```html
+<input :data="{foo: 1, barBaz: true}" />
+<!-- <input data-foo="1" data-bar-baz /> -->
+```
 
-</details>
+#### `:aria="values"` 🔌
 
+> Include as `import 'sprae/directive/aria'`.
 
-<details>
-  <summary><strong>:html</strong> 🔌</summary>
+Set `aria-*` attributes. Boolean values are stringified.
 
-  #### `:html="element"`
-
-  > Include as `import 'sprae/directive/html'`.
-
-  Set html content of an element or instantiate a template.
-
-  ```html
-  Hello, <span :html="userElement">Guest</span>.
-
-  <!-- fragment -->
-  Hello, <template :html="user.name">Guest</template>.
-
-  <!-- instantiate template -->
-  <template :ref="tpl"><span :text="foo"></span></template>
-  <div :html="tpl" :scope="{foo:'bar'}">...inserted here...</div>
-  ```
-</details>
-
-
-<details>
-  <summary><strong>:data</strong> 🔌</summary>
-
-  #### `:data="values"`
-
-  > Include as `import 'sprae/directive/data'`.
-
-  Set `data-*` attributes. CamelCase is converted to dash-case.
-
-  ```html
-  <input :data="{foo: 1, barBaz: true}" />
-  <!-- <input data-foo="1" data-bar-baz /> -->
-  ```
-</details>
-
-
-<details>
-  <summary><strong>:aria</strong> 🔌</summary>
-
-  #### `:aria="values"`
-
-  > Include as `import 'sprae/directive/aria'`.
-
-  Set `aria-*` attributes. Boolean values are stringified.
-
-  ```html
-  <input role="combobox" :aria="{
-    controls: 'joketypes',
-    autocomplete: 'list',
-    expanded: false,
-    activeOption: 'item1',
-    activedescendant: ''
-  }" />
-  <!--
-  <input role="combobox" aria-controls="joketypes" aria-autocomplete="list" aria-expanded="false" aria-active-option="item1" aria-activedescendant>
-  -->
-  ```
-</details>
+```html
+<input role="combobox" :aria="{
+  controls: 'joketypes',
+  autocomplete: 'list',
+  expanded: false,
+  activeOption: 'item1',
+  activedescendant: ''
+}" />
+<!--
+<input role="combobox" aria-controls="joketypes" aria-autocomplete="list" aria-expanded="false" aria-active-option="item1" aria-activedescendant>
+-->
+```
 
 <!--
 #### `:onvisible..oninvisible="e => e => {}"`
