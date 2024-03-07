@@ -44,7 +44,6 @@ directive.each = (tpl, expr, state, name) => {
           console.warn('Duplicate key', key), el = tpl.cloneNode(true);
         }
         else {
-          console.log(key, count.has(key))
           count.add(key);
           el = memo.get(key) || memo.set(key, tpl.cloneNode(true)).get(key);
         }

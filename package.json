@@ -12,7 +12,7 @@
     "dist"
   ],
   "dependencies": {
-    "subscript": "^8.2.2",
+    "subscript": "^8.3.4",
     "swapdom": "^1.1.1",
     "ulive": "^1.0.1"
   },
