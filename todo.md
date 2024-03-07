@@ -101,16 +101,17 @@
   * [x] :data
   * [x] ~~:item~~
 * [x] move effect out of directives, make signal-less state (ideally).
-* [ ] :onvisible..oninvisible
-* [ ] :onmount..onunmount
-* [ ] :animate?
 * [x] fix ToDo
-* [ ] js-framework-bench push + example
 * [x] all FIXMEs
-* [ ] move proxy state into own project / part of signal struct (with tests from here)
 * [x] ~~make cross-version testing: sprae, csp, signals variations~~ justin default is enough
 * [x] avoid triggering unchanged effects
 * [x] ~~since we use justin - make templates reactive~~ nah, too much friction
 * [x] ~~replace class="∴" with just "∴" attribute (less interference/friction)~~ invalid attribute
 * [x] collapse dirs into details
 * [x] make item itself a key also
+* [ ] :onvisible..oninvisible
+* [ ] :onmount..onunmount
+* [ ] :animate?
+* [ ] js-framework-bench push + example
+* [ ] move proxy state into own project / part of signal struct (with tests from here)
+* [ ] some bug with keys identity in todo

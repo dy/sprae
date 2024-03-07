@@ -19,7 +19,7 @@
         <header class="header">
             <h1>todos</h1>
             <input class="new-todo" placeholder="What needs to be done?" autofocus :onkeypress.enter="e => {
-                save(todos.value = [...todos.peek(), signal({ id:todos.value.length, text: e.target.value, done: false})]);
+                save(todos.value = [...todos.peek(), signal({ text: e.target.value, done: false})]);
                 e.target.value = ''
             }">
         </header>
@@ -38,7 +38,7 @@
                             :onchange="e => (item.value = {...item.value, done: !item.value.done}, save(todos.peek()))" />
                         <label :text="item.value.text"></label>
                         <button class="destroy"
-                            :onclick="e => save(todos.value = todos.peek().filter(i => i.value.text !== item.value.text))"></button>
+                            :onclick="e => save(todos.value = todos.peek().filter(i => i.value !== item.value))"></button>
                     </div>
                     <input :ref="edit" class="edit" :value="item.value.text" :oninput="e => (
                             item.value = {...item.value, text:e.target.value},
