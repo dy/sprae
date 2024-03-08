@@ -2,12 +2,12 @@ import * as signals from '@preact/signals-core'
 // import * as signals from '@webreflection/signal'
 import test, { is, any, throws } from "tst";
 import { tick, time } from "wait-please";
-import sprae, { signal, batch } from '../sprae.js'
+import sprae, { signal, batch, untracked } from '../sprae.js'
 import '../directive/aria.js'
 import '../directive/data.js'
 import h from "hyperf";
 
-sprae.use(signals)
+// sprae.use(signals)
 
 Object.defineProperty(DocumentFragment.prototype, "outerHTML", {
   get() {
@@ -23,7 +23,7 @@ Object.defineProperty(DocumentFragment.prototype, "outerHTML", {
 const bump = (s) => batch((_) => ((_ = s.value), (s.value = null), (s.value = _)));
 
 // redefine outerHTML/innerHTML to return unmarked code
-(function() {
+(function () {
   const originalOuterHTMLDescriptor = Object.getOwnPropertyDescriptor(Element.prototype, 'outerHTML');
   const originalInnerHTMLDescriptor = Object.getOwnPropertyDescriptor(Element.prototype, 'innerHTML');
 
@@ -992,6 +992,30 @@ test("each: subscribe to modifying list", async () => {
 
   await tick();
   is(el.outerHTML, `<ul></ul>`);
+});
+
+test('each: unwanted extra subscription', t => {
+  let el = h`<div><x :each="item in (each++, rows)"><a :text="item.label"></a></x></div>`
+
+  const rows = signal(null)
+  const state = sprae(el, { rows, each: 0 })
+
+  console.log('------rows.value = [{id:0},{id:1}]')
+  let a = { label: signal(0) }, b = { label: signal(0) }
+  is(state.each, 1)
+  rows.value = [a, b]
+  is(state.each, 2)
+
+  console.log('---------rows.value=[rows.value[0]]')
+  // this thingy subscribes full list to update
+  rows.value = [b]
+  is(state.each, 3)
+
+  console.log('--------rows.value[1].label.value += 2')
+  // FIXME: this triggers each, but it should not
+  b.label.value += 2
+  is(state.each, 3)
+  is(el.innerHTML, `<x><a>2</a></x>`)
 });
 
 test("scope: inline assign", async () => {

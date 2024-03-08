@@ -413,18 +413,15 @@ npm ci
 npm run build-prod
 
 # bench
-cd ../../..
-cd webdriver-ts
+cd ../../../webdriver-ts
 npm ci
 npm run compile
 npm run bench keyed/sprae
 
 # show results
-cd ..
-cd webdriver-ts-results
+cd ../webdriver-ts-results
 npm ci
-cd ..
-cd webdriver-ts
+cd ../webdriver-ts
 npm run results
 ```
 </details>

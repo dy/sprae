@@ -32,6 +32,7 @@
     "test": "node -r ./test/register.cjs test/test.js",
     "build": "npm run bundle && npm run min",
     "bundle": "esbuild --bundle ./sprae.js --outdir=dist --format=esm",
+    "watch": "esbuild --bundle --watch ./sprae.js --outdir=dist --format=esm",
     "min": "terser ./dist/sprae.js -o ./dist/sprae.min.js --module -c passes=3 -m"
   },
   "repository": {

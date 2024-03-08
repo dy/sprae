@@ -16,6 +16,7 @@ export const directive = {};
 
 // sprae element: apply directives
 const memo = new WeakMap();
+
 export default function sprae(container, values) {
   if (!container.children) return // text nodes, comments etc
 
@@ -23,9 +24,10 @@ export default function sprae(container, values) {
   if (memo.has(container)) {
     const [state, effects] = memo.get(container)
     // we rewrite signals instead of update, because user should have what he provided
-    // console.log(container, state, values)
-    for (let k in values) state[k] = values[k]
-    for (let fx of effects) fx()
+    for (let k in values) { state[k] = values[k] }
+    // since we call direct updates here, we have to make sure
+    // we don't subscribe outer effect, as in case of :each
+    untracked(() => { for (let fx of effects) fx() })
   }
 
   // take over existing state instead of creating clone
