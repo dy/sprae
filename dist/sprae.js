@@ -6,7 +6,7 @@ var __export = (target, all) => {
 
 // node_modules/swapdom/swap-inflate.js
 var swap = (parent, a, b, end = null) => {
-  let i = 0, cur2, next, bi, n = b.length, m = a.length, { remove, same, insert, replace } = swap;
+  let i = 0, cur2, next2, bi, n = b.length, m = a.length, { remove, same, insert, replace } = swap;
   while (i < n && i < m && same(a[i], b[i]))
     i++;
   while (i < n && i < m && same(b[n - 1], a[m - 1]))
@@ -17,16 +17,16 @@ var swap = (parent, a, b, end = null) => {
   else {
     cur2 = a[i];
     while (i < n) {
-      bi = b[i++], next = cur2 ? cur2.nextSibling : end;
+      bi = b[i++], next2 = cur2 ? cur2.nextSibling : end;
       if (same(cur2, bi))
-        cur2 = next;
-      else if (i < n && same(b[i], next))
-        replace(cur2, bi, parent), cur2 = next;
+        cur2 = next2;
+      else if (i < n && same(b[i], next2))
+        replace(cur2, bi, parent), cur2 = next2;
       else
         insert(cur2, bi, parent);
     }
     while (!same(cur2, end))
-      next = cur2.nextSibling, remove(cur2, parent), cur2 = next;
+      next2 = cur2.nextSibling, remove(cur2, parent), cur2 = next2;
   }
   return b;
 };
@@ -123,32 +123,29 @@ var parse = (s) => (idx = 0, cur = s, s = expr(), cur[idx] ? err2() : s || "");
 var err2 = (msg = "Bad syntax", lines = cur.slice(0, idx).split("\n"), last2 = lines.pop()) => {
   let before = cur.slice(idx - 108, idx).split("\n").pop();
   let after = cur.slice(idx, idx + 108).split("\n").shift();
-  throw EvalError(`${msg} at ${lines.length}:${last2.length} \`${idx >= 108 ? "\u2026" : ""}${before}\u25B6${after}\``, "font-weight: bold");
+  throw EvalError(`${msg} at ${lines.length}:${last2.length} \`${idx >= 108 ? "\u2026" : ""}${before}\u2503${after}\``, "font-weight: bold");
 };
-var skip = (is = 1, from = idx, l) => {
-  if (typeof is == "number")
-    idx += is;
-  else
-    while (l = is(cur.charCodeAt(idx)))
-      idx += l;
+var next = (is, from = idx, l) => {
+  while (l = is(cur.charCodeAt(idx)))
+    idx += l;
   return cur.slice(from, idx);
 };
+var skip = (n = 1, from = idx) => (idx += n, cur.slice(from, idx));
 var expr = (prec = 0, end, cc, token2, newNode, fn) => {
-  while ((cc = parse.space()) && (newNode = ((fn = lookup[cc]) && fn(token2, prec)) ?? (!token2 && parse.id())))
+  while ((cc = parse.space()) && (newNode = ((fn = lookup[cc]) && fn(token2, prec)) ?? (!token2 && next(parse.id))))
     token2 = newNode;
   if (end)
     cc == end ? idx++ : err2();
   return token2;
 };
-var isId = (c) => c >= 48 && c <= 57 || c >= 65 && c <= 90 || c >= 97 && c <= 122 || c == 36 || c == 95 || c >= 192 && c != 215 && c != 247;
-var id = parse.id = () => skip(isId);
+var id = parse.id = (c) => c >= 48 && c <= 57 || c >= 65 && c <= 90 || c >= 97 && c <= 122 || c == 36 || c == 95 || c >= 192 && c != 215 && c != 247;
 var space = parse.space = (cc) => {
   while ((cc = cur.charCodeAt(idx)) <= SPACE)
     idx++;
   return cc;
 };
 var lookup = [];
-var token = (op, prec = SPACE, map, c = op.charCodeAt(0), l = op.length, prev = lookup[c], word = op.toUpperCase() !== op) => lookup[c] = (a, curPrec, from = idx) => curPrec < prec && (l < 2 || cur.substr(idx, l) == op) && (!word || !isId(cur.charCodeAt(idx + l))) && (idx += l, map(a, curPrec)) || (idx = from, prev?.(a, curPrec));
+var token = (op, prec = SPACE, map, c = op.charCodeAt(0), l = op.length, prev = lookup[c], word = op.toUpperCase() !== op) => lookup[c] = (a, curPrec, from = idx) => curPrec < prec && (l < 2 || cur.substr(idx, l) == op) && (!word || !parse.id(cur.charCodeAt(idx + l))) && (idx += l, map(a, curPrec)) || (idx = from, prev?.(a, curPrec));
 var binary = (op, prec, right = false) => token(op, prec, (a, b) => a && (b = expr(prec - (right ? 0.5 : 0))) && [op, a, b]);
 var unary = (op, prec, post) => token(op, prec, (a) => post ? a && [op, a] : !a && (a = expr(prec - 0.5)) && [op, a]);
 var nary = (op, prec) => {
@@ -171,10 +168,10 @@ var prop = (a, fn, generic, obj, path) => a[0] === "()" ? prop(a[1], fn, generic
 var compile_default = compile;
 
 // node_modules/subscript/feature/number.js
-var num = (a) => a ? err2() : [, (a = +skip((c) => c === PERIOD || c >= _0 && c <= _9 || (c === _E || c === _e ? 2 : 0))) != a ? err2() : a];
+var num = (a, _) => [, (a = +next((c) => c === PERIOD || c >= _0 && c <= _9 || (c === _E || c === _e ? 2 : 0))) != a ? err2() : a];
 lookup[PERIOD] = (a) => !a && num();
 for (let i = _0; i <= _9; i++)
-  lookup[i] = num;
+  lookup[i] = (a) => a ? err2() : num();
 
 // node_modules/subscript/feature/string.js
 var escape = { n: "\n", r: "\r", t: "	", b: "\b", f: "\f", v: "\v" };
@@ -275,14 +272,14 @@ operator("=", (a, b) => (b = compile(b), prop(a, (container, path, ctx) => conta
 var subscript_default = (s) => compile_default(parse_default(s));
 
 // node_modules/subscript/feature/comment.js
-token("/*", PREC_TOKEN, (a, prec) => (skip((c) => c !== STAR && cur.charCodeAt(idx + 1) !== 47), skip(2), a || expr(prec) || []));
-token("//", PREC_TOKEN, (a, prec) => (skip((c) => c >= SPACE), a || expr(prec) || [""]));
+token("/*", PREC_TOKEN, (a, prec) => (next((c) => c !== STAR && cur.charCodeAt(idx + 1) !== 47), skip(2), a || expr(prec) || []));
+token("//", PREC_TOKEN, (a, prec) => (next((c) => c >= SPACE), a || expr(prec) || [""]));
 
 // node_modules/subscript/feature/pow.js
 binary("**", PREC_EXP, true), operator("**", (a, b) => b && (a = compile(a), b = compile(b), (ctx) => a(ctx) ** b(ctx)));
 
 // node_modules/subscript/feature/ternary.js
-token("?", PREC_ASSIGN, (a, b, c) => a && (b = expr(PREC_ASSIGN, COLON)) && (c = expr(PREC_ASSIGN + 1), ["?", a, b, c]));
+token("?", PREC_ASSIGN, (a, b, c) => a && (b = expr(PREC_ASSIGN - 0.5, COLON)) && (c = expr(PREC_ASSIGN - 0.5), ["?", a, b, c]));
 operator("?", (a, b, c) => (a = compile(a), b = compile(b), c = compile(c), (ctx) => a(ctx) ? b(ctx) : c(ctx)));
 
 // node_modules/subscript/feature/bool.js
@@ -291,13 +288,16 @@ token("false", PREC_TOKEN, (a) => a ? err() : [, false]);
 
 // node_modules/subscript/feature/array.js
 group("[]", PREC_TOKEN);
-operator("[]", (a, b) => !a ? () => [] : a[0] === "," ? (a = a.slice(1).map(compile), (ctx) => a.map((a2) => a2(ctx))) : (a = compile(a), (ctx) => [a(ctx)]));
+operator(
+  "[]",
+  (a, b) => (a = !a ? [] : a[0] === "," ? a.slice(1) : [a], a = a.map((a2) => a2[0] === "..." ? (a2 = compile(a2[1]), (ctx) => a2(ctx)) : (a2 = compile(a2), (ctx) => [a2(ctx)])), (ctx) => a.flatMap((a2) => a2(ctx)))
+);
 
 // node_modules/subscript/feature/object.js
 group("{}", PREC_TOKEN);
-operator("{}", (a, b) => !a ? () => ({}) : a[0] === "," ? (a = a.slice(1).map(compile), (ctx) => Object.fromEntries(a.map((a2) => a2(ctx)))) : a[0] === ":" ? (a = compile(a), (ctx) => Object.fromEntries([a(ctx)])) : (b = compile(a), (ctx) => ({ [a]: b(ctx) })));
-binary(":", PREC_ASSIGN, true);
-operator(":", (a, b) => (b = compile(b), a = Array.isArray(a) ? compile(a) : ((a2) => a2).bind(0, a), (ctx) => [a(ctx), b(ctx)]));
+operator("{}", (a, b) => (a = !a ? [] : a[0] !== "," ? [a] : a.slice(1), a = a.map((p) => compile(typeof p === "string" ? [":", p, p] : p)), (ctx) => Object.fromEntries(a.flatMap((frag) => frag(ctx)))));
+binary(":", PREC_ASSIGN - 0.5, true);
+operator(":", (a, b) => (b = compile(b), Array.isArray(a) ? (a = compile(a), (ctx) => [[a(ctx), b(ctx)]]) : (ctx) => [[a, b(ctx)]]));
 
 // node_modules/subscript/feature/arrow.js
 binary("=>", PREC_ASSIGN, true);
@@ -315,11 +315,15 @@ token("?.", PREC_ACCESS, (a, b) => a && (b = expr(PREC_ACCESS), !b?.map) && ["?.
 operator("?.", (a, b) => b && (a = compile(a), (ctx) => a(ctx)?.[b]));
 operator("(", (a, b, container, args, path, optional) => a[0] === "?." && (a[2] || Array.isArray(a[1])) && (args = !b ? () => [] : b[0] === "," ? (b = b.slice(1).map(compile), (ctx) => b.map((a2) => a2(ctx))) : (b = compile(b), (ctx) => [b(ctx)]), !a[2] && (optional = true, a = a[1]), a[0] === "[" ? path = compile(a[2]) : path = () => a[2], container = compile(a[1]), optional ? (ctx) => container(ctx)?.[path(ctx)]?.(...args(ctx)) : (ctx) => container(ctx)?.[path(ctx)](...args(ctx))));
 
+// node_modules/subscript/feature/spread.js
+unary("...", PREC_PREFIX);
+operator("...", (a) => (a = compile(a), (ctx) => Object.entries(a(ctx))));
+
 // node_modules/subscript/justin.js
 binary("in", PREC_COMP), operator("in", (a, b) => b && (a = compile_default(a), b = compile_default(b), (ctx) => a(ctx) in b(ctx)));
 binary("===", PREC_EQ), binary("!==", 9);
 operator("===", (a, b) => (a = compile_default(a), b = compile_default(b), (ctx) => a(ctx) === b(ctx)));
-operator("===", (a, b) => (a = compile_default(a), b = compile_default(b), (ctx) => a(ctx) !== b(ctx)));
+operator("!==", (a, b) => (a = compile_default(a), b = compile_default(b), (ctx) => a(ctx) !== b(ctx)));
 binary("??", PREC_LOR);
 operator("??", (a, b) => b && (a = compile_default(a), b = compile_default(b), (ctx) => a(ctx) ?? b(ctx)));
 binary("??=", PREC_ASSIGN, true);
@@ -344,10 +348,13 @@ function sprae(container, values) {
     return;
   if (memo.has(container)) {
     const [state2, effects2] = memo.get(container);
-    for (let k in values)
+    for (let k in values) {
       state2[k] = values[k];
-    for (let fx of effects2)
-      fx();
+    }
+    untracked2(() => {
+      for (let fx of effects2)
+        fx();
+    });
   }
   const state = values || {};
   const effects = [];
@@ -439,9 +446,7 @@ directive.each = (tpl, expr2, state, name) => {
       let item = items[idx2];
       let substate = Object.create(state, { [idxVar]: { value: idx2 } });
       substate[itemVar] = item;
-      item = item.peek?.() ?? item;
-      let key = item.key ?? item.id ?? item;
-      let el;
+      let el, key = item.key ?? item.id ?? item;
       if (key == null)
         el = tpl.cloneNode(true);
       else {
@@ -450,7 +455,6 @@ directive.each = (tpl, expr2, state, name) => {
         if (count.has(key)) {
           console.warn("Duplicate key", key), el = tpl.cloneNode(true);
         } else {
-          console.log(key, count.has(key));
           count.add(key);
           el = memo2.get(key) || memo2.set(key, tpl.cloneNode(true)).get(key);
         }
@@ -470,24 +474,24 @@ directive.each = (tpl, expr2, state, name) => {
 // directive/if.js
 var _prevIf = Symbol("if");
 directive.if = (ifEl, expr2, state, name) => {
-  let parent = ifEl.parentNode, next = ifEl.nextElementSibling, holder = document.createTextNode(""), evaluate = compile2(expr2, name), cur2, ifs, elses, none = [];
+  let parent = ifEl.parentNode, next2 = ifEl.nextElementSibling, holder = document.createTextNode(""), evaluate = compile2(expr2, name), cur2, ifs, elses, none = [];
   ifEl.after(holder);
   if (ifEl.content)
     cur2 = none, ifEl.remove(), ifs = [...ifEl.content.childNodes];
   else
     ifs = cur2 = [ifEl];
-  if (next?.hasAttribute(":else")) {
-    next.removeAttribute(":else");
-    if (next.hasAttribute(":if"))
+  if (next2?.hasAttribute(":else")) {
+    next2.removeAttribute(":else");
+    if (next2.hasAttribute(":if"))
       elses = none;
     else
-      next.remove(), elses = next.content ? [...next.content.childNodes] : [next];
+      next2.remove(), elses = next2.content ? [...next2.content.childNodes] : [next2];
   } else
     elses = none;
   return () => {
     const newEls = evaluate(state)?.valueOf() ? ifs : ifEl[_prevIf] ? none : elses;
-    if (next)
-      next[_prevIf] = newEls === ifs;
+    if (next2)
+      next2[_prevIf] = newEls === ifs;
     if (cur2 != newEls) {
       if (cur2[0]?.[_each])
         cur2 = [cur2[0][_each]];
