@@ -32,8 +32,8 @@ const bump = (s) => batch((_) => ((_ = s.value), (s.value = null), (s.value = _)
     if (el.className === '') el.removeAttribute('class');
     for (let subel of el.querySelectorAll(`.∴`)) {
       subel.classList.remove(`∴`);
-      if (subel.className === '') subel.removeAttribute('class');
     }
+    for (let subel of el.querySelectorAll(`[class]`)) if (subel.className === '') subel.removeAttribute('class');
     return el;
   }
 
@@ -1215,7 +1215,8 @@ test.todo("getters", async () => {
 });
 
 test("csp: sandbox", async () => {
-  // const { default: sprae } = await import('../sprae.csp.js')
+  const { default: justin } = await import('subscript/justin')
+  sprae.use({ compiler: justin })
   const globals = { console };
   const state = Object.assign(Object.create(globals), { log: [] });
 
