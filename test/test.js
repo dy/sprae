@@ -461,25 +461,25 @@ test("each: array full", async () => {
 
   console.log("items.shift()");
   params.b.value.shift();
-  bump(params.b);
+  params.b.value = [...params.b.value];
   await tick();
   is(el.innerHTML, "<span>3</span>");
 
   console.log("items.length=2");
   params.b.value.length = 2;
-  bump(params.b);
+  params.b.value = [...params.b.value];
   await tick();
-  is(el.innerHTML, "<span>3</span>");
+  is(el.innerHTML, "<span>3</span><span></span>");
 
   console.log("items.pop()");
   params.b.value.pop();
-  bump(params.b);
+  params.b.value = [...params.b.value];
   await tick();
   is(el.innerHTML, "<span>3</span>");
 
   console.log("items=[]");
   params.b.value = [];
-  bump(params.b);
+  params.b.value = [...params.b.value];
   await tick();
   is(el.innerHTML, "");
 
@@ -571,10 +571,11 @@ test("each: #12 - changing internal object prop", async () => {
   is(el.outerHTML, `<div><x>a</x><x>b</x></div>`);
   console.log("-----set a");
   state.obj.value.a = "newvala"; // :each not working after this
-  bump(state.obj);
+  state.obj.value = { ...state.obj.value }
   is(el.outerHTML, `<div><x>newvala</x><x>b</x></div>`);
+  console.log("-----set c");
   state.obj.value.c = "c";
-  bump(state.obj);
+  state.obj.value = { ...state.obj.value }
   is(el.outerHTML, `<div><x>newvala</x><x>b</x><x>c</x></div>`);
 });
 
@@ -783,6 +784,7 @@ test("each: unkeyed", async () => {
   await tick();
   // is(el.firstChild, first)
   is(el.textContent, "132");
+  console.log('-------- set 333')
   state.xs.value = [3, 3, 3];
   await tick();
   is(el.textContent, "333");

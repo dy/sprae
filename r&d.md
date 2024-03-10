@@ -1005,7 +1005,7 @@
 4. element itself
   + chaining
 
-## [x] CSP approaces -> let's use wired-in justin until otherwise needed
+## [x] CSP approaces -> ~~let's use wired-in justin until otherwise needed~~ -> we need to provide switchable compiler to make code smaller
 
 1. Wired-in by default (non-customizable)
   + easier
@@ -1015,13 +1015,14 @@
   + minimal style
   - size (>5kb), ~5.4kb
   - doesn't really protect from constructor.constructor
+  - it makes code heavier for component applications where we don't care about unsafe eval
 2. Separate CSP entry
   + similar to Alpine
   + ability to choose best option
     ~ not sure if that's a value - making user think
   - maintaining separate entries
     - risk of conflict / friction / non-identical code (discrepancies of justin/js)
-3. ~~Customizable compiler by user~~
+3. Customizable compiler by user
   + single CSP entry
   - formally non-CSP-enabled
   - even if CSP is configured, bundle can be detected as unsafe since it has `new Function`

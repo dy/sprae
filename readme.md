@@ -327,7 +327,7 @@ directive.id = (el, expr, state) => {
 <!--
 ### DOM diffing
 
-DOM differ uses [swapdom](https://github.com/dy/swapdom), can be reconfigured to [list-difference](https://github.com/paldepind/list-difference/), [udomdiff](https://github.com/WebReflection/udomdiff), [domdiff](https://github.com/WebReflection/domdiff), [etc](https://github.com/luwes/js-diff-benchmark):
+DOM diffing uses [swapdom](https://github.com/dy/swapdom), but can be reconfigured to [list-difference](https://github.com/paldepind/list-difference/), [udomdiff](https://github.com/WebReflection/udomdiff), [domdiff](https://github.com/WebReflection/domdiff), or any other ([benchmark](https://github.com/luwes/js-diff-benchmark)):
 
 ```js
 import sprae from 'sprae';
@@ -335,8 +335,8 @@ import domdiff from 'list-difference';
 
 // swap(parentNode, prevEls, newEls, endNode?)
 sprae.use({ swap: domdiff });
-```
--->
+``` -->
+
 
 <!--
 ### Custom Build
