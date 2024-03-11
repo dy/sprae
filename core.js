@@ -1,6 +1,5 @@
-import swapdom from 'swapdom'
+import swapdom from 'swapdom/deflate'
 import * as signals from 'ulive'
-// import justin from 'subscript/justin'
 
 // polyfill
 const _dispose = (Symbol.dispose ||= Symbol("dispose"));

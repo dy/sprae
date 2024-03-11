@@ -610,17 +610,14 @@ test("each: loop within loop", async () => {
     [5, 6],
     [3, 4],
   ];
-  bump(params.c);
   await tick();
   is(el.innerHTML, "<x><y>5</y><y>6</y></x><x><y>3</y><y>4</y></x>");
   // params.c.value[1] = [7, 8];
   params.c.value = [params.c.value[0], [7, 8]];
-  bump(params.c);
   await tick();
   is(el.innerHTML, "<x><y>5</y><y>6</y></x><x><y>7</y><y>8</y></x>");
   // is(el.innerHTML, '<span>1</span><span>2</span>')
   params.c.value = [];
-  bump(params.c);
   await tick();
   is(el.innerHTML, "");
   // params.b = null
@@ -1008,6 +1005,12 @@ test('each: unwanted extra subscription', t => {
   rows.value = [a, b]
   is(state.each, 2)
 
+  // console.log('--------rows.value[1].label.value += 2')
+  // // FIXME: this triggers each, but it should not
+  // b.label.value += 2
+  // is(state.each, 2)
+  // is(el.innerHTML, `<x><a>0</a></x><x><a>2</a></x>`)
+
   console.log('---------rows.value=[rows.value[0]]')
   // this thingy subscribes full list to update
   rows.value = [b]
@@ -1015,6 +1018,7 @@ test('each: unwanted extra subscription', t => {
 
   console.log('--------rows.value[1].label.value += 2')
   // FIXME: this triggers each, but it should not
+  // a.label.value += 2
   b.label.value += 2
   is(state.each, 3)
   is(el.innerHTML, `<x><a>2</a></x>`)
