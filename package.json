@@ -13,7 +13,7 @@
   ],
   "dependencies": {
     "subscript": "^8.3.4",
-    "swapdom": "^1.1.1",
+    "swapdom": "^1.2.1",
     "ulive": "^1.0.1"
   },
   "devDependencies": {

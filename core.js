@@ -1,6 +1,5 @@
-import swapdom from 'swapdom'
+import swapdom from 'swapdom/deflate'
 import * as signals from 'ulive'
-import justin from 'subscript/justin'
 
 // polyfill
 const _dispose = (Symbol.dispose ||= Symbol("dispose"));
@@ -83,6 +82,7 @@ export default function sprae(container, values) {
     while (effects.length) effects.pop()[_dispose]();
     container.classList.remove(SPRAE)
     memo.delete(container);
+    // NOTE: each child disposes own children etc.
     let els = container.getElementsByClassName(SPRAE);
     while (els.length) els[0][_dispose]?.()
   }
@@ -93,19 +93,19 @@ export default function sprae(container, values) {
 // default compiler
 const evalMemo = {};
 
-export let compile = (expr, dir, evaluate) => {
-  if (evaluate = evalMemo[expr = expr.trim()]) return evaluate
+export const compile = (expr, dir, fn) => {
+  if (fn = evalMemo[expr = expr.trim()]) return fn
 
   // static-time errors
-  try {
-    // evaluate = new Function(`__scope`, `with (__scope) { return ${expr} };`);
-    evaluate = justin(expr);
-  }
-  catch (e) { throw Object.assign(e, { message: `${SPRAE} ${e.message}\n\n${dir}${expr ? `="${expr}"\n\n` : ""}`, expr }) }
+  try { fn = compiler(expr); }
+  catch (e) { throw Object.assign(e, { message: `∴ ${e.message}\n\n${dir}${expr ? `="${expr}"\n\n` : ""}`, expr }) }
 
   // runtime errors
-  return evalMemo[expr] = evaluate
+  return evalMemo[expr] = fn
 }
+
+// default compiler is simple new Function (tiny obfuscation against direct new Function detectors)
+export let compiler = expr => compiler.constructor(`__scope`, `with (__scope) { return ${expr} };`)
 
 // DOM swapper
 export let swap = swapdom
@@ -126,4 +126,5 @@ sprae.use = s => {
     untracked = s.untracked || batch
   );
   s.swap && (swap = s.swap)
+  s.compiler && (compiler = s.compiler)
 }

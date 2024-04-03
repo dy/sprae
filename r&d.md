@@ -1005,7 +1005,7 @@
 4. element itself
   + chaining
 
-## [x] CSP approaces -> let's use wired-in justin until otherwise needed
+## [x] CSP approaces -> ~~let's use wired-in justin until otherwise needed~~ -> we need to provide switchable compiler to make code smaller
 
 1. Wired-in by default (non-customizable)
   + easier
@@ -1015,13 +1015,14 @@
   + minimal style
   - size (>5kb), ~5.4kb
   - doesn't really protect from constructor.constructor
+  - it makes code heavier for component applications where we don't care about unsafe eval
 2. Separate CSP entry
   + similar to Alpine
   + ability to choose best option
     ~ not sure if that's a value - making user think
   - maintaining separate entries
     - risk of conflict / friction / non-identical code (discrepancies of justin/js)
-3. ~~Customizable compiler by user~~
+3. Customizable compiler by user
   + single CSP entry
   - formally non-CSP-enabled
   - even if CSP is configured, bundle can be detected as unsafe since it has `new Function`
@@ -1034,3 +1035,14 @@
 - that blows up code a bit configuring subscript
 - that enforces writing signals too, we can't `a = value` anymore
 ? is that obvious enough?
+
+## [ ] Signals store instead of explicit signals?
+
++ practice shows it handles arrays / objects better
++ practice shows it's better memory-wise, I guess we can optimize items signals
++ it reduces toll of wrapping all props into `signal`
++ it makes sense as output from sprae to be reactive proxy store
++ it allows internal code to care less about what's signal what's not
++ generally it makes signals mechanism implicit and optional - API-wise user cares less about what should be a signal what not
+- possibly some bit more of memory/perf cost, since static values get wrapped into signals
+  ? can we optimize static array values instead of being a bunch of signals instead be one signal?

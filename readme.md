@@ -268,7 +268,16 @@ Trigger when element is connected / disconnected from DOM.
 
 ## Expressions
 
-Expressions use [_justin_](https://github.com/dy/subscript?tab=readme-ov-file#justin), a minimal JS subset. It avoids "unsafe-eval" CSP and provides sandboxing. Also it's _fast_.
+Expressions use `_new Function_` as default evaluator, which is fast & compact way, but violates "unsafe-eval" CSP. To make eval stricter & safer, an alternative evaluator can be configured, eg. _justin_:
+
+```js
+import sprae from 'sprae'
+import justin from 'subscript/justin'
+
+sprae.use({compiler: justin}) // set up justin as default compiler
+```
+
+[_Justin_](https://github.com/dy/subscript?tab=readme-ov-file#justin) is minimal JS subset. It avoids "unsafe-eval" CSP and provides sandboxing.
 
 ###### Operators:
 
@@ -285,7 +294,7 @@ Expressions use [_justin_](https://github.com/dy/subscript?tab=readme-ov-file#ju
 
 ## Signals
 
-Sprae uses minimal signals based on [`ulive`](https://ghub.io/ulive). It can be switched to [`@preact/signals-core`](https://ghub.io/@preact/signals-core), [`@webreflection/signal`](https://ghib.io/@webreflection/signal), [`usignal`](https://ghib.io/usignal), which are better for complex states:
+Sprae uses minimal signals based on [`ulive`](https://ghub.io/ulive). It can be switched to more optimized [`@preact/signals-core`](https://ghub.io/@preact/signals-core), [`@webreflection/signal`](https://ghib.io/@webreflection/signal), [`usignal`](https://ghib.io/usignal) etc:
 
 ```js
 import sprae, { signal, computed, effect, batch, untracked } from 'sprae';
@@ -318,7 +327,7 @@ directive.id = (el, expr, state) => {
 <!--
 ### DOM diffing
 
-DOM differ uses [swapdom](https://github.com/dy/swapdom), can be reconfigured to [list-difference](https://github.com/paldepind/list-difference/), [udomdiff](https://github.com/WebReflection/udomdiff), [domdiff](https://github.com/WebReflection/domdiff), [etc](https://github.com/luwes/js-diff-benchmark):
+DOM diffing uses [swapdom](https://github.com/dy/swapdom), but can be reconfigured to [list-difference](https://github.com/paldepind/list-difference/), [udomdiff](https://github.com/WebReflection/udomdiff), [domdiff](https://github.com/WebReflection/domdiff), or any other ([benchmark](https://github.com/luwes/js-diff-benchmark)):
 
 ```js
 import sprae from 'sprae';
@@ -326,8 +335,8 @@ import domdiff from 'list-difference';
 
 // swap(parentNode, prevEls, newEls, endNode?)
 sprae.use({ swap: domdiff });
-```
--->
+``` -->
+
 
 <!--
 ### Custom Build
