@@ -431,6 +431,12 @@ test("if: + :scope doesnt prevent secondary effects from happening", async () =>
   // is(el2.innerHTML, `<x>123</x>`)
 });
 
+test.todo('each: top-level attribs', async () => {
+  let el = h`<x :each="item in items" :text="item.x"/>`
+  sprae(el, { items: [{ x: 1 }] })
+  is(el.outerHTML, `<x>1</x>`)
+})
+
 test("each: array full", async () => {
   let el = h`<p>
     <span :each="a in b" :text="a"></span>
@@ -677,7 +683,6 @@ test.todo("each: fragments text", async () => {
   params.b = null;
   is(el.innerHTML, "");
 });
-
 
 test("each: loop with condition", async () => {
   // NOTE: there doesn't seem to be much value in exactly that
@@ -1403,3 +1408,20 @@ test("events: throttle", async (e) => {
   el.dispatchEvent(new window.KeyboardEvent("keydown", { key: "x", bubbles: true }));
   is(state.log, ["x", "x", "x"]);
 });
+
+test.todo('memory allocation', async e => {
+  let items = signal([])
+  let el = h`<><x :each="item in items" :text="item.x"></x></>`
+  let btn = document.createElement('button')
+  document.body.appendChild(btn)
+  btn.textContent = 'Allocate'
+  btn.onclick = e => {
+    let newItems = []
+    for (let i = 0; i < 10000; i++) {
+      let item = { x: i }
+      newItems.push(item)
+    }
+    items.value = newItems
+  }
+  sprae(el, { items });
+})

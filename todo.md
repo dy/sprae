@@ -114,4 +114,16 @@
 * [ ] :animate?
 * [ ] js-framework-bench push + example
 * [ ] move proxy state into own project / part of signal struct (with tests from here)
-* [ ] some bug with keys identity in todo
+* [x] some bug with keys identity in todo
+* [ ] v9 issues:
+  * [ ] creating/releasing rows doesn't clear up memory
+  * [ ] replacing/swapping rows
+* [ ] state as signal: test updates itself `sprae(el, signal({x:1}))` - needed for :each loop
+* [ ] switchable compiler
+* [ ] try getting rid of compile() calls in subscript
+* [ ] try getting rid of compile() calls in sprae
+
+## [ ] v10
+
+* [ ] signals based on signals proposal
+* [ ] proxy state is back
