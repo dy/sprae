@@ -1,4 +1,4 @@
-import swapdom from 'swapdom/deflate'
+import swapdom from 'swapdom/inflate'
 import * as signals from 'ulive'
 
 // polyfill

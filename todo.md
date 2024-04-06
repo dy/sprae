@@ -119,9 +119,9 @@
   * [x] creating/releasing rows doesn't clear up memory
     * because weakmap stores by key, only if key is disposed it clears up
   * [ ] replacing/swapping rows is slow
-    * because we do full list comparison
+    * the problem is not removal issue, but (seemingly) incremental appending (need better algo)
 * [ ] state as signal: test updates itself `sprae(el, signal({x:1}))` - needed for :each loop
-* [ ] switchable compiler
+* [x] switchable compiler
 * [ ] try getting rid of compile() calls in subscript
 * [ ] try getting rid of compile() calls in sprae
 

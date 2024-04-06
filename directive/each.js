@@ -27,7 +27,7 @@ directive.each = (tpl, expr, state, name) => {
       elCache.delete(el[_key])
       stateCache.delete(el[_key])
     }
-  }, { insert } = swap
+  }, { insert, replace } = swap
 
   // naive approach: whenever items change we replace full list
   return () => {
@@ -54,6 +54,6 @@ directive.each = (tpl, expr, state, name) => {
       if (el.nodeType === 11) els.push(...el.childNodes); else els.push(el);
     }
 
-    swap(parent, cur, cur = els, holder, { insert, remove });
+    swap(parent, cur, cur = els, holder, { insert, remove, replace });
   }
 }
