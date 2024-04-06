@@ -104,7 +104,7 @@ export const compile = (expr, dir, fn) => {
   return evalMemo[expr] = fn
 }
 
-// default compiler is simple new Function (tiny obfuscation against direct new Function detectors)
+// default compiler is simple new Function (tiny obfuscation against direct new Function detection)
 export let compiler = expr => compiler.constructor(`__scope`, `with (__scope) { return ${expr} };`)
 
 // DOM swapper

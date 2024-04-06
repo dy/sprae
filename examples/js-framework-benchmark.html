@@ -67,8 +67,17 @@
     <span class="preloadicon glyphicon glyphicon-remove" aria-hidden="true"></span>
   </div>
 
+  <script type="importmap">
+    {
+      "imports": {
+        "swapdom/deflate": "../node_modules/swapdom/deflate.js",
+        "ulive": "../node_modules/ulive/dist/ulive.es.js"
+      }
+    }
+  </script>
+
   <script type="module">
-    import sprae, { signal } from '../dist/sprae.js'
+    import sprae, { signal } from '../sprae.js'
 
     const adjectives = ['pretty', 'large', 'big', 'small', 'tall', 'short', 'long', 'handsome', 'plain', 'quaint', 'clean', 'elegant', 'easy', 'angry', 'crazy', 'helpful', 'mushy', 'odd', 'unsightly', 'adorable', 'important', 'inexpensive', 'cheap', 'expensive', 'fancy']
     const colours = ['red', 'yellow', 'blue', 'green', 'pink', 'brown', 'purple', 'brown', 'white', 'black', 'orange']

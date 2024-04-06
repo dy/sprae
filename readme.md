@@ -121,7 +121,7 @@ Set value of an input, textarea or select. Takes handle of `checked` and `select
 </select>
 ```
 
-#### `:*="value"`, `:="values"`
+#### `:[prop]="value"`, `:="values"`
 
 Set any attribute(s).
 
@@ -170,7 +170,7 @@ Run effect, not changing any attribute.<br/>Optional cleanup is called in-betwee
 <div :fx="id = setInterval(tick, interval), () => clearInterval(tick)" />
 ```
 
-#### `:on*="handler"`
+#### `:on[event]="handler"`
 
 Attach event(s) listener with possible modifiers.
 
@@ -335,7 +335,8 @@ import domdiff from 'list-difference';
 
 // swap(parentNode, prevEls, newEls, endNode?)
 sprae.use({ swap: domdiff });
-``` -->
+```
+-->
 
 
 <!--
@@ -358,6 +359,7 @@ import 'sprae/directive/text'
 To destroy state and detach sprae handlers, call `element[Symbol.dispose]()`. -->
 
 
+<!--
 ## v9 changes
 
 * No autoinit → use manual init via `import sprae from 'sprae'; sprae(document.body, state)`.
@@ -370,7 +372,7 @@ To destroy state and detach sprae handlers, call `element[Symbol.dispose]()`. --
 * Async props / events are not supported, pass async functions via state.
 * Directives order matters, eg. `<a :if :each :scope />` !== `<a :scope :each :if />`
 * Only one directive per `<template>`, eg. `<template :each />`, not `<template :if :each/>`
-
+ -->
 
 ## Justification
 

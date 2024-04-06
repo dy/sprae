@@ -116,8 +116,10 @@
 * [ ] move proxy state into own project / part of signal struct (with tests from here)
 * [x] some bug with keys identity in todo
 * [ ] v9 issues:
-  * [ ] creating/releasing rows doesn't clear up memory
-  * [ ] replacing/swapping rows
+  * [x] creating/releasing rows doesn't clear up memory
+    * because weakmap stores by key, only if key is disposed it clears up
+  * [ ] replacing/swapping rows is slow
+    * because we do full list comparison
 * [ ] state as signal: test updates itself `sprae(el, signal({x:1}))` - needed for :each loop
 * [ ] switchable compiler
 * [ ] try getting rid of compile() calls in subscript

@@ -2,12 +2,7 @@ import sprae, { directive, compile, swap } from "../core.js";
 
 export const _each = Symbol(":each");
 
-swap.remove = el => {
-  el.remove()
-  el[Symbol.dispose]?.()
-}
-
-const keys = {}
+const keys = {}, _key = Symbol('key')
 
 // :each must init before :ref, :id or any others, since it defines scope
 directive.each = (tpl, expr, state, name) => {
@@ -25,6 +20,15 @@ directive.each = (tpl, expr, state, name) => {
 
   let cur = [];
 
+  const remove = el => {
+    el.remove()
+    el[Symbol.dispose]?.()
+    if (el[_key]) {
+      elCache.delete(el[_key])
+      stateCache.delete(el[_key])
+    }
+  }, { insert } = swap
+
   // naive approach: whenever items change we replace full list
   return () => {
     let items = evaluate(state)?.valueOf(), els = [];
@@ -38,7 +42,7 @@ directive.each = (tpl, expr, state, name) => {
       key = (Object(key) !== key) ? (keys[key] ||= Object(key)) : item
 
       if (key == null || count.has(key) || tpl.content) el = (tpl.content || tpl).cloneNode(true)
-      else count.set(key, 1), el = elCache.get(key) || (elCache.set(key, tpl.cloneNode(true)), elCache.get(key));
+      else count.set(key, 1), (el = elCache.get(key) || (elCache.set(key, tpl.cloneNode(true)), elCache.get(key)))[_key] = key;
 
       // creating via prototype is faster in both creation time & reading time
       let substate = stateCache.get(key) || (stateCache.set(key, Object.create(state, { [idxVar]: { value: idx } })), stateCache.get(key));
@@ -50,6 +54,6 @@ directive.each = (tpl, expr, state, name) => {
       if (el.nodeType === 11) els.push(...el.childNodes); else els.push(el);
     }
 
-    swap(parent, cur, cur = els, holder);
+    swap(parent, cur, cur = els, holder, { insert, remove });
   }
 }
