@@ -265,16 +265,13 @@ Trigger when element is connected / disconnected from DOM.
 ```
 -->
 
-## Signals
+## Customization
 
-Sprae uses preact-flavored [signals](https://github.com/proposal-signals/proposal-signals) for reactivity. Any alternative signals implementation can be used:
+_Sprae_ can be reconfigured to use alternative signals provider, expressions evaluator or directives.
 
-Provider | Size | Feature
-:---|:---|:---
-[`ulive`](https://ghub.io/ulive) | 350b | Minimal implementation, basic performance, good for small states
-[`@webreflection/signal`](https://ghib.io/@webreflection/signal) | 531b | Class-based, better performance, good for small-medium states
-[`usignal`](https://ghib.io/usignal) | 850b | Class-based with optimizations, good for medium states
-[`@preact/signals-core`](https://ghub.io/@preact/signals-core) | 1.47kb | Best performance, good for any states
+### Signals
+
+Sprae uses [standard signals](https://github.com/proposal-signals/proposal-signals) for reactivity, but can be switched to any preact-flavored signals library:
 
 ```js
 import sprae, { signal, computed, effect, batch, untracked } from 'sprae';
@@ -285,9 +282,17 @@ sprae.use(signals);
 sprae(el, { name: signal('Kitty') });
 ```
 
-## Expressions
+Provider | Size | Feature
+:---|:---|:---
+[`ulive`](https://ghub.io/ulive) | 350b | Minimal implementation, basic performance, good for small states
+[`@webreflection/signal`](https://ghib.io/@webreflection/signal) | 531b | Class-based, better performance, good for small-medium states
+[`usignal`](https://ghib.io/usignal) | 850b | Class-based with optimizations, good for medium states
+[`@preact/signals-core`](https://ghub.io/@preact/signals-core) | 1.47kb | Best performance, good for any states
 
-Expressions use `_new Function_` as default evaluator, which is fast & compact way, but violates "unsafe-eval" CSP. To make eval stricter & safer, an alternative evaluator can be configured, eg. _justin_:
+
+### Expressions Evaluator
+
+Expressions use _new Function_ as default evaluator, which is fast & compact way, but violates "unsafe-eval" CSP. To make eval stricter & safer, an alternative evaluator can be configured, eg. _justin_:
 
 ```js
 import sprae from 'sprae'
@@ -311,14 +316,12 @@ sprae.use({compile: justin}) // set up justin as default compiler
 `true false null undefined NaN`
 
 
-## Customization
+## Directives
 
 Sprae build can be tailored to project needs via `sprae/core`:
 
 ```js
 import sprae, { directive } from 'sprae/core.js'
-import { justin } from 'subscript'
-import * as signals from 'ulive'
 
 // include directives
 import 'sprae/directive/if.js'
@@ -328,12 +331,6 @@ import 'sprae/directive/text.js'
 directive.id = (el, evaluate, state) => {
   return () => el.id = evaluate(state)  // return update function
 }
-
-// define compiler
-sprae.use({ compile: justin })
-
-// define signals
-sprae.use(signals)
 ```
 
 See [`sprae.js`](./sprae.js) for example.
@@ -349,21 +346,6 @@ import domdiff from 'list-difference';
 
 // swap(parentNode, prevEls, newEls, endNode?)
 sprae.use({ swap: domdiff });
-```
--->
-
-
-<!--
-### Custom Build
-
-`sprae/core` exports bare-bones engine without directives, which allows tailoring build to project needs:
-
-```js
-import sprae, { directive, effect } from 'sprae/core'
-
-// include required directives
-import 'sprae/directive/if'
-import 'sprae/directive/text'
 ```
 -->
 
