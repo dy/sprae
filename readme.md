@@ -271,7 +271,7 @@ Sprae uses preact-flavored [signals](https://github.com/proposal-signals/proposa
 Any alternative signals implementation can be used:
 
 Provider | Size | Feature
----|---|---
+:---|:---|:---
 [`@preact/signals-core`](https://ghub.io/@preact/signals-core) | 1.47kb | Best performance, good for any states
 [`usignal`](https://ghib.io/usignal) | 850b | Class-based with optimizations, good for medium states
 [`@webreflection/signal`](https://ghib.io/@webreflection/signal) | 531b | Class-based, better performance, good for small-medium states
