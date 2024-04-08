@@ -123,8 +123,9 @@
 * [ ] state as signal: test updates itself `sprae(el, signal({x:1}))` - needed for :each loop
 * [x] switchable compiler
 * [ ] try getting rid of compile() calls in subscript
+* [x] try getting rid of compile() calls in sprae
   ? how to parse each, ref expression?
-* [ ] try getting rid of compile() calls in sprae
+    -> via redefining .parse
 
 ## [ ] v10
 

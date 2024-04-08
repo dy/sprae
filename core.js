@@ -1,5 +1,3 @@
-import swapdom from 'swapdom/inflate'
-
 // polyfill
 const _dispose = (Symbol.dispose ||= Symbol("dispose"));
 
@@ -47,7 +45,9 @@ export default function sprae(container, values) {
 
           // NOTE: secondary directives don't stop flow nor extend state, so no need to check
           for (let name of names) {
-            let update = (directive[name] || directive.default)(el, attr.value, state, name);
+            let dir = directive[name] || directive.default
+            let evaluate = (dir.parse || parse)(attr.value, parse)
+            let update = dir(el, evaluate, state, name);
             if (update) {
               update[_dispose] = effect(update);
               effects.push(update);
@@ -92,29 +92,31 @@ export default function sprae(container, values) {
 // default compiler
 const evalMemo = {};
 
-export const compile = (expr, dir, fn) => {
+const parse = (expr, dir, fn) => {
   if (fn = evalMemo[expr = expr.trim()]) return fn
 
   // static-time errors
-  try { fn = compiler(expr); }
+  try { fn = compile(expr); }
   catch (e) { throw Object.assign(e, { message: `∴ ${e.message}\n\n${dir}${expr ? `="${expr}"\n\n` : ""}`, expr }) }
+
+  fn.expr = expr
 
   // runtime errors
   return evalMemo[expr] = fn
 }
 
 // default compiler is simple new Function (tiny obfuscation against direct new Function detection)
-export let compiler
+export let compile
 
 // DOM swapper
-export let swap = swapdom
+export let swap
 
 // interpolate a$<b> fields from context
 export const ipol = (v, state) => {
   return v?.replace ? v.replace(/\$<([^>]+)>/g, (match, field) => state[field]?.valueOf?.() ?? '') : v
 };
 
-// configure signals/compiler/differ
+// configure signals/compile/differ
 // it's more compact than using sprae.signal = signal etc.
 sprae.use = s => {
   s.signal && (
@@ -125,5 +127,5 @@ sprae.use = s => {
     untracked = s.untracked || batch
   );
   s.swap && (swap = s.swap)
-  s.compiler && (compiler = s.compiler)
+  s.compile && (compile = s.compile)
 }

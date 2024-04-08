@@ -1046,3 +1046,8 @@
 + generally it makes signals mechanism implicit and optional - API-wise user cares less about what should be a signal what not
 - possibly some bit more of memory/perf cost, since static values get wrapped into signals
   ? can we optimize static array values instead of being a bunch of signals instead be one signal?
+
+## [ ] Should we replace `:each="item in items"` to `:each.item="items"`?
+
+- non-conventional
++ `:each` is the only exception now that needs custom expr parsing

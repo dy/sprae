@@ -1,7 +1,6 @@
-import { directive, compile, ipol } from "../core.js";
+import { directive, ipol } from "../core.js";
 
-directive.class = (el, expr, state) => {
-  let evaluate = compile(expr, 'class');
+directive.class = (el, evaluate, state) => {
   let cur = new Set
   return () => {
     let v = evaluate(state);

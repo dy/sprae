@@ -3,8 +3,8 @@
 > DOM tree microhydration
 
 _Sprae_ is a compact & ergonomic progressive enhancement framework.<br/>
-It provides `:`-attributes for inline markup logic with _signals_-based reactivity.<br/>
-Perfect for small-scale websites, prototypes, or lightweight UI.<br/>
+It provides `:`-attributes for inline markup logic with [_signals_](https://github.com/proposal-signals/proposal-signals) reactivity.<br/>
+Perfect for small-scale websites (landings), prototypes, or lightweight UI.<br/>
 
 
 ## Usage
@@ -265,10 +265,10 @@ Trigger when element is connected / disconnected from DOM.
 ```
 -->
 
-
 ## Signals
 
-Sprae can uses signals from [signals proposal](https://github.com/proposal-signals/proposal-signals), preact-flavored. Any alternative signals implementation can be used:
+Sprae uses [signals proposal](https://github.com/proposal-signals/proposal-signals), preact-flavored for reactivity.<br/>
+Any alternative signals implementation can be used:
 
 Provider | Size | Feature
 ---|---
@@ -288,7 +288,6 @@ sprae.use(signals);
 sprae(el, { name: signal('Kitty') });
 ```
 
-
 ## Expressions
 
 Expressions use `_new Function_` as default evaluator, which is fast & compact way, but violates "unsafe-eval" CSP. To make eval stricter & safer, an alternative evaluator can be configured, eg. _justin_:
@@ -297,7 +296,7 @@ Expressions use `_new Function_` as default evaluator, which is fast & compact w
 import sprae from 'sprae'
 import justin from 'subscript/justin'
 
-sprae.use({compiler: justin}) // set up justin as default compiler
+sprae.use({compile: justin}) // set up justin as default compiler
 ```
 
 [_Justin_](https://github.com/dy/subscript?tab=readme-ov-file#justin) is minimal JS subset. It avoids "unsafe-eval" CSP and provides sandboxing.
@@ -317,21 +316,30 @@ sprae.use({compiler: justin}) // set up justin as default compiler
 
 ## Customization
 
-Sprae build can be tailored to project needs via `sprae/core` and `sprae/directive/*`:
+Sprae build can be tailored to project needs via `sprae/core`:
 
 ```js
-import sprae, { directive, compile } from 'sprae/core.js'
+import sprae, { directive } from 'sprae/core.js'
+import { justin } from 'subscript'
+import * as signals from 'ulive'
 
 // include directives
-import 'sprae/directive/if.js';
-import 'sprae/directive/text.js';
+import 'sprae/directive/if.js'
+import 'sprae/directive/text.js'
 
 // define custom directive
-directive.id = (el, expr, state) => {
-  const evaluate = compile(state, 'id') // expression string -> evaluator
+directive.id = (el, evaluate, state) => {
   return () => el.id = evaluate(state)  // return update function
 }
+
+// define compiler
+sprae.use({ compile: justin })
+
+// define signals
+sprae.use(signals)
 ```
+
+See [`sprae.js`](./sprae.js) for example.
 
 <!--
 ### DOM diffing

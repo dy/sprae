@@ -1,8 +1,7 @@
-import { directive, compile } from "../core.js";
+import { directive } from "../core.js";
 
 // set text content
-directive.text = (el, expr, state) => {
-  let evaluate = compile(expr, 'text');
+directive.text = (el, evaluate, state) => {
   if (el.content) el.replaceWith(el = document.createTextNode('')) // <template :text="abc"/>
 
   return () => {

@@ -1,6 +1,5 @@
-import { directive, compile } from "../core.js";
+import { directive } from "../core.js";
 
-directive.fx = (el, expr, state, name) => {
-  let evaluate = compile(expr, name);
+directive.fx = (el, evaluate, state) => {
   return () => evaluate(state);
 };

@@ -1,22 +1,17 @@
-import sprae, { directive, compile, swap } from "../core.js";
+import sprae, { directive, swap } from "../core.js";
 
 export const _each = Symbol(":each");
 
-const keys = {}, _key = Symbol('key')
+const keys = {}, _key = Symbol('key');
 
 // :each must init before :ref, :id or any others, since it defines scope
-directive.each = (tpl, expr, state, name) => {
-  let [leftSide, itemsExpr] = expr.split(/\s+in\s+/);
-  let [itemVar, idxVar = "$"] = leftSide.split(/\s*,\s*/);
-
+(directive.each = (tpl, [itemVar, idxVar, evaluate], state) => {
   // we need :if to be able to replace holder instead of tpl for :if :each case
   const holder = (tpl[_each] = document.createTextNode("")), parent = tpl.parentNode;
   tpl.replaceWith(holder);
 
   // key -> el
   const elCache = new WeakMap, stateCache = new WeakMap
-
-  const evaluate = compile(itemsExpr, name);
 
   let cur = [];
 
@@ -28,6 +23,7 @@ directive.each = (tpl, expr, state, name) => {
       stateCache.delete(el[_key])
     }
   }, { insert, replace } = swap
+
   const options = { remove, insert, replace }
 
   // naive approach: whenever items change we replace full list
@@ -57,4 +53,9 @@ directive.each = (tpl, expr, state, name) => {
 
     swap(parent, cur, cur = els, holder, options);
   }
+}).parse = (expr, parse) => {
+  let [leftSide, itemsExpr] = expr.split(/\s+in\s+/);
+  let [itemVar, idxVar = "$"] = leftSide.split(/\s*,\s*/);
+
+  return [itemVar, idxVar, parse(itemsExpr)]
 }

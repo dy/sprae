@@ -1,10 +1,8 @@
-import { directive, compile } from "../core.js";
+import { directive } from "../core.js";
 import { attr } from './default.js';
 
 // connect expr to element value
-directive.value = (el, expr, state) => {
-  let evaluate = compile(expr, 'value');
-
+directive.value = (el, evaluate, state) => {
   let from, to;
   let update = el.type === "text" || el.type === ""
     ? (value) => el.setAttribute("value", (el.value = value == null ? "" : value))

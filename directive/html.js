@@ -1,7 +1,7 @@
-import sprae, { directive, compile } from "../core.js";
+import sprae, { directive } from "../core.js";
 
-directive.html = (el, expr, state, name) => {
-  let evaluate = compile(expr, name), tpl = evaluate(state);
+directive.html = (el, evaluate, state) => {
+  let tpl = evaluate(state);
 
   if (!tpl) return
 

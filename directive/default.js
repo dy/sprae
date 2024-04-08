@@ -1,15 +1,14 @@
-import { directive, compile, ipol } from "../core.js";
+import { directive, ipol } from "../core.js";
 
 // set generic property directive
-directive.default = (el, expr, state, name) => {
+directive.default = (el, evaluate, state, name) => {
   let evt = name.startsWith("on") && name.slice(2);
-  let evaluate = compile(expr, name);
 
   if (evt) {
     let off
     return () => (
       off?.(), // intermediate teardown
-      off = on(el, evt, evaluate(state))
+      off = on(el, evt, evaluate(state)?.valueOf())
     );
   }
 

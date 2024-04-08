@@ -1,7 +1,6 @@
-import { directive, compile, ipol } from "../core.js";
+import { directive, ipol } from "../core.js";
 
-directive.style = (el, expr, state) => {
-  let evaluate = compile(expr, 'style');
+directive.style = (el, evaluate, state) => {
   let initStyle = el.getAttribute("style") || "";
   if (!initStyle.endsWith(";")) initStyle += "; ";
 

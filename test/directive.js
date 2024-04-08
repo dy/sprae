@@ -1209,7 +1209,7 @@ test.todo("getters", async () => {
 
 test("csp: sandbox", async () => {
   const { default: justin } = await import('subscript/justin')
-  sprae.use({ compiler: justin })
+  sprae.use({ compile: justin })
   const globals = { console };
   const state = Object.assign(Object.create(globals), { log: [] });
 
