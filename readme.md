@@ -267,17 +267,14 @@ Trigger when element is connected / disconnected from DOM.
 
 ## Signals
 
-Sprae uses preact-flavored [signals](https://github.com/proposal-signals/proposal-signals) for reactivity.<br/>
-Any alternative signals implementation can be used:
+Sprae uses preact-flavored [signals](https://github.com/proposal-signals/proposal-signals) for reactivity. Any alternative signals implementation can be used:
 
 Provider | Size | Feature
 :---|:---|:---
-[`@preact/signals-core`](https://ghub.io/@preact/signals-core) | 1.47kb | Best performance, good for any states
-[`usignal`](https://ghib.io/usignal) | 850b | Class-based with optimizations, good for medium states
-[`@webreflection/signal`](https://ghib.io/@webreflection/signal) | 531b | Class-based, better performance, good for small-medium states
 [`ulive`](https://ghub.io/ulive) | 350b | Minimal implementation, basic performance, good for small states
-
-To switch signals provider:
+[`@webreflection/signal`](https://ghib.io/@webreflection/signal) | 531b | Class-based, better performance, good for small-medium states
+[`usignal`](https://ghib.io/usignal) | 850b | Class-based with optimizations, good for medium states
+[`@preact/signals-core`](https://ghub.io/@preact/signals-core) | 1.47kb | Best performance, good for any states
 
 ```js
 import sprae, { signal, computed, effect, batch, untracked } from 'sprae';
