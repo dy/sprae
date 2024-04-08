@@ -115,17 +115,18 @@
 * [ ] js-framework-bench push + example
 * [ ] move proxy state into own project / part of signal struct (with tests from here)
 * [x] some bug with keys identity in todo
-* [ ] v9 issues:
+* [x] v9 issues:
   * [x] creating/releasing rows doesn't clear up memory
     * because weakmap stores by key, only if key is disposed it clears up
-  * [ ] replacing/swapping rows is slow
-    * the problem is not removal issue, but (seemingly) incremental appending (need better algo)
+  * [x] replacing/swapping rows is slow
+    * the reason of slowdown is key - sometimes it's better to keep index as key, not id
 * [ ] state as signal: test updates itself `sprae(el, signal({x:1}))` - needed for :each loop
 * [x] switchable compiler
 * [ ] try getting rid of compile() calls in subscript
+  ? how to parse each, ref expression?
 * [ ] try getting rid of compile() calls in sprae
 
 ## [ ] v10
 
-* [ ] signals based on signals proposal
+* [x] signals based on signals proposal
 * [ ] proxy state is back

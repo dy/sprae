@@ -1,5 +1,4 @@
 import swapdom from 'swapdom/inflate'
-import * as signals from 'ulive'
 
 // polyfill
 const _dispose = (Symbol.dispose ||= Symbol("dispose"));
@@ -8,7 +7,7 @@ const _dispose = (Symbol.dispose ||= Symbol("dispose"));
 const SPRAE = `∴`
 
 // signals impl
-export let { signal, effect, batch, computed, untracked } = signals;
+export let signal, effect, batch, computed, untracked
 
 // reserved directives - order matters!
 export const directive = {};
@@ -105,7 +104,7 @@ export const compile = (expr, dir, fn) => {
 }
 
 // default compiler is simple new Function (tiny obfuscation against direct new Function detection)
-export let compiler = expr => compiler.constructor(`__scope`, `with (__scope) { return ${expr} };`)
+export let compiler
 
 // DOM swapper
 export let swap = swapdom

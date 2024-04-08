@@ -1,6 +1,16 @@
-export * from './core.js'
-export { default } from './core.js'
+import sprae from './core.js'
+import * as signals from './signal.js'
 
+// default signals
+sprae.use(signals)
+
+// default compiler (indirect new Function since we can use justin)
+sprae.use({ compiler: expr => sprae.constructor(`__scope`, `with (__scope) { return ${expr} };`) })
+
+export default sprae
+export { signal, computed, effect, batch, untracked } from './core.js'
+
+// default directives
 import './directive/if.js'
 import './directive/each.js'
 import './directive/ref.js'

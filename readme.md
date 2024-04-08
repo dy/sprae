@@ -266,6 +266,29 @@ Trigger when element is connected / disconnected from DOM.
 -->
 
 
+## Signals
+
+Sprae can uses signals from [signals proposal](https://github.com/proposal-signals/proposal-signals), preact-flavored. Any alternative signals implementation can be used:
+
+Provider | Size | Feature
+---|---
+[`@preact/signals-core`](https://ghub.io/@preact/signals-core) | 1.47kb | Best performance, good for any states
+[`usignal`](https://ghib.io/usignal) | 850b | Class-based with optimizations, good for medium states
+[`@webreflection/signal`](https://ghib.io/@webreflection/signal) | 531b | Class-based, better performance, good for small-medium states
+[`ulive`](https://ghub.io/ulive) | 350b | Minimal implementation, basic performance, good for small states
+
+To switch signals provider:
+
+```js
+import sprae, { signal, computed, effect, batch, untracked } from 'sprae';
+import * as signals from '@preact/signals-core';
+
+sprae.use(signals);
+
+sprae(el, { name: signal('Kitty') });
+```
+
+
 ## Expressions
 
 Expressions use `_new Function_` as default evaluator, which is fast & compact way, but violates "unsafe-eval" CSP. To make eval stricter & safer, an alternative evaluator can be configured, eg. _justin_:
@@ -290,20 +313,6 @@ sprae.use({compiler: justin}) // set up justin as default compiler
 `[] {} "" ''`<br/>
 `1 2.34 -5e6 0x7a`<br/>
 `true false null undefined NaN`
-
-
-## Signals
-
-Sprae uses minimal signals based on [`ulive`](https://ghub.io/ulive). It can be switched to more optimized [`@preact/signals-core`](https://ghub.io/@preact/signals-core), [`@webreflection/signal`](https://ghib.io/@webreflection/signal), [`usignal`](https://ghib.io/usignal) etc:
-
-```js
-import sprae, { signal, computed, effect, batch, untracked } from 'sprae';
-import * as signals from '@preact/signals-core';
-
-sprae.use(signals);
-
-sprae(el, { name: signal('Kitty') });
-```
 
 
 ## Customization
