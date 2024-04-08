@@ -290,7 +290,7 @@ Provider | Size | Feature
 [`@preact/signals-core`](https://ghub.io/@preact/signals-core) | 1.47kb | Best performance, good for any states
 
 
-### Expressions Evaluator
+### Evaluator
 
 Expressions use _new Function_ as default evaluator, which is fast & compact way, but violates "unsafe-eval" CSP. To make eval stricter & safer, an alternative evaluator can be configured, eg. _justin_:
 
