@@ -1,7 +1,7 @@
 import sprae from './core.js'
 
-import * as signals from './signal.js'
-import swap from 'swapdom/inflate'
+import * as signals from 'ulive'
+import swap from 'swapdom/deflate'
 
 // default directives
 import './directive/if.js'
@@ -26,4 +26,4 @@ sprae.use({ compile: expr => sprae.constructor(`__scope`, `with (__scope) { retu
 sprae.use({ swap })
 
 export default sprae
-export { signal, computed, effect, batch, untracked } from './core.js'
+export { signal, computed, untracked, batch, effect } from './core.js'

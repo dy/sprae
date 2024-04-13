@@ -602,6 +602,7 @@ test("each: loop within loop", async () => {
 });
 
 test("each: fragments single", async () => {
+  await tick()
   let el = h`<p>
     <template :each="a in b"><span :text="a"/></template>
   </p>`;
@@ -610,6 +611,7 @@ test("each: fragments single", async () => {
   const params = sprae(el, { b });
 
   is(el.innerHTML, "<span>1</span>");
+  await tick()
   b.value = [1, 2];
   await tick()
   is(el.innerHTML, "<span>1</span><span>2</span>");

@@ -18,6 +18,7 @@ t('signal: readme', async t => {
   is(v1.value, 1)
   // is(log, [0, '-', 1])
   unsub()
+  await tick()
 
   // from value
   let v2 = computed(() => v1 * 2)
@@ -32,7 +33,7 @@ t('signal: readme', async t => {
   console.log('v1.value = 2')
   v1.value = 2
   await tick()
-  is(log, [2, 4])
+  is(log, [2, 4], 'no extra values')
 
   // ignore unchanged
   v1.value = 2
