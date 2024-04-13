@@ -26,4 +26,4 @@ sprae.use({ compile: expr => sprae.constructor(`__scope`, `with (__scope) { retu
 sprae.use({ swap })
 
 export default sprae
-export { signal, computed, untracked, batch, effect } from './core.js'
+export * from './core.js'

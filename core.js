@@ -105,16 +105,11 @@ const parse = (expr, dir, fn) => {
   return evalMemo[expr] = fn
 }
 
-// default compiler is simple new Function (tiny obfuscation against direct new Function detection)
+// compiler
 export let compile
 
 // DOM swapper
 export let swap
-
-// interpolate a$<b> fields from context
-export const ipol = (v, state) => {
-  return v?.replace ? v.replace(/\$<([^>]+)>/g, (match, field) => state[field]?.valueOf?.() ?? '') : v
-};
 
 // configure signals/compile/differ
 // it's more compact than using sprae.signal = signal etc.

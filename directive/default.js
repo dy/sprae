@@ -1,4 +1,4 @@
-import { directive, ipol } from "../core.js";
+import { directive } from "../core.js";
 
 // set generic property directive
 directive.default = (el, evaluate, state, name) => {
@@ -145,3 +145,8 @@ const debounce = (fn, wait) => {
 export const dashcase = (str) => {
   return str.replace(/[A-Z\u00C0-\u00D6\u00D8-\u00DE]/g, (match) => "-" + match.toLowerCase());
 }
+
+// interpolate a$<b> fields from context
+export const ipol = (v, state) => {
+  return v?.replace ? v.replace(/\$<([^>]+)>/g, (match, field) => state[field]?.valueOf?.() ?? '') : v
+};

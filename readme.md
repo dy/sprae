@@ -265,13 +265,9 @@ Trigger when element is connected / disconnected from DOM.
 ```
 -->
 
-## Customization
+## Signals
 
-_Sprae_ can be reconfigured to use alternative signals provider, expressions evaluator or directives.
-
-### Signals
-
-Sprae uses [standard signals](https://github.com/proposal-signals/proposal-signals) for reactivity, but can be switched to any preact-flavored signals library:
+Sprae uses signals for reactivity (see (_sprae/signal.js_)[./signal.js]). It can be switched to any alternative preact-flavored signals (for compatibility or performance):
 
 ```js
 import sprae, { signal, computed, effect, batch, untracked } from 'sprae';
@@ -288,9 +284,10 @@ Provider | Size | Feature
 [`@webreflection/signal`](https://ghib.io/@webreflection/signal) | 531b | Class-based, better performance, good for small-medium states
 [`usignal`](https://ghib.io/usignal) | 850b | Class-based with optimizations, good for medium states
 [`@preact/signals-core`](https://ghub.io/@preact/signals-core) | 1.47kb | Best performance, good for any states
+[`signal-polyfill`](https://github.com/tc39/proposal-signals) | 2.5kb | Standard signals, slowest performance. Use via [adapter](https://gist.github.com/dy/bbac687464ccf5322ab0e2fd0680dc4d).
 
 
-### Evaluator
+## Evaluator
 
 Expressions use _new Function_ as default evaluator, which is fast & compact way, but violates "unsafe-eval" CSP. To make eval stricter & safer, an alternative evaluator can be configured, eg. _justin_:
 
@@ -318,14 +315,10 @@ sprae.use({compile: justin}) // set up justin as default compiler
 
 ## Directives
 
-Sprae build can be tailored to project needs via `sprae/core`:
+Custom directives can be added as:
 
 ```js
 import sprae, { directive } from 'sprae/core.js'
-
-// include directives
-import 'sprae/directive/if.js'
-import 'sprae/directive/text.js'
 
 // define custom directive
 directive.id = (el, evaluate, state) => {
@@ -333,7 +326,30 @@ directive.id = (el, evaluate, state) => {
 }
 ```
 
-See [`sprae.js`](./sprae.js) for example.
+## Custom build
+
+_Sprae_ can be tailored to project needs via `sprae/core` for performance, size or compatibility purposes:
+
+```js
+// sprae.custom.js
+import sprae, { directive } from 'sprae/core.js'
+import * as signals from '@preact/signals'
+import compile from 'subscript'
+import diff from 'udomdiff
+
+// include directives
+import 'sprae/directive/if.js'
+import 'sprae/directive/text.js'
+
+// configure signals
+sprae.use(signals)
+
+// configure compiler
+sprae.use({ compile })
+
+// configure dom differ
+sprae.use({ swap: (parent, from, to, before) => udomdiff(parent, from, to, node=>node, before) })
+```
 
 <!--
 ### DOM diffing

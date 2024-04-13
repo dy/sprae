@@ -1,4 +1,5 @@
-import { directive, ipol } from "../core.js";
+import { directive } from "../core.js";
+import { ipol } from './default.js';
 
 directive.class = (el, evaluate, state) => {
   let cur = new Set

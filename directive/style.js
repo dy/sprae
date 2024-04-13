@@ -1,4 +1,5 @@
-import { directive, ipol } from "../core.js";
+import { directive } from "../core.js";
+import { ipol } from './default.js';
 
 directive.style = (el, evaluate, state) => {
   let initStyle = el.getAttribute("style") || "";
