@@ -267,7 +267,7 @@ Trigger when element is connected / disconnected from DOM.
 
 ## Signals
 
-Sprae uses signals for reactivity (see (_sprae/signal.js_)[./signal.js]). It can be switched to any alternative preact-flavored signals (for compatibility or performance):
+Sprae uses signals for reactivity (see [_sprae/signal.js_](./signal.js)). It can be switched to any alternative preact-flavored signals (for compatibility or performance):
 
 ```js
 import sprae, { signal, computed, effect, batch, untracked } from 'sprae';
