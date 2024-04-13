@@ -4,343 +4,14 @@ var __export = (target, all) => {
     __defProp(target, name, { get: all[name], enumerable: true });
 };
 
-// node_modules/swapdom/swap-inflate.js
-var swap = (parent, a, b, end = null) => {
-  let i = 0, cur2, next2, bi, n = b.length, m = a.length, { remove, same, insert, replace } = swap;
-  while (i < n && i < m && same(a[i], b[i]))
-    i++;
-  while (i < n && i < m && same(b[n - 1], a[m - 1]))
-    end = b[--m, --n];
-  if (i == m)
-    while (i < n)
-      insert(end, b[i++], parent);
-  else {
-    cur2 = a[i];
-    while (i < n) {
-      bi = b[i++], next2 = cur2 ? cur2.nextSibling : end;
-      if (same(cur2, bi))
-        cur2 = next2;
-      else if (i < n && same(b[i], next2))
-        replace(cur2, bi, parent), cur2 = next2;
-      else
-        insert(cur2, bi, parent);
-    }
-    while (!same(cur2, end))
-      next2 = cur2.nextSibling, remove(cur2, parent), cur2 = next2;
-  }
-  return b;
-};
-swap.same = (a, b) => a == b;
-swap.replace = (a, b, parent) => parent.replaceChild(b, a);
-swap.insert = (a, b, parent) => parent.insertBefore(b, a);
-swap.remove = (a, parent) => parent.removeChild(a);
-var swap_inflate_default = swap;
-
-// node_modules/ulive/dist/ulive.es.js
-var ulive_es_exports = {};
-__export(ulive_es_exports, {
-  batch: () => batch,
-  computed: () => computed,
-  current: () => current,
-  effect: () => effect,
-  signal: () => signal,
-  untracked: () => untracked
-});
-var current;
-var signal = (v, s, obs = /* @__PURE__ */ new Set()) => (s = {
-  get value() {
-    current?.deps.push(obs.add(current));
-    return v;
-  },
-  set value(val) {
-    if (val === v)
-      return;
-    v = val;
-    for (let sub of obs)
-      sub(val);
-  },
-  peek() {
-    return v;
-  }
-}, s.toJSON = s.then = s.toString = s.valueOf = () => s.value, s);
-var effect = (fn, teardown, run, deps) => (run = (prev) => {
-  teardown?.call?.();
-  prev = current, current = run;
-  try {
-    teardown = fn();
-  } finally {
-    current = prev;
-  }
-}, deps = run.deps = [], run(), (dep) => {
-  teardown?.call?.();
-  while (dep = deps.pop())
-    dep.delete(run);
-});
-var computed = (fn, s = signal(), c, e) => (c = {
-  get value() {
-    e ||= effect(() => s.value = fn());
-    return s.value;
-  },
-  peek: s.peek
-}, c.toJSON = c.then = c.toString = c.valueOf = () => c.value, c);
-var batch = (fn) => fn();
-var untracked = (fn, prev, v) => (prev = current, current = null, v = fn(), current = prev, v);
-
-// node_modules/subscript/src/const.js
-var PERIOD = 46;
-var SPACE = 32;
-var COLON = 58;
-var DQUOTE = 34;
-var QUOTE = 39;
-var _0 = 48;
-var _9 = 57;
-var _E = 69;
-var _e = 101;
-var BSLASH = 92;
-var STAR = 42;
-var PREC_SEQ = 1;
-var PREC_ASSIGN = 2;
-var PREC_LOR = 3;
-var PREC_LAND = 4;
-var PREC_OR = 5;
-var PREC_XOR = 6;
-var PREC_AND = 7;
-var PREC_EQ = 8;
-var PREC_COMP = 9;
-var PREC_SHIFT = 10;
-var PREC_ADD = 11;
-var PREC_MULT = 12;
-var PREC_EXP = 13;
-var PREC_PREFIX = 14;
-var PREC_POSTFIX = 15;
-var PREC_ACCESS = 17;
-var PREC_TOKEN = 20;
-
-// node_modules/subscript/src/parse.js
-var idx;
-var cur;
-var parse = (s) => (idx = 0, cur = s, s = expr(), cur[idx] ? err2() : s || "");
-var err2 = (msg = "Bad syntax", lines = cur.slice(0, idx).split("\n"), last2 = lines.pop()) => {
-  let before = cur.slice(idx - 108, idx).split("\n").pop();
-  let after = cur.slice(idx, idx + 108).split("\n").shift();
-  throw EvalError(`${msg} at ${lines.length}:${last2.length} \`${idx >= 108 ? "\u2026" : ""}${before}\u2503${after}\``, "font-weight: bold");
-};
-var next = (is, from = idx, l) => {
-  while (l = is(cur.charCodeAt(idx)))
-    idx += l;
-  return cur.slice(from, idx);
-};
-var skip = (n = 1, from = idx) => (idx += n, cur.slice(from, idx));
-var expr = (prec = 0, end, cc, token2, newNode, fn) => {
-  while ((cc = parse.space()) && (newNode = ((fn = lookup[cc]) && fn(token2, prec)) ?? (!token2 && next(parse.id))))
-    token2 = newNode;
-  if (end)
-    cc == end ? idx++ : err2();
-  return token2;
-};
-var id = parse.id = (c) => c >= 48 && c <= 57 || c >= 65 && c <= 90 || c >= 97 && c <= 122 || c == 36 || c == 95 || c >= 192 && c != 215 && c != 247;
-var space = parse.space = (cc) => {
-  while ((cc = cur.charCodeAt(idx)) <= SPACE)
-    idx++;
-  return cc;
-};
-var lookup = [];
-var token = (op, prec = SPACE, map, c = op.charCodeAt(0), l = op.length, prev = lookup[c], word = op.toUpperCase() !== op) => lookup[c] = (a, curPrec, from = idx) => curPrec < prec && (l < 2 || cur.substr(idx, l) == op) && (!word || !parse.id(cur.charCodeAt(idx + l))) && (idx += l, map(a, curPrec)) || (idx = from, prev?.(a, curPrec));
-var binary = (op, prec, right = false) => token(op, prec, (a, b) => a && (b = expr(prec - (right ? 0.5 : 0))) && [op, a, b]);
-var unary = (op, prec, post) => token(op, prec, (a) => post ? a && [op, a] : !a && (a = expr(prec - 0.5)) && [op, a]);
-var nary = (op, prec) => {
-  token(
-    op,
-    prec,
-    (a, b) => (b = expr(prec), (!a || a[0] !== op) && (a = [op, a]), a.push(b), a)
-  );
-};
-var group = (op, prec) => token(op[0], prec, (a) => !a && [op, expr(0, op.charCodeAt(1))]);
-var access = (op, prec) => token(op[0], prec, (a) => a && [op[0], a, expr(0, op.charCodeAt(1))]);
-var parse_default = parse;
-
-// node_modules/subscript/src/compile.js
-var compile = (node) => !Array.isArray(node) ? compile.id(node) : !node[0] ? () => node[1] : operators[node[0]](...node.slice(1));
-var id2 = compile.id = (name) => (ctx) => ctx?.[name];
-var operators = {};
-var operator = (op, fn, prev = operators[op]) => operators[op] = (...args) => fn(...args) || prev && prev(...args);
-var prop = (a, fn, generic, obj, path) => a[0] === "()" ? prop(a[1], fn, generic) : typeof a === "string" ? (ctx) => fn(ctx, a, ctx) : a[0] === "." ? (obj = compile(a[1]), path = a[2], (ctx) => fn(obj(ctx), path, ctx)) : a[0] === "[" ? (obj = compile(a[1]), path = compile(a[2]), (ctx) => fn(obj(ctx), path(ctx), ctx)) : generic ? (a = compile(a), (ctx) => fn([a(ctx)], 0, ctx)) : () => err2("Bad left value");
-var compile_default = compile;
-
-// node_modules/subscript/feature/number.js
-var num = (a, _) => [, (a = +next((c) => c === PERIOD || c >= _0 && c <= _9 || (c === _E || c === _e ? 2 : 0))) != a ? err2() : a];
-lookup[PERIOD] = (a) => !a && num();
-for (let i = _0; i <= _9; i++)
-  lookup[i] = (a) => a ? err2() : num();
-
-// node_modules/subscript/feature/string.js
-var escape = { n: "\n", r: "\r", t: "	", b: "\b", f: "\f", v: "\v" };
-var string = (q) => (qc, c, str = "") => {
-  qc && err2("Unexpected string");
-  skip();
-  while (c = cur.charCodeAt(idx), c - q) {
-    if (c === BSLASH)
-      skip(), c = skip(), str += escape[c] || c;
-    else
-      str += skip();
-  }
-  skip() || err2("Bad string");
-  return [, str];
-};
-lookup[DQUOTE] = string(DQUOTE);
-lookup[QUOTE] = string(QUOTE);
-
-// node_modules/subscript/feature/call.js
-access("()", PREC_ACCESS);
-operator(
-  "(",
-  (a, b, args) => (args = !b ? () => [] : b[0] === "," ? (b = b.slice(1).map((b2) => !b2 ? err() : compile(b2)), (ctx) => b.map((arg) => arg(ctx))) : (b = compile(b), (ctx) => [b(ctx)]), prop(a, (obj, path, ctx) => obj[path](...args(ctx)), true))
-);
-
-// node_modules/subscript/feature/access.js
-access("[]", PREC_ACCESS);
-operator("[", (a, b) => !b ? err() : (a = compile(a), b = compile(b), (ctx) => a(ctx)[b(ctx)]));
-binary(".", PREC_ACCESS);
-operator(".", (a, b) => (a = compile(a), b = !b[0] ? b[1] : b, (ctx) => a(ctx)[b]));
-
-// node_modules/subscript/feature/group.js
-group("()", PREC_ACCESS);
-operator("()", (a) => (!a && err2("Empty ()"), compile(a)));
-var last = (...args) => (args = args.map(compile), (ctx) => args.map((arg) => arg(ctx)).pop());
-nary(",", PREC_SEQ), operator(",", last);
-nary(";", PREC_SEQ, true), operator(";", last);
-
-// node_modules/subscript/feature/mult.js
-binary("*", PREC_MULT), operator("*", (a, b) => b && (a = compile(a), b = compile(b), (ctx) => a(ctx) * b(ctx)));
-binary("/", PREC_MULT), operator("/", (a, b) => b && (a = compile(a), b = compile(b), (ctx) => a(ctx) / b(ctx)));
-binary("%", PREC_MULT), operator("%", (a, b) => b && (a = compile(a), b = compile(b), (ctx) => a(ctx) % b(ctx)));
-binary("*=", PREC_ASSIGN, true);
-operator("*=", (a, b) => (b = compile(b), prop(a, (container, path, ctx) => container[path] *= b(ctx))));
-binary("/=", PREC_ASSIGN, true);
-operator("/=", (a, b) => (b = compile(b), prop(a, (container, path, ctx) => container[path] /= b(ctx))));
-binary("%=", PREC_ASSIGN, true);
-operator("%=", (a, b) => (b = compile(b), prop(a, (container, path, ctx) => container[path] %= b(ctx))));
-
-// node_modules/subscript/feature/add.js
-unary("+", PREC_PREFIX), operator("+", (a, b) => !b && (a = compile(a), (ctx) => +a(ctx)));
-unary("-", PREC_PREFIX), operator("-", (a, b) => !b && (a = compile(a), (ctx) => -a(ctx)));
-binary("+", PREC_ADD), operator("+", (a, b) => b && (a = compile(a), b = compile(b), (ctx) => a(ctx) + b(ctx)));
-binary("-", PREC_ADD), operator("-", (a, b) => b && (a = compile(a), b = compile(b), (ctx) => a(ctx) - b(ctx)));
-binary("+=", PREC_ASSIGN, true);
-operator("+=", (a, b) => (b = compile(b), prop(a, (container, path, ctx) => container[path] += b(ctx))));
-binary("-=", PREC_ASSIGN, true);
-operator("-=", (a, b) => (b = compile(b), prop(a, (container, path, ctx) => container[path] -= b(ctx))));
-
-// node_modules/subscript/feature/increment.js
-var inc;
-var dec;
-token("++", PREC_POSTFIX, (a) => a ? ["++-", a] : ["++", expr(PREC_POSTFIX - 1)]);
-operator("++", inc = (a) => prop(a, (obj, path, ctx) => ++obj[path]));
-operator("++-", inc = (a) => prop(a, (obj, path, ctx) => obj[path]++));
-token("--", PREC_POSTFIX, (a) => a ? ["--+", a] : ["--", expr(PREC_POSTFIX - 1)]);
-operator("--", dec = (a) => prop(a, (obj, path, ctx) => --obj[path]));
-operator("--+", dec = (a) => prop(a, (obj, path, ctx) => obj[path]--));
-
-// node_modules/subscript/feature/bitwise.js
-unary("~", PREC_PREFIX), operator("~", (a, b) => !b && (a = compile(a), (ctx) => ~a(ctx)));
-binary("|", PREC_OR), operator("|", (a, b) => b && (a = compile(a), b = compile(b), (ctx) => a(ctx) | b(ctx)));
-binary("&", PREC_AND), operator("&", (a, b) => b && (a = compile(a), b = compile(b), (ctx) => a(ctx) & b(ctx)));
-binary("^", PREC_XOR), operator("^", (a, b) => b && (a = compile(a), b = compile(b), (ctx) => a(ctx) ^ b(ctx)));
-binary(">>", PREC_SHIFT), operator(">>", (a, b) => b && (a = compile(a), b = compile(b), (ctx) => a(ctx) >> b(ctx)));
-binary("<<", PREC_SHIFT), operator("<<", (a, b) => b && (a = compile(a), b = compile(b), (ctx) => a(ctx) << b(ctx)));
-
-// node_modules/subscript/feature/compare.js
-binary("==", PREC_EQ), operator("==", (a, b) => b && (a = compile(a), b = compile(b), (ctx) => a(ctx) == b(ctx)));
-binary("!=", PREC_EQ), operator("!=", (a, b) => b && (a = compile(a), b = compile(b), (ctx) => a(ctx) != b(ctx)));
-binary(">", PREC_COMP), operator(">", (a, b) => b && (a = compile(a), b = compile(b), (ctx) => a(ctx) > b(ctx)));
-binary("<", PREC_COMP), operator("<", (a, b) => b && (a = compile(a), b = compile(b), (ctx) => a(ctx) < b(ctx)));
-binary(">=", PREC_COMP), operator(">=", (a, b) => b && (a = compile(a), b = compile(b), (ctx) => a(ctx) >= b(ctx)));
-binary("<=", PREC_COMP), operator("<=", (a, b) => b && (a = compile(a), b = compile(b), (ctx) => a(ctx) <= b(ctx)));
-
-// node_modules/subscript/feature/logic.js
-unary("!", PREC_PREFIX), operator("!", (a, b) => !b && (a = compile(a), (ctx) => !a(ctx)));
-binary("||", PREC_LOR);
-operator("||", (a, b) => (a = compile(a), b = compile(b), (ctx) => a(ctx) || b(ctx)));
-binary("&&", PREC_LAND);
-operator("&&", (a, b) => (a = compile(a), b = compile(b), (ctx) => a(ctx) && b(ctx)));
-
-// node_modules/subscript/feature/assign.js
-binary("=", PREC_ASSIGN, true);
-operator("=", (a, b) => (b = compile(b), prop(a, (container, path, ctx) => container[path] = b(ctx))));
-
-// node_modules/subscript/subscript.js
-var subscript_default = (s) => compile_default(parse_default(s));
-
-// node_modules/subscript/feature/comment.js
-token("/*", PREC_TOKEN, (a, prec) => (next((c) => c !== STAR && cur.charCodeAt(idx + 1) !== 47), skip(2), a || expr(prec) || []));
-token("//", PREC_TOKEN, (a, prec) => (next((c) => c >= SPACE), a || expr(prec) || [""]));
-
-// node_modules/subscript/feature/pow.js
-binary("**", PREC_EXP, true), operator("**", (a, b) => b && (a = compile(a), b = compile(b), (ctx) => a(ctx) ** b(ctx)));
-
-// node_modules/subscript/feature/ternary.js
-token("?", PREC_ASSIGN, (a, b, c) => a && (b = expr(PREC_ASSIGN - 0.5, COLON)) && (c = expr(PREC_ASSIGN - 0.5), ["?", a, b, c]));
-operator("?", (a, b, c) => (a = compile(a), b = compile(b), c = compile(c), (ctx) => a(ctx) ? b(ctx) : c(ctx)));
-
-// node_modules/subscript/feature/bool.js
-token("true", PREC_TOKEN, (a) => a ? err() : [, true]);
-token("false", PREC_TOKEN, (a) => a ? err() : [, false]);
-
-// node_modules/subscript/feature/array.js
-group("[]", PREC_TOKEN);
-operator(
-  "[]",
-  (a, b) => (a = !a ? [] : a[0] === "," ? a.slice(1) : [a], a = a.map((a2) => a2[0] === "..." ? (a2 = compile(a2[1]), (ctx) => a2(ctx)) : (a2 = compile(a2), (ctx) => [a2(ctx)])), (ctx) => a.flatMap((a2) => a2(ctx)))
-);
-
-// node_modules/subscript/feature/object.js
-group("{}", PREC_TOKEN);
-operator("{}", (a, b) => (a = !a ? [] : a[0] !== "," ? [a] : a.slice(1), a = a.map((p) => compile(typeof p === "string" ? [":", p, p] : p)), (ctx) => Object.fromEntries(a.flatMap((frag) => frag(ctx)))));
-binary(":", PREC_ASSIGN - 0.5, true);
-operator(":", (a, b) => (b = compile(b), Array.isArray(a) ? (a = compile(a), (ctx) => [[a(ctx), b(ctx)]]) : (ctx) => [[a, b(ctx)]]));
-
-// node_modules/subscript/feature/arrow.js
-binary("=>", PREC_ASSIGN, true);
-operator(
-  "=>",
-  (a, b) => (a = a[0] === "()" ? a[1] : a, a = !a ? [] : a[0] === "," ? a = a.slice(1) : a = [a], b = compile(b[0] === "{}" ? b[1] : b), (ctx = null) => (ctx = Object.create(ctx), (...args) => (a.map((a2, i) => ctx[a2] = args[i]), b(ctx))))
-);
-binary("");
-
-// node_modules/subscript/feature/optional.js
-token("?.", PREC_ACCESS, (a) => a && ["?.", a]);
-operator("?.", (a) => (a = compile(a), (ctx) => a(ctx) || (() => {
-})));
-token("?.", PREC_ACCESS, (a, b) => a && (b = expr(PREC_ACCESS), !b?.map) && ["?.", a, b]);
-operator("?.", (a, b) => b && (a = compile(a), (ctx) => a(ctx)?.[b]));
-operator("(", (a, b, container, args, path, optional) => a[0] === "?." && (a[2] || Array.isArray(a[1])) && (args = !b ? () => [] : b[0] === "," ? (b = b.slice(1).map(compile), (ctx) => b.map((a2) => a2(ctx))) : (b = compile(b), (ctx) => [b(ctx)]), !a[2] && (optional = true, a = a[1]), a[0] === "[" ? path = compile(a[2]) : path = () => a[2], container = compile(a[1]), optional ? (ctx) => container(ctx)?.[path(ctx)]?.(...args(ctx)) : (ctx) => container(ctx)?.[path(ctx)](...args(ctx))));
-
-// node_modules/subscript/feature/spread.js
-unary("...", PREC_PREFIX);
-operator("...", (a) => (a = compile(a), (ctx) => Object.entries(a(ctx))));
-
-// node_modules/subscript/justin.js
-binary("in", PREC_COMP), operator("in", (a, b) => b && (a = compile_default(a), b = compile_default(b), (ctx) => a(ctx) in b(ctx)));
-binary("===", PREC_EQ), binary("!==", 9);
-operator("===", (a, b) => (a = compile_default(a), b = compile_default(b), (ctx) => a(ctx) === b(ctx)));
-operator("!==", (a, b) => (a = compile_default(a), b = compile_default(b), (ctx) => a(ctx) !== b(ctx)));
-binary("??", PREC_LOR);
-operator("??", (a, b) => b && (a = compile_default(a), b = compile_default(b), (ctx) => a(ctx) ?? b(ctx)));
-binary("??=", PREC_ASSIGN, true);
-operator("??=", (a, b) => (b = compile_default(b), prop(a, (obj, path, ctx) => obj[path] ??= b(ctx))));
-binary("||=", PREC_ASSIGN, true);
-operator("||=", (a, b) => (b = compile_default(b), prop(a, (obj, path, ctx) => obj[path] ||= b(ctx))));
-binary("&&=", PREC_ASSIGN, true);
-operator("&&=", (a, b) => (b = compile_default(b), prop(a, (obj, path, ctx) => obj[path] &&= b(ctx))));
-token("undefined", 20, (a) => a ? err2() : [, void 0]);
-token("NaN", 20, (a) => a ? err2() : [, NaN]);
-token("null", 20, (a) => a ? err2() : [, null]);
-var justin_default = subscript_default;
-
 // core.js
 var _dispose = Symbol.dispose ||= Symbol("dispose");
 var SPRAE = `\u2234`;
-var { signal: signal2, effect: effect2, batch: batch2, computed: computed2, untracked: untracked2 } = ulive_es_exports;
+var signal;
+var effect;
+var batch;
+var computed;
+var untracked;
 var directive = {};
 var memo = /* @__PURE__ */ new WeakMap();
 function sprae(container, values) {
@@ -351,7 +22,7 @@ function sprae(container, values) {
     for (let k in values) {
       state2[k] = values[k];
     }
-    untracked2(() => {
+    untracked(() => {
       for (let fx of effects2)
         fx();
     });
@@ -366,9 +37,11 @@ function sprae(container, values) {
           el.removeAttribute(attr2.name);
           let names = attr2.name.slice(1).split(":");
           for (let name of names) {
-            let update = (directive[name] || directive.default)(el, attr2.value, state, name);
+            let dir = directive[name] || directive.default;
+            let evaluate = (dir.parse || parse)(attr2.value, parse);
+            let update = dir(el, evaluate, state, name);
             if (update) {
-              update[_dispose] = effect2(update);
+              update[_dispose] = effect(update);
               effects.push(update);
             }
           }
@@ -402,127 +75,200 @@ function sprae(container, values) {
   return state;
 }
 var evalMemo = {};
-var compile2 = (expr2, dir, evaluate) => {
-  if (evaluate = evalMemo[expr2 = expr2.trim()])
-    return evaluate;
+var parse = (expr, dir, fn) => {
+  if (fn = evalMemo[expr = expr.trim()])
+    return fn;
   try {
-    evaluate = justin_default(expr2);
+    fn = compile(expr);
   } catch (e) {
-    throw Object.assign(e, { message: `${SPRAE} ${e.message}
+    throw Object.assign(e, { message: `\u2234 ${e.message}
 
-${dir}${expr2 ? `="${expr2}"
+${dir}${expr ? `="${expr}"
 
-` : ""}`, expr: expr2 });
+` : ""}`, expr });
   }
-  return evalMemo[expr2] = evaluate;
+  fn.expr = expr;
+  return evalMemo[expr] = fn;
 };
-var swap2 = swap_inflate_default;
+var compile;
+var swap;
 var ipol = (v, state) => {
   return v?.replace ? v.replace(/\$<([^>]+)>/g, (match, field) => state[field]?.valueOf?.() ?? "") : v;
 };
 sprae.use = (s) => {
-  s.signal && (signal2 = s.signal, effect2 = s.effect, computed2 = s.computed, batch2 = s.batch || ((fn) => fn()), untracked2 = s.untracked || batch2);
-  s.swap && (swap2 = s.swap);
+  s.signal && (signal = s.signal, effect = s.effect, computed = s.computed, batch = s.batch || ((fn) => fn()), untracked = s.untracked || batch);
+  s.swap && (swap = s.swap);
+  s.compile && (compile = s.compile);
 };
+
+// signal.js
+var signal_exports = {};
+__export(signal_exports, {
+  batch: () => batch2,
+  computed: () => computed2,
+  effect: () => effect2,
+  signal: () => signal2,
+  untracked: () => untracked2
+});
+var current;
+var signal2 = (v, s, obs = /* @__PURE__ */ new Set()) => (s = {
+  get value() {
+    current?.deps.push(obs.add(current));
+    return v;
+  },
+  set value(val) {
+    if (val === v)
+      return;
+    v = val;
+    for (let sub of obs)
+      sub(val);
+  },
+  peek() {
+    return v;
+  }
+}, s.toJSON = s.then = s.toString = s.valueOf = () => s.value, s);
+var effect2 = (fn, teardown, run, deps) => (run = (prev) => {
+  teardown?.call?.();
+  prev = current, current = run;
+  try {
+    teardown = fn();
+  } finally {
+    current = prev;
+  }
+}, deps = run.deps = [], run(), (dep) => {
+  teardown?.call?.();
+  while (dep = deps.pop())
+    dep.delete(run);
+});
+var computed2 = (fn, s = signal2(), c, e) => (c = {
+  get value() {
+    e ||= effect2(() => s.value = fn());
+    return s.value;
+  },
+  peek: s.peek
+}, c.toJSON = c.then = c.toString = c.valueOf = () => c.value, c);
+var batch2 = (fn) => fn();
+var untracked2 = (fn, prev, v) => (prev = current, current = null, v = fn(), current = prev, v);
+
+// node_modules/swapdom/deflate.js
+var swap2 = (parent, a, b, end = null, { remove, insert } = swap2) => {
+  let i = 0, cur, next, bi, bidx = new Set(b);
+  while (bi = a[i++])
+    !bidx.has(bi) ? remove(bi, parent) : cur = cur || bi;
+  cur = cur || end, i = 0;
+  while (bi = b[i++]) {
+    next = cur ? cur.nextSibling : end;
+    if (cur === bi)
+      cur = next;
+    else {
+      if (b[i] === next)
+        cur = next;
+      insert(bi, cur, parent);
+    }
+  }
+  return b;
+};
+swap2.insert = (a, b, parent) => parent.insertBefore(a, b);
+swap2.remove = (a, parent) => parent.removeChild(a);
+var deflate_default = swap2;
 
 // directive/each.js
 var _each = Symbol(":each");
 var keys = {};
-directive.each = (tpl, expr2, state, name) => {
-  let [leftSide, itemsExpr] = expr2.split(/\s+in\s+/);
-  let [itemVar, idxVar = "_$"] = leftSide.split(/\s*,\s*/);
-  const holder = tpl[_each] = document.createTextNode("");
+var _key = Symbol("key");
+(directive.each = (tpl, [itemVar, idxVar, evaluate], state) => {
+  const holder = tpl[_each] = document.createTextNode(""), parent = tpl.parentNode;
   tpl.replaceWith(holder);
-  const evaluate = compile2(itemsExpr, name);
-  const memo2 = /* @__PURE__ */ new WeakMap();
-  tpl.removeAttribute(":key");
-  let cur2 = [];
+  const elCache = /* @__PURE__ */ new WeakMap(), stateCache = /* @__PURE__ */ new WeakMap();
+  let cur = [];
+  const remove = (el) => {
+    el.remove();
+    el[Symbol.dispose]?.();
+    if (el[_key]) {
+      elCache.delete(el[_key]);
+      stateCache.delete(el[_key]);
+    }
+  }, { insert, replace } = swap;
+  const options = { remove, insert, replace };
   return () => {
     let items = evaluate(state)?.valueOf(), els = [];
     if (typeof items === "number")
       items = Array.from({ length: items }, (_, i) => i);
-    const count = /* @__PURE__ */ new WeakSet();
-    for (let idx2 in items) {
-      let item = items[idx2];
-      let substate = Object.create(state, { [idxVar]: { value: idx2 } });
+    const count = /* @__PURE__ */ new WeakMap();
+    for (let idx in items) {
+      let el, item = items[idx], key = item?.key ?? item?.id ?? item ?? idx;
+      key = Object(key) !== key ? keys[key] ||= Object(key) : item;
+      if (key == null || count.has(key) || tpl.content)
+        el = (tpl.content || tpl).cloneNode(true);
+      else
+        count.set(key, 1), (el = elCache.get(key) || (elCache.set(key, tpl.cloneNode(true)), elCache.get(key)))[_key] = key;
+      let substate = stateCache.get(key) || (stateCache.set(key, Object.create(state, { [idxVar]: { value: idx } })), stateCache.get(key));
       substate[itemVar] = item;
-      let el, key = item.key ?? item.id ?? item;
-      if (key == null)
-        el = tpl.cloneNode(true);
-      else {
-        if (Object(key) !== key)
-          key = keys[key] ||= Object(key);
-        if (count.has(key)) {
-          console.warn("Duplicate key", key), el = tpl.cloneNode(true);
-        } else {
-          count.add(key);
-          el = memo2.get(key) || memo2.set(key, tpl.cloneNode(true)).get(key);
-        }
-      }
-      if (el.content)
-        el = el.content.cloneNode(true);
       sprae(el, substate);
       if (el.nodeType === 11)
         els.push(...el.childNodes);
       else
         els.push(el);
     }
-    swap2(holder.parentNode, cur2, cur2 = els, holder);
+    swap(parent, cur, cur = els, holder, options);
   };
+}).parse = (expr, parse2) => {
+  let [leftSide, itemsExpr] = expr.split(/\s+in\s+/);
+  let [itemVar, idxVar = "$"] = leftSide.split(/\s*,\s*/);
+  return [itemVar, idxVar, parse2(itemsExpr)];
 };
 
 // directive/if.js
 var _prevIf = Symbol("if");
-directive.if = (ifEl, expr2, state, name) => {
-  let parent = ifEl.parentNode, next2 = ifEl.nextElementSibling, holder = document.createTextNode(""), evaluate = compile2(expr2, name), cur2, ifs, elses, none = [];
+directive.if = (ifEl, evaluate, state) => {
+  let parent = ifEl.parentNode, next = ifEl.nextElementSibling, holder = document.createTextNode(""), cur, ifs, elses, none = [];
   ifEl.after(holder);
   if (ifEl.content)
-    cur2 = none, ifEl.remove(), ifs = [...ifEl.content.childNodes];
+    cur = none, ifEl.remove(), ifs = [...ifEl.content.childNodes];
   else
-    ifs = cur2 = [ifEl];
-  if (next2?.hasAttribute(":else")) {
-    next2.removeAttribute(":else");
-    if (next2.hasAttribute(":if"))
+    ifs = cur = [ifEl];
+  if (next?.hasAttribute(":else")) {
+    next.removeAttribute(":else");
+    if (next.hasAttribute(":if"))
       elses = none;
     else
-      next2.remove(), elses = next2.content ? [...next2.content.childNodes] : [next2];
+      next.remove(), elses = next.content ? [...next.content.childNodes] : [next];
   } else
     elses = none;
   return () => {
     const newEls = evaluate(state)?.valueOf() ? ifs : ifEl[_prevIf] ? none : elses;
-    if (next2)
-      next2[_prevIf] = newEls === ifs;
-    if (cur2 != newEls) {
-      if (cur2[0]?.[_each])
-        cur2 = [cur2[0][_each]];
-      swap2(parent, cur2, cur2 = newEls, holder);
-      for (let el of cur2)
+    if (next)
+      next[_prevIf] = newEls === ifs;
+    if (cur != newEls) {
+      if (cur[0]?.[_each])
+        cur = [cur[0][_each]];
+      swap(parent, cur, cur = newEls, holder);
+      for (let el of cur)
         sprae(el, state);
     }
   };
 };
 
 // directive/ref.js
-directive.ref = (el, expr2, state) => {
+(directive.ref = (el, expr, state) => {
   let prev;
   return () => {
     if (prev)
       delete state[prev];
-    state[prev = ipol(expr2, state)] = el;
+    state[prev = ipol(expr, state)] = el;
   };
-};
+}).parse = (expr) => expr;
 
 // directive/scope.js
-directive.scope = (el, expr2, rootState, name) => {
-  let evaluate = compile2(expr2, name);
+directive.scope = (el, evaluate, rootState) => {
   return () => {
     sprae(el, { ...rootState, ...evaluate(rootState)?.valueOf?.() || {} });
   };
 };
 
 // directive/html.js
-directive.html = (el, expr2, state, name) => {
-  let evaluate = compile2(expr2, name), tpl = evaluate(state);
+directive.html = (el, evaluate, state) => {
+  let tpl = evaluate(state);
   if (!tpl)
     return;
   let content = (tpl.content || tpl).cloneNode(true);
@@ -531,8 +277,7 @@ directive.html = (el, expr2, state, name) => {
 };
 
 // directive/text.js
-directive.text = (el, expr2, state) => {
-  let evaluate = compile2(expr2, "text");
+directive.text = (el, evaluate, state) => {
   if (el.content)
     el.replaceWith(el = document.createTextNode(""));
   return () => {
@@ -542,9 +287,8 @@ directive.text = (el, expr2, state) => {
 };
 
 // directive/class.js
-directive.class = (el, expr2, state) => {
-  let evaluate = compile2(expr2, "class");
-  let cur2 = /* @__PURE__ */ new Set();
+directive.class = (el, evaluate, state) => {
+  let cur = /* @__PURE__ */ new Set();
   return () => {
     let v = evaluate(state);
     let clsx = /* @__PURE__ */ new Set();
@@ -556,19 +300,18 @@ directive.class = (el, expr2, state) => {
       else
         Object.entries(v).map(([k, v2]) => v2?.valueOf?.() && clsx.add(k));
     }
-    for (let cls of cur2)
+    for (let cls of cur)
       if (clsx.has(cls))
         clsx.delete(cls);
       else
         el.classList.remove(cls);
-    for (let cls of cur2 = clsx)
+    for (let cls of cur = clsx)
       el.classList.add(cls);
   };
 };
 
 // directive/style.js
-directive.style = (el, expr2, state) => {
-  let evaluate = compile2(expr2, "style");
+directive.style = (el, evaluate, state) => {
   let initStyle = el.getAttribute("style") || "";
   if (!initStyle.endsWith(";"))
     initStyle += "; ";
@@ -585,12 +328,11 @@ directive.style = (el, expr2, state) => {
 };
 
 // directive/default.js
-directive.default = (el, expr2, state, name) => {
+directive.default = (el, evaluate, state, name) => {
   let evt = name.startsWith("on") && name.slice(2);
-  let evaluate = compile2(expr2, name);
   if (evt) {
     let off;
-    return () => (off?.(), off = on(el, evt, evaluate(state)));
+    return () => (off?.(), off = on(el, evt, evaluate(state)?.valueOf()));
   }
   return () => {
     let value = evaluate(state)?.valueOf();
@@ -722,8 +464,7 @@ var dashcase = (str) => {
 };
 
 // directive/value.js
-directive.value = (el, expr2, state) => {
-  let evaluate = compile2(expr2, "value");
+directive.value = (el, evaluate, state) => {
   let from, to;
   let update = el.type === "text" || el.type === "" ? (value) => el.setAttribute("value", el.value = value == null ? "" : value) : el.tagName === "TEXTAREA" || el.type === "text" || el.type === "" ? (value) => (from = el.selectionStart, to = el.selectionEnd, el.setAttribute("value", el.value = value == null ? "" : value), from && el.setSelectionRange(from, to)) : el.type === "checkbox" ? (value) => (el.checked = value, attr(el, "checked", value)) : el.type === "select-one" ? (value) => {
     for (let option in el.options)
@@ -735,19 +476,20 @@ directive.value = (el, expr2, state) => {
 };
 
 // directive/fx.js
-directive.fx = (el, expr2, state, name) => {
-  let evaluate = compile2(expr2, name);
+directive.fx = (el, evaluate, state) => {
   return () => evaluate(state);
 };
+
+// sprae.js
+sprae.use(signal_exports);
+sprae.use({ compile: (expr) => sprae.constructor(`__scope`, `with (__scope) { return ${expr} };`) });
+sprae.use({ swap: deflate_default });
+var sprae_default = sprae;
 export {
-  batch2 as batch,
-  compile2 as compile,
-  computed2 as computed,
-  sprae as default,
-  directive,
-  effect2 as effect,
-  ipol,
-  signal2 as signal,
-  swap2 as swap,
-  untracked2 as untracked
+  batch,
+  computed,
+  sprae_default as default,
+  effect,
+  signal,
+  untracked
 };
