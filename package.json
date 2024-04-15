@@ -8,6 +8,7 @@
   "files": [
     "core.js",
     "sprae.js",
+    "signal.js",
     "directive",
     "dist"
   ],
