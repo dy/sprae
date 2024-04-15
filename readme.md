@@ -289,7 +289,7 @@ Provider | Size | Feature
 
 ## Evaluator
 
-Expressions use _new Function_ as default evaluator, which is fast & compact way, but violates "unsafe-eval" CSP. To make eval stricter & safer, an alternative evaluator can be configured, eg. _justin_:
+Expressions use _new Function_ as default evaluator, which is fast & compact way, but violates "unsafe-eval" CSP. To make eval stricter & safer, as well as sandbox expressions, an alternative evaluator can be configured, eg. _justin_:
 
 ```js
 import sprae from 'sprae'

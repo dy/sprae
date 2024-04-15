@@ -1040,14 +1040,15 @@
 
 + practice shows it handles arrays / objects better
 + practice shows it's better memory-wise, I guess we can optimize items signals
-+ it reduces toll of wrapping all props into `signal`
++ it reduces toll of wrapping all props into `signal` code-wise
 + it makes sense as output from sprae to be reactive proxy store
 + it allows internal code to care less about what's signal what's not
 + generally it makes signals mechanism implicit and optional - API-wise user cares less about what should be a signal what not
++ it allows abstracting away from internal signals implementation - focus on sprae, not signals
 - possibly some bit more of memory/perf cost, since static values get wrapped into signals
   ? can we optimize static array values instead of being a bunch of signals instead be one signal?
 
-## [ ] Should we replace `:each="item in items"` to `:each.item="items"`?
+## [x] ~~Should we replace `:each="item in items"` to `:each.item="items"`?~~ -> fixed via custom .parse
 
 - non-conventional
 + `:each` is the only exception now that needs custom expr parsing

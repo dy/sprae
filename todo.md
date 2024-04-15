@@ -113,7 +113,7 @@
 * [ ] :onmount..onunmount
 * [ ] :animate?
 * [ ] js-framework-bench push + example
-* [ ] move proxy state into own project / part of signal struct (with tests from here)
+* [ ] ~~move proxy state into own project / part of signal struct (with tests from here)~~ part of sprae is better
 * [x] some bug with keys identity in todo
 * [x] v9 issues:
   * [x] creating/releasing rows doesn't clear up memory
@@ -122,7 +122,7 @@
     * the reason of slowdown is key - sometimes it's better to keep index as key, not id
 * [ ] state as signal: test updates itself `sprae(el, signal({x:1}))` - needed for :each loop
 * [x] switchable compiler
-* [ ] try getting rid of compile() calls in subscript
+* [x] ~~try getting rid of compile() calls in subscript~~ not sprae's concern
 * [x] try getting rid of compile() calls in sprae
   ? how to parse each, ref expression?
     -> via redefining .parse
