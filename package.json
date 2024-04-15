@@ -1,7 +1,7 @@
 {
   "name": "sprae",
   "description": "DOM microhydration.",
-  "version": "9.1.0",
+  "version": "9.1.1",
   "main": "./sprae.js",
   "module": "./sprae.js",
   "type": "module",
