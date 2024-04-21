@@ -1,11 +1,10 @@
+import { effect, untracked, use } from "./signal.js";
+
 // polyfill
 const _dispose = (Symbol.dispose ||= Symbol("dispose"));
 
 // mark
 const SPRAE = `∴`
-
-// signals impl
-export let signal, effect, batch, computed, untracked
 
 // reserved directives - order matters!
 export const directive = {};
@@ -105,22 +104,21 @@ const parse = (expr, dir, fn) => {
   return evalMemo[expr] = fn
 }
 
-// compiler
+// default compiler is simple new Function (tiny obfuscation against direct new Function detection)
 export let compile
 
 // DOM swapper
 export let swap
 
+// interpolate a$<b> fields from context
+export const ipol = (v, state) => {
+  return v?.replace ? v.replace(/\$<([^>]+)>/g, (match, field) => state[field]?.valueOf?.() ?? '') : v
+};
+
 // configure signals/compile/differ
 // it's more compact than using sprae.signal = signal etc.
 sprae.use = s => {
-  s.signal && (
-    signal = s.signal,
-    effect = s.effect,
-    computed = s.computed,
-    batch = s.batch || (fn => fn()),
-    untracked = s.untracked || batch
-  );
-  s.swap && (swap = s.swap)
-  s.compile && (compile = s.compile)
+  s.signal && use(s);
+  s.swap && (swap = s.swap);
+  s.compile && (compile = s.compile);
 }

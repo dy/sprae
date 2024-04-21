@@ -1,6 +1,6 @@
 import sprae from './core.js'
 
-import * as signals from './signal.js'
+import * as signals from 'ulive'
 import swap from 'swapdom/deflate'
 
 // default directives
@@ -27,3 +27,4 @@ sprae.use({ swap })
 
 export default sprae
 export * from './core.js'
+export * from './signal.js'

@@ -1048,6 +1048,9 @@
 - possibly some bit more of memory/perf cost, since static values get wrapped into signals
   ? can we optimize static array values instead of being a bunch of signals instead be one signal?
 
+### [ ] Should we create per-object signal, instead of per-property?
+- it gives less granular updates: full array gets diffed, all nodes get refreshed
+
 ## [x] ~~Should we replace `:each="item in items"` to `:each.item="items"`?~~ -> fixed via custom .parse
 
 - non-conventional

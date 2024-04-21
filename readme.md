@@ -264,9 +264,25 @@ Trigger when element is connected / disconnected from DOM.
 ```
 -->
 
+## Custom Directives
+
+Directives can be added as:
+
+```js
+import sprae, { directive } from 'sprae/core.js'
+
+// :id="expression"
+directive.id = (el, evaluate, state) => {
+  // return function for update effect
+  // watches for state props defined by expression
+  return () => el.id = evaluate(state)
+}
+```
+
 ## Signals
 
-Sprae uses signals for reactivity (see [_sprae/signal.js_](./signal.js)). It can be switched to any alternative preact-flavored signals for compatibility or performance:
+Sprae internally uses signals for reactivity (see [_sprae/signal.js_](./signal.js)).<br/>
+It can be switched to any alternative preact-flavored signals for compatibility or performance:
 
 ```js
 import sprae, { signal, computed, effect, batch, untracked } from 'sprae';
@@ -312,20 +328,7 @@ sprae.use({compile: justin}) // set up justin as default compiler
 `true false null undefined NaN`
 
 
-## Directives
-
-Custom directives can be added as:
-
-```js
-import sprae, { directive } from 'sprae/core.js'
-
-// define custom directive
-directive.id = (el, evaluate, state) => {
-  return () => el.id = evaluate(state)  // return update function
-}
-```
-
-## Custom build
+## Custom Build
 
 _Sprae_ can be tailored to project needs via `sprae/core` for performance, size or compatibility purposes:
 
