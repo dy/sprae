@@ -1,7 +1,9 @@
 import t, { is, throws } from 'tst'
-import { signal, computed, effect } from '../signal.js'
-// import { signal, computed, effect } from 'usignal'
+import { signal, computed, effect, use } from '../signal.js'
 import { tick } from 'wait-please'
+import * as signals from '../ulive.js'
+
+use(signals)
 
 // value
 t('signal: readme', async t => {
