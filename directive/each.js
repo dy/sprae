@@ -5,7 +5,7 @@ export const _each = Symbol(":each");
 const keys = {}, _key = Symbol('key');
 
 // :each must init before :ref, :id or any others, since it defines scope
-(directive.each = (tpl, [itemVar, idxVar, evaluate], state) => {
+directive.each = (tpl, [itemVar, idxVar, evaluate], state) => {
   // we need :if to be able to replace holder instead of tpl for :if :each case
   const holder = (tpl[_each] = document.createTextNode("")), parent = tpl.parentNode;
   tpl.replaceWith(holder);
@@ -32,7 +32,6 @@ const keys = {}, _key = Symbol('key');
 
     if (typeof items === "number") items = Array.from({ length: items }, (_, i) => i)
 
-    // let c = 0, inc = () => { if (c++ > 100) throw 'Inf recursion' }
     const count = new WeakMap
     for (let idx in items) {
       let el, item = items[idx], key = item?.key ?? item?.id ?? item ?? idx
@@ -53,7 +52,10 @@ const keys = {}, _key = Symbol('key');
 
     swap(parent, cur, cur = els, holder, options);
   }
-}).parse = (expr, parse) => {
+}
+
+// redefine parser to exclude `[a in] b`
+directive.each.parse = (expr, parse) => {
   let [leftSide, itemsExpr] = expr.split(/\s+in\s+/);
   let [itemVar, idxVar = "$"] = leftSide.split(/\s*,\s*/);
 

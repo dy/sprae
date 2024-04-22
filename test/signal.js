@@ -1,7 +1,7 @@
 import t, { is, throws } from 'tst'
 import { signal, computed, effect, use } from '../signal.js'
 import { tick } from 'wait-please'
-import * as signals from '../ulive.js'
+import * as signals from 'ulive'
 
 use(signals)
 

@@ -1047,6 +1047,8 @@
 + it allows abstracting away from internal signals implementation - focus on sprae, not signals
 - possibly some bit more of memory/perf cost, since static values get wrapped into signals
   ? can we optimize static array values instead of being a bunch of signals instead be one signal?
++ it's way less code for array ops: no need to create signals here and there, no need for constant bump method
++ it has optimized swapping algo
 
 ### [ ] Should we create per-object signal, instead of per-property?
 - it gives less granular updates: full array gets diffed, all nodes get refreshed

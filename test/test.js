@@ -2,7 +2,6 @@ import './signal.js'
 import './store.js'
 import './directive.js'
 
-// sprae.use(signals)
 
 Object.defineProperty(DocumentFragment.prototype, "outerHTML", {
   get() {

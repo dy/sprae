@@ -1,4 +1,5 @@
 import { effect, untracked, use } from "./signal.js";
+import store from './store.js';
 
 // polyfill
 const _dispose = (Symbol.dispose ||= Symbol("dispose"));
@@ -22,11 +23,11 @@ export default function sprae(container, values) {
     for (let k in values) { state[k] = values[k] }
     // since we call direct updates here, we have to make sure
     // we don't subscribe outer effect, as in case of :each
-    untracked(() => { for (let fx of effects) fx() })
+    // untracked(() => { for (let fx of effects) fx() })
   }
 
   // take over existing state instead of creating clone
-  const state = values || {};
+  const state = store(values || {});
   const effects = [];
 
   // init directives on element

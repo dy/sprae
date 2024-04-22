@@ -13,6 +13,7 @@ export default function createState(values, parent) {
 
   // ignore existing state as argument
   if (values[_signals] && !parent) return values;
+
   const initSignals = values[_signals],
 
     // .length signal is stored outside, since it cannot be replaced
@@ -27,8 +28,10 @@ export default function createState(values, parent) {
 
   // proxy conducts prop access to signals
   const state = new Proxy(values, {
+    // FIXME: instead of redefining this we can adjust :scope directive
+    has(values, key) { return key in signals },
+
     get(values, key) {
-      // console.log('get', key)
       // if .length is read within .push/etc - peek signal (don't subscribe)
       if (isArr)
         if (key === 'length') return (proto[lastProp]) ? _len.peek() : _len.value;
@@ -100,7 +103,7 @@ export default function createState(values, parent) {
         _del?.()
       }
       delete values[key]
-      if (!isArr) _len.value--
+      if (!isArr && _len.value) _len.value--
       return true
     }
   })

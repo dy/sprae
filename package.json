@@ -14,7 +14,7 @@
   ],
   "dependencies": {
     "swapdom": "^1.2.1",
-    "ulive": "^1.0.1"
+    "ulive": "^1.0.2"
   },
   "devDependencies": {
     "@preact/signals": "^1.1.3",

@@ -1,6 +1,6 @@
 import store from '../store.js'
 import { effect, batch, use } from '../signal.js'
-import * as signals from '../ulive.js'
+import * as signals from 'ulive'
 // import * as signals from '@preact/signals'
 import t, { is, ok, throws } from 'tst'
 import { tick } from 'wait-please'
