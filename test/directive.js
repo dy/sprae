@@ -396,7 +396,7 @@ test.todo('each: top-level list', async () => {
   is(el.outerHTML, `<x>1</x>`)
 })
 
-test("each: array full", async () => {
+test.only("each: array full", async () => {
   let el = h`<p>
     <span :each="a in b" :text="a"></span>
   </p>`;
@@ -405,47 +405,47 @@ test("each: array full", async () => {
 
   is(el.innerHTML, "<span>0</span>");
 
-  console.log("items[0]=1");
+  console.log("--items[0]=1");
   params.b[0] = 1;
   await tick()
   is(el.innerHTML, "<span>1</span>");
 
-  console.log("items[1]=3");
+  console.log("--items[1]=3");
   params.b[1] = 3;
   await tick();
   is(el.innerHTML, `<span>1</span><span>3</span>`);
 
-  console.log("items=[2,3]");
+  console.log("--items=[2,3]");
   params.b = [2, 3];
   await tick();
   is(el.innerHTML, "<span>2</span><span>3</span>");
 
-  console.log("items[0]=1");
+  console.log("--items[0]=1");
   params.b[0] = 1;
   await tick()
   is(el.innerHTML, "<span>1</span><span>3</span>");
 
-  console.log("items.shift()");
+  console.log("--items.shift()");
   params.b.shift();
   await tick();
   is(el.innerHTML, "<span>3</span>");
 
-  console.log("items.length=2");
+  console.log("--items.length=2");
   params.b.length = 2;
   await tick();
   is(el.innerHTML, "<span>3</span><span></span>");
 
-  console.log("items.pop()");
+  console.log("--items.pop()");
   params.b.pop();
   await tick();
   is(el.innerHTML, "<span>3</span>");
 
-  console.log("items=[]");
+  console.log("--items=[]");
   params.b = [];
   await tick();
   is(el.innerHTML, "");
 
-  console.log("items=null");
+  console.log("--items=null");
   params.b = null;
   await tick();
   is(el.innerHTML, "");

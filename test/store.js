@@ -155,7 +155,7 @@ t('store: iteration is safe', () => {
 })
 
 t.skip('store: store from same instance', () => {
-  // NOTE: I guess we may wan to have multiple proxies for same target, don't we?
+  // NOTE: we may want to have multiple proxies for same target, don't we?
   let s = { x: 1 }
   let s1 = store(s)
   let s2 = store(s)
@@ -249,6 +249,7 @@ t('store: inheritance subscribes to parent getter', async () => {
 })
 
 t.skip('store: sandbox', async () => {
+  // NOTE: handled via custom compiler
   let s = store({ x: 1 })
   is(s.window, window)
 })
@@ -375,6 +376,16 @@ t('store: inheritance does not change root', () => {
 
 t.todo('store: adding new props to object triggers effect', () => {
   const s = store({ x: 1, y: 2 }), log = []
-  effect(() => (log.push(s)))
+  effect(() => (log.push({ ...s })))
   is()
+})
+
+t.todo('store: length is not triggered extra times', async t => {
+  let s = store([1, 2])
+  let log = []
+  effect(() => (console.log('len fx', s.length), log.push(s.length)))
+  console.log('push')
+  s.push(3, 4)
+  await tick()
+  is(log, [2, 4])
 })

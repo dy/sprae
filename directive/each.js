@@ -1,58 +1,68 @@
-import sprae, { directive, swap } from "../core.js";
+import sprae, { directive } from "../core.js";
+import store, { _signals } from "../store.js";
+import { effect, untracked } from '../signal.js';
+
+// FIXME: add microtask for length change
 
 export const _each = Symbol(":each");
 
-const keys = {}, _key = Symbol('key');
-
-// :each must init before :ref, :id or any others, since it defines scope
 directive.each = (tpl, [itemVar, idxVar, evaluate], state) => {
+  // we have to handle item :ref separately if don't create substates
+  // const refName = tpl.getAttribute(':ref') || ''
+  // if (refName) tpl.removeAttribute(':ref')
+
   // we need :if to be able to replace holder instead of tpl for :if :each case
   const holder = (tpl[_each] = document.createTextNode("")), parent = tpl.parentNode;
   tpl.replaceWith(holder);
 
-  // key -> el
-  const elCache = new WeakMap, stateCache = new WeakMap
+  // we re-create items any time new items are produced
+  let cur
 
-  let cur = [];
-
-  const remove = el => {
-    el.remove()
-    el[Symbol.dispose]?.()
-    if (el[_key]) {
-      elCache.delete(el[_key])
-      stateCache.delete(el[_key])
-    }
-  }, { insert, replace } = swap
-
-  const options = { remove, insert, replace }
-
-  // naive approach: whenever items change we replace full list
   return () => {
-    let items = evaluate(state)?.valueOf(), els = [];
+    // called whenever state or length changes
+    let items = evaluate(state)?.valueOf()
 
     if (typeof items === "number") items = Array.from({ length: items }, (_, i) => i)
 
-    const count = new WeakMap
-    for (let idx in items) {
-      let el, item = items[idx], key = item?.key ?? item?.id ?? item ?? idx
-      key = (Object(key) !== key) ? (keys[key] ||= Object(key)) : item
+    let i = 0, l = cur?.length || 0
 
-      if (key == null || count.has(key) || tpl.content) el = (tpl.content || tpl).cloneNode(true)
-      else count.set(key, 1), (el = elCache.get(key) || (elCache.set(key, tpl.cloneNode(true)), elCache.get(key)))[_key] = key;
+    // add or update
+    untracked(() => {
+      let newl = items.length
+      if (newl >= l) {
+        // update
+        if (cur) {
+          for (; i < l; i++) {
+            cur[i] = items[i]
+          }
+        }
+        else cur = items
 
-      // creating via prototype is faster in both creation time & reading time
-      let substate = stateCache.get(key) || (stateCache.set(key, Object.create(state, { [idxVar]: { value: idx } })), stateCache.get(key));
-      substate[itemVar] = item; // can be changed by subsequent updates, need to be writable
+        // add
+        for (; i < newl; i++) {
+          cur[i] = items[i]
 
-      sprae(el, substate);
+          const idx = i,
+            el = tpl.cloneNode(true),
+            scope = Object.create(state, {
+              [itemVar]: { get() { return cur[idx] } },
+              [idxVar]: { value: idx },
+            })
+          holder.before(el)
+          sprae(el, scope)
 
-      // document fragment
-      if (el.nodeType === 11) els.push(...el.childNodes); else els.push(el);
-    }
-
-    swap(parent, cur, cur = els, holder, options);
+          // additional disposal
+          cur[_signals][i][Symbol.dispose] = () => { el.remove(); }
+        }
+      }
+      // delete
+      else {
+        cur.length = newl
+      }
+    })
   }
 }
+
 
 // redefine parser to exclude `[a in] b`
 directive.each.parse = (expr, parse) => {

@@ -32,6 +32,7 @@ export default function createState(values, parent) {
     has(values, key) { return key in signals },
 
     get(values, key) {
+      // console.log('get', key)
       // if .length is read within .push/etc - peek signal (don't subscribe)
       if (isArr)
         if (key === 'length') return (proto[lastProp]) ? _len.peek() : _len.value;
@@ -41,11 +42,12 @@ export default function createState(values, parent) {
       if (key === _signals) return signals
       if (key === _change) return _len.value
       const s = signals[key] || initSignal(key)
+      // console.log('get', key)
       return s?.value // existing property
     },
 
     set(values, key, v) {
-      // console.log('set', key, v)
+      console.log('set', key, v)
       if (isArr) {
         // .length
         if (key === 'length') {
@@ -95,12 +97,13 @@ export default function createState(values, parent) {
     },
 
     deleteProperty(values, key) {
+      // console.log('delete', key)
       const s = signals[key]
       if (s) {
-        const { _del } = s
-        delete s._del
+        const del = s[Symbol.dispose]
+        if (del) delete s[Symbol.dispose]
         delete signals[key]
-        _del?.()
+        del?.()
       }
       delete values[key]
       if (!isArr && _len.value) _len.value--

@@ -1038,19 +1038,20 @@
 
 ## [ ] Signals store instead of explicit signals?
 
-+ practice shows it handles arrays / objects better
-+ practice shows it's better memory-wise, I guess we can optimize items signals
-+ it reduces toll of wrapping all props into `signal` code-wise
++ bench shows arrays / objects better
++ bench shows it's possibly better memory-wise
++ it's way less code for array ops: no need to create signals here and there, no need for bumping prop
++ it allows attributes code forget about signals
++ no need for DOM swapper algo
 + it makes sense as output from sprae to be reactive proxy store
 + it allows internal code to care less about what's signal what's not
 + generally it makes signals mechanism implicit and optional - API-wise user cares less about what should be a signal what not
-+ it allows abstracting away from internal signals implementation - focus on sprae, not signals
 - possibly some bit more of memory/perf cost, since static values get wrapped into signals
   ? can we optimize static array values instead of being a bunch of signals instead be one signal?
-+ it's way less code for array ops: no need to create signals here and there, no need for constant bump method
-+ it has optimized swapping algo
 
-### [ ] Should we create per-object signal, instead of per-property?
+## [ ] Should we make store notify about diff props, rather than length
+
+## [x] Should we create per-object signal, instead of per-property? -> No
 - it gives less granular updates: full array gets diffed, all nodes get refreshed
 
 ## [x] ~~Should we replace `:each="item in items"` to `:each.item="items"`?~~ -> fixed via custom .parse
