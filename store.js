@@ -6,7 +6,7 @@ export const _signals = Symbol('signals'), _change = Symbol('length');
 // track last accessed property to find out if .length was directly accessed from expression or via .push/etc method
 let lastProp
 
-export default function createState(values, parent) {
+export default function store(values, parent) {
   const isArr = Array.isArray(values)
 
   if (!values || (values?.constructor !== Object && !isArr)) return values;
@@ -21,7 +21,7 @@ export default function createState(values, parent) {
     _len = signal(isArr ? values.length : Object.values(values).length),
 
     // dict with signals storing values
-    signals = parent ? Object.create((parent = createState(parent))[_signals]) : isArr ? [] : {},
+    signals = parent ? Object.create((parent = store(parent))[_signals]) : isArr ? [] : {},
     proto = signals.constructor.prototype;
 
   if (parent) for (let key in parent) parent[key] // touch parent keys
@@ -47,7 +47,7 @@ export default function createState(values, parent) {
     },
 
     set(values, key, v) {
-      console.log('set', key, v)
+      // console.log('set', key, v)
       if (isArr) {
         // .length
         if (key === 'length') {
@@ -70,6 +70,7 @@ export default function createState(values, parent) {
       else if (s._set) s._set(v)
       // patch array
       else if (Array.isArray(v) && Array.isArray(cur)) {
+        // NOTE: we check cur to be store, not plain array that can be just a signal value
         untracked(() => {
           batch(() => {
             let i = 0, l = v.length, vals = values[key];
@@ -81,12 +82,14 @@ export default function createState(values, parent) {
       // .x = y
       else {
         // reflect change in values
-        s.value = createState(values[key] = v)
+        s.value = store(values[key] = v)
       }
 
       // force changing length, if eg. a=[]; a[1]=1 - need to come after setting the item
       if (isArr) {
-        if (key >= _len.peek()) _len.value = signals.length = values.length = Number(key) + 1
+        if (key >= _len.peek()) {
+          _len.value = signals.length = values.length = Number(key) + 1
+        }
       }
       // bump _change for object
       else if (newProp) {
@@ -130,7 +133,7 @@ export default function createState(values, parent) {
       }
 
       // take over existing signal or create new signal
-      return signals[key] = desc.value?.peek ? desc.value : signal(createState(desc.value))
+      return signals[key] = desc.value?.peek ? desc.value : signal(store(desc.value))
     }
   }
 

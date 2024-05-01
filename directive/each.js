@@ -1,6 +1,6 @@
 import sprae, { directive } from "../core.js";
-import store, { _signals } from "../store.js";
-import { effect, untracked } from '../signal.js';
+import store, { _change, _signals } from "../store.js";
+import { effect, untracked, computed } from '../signal.js';
 
 // FIXME: add microtask for length change
 
@@ -18,29 +18,41 @@ directive.each = (tpl, [itemVar, idxVar, evaluate], state) => {
   // we re-create items any time new items are produced
   let cur
 
-  return () => {
-    // called whenever state or length changes
-    let items = evaluate(state)?.valueOf()
-
+  // separate computed effect reduces number of needed updates for the effect
+  const items = computed(() => {
+    // console.group('eval items')
+    console.log('eval items')
+    let items = evaluate(state)//?.valueOf()
     if (typeof items === "number") items = Array.from({ length: items }, (_, i) => i)
+    // console.groupEnd()
+    return items || []
+  })
+  let prevl = 0
 
-    let i = 0, l = cur?.length || 0
+  return () => {
+    // subscribe to items change (incl length)
+    if (!cur) {
+      items.value.length
+    }
 
     // add or update
     untracked(() => {
-      let newl = items.length
-      if (newl >= l) {
-        // update
-        if (cur) {
-          for (; i < l; i++) {
-            cur[i] = items[i]
+      let i = 0, newItems = items.value, newl = newItems.length
+
+      if (newl >= prevl) {
+        if (!cur) {
+          cur = newItems
+        }
+        else {
+          // update
+          for (; i < prevl; i++) {
+            cur[i] = newItems[i]
           }
         }
-        else cur = items
 
         // add
         for (; i < newl; i++) {
-          cur[i] = items[i]
+          cur[i] = newItems[i]
 
           const idx = i,
             el = tpl.cloneNode(true),
@@ -49,16 +61,18 @@ directive.each = (tpl, [itemVar, idxVar, evaluate], state) => {
               [idxVar]: { value: idx },
             })
           holder.before(el)
-          sprae(el, scope)
+          sprae(el, scope);
 
           // additional disposal
-          cur[_signals][i][Symbol.dispose] = () => { el.remove(); }
+          ((cur[_signals] ||= [])[i] ||= {})[Symbol.dispose] = () => { el.remove(); }
         }
       }
       // delete
       else {
         cur.length = newl
       }
+
+      prevl = newl
     })
   }
 }

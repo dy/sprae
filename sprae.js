@@ -26,5 +26,3 @@ sprae.use({ compile: expr => sprae.constructor(`__scope`, `with (__scope) { retu
 sprae.use({ swap })
 
 export default sprae
-export * from './core.js'
-export * from './signal.js'
