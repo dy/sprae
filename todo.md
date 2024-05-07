@@ -133,3 +133,4 @@
 * [ ] proxy state is back
   * [ ] bring `effect` back to all directives
   * [ ] flatten `store` to avoid passing parent (only needed by `scope`)
+* [ ] remove valueOf()s in directives

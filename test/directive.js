@@ -739,10 +739,10 @@ test("each: condition within loop", async () => {
 });
 
 test('each: items refer to current el', async () => {
-  // FIXME: fragment init like let el = h`<x :each="x in 3"></x>`
-  let el = h`<div><x :each="x in 3" :data-x="x" :ref="el" :x="log.push(x, el.dataset.x)"></x></div>`;
-  let log = [];
-  let state = sprae(el, { log });
+  // NOTE: the problem here is that the next items can subscribe to `el` defined in root state, that will cause unnecessary :x effect
+  let el = h`<div><x :each="x in 3" :data-x="x" :ref="el" :x="console.group(':x', el),log.push(x, el.dataset.x),console.groupEnd()"></x></div>`;
+  let log = signal([]);
+  let state = sprae(el, { log, untracked });
   is([...state.log], [0, "0", 1, "1", 2, "2"]);
 });
 
@@ -822,6 +822,7 @@ test("each: internal children get updated by state update, also: update by runni
   let el = h`<><x :each="item, idx in items" :text="item" :key="idx"></x></>`;
   let state = sprae(el, { items: signal([1, 2, 3]) });
   is(el.textContent, "123");
+  console.log('----items=[2,2,3]')
   state.items = [2, 2, 3];
   await tick();
   is(el.textContent, "223");
@@ -831,10 +832,9 @@ test("each: internal children get updated by state update, also: update by runni
   await tick();
   is(el.textContent, "023");
   // NOTE: this doesn't update items, since they're new array
-  console.log("state.items[0] = 1");
-  console.log(state.items);
+  console.log("-----state.items[0] = 1");
   state.items[0] = 1;
-  // state.items = [...state.items]
+  state.items = [...state.items];
   await tick();
   is(el.textContent, "123");
 });
@@ -958,10 +958,10 @@ test("each: subscribe to modifying list", async () => {
 });
 
 test.only('each: unwanted extra subscription', async t => {
-  let el = h`<div><x :each="item in (each++, rows)"><a :text="item.label"></a></x></div>`
+  let el = h`<div><x :each="item in (untracked(() => each++), rows)"><a :text="item.label"></a></x></div>`
 
   const rows = signal(null)
-  const state = sprae(el, { rows, each: 0 })
+  const state = sprae(el, { rows, each: 0, untracked })
 
   console.log('------rows.value = [{id:0},{id:1}]')
   let a = { label: signal(0) }, b = { label: signal(0) }
@@ -982,10 +982,10 @@ test.only('each: unwanted extra subscription', async t => {
   await tick()
   is(state.each, 3)
 
-  console.log('--------rows.value[1].label.value += 2')
+  console.log('--------rows.value[1].label += 2')
   // FIXME: this triggers each, but it should not
   // a.label.value += 2
-  b.label.value += 2
+  b.label += 2
   await tick()
   is(state.each, 3)
   is(el.innerHTML, `<x><a>2</a></x>`)

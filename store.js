@@ -6,6 +6,7 @@ export const _signals = Symbol('signals'), _change = Symbol('length');
 // track last accessed property to find out if .length was directly accessed from expression or via .push/etc method
 let lastProp
 
+// FIXME: maybe separate array and object stores?
 export default function store(values, parent) {
   const isArr = Array.isArray(values)
 
@@ -14,6 +15,7 @@ export default function store(values, parent) {
   // ignore existing state as argument
   if (values[_signals] && !parent) return values;
 
+  // NOTE: if you decide to unlazy values, think about large arrays - init upfront can be costly
   const initSignals = values[_signals],
 
     // .length signal is stored outside, since it cannot be replaced
@@ -24,14 +26,15 @@ export default function store(values, parent) {
     signals = parent ? Object.create((parent = store(parent))[_signals]) : isArr ? [] : {},
     proto = signals.constructor.prototype;
 
-  if (parent) for (let key in parent) parent[key] // touch parent keys
+  // touch parent keys
+  if (parent) for (let key in parent) parent[key]
 
   // proxy conducts prop access to signals
   const state = new Proxy(values, {
     // FIXME: instead of redefining this we can adjust :scope directive
-    has(values, key) { return key in signals },
+    has(values, key, child) { return values.hasOwnProperty(key) || parent?.hasOwnProperty(key) },
 
-    get(values, key) {
+    get(values, key, child) {
       // console.log('get', key)
       // if .length is read within .push/etc - peek signal (don't subscribe)
       if (isArr)
@@ -41,13 +44,12 @@ export default function store(values, parent) {
       if (proto[key]) return proto[key]
       if (key === _signals) return signals
       if (key === _change) return _len.value
-      const s = signals[key] || initSignal(key)
-      // console.log('get', key)
+      const s = signals[key] || touchSignal(key)
       return s?.value // existing property
     },
 
     set(values, key, v) {
-      // console.log('set', key, v)
+      console.log('set', key, v)
       if (isArr) {
         // .length
         if (key === 'length') {
@@ -60,8 +62,7 @@ export default function store(values, parent) {
         }
       }
 
-      let newProp = false,
-        s = signals[key] || initSignal(key) || (newProp = true, signal()),
+      let s = signals[key] || touchSignal(key) || (signals[key] = signal()),
         cur = s.peek()
 
       // skip unchanged (although can be handled by last condition - we skip a few checks this way)
@@ -70,14 +71,17 @@ export default function store(values, parent) {
       else if (s._set) s._set(v)
       // patch array
       else if (Array.isArray(v) && Array.isArray(cur)) {
-        // NOTE: we check cur to be store, not plain array that can be just a signal value
-        untracked(() => {
+        // if we update plain array (stored in signal) - take over value instead
+        if (cur[_change]) untracked(() => {
           batch(() => {
             let i = 0, l = v.length, vals = values[key];
             for (; i < l; i++) cur[i] = vals[i] = v[i]
             cur.length = l // forces deleting tail signals
           })
         })
+        else {
+          s.value = v
+        }
       }
       // .x = y
       else {
@@ -90,10 +94,6 @@ export default function store(values, parent) {
         if (key >= _len.peek()) {
           _len.value = signals.length = values.length = Number(key) + 1
         }
-      }
-      // bump _change for object
-      else if (newProp) {
-        _len.value++
       }
 
       return true
@@ -116,10 +116,11 @@ export default function store(values, parent) {
 
   // init signals placeholders (instead of ownKeys & getOwnPropertyDescriptor handlers)
   // if values are existing proxy (in case of extending parent) - take its signals instead of creating new ones
-  for (let key in values) signals[key] = initSignals?.[key] ?? initSignal(key);
+  // FIXME: not needed actually
+  for (let key in values) signals[key] = initSignals?.[key] ?? touchSignal(key);
 
   // initialize signal for provided key
-  function initSignal(key) {
+  function touchSignal(key) {
     // init existing value
     if (values.hasOwnProperty(key)) {
       // create signal from descriptor
@@ -132,7 +133,6 @@ export default function store(values, parent) {
         return signals[key]
       }
 
-      // take over existing signal or create new signal
       return signals[key] = desc.value?.peek ? desc.value : signal(store(desc.value))
     }
   }

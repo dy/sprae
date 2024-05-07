@@ -1049,7 +1049,7 @@
 - possibly some bit more of memory/perf cost, since static values get wrapped into signals
   ? can we optimize static array values instead of being a bunch of signals instead be one signal?
 
-## [ ] Should we make store notify about diff props, rather than length
+## [ ] Should we make store notify about diff props, rather than length?
 
 ## [x] Should we create per-object signal, instead of per-property? -> No
 - it gives less granular updates: full array gets diffed, all nodes get refreshed
@@ -1058,3 +1058,35 @@
 
 - non-conventional
 + `:each` is the only exception now that needs custom expr parsing
+
+### [x] When signal with array is used as store value {rows:signal([1,2,3])} - what's expected update? -> let's make it full reinit array, since it's most direct
+
+1. Remove all, replace all - store plain array
+2. Swap via swapdom etc
+  - heavy, makes no sense as store
+3. Force signal value into a store, update store
+  + we anyways can even with regular stores rewrite to null
+  - duplication: we'd need to store the store somewhere
+    - we'd need to sync up array with internal store somehow
+  - pointlessness: whenever signal updates to new array we have to reinit our store
+
+## [ ] Should we separate store to array/struct?
+
++ different length tracking
++ structs can be not lazy unlike arrays
+
+## [ ] Can we use Object.create for :each scope?
+
+- We need `:ref="el"` to inject element instance per-item
+  + We don't really need to create a separate scope for that, we can just mutate root
+- It's not good to expose per-item props like `:fx="x=123"` to the root
+- We can't really avoid creating new scopes in `:scope="{}"`, can we?
+  ? Possibly it's better to keep root scope as mutation holder
++ It would allow us to get rid of `parent` in `store`
+
+### [ ] Shoud we prohibit creation of new props?
+
++ Structs make objects nice: small, fast, obvious
+- Difficulty for arrays: we cannot really avoid creating new props there
++ We can define scopes via `:scope` for new props
+? Do we need extending root scope? Like writing some new props to it?

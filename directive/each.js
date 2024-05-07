@@ -20,11 +20,10 @@ directive.each = (tpl, [itemVar, idxVar, evaluate], state) => {
 
   // separate computed effect reduces number of needed updates for the effect
   const items = computed(() => {
-    // console.group('eval items')
-    console.log('eval items')
-    let items = evaluate(state)//?.valueOf()
+    console.group('computed items')
+    let items = evaluate(state)
     if (typeof items === "number") items = Array.from({ length: items }, (_, i) => i)
-    // console.groupEnd()
+    console.groupEnd()
     return items || []
   })
   let prevl = 0
@@ -40,7 +39,12 @@ directive.each = (tpl, [itemVar, idxVar, evaluate], state) => {
       let i = 0, newItems = items.value, newl = newItems.length
 
       if (newl >= prevl) {
-        if (!cur) {
+        // rewrite full array - only possible when non-store signals
+        if (newl && newl === prevl) {
+          for (let s of cur[_signals]) s[Symbol.dispose]()
+          cur = newItems
+        }
+        else if (!cur) {
           cur = newItems
         }
         else {
@@ -52,19 +56,27 @@ directive.each = (tpl, [itemVar, idxVar, evaluate], state) => {
 
         // add
         for (; i < newl; i++) {
+          console.group('new item', i)
           cur[i] = newItems[i]
 
           const idx = i,
             el = tpl.cloneNode(true),
-            scope = Object.create(state, {
-              [itemVar]: { get() { return cur[idx] } },
-              [idxVar]: { value: idx },
-            })
+            // NOTE: can't do Object.create here since our new scope can be modified by item (like :ref="el"), so we need to keep root scope untacted
+            // scope = Object.create(state, {
+            //   [itemVar]: { get() { return cur[idx] } },
+            //   [idxVar]: { value: idx },
+            // })
+            scope = store({
+              [itemVar]: cur[_signals]?.[i] ?? cur[i],
+              [idxVar]: idx
+            }, state)
+
           holder.before(el)
           sprae(el, scope);
 
-          // additional disposal
+          // signal/holder disposal removes element
           ((cur[_signals] ||= [])[i] ||= {})[Symbol.dispose] = () => { el.remove(); }
+          console.groupEnd()
         }
       }
       // delete
