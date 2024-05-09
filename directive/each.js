@@ -38,13 +38,14 @@ directive.each = (tpl, [itemVar, idxVar, evaluate], state) => {
     untracked(() => {
       let i = 0, newItems = items.value, newl = newItems.length
 
+      // plain array update, not store (signal with array) - updates full list
+      if (cur && !cur[_change]) {
+        for (let s of cur[_signals] || []) s[Symbol.dispose]()
+        cur = null, prevl = 0
+      }
+
       if (newl >= prevl) {
-        // rewrite full array - only possible when non-store signals
-        if (newl && newl === prevl) {
-          for (let s of cur[_signals]) s[Symbol.dispose]()
-          cur = newItems
-        }
-        else if (!cur) {
+        if (!cur) {
           cur = newItems
         }
         else {

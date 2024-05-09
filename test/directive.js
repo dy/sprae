@@ -474,7 +474,7 @@ test('each: array internal signal reassign', async () => {
   is(el.innerHTML, "<span>2</span>", 'b.value = [signal(2)]');
 
   console.log("------b.value[0].value=3");
-  params.b[0] = 3;
+  params.b[0].value = 3;
   await tick()
   is(el.innerHTML, "<span>3</span>", 'b.value[0].value = 3');
 
@@ -957,7 +957,7 @@ test("each: subscribe to modifying list", async () => {
   is(el.outerHTML, `<ul></ul>`);
 });
 
-test.only('each: unwanted extra subscription', async t => {
+test('each: unwanted extra subscription', async t => {
   let el = h`<div><x :each="item in (untracked(() => each++), rows)"><a :text="item.label"></a></x></div>`
 
   const rows = signal(null)
@@ -972,23 +972,24 @@ test.only('each: unwanted extra subscription', async t => {
 
   // console.log('--------rows.value[1].label.value += 2')
   // // FIXME: this triggers each, but it should not
-  // b.label.value += 2
-  // is(state.each, 2)
-  // is(el.innerHTML, `<x><a>0</a></x><x><a>2</a></x>`)
+  b.label.value += 2
+  is(state.each, 2)
+  is(el.innerHTML, `<x><a>0</a></x><x><a>2</a></x>`)
 
   console.log('---------rows.value=[rows.value[0]]')
   // this thingy subscribes full list to update
   rows.value = [b]
   await tick()
   is(state.each, 3)
+  is(el.innerHTML, `<x><a>2</a></x>`)
 
   console.log('--------rows.value[1].label += 2')
   // FIXME: this triggers each, but it should not
   // a.label.value += 2
-  b.label += 2
+  b.label.value += 2
   await tick()
   is(state.each, 3)
-  is(el.innerHTML, `<x><a>2</a></x>`)
+  is(el.innerHTML, `<x><a>4</a></x>`)
 });
 
 
