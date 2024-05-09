@@ -1036,7 +1036,7 @@
 - that enforces writing signals too, we can't `a = value` anymore
 ? is that obvious enough?
 
-## [ ] Signals store instead of explicit signals?
+## [x] Signals store instead of explicit signals? -> yes, let's try, too many benefits
 
 + bench shows arrays / objects better
 + bench shows it's possibly better memory-wise
@@ -1074,19 +1074,26 @@
 
 + different length tracking
 + structs can be not lazy unlike arrays
+- store can change from object to array...
+  ~ we can prohibit that
++ object/array have quite different diffing logic:
+  + objects don't need length
+  + arrays don't need setters/getters
+  + arrays don't usually have parent scopes
 
 ## [ ] Can we use Object.create for :each scope?
 
 - We need `:ref="el"` to inject element instance per-item
-  + We don't really need to create a separate scope for that, we can just mutate root
+  + We don't really need to create a separate scope for that, we can just preset ref only for subscope
 - It's not good to expose per-item props like `:fx="x=123"` to the root
 - We can't really avoid creating new scopes in `:scope="{}"`, can we?
-  ? Possibly it's better to keep root scope as mutation holder
-+ It would allow us to get rid of `parent` in `store`
+  ? Is it better to keep root scope as mutation holder
++ It would allow us to get rid of `parent` in `store`, which is less static + dynamic trouble
 
 ### [ ] Shoud we prohibit creation of new props?
 
 + Structs make objects nice: small, fast, obvious
 - Difficulty for arrays: we cannot really avoid creating new props there
+  + What if we separate arrays to own `list` type of store?
 + We can define scopes via `:scope` for new props
 ? Do we need extending root scope? Like writing some new props to it?

@@ -42,18 +42,24 @@ directive.each = (tpl, [itemVar, idxVar, evaluate], state) => {
         cur = null, prevl = 0
       }
 
-      if (newl >= prevl) {
+      // delete
+      if (newl < prevl) {
+        cur.length = newl
+      }
+      // update, append, init
+      else {
+        // init
         if (!cur) {
           cur = newItems
         }
+        // update
         else {
-          // update
           for (; i < prevl; i++) {
             cur[i] = newItems[i]
           }
         }
 
-        // add
+        // append
         for (; i < newl; i++) {
           cur[i] = newItems[i]
 
@@ -75,10 +81,6 @@ directive.each = (tpl, [itemVar, idxVar, evaluate], state) => {
           // signal/holder disposal removes element
           ((cur[_signals] ||= [])[i] ||= {})[Symbol.dispose] = () => { el.remove(); }
         }
-      }
-      // delete
-      else {
-        cur.length = newl
       }
 
       prevl = newl
