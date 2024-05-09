@@ -20,10 +20,8 @@ directive.each = (tpl, [itemVar, idxVar, evaluate], state) => {
 
   // separate computed effect reduces number of needed updates for the effect
   const items = computed(() => {
-    console.group('computed items')
     let items = evaluate(state)
     if (typeof items === "number") items = Array.from({ length: items }, (_, i) => i)
-    console.groupEnd()
     return items || []
   })
   let prevl = 0
@@ -57,7 +55,6 @@ directive.each = (tpl, [itemVar, idxVar, evaluate], state) => {
 
         // add
         for (; i < newl; i++) {
-          console.group('new item', i)
           cur[i] = newItems[i]
 
           const idx = i,
@@ -77,7 +74,6 @@ directive.each = (tpl, [itemVar, idxVar, evaluate], state) => {
 
           // signal/holder disposal removes element
           ((cur[_signals] ||= [])[i] ||= {})[Symbol.dispose] = () => { el.remove(); }
-          console.groupEnd()
         }
       }
       // delete

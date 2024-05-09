@@ -1200,9 +1200,14 @@ test("getters", async () => {
 });
 
 test("subscribe to array length", async () => {
-  let el = h`<div :scope="{likes:[]}"><x :onx="e=>(likes.push(1))"></x><y :text="likes.length"></y></div>`;
+  // pre-heat can cause error
+  sprae(h`<x :fx="(log.push(1))"></x>`, { log: [] });
+
+  console.log('---create')
+  let el = h`<div :scope="{likes:[]}"><x :onx="e=>(likes.push(1))"></x><y :text="console.log('text'),likes.length"></y></div>`;
   sprae(el);
   is(el.innerHTML, `<x></x><y>0</y>`);
+  console.log('---event')
   el.firstChild.dispatchEvent(new window.CustomEvent("x"));
   await tick();
   is(el.innerHTML, `<x></x><y>1</y>`);

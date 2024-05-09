@@ -3,12 +3,12 @@ import { signal, computed, effect, batch, untracked } from './signal.js'
 
 export const _signals = Symbol('signals'), _change = Symbol('length');
 
-// track last accessed property to find out if .length was directly accessed from expression or via .push/etc method
-let lastProp
-
 // FIXME: maybe separate array and object stores?
 export default function store(values, parent) {
   const isArr = Array.isArray(values)
+
+  // track last accessed property to find out if .length was directly accessed from expression or via .push/etc method
+  let lastProp
 
   if (!values || (values?.constructor !== Object && !isArr)) return values;
 
@@ -35,7 +35,7 @@ export default function store(values, parent) {
     has(values, key, child) { return values.hasOwnProperty(key) || parent?.hasOwnProperty(key) },
 
     get(values, key, child) {
-      // console.log('get', key)
+      // console.log('get', key, lastProp)
       // if .length is read within .push/etc - peek signal (don't subscribe)
       if (isArr)
         if (key === 'length') return (proto[lastProp]) ? _len.peek() : _len.value;
