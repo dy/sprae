@@ -2,8 +2,8 @@ import sprae, { directive, swap } from "../core.js";
 import { _each } from './each.js';
 
 // :if is interchangeable with :each depending on order, :if :each or :each :if have different meanings
-// as for :if :scope - :if must init first, since it is lazy, to avoid initializing component ahead of time by :scope
-// we consider :scope={x} :if={x} case insignificant
+// as for :if :with - :if must init first, since it is lazy, to avoid initializing component ahead of time by :with
+// we consider :with={x} :if={x} case insignificant
 const _prevIf = Symbol("if");
 directive.if = (ifEl, evaluate, state) => {
   let parent = ifEl.parentNode,

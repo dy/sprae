@@ -31,7 +31,7 @@ export default function store(values, parent) {
 
   // proxy conducts prop access to signals
   const state = new Proxy(values, {
-    // FIXME: instead of redefining this we can adjust :scope directive
+    // FIXME: instead of redefining this we can adjust :with directive
     has(values, key, child) { return values.hasOwnProperty(key) || parent?.hasOwnProperty(key) },
 
     get(values, key, child) {

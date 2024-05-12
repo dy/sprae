@@ -49,7 +49,7 @@
             </ul>
         </section>
         <footer class="footer">
-            <span class="todo-count" :scope="{count: todos.value.filter(item => !item.value.done).length}">
+            <span class="todo-count" :with="{count: todos.value.filter(item => !item.value.done).length}">
                 <strong :text="count">#</strong> <span :text="plur('item', count)">items</span> left
             </span>
             <ul class="filters">

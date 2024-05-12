@@ -109,17 +109,17 @@
 * [x] ~~replace class="∴" with just "∴" attribute (less interference/friction)~~ invalid attribute
 * [x] collapse dirs into details
 * [x] make item itself a key also
-* [ ] :onvisible..oninvisible
-* [ ] :onmount..onunmount
-* [ ] :animate?
-* [ ] js-framework-bench push + example
-* [ ] ~~move proxy state into own project / part of signal struct (with tests from here)~~ part of sprae is better
+* [x] ~~move proxy state into own project / part of signal struct (with tests from here)~~ part of sprae is better
 * [x] some bug with keys identity in todo
 * [x] v9 issues:
   * [x] creating/releasing rows doesn't clear up memory
     * because weakmap stores by key, only if key is disposed it clears up
   * [x] replacing/swapping rows is slow
     * the reason of slowdown is key - sometimes it's better to keep index as key, not id
+* [ ] :onvisible..oninvisible
+* [ ] :onmount..onunmount
+* [ ] :animate?
+* [ ] js-framework-bench push + example
 * [ ] state as signal: test updates itself `sprae(el, signal({x:1}))` - needed for :each loop
 * [x] switchable compiler
 * [x] ~~try getting rid of compile() calls in subscript~~ not sprae's concern
@@ -131,8 +131,8 @@
 
 * [x] signals based on signals proposal
 * [ ] proxy state is back
-  * [ ] bring `effect` back to all directives
   * [ ] flatten `store` to avoid passing parent (only needed by `scope`)
+  * [ ] bring `effect` back to all directives
   * [ ] make array push updates batched
 * [ ] remove valueOf()s in directives
 * [ ] separate store to object / array
