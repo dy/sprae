@@ -740,7 +740,7 @@ test("each: condition within loop", async () => {
 
 test('each: items refer to current el', async () => {
   // NOTE: the problem here is that the next items can subscribe to `el` defined in root state, that will cause unnecessary :x effect
-  let el = h`<div><x :each="x in 3" :data-x="x" :ref="el" :x="console.group(':x', el),log.push(x, el.dataset.x),console.groupEnd()"></x></div>`;
+  let el = h`<div><x :each="x in 3" :data-x="x" :ref="el" :x="log.push(x, el.dataset.x)"></x></div>`;
   let log = signal([]);
   let state = sprae(el, { log, untracked });
   is([...state.log], [0, "0", 1, "1", 2, "2"]);
@@ -958,7 +958,7 @@ test("each: subscribe to modifying list", async () => {
 });
 
 test('each: unwanted extra subscription', async t => {
-  let el = h`<div><x :each="item in (untracked(() => each++), rows)"><a :text="item.label"></a></x></div>`
+  let el = h`<div><x :each="item,i in (untracked(() => each++), rows)"><a :text="console.log(i),item.label"></a></x></div>`
 
   const rows = signal(null)
   const state = sprae(el, { rows, each: 0, untracked })
@@ -983,7 +983,7 @@ test('each: unwanted extra subscription', async t => {
   is(state.each, 3)
   is(el.innerHTML, `<x><a>2</a></x>`)
 
-  console.log('--------rows.value[1].label += 2')
+  console.log('--------rows.value[0].label += 2')
   // FIXME: this triggers each, but it should not
   // a.label.value += 2
   b.label.value += 2

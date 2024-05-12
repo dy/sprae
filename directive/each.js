@@ -28,9 +28,7 @@ directive.each = (tpl, [itemVar, idxVar, evaluate], state) => {
 
   return () => {
     // subscribe to items change (incl length)
-    if (!cur) {
-      items.value.length
-    }
+    if (!cur) items.value.length
 
     // add or update
     untracked(() => {
@@ -65,21 +63,20 @@ directive.each = (tpl, [itemVar, idxVar, evaluate], state) => {
 
           const idx = i,
             el = tpl.cloneNode(true),
-            // NOTE: can't do Object.create here since our new scope can be modified by item (like :ref="el"), so we need to keep root scope untacted
-            // scope = Object.create(state, {
-            //   [itemVar]: { get() { return cur[idx] } },
-            //   [idxVar]: { value: idx },
-            // })
-            scope = store({
-              [itemVar]: cur[_signals]?.[i] ?? cur[i],
-              [idxVar]: idx
-            }, state)
+            scope = Object.create(state, {
+              [itemVar]: { get() { return cur[idx] } },
+              [idxVar]: { value: idx },
+            })
+          // scope = store({
+          //   [itemVar]: cur[_signals]?.[i] ?? cur[i],
+          //   [idxVar]: idx
+          // }, state)
 
-          holder.before(el)
+          holder.before(el);
           sprae(el, scope);
 
           // signal/holder disposal removes element
-          ((cur[_signals] ||= [])[i] ||= {})[Symbol.dispose] = () => { el.remove(); }
+          ((cur[_signals] ||= [])[i] ||= {})[Symbol.dispose] = () => { el[Symbol.dispose](); el.remove(); }
         }
       }
 

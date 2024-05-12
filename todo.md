@@ -135,3 +135,4 @@
   * [ ] flatten `store` to avoid passing parent (only needed by `scope`)
   * [ ] make array push updates batched
 * [ ] remove valueOf()s in directives
+* [ ] separate store to object / array

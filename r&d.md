@@ -109,7 +109,7 @@
 
 -> possibly we have to just subscribe via mechanism of signals-like deps, and :with just initializes subtree with extended object
 
-## [x] :with? -> ~~let's use `:with="{x:1,y:2,z:3}"` for now~~ ~~:with is poor shim for componentization; ~~ -> :scope is needed for local evals, to prevent leaking values, also we need it for :each anyways
+## [x] :with? -> ~~let's use `:with="{x:1,y:2,z:3}"` for now~~ ~~:with is poor shim for componentization; ~~ -> :scope/:with is needed for local evals, to prevent leaking values, also we need it for :each anyways
 
   1. Get rid of :with
     + with is bad JS practice/association
@@ -1086,9 +1086,17 @@
 - We need `:ref="el"` to inject element instance per-item
   + We don't really need to create a separate scope for that, we can just preset ref only for subscope
 - It's not good to expose per-item props like `:fx="x=123"` to the root
+  ~+ why? actually that allows to have access to both local scope and root scope
 - We can't really avoid creating new scopes in `:scope="{}"`, can we?
   ? Is it better to keep root scope as mutation holder
+  + `:with={}` wasn't supposed to define scope, it's just defining variables
 + It would allow us to get rid of `parent` in `store`, which is less static + dynamic trouble
++ `:scope` defines only particular local variables, but generally access to root scope is preserved
+
+### [ ] should we rename `:scope` to `:with` then, to avoid confusion?
+  + less confusion - doesn't create actual scope
+  - bad remembrance of JS with
+    +~ not necessarily the case
 
 ### [ ] Shoud we prohibit creation of new props?
 
