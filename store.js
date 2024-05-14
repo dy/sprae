@@ -16,7 +16,7 @@ export default function store(values, parent) {
   if (values[_signals] && !parent) return values;
 
   // NOTE: if you decide to unlazy values, think about large arrays - init upfront can be costly
-  const
+  let
     // .length signal is stored outside, since it cannot be replaced
     // _len stores total values length (for objects as well)
     _len = signal(isArr ? values.length : Object.values(values).length),
@@ -28,7 +28,7 @@ export default function store(values, parent) {
   // proxy conducts prop access to signals
   const state = new Proxy(values, {
     // FIXME: instead of redefining this we can adjust :with directive
-    has(values, key, child) { return values.hasOwnProperty(key) || parent?.hasOwnProperty(key) },
+    has(values, key, child) { return values.hasOwnProperty(key) || key in signals },
 
     get(values, key, child) {
       // console.log('get', key, lastProp)
@@ -57,6 +57,7 @@ export default function store(values, parent) {
           return true
         }
       }
+      if (key === _signals) return signals = v
 
       let s = signals[key] || touchSignal(key) || (signals[key] = signal()),
         cur = s.peek()
@@ -111,7 +112,7 @@ export default function store(values, parent) {
   })
 
   if (parent) {
-    // touch parent keys
+    // touch parent keys - to make sure signals exist
     for (let key in parent) parent[key]
 
     // we reset parent signals making sure they don't override own values
