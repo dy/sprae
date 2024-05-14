@@ -227,7 +227,7 @@ t('store: inheritance: lazy init', async () => {
   let last
   effect(() => (last = s1.foo))
   is(last, 'bar')
-  console.log('s.x.foo = `baz`')
+  console.log('---s.x.foo = `baz`')
   x.foo = 'baz'
   await tick()
   is(last, 'baz')

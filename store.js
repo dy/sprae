@@ -16,8 +16,7 @@ export default function store(values, parent) {
   if (values[_signals] && !parent) return values;
 
   // NOTE: if you decide to unlazy values, think about large arrays - init upfront can be costly
-  const initSignals = values[_signals],
-
+  const
     // .length signal is stored outside, since it cannot be replaced
     // _len stores total values length (for objects as well)
     _len = signal(isArr ? values.length : Object.values(values).length),
@@ -25,9 +24,6 @@ export default function store(values, parent) {
     // dict with signals storing values
     signals = parent ? Object.create((parent = store(parent))[_signals]) : isArr ? [] : {},
     proto = signals.constructor.prototype;
-
-  // touch parent keys
-  if (parent) for (let key in parent) parent[key]
 
   // proxy conducts prop access to signals
   const state = new Proxy(values, {
@@ -114,10 +110,16 @@ export default function store(values, parent) {
     }
   })
 
-  // init signals placeholders (instead of ownKeys & getOwnPropertyDescriptor handlers)
-  // if values are existing proxy (in case of extending parent) - take its signals instead of creating new ones
-  // FIXME: not needed actually
-  for (let key in values) signals[key] = initSignals?.[key] ?? touchSignal(key);
+  if (parent) {
+    // touch parent keys
+    for (let key in parent) parent[key]
+
+    // we reset parent signals making sure they don't override own values
+    for (let key in values) signals[key] = null
+  }
+
+  // take over existing store signals instead of creating new ones (touch to make sure they exist)
+  if (values[_signals]) for (let key in values) signals[key] = values[_signals][key];
 
   // initialize signal for provided key
   function touchSignal(key) {

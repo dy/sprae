@@ -1,5 +1,5 @@
 import sprae, { directive } from "../core.js";
-import store from '../store.js';
+import store, { _signals } from '../store.js';
 
 // `:each` can redefine scope as `:each="a in myScope"`,
 // same time per-item scope as `:each="..." :with="{collapsed:true}"` is useful
@@ -14,6 +14,8 @@ directive.with = (el, evaluate, rootState) => {
     // FIXME: inherit signals here instead and make store constructor simpler
     sprae(el, store(evaluate(rootState), rootState));
 
-    // sprae(el,)
+    // const s = store(evaluate(rootState)); // creates store with empty signals
+    // s[_signals] = Object.create(rootState[_signals]) // inherit signals from parent
+    // for (let k in s) s[k] // touch signals
   }
 };

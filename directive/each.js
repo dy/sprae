@@ -60,7 +60,6 @@ directive.each = (tpl, [itemVar, idxVar, evaluate], state) => {
         // append
         for (; i < newl; i++) {
           cur[i] = newItems[i]
-
           const idx = i,
             el = tpl.cloneNode(true),
             scope = Object.create(state, {
