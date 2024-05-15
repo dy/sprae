@@ -257,6 +257,7 @@ t.skip('store: sandbox', async () => {
 t('store: array items', async () => {
   // arrays get each item converted to signal struct
   let s5 = store({ list: [{ x: 1 }, { x: 2 }] })
+  let sum; effect(() => (sum = s5.list.reduce((sum, item) => (item.x + sum), 0), console.log('reduce', s5.list)))
   await tick()
   is(sum, 3)
   console.log('--- list[0].x = 2')

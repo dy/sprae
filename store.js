@@ -23,7 +23,7 @@ export default function store(values, parent) {
 
   // proxy conducts prop access to signals
   const state = new Proxy(signals, {
-    get(_, key, child) {
+    get(_, key) {
       // console.log('get', key)
       return signals[key]?.valueOf() // returns either signal value or proto value
     },
