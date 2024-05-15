@@ -108,9 +108,6 @@ const parse = (expr, dir, fn) => {
 // default compiler is simple new Function (tiny obfuscation against direct new Function detection)
 export let compile
 
-// DOM swapper
-export let swap
-
 // interpolate a$<b> fields from context
 export const ipol = (v, state) => {
   return v?.replace ? v.replace(/\$<([^>]+)>/g, (match, field) => state[field] ?? '') : v
@@ -120,6 +117,5 @@ export const ipol = (v, state) => {
 // it's more compact than using sprae.signal = signal etc.
 sprae.use = s => {
   s.signal && use(s);
-  s.swap && (swap = s.swap);
   s.compile && (compile = s.compile);
 }

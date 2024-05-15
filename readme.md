@@ -18,7 +18,7 @@ Perfect for small-scale websites, static pages, landings, prototypes, or lightwe
 
   const state = sprae(container, { user: { name: 'Kitty' } }) // init
 
-  state.user.name.value = 'Dolly' // update
+  state.user.name = 'Dolly' // update
 </script>
 ```
 
@@ -47,6 +47,7 @@ Multiply element.
 ```html
 <ul><li :each="item in items" :text="item"/></ul>
 
+<!-- cases -->
 <li :each="item, idx in array" />
 <li :each="value, key in object" />
 <li :each="idx in number" />
@@ -77,7 +78,7 @@ Welcome, <template :text="user.name" />.
 Set class value.
 
 ```html
-<!-- extends static class -->
+<!-- appends class -->
 <div class="foo" :class="bar"></div>
 
 <!-- interpolation -->
@@ -92,7 +93,7 @@ Set class value.
 Set style value.
 
 ```html
-<!-- extends static style -->
+<!-- extends style -->
 <div style="foo: bar" :style="'baz: qux'">
 
 <!-- interpolation -->
@@ -267,17 +268,23 @@ Trigger when element is connected / disconnected from DOM.
 
 ## Signals
 
-Sprae internally uses signals for reactivity.<br/>
-It can be switched to any alternative preact-flavored signals:
+Sprae uses signals for reactivity and accepts signal values.<br/>
+Signals provider be switched to any preact-flavored implementation:
 
 ```js
 import sprae from 'sprae';
 import { signal, computed, effect, batch, untracked } from 'sprae/signal';
 import * as signals from '@preact/signals-core';
 
+// switch provider to @preact/signals-core
 sprae.use(signals);
 
-sprae(el, { name: signal('Kitty') });
+// use signal as state value
+const name = signal('Kitty')
+sprae(el, { name });
+
+// update state
+name.value = 'Dolly';
 ```
 
 Provider | Size | Feature
@@ -292,7 +299,7 @@ Provider | Size | Feature
 ## Evaluator
 
 Expressions use _new Function_ as default evaluator, which is fast & compact way, but violates "unsafe-eval" CSP.
-To make eval stricter & safer, as well as sandbox expressions, an alternative evaluator can be configured, eg. _justin_:
+To make eval stricter & safer, as well as sandbox expressions, an alternative evaluator can be used, eg. _justin_:
 
 ```js
 import sprae from 'sprae'
@@ -301,7 +308,7 @@ import justin from 'subscript/justin'
 sprae.use({compile: justin}) // set up justin as default compiler
 ```
 
-[_Justin_](https://github.com/dy/subscript?tab=readme-ov-file#justin) is minimal JS subset. It avoids "unsafe-eval" CSP and provides sandboxing.
+[_Justin_](https://github.com/dy/subscript?tab=readme-ov-file#justin) is minimal JS subset that avoids "unsafe-eval" CSP and provides sandboxing.
 
 ###### Operators:
 
@@ -326,7 +333,6 @@ import sprae, { directive } from 'sprae/core'
 import { effect } from 'sprae/signal'
 import * as signals from '@preact/signals'
 import compile from 'subscript'
-import diff from 'udomdiff
 
 // include directives
 import 'sprae/directive/if.js'

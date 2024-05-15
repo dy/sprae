@@ -1,4 +1,4 @@
-import sprae, { directive, swap } from "../core.js";
+import sprae, { directive } from "../core.js";
 import { _each } from './each.js';
 
 // :if is interchangeable with :each depending on order, :if :each or :each :if have different meanings
@@ -31,8 +31,9 @@ directive.if = (ifEl, evaluate, state) => {
     if (cur != newEls) {
       // :if :each
       if (cur[0]?.[_each]) cur = [cur[0][_each]]
-      swap(parent, cur, cur = newEls, holder);
-      for (let el of cur) sprae(el, state);
+      for (let el of cur) el.remove();
+      cur = newEls;
+      for (let el of cur) parent.insertBefore(el, holder), sprae(el, state);
     }
   };
 };

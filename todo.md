@@ -135,5 +135,5 @@
   * [x] flatten `store` to avoid passing parent (only needed by `scope`)
   * [ ] bring `effect` back to all directives
   * [ ] make array push updates batched
-* [ ] remove valueOf()s in directives
+* [x] remove valueOf()s in directives
 * [x] separate store to object / array

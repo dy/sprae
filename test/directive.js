@@ -1224,7 +1224,8 @@ test("csp: sandbox", async () => {
   const s = sprae(el.cloneNode(), state);
   is(s.log, [undefined, console, undefined, undefined]);
 
-  s.log.splice(0);
+  // s.log.splice(0);
+  s.log = [];
   Object.assign(globals, { self: window });
   console.log("--------- sprae again with globals");
   sprae(el.cloneNode(), state);
