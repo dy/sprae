@@ -35,8 +35,8 @@ directive.each = (tpl, [itemVar, idxVar, evaluate], state) => {
       let i = 0, newItems = items.value, newl = newItems.length
 
       // plain array update, not store (signal with array) - updates full list
-      if (cur && !cur[_change]) {
-        for (let s of cur[_signals] || []) s[Symbol.dispose]()
+      if (cur && !(_change in cur)) {
+        for (let s of cur[_signals] || []) { s[Symbol.dispose]() }
         cur = null, prevl = 0
       }
 

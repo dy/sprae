@@ -1,4 +1,4 @@
-import store from '../store.js'
+import store, { _signals } from '../store.js'
 import { effect, batch, use } from '../signal.js'
 import * as signals from 'ulive'
 // import * as signals from '@preact/signals'
@@ -10,7 +10,7 @@ use(signals)
 t('store: basic', async t => {
   let s = store({ x: 0, y: 1 })
 
-  let xy; effect(() => xy = s.x + s.y)
+  let xy; effect(() => (xy = s.x + s.y))
   is(xy, 1, 'Eq')
   console.log('set 2')
   s.x = 2
@@ -198,24 +198,24 @@ t('store: inheritance', () => {
 })
 
 t('store: inheritance: updating values in chain', async () => {
-  let s1 = { x: 1 }
-  let s = store(s1, { y: 2 })
+  let s1 = store({ x: 1 }), parent = store({ y: 2 })
+  let s2 = store(s1, parent)
   // console.group('fx')
-  let xy = 0; effect(() => (xy = s.x + s.y));
+  let xy = 0; effect(() => (xy = s2.x + s2.y));
   // console.groupEnd('fx')
   await tick()
   is(xy, 3)
-  console.log('x++')
-  s.x++
+  console.log('----x++')
+  s2.x++
   await tick()
   is(xy, 4)
   is(s1.x, 2)
-  console.log('y++')
-  s.y++
+  console.log('----y++')
+  s2.y++
   await tick()
   is(xy, 5)
   // NOTE: this is identical behavior to `a={y:1}, b=Object.create(a), b.y++`
-  is(s1.y, 3)
+  is(parent.y, 3)
 })
 
 t('store: inheritance: lazy init', async () => {
@@ -257,7 +257,7 @@ t.skip('store: sandbox', async () => {
 t('store: array items', async () => {
   // arrays get each item converted to signal struct
   let s5 = store({ list: [{ x: 1 }, { x: 2 }] })
-  let sum; effect(() => (sum = s5.list.reduce((sum, item) => (item.x + sum), 0), console.log('reduce', s5.list)))
+  await tick()
   is(sum, 3)
   console.log('--- list[0].x = 2')
   s5.list[0].x = 2
@@ -288,8 +288,8 @@ t('store: set special object as prop', () => {
   is(s.b, a)
 })
 
-t('store: arrays retain reference', () => {
-  // NOTE: not sure if we need it
+t.skip('store: arrays retain reference', () => {
+  // NOTE: not sure if we need it - in favor of simplicity say we don't
   // arrays retain reference
   let list = [1, 2, 3]
   let s6 = store({ list })

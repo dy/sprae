@@ -485,11 +485,11 @@ test("each: array length ops", async () => {
   const params = sprae(el, { b: [0] });
 
   is(el.innerHTML, "<span>0</span>");
-  console.log('b.length = 2')
+  console.log('---b.length = 2')
   params.b.length = 2;
   await tick()
   is(el.innerHTML, "<span>0</span><span></span>");
-  console.log('b.pop()')
+  console.log('---b.pop()')
   params.b.pop();
   await tick()
   is(el.innerHTML, "<span>0</span>");
@@ -1162,18 +1162,18 @@ test(":: null result does nothing", async () => {
 });
 
 test("fx: effects", async () => {
-  let el = h`<x :fx="(log.push(x.value), () => (log.push('out')))"></x>`;
-  let log = [], x = signal(1)
-  let state = sprae(el, { log, x, console });
+  let el = h`<x :fx="(log.push(x), () => (log.push('out')))"></x>`;
+  let x = signal(1)
+  let state = sprae(el, { log: [], x, console });
   is(el.outerHTML, `<x></x>`);
-  is(log, [1])
+  is(state.log, [1])
   console.log('upd value')
   x.value = 2
   await tick()
   is(el.outerHTML, `<x></x>`);
-  is(log, [1, 'out', 2])
+  is(state.log, [1, 'out', 2])
   el[Symbol.dispose]()
-  is(log, [1, 'out', 2, 'out'])
+  is(state.log, [1, 'out', 2, 'out'])
 });
 
 test.skip("immediate scope", async () => {
@@ -1349,6 +1349,7 @@ test("events: key combinations", (e) => {
 test("events: keys with prevent", (e) => {
   let el = h`<y :onkeydown="event => log.push(event.key)"><x :ref="x" :onkeydown.enter.stop></x></y>`;
   let state = sprae(el, { log: [] });
+  console.log(state)
   state.x.dispatchEvent(new window.KeyboardEvent("keydown", { key: "x", bubbles: true }));
   console.log("enter");
   state.x.dispatchEvent(new window.KeyboardEvent("keydown", { key: "Enter", bubbles: true }));
