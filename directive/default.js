@@ -8,12 +8,12 @@ directive.default = (el, evaluate, state, name) => {
     let off
     return () => (
       off?.(), // intermediate teardown
-      off = on(el, evt, evaluate(state)?.valueOf())
+      off = on(el, evt, evaluate(state))
     );
   }
 
   return () => {
-    let value = evaluate(state)?.valueOf();
+    let value = evaluate(state);
     if (name) attr(el, name, ipol(value, state))
     else for (let key in value) attr(el, dashcase(key), ipol(value[key], state));
   };
@@ -148,5 +148,5 @@ export const dashcase = (str) => {
 
 // interpolate a$<b> fields from context
 export const ipol = (v, state) => {
-  return v?.replace ? v.replace(/\$<([^>]+)>/g, (match, field) => state[field]?.valueOf?.() ?? '') : v
+  return v?.replace ? v.replace(/\$<([^>]+)>/g, (match, field) => state[field] ?? '') : v
 };

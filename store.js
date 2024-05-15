@@ -4,7 +4,7 @@ import { signal, computed, effect, batch, untracked } from './signal.js'
 export const _signals = Symbol('signals'), _change = Symbol('length');
 
 // object store is not lazy
-export default function store(values, parent) {
+export default function store(values, signals) {
   // redirect for optimized array store
   if (Array.isArray(values)) return list(values)
 
@@ -12,35 +12,28 @@ export default function store(values, parent) {
   if (!values || (values.constructor !== Object)) return values;
 
   // ignore existing state as argument
-  if (values[_signals] && !parent) return values;
+  if (values[_signals] && !signals) return values;
 
   // NOTE: if you decide to unlazy values, think about large arrays - init upfront can be costly
-  let _len = signal(Object.values(values).length),
-    signals = parent ? Object.create((parent = store(parent))[_signals]) : {}
+  let _len = signal(Object.values(values).length)
 
+  signals ||= {}
   signals[_signals] = signals
   signals[_change] = _len
 
   // proxy conducts prop access to signals
   const state = new Proxy(signals, {
-    get(_, key) {
-      // console.log('get', key)
-      return signals[key]?.valueOf() // returns either signal value or proto value
-    },
+    get: (_, key) => signals[key]?.valueOf(),
 
     set(_, key, v) {
       console.log('set', key, v)
-      if (key === _signals) return signals = v
-
-      if (signals[key]) upd(signals[key], v)
+      if (signals[key]) set(signals[key], v)
       else signals[key] = signal(v)
 
       return true
     },
 
-    deleteProperty(_, key) {
-      if (del(signals, key)) _len.value--
-    }
+    deleteProperty: (_, key) => del(signals, key) && _len.value--
   })
 
   // take over existing store signals instead of creating new ones
@@ -79,8 +72,7 @@ export function list(values) {
   // .length signal is stored separately, since it cannot be replaced on array
   let _len = signal(values.length),
     // gotta fill with null since proto methods like .reduce may fail
-    signals = Array(values.length).fill(null),
-    proto = signals.constructor.prototype;
+    signals = Array(values.length).fill(null);
 
   signals[_signals] = signals
   signals[_change] = _len
@@ -89,13 +81,10 @@ export function list(values) {
   const state = new Proxy(signals, {
     get(_, key) {
       // console.log('get', key)
-      // if .length is read within .push/etc - peek signal (don't subscribe)
-      if (key === 'length') return (proto[lastProp]) ? _len.peek() : _len.value;
+      // if .length is read within .push/etc - peek signal to avoid recursive subscription
+      if (key === 'length') return (Array.prototype[lastProp]) ? _len.peek() : _len.value;
 
       lastProp = key;
-
-      // standard methods
-      if (proto[key]) return proto[key]
 
       if (signals[key]) return signals[key].valueOf()
 
@@ -113,7 +102,7 @@ export function list(values) {
         return true
       }
 
-      if (signals[key]) upd(signals[key], v)
+      if (signals[key]) set(signals[key], v)
       else signals[key] = signal(store(v))
 
       // force changing length, if eg. a=[]; a[1]=1 - need to come after setting the item
@@ -130,7 +119,7 @@ export function list(values) {
 }
 
 // update signal value
-function upd(s, v) {
+function set(s, v) {
   // skip unchanged (although can be handled by last condition - we skip a few checks this way)
   if (v === s.peek());
   // stashed _set for value with getter/setter

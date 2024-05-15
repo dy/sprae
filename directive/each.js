@@ -66,10 +66,6 @@ directive.each = (tpl, [itemVar, idxVar, evaluate], state) => {
               [itemVar]: { get() { return cur[idx] } },
               [idxVar]: { value: idx },
             })
-          // scope = store({
-          //   [itemVar]: cur[_signals]?.[i] ?? cur[i],
-          //   [idxVar]: idx
-          // }, state)
 
           holder.before(el);
           sprae(el, scope);

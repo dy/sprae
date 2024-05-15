@@ -132,7 +132,7 @@
 * [x] signals based on signals proposal
 * [ ] proxy state is back
   * [x] try out store without `values` holder
-  * [ ] flatten `store` to avoid passing parent (only needed by `scope`)
+  * [x] flatten `store` to avoid passing parent (only needed by `scope`)
   * [ ] bring `effect` back to all directives
   * [ ] make array push updates batched
 * [ ] remove valueOf()s in directives

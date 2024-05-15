@@ -26,7 +26,7 @@ directive.if = (ifEl, evaluate, state) => {
   } else elses = none
 
   return () => {
-    const newEls = evaluate(state)?.valueOf() ? ifs : ifEl[_prevIf] ? none : elses;
+    const newEls = evaluate(state) ? ifs : ifEl[_prevIf] ? none : elses;
     if (next) next[_prevIf] = newEls === ifs
     if (cur != newEls) {
       // :if :each

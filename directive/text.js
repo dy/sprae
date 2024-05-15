@@ -5,7 +5,7 @@ directive.text = (el, evaluate, state) => {
   if (el.content) el.replaceWith(el = document.createTextNode('')) // <template :text="abc"/>
 
   return () => {
-    let value = evaluate(state)?.valueOf();
+    let value = evaluate(state);
     el.textContent = value == null ? "" : value;
   };
 };

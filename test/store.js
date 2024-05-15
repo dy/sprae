@@ -1,5 +1,5 @@
 import store, { _signals } from '../store.js'
-import { effect, batch, use } from '../signal.js'
+import { effect, batch, use, signal } from '../signal.js'
 import * as signals from 'ulive'
 // import * as signals from '@preact/signals'
 import t, { is, ok, throws } from 'tst'
@@ -173,7 +173,7 @@ t.skip('store: store from store', () => {
 t('store: inheritance', () => {
   let s = store({ x: 0 })
   //s.x;
-  let s1 = store({ y: 2 }, s)
+  let s1 = store({ y: 2 }, Object.create(s[_signals]))
   is(s1.x, 0)
   is(s1.y, 2)
 
@@ -198,10 +198,11 @@ t('store: inheritance', () => {
 })
 
 t('store: inheritance: updating values in chain', async () => {
-  let s1 = store({ x: 1 }), parent = store({ y: 2 })
-  let s2 = store(s1, parent)
+  let s1 = store({ x: 1 })
+  let s2 = store(s1, Object.create({ y: signal(2) }))
+  console.log(s2.y)
   // console.group('fx')
-  let xy = 0; effect(() => (xy = s2.x + s2.y));
+  let xy = 0; effect(() => (console.log(s2.y), xy = s2.x + s2.y));
   // console.groupEnd('fx')
   await tick()
   is(xy, 3)
@@ -215,14 +216,15 @@ t('store: inheritance: updating values in chain', async () => {
   await tick()
   is(xy, 5)
   // NOTE: this is identical behavior to `a={y:1}, b=Object.create(a), b.y++`
-  is(parent.y, 3)
+  // but since we don't use parent anymore - disregard
+  // is(parent.y, 3)
 })
 
 t('store: inheritance: lazy init', async () => {
   let s = store({ x: { foo: 'bar' } })
   console.log('------create s1')
   const x = s.x;
-  let s1 = store(x, s)
+  let s1 = store(x, s[_signals])
   is(s1.foo, 'bar')
   let last
   effect(() => (last = s1.foo))
@@ -238,7 +240,7 @@ t('store: inheritance: lazy init', async () => {
 
 t('store: inheritance subscribes to parent getter', async () => {
   let s = store({ x: 1 })
-  let s1 = store({}, s)
+  let s1 = store({}, Object.create(s[_signals]))
   let log = []
   effect(() => log.push(s1.z))
   is(log, [undefined])
@@ -371,7 +373,7 @@ t.skip('store: batch', async () => {
 
 t('store: inheritance does not change root', () => {
   const root = store({ x: 1, y: 2 })
-  const s = store({ x: 2 }, root)
+  const s = store({ x: 2 }, Object.create(root[_signals]))
   is(root.x, 1)
 })
 

@@ -6,7 +6,7 @@ directive.style = (el, evaluate, state) => {
   if (!initStyle.endsWith(";")) initStyle += "; ";
 
   return () => {
-    let v = evaluate(state)?.valueOf();
+    let v = evaluate(state);
     if (typeof v === "string") el.setAttribute("style", initStyle + ipol(v, state));
     else {
       el.setAttribute("style", initStyle);

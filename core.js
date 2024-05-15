@@ -1,5 +1,5 @@
 import { effect, untracked, use } from "./signal.js";
-import store from './store.js';
+import store, { _signals } from './store.js';
 
 // polyfill
 const _dispose = (Symbol.dispose ||= Symbol("dispose"));
@@ -113,7 +113,7 @@ export let swap
 
 // interpolate a$<b> fields from context
 export const ipol = (v, state) => {
-  return v?.replace ? v.replace(/\$<([^>]+)>/g, (match, field) => state[field]?.valueOf?.() ?? '') : v
+  return v?.replace ? v.replace(/\$<([^>]+)>/g, (match, field) => state[field] ?? '') : v
 };
 
 // configure signals/compile/differ
