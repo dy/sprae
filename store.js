@@ -26,8 +26,13 @@ export default function store(values, signals) {
   // proxy conducts prop access to signals
   const state = new Proxy(signals, {
     get: (_, key) => signals[key]?.valueOf(),
-    set,
-    deleteProperty: (_, key) => del(signals, key) && _len.value--
+    set: (_, key, v, s) => (s = signals[key], set(signals, key, v), s || (++_len.value)), // bump length for new signal
+    deleteProperty: (_, key) => del(signals, key) && _len.value--,
+    ownKeys() {
+      // subscribe to length when object is spread
+      _len.value
+      return Reflect.ownKeys(signals);
+    },
   })
 
   // take over existing store signals instead of creating new ones
@@ -101,7 +106,8 @@ export function list(values) {
       return true
     },
 
-    deleteProperty: (_, key) => (del(signals, key), true)
+    deleteProperty: (_, key) => (del(signals, key), true),
+
   })
 
   return state
@@ -113,16 +119,9 @@ function set(signals, key, v) {
 
   // new property
   if (!s) {
-    // retain globals as is
-    if (globalThis[key] === v) s = v;
-
     // preserve signal value as is
-    else s = v?.peek ? v : signal(store(v))
-
-    signals[key] = s
+    signals[key] = s = v?.peek ? v : signal(store(v))
   }
-  // skip global objects
-  else if (globalThis[key] === s);
   // skip unchanged (although can be handled by last condition - we skip a few checks this way)
   else if (v === s.peek());
   // stashed _set for value with getter/setter
@@ -146,8 +145,6 @@ function set(signals, key, v) {
   else {
     s.value = store(v)
   }
-
-  return s
 }
 
 // delete signal

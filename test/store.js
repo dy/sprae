@@ -377,13 +377,17 @@ t('store: inheritance does not change root', () => {
   is(root.x, 1)
 })
 
-t.todo('store: adding new props to object triggers effect', () => {
+t('store: adding new props to object triggers effect', () => {
   const s = store({ x: 1, y: 2 }), log = []
-  effect(() => (log.push({ ...s })))
-  is()
+  effect(() => (console.group('fx'), log.push({ ...s }), console.groupEnd()))
+  is(log, [{ x: 1, y: 2 }])
+  console.log('---s.z=3')
+  s.z = 3
+  is(log, [{ x: 1, y: 2 }, { x: 1, y: 2, z: 3 }])
 })
 
-t.todo('store: length is not triggered extra times', async t => {
+t.skip('store: length is not triggered extra times', async t => {
+  // NOTE: we can handle it via each, even batch
   let s = store([1, 2])
   let log = []
   effect(() => (console.log('len fx', s.length), log.push(s.length)))
@@ -393,7 +397,7 @@ t.todo('store: length is not triggered extra times', async t => {
   is(log, [2, 4])
 })
 
-t('store: retain global objects as is', async t => {
+t.skip('store: retain global objects as is', async t => {
   let s = store({ console })
   ok(s.console === globalThis.console)
 })

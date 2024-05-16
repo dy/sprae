@@ -1220,15 +1220,15 @@ test("csp: sandbox", async () => {
   const state = Object.assign(Object.create(globals), { log: [] });
 
   // let el = h`<x :x="log.push(1)"></x>`
-  let el = h`<x :x="log.push( self,  console,  arguments,  __scope)"></x>`;
-  const s = sprae(el.cloneNode(), state);
+  let el = h`<x :x="console.group('set'),log.push( self,  console,  arguments,  __scope),console.groupEnd()"></x>`;
+  let s = sprae(el.cloneNode(), state);
   is(s.log, [undefined, console, undefined, undefined]);
-
   // s.log.splice(0);
-  s.log = [];
+  // s.log = [];
   Object.assign(globals, { self: window });
   console.log("--------- sprae again with globals");
-  sprae(el.cloneNode(), state);
+  s = sprae(el.cloneNode(), state);
+  console.log(s.log)
   is(s.log, [window, console, undefined, undefined]);
 });
 
