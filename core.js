@@ -99,8 +99,6 @@ const parse = (expr, dir, fn) => {
   try { fn = compile(expr); }
   catch (e) { throw Object.assign(e, { message: `∴ ${e.message}\n\n${dir}${expr ? `="${expr}"\n\n` : ""}`, expr }) }
 
-  fn.expr = expr
-
   // runtime errors
   return evalMemo[expr] = fn
 }

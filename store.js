@@ -18,44 +18,34 @@ export default function store(values, signals) {
   let _len = signal(Object.values(values).length)
 
   signals ||= {}
-  signals[_signals] = signals
-  signals[_change] = _len
+  Object.defineProperties(signals, {
+    [_signals]: { value: signals },
+    [_change]: { value: _len }
+  })
 
   // proxy conducts prop access to signals
   const state = new Proxy(signals, {
     get: (_, key) => signals[key]?.valueOf(),
-
-    set(_, key, v) {
-      console.log('set', key, v)
-      if (signals[key]) set(signals[key], v)
-      else signals[key] = signal(v)
-
-      return true
-    },
-
+    set,
     deleteProperty: (_, key) => del(signals, key) && _len.value--
   })
 
   // take over existing store signals instead of creating new ones
-  if (values[_signals]) {
-    for (let key in values) signals[key] = values[_signals][key];
-  }
+  if (values[_signals]) for (let key in values) signals[key] = values[_signals][key];
   else for (let key in values) {
-    // create signal from descriptor
-    let desc = Object.getOwnPropertyDescriptor(values, key), s
+    const desc = Object.getOwnPropertyDescriptor(values, key)
 
-    if (desc) {
-      // getter turns into computed
-      if (desc?.get) {
-        // stash setter
-        (s = computed(desc.get.bind(state)))._set = desc.set?.bind(state);
-      }
-      else s = desc.value?.peek ? desc.value : signal(store(desc.value))
+    // getter turns into computed
+    if (desc?.get) {
+      // stash setter
+      (signals[key] = computed(desc.get.bind(state)))._set = desc.set?.bind(state);
     }
-    else s = signal(store(values[key]))
-
-    signals[key] = s
-  };
+    else {
+      // init blank signal - make sure we don't take prototype one
+      signals[key] = null
+      set(signals, key, values[key]);
+    }
+  }
 
   return state
 }
@@ -74,8 +64,10 @@ export function list(values) {
     // gotta fill with null since proto methods like .reduce may fail
     signals = Array(values.length).fill(null);
 
-  signals[_signals] = signals
-  signals[_change] = _len
+  Object.defineProperties(signals, {
+    [_signals]: { value: signals },
+    [_change]: { value: _len }
+  })
 
   // proxy conducts prop access to signals
   const state = new Proxy(signals, {
@@ -93,7 +85,6 @@ export function list(values) {
     },
 
     set(_, key, v) {
-      console.log('set', key, v)
       // .length
       if (key === 'length') {
         // force cleaning up tail
@@ -102,8 +93,7 @@ export function list(values) {
         return true
       }
 
-      if (signals[key]) set(signals[key], v)
-      else signals[key] = signal(store(v))
+      set(signals, key, v)
 
       // force changing length, if eg. a=[]; a[1]=1 - need to come after setting the item
       if (key >= _len.peek()) _len.value = signals.length = Number(key) + 1
@@ -115,13 +105,26 @@ export function list(values) {
   })
 
   return state
-
 }
 
-// update signal value
-function set(s, v) {
+// set/update signal value
+function set(signals, key, v) {
+  let s = signals[key]
+
+  // new property
+  if (!s) {
+    // retain globals as is
+    if (globalThis[key] === v) s = v;
+
+    // preserve signal value as is
+    else s = v?.peek ? v : signal(store(v))
+
+    signals[key] = s
+  }
+  // skip global objects
+  else if (globalThis[key] === s);
   // skip unchanged (although can be handled by last condition - we skip a few checks this way)
-  if (v === s.peek());
+  else if (v === s.peek());
   // stashed _set for value with getter/setter
   else if (s._set) s._set(v)
   // patch array
@@ -143,6 +146,8 @@ function set(s, v) {
   else {
     s.value = store(v)
   }
+
+  return s
 }
 
 // delete signal

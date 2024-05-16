@@ -224,7 +224,7 @@ t('store: inheritance: lazy init', async () => {
   let s = store({ x: { foo: 'bar' } })
   console.log('------create s1')
   const x = s.x;
-  let s1 = store(x, s[_signals])
+  let s1 = store(x, { ...s[_signals] })
   is(s1.foo, 'bar')
   let last
   effect(() => (last = s1.foo))
@@ -373,7 +373,7 @@ t.skip('store: batch', async () => {
 
 t('store: inheritance does not change root', () => {
   const root = store({ x: 1, y: 2 })
-  const s = store({ x: 2 }, Object.create(root[_signals]))
+  const s = store({ x: 2 }, { ...root[_signals] })
   is(root.x, 1)
 })
 
@@ -391,4 +391,9 @@ t.todo('store: length is not triggered extra times', async t => {
   s.push(3, 4)
   await tick()
   is(log, [2, 4])
+})
+
+t('store: retain global objects as is', async t => {
+  let s = store({ console })
+  ok(s.console === globalThis.console)
 })

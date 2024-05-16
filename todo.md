@@ -137,3 +137,5 @@
   * [ ] make array push updates batched
 * [x] remove valueOf()s in directives
 * [x] separate store to object / array
+* [ ] finish all .todo tests
+* [ ] make :with create static state
