@@ -7,21 +7,19 @@ import { effect, untracked, computed } from '../signal.js';
 export const _each = Symbol(":each");
 
 directive.each = (tpl, [itemVar, idxVar, evaluate], state) => {
-  // we have to handle item :ref separately if don't create substates
-  // const refName = tpl.getAttribute(':ref') || ''
-  // if (refName) tpl.removeAttribute(':ref')
-
   // we need :if to be able to replace holder instead of tpl for :if :each case
   const holder = (tpl[_each] = document.createTextNode("")), parent = tpl.parentNode;
   tpl.replaceWith(holder);
 
   // we re-create items any time new items are produced
-  let cur
+  let cur, keys
 
   // separate computed effect reduces number of needed updates for the effect
   const items = computed(() => {
+    keys = null
     let items = evaluate(state)
     if (typeof items === "number") items = Array.from({ length: items }, (_, i) => i)
+    if (items?.constructor === Object) keys = Object.keys(items), items = Object.values(items)
     return items || []
   })
   let prevl = 0
@@ -64,7 +62,7 @@ directive.each = (tpl, [itemVar, idxVar, evaluate], state) => {
             el = tpl.cloneNode(true),
             scope = Object.create(state, {
               [itemVar]: { get() { return cur[idx] } },
-              [idxVar]: { value: idx },
+              [idxVar]: { value: keys ? keys[idx] : idx },
             })
 
           holder.before(el);
