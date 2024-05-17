@@ -18,14 +18,9 @@ export default function store(values, signals) {
   let _len = signal(Object.values(values).length)
 
   signals ||= {}
-  Object.defineProperties(signals, {
-    [_signals]: { value: signals },
-    [_change]: { value: _len }
-  })
-
   // proxy conducts prop access to signals
   const state = new Proxy(signals, {
-    get: (_, key) => signals[key]?.valueOf(),
+    get: (_, key) => key === _change ? _len : key === _signals ? signals : signals[key]?.valueOf(),
     set: (_, key, v, s) => (s = signals[key], set(signals, key, v), s || (++_len.value)), // bump length for new signal
     deleteProperty: (_, key) => del(signals, key) && _len.value--,
     ownKeys() {
@@ -69,14 +64,12 @@ export function list(values) {
     // gotta fill with null since proto methods like .reduce may fail
     signals = Array(values.length).fill(null);
 
-  Object.defineProperties(signals, {
-    [_signals]: { value: signals },
-    [_change]: { value: _len }
-  })
-
   // proxy conducts prop access to signals
   const state = new Proxy(signals, {
     get(_, key) {
+      if (key === _change) return _len
+      if (key === _signals) return signals
+
       // console.log('get', key)
       // if .length is read within .push/etc - peek signal to avoid recursive subscription
       if (key === 'length') return (Array.prototype[lastProp]) ? _len.peek() : _len.value;
@@ -130,7 +123,7 @@ function set(signals, key, v) {
   else if (Array.isArray(v) && Array.isArray(s.peek())) {
     const cur = s.peek()
     // if we update plain array (stored in signal) - take over value instead
-    if (_change in cur) untracked(() => {
+    if (cur[_change]) untracked(() => {
       batch(() => {
         let i = 0, l = v.length;
         for (; i < l; i++) cur[i] = v[i]

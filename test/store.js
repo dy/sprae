@@ -1,4 +1,4 @@
-import store, { _signals } from '../store.js'
+import store, { _change, _signals } from '../store.js'
 import { effect, batch, use, signal } from '../signal.js'
 import * as signals from 'ulive'
 // import * as signals from '@preact/signals'
@@ -400,4 +400,10 @@ t.skip('store: length is not triggered extra times', async t => {
 t.skip('store: retain global objects as is', async t => {
   let s = store({ console })
   ok(s.console === globalThis.console)
+})
+
+t('store: reading length or signals', async t => {
+  let o = store({}), l = store([])
+  o[_signals], l[_signals]
+  o[_change], l[_change]
 })

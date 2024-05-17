@@ -27,15 +27,15 @@ directive.each = (tpl, [itemVar, idxVar, evaluate], state) => {
   let prevl = 0
 
   return () => {
-    // subscribe to items change (incl length)
-    if (!cur) items.value.length
+    // subscribe to items change (.length)
+    if (!cur) items.value[_change]?.value
 
     // add or update
     untracked(() => {
       let i = 0, newItems = items.value, newl = newItems.length
 
       // plain array update, not store (signal with array) - updates full list
-      if (cur && !(_change in cur)) {
+      if (cur && !(cur[_change])) {
         for (let s of cur[_signals] || []) { s[Symbol.dispose]() }
         cur = null, prevl = 0
       }
