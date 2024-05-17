@@ -18,7 +18,7 @@ directive.each = (tpl, [itemVar, idxVar, evaluate], state) => {
   const items = computed(() => {
     keys = null
     let items = evaluate(state)
-    if (typeof items === "number") items = Array.from({ length: items }, (_, i) => i)
+    if (typeof items === "number") items = Array.from({ length: items }, (_, i) => i + 1)
     if (items?.constructor === Object) keys = Object.keys(items), items = Object.values(items)
     return items || []
   })

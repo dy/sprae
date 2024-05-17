@@ -16,9 +16,11 @@ Perfect for small-scale websites, static pages, landings, prototypes, or lightwe
 <script type="module">
   import sprae from 'sprae'
 
-  const state = sprae(container, { user: { name: 'Kitty' } }) // init
+  // init
+  const state = sprae(container, { user: { name: 'Kitty' } })
 
-  state.user.name = 'Dolly' // update
+  // update
+  state.user.name = 'Dolly'
 </script>
 ```
 
@@ -50,7 +52,7 @@ Multiply element.
 <!-- cases -->
 <li :each="item, idx in array" />
 <li :each="value, key in object" />
-<li :each="idx in number" />
+<li :each="count, idx in number" />
 
 <!-- fragment -->
 <template :each="item in items">
@@ -84,7 +86,7 @@ Set class value.
 <!-- interpolation -->
 <div :class="'foo $<bar>'"></div>
 
-<!-- array/object -->
+<!-- array/object, a-la clsx -->
 <div :class="[foo && 'foo', {bar: bar}]"></div>
 ```
 
@@ -268,8 +270,7 @@ Trigger when element is connected / disconnected from DOM.
 
 ## Signals
 
-Sprae uses signals for reactivity and accepts signal values.<br/>
-Signals provider be switched to any preact-flavored implementation:
+Sprae can take signal values. Signals provider can be switched to any preact-flavored implementation:
 
 ```js
 import sprae from 'sprae';

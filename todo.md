@@ -139,4 +139,4 @@
 * [x] separate store to object / array
 * [ ] finish all .todo tests
 * [ ] make :with create static state
-* [ ] optimize :each for push(...many) - should call length update only once (batched)
+* [ ] make :ref recognize strings/evaluables

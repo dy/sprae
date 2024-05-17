@@ -398,6 +398,12 @@ test.todo('each: top-level list', async () => {
   is(el.outerHTML, `<x>1</x>`)
 })
 
+test('each: number', async () => {
+  let el = h`<div><x :each="i, i0 in 3" :text="[i, i0]"/></div>`
+  sprae(el)
+  is(el.innerHTML, `<x>1,0</x><x>2,1</x><x>3,2</x>`)
+})
+
 test("each: array full", async () => {
   let el = h`<p>
     <span :each="a in b" :text="a"></span>
@@ -709,10 +715,10 @@ test("each: loop within condition", async () => {
 
   const params = sprae(el, { a: signal(1) });
 
-  is(el.innerHTML, "<x><y>0</y></x>");
+  is(el.innerHTML, "<x><y>1</y></x>");
   params.a = 2;
   await tick();
-  is(el.innerHTML, "<x><y>0</y><y>-1</y></x>");
+  is(el.innerHTML, "<x><y>-1</y><y>-2</y></x>");
   params.a = 0;
   await tick();
   is(el.innerHTML, "");
@@ -743,7 +749,7 @@ test('each: items refer to current el', async () => {
   let el = h`<div><x :each="x in 3" :data-x="x" :ref="el" :x="log.push(x, el.dataset.x)"></x></div>`;
   let log = signal([]);
   let state = sprae(el, { log, untracked });
-  is([...state.log], [0, "0", 1, "1", 2, "2"]);
+  is([...state.log], [1, "1", 2, "2", 3, "3"]);
 });
 
 test("each: unkeyed", async () => {
@@ -811,7 +817,7 @@ test("each: keyed objects list", async () => {
 test("each: wrapped source", async () => {
   let el = h`<div><x :each="i in (x || 2)" :text="i"></x></div>`;
   sprae(el, { x: 0 });
-  is(el.innerHTML, `<x>0</x><x>1</x>`);
+  is(el.innerHTML, `<x>1</x><x>2</x>`);
 });
 
 test.todo("each: unmounted elements remove listeners", async () => {
@@ -934,7 +940,7 @@ test("each: swapping", async () => {
 test("each: with :with", () => {
   let el = h`<ul><li :each="i in 3" :with="{x:i}" :text="x"></li></ul>`;
   sprae(el);
-  is(el.outerHTML, `<ul><li>0</li><li>1</li><li>2</li></ul>`);
+  is(el.outerHTML, `<ul><li>1</li><li>2</li><li>3</li></ul>`);
 });
 
 test("each: subscribe to modifying list", async () => {
