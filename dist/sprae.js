@@ -4,75 +4,189 @@ var __export = (target, all) => {
     __defProp(target, name, { get: all[name], enumerable: true });
 };
 
+// signal.js
+var signal;
+var effect;
+var untracked;
+var batch;
+var computed;
+function use(s) {
+  signal = s.signal;
+  effect = s.effect;
+  computed = s.computed;
+  batch = s.batch || ((fn) => fn());
+  untracked = s.untracked || batch;
+}
+
+// store.js
+var _signals = Symbol("signals");
+var _change = Symbol("length");
+function store(values, signals) {
+  if (!values)
+    return values;
+  if (values[_signals] && !signals)
+    return values;
+  if (Array.isArray(values))
+    return list(values);
+  if (values.constructor !== Object)
+    return values;
+  let _len = signal(Object.values(values).length);
+  signals ||= {};
+  const state = new Proxy(signals, {
+    get: (_, key) => key === _change ? _len : key === _signals ? signals : signals[key]?.valueOf(),
+    set: (_, key, v, s) => (s = signals[key], set(signals, key, v), s || ++_len.value),
+    deleteProperty: (_, key) => del(signals, key) && _len.value--,
+    ownKeys() {
+      _len.value;
+      return Reflect.ownKeys(signals);
+    }
+  });
+  if (values[_signals])
+    for (let key in values)
+      signals[key] = values[_signals][key];
+  else
+    for (let key in values) {
+      const desc = Object.getOwnPropertyDescriptor(values, key);
+      if (desc?.get) {
+        (signals[key] = computed(desc.get.bind(state)))._set = desc.set?.bind(state);
+      } else {
+        signals[key] = null;
+        set(signals, key, values[key]);
+      }
+    }
+  return state;
+}
+function list(values) {
+  let lastProp;
+  if (values[_signals])
+    return values;
+  let _len = signal(values.length), signals = Array(values.length).fill(null);
+  const state = new Proxy(signals, {
+    get(_, key) {
+      if (key === _change)
+        return _len;
+      if (key === _signals)
+        return signals;
+      if (key === "length")
+        return Array.prototype[lastProp] ? _len.peek() : _len.value;
+      lastProp = key;
+      if (signals[key])
+        return signals[key].valueOf();
+      if (key < signals.length)
+        return (signals[key] = signal(store(values[key]))).value;
+    },
+    set(_, key, v) {
+      if (key === "length") {
+        for (let i = v, l = signals.length; i < l; i++)
+          delete state[i];
+        _len.value = signals.length = v;
+        return true;
+      }
+      set(signals, key, v);
+      if (key >= _len.peek())
+        _len.value = signals.length = Number(key) + 1;
+      return true;
+    },
+    deleteProperty: (_, key) => (del(signals, key), true)
+  });
+  return state;
+}
+function set(signals, key, v) {
+  let s = signals[key];
+  if (!s) {
+    signals[key] = s = v?.peek ? v : signal(store(v));
+  } else if (v === s.peek())
+    ;
+  else if (s._set)
+    s._set(v);
+  else if (Array.isArray(v) && Array.isArray(s.peek())) {
+    const cur = s.peek();
+    if (cur[_change])
+      untracked(() => {
+        batch(() => {
+          let i = 0, l = v.length;
+          for (; i < l; i++)
+            cur[i] = v[i];
+          cur.length = l;
+        });
+      });
+    else {
+      s.value = v;
+    }
+  } else {
+    s.value = store(v);
+  }
+}
+function del(signals, key) {
+  const s = signals[key];
+  if (s) {
+    const del2 = s[Symbol.dispose];
+    if (del2)
+      delete s[Symbol.dispose];
+    delete signals[key];
+    del2?.();
+    return true;
+  }
+}
+
 // core.js
 var _dispose = Symbol.dispose ||= Symbol("dispose");
 var SPRAE = `\u2234`;
-var signal;
-var effect;
-var batch;
-var computed;
-var untracked;
 var directive = {};
 var memo = /* @__PURE__ */ new WeakMap();
-function sprae(container, values) {
-  if (!container.children)
-    return;
-  if (memo.has(container)) {
-    const [state2, effects2] = memo.get(container);
-    for (let k in values) {
-      state2[k] = values[k];
-    }
-    untracked(() => {
-      for (let fx of effects2)
-        fx();
-    });
-  }
-  const state = values || {};
-  const effects = [];
-  const init = (el, parent = el.parentNode) => {
-    if (el.attributes) {
-      for (let i = 0; i < el.attributes.length; ) {
-        let attr2 = el.attributes[i];
-        if (attr2.name[0] === ":") {
-          el.removeAttribute(attr2.name);
-          let names = attr2.name.slice(1).split(":");
-          for (let name of names) {
-            let dir = directive[name] || directive.default;
-            let evaluate = (dir.parse || parse)(attr2.value, parse);
-            let update = dir(el, evaluate, state, name);
-            if (update) {
-              update[_dispose] = effect(update);
-              effects.push(update);
-            }
-          }
-          if (memo.has(el))
-            return;
-          if (el.parentNode !== parent)
-            return false;
-        } else
-          i++;
+function sprae(els, values) {
+  let state;
+  if (!els?.[Symbol.iterator])
+    els = [els];
+  for (let el of els) {
+    if (el?.children) {
+      if (memo.has(el)) {
+        Object.assign(memo.get(el), values);
+      } else {
+        state ||= store(values || {});
+        init(el, state);
+        if (!memo.has(el))
+          memo.set(el, state);
       }
     }
-    for (let i = 0, child; child = el.children[i]; i++) {
-      if (init(child, el) === false)
-        i--;
+  }
+  ;
+  return state;
+}
+function init(el, state, parent = el.parentNode, effects = []) {
+  if (el.attributes) {
+    for (let i = 0; i < el.attributes.length; ) {
+      let attr2 = el.attributes[i];
+      if (attr2.name[0] === ":") {
+        el.removeAttribute(attr2.name);
+        let names = attr2.name.slice(1).split(":");
+        for (let name of names) {
+          let dir = directive[name] || directive.default;
+          let evaluate = (dir.parse || parse)(attr2.value, parse);
+          let dispose = dir(el, evaluate, state, name);
+          if (dispose)
+            effects.push(dispose);
+        }
+        if (memo.has(el))
+          return;
+        if (el.parentNode !== parent)
+          return;
+      } else
+        i++;
     }
-  };
-  init(container);
-  if (memo.has(container))
-    return state;
-  memo.set(container, [state, effects]);
-  container.classList?.add(SPRAE);
-  container[_dispose] = () => {
+  }
+  for (let child of [...el.children])
+    init(child, state, el);
+  el.classList?.add(SPRAE);
+  el[_dispose] = () => {
     while (effects.length)
-      effects.pop()[_dispose]();
-    container.classList.remove(SPRAE);
-    memo.delete(container);
-    let els = container.getElementsByClassName(SPRAE);
+      effects.pop()();
+    el.classList.remove(SPRAE);
+    memo.delete(el);
+    let els = el.getElementsByClassName(SPRAE);
     while (els.length)
       els[0][_dispose]?.();
   };
-  return state;
 }
 var evalMemo = {};
 var parse = (expr, dir, fn) => {
@@ -87,20 +201,17 @@ ${dir}${expr ? `="${expr}"
 
 ` : ""}`, expr });
   }
-  fn.expr = expr;
   return evalMemo[expr] = fn;
 };
 var compile;
-var swap;
 sprae.use = (s) => {
-  s.signal && (signal = s.signal, effect = s.effect, computed = s.computed, batch = s.batch || ((fn) => fn()), untracked = s.untracked || batch);
-  s.swap && (swap = s.swap);
+  s.signal && use(s);
   s.compile && (compile = s.compile);
 };
 
-// signal.js
-var signal_exports = {};
-__export(signal_exports, {
+// node_modules/ulive/dist/ulive.es.js
+var ulive_es_exports = {};
+__export(ulive_es_exports, {
   batch: () => batch2,
   computed: () => computed2,
   effect: () => effect2,
@@ -108,6 +219,7 @@ __export(signal_exports, {
   untracked: () => untracked2
 });
 var current;
+var batched;
 var signal2 = (v, s, obs = /* @__PURE__ */ new Set()) => (s = {
   get value() {
     current?.deps.push(obs.add(current));
@@ -118,24 +230,24 @@ var signal2 = (v, s, obs = /* @__PURE__ */ new Set()) => (s = {
       return;
     v = val;
     for (let sub of obs)
-      sub(val);
+      batched ? batched.add(sub) : sub();
   },
   peek() {
     return v;
   }
 }, s.toJSON = s.then = s.toString = s.valueOf = () => s.value, s);
-var effect2 = (fn, teardown, run, deps) => (run = (prev) => {
+var effect2 = (fn, teardown, fx, deps) => (fx = (prev) => {
   teardown?.call?.();
-  prev = current, current = run;
+  prev = current, current = fx;
   try {
     teardown = fn();
   } finally {
     current = prev;
   }
-}, deps = run.deps = [], run(), (dep) => {
+}, deps = fx.deps = [], fx(), (dep) => {
   teardown?.call?.();
   while (dep = deps.pop())
-    dep.delete(run);
+    dep.delete(fx);
 });
 var computed2 = (fn, s = signal2(), c, e) => (c = {
   get value() {
@@ -144,11 +256,25 @@ var computed2 = (fn, s = signal2(), c, e) => (c = {
   },
   peek: s.peek
 }, c.toJSON = c.then = c.toString = c.valueOf = () => c.value, c);
-var batch2 = (fn) => fn();
+var batch2 = (fn) => {
+  let fxs = batched;
+  if (!fxs)
+    batched = /* @__PURE__ */ new Set();
+  try {
+    fn();
+  } finally {
+    if (!fxs) {
+      fxs = batched;
+      batched = null;
+      for (const fx of fxs)
+        fx();
+    }
+  }
+};
 var untracked2 = (fn, prev, v) => (prev = current, current = null, v = fn(), current = prev, v);
 
 // node_modules/swapdom/deflate.js
-var swap2 = (parent, a, b, end = null, { remove, insert } = swap2) => {
+var swap = (parent, a, b, end = null, { remove, insert } = swap) => {
   let i = 0, cur, next, bi, bidx = new Set(b);
   while (bi = a[i++])
     !bidx.has(bi) ? remove(bi, parent) : cur = cur || bi;
@@ -165,51 +291,75 @@ var swap2 = (parent, a, b, end = null, { remove, insert } = swap2) => {
   }
   return b;
 };
-swap2.insert = (a, b, parent) => parent.insertBefore(a, b);
-swap2.remove = (a, parent) => parent.removeChild(a);
-var deflate_default = swap2;
+swap.insert = (a, b, parent) => parent.insertBefore(a, b);
+swap.remove = (a, parent) => parent.removeChild(a);
+var deflate_default = swap;
 
 // directive/each.js
 var _each = Symbol(":each");
-var keys = {};
-var _key = Symbol("key");
-(directive.each = (tpl, [itemVar, idxVar, evaluate], state) => {
-  const holder = tpl[_each] = document.createTextNode(""), parent = tpl.parentNode;
+directive.each = (tpl, [itemVar, idxVar, evaluate], state) => {
+  const holder = tpl[_each] = document.createTextNode("");
   tpl.replaceWith(holder);
-  const elCache = /* @__PURE__ */ new WeakMap(), stateCache = /* @__PURE__ */ new WeakMap();
-  let cur = [];
-  const remove = (el) => {
-    el.remove();
-    el[Symbol.dispose]?.();
-    if (el[_key]) {
-      elCache.delete(el[_key]);
-      stateCache.delete(el[_key]);
-    }
-  }, { insert, replace } = swap;
-  const options = { remove, insert, replace };
-  return () => {
-    let items = evaluate(state)?.valueOf(), els = [];
-    if (typeof items === "number")
-      items = Array.from({ length: items }, (_, i) => i);
-    const count = /* @__PURE__ */ new WeakMap();
-    for (let idx in items) {
-      let el, item = items[idx], key = item?.key ?? item?.id ?? item ?? idx;
-      key = Object(key) !== key ? keys[key] ||= Object(key) : item;
-      if (key == null || count.has(key) || tpl.content)
-        el = (tpl.content || tpl).cloneNode(true);
-      else
-        count.set(key, 1), (el = elCache.get(key) || (elCache.set(key, tpl.cloneNode(true)), elCache.get(key)))[_key] = key;
-      let substate = stateCache.get(key) || (stateCache.set(key, Object.create(state, { [idxVar]: { value: idx } })), stateCache.get(key));
-      substate[itemVar] = item;
-      sprae(el, substate);
-      if (el.nodeType === 11)
-        els.push(...el.childNodes);
-      else
-        els.push(el);
-    }
-    swap(parent, cur, cur = els, holder, options);
+  let cur, keys2, prevl = 0;
+  const items = computed(() => {
+    keys2 = null;
+    let items2 = evaluate(state);
+    if (typeof items2 === "number")
+      items2 = Array.from({ length: items2 }, (_, i) => i + 1);
+    if (items2?.constructor === Object)
+      keys2 = Object.keys(items2), items2 = Object.values(items2);
+    return items2 || [];
+  });
+  const update = () => {
+    untracked(() => {
+      let i = 0, newItems = items.value, newl = newItems.length;
+      if (cur && !cur[_change]) {
+        for (let s of cur[_signals] || []) {
+          s[Symbol.dispose]();
+        }
+        cur = null, prevl = 0;
+      }
+      if (newl < prevl) {
+        cur.length = newl;
+      } else {
+        if (!cur) {
+          cur = newItems;
+        } else {
+          for (; i < prevl; i++) {
+            cur[i] = newItems[i];
+          }
+        }
+        for (; i < newl; i++) {
+          cur[i] = newItems[i];
+          let idx = i, scope = Object.create(state, {
+            [itemVar]: { get() {
+              return cur[idx];
+            } },
+            [idxVar]: { value: keys2 ? keys2[idx] : idx }
+          }), el = (tpl.content || tpl).cloneNode(true), els = tpl.content ? [...el.childNodes] : [el];
+          holder.before(el);
+          sprae(els, scope);
+          ((cur[_signals] ||= [])[i] ||= {})[Symbol.dispose] = () => {
+            for (let el2 of els)
+              el2[Symbol.dispose](), el2.remove();
+          };
+        }
+      }
+      prevl = newl;
+    });
   };
-}).parse = (expr, parse2) => {
+  let planned = 0;
+  return effect(() => {
+    if (!cur)
+      items.value[_change]?.value;
+    if (!planned) {
+      update();
+      queueMicrotask(() => (planned && update(), planned = 0));
+    } else
+      planned++;
+  });
+};
+directive.each.parse = (expr, parse2) => {
   let [leftSide, itemsExpr] = expr.split(/\s+in\s+/);
   let [itemVar, idxVar = "$"] = leftSide.split(/\s*,\s*/);
   return [itemVar, idxVar, parse2(itemsExpr)];
@@ -232,35 +382,35 @@ directive.if = (ifEl, evaluate, state) => {
       next.remove(), elses = next.content ? [...next.content.childNodes] : [next];
   } else
     elses = none;
-  return () => {
-    const newEls = evaluate(state)?.valueOf() ? ifs : ifEl[_prevIf] ? none : elses;
+  return effect(() => {
+    const newEls = evaluate(state) ? ifs : ifEl[_prevIf] ? none : elses;
     if (next)
       next[_prevIf] = newEls === ifs;
     if (cur != newEls) {
       if (cur[0]?.[_each])
         cur = [cur[0][_each]];
-      swap(parent, cur, cur = newEls, holder);
       for (let el of cur)
-        sprae(el, state);
+        el.remove();
+      cur = newEls;
+      for (let el of cur)
+        parent.insertBefore(el, holder), sprae(el, state);
     }
-  };
+  });
 };
 
 // directive/default.js
 directive.default = (el, evaluate, state, name) => {
-  let evt = name.startsWith("on") && name.slice(2);
-  if (evt) {
-    let off;
-    return () => (off?.(), off = on(el, evt, evaluate(state)?.valueOf()));
-  }
-  return () => {
-    let value = evaluate(state)?.valueOf();
-    if (name)
-      attr(el, name, ipol(value, state));
-    else
-      for (let key in value)
-        attr(el, dashcase(key), ipol(value[key], state));
-  };
+  let evt = name.startsWith("on") && name.slice(2), off;
+  return effect(
+    evt ? () => (off?.(), off = on(el, evt, evaluate(state))) : () => {
+      let value = evaluate(state);
+      if (name)
+        attr(el, name, ipol(value, state));
+      else
+        for (let key in value)
+          attr(el, dashcase(key), ipol(value[key], state));
+    }
+  );
 };
 var on = (el, e, fn = () => {
 }) => {
@@ -315,22 +465,22 @@ var mods = {
     return true;
   },
   self: (ctx) => (e) => e.target === ctx.target,
-  ctrl: (_, ...param) => (e) => keys2.ctrl(e) && param.every((p) => keys2[p] ? keys2[p](e) : e.key === p),
-  shift: (_, ...param) => (e) => keys2.shift(e) && param.every((p) => keys2[p] ? keys2[p](e) : e.key === p),
-  alt: (_, ...param) => (e) => keys2.alt(e) && param.every((p) => keys2[p] ? keys2[p](e) : e.key === p),
-  meta: (_, ...param) => (e) => keys2.meta(e) && param.every((p) => keys2[p] ? keys2[p](e) : e.key === p),
-  arrow: () => keys2.arrow,
-  enter: () => keys2.enter,
-  escape: () => keys2.escape,
-  tab: () => keys2.tab,
-  space: () => keys2.space,
-  backspace: () => keys2.backspace,
-  delete: () => keys2.delete,
-  digit: () => keys2.digit,
-  letter: () => keys2.letter,
-  character: () => keys2.character
+  ctrl: (_, ...param) => (e) => keys.ctrl(e) && param.every((p) => keys[p] ? keys[p](e) : e.key === p),
+  shift: (_, ...param) => (e) => keys.shift(e) && param.every((p) => keys[p] ? keys[p](e) : e.key === p),
+  alt: (_, ...param) => (e) => keys.alt(e) && param.every((p) => keys[p] ? keys[p](e) : e.key === p),
+  meta: (_, ...param) => (e) => keys.meta(e) && param.every((p) => keys[p] ? keys[p](e) : e.key === p),
+  arrow: () => keys.arrow,
+  enter: () => keys.enter,
+  escape: () => keys.escape,
+  tab: () => keys.tab,
+  space: () => keys.space,
+  backspace: () => keys.backspace,
+  delete: () => keys.delete,
+  digit: () => keys.digit,
+  letter: () => keys.letter,
+  character: () => keys.character
 };
-var keys2 = {
+var keys = {
   ctrl: (e) => e.ctrlKey || e.key === "Control" || e.key === "Ctrl",
   shift: (e) => e.shiftKey || e.key === "Shift",
   alt: (e) => e.altKey || e.key === "Alt",
@@ -382,24 +532,28 @@ var dashcase = (str) => {
   return str.replace(/[A-Z\u00C0-\u00D6\u00D8-\u00DE]/g, (match) => "-" + match.toLowerCase());
 };
 var ipol = (v, state) => {
-  return v?.replace ? v.replace(/\$<([^>]+)>/g, (match, field) => state[field]?.valueOf?.() ?? "") : v;
+  return v?.replace ? v.replace(/\$<([^>]+)>/g, (match, field) => state[field] ?? "") : v;
 };
 
 // directive/ref.js
-(directive.ref = (el, expr, state) => {
-  let prev;
-  return () => {
-    if (prev)
-      delete state[prev];
-    state[prev = ipol(expr, state)] = el;
-  };
-}).parse = (expr) => expr;
+directive.ref = (el, expr, state) => {
+  Object.defineProperty(state, ipol(expr, state), { value: el });
+};
+directive.ref.parse = (expr) => expr;
 
-// directive/scope.js
-directive.scope = (el, evaluate, rootState) => {
-  return () => {
-    sprae(el, { ...rootState, ...evaluate(rootState)?.valueOf?.() || {} });
-  };
+// directive/with.js
+directive.with = (el, evaluate, rootState) => {
+  let state, values;
+  return effect(() => {
+    values = evaluate(rootState);
+    Object.assign(state ||= sprae(
+      el,
+      store(
+        values,
+        Object.create(rootState[_signals])
+      )
+    ), values);
+  });
 };
 
 // directive/html.js
@@ -416,25 +570,25 @@ directive.html = (el, evaluate, state) => {
 directive.text = (el, evaluate, state) => {
   if (el.content)
     el.replaceWith(el = document.createTextNode(""));
-  return () => {
-    let value = evaluate(state)?.valueOf();
+  return effect(() => {
+    let value = evaluate(state);
     el.textContent = value == null ? "" : value;
-  };
+  });
 };
 
 // directive/class.js
 directive.class = (el, evaluate, state) => {
   let cur = /* @__PURE__ */ new Set();
-  return () => {
+  return effect(() => {
     let v = evaluate(state);
     let clsx = /* @__PURE__ */ new Set();
     if (v) {
       if (typeof v === "string")
-        ipol(v?.valueOf?.(), state).split(" ").map((cls) => clsx.add(cls));
+        ipol(v, state).split(" ").map((cls) => clsx.add(cls));
       else if (Array.isArray(v))
-        v.map((v2) => (v2 = ipol(v2?.valueOf?.(), state)) && clsx.add(v2));
+        v.map((v2) => (v2 = ipol(v2, state)) && clsx.add(v2));
       else
-        Object.entries(v).map(([k, v2]) => v2?.valueOf?.() && clsx.add(k));
+        Object.entries(v).map(([k, v2]) => v2 && clsx.add(k));
     }
     for (let cls of cur)
       if (clsx.has(cls))
@@ -443,7 +597,7 @@ directive.class = (el, evaluate, state) => {
         el.classList.remove(cls);
     for (let cls of cur = clsx)
       el.classList.add(cls);
-  };
+  });
 };
 
 // directive/style.js
@@ -451,8 +605,8 @@ directive.style = (el, evaluate, state) => {
   let initStyle = el.getAttribute("style") || "";
   if (!initStyle.endsWith(";"))
     initStyle += "; ";
-  return () => {
-    let v = evaluate(state)?.valueOf();
+  return effect(() => {
+    let v = evaluate(state);
     if (typeof v === "string")
       el.setAttribute("style", initStyle + ipol(v, state));
     else {
@@ -460,7 +614,7 @@ directive.style = (el, evaluate, state) => {
       for (let k in v)
         el.style.setProperty(k, ipol(v[k], state));
     }
-  };
+  });
 };
 
 // directive/value.js
@@ -472,27 +626,19 @@ directive.value = (el, evaluate, state) => {
     el.value = value;
     el.selectedOptions[0]?.setAttribute("selected", "");
   } : (value) => el.value = value;
-  return () => update(evaluate(state)?.valueOf?.());
+  return effect(() => update(evaluate(state)));
 };
 
 // directive/fx.js
 directive.fx = (el, evaluate, state) => {
-  return () => evaluate(state);
+  return effect(() => evaluate(state));
 };
 
 // sprae.js
-sprae.use(signal_exports);
+sprae.use(ulive_es_exports);
 sprae.use({ compile: (expr) => sprae.constructor(`__scope`, `with (__scope) { return ${expr} };`) });
 sprae.use({ swap: deflate_default });
 var sprae_default = sprae;
 export {
-  batch,
-  compile,
-  computed,
-  sprae_default as default,
-  directive,
-  effect,
-  signal,
-  swap,
-  untracked
+  sprae_default as default
 };
