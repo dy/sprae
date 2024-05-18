@@ -138,6 +138,8 @@
 * [x] ~~make :ref recognize strings/evaluables~~ no need, wait until needed, simpler the better, even effect is not needed
 * [ ] with must not create inherited root scope, it's enough to overwrite signals
   * [ ] this also allows removing signals argument from store
+* [ ] fix all examples
+* [ ] run benchmarks
 
 ## Backlog
 

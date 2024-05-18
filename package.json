@@ -8,12 +8,12 @@
   "files": [
     "core.js",
     "sprae.js",
+    "store.js",
     "signal.js",
     "directive",
     "dist"
   ],
   "dependencies": {
-    "swapdom": "^1.2.1",
     "ulive": "^1.0.2"
   },
   "devDependencies": {
