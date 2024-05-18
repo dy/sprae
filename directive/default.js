@@ -1,22 +1,20 @@
 import { directive } from "../core.js";
+import { effect } from "../signal.js";
 
 // set generic property directive
 directive.default = (el, evaluate, state, name) => {
-  let evt = name.startsWith("on") && name.slice(2);
-
-  if (evt) {
-    let off
-    return () => (
-      off?.(), // intermediate teardown
-      off = on(el, evt, evaluate(state)?.valueOf())
-    );
-  }
-
-  return () => {
-    let value = evaluate(state)?.valueOf();
-    if (name) attr(el, name, ipol(value, state))
-    else for (let key in value) attr(el, dashcase(key), ipol(value[key], state));
-  };
+  let evt = name.startsWith("on") && name.slice(2), off
+  return effect(
+    evt ?
+      () => (
+        off?.(), // intermediate teardown
+        off = on(el, evt, evaluate(state))
+      ) :
+      () => {
+        let value = evaluate(state);
+        if (name) attr(el, name, ipol(value, state))
+        else for (let key in value) attr(el, dashcase(key), ipol(value[key], state));
+      });
 };
 
 
@@ -148,5 +146,5 @@ export const dashcase = (str) => {
 
 // interpolate a$<b> fields from context
 export const ipol = (v, state) => {
-  return v?.replace ? v.replace(/\$<([^>]+)>/g, (match, field) => state[field]?.valueOf?.() ?? '') : v
+  return v?.replace ? v.replace(/\$<([^>]+)>/g, (match, field) => state[field] ?? '') : v
 };

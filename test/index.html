@@ -3,7 +3,7 @@
 <title>Test</title>
 
 <!-- <script defer src="../sprae.auto.js"></script> -->
-<div :scope="{data:'autoinit works'}">
+<div :with="{data:'autoinit works'}">
     <span :text="data">autoinit is broken</span>
 </div>
 
@@ -28,6 +28,7 @@
             "preact": "../node_modules/preact/dist/preact.mjs",
             "preact/hooks": "../node_modules/preact/hooks/dist/hooks.mjs",
             "@preact/signals-core": "../node_modules/@preact/signals-core/dist/signals-core.mjs",
+            "@preact/signals": "../node_modules/@preact/signals/dist/signals.mjs",
             "usignal": "../node_modules/usignal/es.js",
             "@webreflection/signal": "../node_modules/@webreflection/signal/es.js",
             "staet": "../node_modules/staet/staet.js",

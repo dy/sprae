@@ -7,7 +7,7 @@ import swap from 'swapdom/deflate'
 import './directive/if.js'
 import './directive/each.js'
 import './directive/ref.js'
-import './directive/scope.js'
+import './directive/with.js'
 import './directive/html.js'
 import './directive/text.js'
 import './directive/class.js'
@@ -26,5 +26,3 @@ sprae.use({ compile: expr => sprae.constructor(`__scope`, `with (__scope) { retu
 sprae.use({ swap })
 
 export default sprae
-export * from './core.js'
-export * from './signal.js'

@@ -109,7 +109,7 @@
 
 -> possibly we have to just subscribe via mechanism of signals-like deps, and :with just initializes subtree with extended object
 
-## [x] :with? -> ~~let's use `:with="{x:1,y:2,z:3}"` for now~~ ~~:with is poor shim for componentization; ~~ -> :scope is needed for local evals, to prevent leaking values, also we need it for :each anyways
+## [x] :with? -> ~~let's use `:with="{x:1,y:2,z:3}"` for now~~ ~~:with is poor shim for componentization; ~~ -> :scope/:with is needed for local evals, to prevent leaking values, also we need it for :each anyways
 
   1. Get rid of :with
     + with is bad JS practice/association
@@ -1036,22 +1036,72 @@
 - that enforces writing signals too, we can't `a = value` anymore
 ? is that obvious enough?
 
-## [ ] Signals store instead of explicit signals?
+## [x] Signals store instead of explicit signals? -> yes, let's try, too many benefits
 
-+ practice shows it handles arrays / objects better
-+ practice shows it's better memory-wise, I guess we can optimize items signals
-+ it reduces toll of wrapping all props into `signal` code-wise
++ bench shows arrays / objects better
++ bench shows it's possibly better memory-wise
++ it's way less code for array ops: no need to create signals here and there, no need for bumping prop
++ it allows attributes code forget about signals
++ no need for DOM swapper algo
 + it makes sense as output from sprae to be reactive proxy store
 + it allows internal code to care less about what's signal what's not
 + generally it makes signals mechanism implicit and optional - API-wise user cares less about what should be a signal what not
-+ it allows abstracting away from internal signals implementation - focus on sprae, not signals
 - possibly some bit more of memory/perf cost, since static values get wrapped into signals
   ? can we optimize static array values instead of being a bunch of signals instead be one signal?
 
-### [ ] Should we create per-object signal, instead of per-property?
+## [ ] Should we make store notify about diff props, rather than length?
+
+## [x] Should we create per-object signal, instead of per-property? -> No
 - it gives less granular updates: full array gets diffed, all nodes get refreshed
 
 ## [x] ~~Should we replace `:each="item in items"` to `:each.item="items"`?~~ -> fixed via custom .parse
 
 - non-conventional
 + `:each` is the only exception now that needs custom expr parsing
+
+### [x] When signal with array is used as store value {rows:signal([1,2,3])} - what's expected update? -> let's make it full reinit array, since it's most direct
+
+1. Remove all, replace all - store plain array
+2. Swap via swapdom etc
+  - heavy, makes no sense as store
+3. Force signal value into a store, update store
+  + we anyways can even with regular stores rewrite to null
+  - duplication: we'd need to store the store somewhere
+    - we'd need to sync up array with internal store somehow
+  - pointlessness: whenever signal updates to new array we have to reinit our store
+
+## [ ] Should we separate store to array/struct?
+
++ different length tracking
++ structs can be not lazy unlike arrays
+- store can change from object to array...
+  ~ we can prohibit that
++ object/array have quite different diffing logic:
+  + objects don't need length
+  + arrays don't need setters/getters
+  + arrays don't usually have parent scopes
+
+## [ ] Can we use Object.create for :each scope?
+
+- We need `:ref="el"` to inject element instance per-item
+  + We don't really need to create a separate scope for that, we can just preset ref only for subscope
+- It's not good to expose per-item props like `:fx="x=123"` to the root
+  ~+ why? actually that allows to have access to both local scope and root scope
+- We can't really avoid creating new scopes in `:scope="{}"`, can we?
+  ? Is it better to keep root scope as mutation holder
+  + `:with={}` wasn't supposed to define scope, it's just defining variables
++ It would allow us to get rid of `parent` in `store`, which is less static + dynamic trouble
++ `:scope` defines only particular local variables, but generally access to root scope is preserved
+
+### [ ] should we rename `:scope` to `:with` then, to avoid confusion?
+  + less confusion - doesn't create actual scope
+  - bad remembrance of JS with
+    +~ not necessarily the case
+
+### [ ] Shoud we prohibit creation of new props?
+
++ Structs make objects nice: small, fast, obvious
+- Difficulty for arrays: we cannot really avoid creating new props there
+  + What if we separate arrays to own `list` type of store?
++ We can define scopes via `:scope` for new props
+? Do we need extending root scope? Like writing some new props to it?

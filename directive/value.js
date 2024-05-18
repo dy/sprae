@@ -1,5 +1,6 @@
 import { directive } from "../core.js";
 import { attr } from './default.js';
+import { effect } from "../signal.js";
 
 // connect expr to element value
 directive.value = (el, evaluate, state) => {
@@ -25,5 +26,5 @@ directive.value = (el, evaluate, state) => {
           }
           : (value) => (el.value = value);
 
-  return () => (update(evaluate(state)?.valueOf?.()));
+  return effect(() => (update(evaluate(state))));
 };

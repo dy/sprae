@@ -2,7 +2,7 @@
 
 > DOM tree microhydration
 
-_Sprae_ is open & minimalistic progressive enhancement framework with signals-based reactivity.<br/>
+_Sprae_ is open & minimalistic progressive enhancement framework.<br/>
 Perfect for small-scale websites, static pages, landings, prototypes, or lightweight UI.<br/>
 
 
@@ -14,17 +14,17 @@ Perfect for small-scale websites, static pages, landings, prototypes, or lightwe
 </div>
 
 <script type="module">
-  import sprae, { signal } from 'sprae'
+  import sprae from 'sprae'
 
-  const name = signal('Kitty')
-  sprae(container, { user: { name } }) // init
+  // init
+  const state = sprae(container, { user: { name: 'Kitty' } })
 
-  name.value = 'Dolly' // update
+  // update
+  state.user.name = 'Dolly'
 </script>
 ```
 
-Sprae evaluates `:`-directives and evaporates them, attaching state to html.
-
+Sprae evaluates `:`-directives and evaporates them, returning reactive state.
 
 ## Directives
 
@@ -42,21 +42,17 @@ Control flow of elements.
 ```
 
 
-#### `:each="item, index in items"`
+#### `:each="item, index? in items"`
 
-Multiply element. Item is identified either by `item.id`, `item.key` or `item` itself.
+Multiply element.
 
 ```html
 <ul><li :each="item in items" :text="item"/></ul>
 
 <!-- cases -->
-<li :each="item, idx in list" />
-<li :each="val, key in obj" />
-<li :each="idx in number" />
-
-<!-- by condition -->
-<li :if="items" :each="item in items" :text="item" />
-<li :else>Empty list</li>
+<li :each="item, idx in array" />
+<li :each="value, key in object" />
+<li :each="count, idx in number" />
 
 <!-- fragment -->
 <template :each="item in items">
@@ -81,22 +77,28 @@ Welcome, <template :text="user.name" />.
 
 #### `:class="value"`
 
-Set class value, extends existing `class`.
+Set class value.
 
 ```html
-<!-- string with interpolation -->
+<!-- appends class -->
+<div class="foo" :class="bar"></div>
+
+<!-- interpolation -->
 <div :class="'foo $<bar>'"></div>
 
-<!-- array/object a-la clsx -->
+<!-- array/object, a-la clsx -->
 <div :class="[foo && 'foo', {bar: bar}]"></div>
 ```
 
 #### `:style="value"`
 
-Set style value, extends existing `style`.
+Set style value.
 
 ```html
-<!-- string with interpolation -->
+<!-- extends style -->
+<div style="foo: bar" :style="'baz: qux'">
+
+<!-- interpolation -->
 <div :style="'foo: $<bar>'"></div>
 
 <!-- object -->
@@ -108,16 +110,19 @@ Set style value, extends existing `style`.
 
 #### `:value="value"`
 
-Set value of an input, textarea or select. Takes handle of `checked` and `selected` attributes.
+Set value of an input, textarea or select.
 
 ```html
 <input :value="value" />
 <textarea :value="value" />
 
-<!-- selects right option -->
+<!-- selects right option & handles selected attr -->
 <select :value="selected">
   <option :each="i in 5" :value="i" :text="i"></option>
 </select>
+
+<!-- handles checked attr -->
+<input type="checkbox" :value="checked" />
 ```
 
 #### `:[prop]="value"`, `:="values"`
@@ -134,33 +139,32 @@ Set any attribute(s).
 <input :="{ id: name, name, type: 'text', value }" />
 ```
 
-#### `:scope="data"`
+#### `:with="values"`
 
-Define or extend data scope for a subtree.
+Define values for a subtree.
 
 ```html
-<x :scope="{ foo: signal('bar') }">
-  <!-- extends parent scope -->
-  <y :scope="{ baz: 'qux' }" :text="foo + baz"></y>
+<x :with="{ foo: signal('bar') }">
+  <y :with="{ baz: 'qux' }" :text="foo + baz"></y>
 </x>
 ```
 
 #### `:ref="name"`
 
-Expose element to current scope with `name`.
+Expose element with `name`.
 
 ```html
 <textarea :ref="text" placeholder="Enter text..."></textarea>
 
 <!-- iterable items -->
 <li :each="item in items" :ref="item">
-  <input :onfocus..onblur=="e => (item.classList.add('editing'), e => item.classList.remove('editing'))"/>
+  <input :onfocus..onblur="e => (item.classList.add('editing'), e => item.classList.remove('editing'))"/>
 </li>
 ```
 
 #### `:fx="code"`
 
-Run effect, not changing any attribute.<br/>Optional cleanup is called in-between effect calls or on disposal.
+Run effect, not changing any attribute.
 
 ```html
 <div :fx="a.value ? foo() : bar()" />
@@ -171,7 +175,7 @@ Run effect, not changing any attribute.<br/>Optional cleanup is called in-betwee
 
 #### `:on[event]="handler"`
 
-Attach event(s) listener with possible modifiers.
+Attach event(s) listener with optional modifiers.
 
 ```html
 <input type="checkbox" :onchange="e => isChecked = e.target.value">
@@ -182,7 +186,7 @@ Attach event(s) listener with possible modifiers.
 <!-- events sequence -->
 <button :onfocus..onblur="e => ( handleFocus(), e => handleBlur())">
 
-<!-- event modifiers -->
+<!-- modifiers -->
 <button :onclick.throttle-500="handler">Not too often</button>
 ```
 
@@ -210,7 +214,7 @@ Hello, <template :html="user.name">Guest</template>.
 
 <!-- instantiate template -->
 <template :ref="tpl"><span :text="foo"></span></template>
-<div :html="tpl" :scope="{foo:'bar'}">...inserted here...</div>
+<div :html="tpl" :with="{foo:'bar'}">...inserted here...</div>
 ```
 
 #### `:data="values"` 🔌
@@ -264,47 +268,39 @@ Trigger when element is connected / disconnected from DOM.
 ```
 -->
 
-## Custom Directives
-
-Directives can be added as:
-
-```js
-import sprae, { directive } from 'sprae/core.js'
-
-// :id="expression"
-directive.id = (el, evaluate, state) => {
-  // return function for update effect
-  // watches for state props defined by expression
-  return () => el.id = evaluate(state)
-}
-```
-
 ## Signals
 
-Sprae internally uses signals for reactivity (see [_sprae/signal.js_](./signal.js)).<br/>
-It can be switched to any alternative preact-flavored signals for compatibility or performance:
+Sprae can take signal values. Signals provider can be switched to any preact-flavored implementation:
 
 ```js
-import sprae, { signal, computed, effect, batch, untracked } from 'sprae';
+import sprae from 'sprae';
+import { signal, computed, effect, batch, untracked } from 'sprae/signal';
 import * as signals from '@preact/signals-core';
 
+// switch provider to @preact/signals-core
 sprae.use(signals);
 
-sprae(el, { name: signal('Kitty') });
+// use signal as state value
+const name = signal('Kitty')
+sprae(el, { name });
+
+// update state
+name.value = 'Dolly';
 ```
 
 Provider | Size | Feature
 :---|:---|:---
-[`ulive`](https://ghub.io/ulive) | 350b | Minimal implementation, basic performance, good for small states
-[`@webreflection/signal`](https://ghib.io/@webreflection/signal) | 531b | Class-based, better performance, good for small-medium states
-[`usignal`](https://ghib.io/usignal) | 850b | Class-based with optimizations, good for medium states
-[`@preact/signals-core`](https://ghub.io/@preact/signals-core) | 1.47kb | Best performance, good for any states
-[`signal-polyfill`](https://github.com/tc39/proposal-signals) | 2.5kb | Standard signals, slowest performance. Use via [adapter](https://gist.github.com/dy/bbac687464ccf5322ab0e2fd0680dc4d).
+[`ulive`](https://ghub.io/ulive) (default) | 350b | Minimal implementation, basic performance, good for small states.
+[`@webreflection/signal`](https://ghib.io/@webreflection/signal) | 531b | Class-based, better performance, good for small-medium states.
+[`usignal`](https://ghib.io/usignal) | 850b | Class-based with optimizations, good for medium states.
+[`@preact/signals-core`](https://ghub.io/@preact/signals-core) | 1.47kb | Best performance, good for any states, industry standard.
+[`signal-polyfill`](https://github.com/tc39/proposal-signals) | 2.5kb | Proposal signals. Use via [adapter](https://gist.github.com/dy/bbac687464ccf5322ab0e2fd0680dc4d).
 
 
 ## Evaluator
 
-Expressions use _new Function_ as default evaluator, which is fast & compact way, but violates "unsafe-eval" CSP. To make eval stricter & safer, as well as sandbox expressions, an alternative evaluator can be configured, eg. _justin_:
+Expressions use _new Function_ as default evaluator, which is fast & compact way, but violates "unsafe-eval" CSP.
+To make eval stricter & safer, as well as sandbox expressions, an alternative evaluator can be used, eg. _justin_:
 
 ```js
 import sprae from 'sprae'
@@ -313,7 +309,7 @@ import justin from 'subscript/justin'
 sprae.use({compile: justin}) // set up justin as default compiler
 ```
 
-[_Justin_](https://github.com/dy/subscript?tab=readme-ov-file#justin) is minimal JS subset. It avoids "unsafe-eval" CSP and provides sandboxing.
+[_Justin_](https://github.com/dy/subscript?tab=readme-ov-file#justin) is minimal JS subset that avoids "unsafe-eval" CSP and provides sandboxing.
 
 ###### Operators:
 
@@ -330,69 +326,41 @@ sprae.use({compile: justin}) // set up justin as default compiler
 
 ## Custom Build
 
-_Sprae_ can be tailored to project needs via `sprae/core` for performance, size or compatibility purposes:
+_Sprae_ can be tailored to project needs via `sprae/core`:
 
 ```js
 // sprae.custom.js
-import sprae, { directive } from 'sprae/core.js'
+import sprae, { directive } from 'sprae/core'
+import { effect } from 'sprae/signal'
 import * as signals from '@preact/signals'
 import compile from 'subscript'
-import diff from 'udomdiff
 
 // include directives
 import 'sprae/directive/if.js'
 import 'sprae/directive/text.js'
+
+// custom directive :id="expression"
+directive.id = (el, evaluate, state) => {
+  effect(() => el.id = evaluate(state))
+}
 
 // configure signals
 sprae.use(signals)
 
 // configure compiler
 sprae.use({ compile })
-
-// configure dom differ
-sprae.use({ swap: (parent, from, to, before) => udomdiff(parent, from, to, node=>node, before) })
 ```
-
-<!--
-### DOM diffing
-
-DOM diffing uses [swapdom](https://github.com/dy/swapdom), but can be reconfigured to [list-difference](https://github.com/paldepind/list-difference/), [udomdiff](https://github.com/WebReflection/udomdiff), [domdiff](https://github.com/WebReflection/domdiff), or any other ([benchmark](https://github.com/luwes/js-diff-benchmark)):
-
-```js
-import sprae from 'sprae';
-import domdiff from 'list-difference';
-
-// swap(parentNode, prevEls, newEls, endNode?)
-sprae.use({ swap: domdiff });
-```
--->
-
 
 <!-- ## Dispose
 
 To destroy state and detach sprae handlers, call `element[Symbol.dispose]()`. -->
 
 
-<!--
-## v9 changes
-
-* No autoinit → use manual init via `import sprae from 'sprae'; sprae(document.body, state)`.
-* No default globals (`console`, `setTimeout` etc) - pass to state if required.
-* ``:class="`abc ${def}`"`` → `:class="'abc $<def>'"` (_justin_)
-* `:with={x:'x'}` -> `:scope={x:'x'}`
-* No reactive store → use signals for reactive values.
-* `:render="tpl"` → `:html="tpl"`
-* `@click="event.target"` → `:onclick="event => event.target"`
-* Async props / events are not supported, pass async functions via state.
-* Directives order matters, eg. `<a :if :each :scope />` !== `<a :scope :each :if />`
-* Only one directive per `<template>`, eg. `<template :each />`, not `<template :if :each/>`
- -->
-
 ## Justification
 
-[Template-parts](https://github.com/dy/template-parts) / [templize](https://github.com/dy/templize) is progressive, but is stuck with native HTML quirks ([parsing table](https://github.com/github/template-parts/issues/24), [SVG attributes](https://github.com/github/template-parts/issues/25), [liquid syntax](https://shopify.github.io/liquid/tags/template/#raw) conflict etc). [Alpine](https://github.com/alpinejs/alpine) / [petite-vue](https://github.com/vuejs/petite-vue) / [lucia](https://github.com/aidenyabi/lucia) escape native HTML quirks, but have excessive API (`:`, `x-`, `{}`, `@`, `$`) and tend to [self-encapsulate](https://github.com/alpinejs/alpine/discussions/3223).
+[Template-parts](https://github.com/dy/template-parts) is stuck with native HTML quirks ([parsing table](https://github.com/github/template-parts/issues/24), [SVG attributes](https://github.com/github/template-parts/issues/25), [liquid syntax](https://shopify.github.io/liquid/tags/template/#raw) conflict etc). [Alpine](https://github.com/alpinejs/alpine) / [petite-vue](https://github.com/vuejs/petite-vue) / [lucia](https://github.com/aidenyabi/lucia) escape native HTML quirks, but have excessive API (`:`, `x-`, `{}`, `@`, `$`) and tend to [self-encapsulate](https://github.com/alpinejs/alpine/discussions/3223).
 
-_Sprae_ holds open & minimalistic philosophy, combining _`:`-directives_ with _signals_.
+_Sprae_ holds open & minimalistic philosophy, combining _`:`-directives_ with emerging _signals_.
 
 <!--
 |                       | [AlpineJS](https://github.com/alpinejs/alpine)          | [Petite-Vue](https://github.com/vuejs/petite-vue)        | Sprae            |

@@ -1,59 +1,96 @@
-import sprae, { directive, swap } from "../core.js";
+import sprae, { directive } from "../core.js";
+import { _change, _signals } from "../store.js";
+import { effect, untracked, computed } from '../signal.js';
+
 
 export const _each = Symbol(":each");
 
-const keys = {}, _key = Symbol('key');
-
-// :each must init before :ref, :id or any others, since it defines scope
-(directive.each = (tpl, [itemVar, idxVar, evaluate], state) => {
+directive.each = (tpl, [itemVar, idxVar, evaluate], state) => {
   // we need :if to be able to replace holder instead of tpl for :if :each case
-  const holder = (tpl[_each] = document.createTextNode("")), parent = tpl.parentNode;
+  const holder = (tpl[_each] = document.createTextNode(""));
   tpl.replaceWith(holder);
 
-  // key -> el
-  const elCache = new WeakMap, stateCache = new WeakMap
+  // we re-create items any time new items are produced
+  let cur, keys, prevl = 0
 
-  let cur = [];
+  // separate computed effect reduces number of needed updates for the effect
+  const items = computed(() => {
+    keys = null
+    let items = evaluate(state)
+    if (typeof items === "number") items = Array.from({ length: items }, (_, i) => i + 1)
+    if (items?.constructor === Object) keys = Object.keys(items), items = Object.values(items)
+    return items || []
+  })
 
-  const remove = el => {
-    el.remove()
-    el[Symbol.dispose]?.()
-    if (el[_key]) {
-      elCache.delete(el[_key])
-      stateCache.delete(el[_key])
-    }
-  }, { insert, replace } = swap
+  const update = () => {
+    // NOTE: untracked avoids rerendering full list whenever internal items or props change
+    untracked(() => {
+      let i = 0, newItems = items.value, newl = newItems.length
 
-  const options = { remove, insert, replace }
+      // plain array update, not store (signal with array) - updates full list
+      if (cur && !(cur[_change])) {
+        for (let s of cur[_signals] || []) { s[Symbol.dispose]() }
+        cur = null, prevl = 0
+      }
 
-  // naive approach: whenever items change we replace full list
-  return () => {
-    let items = evaluate(state)?.valueOf(), els = [];
+      // delete
+      if (newl < prevl) {
+        cur.length = newl
+      }
+      // update, append, init
+      else {
+        // init
+        if (!cur) {
+          cur = newItems
+        }
+        // update
+        else {
+          for (; i < prevl; i++) {
+            cur[i] = newItems[i]
+          }
+        }
 
-    if (typeof items === "number") items = Array.from({ length: items }, (_, i) => i)
+        // append
+        for (; i < newl; i++) {
+          cur[i] = newItems[i]
+          let idx = i,
+            scope = Object.create(state, {
+              [itemVar]: { get() { return cur[idx] } },
+              [idxVar]: { value: keys ? keys[idx] : idx },
+            }),
+            el = (tpl.content || tpl).cloneNode(true), // single element or fragment
+            els = tpl.content ? [...el.childNodes] : [el] // total added elements
 
-    // let c = 0, inc = () => { if (c++ > 100) throw 'Inf recursion' }
-    const count = new WeakMap
-    for (let idx in items) {
-      let el, item = items[idx], key = item?.key ?? item?.id ?? item ?? idx
-      key = (Object(key) !== key) ? (keys[key] ||= Object(key)) : item
+          holder.before(el);
+          sprae(els, scope);
 
-      if (key == null || count.has(key) || tpl.content) el = (tpl.content || tpl).cloneNode(true)
-      else count.set(key, 1), (el = elCache.get(key) || (elCache.set(key, tpl.cloneNode(true)), elCache.get(key)))[_key] = key;
+          // signal/holder disposal removes element
+          ((cur[_signals] ||= [])[i] ||= {})[Symbol.dispose] = () => {
+            for (let el of els) el[Symbol.dispose](), el.remove()
+          };
+        }
+      }
 
-      // creating via prototype is faster in both creation time & reading time
-      let substate = stateCache.get(key) || (stateCache.set(key, Object.create(state, { [idxVar]: { value: idx } })), stateCache.get(key));
-      substate[itemVar] = item; // can be changed by subsequent updates, need to be writable
-
-      sprae(el, substate);
-
-      // document fragment
-      if (el.nodeType === 11) els.push(...el.childNodes); else els.push(el);
-    }
-
-    swap(parent, cur, cur = els, holder, options);
+      prevl = newl
+    })
   }
-}).parse = (expr, parse) => {
+
+  let planned = 0
+  return effect(() => {
+    // subscribe to items change (.length)
+    if (!cur) items.value[_change]?.value
+
+    // make first render immediately, debounce subsequent renders
+    if (!planned) {
+      update()
+      queueMicrotask(() => (planned && update(), planned = 0))
+    } else planned++
+  })
+}
+
+
+// redefine parser to exclude `[a in] b`
+directive.each.parse = (expr, parse) => {
   let [leftSide, itemsExpr] = expr.split(/\s+in\s+/);
   let [itemVar, idxVar = "$"] = leftSide.split(/\s*,\s*/);
 
