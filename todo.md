@@ -133,10 +133,10 @@
 * [ ] proxy state is back
   * [x] try out store without `values` holder
   * [x] flatten `store` to avoid passing parent (only needed by `scope`)
-  * [ ] bring `effect` back to all directives
+  * [x] bring `effect` back to all directives
   * [ ] make array push updates batched
 * [x] remove valueOf()s in directives
 * [x] separate store to object / array
 * [ ] finish all .todo tests
 * [ ] make :with create static state
-* [ ] make :ref recognize strings/evaluables
+* [x] ~~make :ref recognize strings/evaluables~~ no need, wait until needed, simpler the better, even effect is not needed

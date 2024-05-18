@@ -26,7 +26,7 @@ export default function sprae(container, values) {
   // take over existing state instead of creating clone
   const state = store(values || {}), effects = [];
 
-  init(container);
+  init(container, state, effects);
 
   // if element was spraed by :with or :each instruction - skip
   if (memo.has(container)) return state// memo.get(container)
@@ -45,43 +45,44 @@ export default function sprae(container, values) {
     while (els.length) els[0][_dispose]?.()
   }
 
-  // init directives on element
-  function init(el, parent = el.parentNode) {
-    if (el.attributes) {
-      // init generic-name attributes second
-      for (let i = 0; i < el.attributes.length;) {
-        let attr = el.attributes[i];
-
-        if (attr.name[0] === ':') {
-          el.removeAttribute(attr.name);
-
-          // multiple attributes like :id:for=""
-          let names = attr.name.slice(1).split(':')
-
-          // NOTE: secondary directives don't stop flow nor extend state, so no need to check
-          for (let name of names) {
-            let dir = directive[name] || directive.default
-            let evaluate = (dir.parse || parse)(attr.value, parse)
-            let dispose = dir(el, evaluate, state, name);
-            if (dispose) effects.push(dispose);
-          }
-
-          // stop if element was spraed by internal directive
-          if (memo.has(el)) return;
-          // stop if element is skipped (detached) like in case of :if or :each
-          if (el.parentNode !== parent) return false;
-        } else i++;
-      }
-    }
-
-    for (let i = 0, child; child = el.children[i]; i++) {
-      // if element was removed from parent (skipped) - reduce index
-      if (init(child, el) === false) i--;
-    }
-  };
-
   return state;
 }
+
+
+// init directives on element
+function init(el, state, effects, parent = el.parentNode) {
+  if (el.attributes) {
+    // init generic-name attributes second
+    for (let i = 0; i < el.attributes.length;) {
+      let attr = el.attributes[i];
+
+      if (attr.name[0] === ':') {
+        el.removeAttribute(attr.name);
+
+        // multiple attributes like :id:for=""
+        let names = attr.name.slice(1).split(':')
+
+        // NOTE: secondary directives don't stop flow nor extend state, so no need to check
+        for (let name of names) {
+          let dir = directive[name] || directive.default
+          let evaluate = (dir.parse || parse)(attr.value, parse)
+          let dispose = dir(el, evaluate, state, name);
+          if (dispose) effects.push(dispose);
+        }
+
+        // stop if element was spraed by internal directive
+        if (memo.has(el)) return;
+        // stop if element is skipped (detached) like in case of :if or :each
+        if (el.parentNode !== parent) return false;
+      } else i++;
+    }
+  }
+
+  for (let i = 0, child; child = el.children[i]; i++) {
+    // if element was removed from parent (skipped) - reduce index
+    if (init(child, state, effects, el) === false) i--;
+  }
+};
 
 // default compiler
 const evalMemo = {};
