@@ -13,26 +13,31 @@ export const directive = {};
 // sprae element: apply directives
 const memo = new WeakMap();
 
-export default function sprae(container, values) {
-  if (!container.children) return // text nodes, comments etc - but collections are fine
+export default function sprae(els, values) {
+  let state
 
-  // repeated call can be caused by :each with new objects with old keys needs an update
-  if (memo.has(container)) {
-    const state = memo.get(container)
-    // we rewrite signals instead of update, because user should have what he provided
-    Object.assign(state, values)
-  }
+  // make multiple items
+  if (!els?.[Symbol.iterator]) els = [els]
 
-  // take over existing state instead of creating clone
-  const state = store(values || {});
+  for (let el of els) {
+    // text nodes, comments etc - but collections are fine
+    if (el?.children) {
+      // repeated call can be caused by :each with new objects with old keys needs an update
+      if (memo.has(el)) {
+        // we rewrite signals instead of update, because user should have what he provided
+        Object.assign(memo.get(el), values)
+      }
+      else {
+        // take over existing state instead of creating clone
+        state ||= store(values || {});
 
-  init(container, state);
+        init(el, state);
 
-  // if element was spraed by :with or :each instruction - skip
-  if (memo.has(container)) return state;
-
-  // save
-  memo.set(container, state);
+        // if element was spraed by :with or :each instruction - skip, otherwise save
+        if (!memo.has(el)) memo.set(el, state);
+      }
+    }
+  };
 
   return state;
 }
