@@ -137,6 +137,6 @@
   * [ ] make array push updates batched
 * [x] remove valueOf()s in directives
 * [x] separate store to object / array
-* [ ] finish all .todo tests
-* [ ] make :with create static state
+* [ ] ~~finish all .todo tests~~ they're not relevant
+* [x] make :with create static state
 * [x] ~~make :ref recognize strings/evaluables~~ no need, wait until needed, simpler the better, even effect is not needed

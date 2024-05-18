@@ -317,7 +317,7 @@ t('store: direct list', async () => {
 })
 
 t('store: array methods', () => {
-  // FIXME: somehow sprae was falling with something like this
+  // somehow sprae was falling with something like this
   let a = store({ a: [1] })
   let b = a['a']['map'](x => x * 2)
   is(b, [2])

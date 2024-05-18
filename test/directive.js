@@ -398,7 +398,7 @@ test("if: + :with doesnt prevent secondary effects from happening", async () => 
 });
 
 
-test.todo('each: top-level list', async () => {
+test.skip('each: top-level list', async () => {
   let el = h`<x :each="item in items" :text="item.x"/>`
   sprae(el, { items: [{ x: 1 }] })
   is(el.outerHTML, `<x>1</x>`)
@@ -647,7 +647,7 @@ test("each: fragments multiple", async () => {
   is(el.innerHTML, "");
 });
 
-test.todo("each: fragments text", async () => {
+test.skip("each: fragments text", async () => {
   let el = h`<p>
     <template :each="a in b" :text="a"></template>
   </p>`;
@@ -826,7 +826,7 @@ test("each: wrapped source", async () => {
   is(el.innerHTML, `<x>1</x><x>2</x>`);
 });
 
-test.todo("each: unmounted elements remove listeners", async () => {
+test.skip("each: unmounted elements remove listeners", async () => {
   // let's hope they get removed without memory leaks :')
 });
 
@@ -983,7 +983,6 @@ test('each: unwanted extra subscription', async t => {
   is(state.each, 2)
 
   // console.log('--------rows.value[1].label.value += 2')
-  // // FIXME: this triggers each, but it should not
   b.label.value += 2
   is(state.each, 2)
   is(el.innerHTML, `<x><a>0</a></x><x><a>2</a></x>`)
@@ -996,7 +995,6 @@ test('each: unwanted extra subscription', async t => {
   is(el.innerHTML, `<x><a>2</a></x>`)
 
   console.log('--------rows.value[0].label += 2')
-  // FIXME: this triggers each, but it should not
   b.label.value += 2
   await tick()
   is(state.each, 3)
@@ -1108,7 +1106,7 @@ test("html: nested items", async () => {
   );
 });
 
-test.todo("html: template after use", async () => {
+test.skip("html: template after use", async () => {
   let a = h`<x :html="tpl" :with="{text:'abc'}" /><template :ref="tpl"><div :text="text"></div></template>`;
   let state = sprae(a);
   is(a.outerHTML, `<x><div>abc</div></x><template><div :text="text"></div></template>`);
@@ -1403,7 +1401,7 @@ test("events: throttle", async (e) => {
   is(state.log, ["x", "x", "x"]);
 });
 
-test.todo('memory allocation', async e => {
+test.skip('memory allocation', async e => {
   let items = signal([])
   let el = h`<><x :each="item in items" :text="item.x"></x></>`
   let btn = document.createElement('button')
