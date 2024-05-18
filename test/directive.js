@@ -969,7 +969,7 @@ test("each: subscribe to modifying list", async () => {
 });
 
 test('each: unwanted extra subscription', async t => {
-  let el = h`<div><x :each="item,i in (untracked(() => each++), rows)"><a :text="console.log(i),item.label"></a></x></div>`
+  let el = h`<div><x :each="item,i in (untracked(() => each++), rows)"><a :text="item.label"></a></x></div>`
 
   const rows = signal(null)
   const state = sprae(el, { rows, each: 0, untracked })
@@ -996,7 +996,6 @@ test('each: unwanted extra subscription', async t => {
 
   console.log('--------rows.value[0].label += 2')
   // FIXME: this triggers each, but it should not
-  // a.label.value += 2
   b.label.value += 2
   await tick()
   is(state.each, 3)

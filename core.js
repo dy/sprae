@@ -24,33 +24,21 @@ export default function sprae(container, values) {
   }
 
   // take over existing state instead of creating clone
-  const state = store(values || {}), effects = [];
+  const state = store(values || {});
 
-  init(container, state, effects);
+  init(container, state);
 
   // if element was spraed by :with or :each instruction - skip
-  if (memo.has(container)) return state// memo.get(container)
+  if (memo.has(container)) return state;
 
   // save
   memo.set(container, state);
-  container.classList?.add(SPRAE); // mark spraed element
-
-  // expose dispose
-  container[_dispose] = () => {
-    while (effects.length) effects.pop()();
-    container.classList.remove(SPRAE)
-    memo.delete(container);
-    // NOTE: each child disposes own children etc.
-    let els = container.getElementsByClassName(SPRAE);
-    while (els.length) els[0][_dispose]?.()
-  }
 
   return state;
 }
 
-
-// init directives on element
-function init(el, state, effects, parent = el.parentNode) {
+// init directives on a single element
+function init(el, state, parent = el.parentNode, effects = []) {
   if (el.attributes) {
     // init generic-name attributes second
     for (let i = 0; i < el.attributes.length;) {
@@ -72,21 +60,29 @@ function init(el, state, effects, parent = el.parentNode) {
 
         // stop if element was spraed by internal directive
         if (memo.has(el)) return;
+
         // stop if element is skipped (detached) like in case of :if or :each
-        if (el.parentNode !== parent) return false;
+        if (el.parentNode !== parent) return;
       } else i++;
     }
   }
 
-  for (let i = 0, child; child = el.children[i]; i++) {
-    // if element was removed from parent (skipped) - reduce index
-    if (init(child, state, effects, el) === false) i--;
+  [...el.children].map(child => init(child, state, el))
+
+  // mark spraed element
+  el.classList?.add(SPRAE);
+  el[_dispose] = () => {
+    while (effects.length) effects.pop()();
+    el.classList.remove(SPRAE);
+    memo.delete(el);
+    // NOTE: each child disposes own children etc.
+    let els = el.getElementsByClassName(SPRAE);
+    while (els.length) els[0][_dispose]?.()
   }
 };
 
-// default compiler
+// compiler
 const evalMemo = {};
-
 const parse = (expr, dir, fn) => {
   if (fn = evalMemo[expr = expr.trim()]) return fn
 
@@ -98,13 +94,7 @@ const parse = (expr, dir, fn) => {
   return evalMemo[expr] = fn
 }
 
-// default compiler is simple new Function (tiny obfuscation against direct new Function detection)
 export let compile
-
-// interpolate a$<b> fields from context
-export const ipol = (v, state) => {
-  return v?.replace ? v.replace(/\$<([^>]+)>/g, (match, field) => state[field] ?? '') : v
-};
 
 // configure signals/compile/differ
 // it's more compact than using sprae.signal = signal etc.
