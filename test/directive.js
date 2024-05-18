@@ -774,9 +774,10 @@ test("each: unkeyed", async () => {
   // is(el.firstChild, first)
 });
 
-test("each: keyed primitive list", async () => {
+// NOTE: we don't support keying
+test.skip("each: keyed primitive list", async () => {
   let el = h`<div><x :each="x, i in xs" :text="x.id"></x></div>`;
-  let state = sprae(el, { xs: signal([{ id: 1 }, { id: 2 }, { id: 3 }]) });
+  let state = sprae(el, { xs: [{ id: 1 }, { id: 2 }, { id: 3 }] });
   is(el.children.length, 3);
   is(el.textContent, "123");
   let [first, second, third] = el.childNodes;
@@ -796,9 +797,9 @@ test("each: keyed primitive list", async () => {
   // FIXME: test if it disposes memory here after destroying
 });
 
-test("each: keyed objects list", async () => {
+test.skip("each: keyed objects list", async () => {
   let el = h`<div><x :each="x, i in xs" :key="x.id" :text="x.id"></x></div>`;
-  let state = sprae(el, { xs: signal([{ id: 1 }, { id: 2 }, { id: 3 }]) });
+  let state = sprae(el, { xs: [{ id: 1 }, { id: 2 }, { id: 3 }] });
   is(el.children.length, 3);
   is(el.textContent, "123");
   let [first, second, third] = el.childNodes;
