@@ -72,7 +72,7 @@ function init(el, state, parent = el.parentNode, effects = []) {
     }
   }
 
-  [...el.children].map(child => init(child, state, el))
+  for (let child of [...el.children]) init(child, state, el)
 
   // mark spraed element
   el.classList?.add(SPRAE);
