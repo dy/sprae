@@ -1,8 +1,7 @@
 import sprae, { directive } from "../core.js";
-import store, { _change, _signals } from "../store.js";
+import { _change, _signals } from "../store.js";
 import { effect, untracked, computed } from '../signal.js';
 
-// FIXME: add microtask for length change
 
 export const _each = Symbol(":each");
 
@@ -12,7 +11,7 @@ directive.each = (tpl, [itemVar, idxVar, evaluate], state) => {
   tpl.replaceWith(holder);
 
   // we re-create items any time new items are produced
-  let cur, keys
+  let cur, keys, prevl = 0
 
   // separate computed effect reduces number of needed updates for the effect
   const items = computed(() => {
@@ -22,10 +21,9 @@ directive.each = (tpl, [itemVar, idxVar, evaluate], state) => {
     if (items?.constructor === Object) keys = Object.keys(items), items = Object.values(items)
     return items || []
   })
-  let prevl = 0
 
   const update = () => {
-    // add or update
+    // NOTE: untracked avoids rerendering full list whenever internal items or props change
     untracked(() => {
       let i = 0, newItems = items.value, newl = newItems.length
 
@@ -82,7 +80,7 @@ directive.each = (tpl, [itemVar, idxVar, evaluate], state) => {
     // subscribe to items change (.length)
     if (!cur) items.value[_change]?.value
 
-    // make first render immediately, plan subsequent renders
+    // make first render immediately, debounce subsequent renders
     if (!planned) {
       update()
       queueMicrotask(() => (planned && update(), planned = 0))
