@@ -5,14 +5,16 @@ export const _signals = Symbol('signals'), _change = Symbol('length');
 
 // object store is not lazy
 export default function store(values, signals) {
+  if (!values) return values
+
+  // ignore existing state as argument
+  if (values[_signals] && !signals) return values;
+
   // redirect for optimized array store
   if (Array.isArray(values)) return list(values)
 
   // ignore non-objects
-  if (!values || (values.constructor !== Object)) return values;
-
-  // ignore existing state as argument
-  if (values[_signals] && !signals) return values;
+  if (values.constructor !== Object) return values;
 
   // NOTE: if you decide to unlazy values, think about large arrays - init upfront can be costly
   let _len = signal(Object.values(values).length)

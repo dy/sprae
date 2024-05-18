@@ -14,24 +14,39 @@ export const directive = {};
 const memo = new WeakMap();
 
 export default function sprae(container, values) {
-  if (!container.children) return // text nodes, comments etc
+  if (!container.children) return // text nodes, comments etc - but collections are fine
 
   // repeated call can be caused by :each with new objects with old keys needs an update
   if (memo.has(container)) {
-    const [state, effects] = memo.get(container)
+    const state = memo.get(container)
     // we rewrite signals instead of update, because user should have what he provided
-    for (let k in values) { state[k] = values[k] }
-    // since we call direct updates here, we have to make sure
-    // we don't subscribe outer effect, as in case of :each
-    // untracked(() => { for (let fx of effects) fx() })
+    Object.assign(state, values)
   }
 
   // take over existing state instead of creating clone
-  const state = store(values || {});
-  const effects = [];
+  const state = store(values || {}), effects = [];
+
+  init(container);
+
+  // if element was spraed by :with or :each instruction - skip
+  if (memo.has(container)) return state// memo.get(container)
+
+  // save
+  memo.set(container, state);
+  container.classList?.add(SPRAE); // mark spraed element
+
+  // expose dispose
+  container[_dispose] = () => {
+    while (effects.length) effects.pop()();
+    container.classList.remove(SPRAE)
+    memo.delete(container);
+    // NOTE: each child disposes own children etc.
+    let els = container.getElementsByClassName(SPRAE);
+    while (els.length) els[0][_dispose]?.()
+  }
 
   // init directives on element
-  const init = (el, parent = el.parentNode) => {
+  function init(el, parent = el.parentNode) {
     if (el.attributes) {
       // init generic-name attributes second
       for (let i = 0; i < el.attributes.length;) {
@@ -47,15 +62,13 @@ export default function sprae(container, values) {
           for (let name of names) {
             let dir = directive[name] || directive.default
             let evaluate = (dir.parse || parse)(attr.value, parse)
-            let update = dir(el, evaluate, state, name);
-            if (update) {
-              update[_dispose] = effect(update);
-              effects.push(update);
-            }
+            let dispose = dir(el, evaluate, state, name);
+            if (dispose) effects.push(dispose);
           }
 
-          // stop if element was spraed by directive or skipped (detached) like in case of :if or :each
+          // stop if element was spraed by internal directive
           if (memo.has(el)) return;
+          // stop if element is skipped (detached) like in case of :if or :each
           if (el.parentNode !== parent) return false;
         } else i++;
       }
@@ -66,25 +79,6 @@ export default function sprae(container, values) {
       if (init(child, el) === false) i--;
     }
   };
-
-  init(container);
-
-  // if element was spraed by :with or :each instruction - skip
-  if (memo.has(container)) return state// memo.get(container)
-
-  // save
-  memo.set(container, [state, effects]);
-  container.classList?.add(SPRAE); // mark spraed element
-
-  // expose dispose
-  container[_dispose] = () => {
-    while (effects.length) effects.pop()[_dispose]();
-    container.classList.remove(SPRAE)
-    memo.delete(container);
-    // NOTE: each child disposes own children etc.
-    let els = container.getElementsByClassName(SPRAE);
-    while (els.length) els[0][_dispose]?.()
-  }
 
   return state;
 }

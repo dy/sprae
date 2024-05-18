@@ -1,22 +1,20 @@
 import { directive } from "../core.js";
+import { effect } from "../signal.js";
 
 // set generic property directive
 directive.default = (el, evaluate, state, name) => {
-  let evt = name.startsWith("on") && name.slice(2);
-
-  if (evt) {
-    let off
-    return () => (
-      off?.(), // intermediate teardown
-      off = on(el, evt, evaluate(state))
-    );
-  }
-
-  return () => {
-    let value = evaluate(state);
-    if (name) attr(el, name, ipol(value, state))
-    else for (let key in value) attr(el, dashcase(key), ipol(value[key], state));
-  };
+  let evt = name.startsWith("on") && name.slice(2), off
+  return effect(
+    evt ?
+      () => (
+        off?.(), // intermediate teardown
+        off = on(el, evt, evaluate(state))
+      ) :
+      () => {
+        let value = evaluate(state);
+        if (name) attr(el, name, ipol(value, state))
+        else for (let key in value) attr(el, dashcase(key), ipol(value[key], state));
+      });
 };
 
 

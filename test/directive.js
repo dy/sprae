@@ -42,6 +42,12 @@ test("common: reactive", async () => {
   );
 });
 
+test('common: multiple elements', async () => {
+  let el = h`<a><x :text="'x'"></x><y :text="'y'"></y></a>`
+  sprae(el.childNodes)
+  is(el.innerHTML, `<x>x</x><y>y</y>`)
+})
+
 test("common: empty strings", async () => {
   let el = h`<x :="" :x=""></x>`;
   sprae(el);
@@ -606,16 +612,15 @@ test("each: fragments single", async () => {
     <template :each="a in b"><span :text="a"/></template>
   </p>`;
 
-  const b = signal([1]);
-  const params = sprae(el, { b });
+  const params = sprae(el, { b: [1] });
 
   is(el.innerHTML, "<span>1</span>");
   await tick()
-  b.value = [1, 2];
+  params.b = [1, 2];
   await tick()
   is(el.innerHTML, "<span>1</span><span>2</span>");
-  console.log("b.value=[]");
-  b.value = [];
+  console.log("params.b=[]");
+  params.b = [];
   await tick()
   is(el.innerHTML, "");
   params.b = null;

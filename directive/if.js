@@ -1,5 +1,6 @@
 import sprae, { directive } from "../core.js";
 import { _each } from './each.js';
+import { effect } from "../signal.js";
 
 // :if is interchangeable with :each depending on order, :if :each or :each :if have different meanings
 // as for :if :with - :if must init first, since it is lazy, to avoid initializing component ahead of time by :with
@@ -25,7 +26,7 @@ directive.if = (ifEl, evaluate, state) => {
     else next.remove(), elses = next.content ? [...next.content.childNodes] : [next];
   } else elses = none
 
-  return () => {
+  return effect(() => {
     const newEls = evaluate(state) ? ifs : ifEl[_prevIf] ? none : elses;
     if (next) next[_prevIf] = newEls === ifs
     if (cur != newEls) {
@@ -35,5 +36,5 @@ directive.if = (ifEl, evaluate, state) => {
       cur = newEls;
       for (let el of cur) parent.insertBefore(el, holder), sprae(el, state);
     }
-  };
+  });
 };

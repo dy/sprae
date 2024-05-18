@@ -1,9 +1,10 @@
 import { directive } from "../core.js";
 import { ipol } from './default.js';
+import { effect } from "../signal.js";
 
 directive.class = (el, evaluate, state) => {
   let cur = new Set
-  return () => {
+  return effect(() => {
     let v = evaluate(state);
     let clsx = new Set;
     if (v) {
@@ -13,5 +14,5 @@ directive.class = (el, evaluate, state) => {
     }
     for (let cls of cur) if (clsx.has(cls)) clsx.delete(cls); else el.classList.remove(cls);
     for (let cls of cur = clsx) el.classList.add(cls)
-  };
+  });
 };

@@ -8,7 +8,7 @@ export const _each = Symbol(":each");
 
 directive.each = (tpl, [itemVar, idxVar, evaluate], state) => {
   // we need :if to be able to replace holder instead of tpl for :if :each case
-  const holder = (tpl[_each] = document.createTextNode("")), parent = tpl.parentNode;
+  const holder = (tpl[_each] = document.createTextNode(""));
   tpl.replaceWith(holder);
 
   // we re-create items any time new items are produced
@@ -24,7 +24,7 @@ directive.each = (tpl, [itemVar, idxVar, evaluate], state) => {
   })
   let prevl = 0
 
-  return () => {
+  return effect(() => {
     // subscribe to items change (.length)
     if (!cur) items.value[_change]?.value
 
@@ -59,7 +59,7 @@ directive.each = (tpl, [itemVar, idxVar, evaluate], state) => {
         for (; i < newl; i++) {
           cur[i] = newItems[i]
           const idx = i,
-            el = tpl.cloneNode(true),
+            el = (tpl.content || tpl).cloneNode(true),
             scope = Object.create(state, {
               [itemVar]: { get() { return cur[idx] } },
               [idxVar]: { value: keys ? keys[idx] : idx },
@@ -75,7 +75,7 @@ directive.each = (tpl, [itemVar, idxVar, evaluate], state) => {
 
       prevl = newl
     })
-  }
+  })
 }
 
 
