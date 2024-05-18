@@ -134,9 +134,10 @@
   * [x] try out store without `values` holder
   * [x] flatten `store` to avoid passing parent (only needed by `scope`)
   * [x] bring `effect` back to all directives
-  * [ ] make array push updates batched
+  * [x] make array push updates batched
 * [x] remove valueOf()s in directives
 * [x] separate store to object / array
-* [ ] ~~finish all .todo tests~~ they're not relevant
+* [x] ~~finish all .todo tests~~ they're not relevant
 * [x] make :with create static state
 * [x] ~~make :ref recognize strings/evaluables~~ no need, wait until needed, simpler the better, even effect is not needed
+* [ ] with must not create inherited root scope, it's enough to overwrite signals

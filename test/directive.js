@@ -1,8 +1,8 @@
 import test, { is, any, throws } from "tst";
 import { tick, time } from "wait-please";
 import sprae from '../sprae.js'
-import { signal, batch, untracked } from '../signal.js'
-import store from '../store.js'
+import { signal, batch, untracked, effect } from '../signal.js'
+import store, { _change } from '../store.js'
 import '../directive/aria.js'
 import '../directive/data.js'
 import h from "hyperf";
@@ -1000,6 +1000,26 @@ test('each: unwanted extra subscription', async t => {
   is(state.each, 3)
   is(el.innerHTML, `<x><a>4</a></x>`)
 });
+
+test('each: batched .length updates', async t => {
+  let c = 0
+  let state = store({ list: [1, 2], count() { c++ } })
+  let el = h`<a><b :each="x in (count(), list)" :text="x"/></a>`
+  sprae(el, state)
+  await tick()
+  is(c, 1)
+  is(el.innerHTML, `<b>1</b><b>2</b>`)
+
+  state.list.push(3, 4, 5)
+  // bump list
+  batch(() => {
+    let list = state.list
+    state.list = null
+    state.list = list
+  })
+  await tick()
+  is(c, 2)
+})
 
 
 test("with: inline assign", async () => {

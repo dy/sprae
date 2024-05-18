@@ -24,10 +24,7 @@ directive.each = (tpl, [itemVar, idxVar, evaluate], state) => {
   })
   let prevl = 0
 
-  return effect(() => {
-    // subscribe to items change (.length)
-    if (!cur) items.value[_change]?.value
-
+  const update = () => {
     // add or update
     untracked(() => {
       let i = 0, newItems = items.value, newl = newItems.length
@@ -78,6 +75,18 @@ directive.each = (tpl, [itemVar, idxVar, evaluate], state) => {
 
       prevl = newl
     })
+  }
+
+  let planned = 0
+  return effect(() => {
+    // subscribe to items change (.length)
+    if (!cur) items.value[_change]?.value
+
+    // make first render immediately, plan subsequent renders
+    if (!planned) {
+      update()
+      queueMicrotask(() => (planned && update(), planned = 0))
+    } else planned++
   })
 }
 
