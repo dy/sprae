@@ -1049,7 +1049,7 @@
 - possibly some bit more of memory/perf cost, since static values get wrapped into signals
   ? can we optimize static array values instead of being a bunch of signals instead be one signal?
 
-## [ ] Should we make store notify about diff props, rather than length?
+## [x] Should we make store notify about diff props, rather than length? -> nah, too complex
 
 ## [x] Should we create per-object signal, instead of per-property? -> No
 - it gives less granular updates: full array gets diffed, all nodes get refreshed
@@ -1070,7 +1070,7 @@
     - we'd need to sync up array with internal store somehow
   - pointlessness: whenever signal updates to new array we have to reinit our store
 
-## [ ] Should we separate store to array/struct?
+## [x] Should we separate store to array/struct? -> yes, cleaner logic
 
 + different length tracking
 + structs can be not lazy unlike arrays

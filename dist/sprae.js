@@ -21,17 +21,16 @@ function use(s) {
 // store.js
 var _signals = Symbol("signals");
 var _change = Symbol("length");
-function store(values, signals) {
+function store(values) {
   if (!values)
     return values;
-  if (values[_signals] && !signals)
+  if (values[_signals])
     return values;
   if (Array.isArray(values))
     return list(values);
   if (values.constructor !== Object)
     return values;
-  let _len = signal(Object.values(values).length);
-  signals ||= {};
+  let signals = {}, _len = signal(Object.values(values).length);
   const state = new Proxy(signals, {
     get: (_, key) => key === _change ? _len : key === _signals ? signals : signals[key]?.valueOf(),
     set: (_, key, v, s) => (s = signals[key], set(signals, key, v), s || ++_len.value),
@@ -41,19 +40,15 @@ function store(values, signals) {
       return Reflect.ownKeys(signals);
     }
   });
-  if (values[_signals])
-    for (let key in values)
-      signals[key] = values[_signals][key];
-  else
-    for (let key in values) {
-      const desc = Object.getOwnPropertyDescriptor(values, key);
-      if (desc?.get) {
-        (signals[key] = computed(desc.get.bind(state)))._set = desc.set?.bind(state);
-      } else {
-        signals[key] = null;
-        set(signals, key, values[key]);
-      }
+  for (let key in values) {
+    const desc = Object.getOwnPropertyDescriptor(values, key);
+    if (desc?.get) {
+      (signals[key] = computed(desc.get.bind(state)))._set = desc.set?.bind(state);
+    } else {
+      signals[key] = null;
+      set(signals, key, values[key]);
     }
+  }
   return state;
 }
 function list(values) {
@@ -272,28 +267,6 @@ var batch2 = (fn) => {
   }
 };
 var untracked2 = (fn, prev, v) => (prev = current, current = null, v = fn(), current = prev, v);
-
-// node_modules/swapdom/deflate.js
-var swap = (parent, a, b, end = null, { remove, insert } = swap) => {
-  let i = 0, cur, next, bi, bidx = new Set(b);
-  while (bi = a[i++])
-    !bidx.has(bi) ? remove(bi, parent) : cur = cur || bi;
-  cur = cur || end, i = 0;
-  while (bi = b[i++]) {
-    next = cur ? cur.nextSibling : end;
-    if (cur === bi)
-      cur = next;
-    else {
-      if (b[i] === next)
-        cur = next;
-      insert(bi, cur, parent);
-    }
-  }
-  return b;
-};
-swap.insert = (a, b, parent) => parent.insertBefore(a, b);
-swap.remove = (a, parent) => parent.removeChild(a);
-var deflate_default = swap;
 
 // directive/each.js
 var _each = Symbol(":each");
@@ -543,16 +516,18 @@ directive.ref.parse = (expr) => expr;
 
 // directive/with.js
 directive.with = (el, evaluate, rootState) => {
-  let state, values;
+  let state;
   return effect(() => {
-    values = evaluate(rootState);
-    Object.assign(state ||= sprae(
-      el,
-      store(
-        values,
-        Object.create(rootState[_signals])
-      )
-    ), values);
+    let values = evaluate(rootState);
+    if (!state) {
+      state = store({});
+      Object.assign(state[_signals], rootState[_signals]);
+      for (let key in values)
+        state[_signals][key] = null, state[key] = values[key];
+      sprae(el, state);
+    } else {
+      Object.assign(state, values);
+    }
   });
 };
 
@@ -637,7 +612,6 @@ directive.fx = (el, evaluate, state) => {
 // sprae.js
 sprae.use(ulive_es_exports);
 sprae.use({ compile: (expr) => sprae.constructor(`__scope`, `with (__scope) { return ${expr} };`) });
-sprae.use({ swap: deflate_default });
 var sprae_default = sprae;
 export {
   sprae_default as default
