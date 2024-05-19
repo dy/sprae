@@ -70,16 +70,13 @@
   <script type="importmap">
     {
       "imports": {
-        "swapdom/inflate": "../node_modules/swapdom/inflate.js",
-        "swapdom/deflate": "../node_modules/swapdom/deflate.js",
-        "ulive": "../node_modules/ulive/dist/ulive.es.js",
-        "signal-polyfill": "../node_modules/signal-polyfill/dist/index.js"
+        "ulive": "../node_modules/ulive/dist/ulive.es.js"
       }
     }
   </script>
 
   <script type="module">
-    import sprae, { signal } from '../sprae.js'
+    import sprae from '../sprae.js'
 
     const adjectives = ['pretty', 'large', 'big', 'small', 'tall', 'short', 'long', 'handsome', 'plain', 'quaint', 'clean', 'elegant', 'easy', 'angry', 'crazy', 'helpful', 'mushy', 'odd', 'unsightly', 'adorable', 'important', 'inexpensive', 'cheap', 'expensive', 'fancy']
     const colours = ['red', 'yellow', 'blue', 'green', 'pink', 'brown', 'purple', 'brown', 'white', 'black', 'orange']
@@ -92,7 +89,7 @@
       for (let i = 0; i < count; i++) {
         data.push({
           id: nextId++,
-          label: signal(`${adjectives[_random(adjectives.length)]} ${colours[_random(colours.length)]} ${nouns[_random(nouns.length)]}`),
+          label: `${adjectives[_random(adjectives.length)]} ${colours[_random(colours.length)]} ${nouns[_random(nouns.length)]}`,
         })
       }
 
@@ -104,53 +101,51 @@
     }
 
     sprae(document.getElementById('main'), {
-      rows: signal(buildData(3)),
-      selected: signal(),
+      rows: buildData(3),
+      selected: null,
 
       remove(item) {
-        const index = this.rows.value.findIndex(x => (x.id == item.id))
-        this.rows.value.splice(index, 1)
-        this.rows.value = [...this.rows.value]
+        const index = this.rows.findIndex(x => (x.id == item.id))
+        this.rows.splice(index, 1)
       },
 
       select(item) {
         console.time('select', item)
-        this.selected.value = item
+        this.selected = item
         console.timeEnd('select')
       },
 
       run() {
-        this.rows.value = buildData(1000)
-        this.selected.value = null
+        this.rows = buildData(1000)
+        this.selected = null
       },
 
       add() {
-        this.rows.value = [...this.rows.peek(), ...buildData(1000)]
-        this.selected.value = null
+        this.rows = [...this.rows, ...buildData(1000)]
+        this.selected = null
       },
 
       update() {
-        for (let i = 0; i < this.rows.value.length; i += 10) {
-          this.rows.value[i].label.value += ' !!!'
+        for (let i = 0; i < this.rows.length; i += 10) {
+          this.rows[i].label += ' !!!'
         }
-        this.selected.value = null
+        this.selected = null
       },
 
       runLots() {
-        this.rows.value = buildData(10000)
-        this.selected.value = null
+        this.rows = buildData(10000)
+        this.selected = null
       },
 
       clear() {
-        this.rows.value = []
-        this.selected.value = null
+        this.rows = []
+        this.selected = null
       },
 
       swap() {
-        if (this.rows.value.length > 998) {
-          let rows = this.rows.value;
+        if (this.rows.length > 998) {
+          let rows = this.rows;
           [rows[1], rows[998]] = [rows[998], rows[1]]
-          this.rows.value = [...rows]
         }
       }
     })
