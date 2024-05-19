@@ -51,7 +51,6 @@ directive.each = (tpl, [itemVar, idxVar, evaluate], state) => {
         }
 
         // append
-        console.time(1)
         for (; i < newl; i++) {
           cur[i] = newItems[i]
           let idx = i,
@@ -70,7 +69,6 @@ directive.each = (tpl, [itemVar, idxVar, evaluate], state) => {
             for (let el of els) el[Symbol.dispose](), el.remove()
           };
         }
-        console.timeEnd(1)
       }
 
       prevl = newl

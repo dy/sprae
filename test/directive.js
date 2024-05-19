@@ -1437,3 +1437,12 @@ test.skip('memory allocation', async e => {
   }
   sprae(el, { items });
 })
+
+test.only('perf: must be fast', async e => {
+  let el = h`<a :l="l"><b :each="i in l"><c :text="i"/></b></a>`
+  console.time('perf')
+  for (let i = 0; i < 1e2; i++) {
+    sprae(el.cloneNode(true), { l: 1e2 })
+  }
+  console.timeEnd('perf')
+})
