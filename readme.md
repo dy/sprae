@@ -144,7 +144,7 @@ Set any attribute(s).
 Define values for a subtree.
 
 ```html
-<x :with="{ foo: signal('bar') }">
+<x :with="{ foo: 'bar' }">
   <y :with="{ baz: 'qux' }" :text="foo + baz"></y>
 </x>
 ```
