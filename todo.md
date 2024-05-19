@@ -136,8 +136,8 @@
 * [x] ~~finish all .todo tests~~ they're not relevant
 * [x] make :with create static state
 * [x] ~~make :ref recognize strings/evaluables~~ no need, wait until needed, simpler the better, even effect is not needed
-* [ ] with must not create inherited root scope, it's enough to overwrite signals
-  * [ ] this also allows removing signals argument from store
+* [x] with must not create inherited root scope, it's enough to overwrite signals
+  * [x] this also allows removing signals argument from store
 * [ ] fix all examples
 * [ ] run benchmarks
 

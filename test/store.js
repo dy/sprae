@@ -170,7 +170,8 @@ t.skip('store: store from store', () => {
   ok(s1 === s2)
 })
 
-t('store: inheritance', () => {
+t.skip('store: inheritance', () => {
+  // NOTE: we do manual inheritance in :with
   let s = store({ x: 0 })
   //s.x;
   let s1 = store({ y: 2 }, Object.create(s[_signals]))
@@ -197,7 +198,7 @@ t('store: inheritance', () => {
   // })
 })
 
-t('store: inheritance: updating values in chain', async () => {
+t.skip('store: inheritance: updating values in chain', async () => {
   let s1 = store({ x: 1 })
   let s2 = store(s1, Object.create({ y: signal(2) }))
   console.log(s2.y)
@@ -220,7 +221,7 @@ t('store: inheritance: updating values in chain', async () => {
   // is(parent.y, 3)
 })
 
-t('store: inheritance: lazy init', async () => {
+t.skip('store: inheritance: lazy init', async () => {
   let s = store({ x: { foo: 'bar' } })
   console.log('------create s1')
   const x = s.x;
@@ -238,7 +239,7 @@ t('store: inheritance: lazy init', async () => {
   is(x.foo, 'qux')
 })
 
-t('store: inheritance subscribes to parent getter', async () => {
+t.skip('store: inheritance subscribes to parent getter', async () => {
   let s = store({ x: 1 })
   let s1 = store({}, Object.create(s[_signals]))
   let log = []
