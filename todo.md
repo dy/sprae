@@ -140,6 +140,7 @@
   * [x] this also allows removing signals argument from store
 * [ ] fix all examples
   * [ ] :each is too slow for appending 1000 items
+    * the slowdown is caused by sprae constructor. Analyse which branch takes most time
 * [ ] run benchmarks
 
 ## Backlog
