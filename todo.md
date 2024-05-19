@@ -139,6 +139,7 @@
 * [x] with must not create inherited root scope, it's enough to overwrite signals
   * [x] this also allows removing signals argument from store
 * [ ] fix all examples
+  * [ ] :each is too slow for appending 1000 items
 * [ ] run benchmarks
 
 ## Backlog

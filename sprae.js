@@ -1,7 +1,6 @@
 import sprae from './core.js'
 
 import * as signals from 'ulive'
-import swap from 'swapdom/deflate'
 
 // default directives
 import './directive/if.js'
@@ -21,8 +20,5 @@ sprae.use(signals)
 
 // default compiler (indirect new Function to avoid detector)
 sprae.use({ compile: expr => sprae.constructor(`__scope`, `with (__scope) { return ${expr} };`) })
-
-// defaul dom swapper
-sprae.use({ swap })
 
 export default sprae
