@@ -80,8 +80,8 @@ directive.each = (tpl, [itemVar, idxVar, evaluate], state) => {
 
   let planned = 0
   return effect(() => {
-    // subscribe to items change (.length)
-    if (!cur) items.value[_change]?.value
+    // subscribe to items change (.length) - we do it every time (not just on init) since preact unsubscribes unused signals
+    items.value[_change]?.value
 
     // make first render immediately, debounce subsequent renders
     if (!planned) {

@@ -23,7 +23,7 @@ export default function store(values) {
   const state = new Proxy(signals, {
     get: (_, key) => key === _change ? _len : key === _signals ? signals : signals[key]?.valueOf(),
     set: (_, key, v, s) => (s = signals[key], set(signals, key, v), s || (++_len.value)), // bump length for new signal
-    deleteProperty: (_, key) => del(signals, key) && _len.value--,
+    deleteProperty: (_, key) => (signals[key] && (del(signals, key), _len.value--), 1),
     ownKeys() {
       // subscribe to length when object is spread
       _len.value
@@ -83,10 +83,12 @@ export function list(values) {
     },
 
     set(_, key, v) {
+      // console.log('set', key, v)
       // .length
       if (key === 'length') {
         // force cleaning up tail
         for (let i = v, l = signals.length; i < l; i++) delete state[i]
+        // .length = N directly
         _len.value = signals.length = v;
         return true
       }
@@ -99,7 +101,7 @@ export function list(values) {
       return true
     },
 
-    deleteProperty: (_, key) => (del(signals, key), true),
+    deleteProperty: (_, key) => (signals[key] && del(signals, key), 1),
 
   })
 
@@ -142,13 +144,8 @@ function set(signals, key, v) {
 
 // delete signal
 function del(signals, key) {
-  // console.log('delete', key)
-  const s = signals[key]
-  if (s) {
-    const del = s[Symbol.dispose]
-    if (del) delete s[Symbol.dispose]
-    delete signals[key]
-    del?.()
-    return true
-  }
+  const s = signals[key], del = s[Symbol.dispose]
+  if (del) delete s[Symbol.dispose]
+  delete signals[key]
+  del?.()
 }

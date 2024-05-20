@@ -28,6 +28,7 @@ export default function sprae(el, values) {
   // if element was spraed by :with or :each instruction - skip, otherwise save
   if (!memo.has(el)) memo.set(el, state);
 
+  // disposer draes all internal elements
   el[_dispose] = () => {
     while (disposes.length) disposes.pop()();
     memo.delete(el);
@@ -84,7 +85,7 @@ const parse = (expr, dir, fn) => {
 
 export let compile
 
-// configure signals/compile/differ
+// configure signals/compile
 // it's more compact than using sprae.signal = signal etc.
 sprae.use = s => {
   s.signal && use(s);

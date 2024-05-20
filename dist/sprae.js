@@ -34,7 +34,7 @@ function store(values) {
   const state = new Proxy(signals, {
     get: (_, key) => key === _change ? _len : key === _signals ? signals : signals[key]?.valueOf(),
     set: (_, key, v, s) => (s = signals[key], set(signals, key, v), s || ++_len.value),
-    deleteProperty: (_, key) => del(signals, key) && _len.value--,
+    deleteProperty: (_, key) => (signals[key] && (del(signals, key), _len.value--), 1),
     ownKeys() {
       _len.value;
       return Reflect.ownKeys(signals);
@@ -80,7 +80,7 @@ function list(values) {
         _len.value = signals.length = Number(key) + 1;
       return true;
     },
-    deleteProperty: (_, key) => (del(signals, key), true)
+    deleteProperty: (_, key) => (signals[key] && del(signals, key), 1)
   });
   return state;
 }
@@ -111,15 +111,11 @@ function set(signals, key, v) {
   }
 }
 function del(signals, key) {
-  const s = signals[key];
-  if (s) {
-    const del2 = s[Symbol.dispose];
-    if (del2)
-      delete s[Symbol.dispose];
-    delete signals[key];
-    del2?.();
-    return true;
-  }
+  const s = signals[key], del2 = s[Symbol.dispose];
+  if (del2)
+    delete s[Symbol.dispose];
+  delete signals[key];
+  del2?.();
 }
 
 // core.js
@@ -310,8 +306,7 @@ directive.each = (tpl, [itemVar, idxVar, evaluate], state) => {
   };
   let planned = 0;
   return effect(() => {
-    if (!cur)
-      items.value[_change]?.value;
+    items.value[_change]?.value;
     if (!planned) {
       update();
       queueMicrotask(() => (planned && update(), planned = 0));

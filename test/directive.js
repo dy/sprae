@@ -1,5 +1,6 @@
 import test, { is, any, throws } from "tst";
 import { tick, time } from "wait-please";
+import * as signals from '@preact/signals-core'
 import sprae from '../sprae.js'
 import { signal, batch, untracked, effect } from '../signal.js'
 import store, { _change } from '../store.js'
@@ -7,6 +8,7 @@ import '../directive/aria.js'
 import '../directive/data.js'
 import h from "hyperf";
 
+sprae.use(signals)
 
 test("hidden: core", async () => {
   let el = h`<div :hidden="hidden"></div>`;
@@ -495,28 +497,33 @@ test('each: array internal signal reassign', async () => {
 
 test("each: array length ops", async () => {
   let el = h`<p><span :each="a in b" :text="a"></span></p>`;
+  console.log('---b=[0]')
   const params = sprae(el, { b: [0] });
 
+  await tick()
   is(el.innerHTML, "<span>0</span>");
+
   console.log('---b.length = 2')
   params.b.length = 2;
   await tick()
   is(el.innerHTML, "<span>0</span><span></span>");
+
   console.log('---b.pop()')
   params.b.pop();
   await tick()
   is(el.innerHTML, "<span>0</span>");
 
+  console.log('---b.shift()')
   params.b.shift();
   await tick()
   is(el.innerHTML, "");
 
-  console.log('b.push(1,2)')
+  console.log('---b.push(1,2)')
   params.b.push(1, 2);
   await tick()
   is(el.innerHTML, "<span>1</span><span>2</span>");
 
-  console.log('b.pop()')
+  console.log('---b.pop()')
   params.b.pop();
   await tick()
   is(el.innerHTML, "<span>1</span>");
@@ -971,34 +978,34 @@ test("each: subscribe to modifying list", async () => {
 });
 
 test('each: unwanted extra subscription', async t => {
-  let el = h`<div><x :each="item,i in (untracked(() => each++), rows)"><a :text="item.label"></a></x></div>`
+  let el = h`<div><x :each="item,i in (untracked(() => {count++}), rows)"><a :text="item.label"></a></x></div>`
 
   const rows = signal(null)
-  const state = sprae(el, { rows, each: 0, untracked })
+  const state = sprae(el, { rows, count: 0, untracked })
 
   console.log('------rows.value = [{id:0},{id:1}]')
   let a = { label: signal(0) }, b = { label: signal(0) }
-  is(state.each, 1)
+  is(state.count, 1)
   rows.value = [a, b]
   await tick()
-  is(state.each, 2)
+  is(state.count, 2)
 
-  // console.log('--------rows.value[1].label.value += 2')
+  console.log('--------rows.value[1].label.value += 2')
   b.label.value += 2
-  is(state.each, 2)
+  is(state.count, 2)
   is(el.innerHTML, `<x><a>0</a></x><x><a>2</a></x>`)
 
   console.log('---------rows.value=[rows.value[0]]')
   // this thingy subscribes full list to update
   rows.value = [b]
   await tick()
-  is(state.each, 3)
+  is(state.count, 3)
   is(el.innerHTML, `<x><a>2</a></x>`)
 
   console.log('--------rows.value[0].label += 2')
   b.label.value += 2
   await tick()
-  is(state.each, 3)
+  is(state.count, 3)
   is(el.innerHTML, `<x><a>4</a></x>`)
 });
 
