@@ -42,7 +42,8 @@ test("common: reactive", async () => {
   );
 });
 
-test('common: multiple elements', async () => {
+test.skip('common: multiple elements', async () => {
+  // NOTE: we don't support that anymore - no much value, just pass container
   let el = h`<a><x :text="'x'"></x><y :text="'y'"></y></a>`
   sprae(el.childNodes)
   is(el.innerHTML, `<x>x</x><y>y</y>`)
@@ -1438,7 +1439,7 @@ test.skip('memory allocation', async e => {
   sprae(el, { items });
 })
 
-test.only('perf: must be fast', async e => {
+test.todo('perf: must be fast', async e => {
   let el = h`<a :l="l"><b :each="i in l"><c :text="i"/></b></a>`
   console.time('perf')
   for (let i = 0; i < 1e2; i++) {

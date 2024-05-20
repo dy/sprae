@@ -58,15 +58,18 @@ directive.each = (tpl, [itemVar, idxVar, evaluate], state) => {
               [itemVar]: { get() { return cur[idx] } },
               [idxVar]: { value: keys ? keys[idx] : idx },
             }),
-            el = (tpl.content || tpl).cloneNode(true), // single element or fragment
-            els = tpl.content ? [...el.childNodes] : [el] // total added elements
+            el = (tpl.content || tpl).cloneNode(true),
+            frag = tpl.content ?
+              // fake fragment to init sprae
+              { children: [...el.children], remove() { this.children.map(el => el.remove()) } } :
+              el;
 
           holder.before(el);
-          sprae(els, scope);
+          sprae(frag, scope);
 
           // signal/holder disposal removes element
           ((cur[_signals] ||= [])[i] ||= {})[Symbol.dispose] = () => {
-            for (let el of els) el[Symbol.dispose](), el.remove()
+            frag[Symbol.dispose](), frag.remove()
           };
         }
       }
