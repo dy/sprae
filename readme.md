@@ -363,8 +363,8 @@ To destroy state and detach sprae handlers, call `element[Symbol.dispose]()`. --
 
 _Sprae_ holds open & minimalistic philosophy:
 * Slim `:` API and _signals_ reactivity.
-* Extensible & configurable.
-* Small & performant.
+* Pluggable directives & configurable internals.
+* Small, safe & performant.
 * Aims at making developers happy 🫰
 
 <!--
