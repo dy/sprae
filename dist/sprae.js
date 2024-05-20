@@ -126,62 +126,50 @@ function del(signals, key) {
 
 // core.js
 var _dispose = Symbol.dispose ||= Symbol("dispose");
-var SPRAE = `\u2234`;
 var directive = {};
 var memo = /* @__PURE__ */ new WeakMap();
-function sprae(els, values) {
-  let state;
-  if (!els?.[Symbol.iterator])
-    els = [els];
-  for (let el of els) {
-    if (el?.children) {
-      if (memo.has(el)) {
-        Object.assign(memo.get(el), values);
-      } else {
-        state ||= store(values || {});
-        init(el, state);
-        if (!memo.has(el))
-          memo.set(el, state);
+function sprae(el, values) {
+  if (!el?.children)
+    return;
+  if (memo.has(el)) {
+    return Object.assign(memo.get(el), values);
+  }
+  const state = store(values || {}), disposes = [];
+  init(el);
+  if (!memo.has(el))
+    memo.set(el, state);
+  el[_dispose] = () => {
+    while (disposes.length)
+      disposes.pop()();
+    memo.delete(el);
+  };
+  return state;
+  function init(el2, parent = el2.parentNode) {
+    if (el2.attributes) {
+      for (let i = 0; i < el2.attributes.length; ) {
+        let attr2 = el2.attributes[i];
+        if (attr2.name[0] === ":") {
+          el2.removeAttribute(attr2.name);
+          let names = attr2.name.slice(1).split(":");
+          for (let name of names) {
+            let dir = directive[name] || directive.default;
+            let evaluate = (dir.parse || parse)(attr2.value, parse);
+            let dispose = dir(el2, evaluate, state, name);
+            if (dispose)
+              disposes.push(dispose);
+          }
+          if (memo.has(el2))
+            return disposes.push(el2[_dispose]);
+          if (el2.parentNode !== parent)
+            return;
+        } else
+          i++;
       }
     }
+    for (let child of [...el2.children])
+      init(child, el2);
   }
   ;
-  return state;
-}
-function init(el, state, parent = el.parentNode, effects = []) {
-  if (el.attributes) {
-    for (let i = 0; i < el.attributes.length; ) {
-      let attr2 = el.attributes[i];
-      if (attr2.name[0] === ":") {
-        el.removeAttribute(attr2.name);
-        let names = attr2.name.slice(1).split(":");
-        for (let name of names) {
-          let dir = directive[name] || directive.default;
-          let evaluate = (dir.parse || parse)(attr2.value, parse);
-          let dispose = dir(el, evaluate, state, name);
-          if (dispose)
-            effects.push(dispose);
-        }
-        if (memo.has(el))
-          return;
-        if (el.parentNode !== parent)
-          return;
-      } else
-        i++;
-    }
-  }
-  for (let child of [...el.children])
-    init(child, state, el);
-  el.classList?.add(SPRAE);
-  el[_dispose] = () => {
-    while (effects.length)
-      effects.pop()();
-    el.classList.remove(SPRAE);
-    memo.delete(el);
-    let els = el.getElementsByClassName(SPRAE);
-    while (els.length)
-      els[0][_dispose]?.();
-  };
 }
 var evalMemo = {};
 var parse = (expr, dir, fn) => {
@@ -309,12 +297,13 @@ directive.each = (tpl, [itemVar, idxVar, evaluate], state) => {
               return cur[idx];
             } },
             [idxVar]: { value: keys2 ? keys2[idx] : idx }
-          }), el = (tpl.content || tpl).cloneNode(true), els = tpl.content ? [...el.childNodes] : [el];
+          }), el = (tpl.content || tpl).cloneNode(true), frag = tpl.content ? { children: [...el.children], remove() {
+            this.children.map((el2) => el2.remove());
+          } } : el;
           holder.before(el);
-          sprae(els, scope);
+          sprae(frag, scope);
           ((cur[_signals] ||= [])[i] ||= {})[Symbol.dispose] = () => {
-            for (let el2 of els)
-              el2[Symbol.dispose](), el2.remove();
+            frag[Symbol.dispose](), frag.remove();
           };
         }
       }
