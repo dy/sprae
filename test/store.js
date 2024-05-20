@@ -408,3 +408,9 @@ t('store: reading length or signals', async t => {
   o[_signals], l[_signals]
   o[_change], l[_change]
 })
+
+t('store: concat', async t => {
+  let rows = store([1, 2])
+  is(rows, [1, 2])
+  is(rows.concat([3, 4]), [1, 2, 3, 4])
+})

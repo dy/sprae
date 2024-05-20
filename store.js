@@ -67,8 +67,8 @@ export function list(values) {
   // proxy conducts prop access to signals
   const state = new Proxy(signals, {
     get(_, key) {
-      if (key === _change) return _len
-      if (key === _signals) return signals
+      // covers Symbol.isConcatSpreadable etc.
+      if (typeof key === 'symbol') return key === _change ? _len : key === _signals ? signals : signals[key]
 
       // console.log('get', key)
       // if .length is read within .push/etc - peek signal to avoid recursive subscription
