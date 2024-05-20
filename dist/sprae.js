@@ -58,10 +58,8 @@ function list(values) {
   let _len = signal(values.length), signals = Array(values.length).fill(null);
   const state = new Proxy(signals, {
     get(_, key) {
-      if (key === _change)
-        return _len;
-      if (key === _signals)
-        return signals;
+      if (typeof key === "symbol")
+        return key === _change ? _len : key === _signals ? signals : signals[key];
       if (key === "length")
         return Array.prototype[lastProp] ? _len.peek() : _len.value;
       lastProp = key;
