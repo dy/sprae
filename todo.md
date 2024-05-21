@@ -140,9 +140,9 @@
   * [x] this also allows removing signals argument from store
 * [x] run benchmarks
 * [x] :each is too slow for appending 1000 items
+* [x] make each scope flat computed, not inheritance
 * [ ] fix todo mvc
 * [ ] fix wavearea
-* [ ] make each scope flat computed, not inheritance
 
 ## Backlog
 

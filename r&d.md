@@ -537,7 +537,7 @@
   - `:onclick.toggle="play"`
     ~ `:onclick.toggle="play()"`
 
-## [x] Should we introduce `@click` for short-notation events? -> let's keep `:onx` only ~~for raw events, `@x` for normal events~~
+## [x] Should we introduce `@click` for short-notation events? -> let's keep `:onx` ~~for raw events, `@x` for normal events~~
   + gives shorter code for majority of cases
   + separates event reaction from prop reaction
   + compatible with all frameworks (vue, alpine, lucia, lit)
@@ -992,7 +992,7 @@
   + we handle effect disposal in centralized way, not per-directive
 
 
-## [ ] What should we return from `sprae` call?
+## [x] What should we return from `sprae` call? -> we return reactive state
 
 1. ~~state signal~~
   - not clear what sort of signal is that
@@ -1081,7 +1081,7 @@
   + arrays don't need setters/getters
   + arrays don't usually have parent scopes
 
-## [ ] Can we use Object.create for :each scope?
+## [x] Can we use Object.create for :each scope? -> no, let's make it flat
 
 - We need `:ref="el"` to inject element instance per-item
   + We don't really need to create a separate scope for that, we can just preset ref only for subscope
@@ -1093,7 +1093,7 @@
 + It would allow us to get rid of `parent` in `store`, which is less static + dynamic trouble
 + `:scope` defines only particular local variables, but generally access to root scope is preserved
 
-### [ ] should we rename `:scope` to `:with` then, to avoid confusion?
+### [x] should we rename `:scope` to `:with` then, to avoid confusion? -> Yes, :with is flat, it's better
   + less confusion - doesn't create actual scope
   - bad remembrance of JS with
     +~ not necessarily the case
