@@ -1,6 +1,6 @@
 import sprae, { directive } from "../core.js";
 import store, { _change, _signals } from "../store.js";
-import { effect, untracked, computed } from '../signal.js';
+import { effect, untracked, computed, signal } from '../signal.js';
 
 
 export const _each = Symbol(":each");
@@ -64,7 +64,7 @@ directive.each = (tpl, [itemVar, idxVar, evaluate], state) => {
           // define local scope signals
           Object.assign(scope[_signals], state[_signals], {
             [itemVar]: computed(() => cur[idx]),
-            [idxVar]: computed(keys ? () => keys[idx] : () => idx)
+            [idxVar]: signal(keys ? keys[idx] : idx)
           });
 
           holder.before(el);
