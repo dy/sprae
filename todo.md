@@ -138,10 +138,11 @@
 * [x] ~~make :ref recognize strings/evaluables~~ no need, wait until needed, simpler the better, even effect is not needed
 * [x] with must not create inherited root scope, it's enough to overwrite signals
   * [x] this also allows removing signals argument from store
-* [ ] fix all examples
-  * [ ] :each is too slow for appending 1000 items
-    * the slowdown is caused by sprae constructor. Analyse which branch takes most time
-* [ ] run benchmarks
+* [x] run benchmarks
+* [x] :each is too slow for appending 1000 items
+* [ ] fix todo mvc
+* [ ] fix wavearea
+* [ ] make each scope flat computed, not inheritance
 
 ## Backlog
 

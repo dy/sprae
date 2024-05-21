@@ -1,5 +1,5 @@
 import sprae, { directive } from "../core.js";
-import { _change, _signals } from "../store.js";
+import store, { _change, _signals } from "../store.js";
 import { effect, untracked, computed } from '../signal.js';
 
 
@@ -54,15 +54,18 @@ directive.each = (tpl, [itemVar, idxVar, evaluate], state) => {
         for (; i < newl; i++) {
           cur[i] = newItems[i]
           let idx = i,
-            scope = Object.create(state, {
-              [itemVar]: { get() { return cur[idx] } },
-              [idxVar]: { value: keys ? keys[idx] : idx },
-            }),
+            scope = store({}),
             el = (tpl.content || tpl).cloneNode(true),
             frag = tpl.content ?
               // fake fragment to init sprae
               { children: [...el.children], remove() { this.children.map(el => el.remove()) } } :
               el;
+
+          // define local scope signals
+          Object.assign(scope[_signals], state[_signals], {
+            [itemVar]: computed(() => cur[idx]),
+            [idxVar]: computed(keys ? () => keys[idx] : () => idx)
+          });
 
           holder.before(el);
           sprae(frag, scope);
