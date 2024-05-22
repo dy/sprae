@@ -409,8 +409,16 @@ t('store: reading length or signals', async t => {
   o[_change], l[_change]
 })
 
-t('store: concat', async t => {
+t('store: array concat', async t => {
   let rows = store([1, 2])
   is(rows, [1, 2])
   is(rows.concat([3, 4]), [1, 2, 3, 4])
+})
+
+t('store: array subscribes to filtered', async t => {
+  let list = store([1, 2]), result
+  effect(() => result = list.filter(x => x > 1).length)
+  is(result, 1)
+  list.push(3)
+  is(result, 2)
 })
