@@ -4,7 +4,7 @@ import { signal, computed, effect, batch, untracked } from './signal.js'
 export const _signals = Symbol('signals'), _change = Symbol('length');
 
 // object store is not lazy
-export default function store(values) {
+export default function store(values, parent) {
   if (!values) return values
 
   // ignore existing state as argument
@@ -17,7 +17,7 @@ export default function store(values) {
   if (values.constructor !== Object) return values;
 
   // NOTE: if you decide to unlazy values, think about large arrays - init upfront can be costly
-  let signals = {}, _len = signal(Object.values(values).length)
+  let signals = { ...parent?.[_signals] }, _len = signal(Object.values(values).length)
 
   // proxy conducts prop access to signals
   const state = new Proxy(signals, {

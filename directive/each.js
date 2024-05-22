@@ -54,18 +54,15 @@ directive.each = (tpl, [itemVar, idxVar, evaluate], state) => {
         for (; i < newl; i++) {
           cur[i] = newItems[i]
           let idx = i,
-            scope = store({}),
+            scope = store({
+              [itemVar]: computed(() => cur[idx]),
+              [idxVar]: keys ? keys[idx] : idx
+            }, state),
             el = (tpl.content || tpl).cloneNode(true),
             frag = tpl.content ?
               // fake fragment to init sprae
               { children: [...el.children], remove() { this.children.map(el => el.remove()) } } :
               el;
-
-          // define local scope signals
-          Object.assign(scope[_signals], state[_signals], {
-            [itemVar]: computed(() => cur[idx]),
-            [idxVar]: signal(keys ? keys[idx] : idx)
-          });
 
           holder.before(el);
           sprae(frag, scope);
