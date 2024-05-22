@@ -286,14 +286,13 @@ directive.each = (tpl, [itemVar, idxVar, evaluate], state) => {
         }
         for (; i < newl; i++) {
           cur[i] = newItems[i];
-          let idx = i, scope = Object.create(state, {
-            [itemVar]: { get() {
-              return cur[idx];
-            } },
-            [idxVar]: { value: keys2 ? keys2[idx] : idx }
-          }), el = (tpl.content || tpl).cloneNode(true), frag = tpl.content ? { children: [...el.children], remove() {
+          let idx = i, scope = store({}), el = (tpl.content || tpl).cloneNode(true), frag = tpl.content ? { children: [...el.children], remove() {
             this.children.map((el2) => el2.remove());
           } } : el;
+          Object.assign(scope[_signals], state[_signals], {
+            [itemVar]: computed(() => cur[idx]),
+            [idxVar]: signal(keys2 ? keys2[idx] : idx)
+          });
           holder.before(el);
           sprae(frag, scope);
           ((cur[_signals] ||= [])[i] ||= {})[Symbol.dispose] = () => {
@@ -492,7 +491,7 @@ var ipol = (v, state) => {
 
 // directive/ref.js
 directive.ref = (el, expr, state) => {
-  Object.defineProperty(state, ipol(expr, state), { value: el });
+  state[_signals][ipol(expr, state)] = signal(el);
 };
 directive.ref.parse = (expr) => expr;
 
