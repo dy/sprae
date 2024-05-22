@@ -1,4 +1,4 @@
-import { directive } from "../core.js";
+import { directive, err } from "../core.js";
 import { effect } from "../signal.js";
 
 // set generic property directive
@@ -20,7 +20,7 @@ directive.default = (el, evaluate, state, name) => {
 
 // bind event to a target
 const on = (el, e, fn = () => { }) => {
-  const ctx = { evt: "", target: el, test: () => true };
+  const ctx = { evt: '', target: el, test: () => true };
 
   // onevt.debounce-108 -> evt.debounce-108
   ctx.evt = e.replace(
@@ -33,8 +33,11 @@ const on = (el, e, fn = () => { }) => {
 
   if (defer) fn = defer(fn);
 
-  const cb = (e) =>
-    test(e) && (stop && e.stopPropagation(), prevent && e.preventDefault(), fn.call(target, e));
+  const cb = (e) => {
+    try {
+      test(e) && (stop && e.stopPropagation(), prevent && e.preventDefault(), fn.call(target, e))
+    } catch (error) { err(error, `:on${evt}`, fn) }
+  };
 
   target.addEventListener(evt, cb, opts);
 

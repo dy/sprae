@@ -76,11 +76,16 @@ const parse = (expr, dir, fn) => {
   if (fn = evalMemo[expr = expr.trim()]) return fn
 
   // static-time errors
-  try { fn = compile(expr); }
-  catch (e) { throw Object.assign(e, { message: `∴ ${e.message}\n\n${dir}${expr ? `="${expr}"\n\n` : ""}`, expr }) }
+  try { fn = compile(expr) }
+  catch (e) { err(e, dir, expr) }
 
   // runtime errors
   return evalMemo[expr] = fn
+}
+
+// wrapped call
+export let err = (e, dir, expr = '') => {
+  throw Object.assign(e, { message: `∴ ${e.message}\n\n${dir}${expr ? `="${expr}"\n\n` : ""}`, expr })
 }
 
 export let compile
