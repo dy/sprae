@@ -50,7 +50,7 @@ export default function store(values, parent) {
   return state
 }
 
-// length mutator methods
+// length changing methods
 const mut = { push: 1, pop: 1, shift: 1, unshift: 1, splice: 1 }
 
 // array store - signals are lazy since arrays can be very large & expensive
@@ -74,8 +74,6 @@ export function list(values) {
 
       // console.log('get', key)
       // if .length is read within .push/etc - peek signal to avoid recursive subscription
-      // FIXME: is there a better way to maybe to detect writing .length by an array method and ignoring reactions?
-      // maybe somethign via batching?
       if (key === 'length') return mut[lastProp] ? _len.peek() : _len.value;
 
       lastProp = key;

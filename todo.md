@@ -144,7 +144,7 @@
 * [x] fix todo mvc
   * [x] `todos.filter(xxx).length` - should be subscribable
   * [x] test `item = {...item}`
-* [ ] try debouncing / batching array.length writes, including via mutator methods like .push, so that we avoid cycles & tracking last prop
+* [x] ~~try debouncing / batching array.length writes~~ -> doesn't seem possible
 * [ ] fix wavearea
 
 ## Backlog
