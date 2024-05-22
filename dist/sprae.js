@@ -51,6 +51,7 @@ function store(values, parent) {
   }
   return state;
 }
+var mut = { push: 1, pop: 1, shift: 1, unshift: 1, splice: 1 };
 function list(values) {
   let lastProp;
   if (values[_signals])
@@ -61,7 +62,7 @@ function list(values) {
       if (typeof key === "symbol")
         return key === _change ? _len : key === _signals ? signals : signals[key];
       if (key === "length")
-        return Array.prototype[lastProp] ? _len.peek() : _len.value;
+        return mut[lastProp] ? _len.peek() : _len.value;
       lastProp = key;
       if (signals[key])
         return signals[key].valueOf();
@@ -172,13 +173,16 @@ var parse = (expr, dir, fn) => {
   try {
     fn = compile(expr);
   } catch (e) {
-    throw Object.assign(e, { message: `\u2234 ${e.message}
+    err(e, dir, expr);
+  }
+  return evalMemo[expr] = fn;
+};
+var err = (e, dir, expr = "") => {
+  throw Object.assign(e, { message: `\u2234 ${e.message}
 
 ${dir}${expr ? `="${expr}"
 
 ` : ""}`, expr });
-  }
-  return evalMemo[expr] = fn;
 };
 var compile;
 sprae.use = (s) => {
@@ -287,7 +291,7 @@ directive.each = (tpl, [itemVar, idxVar, evaluate], state) => {
         for (; i < newl; i++) {
           cur[i] = newItems[i];
           let idx = i, scope = store({
-            [itemVar]: computed(() => cur[idx]),
+            [itemVar]: cur[_signals]?.[idx] || cur[idx],
             [idxVar]: keys2 ? keys2[idx] : idx
           }, state), el = (tpl.content || tpl).cloneNode(true), frag = tpl.content ? { children: [...el.children], remove() {
             this.children.map((el2) => el2.remove());
@@ -375,7 +379,13 @@ var on = (el, e, fn = () => {
   const { evt, target, test, defer, stop, prevent, ...opts } = ctx;
   if (defer)
     fn = defer(fn);
-  const cb = (e2) => test(e2) && (stop && e2.stopPropagation(), prevent && e2.preventDefault(), fn.call(target, e2));
+  const cb = (e2) => {
+    try {
+      test(e2) && (stop && e2.stopPropagation(), prevent && e2.preventDefault(), fn.call(target, e2));
+    } catch (error) {
+      err(error, `:on${evt}`, fn);
+    }
+  };
   target.addEventListener(evt, cb, opts);
   return () => target.removeEventListener(evt, cb, opts);
 };
