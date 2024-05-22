@@ -21,7 +21,7 @@ function use(s) {
 // store.js
 var _signals = Symbol("signals");
 var _change = Symbol("length");
-function store(values) {
+function store(values, parent) {
   if (!values)
     return values;
   if (values[_signals])
@@ -30,7 +30,7 @@ function store(values) {
     return list(values);
   if (values.constructor !== Object)
     return values;
-  let signals = {}, _len = signal(Object.values(values).length);
+  let signals = { ...parent?.[_signals] }, _len = signal(Object.values(values).length);
   const state = new Proxy(signals, {
     get: (_, key) => key === _change ? _len : key === _signals ? signals : signals[key]?.valueOf(),
     set: (_, key, v, s) => (s = signals[key], set(signals, key, v), s || ++_len.value),
@@ -286,13 +286,12 @@ directive.each = (tpl, [itemVar, idxVar, evaluate], state) => {
         }
         for (; i < newl; i++) {
           cur[i] = newItems[i];
-          let idx = i, scope = store({}), el = (tpl.content || tpl).cloneNode(true), frag = tpl.content ? { children: [...el.children], remove() {
+          let idx = i, scope = store({
+            [itemVar]: computed(() => cur[idx]),
+            [idxVar]: keys2 ? keys2[idx] : idx
+          }, state), el = (tpl.content || tpl).cloneNode(true), frag = tpl.content ? { children: [...el.children], remove() {
             this.children.map((el2) => el2.remove());
           } } : el;
-          Object.assign(scope[_signals], state[_signals], {
-            [itemVar]: computed(() => cur[idx]),
-            [idxVar]: signal(keys2 ? keys2[idx] : idx)
-          });
           holder.before(el);
           sprae(frag, scope);
           ((cur[_signals] ||= [])[i] ||= {})[Symbol.dispose] = () => {
@@ -491,7 +490,7 @@ var ipol = (v, state) => {
 
 // directive/ref.js
 directive.ref = (el, expr, state) => {
-  state[_signals][ipol(expr, state)] = signal(el);
+  state[ipol(expr, state)] = el;
 };
 directive.ref.parse = (expr) => expr;
 
@@ -500,15 +499,7 @@ directive.with = (el, evaluate, rootState) => {
   let state;
   return effect(() => {
     let values = evaluate(rootState);
-    if (!state) {
-      state = store({});
-      Object.assign(state[_signals], rootState[_signals]);
-      for (let key in values)
-        state[_signals][key] = null, state[key] = values[key];
-      sprae(el, state);
-    } else {
-      Object.assign(state, values);
-    }
+    sprae(el, state ? values : state = store(values, rootState));
   });
 };
 
