@@ -1029,6 +1029,14 @@ test('each: batched .length updates', async t => {
   is(c, 2)
 })
 
+test('each: rewrite item', async t => {
+  let el = h`<a><x :each="i in items" :text="i" :onx="e=>i++"/></a>`
+  let state = sprae(el, { items: [1, 2, 3] })
+  is(el.innerHTML, `<x>1</x><x>2</x><x>3</x>`)
+  el.childNodes[1].dispatchEvent(new window.Event("x"))
+  is(el.innerHTML, `<x>1</x><x>3</x><x>3</x>`)
+})
+
 
 test("with: inline assign", async () => {
   let el = h`<x :with="{foo:'bar'}"><y :text="foo + baz"></y></x>`;

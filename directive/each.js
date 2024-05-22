@@ -1,6 +1,6 @@
 import sprae, { directive } from "../core.js";
 import store, { _change, _signals } from "../store.js";
-import { effect, untracked, computed, signal } from '../signal.js';
+import { effect, untracked, computed } from '../signal.js';
 
 
 export const _each = Symbol(":each");
@@ -55,7 +55,9 @@ directive.each = (tpl, [itemVar, idxVar, evaluate], state) => {
           cur[i] = newItems[i]
           let idx = i,
             scope = store({
-              [itemVar]: computed(() => cur[idx]),
+              // [itemVar]: cur[_signals]?.[idx] || cur[idx],
+              get [itemVar]() { return cur[idx] },
+              set [itemVar](item) { cur[idx] = item },
               [idxVar]: keys ? keys[idx] : idx
             }, state),
             el = (tpl.content || tpl).cloneNode(true),

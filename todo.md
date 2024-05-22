@@ -141,7 +141,10 @@
 * [x] run benchmarks
 * [x] :each is too slow for appending 1000 items
 * [x] make each scope flat computed, not inheritance
-* [ ] fix todo mvc
+* [x] fix todo mvc
+  * [x] `todos.filter(xxx).length` - should be subscribable
+  * [x] test `item = {...item}`
+* [ ] try debouncing / batching array.length writes, including via mutator methods like .push, so that we avoid cycles & tracking last prop
 * [ ] fix wavearea
 
 ## Backlog
