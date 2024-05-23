@@ -197,9 +197,9 @@ Attach event(s) listener with optional modifiers.
 * `.window`, `.document`, `.outside`, `.self` – specify event target.
 * `.throttle-<ms>`, `.debounce-<ms>` – defer function call with one of the methods.
 * `.<key>` – filtered by [`event.key`](https://developer.mozilla.org/en-US/docs/Web/API/UI_Events/Keyboard_event_key_values):
-  * `.ctrl`, `.shift`, `.alt`, `.meta`, `.enter`, `.esc`, `.tab`, `.space`, `.up`, `.right`, `.down`, `.left` – direct keys
+  * `.ctrl`, `.shift`, `.alt`, `.meta`, `.enter`, `.esc`, `.tab`, `.space` – direct key
   * `.delete` – delete or backspace
-  * `.arrow` – up, right, down or left
+  * `.arrow` – up, right, down or left arrow
   * `.digit` – 0-9
   * `.letter` – A-Z, a-z or any [unicode letter](https://unicode.org/reports/tr18/#General_Category_Property)
   * `.char` – any non-space character
