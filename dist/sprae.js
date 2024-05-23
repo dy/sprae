@@ -356,22 +356,17 @@ directive.if = (ifEl, evaluate, state) => {
 };
 
 // directive/default.js
-directive.default = (el, evaluate, state, name) => {
-  let evt = name.startsWith("on") && name.slice(2), off;
-  return effect(
-    evt ? () => (off?.(), off = on(el, evt, evaluate(state))) : () => {
+directive.default = (target, evaluate, state, name) => {
+  if (!name.startsWith("on"))
+    return effect(() => {
       let value = evaluate(state);
       if (name)
-        attr(el, name, ipol(value, state));
+        attr(target, name, ipol(value, state));
       else
         for (let key in value)
-          attr(el, dashcase(key), ipol(value[key], state));
-    }
-  );
-};
-var on = (target, evt, fn = () => {
-}) => {
-  const ctxs = evt.split("..").map((e) => {
+          attr(target, dashcase(key), ipol(value[key], state));
+    });
+  const ctxs = name.split("..").map((e) => {
     let ctx = { evt: "", target, test: () => true };
     ctx.evt = (e.startsWith("on") ? e.slice(2) : e).replace(
       /\.(\w+)?-?([-\w]+)?/g,
@@ -380,33 +375,24 @@ var on = (target, evt, fn = () => {
     return ctx;
   });
   if (ctxs.length == 1)
-    return addListener(fn, ctxs[0]);
-  const nextListener = (fn2, idx = 0) => {
-    let off;
-    return off = addListener((e) => {
-      if (idx)
-        off();
-      let nextFn = fn2.call(target, e);
-      if (typeof nextFn !== "function")
-        nextFn = () => {
-        };
-      if (idx + 1 < ctxs.length)
-        nextListener(nextFn, idx + 1);
-    }, ctxs[idx]);
+    return effect(() => addListener(evaluate(state), ctxs[0]));
+  let startFn, nextFn, off, idx = 0;
+  const nextListener = (fn) => {
+    off = addListener((e) => (off(), nextFn = fn?.(e), (idx = ++idx % ctxs.length) ? nextListener(nextFn) : startFn && nextListener(startFn)), ctxs[idx]);
   };
-  return nextListener(fn);
-  function addListener(fn2, { evt: evt2, target: target2, test, defer, stop, prevent, ...opts }) {
+  return effect(() => (startFn = evaluate(state), !off && nextListener(startFn), () => startFn = null));
+  function addListener(fn, { evt, target: target2, test, defer, stop, prevent, immediate, ...opts }) {
     if (defer)
-      fn2 = defer(fn2);
+      fn = defer(fn);
     const cb = (e) => {
       try {
-        test(e) && (stop && e.stopPropagation(), prevent && e.preventDefault(), fn2.call(target2, e));
+        test(e) && (stop && (immediate ? e.stopImmediatePropagation() : e.stopPropagation()), prevent && e.preventDefault(), fn?.(e));
       } catch (error) {
-        err(error, `:on${evt2}`, fn2);
+        err(error, `:on${evt}`, fn);
       }
     };
-    target2.addEventListener(evt2, cb, opts);
-    return () => target2.removeEventListener(evt2, cb, opts);
+    target2.addEventListener(evt, cb, opts);
+    return () => target2.removeEventListener(evt, cb, opts);
   }
   ;
 };
@@ -416,6 +402,9 @@ var mods = {
   },
   stop(ctx) {
     ctx.stop = true;
+  },
+  immediate(ctx) {
+    ctx.immediate = true;
   },
   once(ctx) {
     ctx.once = true;
@@ -454,15 +443,18 @@ var mods = {
   alt: (_, ...param) => (e) => keys.alt(e) && param.every((p) => keys[p] ? keys[p](e) : e.key === p),
   meta: (_, ...param) => (e) => keys.meta(e) && param.every((p) => keys[p] ? keys[p](e) : e.key === p),
   arrow: () => keys.arrow,
+  up: () => keys.up,
+  left: () => keys.left,
+  right: () => keys.right,
+  down: () => keys.down,
   enter: () => keys.enter,
-  escape: () => keys.escape,
+  esc: () => keys.esc,
   tab: () => keys.tab,
   space: () => keys.space,
-  backspace: () => keys.backspace,
   delete: () => keys.delete,
   digit: () => keys.digit,
   letter: () => keys.letter,
-  character: () => keys.character
+  char: () => keys.char
 };
 var keys = {
   ctrl: (e) => e.ctrlKey || e.key === "Control" || e.key === "Ctrl",
@@ -470,15 +462,18 @@ var keys = {
   alt: (e) => e.altKey || e.key === "Alt",
   meta: (e) => e.metaKey || e.key === "Meta" || e.key === "Command",
   arrow: (e) => e.key.startsWith("Arrow"),
+  up: (e) => e.key === "ArrowUp",
+  left: (e) => e.key === "ArrowLeft",
+  right: (e) => e.key === "ArrowRight",
+  down: (e) => e.key === "ArrowDown",
   enter: (e) => e.key === "Enter",
-  escape: (e) => e.key.startsWith("Esc"),
+  esc: (e) => e.key.startsWith("Esc"),
   tab: (e) => e.key === "Tab",
   space: (e) => e.key === "\xA0" || e.key === "Space" || e.key === " ",
-  backspace: (e) => e.key === "Backspace",
-  delete: (e) => e.key === "Delete",
+  delete: (e) => e.key === "Delete" || e.key === "Backspace",
   digit: (e) => /^\d$/.test(e.key),
   letter: (e) => /^[a-zA-Z]$/.test(e.key),
-  character: (e) => /^\S$/.test(e.key)
+  char: (e) => /^\S$/.test(e.key)
 };
 var attr = (el, name, v) => {
   if (v == null || v === false)

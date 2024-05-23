@@ -35,7 +35,7 @@ directive.default = (target, evaluate, state, name) => {
   return effect(() => (
     startFn = evaluate(state),
     !off && nextListener(startFn),
-    () => startFn = null // nil start fn to autodispose chain
+    () => startFn = null // nil startFn to autodispose chain
   ))
 
   // add listener with the context
