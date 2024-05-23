@@ -19,30 +19,47 @@ directive.default = (el, evaluate, state, name) => {
 
 
 // bind event to a target
-const on = (el, e, fn = () => { }) => {
-  const ctx = { evt: '', target: el, test: () => true };
+// NOTE: if you decide to remove chain of events, please ask yourself - are you not confident again?
+// did you look at someone else again? That's unique selling feature of sprae, don't diminish your own value.
+const on = (target, evt, fn = () => { }) => {
+  // ona..onb
+  const ctxs = evt.split('..').map(e => {
+    let ctx = { evt: '', target, test: () => true };
+    ctx.evt = (e.startsWith('on') ? e.slice(2) : e).replace(/\.(\w+)?-?([-\w]+)?/g,
+      (match, mod, param = '') => (ctx.test = mods[mod]?.(ctx, ...param.split('-')) || ctx.test, '')
+    );
+    return ctx;
+  });
 
-  // onevt.debounce-108 -> evt.debounce-108
-  ctx.evt = e.replace(
-    /\.(\w+)?-?([-\w]+)?/g,
-    (match, mod, param = "") => ((ctx.test = mods[mod]?.(ctx, ...param.split("-")) || ctx.test), ""),
-  );
+  // single event bind
+  if (ctxs.length == 1) return addListener(fn, ctxs[0])
+
+  // events chain cycler
+  const nextListener = (fn, idx = 0) => {
+    let off
+    return off = addListener((e) => {
+      if (idx) off(); // don't remove entry listener - we must keep chain entry always open
+      let nextFn = fn.call(target, e)
+      if (typeof nextFn !== 'function') nextFn = () => { }
+      if (idx + 1 < ctxs.length) nextListener(nextFn, idx + 1);
+    }, ctxs[idx]);
+  }
+
+  return nextListener(fn)
 
   // add listener applying the context
-  const { evt, target, test, defer, stop, prevent, ...opts } = ctx;
+  function addListener(fn, { evt, target, test, defer, stop, prevent, ...opts }) {
+    if (defer) fn = defer(fn)
 
-  if (defer) fn = defer(fn);
+    const cb = (e) => {
+      try {
+        test(e) && (stop && e.stopPropagation(), prevent && e.preventDefault(), fn.call(target, e))
+      } catch (error) { err(error, `:on${evt}`, fn) }
+    };
 
-  const cb = (e) => {
-    try {
-      test(e) && (stop && e.stopPropagation(), prevent && e.preventDefault(), fn.call(target, e))
-    } catch (error) { err(error, `:on${evt}`, fn) }
+    target.addEventListener(evt, cb, opts)
+    return () => target.removeEventListener(evt, cb, opts)
   };
-
-  target.addEventListener(evt, cb, opts);
-
-  // return off
-  return () => target.removeEventListener(evt, cb, opts);
 };
 
 // event modifiers
