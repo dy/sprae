@@ -125,7 +125,7 @@ Set value of an input, textarea or select.
 <input type="checkbox" :value="checked" />
 ```
 
-#### `:[prop]="value"`, `:="values"`
+#### `:<prop>="value"`, `:="values"`
 
 Set any attribute(s).
 
@@ -173,7 +173,7 @@ Run effect, not changing any attribute.
 <div :fx="id = setInterval(tick, interval), () => clearInterval(tick)" />
 ```
 
-#### `:on[event]="handler"`
+#### `:on<event>="handler"`, `:on<in>..on<out>="handler"`
 
 Attach event(s) listener with optional modifiers.
 
@@ -183,7 +183,7 @@ Attach event(s) listener with optional modifiers.
 <!-- multiple events -->
 <input :value="text" :oninput:onchange="e => text = e.target.value">
 
-<!-- sequence -->
+<!-- sequence of events -->
 <button :onfocus..onblur="e => ( handleFocus(), e => handleBlur())">
 
 <!-- modifiers -->
@@ -193,11 +193,17 @@ Attach event(s) listener with optional modifiers.
 ##### Modifiers:
 
 * `.once`, `.passive`, `.capture` – listener [options](https://developer.mozilla.org/en-US/docs/Web/API/EventTarget/addEventListener#options).
-* `.prevent`, `.stop` + `.immediate` – prevent default or stop propagation.
+* `.prevent`, `.stop` (`.immediate`) – prevent default or stop (immediate) propagation.
 * `.window`, `.document`, `.outside`, `.self` – specify event target.
 * `.throttle-<ms>`, `.debounce-<ms>` – defer function call with one of the methods.
-* `.ctrl`, `.shift`, `.alt`, `.meta`, `.enter`, `.esc`, `.tab`, `.space`, `.delete` (+backspace), `.up`, `.right`, `.down`, `.left`, `.arrow` (up/right/down/left), `.digit` (0-9), `.letter` (a-z), `.char` (non-space) – filter by [`event.key`](https://developer.mozilla.org/en-US/docs/Web/API/UI_Events/Keyboard_event_key_values).
-* `.ctrl-<key>, .alt-<key>, .meta-<key>, .shift-<key>` – key combinations, eg. `.ctrl-alt-delete` or `.meta-x`.
+* `.<key>` – filter by [`event.key`](https://developer.mozilla.org/en-US/docs/Web/API/UI_Events/Keyboard_event_key_values).
+  * `.ctrl`, `.shift`, `.alt`, `.meta`, `.enter`, `.esc`, `.tab`, `.space`, `.up`, `.right`, `.down`, `.left` – direct keys
+  * `.delete` – delete or backspace
+  * `.arrow` – up, right, down or left
+  * `.digit` – 0-9
+  * `.letter` – a-z, A-Z
+  * `.char` – any non-space character
+  * `.ctrl-<key>, .alt-<key>, .meta-<key>, .shift-<key>` – key combinations, eg. `.ctrl-alt-delete` or `.meta-x`.
 * `.*` – any other modifier has no effect, but allows binding multiple handlers to same event (like jQuery event classes).
 
 #### `:html="element"` 🔌
