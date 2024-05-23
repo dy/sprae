@@ -369,25 +369,46 @@ directive.default = (el, evaluate, state, name) => {
     }
   );
 };
-var on = (el, e, fn = () => {
+var on = (target, evt, fn = () => {
 }) => {
-  const ctx = { evt: "", target: el, test: () => true };
-  ctx.evt = e.replace(
-    /\.(\w+)?-?([-\w]+)?/g,
-    (match, mod, param = "") => (ctx.test = mods[mod]?.(ctx, ...param.split("-")) || ctx.test, "")
-  );
-  const { evt, target, test, defer, stop, prevent, ...opts } = ctx;
-  if (defer)
-    fn = defer(fn);
-  const cb = (e2) => {
-    try {
-      test(e2) && (stop && e2.stopPropagation(), prevent && e2.preventDefault(), fn.call(target, e2));
-    } catch (error) {
-      err(error, `:on${evt}`, fn);
-    }
+  const ctxs = evt.split("..").map((e) => {
+    let ctx = { evt: "", target, test: () => true };
+    ctx.evt = (e.startsWith("on") ? e.slice(2) : e).replace(
+      /\.(\w+)?-?([-\w]+)?/g,
+      (match, mod, param = "") => (ctx.test = mods[mod]?.(ctx, ...param.split("-")) || ctx.test, "")
+    );
+    return ctx;
+  });
+  if (ctxs.length == 1)
+    return addListener(fn, ctxs[0]);
+  const nextListener = (fn2, idx = 0) => {
+    let off;
+    return off = addListener((e) => {
+      if (idx)
+        off();
+      let nextFn = fn2.call(target, e);
+      if (typeof nextFn !== "function")
+        nextFn = () => {
+        };
+      if (idx + 1 < ctxs.length)
+        nextListener(nextFn, idx + 1);
+    }, ctxs[idx]);
   };
-  target.addEventListener(evt, cb, opts);
-  return () => target.removeEventListener(evt, cb, opts);
+  return nextListener(fn);
+  function addListener(fn2, { evt: evt2, target: target2, test, defer, stop, prevent, ...opts }) {
+    if (defer)
+      fn2 = defer(fn2);
+    const cb = (e) => {
+      try {
+        test(e) && (stop && e.stopPropagation(), prevent && e.preventDefault(), fn2.call(target2, e));
+      } catch (error) {
+        err(error, `:on${evt2}`, fn2);
+      }
+    };
+    target2.addEventListener(evt2, cb, opts);
+    return () => target2.removeEventListener(evt2, cb, opts);
+  }
+  ;
 };
 var mods = {
   prevent(ctx) {
