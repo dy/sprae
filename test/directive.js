@@ -1448,12 +1448,44 @@ test('events: in-out events', e => {
   is(state.log, ['mousedown', 'mouseup'])
 })
 
+test('events: toggle', async e => {
+  let el = h`<x :onx..onx="e=>(log.push(1),e=>log.push(2))"></x>`
+  let state = sprae(el, { log: [] })
+  console.log('dispatch')
+  el.dispatchEvent(new window.KeyboardEvent('x'));
+  is(state.log, [1])
+  console.log('dispatch')
+  el.dispatchEvent(new window.KeyboardEvent('x'));
+  is(state.log, [1, 2])
+  console.log('dispatch')
+  el.dispatchEvent(new window.KeyboardEvent('x'));
+  is(state.log, [1, 2, 1])
+  console.log('dispatch')
+  el.dispatchEvent(new window.KeyboardEvent('x'));
+  is(state.log, [1, 2, 1, 2])
+})
 
-test('events: in-out side-effects', e => {
+test('events: chain of events', e => {
+  let el = h`<div :onmousedown..onmousemove..onmouseup="e=>(log.push(e.type),e=>(log.push(e.type),e=>log.push(e.type)))"></div>`
+  let state = sprae(el, { log: [] })
+
+  el.dispatchEvent(new window.Event('mousedown'));
+  is(state.log, ['mousedown'])
+  el.dispatchEvent(new window.Event('mousemove'));
+  is(state.log, ['mousedown', 'mousemove'])
+  el.dispatchEvent(new window.Event('mouseup'));
+  is(state.log, ['mousedown', 'mousemove', 'mouseup'])
+  el.dispatchEvent(new window.Event('mouseup'));
+  is(state.log, ['mousedown', 'mousemove', 'mouseup'])
+  el.dispatchEvent(new window.Event('mousedown'));
+  is(state.log, ['mousedown', 'mousemove', 'mouseup', 'mousedown'])
+})
+
+test('events: parallel chains', e => {
   let log = []
 
   // 1. skip in event and do directly out
-  let el = h`<x :onin..onout="io"></x>`
+  let el = h`<x :onin.1.stop.immediate..onout.stop.immediate="io" :onin.2.stop.immediate..onout.stop.immediate="io"></x>`
   sprae(el, {
     io(e) {
       log.push(e.type)
@@ -1476,28 +1508,13 @@ test('events: in-out side-effects', e => {
   el.dispatchEvent(new window.Event('in'));
   is(log, ['in', 'out', 'in', 'in'])
   el.dispatchEvent(new window.Event('out'));
-  is(log, ['in', 'out', 'in', 'in', 'out', 'out'])
+  is(log, ['in', 'out', 'in', 'in', 'out'])
   el.dispatchEvent(new window.Event('out'));
   is(log, ['in', 'out', 'in', 'in', 'out', 'out'])
 })
 
-test('events: chain of events', e => {
-  let el = h`<div :onmousedown..onmousemove..onmouseup="e=>(log.push(e.type),e=>(log.push(e.type),e=>log.push(e.type)))"></div>`
-  let state = sprae(el, { log: [] })
-
-  el.dispatchEvent(new window.Event('mousedown'));
-  is(state.log, ['mousedown'])
-  el.dispatchEvent(new window.Event('mousemove'));
-  is(state.log, ['mousedown', 'mousemove'])
-  el.dispatchEvent(new window.Event('mouseup'));
-  is(state.log, ['mousedown', 'mousemove', 'mouseup'])
-  el.dispatchEvent(new window.Event('mouseup'));
-  is(state.log, ['mousedown', 'mousemove', 'mouseup'])
-  el.dispatchEvent(new window.Event('mousedown'));
-  is(state.log, ['mousedown', 'mousemove', 'mouseup', 'mousedown'])
-})
-
-test('events: parallel chains', e => {
+test.skip('events: parallel chains', e => {
+  // NOTE: covered above
   let el = h`<div :onx..ony..onz="e=>('x',log.push(e.type),e=>('y',log.push(e.type),e=>('z',log.push(e.type))))"></div>`
   let state = sprae(el, { log: [] })
 
@@ -1537,9 +1554,9 @@ test('events: state changes between chain of events', async e => {
   is(log, ['x1'])
   // console.log('xx')
   // NOTE: state update registers new chain listener before finishing prev chain
-  // el.dispatchEvent(new window.Event('x'));
-  // el.dispatchEvent(new window.Event('x'));
-  // is(log, [1])
+  el.dispatchEvent(new window.Event('x'));
+  el.dispatchEvent(new window.Event('x'));
+  is(log, ['x1'])
   console.log('emit y, y')
   el.dispatchEvent(new window.Event('y'));
   el.dispatchEvent(new window.Event('y'));
@@ -1552,7 +1569,6 @@ test('events: state changes between chain of events', async e => {
   el.dispatchEvent(new window.Event('y'));
   is(log, ['x1', 'y1', 'x2', 'y2'])
 })
-
 
 test('events: modifiers chain', async e => {
   let el = h`<x :onkeydown.letter..onkeyup.letter="e=>(log.push(e.key),(e)=>log.push(e.key))"></x>`

@@ -2,28 +2,20 @@ import { directive, err } from "../core.js";
 import { effect } from "../signal.js";
 
 // set generic property directive
-directive.default = (el, evaluate, state, name) => {
-  let evt = name.startsWith("on") && name.slice(2), off
-  return effect(
-    evt ?
-      () => (
-        off?.(), // intermediate teardown
-        off = on(el, evt, evaluate(state))
-      ) :
-      () => {
-        let value = evaluate(state);
-        if (name) attr(el, name, ipol(value, state))
-        else for (let key in value) attr(el, dashcase(key), ipol(value[key], state));
-      });
-};
+directive.default = (target, evaluate, state, name) => {
+  // simple prop
+  if (!name.startsWith('on')) return effect(
+    () => {
+      let value = evaluate(state);
+      if (name) attr(target, name, ipol(value, state))
+      else for (let key in value) attr(target, dashcase(key), ipol(value[key], state));
+    });
 
-
-// bind event to a target
-// NOTE: if you decide to remove chain of events, please ask yourself - are you not confident again?
-// did you look at someone else again? That's unique selling feature of sprae, don't diminish your own value.
-const on = (target, evt, fn = () => { }) => {
+  // bind event to a target
+  // NOTE: if you decide to remove chain of events, please ask yourself - are you not confident again?
+  // did you look at someone else again? That's unique selling feature of sprae, don't diminish your own value.
   // ona..onb
-  const ctxs = evt.split('..').map(e => {
+  const ctxs = name.split('..').map(e => {
     let ctx = { evt: '', target, test: () => true };
     ctx.evt = (e.startsWith('on') ? e.slice(2) : e).replace(/\.(\w+)?-?([-\w]+)?/g,
       (match, mod, param = '') => (ctx.test = mods[mod]?.(ctx, ...param.split('-')) || ctx.test, '')
@@ -31,35 +23,39 @@ const on = (target, evt, fn = () => { }) => {
     return ctx;
   });
 
-  // single event bind
-  if (ctxs.length == 1) return addListener(fn, ctxs[0])
+  // FIXME: generalize pool of planned events to avoid this condition
+  // single event
+  if (ctxs.length == 1) return effect(() => addListener(evaluate(state), ctxs[0]))
 
-  // events chain cycler
+  // sequence of events
+  let startFn = evaluate(state), off
   const nextListener = (fn, idx = 0) => {
-    let off
-    return off = addListener((e) => {
-      if (idx) off(); // don't remove entry listener - we must keep chain entry always open
-      let nextFn = fn.call(target, e)
-      if (typeof nextFn !== 'function') nextFn = () => { }
-      if (idx + 1 < ctxs.length) nextListener(nextFn, idx + 1);
+    off = addListener((e) => {
+      off()
+      let nextFn = fn?.(e)
+      if (idx + 1 < ctxs.length) nextListener(nextFn, idx + 1)
+      else console.log('reset'), nextListener(startFn)
     }, ctxs[idx]);
   }
+  nextListener(startFn)
 
-  return nextListener(fn)
+  return effect(() => (console.log('fx'), startFn = evaluate(state), null))
 
-  // add listener applying the context
-  function addListener(fn, { evt, target, test, defer, stop, prevent, ...opts }) {
+
+  // add listener with the context
+  function addListener(fn, { evt, target, test, defer, stop, prevent, immediate, ...opts }) {
     if (defer) fn = defer(fn)
 
     const cb = (e) => {
       try {
-        test(e) && (stop && e.stopPropagation(), prevent && e.preventDefault(), fn.call(target, e))
+        test(e) && (stop && (immediate ? e.stopImmediatePropagation() : e.stopPropagation()), prevent && e.preventDefault(), fn?.(e))
       } catch (error) { err(error, `:on${evt}`, fn) }
     };
 
     target.addEventListener(evt, cb, opts)
     return () => target.removeEventListener(evt, cb, opts)
   };
+
 };
 
 // event modifiers
@@ -67,6 +63,7 @@ const mods = {
   // actions
   prevent(ctx) { ctx.prevent = true; },
   stop(ctx) { ctx.stop = true; },
+  immediate(ctx) { ctx.immediate = true; },
 
   // options
   once(ctx) { ctx.once = true; },
@@ -96,15 +93,18 @@ const mods = {
   alt: (_, ...param) => (e) => keys.alt(e) && param.every((p) => (keys[p] ? keys[p](e) : e.key === p)),
   meta: (_, ...param) => (e) => keys.meta(e) && param.every((p) => (keys[p] ? keys[p](e) : e.key === p)),
   arrow: () => keys.arrow,
+  up: () => keys.up,
+  left: () => keys.left,
+  right: () => keys.right,
+  down: () => keys.down,
   enter: () => keys.enter,
-  escape: () => keys.escape,
+  esc: () => keys.esc,
   tab: () => keys.tab,
   space: () => keys.space,
-  backspace: () => keys.backspace,
   delete: () => keys.delete,
   digit: () => keys.digit,
   letter: () => keys.letter,
-  character: () => keys.character,
+  char: () => keys.char,
 };
 
 // key testers
@@ -114,15 +114,18 @@ const keys = {
   alt: (e) => e.altKey || e.key === "Alt",
   meta: (e) => e.metaKey || e.key === "Meta" || e.key === "Command",
   arrow: (e) => e.key.startsWith("Arrow"),
+  up: (e) => e.key === "ArrowUp",
+  left: (e) => e.key === "ArrowLeft",
+  right: (e) => e.key === "ArrowRight",
+  down: (e) => e.key === "ArrowDown",
   enter: (e) => e.key === "Enter",
-  escape: (e) => e.key.startsWith("Esc"),
+  esc: (e) => e.key.startsWith("Esc"),
   tab: (e) => e.key === "Tab",
   space: (e) => e.key === " " || e.key === "Space" || e.key === " ",
-  backspace: (e) => e.key === "Backspace",
-  delete: (e) => e.key === "Delete",
+  delete: (e) => e.key === "Delete" || e.key === "Backspace",
   digit: (e) => /^\d$/.test(e.key),
   letter: (e) => /^[a-zA-Z]$/.test(e.key),
-  character: (e) => /^\S$/.test(e.key),
+  char: (e) => /^\S$/.test(e.key),
 };
 
 // set attr

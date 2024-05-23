@@ -575,9 +575,16 @@
     - also it makes precedence of `:` and `..` unclear - what comes before what after.
 
   ? Can we use `:onclick.toggle="play"`?
-    - it doesn't help with switch-over
+    - it doesn't help with switch-over across different event starters
   ? Some 'or' character `:onclick--onkeydown`
   ? We can redirect to main event, that's it for now
+
+## [x] Events chain (sequence): parallel or sequential? -> let's keep sequential, for parallel use stop.immediate.1
+
+* `:onclick..onclick="play"` - it doesn't work as toggle because we allow parallel execution, so second onclick gets superceded by first one. Do we need that?
+  - we can limit parallel events pool via `:onclick.1..onclick :onclick.second..onclick`
+  - `:onclick..onclick` is more obvious/explicit/uniform than `:onclick.toggle`
+  ? do we ever need cases when we need parallel execution?
 
 ## [x] Should getters convert to computed? -> yes, that's relatively cheap and useful
 
