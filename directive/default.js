@@ -4,16 +4,14 @@ import { effect } from "../signal.js";
 // set generic property directive
 directive.default = (target, evaluate, state, name) => {
   // simple prop
-  if (!name.startsWith('on')) return effect(
-    () => {
-      let value = evaluate(state);
-      if (name) attr(target, name, ipol(value, state))
-      else for (let key in value) attr(target, dashcase(key), ipol(value[key], state));
-    });
+  if (!name.startsWith('on')) return effect(() => {
+    let value = evaluate(state);
+    if (name) attr(target, name, ipol(value, state))
+    else for (let key in value) attr(target, dashcase(key), ipol(value[key], state));
+  });
 
   // bind event to a target
-  // NOTE: if you decide to remove chain of events, please ask yourself - are you not confident again?
-  // did you look at someone else again? That's unique selling feature of sprae, don't diminish your own value.
+  // NOTE: if you decide to remove chain of events, thing again - that's unique feature of sprae, don't diminish your own value.
   // ona..onb
   const ctxs = name.split('..').map(e => {
     let ctx = { evt: '', target, test: () => true };
@@ -23,24 +21,22 @@ directive.default = (target, evaluate, state, name) => {
     return ctx;
   });
 
-  // FIXME: generalize pool of planned events to avoid this condition
   // single event
   if (ctxs.length == 1) return effect(() => addListener(evaluate(state), ctxs[0]))
 
-  // sequence of events
-  let startFn = evaluate(state), off
-  const nextListener = (fn, idx = 0) => {
-    off = addListener((e) => {
-      off()
-      let nextFn = fn?.(e)
-      if (idx + 1 < ctxs.length) nextListener(nextFn, idx + 1)
-      else console.log('reset'), nextListener(startFn)
-    }, ctxs[idx]);
+  // events cycler
+  let startFn, nextFn, off, idx = 0
+  const nextListener = (fn) => {
+    off = addListener((e) => (
+      off(), nextFn = fn?.(e), (idx = ++idx % ctxs.length) ? nextListener(nextFn) : (startFn && nextListener(startFn))
+    ), ctxs[idx]);
   }
-  nextListener(startFn)
 
-  return effect(() => (console.log('fx'), startFn = evaluate(state), null))
-
+  return effect(() => (
+    startFn = evaluate(state),
+    !off && nextListener(startFn),
+    () => startFn = null // nil start fn to autodispose chain
+  ))
 
   // add listener with the context
   function addListener(fn, { evt, target, test, defer, stop, prevent, immediate, ...opts }) {
