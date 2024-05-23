@@ -120,7 +120,7 @@ const keys = {
   space: (e) => e.key === " " || e.key === "Space" || e.key === " ",
   delete: (e) => e.key === "Delete" || e.key === "Backspace",
   digit: (e) => /^\d$/.test(e.key),
-  letter: (e) => /^[a-zA-Z]$/.test(e.key),
+  letter: (e) => /^\p{L}$/gu.test(e.key),
   char: (e) => /^\S$/.test(e.key),
 };
 
