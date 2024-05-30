@@ -206,23 +206,6 @@ Attach event(s) listener with optional modifiers.
   * `.ctrl-<key>, .alt-<key>, .meta-<key>, .shift-<key>` – key combinations, eg. `.ctrl-alt-delete` or `.meta-x`.
 * `.*` – any other modifier has no effect, but allows binding multiple handlers to same event (like jQuery event classes).
 
-#### `:html="element"` 🔌
-
-> Include as `import 'sprae/directive/html'`.
-
-Set html content of an element or instantiate a template.
-
-```html
-Hello, <span :html="userElement">Guest</span>.
-
-<!-- fragment -->
-Hello, <template :html="user.name">Guest</template>.
-
-<!-- instantiate template -->
-<template :ref="tpl"><span :text="foo"></span></template>
-<div :html="tpl" :with="{foo:'bar'}">...inserted here...</div>
-```
-
 #### `:data="values"` 🔌
 
 > Include as `import 'sprae/directive/data'`.
@@ -251,6 +234,24 @@ Set `aria-*` attributes. Boolean values are stringified.
 <!--
 <input role="combobox" aria-controls="joketypes" aria-autocomplete="list" aria-expanded="false" aria-active-option="item1" aria-activedescendant>
 -->
+```
+
+
+#### `:html="element"` 🔌 (experimental)
+
+> Include as `import 'sprae/directive/html'`.
+
+Set html content of an element or instantiate a template.
+
+```html
+Hello, <span :html="userElement">Guest</span>.
+
+<!-- fragment -->
+Hello, <template :html="user.name">Guest</template>.
+
+<!-- instantiate template -->
+<template :ref="tpl"><span :text="foo"></span></template>
+<div :html="tpl" :with="{foo:'bar'}">...inserted here...</div>
 ```
 
 <!--
@@ -302,6 +303,15 @@ Provider | Size | Feature
 [`@preact/signals-core`](https://ghub.io/@preact/signals-core) | 1.47kb | Best performance, good for any states, industry standard.
 [`signal-polyfill`](https://github.com/proposal-signals/signal-polyfill) | 2.5kb | Proposal signals. Use via [adapter](https://gist.github.com/dy/bbac687464ccf5322ab0e2fd0680dc4d).
 
+## Untracked
+
+Properties prefixed with `_` indicate untracked value:
+
+```js
+let state = sprae(el, {x:1, _y:2})
+state.x++ // updates template
+state._y++ // no side-effect
+```
 
 ## Evaluator
 

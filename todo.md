@@ -145,7 +145,9 @@
   * [x] `todos.filter(xxx).length` - should be subscribable
   * [x] test `item = {...item}`
 * [x] ~~try debouncing / batching array.length writes~~ -> doesn't seem possible
+* [x] lodash for untracked values
 * [ ] fix wavearea
+
 
 ## Backlog
 

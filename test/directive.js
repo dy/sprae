@@ -3,7 +3,7 @@ import { tick, time } from "wait-please";
 import * as signals from '@preact/signals-core'
 import sprae from '../sprae.js'
 import { signal, batch, untracked, effect } from '../signal.js'
-import store, { _change } from '../store.js'
+import store, { _change, _signals } from '../store.js'
 import '../directive/aria.js'
 import '../directive/data.js'
 import h from "hyperf";
@@ -978,34 +978,36 @@ test("each: subscribe to modifying list", async () => {
 });
 
 test('each: unwanted extra subscription', async t => {
-  let el = h`<div><x :each="item,i in (untracked(() => {count++}), rows)"><a :text="item.label"></a></x></div>`
+  let el = h`<div><x :each="item,i in (console.log('upd',_count),_count++, rows)"><a :text="item.label"></a></x></div>`
 
   const rows = signal(null)
-  const state = sprae(el, { rows, count: 0, untracked })
+  const state = sprae(el, { rows, _count: 0 })
 
   console.log('------rows.value = [{id:0},{id:1}]')
+  await tick()
+  is(state._count, 1)
+
   let a = { label: signal(0) }, b = { label: signal(0) }
-  is(state.count, 1)
   rows.value = [a, b]
   await tick()
-  is(state.count, 2)
+  is(state._count, 2)
 
   console.log('--------rows.value[1].label.value += 2')
   b.label.value += 2
-  is(state.count, 2)
+  is(state._count, 2)
   is(el.innerHTML, `<x><a>0</a></x><x><a>2</a></x>`)
 
   console.log('---------rows.value=[rows.value[0]]')
   // this thingy subscribes full list to update
   rows.value = [b]
   await tick()
-  is(state.count, 3)
+  is(state._count, 3)
   is(el.innerHTML, `<x><a>2</a></x>`)
 
   console.log('--------rows.value[0].label += 2')
   b.label.value += 2
   await tick()
-  is(state.count, 3)
+  is(state._count, 3)
   is(el.innerHTML, `<x><a>4</a></x>`)
 });
 

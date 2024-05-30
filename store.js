@@ -21,8 +21,8 @@ export default function store(values, parent) {
 
   // proxy conducts prop access to signals
   const state = new Proxy(signals, {
-    get: (_, key) => key === _change ? _len : key === _signals ? signals : signals[key]?.valueOf(),
-    set: (_, key, v, s) => (s = signals[key], set(signals, key, v), s || (++_len.value)), // bump length for new signal
+    get: (_, key) => key === _change ? _len : key === _signals ? signals : (signals[key]?.valueOf()),
+    set: (_, key, v, s) => (s = signals[key], set(signals, key, v), s ?? (++_len.value)), // bump length for new signal
     deleteProperty: (_, key) => (signals[key] && (del(signals, key), _len.value--), 1),
     ownKeys() {
       // subscribe to length when object is spread
@@ -42,7 +42,7 @@ export default function store(values, parent) {
     }
     else {
       // init blank signal - make sure we don't take prototype one
-      signals[key] = null
+      signals[key] = undefined
       set(signals, key, values[key]);
     }
   }
@@ -64,7 +64,7 @@ export function list(values) {
   // .length signal is stored separately, since it cannot be replaced on array
   let _len = signal(values.length),
     // gotta fill with null since proto methods like .reduce may fail
-    signals = Array(values.length).fill(null);
+    signals = Array(values.length).fill();
 
   // proxy conducts prop access to signals
   const state = new Proxy(signals, {
@@ -114,8 +114,10 @@ export function list(values) {
 function set(signals, key, v) {
   let s = signals[key]
 
+  // untracked
+  if (key[0] === '_') signals[key] = v
   // new property
-  if (!s) {
+  else if (!s) {
     // preserve signal value as is
     signals[key] = s = v?.peek ? v : signal(store(v))
   }

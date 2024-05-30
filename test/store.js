@@ -422,3 +422,13 @@ t('store: array subscribes to filtered', async t => {
   list.push(3)
   is(result, 2)
 })
+
+t('store: untracked values', async t => {
+  let s = store({ x: 1, _y: 2 }), log = []
+  effect(() => log.push(s.x, s._y))
+  is(log, [1, 2])
+  s.x++
+  is(log, [1, 2, 2, 2])
+  s._y++
+  is(log, [1, 2, 2, 2])
+})
