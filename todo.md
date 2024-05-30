@@ -146,7 +146,7 @@
   * [x] test `item = {...item}`
 * [x] ~~try debouncing / batching array.length writes~~ -> doesn't seem possible
 * [x] lodash for untracked values
-* [ ] fix wavearea
+* [x] fix wavearea
 
 
 ## Backlog
