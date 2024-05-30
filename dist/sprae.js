@@ -33,7 +33,7 @@ function store(values, parent) {
   let signals = { ...parent?.[_signals] }, _len = signal(Object.values(values).length);
   const state = new Proxy(signals, {
     get: (_, key) => key === _change ? _len : key === _signals ? signals : signals[key]?.valueOf(),
-    set: (_, key, v, s) => (s = signals[key], set(signals, key, v), s || ++_len.value),
+    set: (_, key, v, s) => (s = signals[key], set(signals, key, v), s ?? ++_len.value),
     deleteProperty: (_, key) => (signals[key] && (del(signals, key), _len.value--), 1),
     ownKeys() {
       _len.value;
@@ -45,7 +45,7 @@ function store(values, parent) {
     if (desc?.get) {
       (signals[key] = computed(desc.get.bind(state)))._set = desc.set?.bind(state);
     } else {
-      signals[key] = null;
+      signals[key] = void 0;
       set(signals, key, values[key]);
     }
   }
@@ -56,7 +56,7 @@ function list(values) {
   let lastProp;
   if (values[_signals])
     return values;
-  let _len = signal(values.length), signals = Array(values.length).fill(null);
+  let _len = signal(values.length), signals = Array(values.length).fill();
   const state = new Proxy(signals, {
     get(_, key) {
       if (typeof key === "symbol")
@@ -87,7 +87,9 @@ function list(values) {
 }
 function set(signals, key, v) {
   let s = signals[key];
-  if (!s) {
+  if (key[0] === "_")
+    signals[key] = v;
+  else if (!s) {
     signals[key] = s = v?.peek ? v : signal(store(v));
   } else if (v === s.peek())
     ;
