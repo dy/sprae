@@ -424,11 +424,12 @@ t('store: array subscribes to filtered', async t => {
 })
 
 t('store: untracked values', async t => {
-  let s = store({ x: 1, _y: 2 }), log = []
+  let s = store({ x: 1, _y: 0 }), log = []
   effect(() => log.push(s.x, s._y))
-  is(log, [1, 2])
+  is(log, [1, 0])
   s.x++
-  is(log, [1, 2, 2, 2])
+  is(log, [1, 0, 2, 0])
   s._y++
-  is(log, [1, 2, 2, 2])
+  is(log, [1, 0, 2, 0])
+  s._y = 0
 })

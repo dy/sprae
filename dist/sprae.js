@@ -33,7 +33,7 @@ function store(values, parent) {
   let signals = { ...parent?.[_signals] }, _len = signal(Object.values(values).length);
   const state = new Proxy(signals, {
     get: (_, key) => key === _change ? _len : key === _signals ? signals : signals[key]?.valueOf(),
-    set: (_, key, v, s) => (s = signals[key], set(signals, key, v), s ?? ++_len.value),
+    set: (_, key, v, s) => (s = signals[key], set(signals, key, v), s ?? ++_len.value, 1),
     deleteProperty: (_, key) => (signals[key] && (del(signals, key), _len.value--), 1),
     ownKeys() {
       _len.value;
