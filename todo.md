@@ -147,7 +147,7 @@
 * [x] ~~try debouncing / batching array.length writes~~ -> doesn't seem possible
 * [x] lodash for untracked values
 * [x] fix wavearea
-
+* [ ] fix :if within :each
 
 ## Backlog
 
