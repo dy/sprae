@@ -353,7 +353,7 @@ directive.if = (ifEl, evaluate, state) => {
       cur = newEls;
       for (let el of cur) {
         parent.insertBefore(el, holder);
-        memo.get(el) == null && memo.delete(el);
+        memo.get(el) === null && memo.delete(el);
         sprae(el, state);
       }
     }
