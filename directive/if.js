@@ -41,7 +41,7 @@ directive.if = (ifEl, evaluate, state) => {
       cur = newEls;
       for (let el of cur) {
         parent.insertBefore(el, holder)
-        memo.get(el) == null && memo.delete(el) // remove fake memo to sprae as new
+        memo.get(el) === null && memo.delete(el) // remove fake memo to sprae as new
         sprae(el, state)
       }
     }
