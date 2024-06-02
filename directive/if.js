@@ -1,4 +1,4 @@
-import sprae, { directive } from "../core.js";
+import sprae, { directive, memo } from "../core.js";
 import { _each } from './each.js';
 import { effect } from "../signal.js";
 
@@ -16,15 +16,19 @@ directive.if = (ifEl, evaluate, state) => {
 
   ifEl.after(holder) // mark end of modifying section
 
-  if (ifEl.content) cur = none, ifEl.remove(), ifs = [...ifEl.content.childNodes]
-  else ifs = cur = [ifEl]
+  ifEl.remove(), cur = none
+
+  ifs = ifEl.content ? [...ifEl.content.childNodes] : [ifEl]
 
   if (next?.hasAttribute(":else")) {
     next.removeAttribute(":else");
     // if next is :else :if - leave it for its own :if handler
     if (next.hasAttribute(":if")) elses = none;
     else next.remove(), elses = next.content ? [...next.content.childNodes] : [next];
-  } else elses = none
+  } else elses = none;
+
+  // we mark all els as fake-spraed, because we have to sprae for real on insert
+  for (let el of [...ifs, ...elses]) memo.set(el, null)
 
   return effect(() => {
     const newEls = evaluate(state) ? ifs : ifEl[_prevIf] ? none : elses;
@@ -32,9 +36,14 @@ directive.if = (ifEl, evaluate, state) => {
     if (cur != newEls) {
       // :if :each
       if (cur[0]?.[_each]) cur = [cur[0][_each]]
+
       for (let el of cur) el.remove();
       cur = newEls;
-      for (let el of cur) parent.insertBefore(el, holder), sprae(el, state);
+      for (let el of cur) {
+        parent.insertBefore(el, holder)
+        memo.get(el) == null && memo.delete(el) // remove fake memo to sprae as new
+        sprae(el, state)
+      }
     }
   });
 };

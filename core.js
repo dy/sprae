@@ -7,9 +7,10 @@ const _dispose = (Symbol.dispose ||= Symbol("dispose"));
 // reserved directives - order matters!
 export const directive = {};
 
-// sprae element: apply directives
-const memo = new WeakMap();
+// every element that's in cache === directly spraed and un subsequent sprae is just updated (like each)
+export const memo = new WeakMap();
 
+// sprae element: apply directives
 export default function sprae(el, values) {
   // text nodes, comments etc - but collections are fine
   if (!el?.children) return
@@ -28,7 +29,7 @@ export default function sprae(el, values) {
   // if element was spraed by :with or :each instruction - skip, otherwise save
   if (!memo.has(el)) memo.set(el, state);
 
-  // disposer draes all internal elements
+  // disposer unspraes all internal elements
   el[_dispose] = () => {
     while (disposes.length) disposes.pop()();
     memo.delete(el);
@@ -57,15 +58,15 @@ export default function sprae(el, values) {
           }
 
           // stop if element was spraed by internal directive
-          if (memo.has(el)) return disposes.push(el[_dispose]);
+          if (memo.has(el)) return el[_dispose] && disposes.push(el[_dispose])
 
           // stop if element is skipped (detached) like in case of :if or :each
-          if (el.parentNode !== parent) return;
+          if (el.parentNode !== parent) return
         } else i++;
       }
     }
 
-    for (let child of [...el.children]) init(child, el)
+    for (let child of [...el.children]) init(child, el);
   };
 }
 

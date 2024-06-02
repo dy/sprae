@@ -322,7 +322,7 @@ test("if: short with insertions", async () => {
   let el = h`<p>
     <span :if="a==1" :text="'1:'+a"></span>
     <span :else :if="a==2" :text="'2:'+a"></span>
-    <span :else :text="a"></span>
+    <span :else :text="'3:'+a"></span>
   </p>`;
 
   const params = sprae(el, { a: 1 });
@@ -333,17 +333,17 @@ test("if: short with insertions", async () => {
   is(el.innerHTML, "<span>2:2</span>");
   params.a = 3;
   await tick();
-  is(el.innerHTML, "<span>3</span>");
+  is(el.innerHTML, "<span>3:3</span>");
   params.a = 4;
   await tick();
-  is(el.innerHTML, "<span>4</span>");
+  is(el.innerHTML, "<span>3:4</span>");
 
   params.a = 1;
   await tick();
   is(el.innerHTML, "<span>1:1</span>");
   params.a = 4;
   await tick();
-  is(el.innerHTML, "<span>4</span>");
+  is(el.innerHTML, "<span>3:4</span>");
 
   params.a = null;
 });
@@ -399,6 +399,17 @@ test("if: + :with doesnt prevent secondary effects from happening", async () => 
   // state2.cond = '123'
   // is(el2.innerHTML, `<x>123</x>`)
 });
+
+test("if: :with + :if after attributes", async () => {
+  let el = h`<x :with="{x:1}" :if="cur === 1" :text="x"></x><x :with="{x:2}" :if="cur === 2" :text="x"></x>`
+
+  let s = sprae(el, { cur: 1 })
+  is(el.outerHTML, `<x>1</x>`)
+
+  console.log('------- s.cur = 2')
+  s.cur = 2
+  is(el.outerHTML, `<x>2</x>`)
+})
 
 
 test.skip('each: top-level list', async () => {
@@ -1037,6 +1048,14 @@ test('each: rewrite item', async t => {
   is(el.innerHTML, `<x>1</x><x>2</x><x>3</x>`)
   el.childNodes[1].dispatchEvent(new window.Event("x"))
   is(el.innerHTML, `<x>1</x><x>3</x><x>3</x>`)
+})
+
+test('each: :if within :each', async t => {
+  let el = h`<div><x :each="i in 3" :if="i === cur" :text="i"></x></div>`
+  let s = sprae(el, { cur: 1 })
+  is(el.innerHTML, `<x>1</x>`)
+  s.cur = 2
+  is(el.innerHTML, `<x>2</x>`)
 })
 
 
