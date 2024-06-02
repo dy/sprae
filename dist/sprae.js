@@ -156,7 +156,7 @@ function sprae(el, values) {
               disposes.push(dispose);
           }
           if (memo.has(el2))
-            return disposes.push(el2[_dispose]);
+            return el2[_dispose] && disposes.push(el2[_dispose]);
           if (el2.parentNode !== parent)
             return;
         } else
@@ -329,10 +329,8 @@ var _prevIf = Symbol("if");
 directive.if = (ifEl, evaluate, state) => {
   let parent = ifEl.parentNode, next = ifEl.nextElementSibling, holder = document.createTextNode(""), cur, ifs, elses, none = [];
   ifEl.after(holder);
-  if (ifEl.content)
-    cur = none, ifEl.remove(), ifs = [...ifEl.content.childNodes];
-  else
-    ifs = cur = [ifEl];
+  ifEl.remove(), cur = none;
+  ifs = ifEl.content ? [...ifEl.content.childNodes] : [ifEl];
   if (next?.hasAttribute(":else")) {
     next.removeAttribute(":else");
     if (next.hasAttribute(":if"))
@@ -341,6 +339,8 @@ directive.if = (ifEl, evaluate, state) => {
       next.remove(), elses = next.content ? [...next.content.childNodes] : [next];
   } else
     elses = none;
+  for (let el of [...ifs, ...elses])
+    memo.set(el, null);
   return effect(() => {
     const newEls = evaluate(state) ? ifs : ifEl[_prevIf] ? none : elses;
     if (next)
@@ -351,8 +351,11 @@ directive.if = (ifEl, evaluate, state) => {
       for (let el of cur)
         el.remove();
       cur = newEls;
-      for (let el of cur)
-        parent.insertBefore(el, holder), sprae(el, state);
+      for (let el of cur) {
+        parent.insertBefore(el, holder);
+        memo.get(el) == null && memo.delete(el);
+        sprae(el, state);
+      }
     }
   });
 };
