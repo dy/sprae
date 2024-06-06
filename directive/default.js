@@ -6,8 +6,8 @@ directive.default = (target, evaluate, state, name) => {
   // simple prop
   if (!name.startsWith('on')) return effect(() => {
     let value = evaluate(state);
-    if (name) attr(target, name, ipol(value, state))
-    else for (let key in value) attr(target, dashcase(key), ipol(value[key], state));
+    if (name) attr(target, name, value)
+    else for (let key in value) attr(target, dashcase(key), value[key]);
   });
 
   // bind event to a target
@@ -155,8 +155,3 @@ const debounce = (fn, wait) => {
 export const dashcase = (str) => {
   return str.replace(/[A-Z\u00C0-\u00D6\u00D8-\u00DE]/g, (match) => "-" + match.toLowerCase());
 }
-
-// interpolate a$<b> fields from context
-export const ipol = (v, state) => {
-  return v?.replace ? v.replace(/\$<([^>]+)>/g, (match, field) => state[field] ?? '') : v
-};

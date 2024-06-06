@@ -860,7 +860,7 @@
   - there's an opinion that async/await is a mistake: use signals
   * likely async is an indicator that code must be organized via JS, templates are not for heavy async logic
 
-### [x] What should we do with tagged strings :id="`item-${id}`"? -> keep strings `'item-' + id` with placeholders `'item-$<id>'`
+### [x] What should we do with tagged strings :id="`item-${id}`"? -> keep strings `'item-' + id` ~~with placeholders `'item-$<id>'`~~
   1. Prohibit
     . `:class="['a', b, 'c']"`
       + built-in clsx
@@ -878,6 +878,8 @@
   4. regex.replace-like `:class="'a $<name> b'"`
     + implementable as `values.join('|').replace(attr)`
     - doesn't allow complex expressions inside of `$<>`
+    - syntax parsers complain
+    - doesn't look trustworthy, like unnecessary ad-hoc complication - just use + man
   5. Register directive similar to :ref as `class="a {b} c"`
     - That's natural advantage of template-parts
   6. Implement via subscript...

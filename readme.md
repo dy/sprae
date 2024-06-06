@@ -83,9 +83,6 @@ Set class value.
 <!-- appends class -->
 <div class="foo" :class="bar"></div>
 
-<!-- interpolation -->
-<div :class="'foo $<bar>'"></div>
-
 <!-- array/object, a-la clsx -->
 <div :class="[foo && 'foo', {bar: bar}]"></div>
 ```
@@ -97,9 +94,6 @@ Set style value.
 ```html
 <!-- extends style -->
 <div style="foo: bar" :style="'baz: qux'">
-
-<!-- interpolation -->
-<div :style="'foo: $<bar>'"></div>
 
 <!-- object -->
 <div :style="{foo: 'bar'}"></div>

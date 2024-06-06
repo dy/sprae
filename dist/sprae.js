@@ -360,16 +360,92 @@ directive.if = (ifEl, evaluate, state) => {
   });
 };
 
+// directive/ref.js
+directive.ref = (el, expr, state) => {
+  state[expr] = el;
+};
+directive.ref.parse = (expr) => expr;
+
+// directive/with.js
+directive.with = (el, evaluate, rootState) => {
+  let state;
+  return effect(() => {
+    let values = evaluate(rootState);
+    sprae(el, state ? values : state = store(values, rootState));
+  });
+};
+
+// directive/html.js
+directive.html = (el, evaluate, state) => {
+  let tpl = evaluate(state);
+  if (!tpl)
+    return;
+  let content = (tpl.content || tpl).cloneNode(true);
+  el.replaceChildren(content);
+  sprae(el, state);
+};
+
+// directive/text.js
+directive.text = (el, evaluate, state) => {
+  if (el.content)
+    el.replaceWith(el = document.createTextNode(""));
+  return effect(() => {
+    let value = evaluate(state);
+    el.textContent = value == null ? "" : value;
+  });
+};
+
+// directive/class.js
+directive.class = (el, evaluate, state) => {
+  let cur = /* @__PURE__ */ new Set();
+  return effect(() => {
+    let v = evaluate(state);
+    let clsx = /* @__PURE__ */ new Set();
+    if (v) {
+      if (typeof v === "string")
+        v.split(" ").map((cls) => clsx.add(cls));
+      else if (Array.isArray(v))
+        v.map((v2) => v2 && clsx.add(v2));
+      else
+        Object.entries(v).map(([k, v2]) => v2 && clsx.add(k));
+    }
+    for (let cls of cur)
+      if (clsx.has(cls))
+        clsx.delete(cls);
+      else
+        el.classList.remove(cls);
+    for (let cls of cur = clsx)
+      el.classList.add(cls);
+  });
+};
+
+// directive/style.js
+directive.style = (el, evaluate, state) => {
+  let initStyle = el.getAttribute("style") || "";
+  if (!initStyle.endsWith(";"))
+    initStyle += "; ";
+  return effect(() => {
+    let v = evaluate(state);
+    if (typeof v === "string")
+      el.setAttribute("style", initStyle + v);
+    else {
+      el.setAttribute("style", initStyle);
+      for (let k in v)
+        el.style.setProperty(k, v[k]);
+    }
+  });
+};
+
 // directive/default.js
 directive.default = (target, evaluate, state, name) => {
   if (!name.startsWith("on"))
     return effect(() => {
       let value = evaluate(state);
       if (name)
-        attr(target, name, ipol(value, state));
+        attr(target, name, value);
       else
         for (let key in value)
-          attr(target, dashcase(key), ipol(value[key], state));
+          attr(target, dashcase(key), value[key]);
     });
   const ctxs = name.split("..").map((e) => {
     let ctx = { evt: "", target, test: () => true };
@@ -506,85 +582,6 @@ var debounce = (fn, wait) => {
 };
 var dashcase = (str) => {
   return str.replace(/[A-Z\u00C0-\u00D6\u00D8-\u00DE]/g, (match) => "-" + match.toLowerCase());
-};
-var ipol = (v, state) => {
-  return v?.replace ? v.replace(/\$<([^>]+)>/g, (match, field) => state[field] ?? "") : v;
-};
-
-// directive/ref.js
-directive.ref = (el, expr, state) => {
-  state[ipol(expr, state)] = el;
-};
-directive.ref.parse = (expr) => expr;
-
-// directive/with.js
-directive.with = (el, evaluate, rootState) => {
-  let state;
-  return effect(() => {
-    let values = evaluate(rootState);
-    sprae(el, state ? values : state = store(values, rootState));
-  });
-};
-
-// directive/html.js
-directive.html = (el, evaluate, state) => {
-  let tpl = evaluate(state);
-  if (!tpl)
-    return;
-  let content = (tpl.content || tpl).cloneNode(true);
-  el.replaceChildren(content);
-  sprae(el, state);
-};
-
-// directive/text.js
-directive.text = (el, evaluate, state) => {
-  if (el.content)
-    el.replaceWith(el = document.createTextNode(""));
-  return effect(() => {
-    let value = evaluate(state);
-    el.textContent = value == null ? "" : value;
-  });
-};
-
-// directive/class.js
-directive.class = (el, evaluate, state) => {
-  let cur = /* @__PURE__ */ new Set();
-  return effect(() => {
-    let v = evaluate(state);
-    let clsx = /* @__PURE__ */ new Set();
-    if (v) {
-      if (typeof v === "string")
-        ipol(v, state).split(" ").map((cls) => clsx.add(cls));
-      else if (Array.isArray(v))
-        v.map((v2) => (v2 = ipol(v2, state)) && clsx.add(v2));
-      else
-        Object.entries(v).map(([k, v2]) => v2 && clsx.add(k));
-    }
-    for (let cls of cur)
-      if (clsx.has(cls))
-        clsx.delete(cls);
-      else
-        el.classList.remove(cls);
-    for (let cls of cur = clsx)
-      el.classList.add(cls);
-  });
-};
-
-// directive/style.js
-directive.style = (el, evaluate, state) => {
-  let initStyle = el.getAttribute("style") || "";
-  if (!initStyle.endsWith(";"))
-    initStyle += "; ";
-  return effect(() => {
-    let v = evaluate(state);
-    if (typeof v === "string")
-      el.setAttribute("style", initStyle + ipol(v, state));
-    else {
-      el.setAttribute("style", initStyle);
-      for (let k in v)
-        el.style.setProperty(k, ipol(v[k], state));
-    }
-  });
 };
 
 // directive/value.js
