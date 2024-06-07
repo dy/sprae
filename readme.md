@@ -24,7 +24,7 @@ Perfect for small-scale websites, static pages, landings, prototypes, or lightwe
 </script>
 ```
 
-Sprae evaluates `:`-directives and evaporates them, returning reactive state.
+Sprae evaluates `:`-directives and evaporates them, returning reactive state for updates. 
 
 ## Directives
 
@@ -271,7 +271,8 @@ Trigger when element is connected / disconnected from DOM.
 
 ## Signals
 
-Sprae can take signal values. Signals provider can be switched to any preact-flavored implementation:
+Sprae uses signals for reactivity and can take signal values as inputs.
+Signals provider can be switched to any preact-flavored implementation:
 
 ```js
 import sprae from 'sprae';
