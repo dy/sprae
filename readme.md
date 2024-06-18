@@ -4,7 +4,7 @@
 
 _Sprae_ is open & minimalistic progressive enhancement framework.<br/>
 Perfect for small-scale websites, static pages, landings, prototypes, or lightweight UI.<br/>
-A light, fast and easy alternative to alpine & petit-vue.
+A light, fast and sweet alternative to alpine & petit-vue.
 
 ## Usage
 
