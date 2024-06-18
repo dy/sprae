@@ -373,10 +373,11 @@ To destroy state and detach sprae handlers, call `element[Symbol.dispose]()`. --
 * [Template-parts](https://github.com/dy/template-parts) is stuck with native HTML quirks ([parsing table](https://github.com/github/template-parts/issues/24), [SVG attributes](https://github.com/github/template-parts/issues/25), [liquid syntax](https://shopify.github.io/liquid/tags/template/#raw) conflict etc).
 * [Alpine](https://github.com/alpinejs/alpine) / [petite-vue](https://github.com/vuejs/petite-vue) / [lucia](https://github.com/aidenyabi/lucia) escape native HTML quirks, but have excessive API (`:`, `x-`, `{}`, `@`, `$`), tend to [self-encapsulate](https://github.com/alpinejs/alpine/discussions/3223) and not care about size/performance.
 
-_Sprae_ holds open & minimalistic philosophy:
+_Sprae_ holds open, sweet & minimalistic philosophy:
 * Slim `:` API and _signals_ reactivity.
 * Pluggable directives & configurable internals.
 * Small, safe & performant.
+* Bits of organic sugar.
 * Aims at making developers happy 🫰
 
 <!--
