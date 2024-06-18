@@ -347,6 +347,7 @@ import * as signals from '@preact/signals'
 import compile from 'subscript'
 
 // standard directives
+import 'sprae/directive/default.js'
 import 'sprae/directive/if.js'
 import 'sprae/directive/text.js'
 
