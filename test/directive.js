@@ -689,19 +689,15 @@ test("each: loop with condition", async () => {
   // also it creates confusion with :else directive
   // prohibiting that allows in-order directives init
   let el = h`<p>
-  <span :if="c" :each="a in b" :text="a"></span>
+  <span :each="a in b" :if="a" :text="a"></span>
   </p>`;
 
-  const params = sprae(el, { b: [1, 2], c: false });
+  const params = sprae(el, { b: [0, 1, 2] });
 
-  is(el.innerHTML, "");
-  params.c = true;
-  await tick();
   is(el.innerHTML, "<span>1</span><span>2</span>");
-  params.b = [1];
+  params.b = [2, 0, 1];
   await tick();
-  is(el.innerHTML, "<span>1</span>");
-  console.log("set null");
+  is(el.innerHTML, "<span>2</span><span>1</span>");
   params.b = null;
   await tick();
   is(el.innerHTML, "");
