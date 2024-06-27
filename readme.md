@@ -24,7 +24,7 @@ A light, fast and sweet alternative to alpine, petit-vue etc.
 </script>
 ```
 
-Sprae evaluates `:`-directives and evaporates them, returning reactive state for updates. 
+Sprae evaluates `:`-directives and evaporates them, returning reactive state for updates.
 
 ## Directives
 
@@ -59,9 +59,6 @@ Multiply element.
   <dt :text="item.term"/>
   <dd :text="item.definition"/>
 </template>
-
-<!-- prevent FOUC -->
-<style>[:each] {visibility: hidden}</style>
 ```
 
 #### `:text="value"`
@@ -363,10 +360,13 @@ sprae.use(signals)
 sprae.use({ compile })
 ```
 
-<!-- ## Dispose
 
-To destroy state and detach sprae handlers, call `element[Symbol.dispose]()`. -->
+## Gotchas
 
+* To prevent [FOUC](https://en.wikipedia.org/wiki/Flash_of_unstyled_content) add `<style>[:each],[:if],[:else],[:text] {visibility: hidden}</style>`
+* Attributes order matters, eg. `<li :each="value in values" :text="value.name"></li>` is not the same as `<li :text="value.name" :each="value in values"></li>`
+* To destroy state and detach sprae handlers, call `element[Symbol.dispose]()`.
+* State getters/setters work as computed effects, eg. `sprae(el, { x:1, get x2(){ return this.x * 2} })`.
 
 ## Justification
 
