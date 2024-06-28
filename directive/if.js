@@ -18,6 +18,7 @@ directive.if = (ifEl, evaluate, state) => {
 
   ifEl.remove(), cur = none
 
+  // FIXME: we need fake fragment here too with further autoupdating attribs
   ifs = ifEl.content ? [...ifEl.content.childNodes] : [ifEl]
 
   if (next?.hasAttribute(":else")) {
@@ -35,6 +36,7 @@ directive.if = (ifEl, evaluate, state) => {
     if (next) next[_prevIf] = newEls === ifs
     if (cur != newEls) {
       // :if :each
+      // FIXME: is that sufficient? like removing all instances created by _each?
       if (cur[0]?.[_each]) cur = [cur[0][_each]]
 
       for (let el of cur) el.remove();

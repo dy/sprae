@@ -122,7 +122,6 @@ t('store: bulk-update', async () => {
     set xy([x, y]) { return this.x = x, this.y = y }
   })
 
-  // FIXME: number of invocations must be minimized
   let xy; effect(() => xy = s.x + s.y)
   let len; effect(() => (len = (s.z.r ** 2 + s.z.i ** 2) ** 0.5))
 

@@ -3,7 +3,7 @@ import store, { _change, _signals } from "../store.js";
 import { effect, untracked, computed } from '../signal.js';
 
 
-export const _each = Symbol(":each");
+export const _each = Symbol(":each"), _frag = Symbol('frag');
 
 directive.each = (tpl, [itemVar, idxVar, evaluate], state) => {
   // we need :if to be able to replace holder instead of tpl for :if :each case
@@ -58,18 +58,14 @@ directive.each = (tpl, [itemVar, idxVar, evaluate], state) => {
               [itemVar]: cur[_signals]?.[idx] || cur[idx],
               [idxVar]: keys ? keys[idx] : idx
             }, state),
-            el = (tpl.content || tpl).cloneNode(true),
-            frag = tpl.content ?
-              // fake fragment to allow sprae multiple elements
-              { children: [...el.children], remove() { this.children.map(el => el.remove()) } } :
-              el;
+            el = tpl.content ? tplfrag(tpl) : tpl.cloneNode(true);
 
-          holder.before(el);
-          sprae(frag, scope);
+          holder.before(el.content || el);
+          sprae(el, scope);
 
           // signal/holder disposal removes element
           ((cur[_signals] ||= [])[i] ||= {})[Symbol.dispose] = () => {
-            frag[Symbol.dispose](), frag.remove()
+            el[Symbol.dispose](), el.remove()
           };
         }
       }
@@ -98,4 +94,31 @@ directive.each.parse = (expr, parse) => {
   let [itemVar, idxVar = "$"] = leftSide.split(/\s*,\s*/);
 
   return [itemVar, idxVar, parse(itemsExpr)]
+}
+
+// persistish fragment
+export const tplfrag = (tpl) => {
+  let frag = tpl.content.cloneNode(true)
+  let attr = [...tpl.attributes]
+  let children = [...frag.children]
+  let holder = document.createTextNode('')
+  frag.appendChild(holder)
+  return {
+    holder,
+    content: frag, // FIXME: must be simpler
+    children,
+    remove() {
+      console.trace('remove')
+      holder.remove()
+      for (let c of children) c.remove()
+    },
+    attributes: attr,
+    replaceWith(el) {
+      holder.replaceWith(el)
+      this.remove()
+    },
+    removeAttribute(name) { attr.splice(attr.findIndex(a => a.name === name), 1) }
+    // getAttributeNames() { return this.attributes },
+    // getAttribute(name) { this.attributes. },
+  }
 }
