@@ -2,7 +2,7 @@
 
 > DOM tree microhydration
 
-_Sprae_ is open & minimalistic progressive enhancement framework, a light & sweet alternative to alpine, petit-vue etc.<br/>
+_Sprae_ is open & minimalistic progressive enhancement framework, a light alternative to alpine, petit-vue etc.<br/>
 Perfect for small-scale websites, static pages, landings, prototypes, or lightweight UI.<br/>
 
 ## Usage
