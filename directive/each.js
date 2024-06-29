@@ -98,19 +98,20 @@ directive.each.parse = (expr, parse) => {
 
 // persistish fragment
 export const tplfrag = (tpl) => {
-  let frag = tpl.content.cloneNode(true)
+  let content = tpl.content.cloneNode(true)
   let attr = [...tpl.attributes]
-  let children = [...frag.children]
+  let children = [...content.children]
   let holder = document.createTextNode('')
-  frag.appendChild(holder)
+  content.appendChild(holder)
   return {
+    get parentNode() { return holder.parentNode },
     holder,
-    content: frag, // FIXME: must be simpler
+    content,
     children,
     remove() {
-      console.trace('remove')
-      holder.remove()
-      for (let c of children) c.remove()
+      // holder.remove()
+      // children.map(c => c.remove())
+      content.append(...children, holder)
     },
     attributes: attr,
     replaceWith(el) {

@@ -14,12 +14,11 @@ directive.if = (ifEl, evaluate, state) => {
     // actual replaceable els (takes <template>)
     cur, ifs, elses, none = [];
 
-  ifEl.after(holder) // mark end of modifying section
-
+  (ifEl.holder || ifEl).after(holder) // mark end of modifying section
   ifEl.remove(), cur = none
 
   // FIXME: we need fake fragment here too with further autoupdating attribs
-  ifs = ifEl.content ? [...ifEl.content.childNodes] : [ifEl]
+  ifs = ifEl.holder ? [ifEl] : ifEl.content ? [...ifEl.content.childNodes] : [ifEl]
 
   if (next?.hasAttribute(":else")) {
     next.removeAttribute(":else");
@@ -42,7 +41,7 @@ directive.if = (ifEl, evaluate, state) => {
       for (let el of cur) el.remove();
       cur = newEls;
       for (let el of cur) {
-        parent.insertBefore(el, holder)
+        parent.insertBefore((el.content || el), holder)
         memo.get(el) === null && memo.delete(el) // remove fake memo to sprae as new
         sprae(el, state)
       }
