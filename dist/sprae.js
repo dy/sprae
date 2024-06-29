@@ -275,11 +275,42 @@ var batch2 = (fn) => {
 };
 var untracked2 = (fn, prev, v) => (prev = current, current = null, v = fn(), current = prev, v);
 
+// directive/if.js
+var _prevIf = Symbol("if");
+directive.if = (ifEl, evaluate, state) => {
+  let next = ifEl.nextElementSibling, holder = document.createTextNode(""), none = [], cur = none, ifs, elses;
+  ifEl.replaceWith(holder);
+  ifs = ifEl.content ? [frag(ifEl)] : [ifEl];
+  if (next?.hasAttribute(":else")) {
+    next.removeAttribute(":else");
+    if (next.hasAttribute(":if"))
+      elses = none;
+    else
+      next.remove(), elses = next.content ? [frag(next)] : [next];
+  } else
+    elses = none;
+  for (let el of [...ifs, ...elses])
+    memo.set(el, null);
+  return effect(() => {
+    const newEls = evaluate(state) ? ifs : ifEl[_prevIf] ? none : elses;
+    if (next)
+      next[_prevIf] = newEls === ifs;
+    if (cur != newEls) {
+      for (let el of cur)
+        el.remove();
+      cur = newEls;
+      for (let el of cur) {
+        holder.before(el.content || el);
+        memo.get(el) === null && memo.delete(el);
+        sprae(el, state);
+      }
+    }
+  });
+};
+
 // directive/each.js
-var _each = Symbol(":each");
-var _frag = Symbol("frag");
 directive.each = (tpl, [itemVar, idxVar, evaluate], state) => {
-  const holder = tpl[_each] = document.createTextNode("");
+  const holder = document.createTextNode("");
   tpl.replaceWith(holder);
   let cur, keys2, prevl = 0;
   const items = computed(() => {
@@ -340,41 +371,6 @@ directive.each.parse = (expr, parse2) => {
   let [leftSide, itemsExpr] = expr.split(/\s+in\s+/);
   let [itemVar, idxVar = "$"] = leftSide.split(/\s*,\s*/);
   return [itemVar, idxVar, parse2(itemsExpr)];
-};
-
-// directive/if.js
-var _prevIf = Symbol("if");
-directive.if = (ifEl, evaluate, state) => {
-  let next = ifEl.nextElementSibling, holder = document.createTextNode(""), none = [], cur = none, ifs, elses;
-  ifEl.replaceWith(holder);
-  ifs = ifEl.content ? [frag(ifEl)] : [ifEl];
-  if (next?.hasAttribute(":else")) {
-    next.removeAttribute(":else");
-    if (next.hasAttribute(":if"))
-      elses = none;
-    else
-      next.remove(), elses = next.content ? [frag(next)] : [next];
-  } else
-    elses = none;
-  for (let el of [...ifs, ...elses])
-    memo.set(el, null);
-  return effect(() => {
-    const newEls = evaluate(state) ? ifs : ifEl[_prevIf] ? none : elses;
-    if (next)
-      next[_prevIf] = newEls === ifs;
-    if (cur != newEls) {
-      if (cur[0]?.[_each])
-        cur = [cur[0][_each]];
-      for (let el of cur)
-        el.remove();
-      cur = newEls;
-      for (let el of cur) {
-        holder.before(el.content || el);
-        memo.get(el) === null && memo.delete(el);
-        sprae(el, state);
-      }
-    }
-  });
 };
 
 // directive/ref.js
