@@ -7,24 +7,21 @@ import { effect } from "../signal.js";
 // we consider :with={x} :if={x} case insignificant
 const _prevIf = Symbol("if");
 directive.if = (ifEl, evaluate, state) => {
-  let parent = ifEl.parentNode,
-    next = ifEl.nextElementSibling,
+  let next = ifEl.nextElementSibling,
     holder = document.createTextNode(''),
 
     // actual replaceable els (takes <template>)
-    cur, ifs, elses, none = [];
+    none = [], cur = none, ifs, elses;
 
-  (ifEl._ || ifEl).after(holder) // mark end of modifying section
-  ifEl.remove(), cur = none
+  ifEl.replaceWith(holder)
 
-  // FIXME: we need fake fragment here too with further autoupdating attribs
-  ifs = ifEl._ ? [ifEl] : ifEl.content ? [frag(ifEl)] : [ifEl]
+  ifs = ifEl.content ? [frag(ifEl)] : [ifEl]
 
   if (next?.hasAttribute(":else")) {
     next.removeAttribute(":else");
     // if next is :else :if - leave it for its own :if handler
     if (next.hasAttribute(":if")) elses = none;
-    else next.remove(), elses = next._ ? [next] : next.content ? [frag(next)] : [next];
+    else next.remove(), elses = next.content ? [frag(next)] : [next];
   } else elses = none;
 
   // we mark all els as fake-spraed, because we have to sprae for real on insert
@@ -40,7 +37,7 @@ directive.if = (ifEl, evaluate, state) => {
       for (let el of cur) el.remove();
       cur = newEls;
       for (let el of cur) {
-        parent.insertBefore((el.content || el), holder)
+        holder.before(el.content || el)
         memo.get(el) === null && memo.delete(el) // remove fake memo to sprae as new
         sprae(el, state)
       }

@@ -99,28 +99,26 @@ sprae.use = s => {
 }
 
 
-// <template> fragment holder, like persisting fragment but with minimal API surface
+// instantiated <template> fragment holder, like persisting fragment but with minimal API surface
 export const frag = (tpl) => {
-  if (tpl._) return tpl // existing tpl
-  let content = tpl.content.cloneNode(true)
-  let attr = [...tpl.attributes]
-  let _ = document.createTextNode('') // fragment holder node
-  content.append(_)
-  let childNodes = [...content.childNodes]
+  if (!tpl.nodeType) return tpl // existing tpl
+
+  // ensure at least one node
+  tpl.content.appendChild(document.createTextNode(''))
+
+  let content = tpl.content.cloneNode(true),
+    attributes = [...tpl.attributes],
+    childNodes = [...content.childNodes]
+
   return {
-    get parentNode() { return _.parentNode },
-    _,
-    content,
     childNodes,
-    remove() {
-      content.append(...childNodes, _)
-    },
+    content,
+    remove: () => content.append(...childNodes),
     replaceWith(el) {
-      if (el === content) return
-      _.before(el)
-      this.remove()
+      childNodes[0].before(el)
+      content.append(...childNodes)
     },
-    attributes: attr,
-    removeAttribute(name) { attr.splice(attr.findIndex(a => a.name === name), 1) }
+    attributes,
+    removeAttribute(name) { attributes.splice(attributes.findIndex(a => a.name === name), 1) }
   }
 }
