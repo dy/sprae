@@ -126,7 +126,7 @@ var _dispose = Symbol.dispose ||= Symbol("dispose");
 var directive = {};
 var memo = /* @__PURE__ */ new WeakMap();
 function sprae(el, values) {
-  if (!el?.children)
+  if (!el?.childNodes)
     return;
   if (memo.has(el)) {
     return Object.assign(memo.get(el), values);
@@ -142,28 +142,28 @@ function sprae(el, values) {
   };
   return state;
   function init(el2, parent = el2.parentNode) {
-    if (el2.attributes) {
-      for (let i = 0; i < el2.attributes.length; ) {
-        let attr2 = el2.attributes[i];
-        if (attr2.name[0] === ":") {
-          el2.removeAttribute(attr2.name);
-          let names = attr2.name.slice(1).split(":");
-          for (let name of names) {
-            let dir = directive[name] || directive.default;
-            let evaluate = (dir.parse || parse)(attr2.value, parse);
-            let dispose = dir(el2, evaluate, state, name);
-            if (dispose)
-              disposes.push(dispose);
-          }
-          if (memo.has(el2))
-            return el2[_dispose] && disposes.push(el2[_dispose]);
-          if (el2.parentNode !== parent)
-            return;
-        } else
-          i++;
-      }
+    if (!el2.childNodes)
+      return;
+    for (let i = 0; i < el2.attributes?.length; ) {
+      let attr2 = el2.attributes[i];
+      if (attr2.name[0] === ":") {
+        el2.removeAttribute(attr2.name);
+        let names = attr2.name.slice(1).split(":");
+        for (let name of names) {
+          let dir = directive[name] || directive.default;
+          let evaluate = (dir.parse || parse)(attr2.value, parse);
+          let dispose = dir(el2, evaluate, state, name);
+          if (dispose)
+            disposes.push(dispose);
+        }
+        if (memo.has(el2))
+          return el2[_dispose] && disposes.push(el2[_dispose]);
+        if (el2.parentNode !== parent)
+          return;
+      } else
+        i++;
     }
-    for (let child of [...el2.children])
+    for (let child of [...el2.childNodes])
       init(child, el2);
   }
   ;
@@ -190,6 +190,25 @@ var compile;
 sprae.use = (s) => {
   s.signal && use(s);
   s.compile && (compile = s.compile);
+};
+var frag = (tpl) => {
+  if (!tpl.nodeType)
+    return tpl;
+  tpl.content.appendChild(document.createTextNode(""));
+  let content = tpl.content.cloneNode(true), attributes = [...tpl.attributes], childNodes = [...content.childNodes];
+  return {
+    childNodes,
+    content,
+    remove: () => content.append(...childNodes),
+    replaceWith(el) {
+      childNodes[0].before(el);
+      content.append(...childNodes);
+    },
+    attributes,
+    removeAttribute(name) {
+      attributes.splice(attributes.findIndex((a) => a.name === name), 1);
+    }
+  };
 };
 
 // node_modules/ulive/dist/ulive.es.js
@@ -258,6 +277,7 @@ var untracked2 = (fn, prev, v) => (prev = current, current = null, v = fn(), cur
 
 // directive/each.js
 var _each = Symbol(":each");
+var _frag = Symbol("frag");
 directive.each = (tpl, [itemVar, idxVar, evaluate], state) => {
   const holder = tpl[_each] = document.createTextNode("");
   tpl.replaceWith(holder);
@@ -295,13 +315,11 @@ directive.each = (tpl, [itemVar, idxVar, evaluate], state) => {
           let idx = i, scope = store({
             [itemVar]: cur[_signals]?.[idx] || cur[idx],
             [idxVar]: keys2 ? keys2[idx] : idx
-          }, state), el = (tpl.content || tpl).cloneNode(true), frag = tpl.content ? { children: [...el.children], remove() {
-            this.children.map((el2) => el2.remove());
-          } } : el;
-          holder.before(el);
-          sprae(frag, scope);
+          }, state), el = tpl.content ? frag(tpl) : tpl.cloneNode(true);
+          holder.before(el.content || el);
+          sprae(el, scope);
           ((cur[_signals] ||= [])[i] ||= {})[Symbol.dispose] = () => {
-            frag[Symbol.dispose](), frag.remove();
+            el[Symbol.dispose](), el.remove();
           };
         }
       }
@@ -327,16 +345,15 @@ directive.each.parse = (expr, parse2) => {
 // directive/if.js
 var _prevIf = Symbol("if");
 directive.if = (ifEl, evaluate, state) => {
-  let parent = ifEl.parentNode, next = ifEl.nextElementSibling, holder = document.createTextNode(""), cur, ifs, elses, none = [];
-  ifEl.after(holder);
-  ifEl.remove(), cur = none;
-  ifs = ifEl.content ? [...ifEl.content.childNodes] : [ifEl];
+  let next = ifEl.nextElementSibling, holder = document.createTextNode(""), none = [], cur = none, ifs, elses;
+  ifEl.replaceWith(holder);
+  ifs = ifEl.content ? [frag(ifEl)] : [ifEl];
   if (next?.hasAttribute(":else")) {
     next.removeAttribute(":else");
     if (next.hasAttribute(":if"))
       elses = none;
     else
-      next.remove(), elses = next.content ? [...next.content.childNodes] : [next];
+      next.remove(), elses = next.content ? [frag(next)] : [next];
   } else
     elses = none;
   for (let el of [...ifs, ...elses])
@@ -352,7 +369,7 @@ directive.if = (ifEl, evaluate, state) => {
         el.remove();
       cur = newEls;
       for (let el of cur) {
-        parent.insertBefore(el, holder);
+        holder.before(el.content || el);
         memo.get(el) === null && memo.delete(el);
         sprae(el, state);
       }
@@ -387,8 +404,12 @@ directive.html = (el, evaluate, state) => {
 
 // directive/text.js
 directive.text = (el, evaluate, state) => {
-  if (el.content)
-    el.replaceWith(el = document.createTextNode(""));
+  if (el.content) {
+    let tplfrag = frag(el);
+    if (el !== tplfrag)
+      el.replaceWith(tplfrag.content);
+    el = tplfrag.childNodes[0];
+  }
   return effect(() => {
     let value = evaluate(state);
     el.textContent = value == null ? "" : value;
