@@ -1,5 +1,4 @@
 import sprae, { directive, memo, frag } from "../core.js";
-import { _each } from './each.js';
 import { effect } from "../signal.js";
 
 // :if is interchangeable with :each depending on order, :if :each or :each :if have different meanings
@@ -31,9 +30,6 @@ directive.if = (ifEl, evaluate, state) => {
     const newEls = evaluate(state) ? ifs : ifEl[_prevIf] ? none : elses;
     if (next) next[_prevIf] = newEls === ifs
     if (cur != newEls) {
-      // :if :each
-      // FIXME: is that sufficient? like removing all instances created by _each?
-      if (cur[0]?.[_each]) cur = [cur[0][_each]]
       for (let el of cur) el.remove();
       cur = newEls;
       for (let el of cur) {

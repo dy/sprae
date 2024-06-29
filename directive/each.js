@@ -3,11 +3,9 @@ import store, { _change, _signals } from "../store.js";
 import { effect, untracked, computed } from '../signal.js';
 
 
-export const _each = Symbol(":each"), _frag = Symbol('frag');
-
 directive.each = (tpl, [itemVar, idxVar, evaluate], state) => {
   // we need :if to be able to replace holder instead of tpl for :if :each case
-  const holder = (tpl[_each] = document.createTextNode(""));
+  const holder = (document.createTextNode(""));
   tpl.replaceWith(holder);
 
   // we re-create items any time new items are produced
