@@ -1,5 +1,5 @@
-import sprae, { directive, memo } from "../core.js";
-import { _each, tplfrag } from './each.js';
+import sprae, { directive, memo, frag } from "../core.js";
+import { _each } from './each.js';
 import { effect } from "../signal.js";
 
 // :if is interchangeable with :each depending on order, :if :each or :each :if have different meanings
@@ -14,17 +14,17 @@ directive.if = (ifEl, evaluate, state) => {
     // actual replaceable els (takes <template>)
     cur, ifs, elses, none = [];
 
-  (ifEl.holder || ifEl).after(holder) // mark end of modifying section
+  (ifEl._ || ifEl).after(holder) // mark end of modifying section
   ifEl.remove(), cur = none
 
   // FIXME: we need fake fragment here too with further autoupdating attribs
-  ifs = ifEl.holder ? [ifEl] : ifEl.content ? [tplfrag(ifEl)] : [ifEl]
+  ifs = ifEl._ ? [ifEl] : ifEl.content ? [frag(ifEl)] : [ifEl]
 
   if (next?.hasAttribute(":else")) {
     next.removeAttribute(":else");
     // if next is :else :if - leave it for its own :if handler
     if (next.hasAttribute(":if")) elses = none;
-    else next.remove(), elses = next.holder ? [next] : next.content ? [tplfrag(next)] : [next];
+    else next.remove(), elses = next._ ? [next] : next.content ? [frag(next)] : [next];
   } else elses = none;
 
   // we mark all els as fake-spraed, because we have to sprae for real on insert

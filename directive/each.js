@@ -1,4 +1,4 @@
-import sprae, { directive } from "../core.js";
+import sprae, { directive, frag } from "../core.js";
 import store, { _change, _signals } from "../store.js";
 import { effect, untracked, computed } from '../signal.js';
 
@@ -58,7 +58,7 @@ directive.each = (tpl, [itemVar, idxVar, evaluate], state) => {
               [itemVar]: cur[_signals]?.[idx] || cur[idx],
               [idxVar]: keys ? keys[idx] : idx
             }, state),
-            el = tpl.content ? tplfrag(tpl) : tpl.cloneNode(true);
+            el = tpl.content ? frag(tpl) : tpl.cloneNode(true);
 
           holder.before(el.content || el);
           sprae(el, scope);
@@ -94,28 +94,4 @@ directive.each.parse = (expr, parse) => {
   let [itemVar, idxVar = "$"] = leftSide.split(/\s*,\s*/);
 
   return [itemVar, idxVar, parse(itemsExpr)]
-}
-
-// persistish fragment
-export const tplfrag = (tpl) => {
-  let content = tpl.content.cloneNode(true)
-  let attr = [...tpl.attributes]
-  let holder = document.createTextNode('')
-  content.appendChild(holder)
-  let childNodes = [...content.childNodes]
-  return {
-    get parentNode() { return holder.parentNode },
-    holder,
-    content,
-    childNodes,
-    remove() {
-      content.append(...childNodes, holder)
-    },
-    attributes: attr,
-    replaceWith(el) {
-      holder.replaceWith(el)
-      this.remove()
-    },
-    removeAttribute(name) { attr.splice(attr.findIndex(a => a.name === name), 1) }
-  }
 }
