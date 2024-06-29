@@ -362,12 +362,12 @@ sprae.use({ compile })
 
 ## Hints
 
-* To prevent [FOUC](https://en.wikipedia.org/wiki/Flash_of_unstyled_content) add `<style>[:each],[:if],[:else],[:text] {visibility: hidden}</style>`
-* Attributes order matters, eg. `<li :each="value in values" :text="value.name"></li>` is not the same as `<li :text="value.name" :each="value in values"></li>`
+* To prevent [FOUC](https://en.wikipedia.org/wiki/Flash_of_unstyled_content) add `<style>[:each],[:if],[:else] {visibility: hidden}</style>`
+* Attributes order matters, eg. `<li :each="el in els" :text="el.name"></li>` is not the same as `<li :text="el.name" :each="el in els"></li>`
 * To destroy state and detach sprae handlers, call `element[Symbol.dispose]()`.
 * State getters/setters work as computed effects, eg. `sprae(el, { x:1, get x2(){ return this.x * 2} })`.
-* `this` keyword is not used, to get access to current element use `ref` as `<input :ref="el" :text="el.value"/>`
-* Async/await is not supported in attributes, it's a strong signal you need to put these methods into state.
+* `this` keyword is not used, to get access to current element use `<input :ref="el" :text="el.value"/>`
+* Async/await is not supported in attributes, it's a strong indicator you need to put these methods into state.
 
 ## Justification
 
