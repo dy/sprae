@@ -103,19 +103,19 @@ sprae.use = s => {
 export const frag = (tpl) => {
   if (!tpl.nodeType) return tpl // existing tpl
 
-  // ensure at least one node
-  tpl.content.appendChild(document.createTextNode(''))
-
   let content = tpl.content.cloneNode(true),
     attributes = [...tpl.attributes],
-    childNodes = [...content.childNodes]
+    ref = document.createTextNode(''),
+    // ensure at least one node
+    childNodes = (content.append(ref), [...content.childNodes])
 
   return {
     childNodes,
     content,
     remove: () => content.append(...childNodes),
     replaceWith(el) {
-      childNodes[0].before(el)
+      if (el === ref) return
+      ref.before(el)
       content.append(...childNodes)
     },
     attributes,
