@@ -194,14 +194,15 @@ sprae.use = (s) => {
 var frag = (tpl) => {
   if (!tpl.nodeType)
     return tpl;
-  tpl.content.appendChild(document.createTextNode(""));
-  let content = tpl.content.cloneNode(true), attributes = [...tpl.attributes], childNodes = [...content.childNodes];
+  let content = tpl.content.cloneNode(true), attributes = [...tpl.attributes], ref = document.createTextNode(""), childNodes = (content.append(ref), [...content.childNodes]);
   return {
     childNodes,
     content,
     remove: () => content.append(...childNodes),
     replaceWith(el) {
-      childNodes[0].before(el);
+      if (el === ref)
+        return;
+      ref.before(el);
       content.append(...childNodes);
     },
     attributes,
@@ -394,12 +395,8 @@ directive.html = (el, evaluate, state) => {
 
 // directive/text.js
 directive.text = (el, evaluate, state) => {
-  if (el.content) {
-    let tplfrag = frag(el);
-    if (el !== tplfrag)
-      el.replaceWith(tplfrag.content);
-    el = tplfrag.childNodes[0];
-  }
+  if (el.content)
+    el.replaceWith(el = frag(el).childNodes[0]);
   return effect(() => {
     let value = evaluate(state);
     el.textContent = value == null ? "" : value;
