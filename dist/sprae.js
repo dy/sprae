@@ -277,32 +277,26 @@ var untracked2 = (fn, prev, v) => (prev = current, current = null, v = fn(), cur
 
 // directive/if.js
 var _prevIf = Symbol("if");
-directive.if = (ifEl, evaluate, state) => {
-  let next = ifEl.nextElementSibling, holder = document.createTextNode(""), none = [], cur = none, ifs, elses;
-  ifEl.replaceWith(holder);
-  ifs = ifEl.content ? [frag(ifEl)] : [ifEl];
+directive.if = (el, evaluate, state) => {
+  let next = el.nextElementSibling, holder = document.createTextNode(""), curEl, ifEl, elseEl;
+  el.replaceWith(holder);
+  ifEl = el.content ? frag(el) : el;
+  memo.set(ifEl, null);
   if (next?.hasAttribute(":else")) {
     next.removeAttribute(":else");
-    if (next.hasAttribute(":if"))
-      elses = none;
-    else
-      next.remove(), elses = next.content ? [frag(next)] : [next];
-  } else
-    elses = none;
-  for (let el of [...ifs, ...elses])
-    memo.set(el, null);
+    if (!next.hasAttribute(":if"))
+      next.remove(), elseEl = next.content ? frag(next) : next, memo.set(elseEl, null);
+  }
   return effect(() => {
-    const newEls = evaluate(state) ? ifs : ifEl[_prevIf] ? none : elses;
+    const newEl = evaluate(state) ? ifEl : el[_prevIf] ? null : elseEl;
     if (next)
-      next[_prevIf] = newEls === ifs;
-    if (cur != newEls) {
-      for (let el of cur)
-        el.remove();
-      cur = newEls;
-      for (let el of cur) {
-        holder.before(el.content || el);
-        memo.get(el) === null && memo.delete(el);
-        sprae(el, state);
+      next[_prevIf] = newEl === ifEl;
+    if (curEl != newEl) {
+      curEl?.remove();
+      if (curEl = newEl) {
+        holder.before(curEl.content || curEl);
+        memo.get(curEl) === null && memo.delete(curEl);
+        sprae(curEl, state);
       }
     }
   });
