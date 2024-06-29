@@ -177,7 +177,7 @@
 -> so that directive updator gets invoked only when any of expr dependencies change
 -> gotta solve via signal-struct
 
-## [x] Replace :else-if with :else :if -> no, logically different
+## [x] Replace :else-if with :else :if -> yes
 
 + `:else :if=""` is meaningful expansion of both directives
 + `:else :if` is coming from JS

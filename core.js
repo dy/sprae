@@ -12,8 +12,8 @@ export const memo = new WeakMap();
 
 // sprae element: apply directives
 export default function sprae(el, values) {
-  // text nodes, comments etc - but collections are fine
-  if (!el?.children) return
+  // text nodes, comments etc
+  if (!el?.childNodes) return
 
   // repeated call can be caused by :each with new objects with old keys needs an update
   if (memo.has(el)) {
@@ -38,35 +38,35 @@ export default function sprae(el, values) {
   return state;
 
   function init(el, parent = el.parentNode) {
-    if (el.attributes) {
-      // init generic-name attributes second
-      for (let i = 0; i < el.attributes.length;) {
-        let attr = el.attributes[i];
+    if (!el.childNodes) return // ignore text nodes, comments etc
 
-        if (attr.name[0] === ':') {
-          el.removeAttribute(attr.name);
+    // init generic-name attributes second
+    for (let i = 0; i < el.attributes?.length;) {
+      let attr = el.attributes[i];
 
-          // multiple attributes like :id:for=""
-          let names = attr.name.slice(1).split(':')
+      if (attr.name[0] === ':') {
+        el.removeAttribute(attr.name);
 
-          // NOTE: secondary directives don't stop flow nor extend state, so no need to check
-          for (let name of names) {
-            let dir = directive[name] || directive.default
-            let evaluate = (dir.parse || parse)(attr.value, parse)
-            let dispose = dir(el, evaluate, state, name);
-            if (dispose) disposes.push(dispose);
-          }
+        // multiple attributes like :id:for=""
+        let names = attr.name.slice(1).split(':')
 
-          // stop if element was spraed by internal directive
-          if (memo.has(el)) return el[_dispose] && disposes.push(el[_dispose])
+        // NOTE: secondary directives don't stop flow nor extend state, so no need to check
+        for (let name of names) {
+          let dir = directive[name] || directive.default
+          let evaluate = (dir.parse || parse)(attr.value, parse)
+          let dispose = dir(el, evaluate, state, name);
+          if (dispose) disposes.push(dispose);
+        }
 
-          // stop if element is skipped (detached) like in case of :if or :each
-          if (el.parentNode !== parent) return
-        } else i++;
-      }
+        // stop if element was spraed by internal directive
+        if (memo.has(el)) return el[_dispose] && disposes.push(el[_dispose])
+
+        // stop if element is skipped (detached) like in case of :if or :each
+        if (el.parentNode !== parent) return
+      } else i++;
     }
 
-    for (let child of [...el.children]) init(child, el);
+    for (let child of [...el.childNodes]) init(child, el);
   };
 }
 
@@ -96,4 +96,29 @@ export let compile
 sprae.use = s => {
   s.signal && use(s);
   s.compile && (compile = s.compile);
+}
+
+
+// instantiated <template> fragment holder, like persisting fragment but with minimal API surface
+export const frag = (tpl) => {
+  if (!tpl.nodeType) return tpl // existing tpl
+
+  // ensure at least one node
+  tpl.content.appendChild(document.createTextNode(''))
+
+  let content = tpl.content.cloneNode(true),
+    attributes = [...tpl.attributes],
+    childNodes = [...content.childNodes]
+
+  return {
+    childNodes,
+    content,
+    remove: () => content.append(...childNodes),
+    replaceWith(el) {
+      childNodes[0].before(el)
+      content.append(...childNodes)
+    },
+    attributes,
+    removeAttribute(name) { attributes.splice(attributes.findIndex(a => a.name === name), 1) }
+  }
 }

@@ -1,13 +1,11 @@
-import sprae, { directive } from "../core.js";
+import sprae, { directive, frag } from "../core.js";
 import store, { _change, _signals } from "../store.js";
 import { effect, untracked, computed } from '../signal.js';
 
 
-export const _each = Symbol(":each");
-
 directive.each = (tpl, [itemVar, idxVar, evaluate], state) => {
   // we need :if to be able to replace holder instead of tpl for :if :each case
-  const holder = (tpl[_each] = document.createTextNode(""));
+  const holder = (document.createTextNode(""));
   tpl.replaceWith(holder);
 
   // we re-create items any time new items are produced
@@ -58,18 +56,14 @@ directive.each = (tpl, [itemVar, idxVar, evaluate], state) => {
               [itemVar]: cur[_signals]?.[idx] || cur[idx],
               [idxVar]: keys ? keys[idx] : idx
             }, state),
-            el = (tpl.content || tpl).cloneNode(true),
-            frag = tpl.content ?
-              // fake fragment to allow sprae multiple elements
-              { children: [...el.children], remove() { this.children.map(el => el.remove()) } } :
-              el;
+            el = tpl.content ? frag(tpl) : tpl.cloneNode(true);
 
-          holder.before(el);
-          sprae(frag, scope);
+          holder.before(el.content || el);
+          sprae(el, scope);
 
           // signal/holder disposal removes element
           ((cur[_signals] ||= [])[i] ||= {})[Symbol.dispose] = () => {
-            frag[Symbol.dispose](), frag.remove()
+            el[Symbol.dispose](), el.remove()
           };
         }
       }
