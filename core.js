@@ -13,7 +13,7 @@ export const memo = new WeakMap();
 // sprae element: apply directives
 export default function sprae(el, values) {
   // text nodes, comments etc
-  if (!el?.children) return
+  if (!el?.childNodes) return
 
   // repeated call can be caused by :each with new objects with old keys needs an update
   if (memo.has(el)) {
@@ -38,6 +38,8 @@ export default function sprae(el, values) {
   return state;
 
   function init(el, parent = el.parentNode) {
+    if (!el.childNodes) return // ignore text nodes, comments etc
+
     // init generic-name attributes second
     for (let i = 0; i < el.attributes?.length;) {
       let attr = el.attributes[i];
@@ -64,7 +66,7 @@ export default function sprae(el, values) {
       } else i++;
     }
 
-    for (let child of [...el.children]) init(child, el);
+    for (let child of [...el.childNodes]) init(child, el);
   };
 }
 

@@ -100,7 +100,6 @@ directive.each.parse = (expr, parse) => {
 export const tplfrag = (tpl) => {
   let content = tpl.content.cloneNode(true)
   let attr = [...tpl.attributes]
-  let children = [...content.children]
   let holder = document.createTextNode('')
   content.appendChild(holder)
   let childNodes = [...content.childNodes]
@@ -108,10 +107,8 @@ export const tplfrag = (tpl) => {
     get parentNode() { return holder.parentNode },
     holder,
     content,
-    children,
+    childNodes,
     remove() {
-      // holder.remove()
-      // children.map(c => c.remove())
       content.append(...childNodes, holder)
     },
     attributes: attr,
@@ -120,7 +117,5 @@ export const tplfrag = (tpl) => {
       this.remove()
     },
     removeAttribute(name) { attr.splice(attr.findIndex(a => a.name === name), 1) }
-    // getAttributeNames() { return this.attributes },
-    // getAttribute(name) { this.attributes. },
   }
 }
