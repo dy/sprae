@@ -103,6 +103,7 @@ export const tplfrag = (tpl) => {
   let children = [...content.children]
   let holder = document.createTextNode('')
   content.appendChild(holder)
+  let childNodes = [...content.childNodes]
   return {
     get parentNode() { return holder.parentNode },
     holder,
@@ -111,7 +112,7 @@ export const tplfrag = (tpl) => {
     remove() {
       // holder.remove()
       // children.map(c => c.remove())
-      content.append(...children, holder)
+      content.append(...childNodes, holder)
     },
     attributes: attr,
     replaceWith(el) {

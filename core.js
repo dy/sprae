@@ -39,7 +39,7 @@ export default function sprae(el, values) {
 
   function init(el, parent = el.parentNode) {
     // init generic-name attributes second
-    for (let i = 0; i < el.attributes.length;) {
+    for (let i = 0; i < el.attributes?.length;) {
       let attr = el.attributes[i];
 
       if (attr.name[0] === ':') {

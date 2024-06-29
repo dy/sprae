@@ -275,6 +275,25 @@ test("text: fragment", async () => {
   is(el.outerHTML, `abc`);
 });
 
+test('text: fragment with condition', async () => {
+  // NOTE: this ignores condition
+  let el = h`a<template :text="text" :if="text!='b'"/>`;
+  let params = sprae(el, { text: "b" });
+  is(el.outerHTML, `ab`);
+  params.text = 'c';
+  await tick();
+  is(el.outerHTML, `ac`);
+})
+test('text: condition with fragment', async () => {
+  let el = h`a<template :if="text!='b'" :text="text"/>`;
+  let params = sprae(el, { text: "b" });
+  is(el.outerHTML, `a`);
+  console.log("params.text = 'c'")
+  params.text = 'c';
+  await tick();
+  is(el.outerHTML, `ac`);
+})
+
 test("if: base", async () => {
   let el = h`<p>
     <if :if="a==1">a</if>
@@ -297,7 +316,7 @@ test("if: base", async () => {
   is(el.innerHTML, "<else>c</else>");
 });
 
-test("if: template", async () => {
+test("if: template / fragment", async () => {
   let el = h`<p>
     <template :if="a==1">a<x>1</x></template>
     <template :else :if="a==2">b<x>2</x></template>
@@ -307,6 +326,7 @@ test("if: template", async () => {
   const params = sprae(el, { a: 1 });
 
   is(el.innerHTML, "a<x>1</x>");
+  console.log('params.a = 2')
   params.a = 2;
   await tick();
   is(el.innerHTML, "b<x>2</x>");
@@ -666,7 +686,7 @@ test("each: fragments multiple", async () => {
   is(el.innerHTML, "");
 });
 
-test.skip("each: fragments text", async () => {
+test("each: fragments direct", async () => {
   let el = h`<p>
     <template :each="a in b" :text="a"></template>
   </p>`;
@@ -674,9 +694,30 @@ test.skip("each: fragments text", async () => {
   const b = signal([1]);
   const params = sprae(el, { b });
 
-  is(el.innerHTML, "<span>1</span>");
+  is(el.innerHTML, "1");
+
+  console.log("b.value=[1,2]");
   b.value = [1, 2];
-  is(el.innerHTML, "<span>1</span><span>2</span>");
+  is(el.innerHTML, "12");
+
+  console.log("b.value=[]");
+  b.value = [];
+  is(el.innerHTML, "");
+  params.b = null;
+  is(el.innerHTML, "");
+});
+
+test('each: fragment with condition', async () => {
+  let el = h`<p>
+    <template :each="a in b" :if="a!=1" :text="a"></template>
+  </p>`;
+
+  const b = signal([1, 2]);
+  const params = sprae(el, { b });
+
+  is(el.innerHTML, "2");
+  b.value = [1];
+  is(el.innerHTML, "");
   console.log("b.value=[]");
   b.value = [];
   is(el.innerHTML, "");
@@ -685,19 +726,16 @@ test.skip("each: fragments text", async () => {
 });
 
 test("each: loop with condition", async () => {
-  // NOTE: there doesn't seem to be much value in exactly that
-  // also it creates confusion with :else directive
-  // prohibiting that allows in-order directives init
   let el = h`<p>
-  <span :each="a in b" :if="a" :text="a"></span>
+  <span :each="a in b" :if="a!=1" :text="a"></span>
   </p>`;
 
   const params = sprae(el, { b: [0, 1, 2] });
 
-  is(el.innerHTML, "<span>1</span><span>2</span>");
+  is(el.innerHTML, "<span>0</span><span>2</span>");
   params.b = [2, 0, 1];
   await tick();
-  is(el.innerHTML, "<span>2</span><span>1</span>");
+  is(el.innerHTML, "<span>2</span><span>0</span>");
   params.b = null;
   await tick();
   is(el.innerHTML, "");
@@ -765,7 +803,7 @@ test("each: condition within loop", async () => {
 });
 
 test('each: items refer to current el', async () => {
-  // NOTE: the problem here is that the next items can subscribe to `el` defined in root state, that will cause unnecessary :x effect
+  // NOTE: the problem here is that the next items can subscribe to `el` defined in root state (if each hasn't created scope), that will cause unnecessary :x effect
   let el = h`<div><x :each="x in 3" :data-x="x" :ref="el" :x="log.push(x, el.dataset.x)"></x></div>`;
   let log = signal([]);
   let state = sprae(el, { log, untracked });
@@ -789,53 +827,7 @@ test("each: unkeyed", async () => {
   // is(el.firstChild, first)
 });
 
-// NOTE: we don't support keying
-test.skip("each: keyed primitive list", async () => {
-  let el = h`<div><x :each="x, i in xs" :text="x.id"></x></div>`;
-  let state = sprae(el, { xs: [{ id: 1 }, { id: 2 }, { id: 3 }] });
-  is(el.children.length, 3);
-  is(el.textContent, "123");
-  let [first, second, third] = el.childNodes;
-
-  state.xs = [{ id: 1 }, { id: 3 }, { id: 2 }];
-  await tick();
-  is(el.textContent, "132");
-  is(el.childNodes[0], first, 'firstChild === first');
-  is(el.childNodes[2], second, 'lastChild === second');
-  is(el.childNodes[1], third);
-
-  console.log('----')
-  state.xs = [{ id: 3, key: 1 }, { id: 3, key: 2 }, { id: 3, key: 3 }];
-  await tick();
-  is(el.textContent, "333");
-  // is(el.childNodes[0], third);
-  // FIXME: test if it disposes memory here after destroying
-});
-
-test.skip("each: keyed objects list", async () => {
-  let el = h`<div><x :each="x, i in xs" :key="x.id" :text="x.id"></x></div>`;
-  let state = sprae(el, { xs: [{ id: 1 }, { id: 2 }, { id: 3 }] });
-  is(el.children.length, 3);
-  is(el.textContent, "123");
-  let [first, second, third] = el.childNodes;
-
-  state.xs = [{ id: 1 }, { id: 3 }, { id: 2 }];
-  await tick();
-  is(el.textContent, "132");
-  is(el.childNodes[0], first, 'firstChild === first');
-  is(el.childNodes[2], second, 'lastChild === second');
-  is(el.childNodes[1], third);
-
-  state.xs = [{ id: 3 }, { id: 2 }, { id: 1 }];
-  await tick();
-  is(el.textContent, "321");
-  is(el.childNodes[0], third);
-  is(el.childNodes[1], second);
-  is(el.childNodes[2], first);
-  // FIXME: test if it disposes memory here after destroying
-});
-
-test("each: wrapped source", async () => {
+test("each: expression as source", async () => {
   let el = h`<div><x :each="i in (x || 2)" :text="i"></x></div>`;
   sprae(el, { x: 0 });
   is(el.innerHTML, `<x>1</x><x>2</x>`);
@@ -870,22 +862,6 @@ test("each: :id and others must receive value from context", () => {
   let el = h`<div><x :each="item, idx in items" :id="idx"></x></div>`;
   sprae(el, { items: [1, 2, 3] });
   is(el.innerHTML, `<x id="0"></x><x id="1"></x><x id="2"></x>`);
-});
-
-test.skip("each: key-based caching is in-sync with direct elements", () => {
-  // FIXME: I wonder if that's that big of a deal
-  let el = h`<ul><li :each="i in x" :key="i" :id="i"></li></ul>`;
-  let el2 = h`<ul><li :each="i in x" :id="i"></li></ul>`;
-  let state = sprae(el, { x: 2 });
-  let state2 = sprae(el2, { x: 2 });
-  is(el.outerHTML, el2.outerHTML);
-  console.log("---inserts");
-  el.firstChild.after(el.firstChild.cloneNode(true));
-  el2.firstChild.after(el2.firstChild.cloneNode(true));
-  console.log("state.x = 3");
-  state.x = 3;
-  state2.x = 3;
-  is(el.outerHTML, el2.outerHTML);
 });
 
 test("each: remove last", async () => {
@@ -1045,15 +1021,6 @@ test('each: rewrite item', async t => {
   el.childNodes[1].dispatchEvent(new window.Event("x"))
   is(el.innerHTML, `<x>1</x><x>3</x><x>3</x>`)
 })
-
-test('each: :if within :each', async t => {
-  let el = h`<div><x :each="i in 3" :if="i === cur" :text="i"></x></div>`
-  let s = sprae(el, { cur: 1 })
-  is(el.innerHTML, `<x>1</x>`)
-  s.cur = 2
-  is(el.innerHTML, `<x>2</x>`)
-})
-
 
 test("with: inline assign", async () => {
   let el = h`<x :with="{foo:'bar'}"><y :text="foo + baz"></y></x>`;

@@ -1,5 +1,5 @@
 import sprae, { directive, memo } from "../core.js";
-import { _each } from './each.js';
+import { _each, tplfrag } from './each.js';
 import { effect } from "../signal.js";
 
 // :if is interchangeable with :each depending on order, :if :each or :each :if have different meanings
@@ -18,13 +18,13 @@ directive.if = (ifEl, evaluate, state) => {
   ifEl.remove(), cur = none
 
   // FIXME: we need fake fragment here too with further autoupdating attribs
-  ifs = ifEl.holder ? [ifEl] : ifEl.content ? [...ifEl.content.childNodes] : [ifEl]
+  ifs = ifEl.holder ? [ifEl] : ifEl.content ? [tplfrag(ifEl)] : [ifEl]
 
   if (next?.hasAttribute(":else")) {
     next.removeAttribute(":else");
     // if next is :else :if - leave it for its own :if handler
     if (next.hasAttribute(":if")) elses = none;
-    else next.remove(), elses = next.content ? [...next.content.childNodes] : [next];
+    else next.remove(), elses = next.holder ? [next] : next.content ? [tplfrag(next)] : [next];
   } else elses = none;
 
   // we mark all els as fake-spraed, because we have to sprae for real on insert
@@ -37,7 +37,6 @@ directive.if = (ifEl, evaluate, state) => {
       // :if :each
       // FIXME: is that sufficient? like removing all instances created by _each?
       if (cur[0]?.[_each]) cur = [cur[0][_each]]
-
       for (let el of cur) el.remove();
       cur = newEls;
       for (let el of cur) {
