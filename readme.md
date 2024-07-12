@@ -26,7 +26,7 @@ A light alternative to alpine, petite-vue etc.
 
 Sprae evaluates `:`-directives and evaporates them, returning reactive state for updates.
 
-### As standalone
+### Standalone
 
 ```html
 <script src="https://cdn.jsdelivr.net/npm/sprae/dist/sprae.umd.js" init></script>
@@ -37,7 +37,7 @@ Sprae evaluates `:`-directives and evaporates them, returning reactive state for
 
 `init` attribute autoinits sprae on document.
 
-### As CJS etc.
+### CJS etc
 
 ```js
 const sprae = require('sprae/dist/sprae.umd.js');
