@@ -1,87 +1,79 @@
 <!doctype html>
 <html lang="en" data-framework="sprae">
 
-    <head>
-        <meta charset="utf-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1">
-        <title>sprae • TodoMVC</title>
-        <link rel="stylesheet" href="https://unpkg.com/todomvc-common/base.css">
-        <link rel="stylesheet"
-              href="https://unpkg.com/todomvc-app-css/index.css">
-        <style>
-            [\:each] {
-                display: none;
-            }
-        </style>
-    </head>
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>sprae • TodoMVC</title>
+    <link rel="stylesheet" href="https://unpkg.com/todomvc-common/base.css">
+    <link rel="stylesheet" href="https://unpkg.com/todomvc-app-css/index.css">
+    <style>
+      [\:each] {
+        display: none;
+      }
+    </style>
+  </head>
 
-    <body>
-        <section class="todoapp">
-            <header class="header">
-                <h1>todos</h1>
-                <input :ref="input" class="new-todo"
-                       placeholder="What needs to be done?" autofocus
-                       :onkeypress.enter="e => {
+  <body>
+    <section class="todoapp">
+      <header class="header">
+        <h1>todos</h1>
+        <input :ref="input" class="new-todo"
+               placeholder="What needs to be done?" autofocus :onkeypress.enter="e => {
                 save(todos = [...todos, { text: input.value, done: false}]);
                 input.value = ''
             }">
-            </header>
-            <section class="main">
-                <input id="toggle-all" class="toggle-all" type="checkbox"
-                       :onclick="(e, all) => (
+      </header>
+      <section class="main">
+        <input id="toggle-all" class="toggle-all" type="checkbox" :onclick="(e, all) => (
                 all = todos.every(item => item.done),
                 save(todos = todos.map(item => (item.done = !all, item)))
             )">
-                <label for="toggle-all">Mark all as complete</label>
-                <ul class="todo-list">
-                    <li :each="item in todos" :ref="li"
-                        :class="{ completed: item.done }"
-                        :hidden="hash === '#/active' ? item.done : hash === '#/completed' ? !item.done : false"
-                        :ondblclick="e => ( edit.focus(), li.classList.add('editing') )">
-                        <div class="view">
-                            <input class="toggle" type="checkbox"
-                                   :value="item.done"
-                                   :onchange="e => (item = {...item, done: !item.done}, save(todos))" />
-                            <label :text="item.text"></label>
-                            <button class="destroy"
-                                    :onclick="e => save(todos = todos.filter(i => i !== item))"></button>
-                        </div>
-                        <input :ref="edit" class="edit" :value="item.text"
-                               :oninput="e => (
-                            item.text = edit.value,
-                            save(todos)
-                        )" :onblur="e => (li.classList.remove('editing'))"
-                               :onkeypress.enter="e => (edit.blur())" />
-                    </li>
-                </ul>
-            </section>
-            <footer class="footer">
-                <span class="todo-count"
-                      :with="{count: todos.filter(item => !item.done).length}">
-                    <strong :text="count">#</strong> <span
-                          :text="plur('item', count)">items</span> left
-                </span>
-                <ul class="filters">
-                    <li
-                        :each="label, key in {'#/': 'All', '#/active': 'Active', '#/completed': 'Completed'}">
-                        <a :class="{selected: hash === key}" :href="key"
-                           :text="label"></a>
-                    </li>
-                </ul>
-                <button class="clear-completed"
-                        :hidden="todos.every(item => !item.done)"
-                        :onclick="e => save(todos = todos.filter(item => !item.done ? true : false))">
-                    Clear completed
-                </button>
-            </footer>
-        </section>
-        <footer class="info">
-            <p>Double-click to edit a todo</p>
-            <p>Created by <a href="https://github.com/dy">dy</a></p>
-            <p>Part of <a href="http://todomvc.com">TodoMVC</a></p>
-        </footer>
-        <script src="https://unpkg.com/todomvc-common/base.js"></script>
-        <script type="importmap"> {
+        <label for="toggle-all">Mark all as complete</label>
+        <ul class="todo-list">
+          <li :each="item in todos" :ref="li" :class="{ completed: item.done }"
+              :hidden="hash === '#/active' ? item.done : hash === '#/completed' ? !item.done : false"
+              :ondblclick="e => ( edit.focus(), li.classList.add('editing') )">
+            <div class="view">
+              <input class="toggle" type="checkbox" :value="item.done"
+                     :onchange="e => save(todos)" />
+              <label :text="item.text"></label>
+              <button class="destroy"
+                      :onclick="e => save(todos = todos.filter(i => i !== item))"></button>
+            </div>
+            <input :ref="edit" class="edit" :value="item.text"
+                   :oninput="e => (save(todos))"
+                   :onblur="e => (li.classList.remove('editing'))"
+                   :onkeypress.enter="e => (edit.blur())" />
+          </li>
+        </ul>
+      </section>
+      <footer class="footer">
+        <span class="todo-count"
+              :with="{count: todos.filter(item => !item.done).length}">
+          <strong :text="count">#</strong> <span
+                :text="plur('item', count)">items</span> left
+        </span>
+        <ul class="filters">
+          <li
+              :each="label, key in {'#/': 'All', '#/active': 'Active', '#/completed': 'Completed'}">
+            <a :class="{selected: hash === key}" :href="key" :text="label"></a>
+          </li>
+        </ul>
+        <button class="clear-completed"
+                :hidden="todos.every(item => !item.done)"
+                :onclick="e => save(todos = todos.filter(item => !item.done ? true : false))">
+          Clear completed
+        </button>
+      </footer>
+    </section>
+    <footer class="info">
+      <p>Double-click to edit a todo</p>
+      <p>Created by <a href="https://github.com/dy">dy</a></p>
+      <p>Part of <a href="http://todomvc.com">TodoMVC</a></p>
+    </footer>
+    <script src="https://unpkg.com/todomvc-common/base.js"></script>
+    <script type="importmap"> {
       "imports": {
         "sprae": "https://cdn.jsdelivr.net/npm/sprae/sprae.min.js",
         "plur": "https://cdn.skypack.dev/plur",
@@ -91,20 +83,20 @@
       }
     }
     </script>
-        <script type="module">
-            import sprae from '../sprae.js'
-            import plur from 'plur'
+    <script type="module">
+      import sprae from '../sprae.js'
+      import plur from 'plur'
 
-            let state = sprae(document.body, {
-                plur, console,
-                todos: JSON.parse(localStorage.getItem('todomvc.items') || '[]'),
-                hash: window.location.hash || '#/',
-                save: items => localStorage.setItem('todomvc.items', JSON.stringify(items))
-            })
+      let state = sprae(document.body, {
+        plur, console,
+        todos: JSON.parse(localStorage.getItem('todomvc.items') || '[]'),
+        hash: window.location.hash || '#/',
+        save: items => localStorage.setItem('todomvc.items', JSON.stringify(items))
+      })
 
-            // hash source
-            window.addEventListener('hashchange', e => state.hash = window.location.hash)
-        </script>
-    </body>
+      // hash source
+      window.addEventListener('hashchange', e => state.hash = window.location.hash)
+    </script>
+  </body>
 
 </html>

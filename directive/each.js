@@ -1,4 +1,4 @@
-import sprae, { directive, frag } from "../core.js";
+import sprae, { directive, frag, parse } from "../core.js";
 import store, { _change, _signals } from "../store.js";
 import { effect, untracked, computed } from '../signal.js';
 
@@ -87,7 +87,7 @@ directive.each = (tpl, [itemVar, idxVar, evaluate], state) => {
 
 
 // redefine parser to exclude `[a in] b`
-directive.each.parse = (expr, parse) => {
+directive.each.parse = (expr) => {
   let [leftSide, itemsExpr] = expr.split(/\s+in\s+/);
   let [itemVar, idxVar = "$"] = leftSide.split(/\s*,\s*/);
 

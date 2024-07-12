@@ -19,6 +19,6 @@ import './directive/default.js'
 sprae.use(signals)
 
 // default compiler (indirect new Function to avoid detector)
-sprae.use({ compile: expr => sprae.constructor(`__scope`, `with (__scope) { return ${expr} };`) })
+sprae.use({ compile: expr => sprae.constructor(`with (arguments[0]) { return ${expr} };`) })
 
 export default sprae
