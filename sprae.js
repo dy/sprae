@@ -22,6 +22,3 @@ sprae.use(signals)
 sprae.use({ compile: expr => sprae.constructor(`with (arguments[0]) { return ${expr} };`) })
 
 export default sprae
-
-// autoinit
-if (document?.currentScript?.hasAttribute('init')) sprae(document.documentElement)

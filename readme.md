@@ -26,6 +26,27 @@ A light alternative to alpine, petite-vue etc.
 
 Sprae evaluates `:`-directives and evaporates them, returning reactive state for updates.
 
+<details>
+<summary><strong>Alternative</strong>
+
+Sprae can be used in other environments (CJS, global etc) via UMD entry as:
+
+```html
+<script src="https://cdn.jsdelivr.net/npm/sprae/dist/sprae.umd.js"></script>
+<script>
+  window.sprae(documentElement);
+</script>
+```
+
+`init` attribute autoinits sprae on document:
+
+```html
+<script src="https://cdn.jsdelivr.net/npm/sprae/dist/sprae.umd.js" init></script>
+```
+
+</details>
+
+
 ## Directives
 
 #### `:if="condition"`, `:else`
