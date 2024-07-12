@@ -25,7 +25,6 @@
     "jsdom": "^21.1.0",
     "signal-polyfill": "^0.1.1",
     "subscript": "^8.3.5",
-    "terser": "^5.15.1",
     "tst": "^7.1.1",
     "usignal": "^0.9.0",
     "wait-please": "^3.1.0"
@@ -35,7 +34,7 @@
     "build": "npm run bundle && npm run min",
     "bundle": "esbuild --bundle ./sprae.js --outdir=dist --format=esm --supported:logical-assignment=false",
     "watch": "esbuild --bundle --watch ./sprae.js --outdir=dist --format=esm",
-    "min": "terser ./dist/sprae.js -o ./dist/sprae.min.js --module -c passes=3 -m"
+    "min": "esbuild --bundle ./dist/sprae.js --outfile=dist/sprae.min.js --minify --format=esm",
   },
   "repository": {
     "type": "git",
