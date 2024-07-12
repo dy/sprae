@@ -17,6 +17,7 @@ A light alternative to alpine, petite-vue etc.
   import sprae from 'sprae'
 
   // init
+  const container = document.querySelector('#container');
   const state = sprae(container, { user: { name: 'Kitty' } })
 
   // update
