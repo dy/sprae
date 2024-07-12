@@ -440,7 +440,7 @@ directive.style = (el, evaluate, state) => {
     else {
       el.setAttribute("style", initStyle);
       for (let k in v)
-        el.style.setProperty(k, v[k]);
+        el.style.setProperty(k, el.style[k] = v[k]);
     }
   });
 };
