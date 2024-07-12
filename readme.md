@@ -119,7 +119,7 @@ Set style value.
 
 #### `:value="value"`
 
-Set value to/from an input, textarea or select (like `model`).
+Set value to/from an input, textarea or select (like alpinejs `x-model`).
 
 ```html
 <input :value="value" />
@@ -131,7 +131,7 @@ Set value to/from an input, textarea or select (like `model`).
 </select>
 
 <!-- handles checked attr -->
-<input type="checkbox" :value="checked" />
+<input type="checkbox" :value="item.done" />
 ```
 
 #### `:<prop>="value"`, `:="values"`
