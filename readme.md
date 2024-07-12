@@ -37,7 +37,7 @@ Sprae evaluates `:`-directives and evaporates them, returning reactive state for
 
 `init` attribute autoinits sprae on document.
 
-### As CJS, AMD
+### As CJS
 
 ```js
 const sprae = require('sprae/dist/sprae.umd.js');
