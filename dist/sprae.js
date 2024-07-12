@@ -122,7 +122,7 @@ function del(signals, key) {
 }
 
 // core.js
-var _dispose = Symbol.dispose ||= Symbol("dispose");
+var _dispose = Symbol.dispose || (Symbol.dispose = Symbol("dispose"));
 var directive = {};
 var memo = /* @__PURE__ */ new WeakMap();
 function sprae(el, values) {
@@ -254,7 +254,7 @@ var effect2 = (fn, teardown, fx, deps) => (fx = (prev) => {
 });
 var computed2 = (fn, s = signal2(), c, e) => (c = {
   get value() {
-    e ||= effect2(() => s.value = fn());
+    e || (e = effect2(() => s.value = fn()));
     return s.value;
   },
   peek: s.peek
@@ -319,6 +319,7 @@ directive.each = (tpl, [itemVar, idxVar, evaluate], state) => {
   });
   const update = () => {
     untracked(() => {
+      var _a, _b;
       let i = 0, newItems = items.value, newl = newItems.length;
       if (cur && !cur[_change]) {
         for (let s of cur[_signals] || []) {
@@ -344,7 +345,7 @@ directive.each = (tpl, [itemVar, idxVar, evaluate], state) => {
           }, state), el = tpl.content ? frag(tpl) : tpl.cloneNode(true);
           holder.before(el.content || el);
           sprae(el, scope);
-          ((cur[_signals] ||= [])[i] ||= {})[Symbol.dispose] = () => {
+          ((_b = cur[_a = _signals] || (cur[_a] = []))[i] || (_b[i] = {}))[Symbol.dispose] = () => {
             el[Symbol.dispose](), el.remove();
           };
         }
