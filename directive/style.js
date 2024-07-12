@@ -10,7 +10,7 @@ directive.style = (el, evaluate, state) => {
     if (typeof v === "string") el.setAttribute("style", initStyle + v);
     else {
       el.setAttribute("style", initStyle);
-      for (let k in v) el.style.setProperty(k, v[k]);
+      for (let k in v) el.style.setProperty(k, el.style[k] = v[k])
     }
   });
 };

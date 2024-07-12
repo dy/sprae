@@ -88,7 +88,7 @@ test("common: const in with", async () => {
 });
 
 
-test("style", async () => {
+test("style: basic", async () => {
   let el = h`<x style="left: 1px" :style="style"></x>`;
   let params = sprae(el, { style: "top: 1px" });
   is(el.outerHTML, `<x style="left: 1px; top: 1px"></x>`);
@@ -106,9 +106,12 @@ test("style", async () => {
   is(el.outerHTML, `<x style="left: 1px; top: 1px; bottom: 2px;"></x>`);
 
   params.style = { top: "2px", bottom: null };
-
   await tick();
   is(el.outerHTML, `<x style="left: 1px; top: 2px;"></x>`);
+
+  params.style = { backgroundColor: 'gray' };
+  await tick();
+  is(el.outerHTML, `<x style="left: 1px; background-color: gray;"></x>`);
 });
 
 
