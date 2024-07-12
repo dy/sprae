@@ -151,7 +151,7 @@ function sprae(el, values) {
         let names = attr2.name.slice(1).split(":");
         for (let name of names) {
           let dir = directive[name] || directive.default;
-          let evaluate = (dir.parse || parse)(attr2.value, parse);
+          let evaluate = (dir.parse || parse)(attr2.value);
           let dispose = dir(el2, evaluate, state, name);
           if (dispose)
             disposes.push(dispose);
@@ -363,10 +363,10 @@ directive.each = (tpl, [itemVar, idxVar, evaluate], state) => {
       planned++;
   });
 };
-directive.each.parse = (expr, parse2) => {
+directive.each.parse = (expr) => {
   let [leftSide, itemsExpr] = expr.split(/\s+in\s+/);
   let [itemVar, idxVar = "$"] = leftSide.split(/\s*,\s*/);
-  return [itemVar, idxVar, parse2(itemsExpr)];
+  return [itemVar, idxVar, parse(itemsExpr)];
 };
 
 // directive/ref.js
@@ -594,15 +594,25 @@ var dashcase = (str) => {
 };
 
 // directive/value.js
-directive.value = (el, evaluate, state) => {
-  let from, to;
-  let update = el.type === "text" || el.type === "" ? (value) => el.setAttribute("value", el.value = value == null ? "" : value) : el.tagName === "TEXTAREA" || el.type === "text" || el.type === "" ? (value) => (from = el.selectionStart, to = el.selectionEnd, el.setAttribute("value", el.value = value == null ? "" : value), from && el.setSelectionRange(from, to)) : el.type === "checkbox" ? (value) => (el.checked = value, attr(el, "checked", value)) : el.type === "select-one" ? (value) => {
+directive.value = (el, [getValue, setValue], state) => {
+  const update = el.type === "text" || el.type === "" ? (value) => el.setAttribute("value", el.value = value == null ? "" : value) : el.tagName === "TEXTAREA" || el.type === "text" || el.type === "" ? (value, from, to) => (from = el.selectionStart, to = el.selectionEnd, el.setAttribute("value", el.value = value == null ? "" : value), from && el.setSelectionRange(from, to)) : el.type === "checkbox" ? (value) => (el.checked = value, attr(el, "checked", value)) : el.type === "select-one" ? (value) => {
     for (let option in el.options)
       option.removeAttribute("selected");
     el.value = value;
     el.selectedOptions[0]?.setAttribute("selected", "");
   } : (value) => el.value = value;
-  return effect(() => update(evaluate(state)));
+  const handleChange = el.type === "checkbox" ? (e) => setValue(state, el.checked) : (e) => setValue(state, el.value);
+  el.addEventListener("input", handleChange);
+  el.addEventListener("change", handleChange);
+  return effect(() => update(getValue(state)));
+};
+directive.value.parse = (expr) => {
+  let evaluate = [parse(expr)];
+  try {
+    evaluate.push(parse(`${expr}=arguments[1];`));
+  } catch (e) {
+  }
+  return evaluate;
 };
 
 // directive/fx.js
@@ -612,7 +622,7 @@ directive.fx = (el, evaluate, state) => {
 
 // sprae.js
 sprae.use(ulive_es_exports);
-sprae.use({ compile: (expr) => sprae.constructor(`__scope`, `with (__scope) { return ${expr} };`) });
+sprae.use({ compile: (expr) => sprae.constructor(`with (arguments[0]) { return ${expr} };`) });
 var sprae_default = sprae;
 export {
   sprae_default as default

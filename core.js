@@ -53,7 +53,7 @@ export default function sprae(el, values) {
         // NOTE: secondary directives don't stop flow nor extend state, so no need to check
         for (let name of names) {
           let dir = directive[name] || directive.default
-          let evaluate = (dir.parse || parse)(attr.value, parse)
+          let evaluate = (dir.parse || parse)(attr.value)
           let dispose = dir(el, evaluate, state, name);
           if (dispose) disposes.push(dispose);
         }
@@ -73,7 +73,7 @@ export default function sprae(el, values) {
 
 // compiler
 const evalMemo = {};
-const parse = (expr, dir, fn) => {
+export const parse = (expr, dir, fn) => {
   if (fn = evalMemo[expr = expr.trim()]) return fn
 
   // static-time errors
@@ -85,7 +85,7 @@ const parse = (expr, dir, fn) => {
 }
 
 // wrapped call
-export let err = (e, dir, expr = '') => {
+export const err = (e, dir, expr = '') => {
   throw Object.assign(e, { message: `∴ ${e.message}\n\n${dir}${expr ? `="${expr}"\n\n` : ""}`, expr })
 }
 

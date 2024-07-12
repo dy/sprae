@@ -10,6 +10,7 @@ import h from "hyperf";
 
 sprae.use(signals)
 
+
 test("hidden: core", async () => {
   let el = h`<div :hidden="hidden"></div>`;
   let params = sprae(el, { hidden: true });
@@ -85,6 +86,7 @@ test("common: const in with", async () => {
   await tick();
   is(state.y, 1);
 });
+
 
 test("style", async () => {
   let el = h`<x style="left: 1px" :style="style"></x>`;
@@ -197,6 +199,7 @@ test.skip("props: semicols in expression", async () => {
   // is(el.outerHTML, `<x x="0123"></x>`);
 });
 
+
 test("data: base", async () => {
   let el = h`<input :data="{a:1, fooBar:2}"/>`;
   let params = sprae(el);
@@ -224,8 +227,8 @@ test("value: direct", async () => {
   is(el.outerHTML, `<input value="2">`);
 
   el.value = 3;
-  // el.dispatchEvent(new window.Event('change'))
-  // is(state.a, '3')
+  el.dispatchEvent(new window.Event('change'))
+  is(state.a, '3')
 });
 
 test("value: checkbox", async () => {
@@ -239,8 +242,9 @@ test("value: checkbox", async () => {
   is(el.checked, false);
   is(el.outerHTML, `<input type="checkbox">`);
 
-  // el.dispatchEvent(new window.Event('change'))
-  // is(state.a, '3')
+  el.checked = true;
+  el.dispatchEvent(new window.Event('change'))
+  is(state.a, true)
 });
 
 test("value: textarea", async () => {
@@ -284,6 +288,7 @@ test('text: fragment with condition', async () => {
   await tick();
   is(el.outerHTML, `ac`);
 })
+
 test('text: condition with fragment', async () => {
   let el = h`a<template :if="text!='b'" :text="text"/>`;
   let params = sprae(el, { text: "b" });
@@ -293,6 +298,7 @@ test('text: condition with fragment', async () => {
   await tick();
   is(el.outerHTML, `ac`);
 })
+
 
 test("if: base", async () => {
   let el = h`<p>
@@ -1021,6 +1027,7 @@ test('each: rewrite item', async t => {
   el.childNodes[1].dispatchEvent(new window.Event("x"))
   is(el.innerHTML, `<x>1</x><x>3</x><x>3</x>`)
 })
+
 
 test("with: inline assign", async () => {
   let el = h`<x :with="{foo:'bar'}"><y :text="foo + baz"></y></x>`;

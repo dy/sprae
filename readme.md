@@ -101,7 +101,7 @@ Set style value.
 
 #### `:value="value"`
 
-Set value of an input, textarea or select.
+Set value to/from an input, textarea or select (like `model`).
 
 ```html
 <input :value="value" />
