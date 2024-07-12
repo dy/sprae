@@ -27,9 +27,9 @@ A light alternative to alpine, petite-vue etc.
 Sprae evaluates `:`-directives and evaporates them, returning reactive state for updates.
 
 <details>
-<summary><h3>Standalone</h3></summary>
+<summary><strong>CDN version</strong></summary>
 
-Sprae can be used in other environments (CJS, CDN, global etc) via UMD entry as:
+Sprae can be used in other environments (CJS, standalone etc) via UMD entry as:
 
 ```html
 <script src="https://cdn.jsdelivr.net/npm/sprae/dist/sprae.umd.js"></script>
