@@ -27,7 +27,7 @@ A light alternative to alpine, petite-vue etc.
 Sprae evaluates `:`-directives and evaporates them, returning reactive state for updates.
 
 <details>
-<summary><strong>Alternative</strong>
+<summary><strong>Alternative</strong></summary>
 
 Sprae can be used in other environments (CJS, global etc) via UMD entry as:
 
