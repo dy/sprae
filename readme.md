@@ -28,21 +28,18 @@ Sprae evaluates `:`-directives and evaporates them, returning reactive state for
 
 <details>
 <summary><strong>CDN version</strong></summary>
+<br>
 
 Sprae can be used in other environments (CJS, standalone etc) via UMD entry as:
 
 ```html
-<script src="https://cdn.jsdelivr.net/npm/sprae/dist/sprae.umd.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/sprae/dist/sprae.umd.js" init></script>
 <script>
-  window.sprae(document.documentElement);
+  window.sprae(someElement);
 </script>
 ```
 
-`init` attribute autoinits sprae on document:
-
-```html
-<script src="https://cdn.jsdelivr.net/npm/sprae/dist/sprae.umd.js" init></script>
-```
+`init` attribute autoinits sprae on document.
 
 </details>
 
