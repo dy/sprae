@@ -4,6 +4,7 @@
   "version": "10.8.2",
   "main": "./sprae.js",
   "module": "./sprae.js",
+  "unpkg": "dist/sprae.umd.js",
   "type": "module",
   "files": [
     "core.js",

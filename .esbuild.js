@@ -1,32 +1,38 @@
 import esbuild from "esbuild";
 import { umdWrapper } from "esbuild-plugin-umd-wrapper"
 
-esbuild
-  .build({
-    entryPoints: ["sprae.js"],
-    outfile: "dist/sprae.js",
-    format: "esm",
-    bundle: true,
-    target: 'es2020'
-  })
-
-esbuild.build({
+const options = {
   entryPoints: ["sprae.js"],
-  outfile: "dist/sprae.min.js",
+  outfile: "dist/sprae.js",
   format: "esm",
   bundle: true,
+  target: 'es2020',
+  sourcemap: 'external'
+}
+
+esbuild.build(options)
+
+esbuild.build({
+  ...options,
+  outfile: "dist/sprae.min.js",
   minify: true,
-  target: 'es2020'
 })
 
 esbuild.build({
-  entryPoints: ["sprae.js"],
+  ...options,
   outfile: "dist/sprae.umd.js",
   format: "umd",
-  bundle: true,
-  target: 'es2020',
   plugins: [umdWrapper({
     libraryName: "sprae"
   })],
 })
-  .catch(() => process.exit(1));
+
+esbuild.build({
+  ...options,
+  outfile: "dist/sprae.umd.min.js",
+  format: "umd",
+  minify: true,
+  plugins: [umdWrapper({
+    libraryName: "sprae"
+  })],
+})
