@@ -33,6 +33,7 @@ directive.value = (el, [getValue, setValue], state) => {
 directive.value.parse = expr => {
   let evaluate = [parse(expr)]
   try {
+    // for values like `123 = arguments[1]`, `foo?.bar = arguments[1]`
     evaluate.push(parse(`${expr}=arguments[1];`))
   }
   catch (e) { }
