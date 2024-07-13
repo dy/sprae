@@ -8,7 +8,7 @@
     } else {
       g["sprae"] = f();
     }
-  }(this, () => {
+  }(typeof self !== 'undefined' ? self : this, () => {
 var exports = {};
 var module = { exports };(function (g, f) {
     if ("object" == typeof exports && "object" == typeof module) {
@@ -20,33 +20,14 @@ var module = { exports };(function (g, f) {
     } else {
       g["sprae"] = f();
     }
-  }(this, () => {
+  }(typeof self !== 'undefined' ? self : this, () => {
 var exports = {};
 var module = { exports };
 var __defProp = Object.defineProperty;
-var __getOwnPropDesc = Object.getOwnPropertyDescriptor;
-var __getOwnPropNames = Object.getOwnPropertyNames;
-var __hasOwnProp = Object.prototype.hasOwnProperty;
 var __export = (target, all) => {
   for (var name in all)
     __defProp(target, name, { get: all[name], enumerable: true });
 };
-var __copyProps = (to, from, except, desc) => {
-  if (from && typeof from === "object" || typeof from === "function") {
-    for (let key of __getOwnPropNames(from))
-      if (!__hasOwnProp.call(to, key) && key !== except)
-        __defProp(to, key, { get: () => from[key], enumerable: !(desc = __getOwnPropDesc(from, key)) || desc.enumerable });
-  }
-  return to;
-};
-var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: true }), mod);
-
-// sprae.js
-var sprae_exports = {};
-__export(sprae_exports, {
-  default: () => sprae_default
-});
-module.exports = __toCommonJS(sprae_exports);
 
 // signal.js
 var signal;
@@ -667,7 +648,12 @@ directive.fx = (el, evaluate, state) => {
 sprae.use(ulive_es_exports);
 sprae.use({ compile: (expr) => sprae.constructor(`with (arguments[0]) { return ${expr} };`) });
 var sprae_default = sprae;
-if (document?.currentScript?.hasAttribute('init')) sprae(document.documentElement)if (typeof module.exports == "object" && typeof exports == "object") {
+
+// sprae.umd.cjs
+module.exports = sprae_default;
+if (document?.currentScript?.hasAttribute("init"))
+  sprae_default(document.documentElement);
+;if (typeof module.exports == "object" && typeof exports == "object") {
   var __cp = (to, from, except, desc) => {
     if ((from && typeof from === "object") || typeof from === "function") {
       for (let key of Object.getOwnPropertyNames(from)) {
@@ -683,7 +669,7 @@ if (document?.currentScript?.hasAttribute('init')) sprae(document.documentElemen
   module.exports = __cp(module.exports, exports);
 }
 return module.exports;
-}))if (typeof module.exports == "object" && typeof exports == "object") {
+}));if (typeof module.exports == "object" && typeof exports == "object") {
   var __cp = (to, from, except, desc) => {
     if ((from && typeof from === "object") || typeof from === "function") {
       for (let key of Object.getOwnPropertyNames(from)) {
