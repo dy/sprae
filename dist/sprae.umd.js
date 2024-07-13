@@ -1,28 +1,4 @@
-(function (g, f) {
-    if ("object" == typeof exports && "object" == typeof module) {
-      module.exports = f();
-    } else if ("function" == typeof define && define.amd) {
-      define("sprae", [], f);
-    } else if ("object" == typeof exports) {
-      exports["sprae"] = f();
-    } else {
-      g["sprae"] = f();
-    }
-  }(typeof self !== 'undefined' ? self : this, () => {
-var exports = {};
-var module = { exports };(function (g, f) {
-    if ("object" == typeof exports && "object" == typeof module) {
-      module.exports = f();
-    } else if ("function" == typeof define && define.amd) {
-      define("sprae", [], f);
-    } else if ("object" == typeof exports) {
-      exports["sprae"] = f();
-    } else {
-      g["sprae"] = f();
-    }
-  }(typeof self !== 'undefined' ? self : this, () => {
-var exports = {};
-var module = { exports };
+(function (g, f) {if ("object" == typeof exports && "object" == typeof module) {module.exports = f();} else if ("function" == typeof define && define.amd) {define("sprae", [], f);} else if ("object" == typeof exports) {exports["sprae"] = f();} else {g["sprae"] = f();}}(typeof self !== 'undefined' ? self : typeof globalThis !== 'undefined' ? globalThis : this, () => {var exports = {};var module = { exports };
 var __defProp = Object.defineProperty;
 var __export = (target, all) => {
   for (var name in all)
@@ -654,22 +630,6 @@ module.exports = sprae_default;
 if (typeof document !== "undefined" && document?.currentScript?.hasAttribute("init"))
   sprae_default(document.documentElement);
 ;if (typeof module.exports == "object" && typeof exports == "object") {
-  var __cp = (to, from, except, desc) => {
-    if ((from && typeof from === "object") || typeof from === "function") {
-      for (let key of Object.getOwnPropertyNames(from)) {
-        if (!Object.prototype.hasOwnProperty.call(to, key) && key !== except)
-        Object.defineProperty(to, key, {
-          get: () => from[key],
-          enumerable: !(desc = Object.getOwnPropertyDescriptor(from, key)) || desc.enumerable,
-        });
-      }
-    }
-    return to;
-  };
-  module.exports = __cp(module.exports, exports);
-}
-return module.exports;
-}));if (typeof module.exports == "object" && typeof exports == "object") {
   var __cp = (to, from, except, desc) => {
     if ((from && typeof from === "object") || typeof from === "function") {
       for (let key of Object.getOwnPropertyNames(from)) {
