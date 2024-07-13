@@ -651,7 +651,7 @@ var sprae_default = sprae;
 
 // sprae.umd.cjs
 module.exports = sprae_default;
-if (document?.currentScript?.hasAttribute("init"))
+if (typeof document !== "undefined" && document?.currentScript?.hasAttribute("init"))
   sprae_default(document.documentElement);
 ;if (typeof module.exports == "object" && typeof exports == "object") {
   var __cp = (to, from, except, desc) => {

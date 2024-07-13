@@ -22,7 +22,7 @@
     "@webreflection/signal": "^2.0.0",
     "es-module-shims": "^1.6.2",
     "esbuild": "^0.15.14",
-    "esbuild-plugin-umd-wrapper": "2.0.2",
+    "esbuild-plugin-umd-wrapper": "^2.0.2",
     "hyperf": "^1.6.2",
     "jsdom": "^21.1.0",
     "signal-polyfill": "^0.1.1",
