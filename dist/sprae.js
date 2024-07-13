@@ -430,17 +430,16 @@ directive.class = (el, evaluate, state) => {
 
 // directive/style.js
 directive.style = (el, evaluate, state) => {
-  let initStyle = el.getAttribute("style") || "";
-  if (!initStyle.endsWith(";"))
-    initStyle += "; ";
+  let initStyle = el.getAttribute("style");
   return effect(() => {
     let v = evaluate(state);
     if (typeof v === "string")
-      el.setAttribute("style", initStyle + v);
+      el.setAttribute("style", initStyle + (initStyle.endsWith(";") ? "" : "; ") + v);
     else {
-      el.setAttribute("style", initStyle);
+      if (initStyle)
+        el.setAttribute("style", initStyle);
       for (let k in v)
-        el.style.setProperty(k, el.style[k] = v[k]);
+        k[0] == "-" ? el.style.setProperty(k, v[k]) : el.style[k] = v[k];
     }
   });
 };
