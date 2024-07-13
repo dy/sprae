@@ -1,4 +1,4 @@
-(function(g,f){typeof exports==='object'&&typeof module!=='undefined'?module.exports=f():typeof define==='function'&&define.amd?define(f):(g=typeof globalThis!=='undefined'?globalThis:g||self,g.sprae=f());})(this,(function(){'use strict';var __defProp = Object.defineProperty;
+var __defProp = Object.defineProperty;
 var __export = (target, all) => {
   for (var name in all)
     __defProp(target, name, { get: all[name], enumerable: true });
@@ -166,6 +166,7 @@ function sprae(el, values) {
     for (let child of [...el2.childNodes])
       init(child, el2);
   }
+  ;
 }
 var evalMemo = {};
 var parse = (expr, dir, fn) => {
@@ -482,6 +483,7 @@ directive.default = (target, evaluate, state, name) => {
     target2.addEventListener(evt, cb, opts);
     return () => target2.removeEventListener(evt, cb, opts);
   }
+  ;
 };
 var mods = {
   prevent(ctx) {
@@ -625,4 +627,7 @@ var sprae_default = sprae;
 // sprae.init.js
 if (document?.currentScript?.hasAttribute("init"))
   sprae_default(document.documentElement);
-var sprae_init_default = sprae_default;return sprae_init_default;}));
+var sprae_init_default = sprae_default;
+export {
+  sprae_init_default as default
+};
