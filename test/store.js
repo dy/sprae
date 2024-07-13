@@ -7,6 +7,7 @@ import { tick } from 'wait-please'
 
 use(signals)
 
+
 t('store: basic', async t => {
   let s = store({ x: 0, y: 1 })
 

@@ -206,13 +206,16 @@ t.todo('signal: error in mapper', async t => {
   let y = x.map(x => { throw Error('123') })
   t.ok(y.error)
 })
+
 t.todo('signal: error in subscription', async t => {
   let x = signal(1)
   x.subscribe(() => { throw new Error('x') })
 })
+
 t.todo('signal: error in init', async t => {
   let x = signal(() => { throw Error(123) })
 })
+
 t.todo('signal: error in set', async t => {
   let x = signal(1)
   x(x => { throw Error(123) })
