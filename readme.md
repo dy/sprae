@@ -60,7 +60,7 @@ Control flow of elements.
 Multiply element.
 
 ```html
-<!-- attr order -->
+<!-- order matters -->
 <ul><li :each="item in items" :text="item"/></ul>
 
 <!-- cases -->
