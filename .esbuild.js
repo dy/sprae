@@ -16,18 +16,18 @@ esbuild.build({
   minify: true
 })
 
-// UMD build
+// Standalone build
 await esbuild.build({
   entryPoints: ["sprae.js"],
-  outfile: "dist/sprae.umd.js",
+  outfile: "dist/sprae.auto.js",
   bundle: true,
   target: 'es2020',
   sourcemap: 'external',
   format: "iife"
 })
 esbuild.build({
-  entryPoints: ['dist/sprae.umd.js'],
-  outfile: "dist/sprae.umd.min.js",
+  entryPoints: ['dist/sprae.auto.js'],
+  outfile: "dist/sprae.auto.min.js",
   sourcemap: 'external',
   minify: true
 })

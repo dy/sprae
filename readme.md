@@ -27,17 +27,17 @@ A light alternative to alpine, petite-vue etc.
 
 Sprae evaluates `:`-directives and evaporates them, returning reactive state for updates.
 
-### Standalone
+### Autoinit
 
 ```html
-<script src="https://cdn.jsdelivr.net/npm/sprae/dist/sprae.umd.js" init></script>
+<!-- `init` attribute autoinits sprae on document -->
+<script src="https://cdn.jsdelivr.net/npm/sprae/dist/sprae.auto.js" init></script>
+
 <script>
   window.sprae(el); // global standalone
 </script>
 ```
 
-`init` attribute autoinits sprae on document.<br>
-`sprae.umd.js` can be also used as commonjs.
 
 
 ## Directives
