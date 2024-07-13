@@ -282,7 +282,7 @@ Trigger when element is connected / disconnected from DOM.
 
 ## Signals
 
-Sprae uses signals-based store for reactivity and can take signal values as inputs.
+Sprae uses signals for reactivity and can take signal values as inputs.<br/>
 Signals provider can be switched to any preact-flavored implementation:
 
 ```js
