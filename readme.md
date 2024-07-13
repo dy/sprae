@@ -61,12 +61,12 @@ Control flow of elements.
 <template :if="foo">foo <span>bar</span> baz</template>
 ```
 
-
 #### `:each="item, index? in items"`
 
 Multiply element.
 
 ```html
+<!-- attr order -->
 <ul><li :each="item in items" :text="item"/></ul>
 
 <!-- cases -->
@@ -110,13 +110,13 @@ Set style value.
 
 ```html
 <!-- extends style -->
-<div style="foo: bar" :style="'baz: qux'">
+<div style="foo: bar" :style="'baz-baz: qux'">
 
 <!-- object -->
-<div :style="{foo: 'bar'}"></div>
+<div :style="{bazBaz: 'qux'}"></div>
 
 <!-- CSS variable -->
-<div :style="{'--baz': qux}"></div>
+<div :style="{'--baz-baz': qux}"></div>
 ```
 
 #### `:value="value"`
@@ -288,7 +288,7 @@ Trigger when element is connected / disconnected from DOM.
 
 ## Signals
 
-Sprae uses signals for reactivity and can take signal values as inputs.
+Sprae uses signals-based store for reactivity and can take signal values as inputs.
 Signals provider can be switched to any preact-flavored implementation:
 
 ```js
@@ -315,15 +315,6 @@ Provider | Size | Feature
 [`@preact/signals-core`](https://ghub.io/@preact/signals-core) | 1.47kb | Best performance, good for any states, industry standard.
 [`signal-polyfill`](https://github.com/proposal-signals/signal-polyfill) | 2.5kb | Proposal signals. Use via [adapter](https://gist.github.com/dy/bbac687464ccf5322ab0e2fd0680dc4d).
 
-## Untracked
-
-Properties prefixed with `_` indicate untracked value:
-
-```js
-let state = sprae(el, {x:1, _y:2})
-state.x++ // updates template
-state._y++ // no side-effect
-```
 
 ## Evaluator
 
@@ -382,8 +373,9 @@ sprae.use({ compile })
 
 ## Hints
 
-* To prevent [FOUC](https://en.wikipedia.org/wiki/Flash_of_unstyled_content) add `<style>[:each],[:if],[:else] {visibility: hidden}</style>`
-* Attributes order matters, eg. `<li :each="el in els" :text="el.name"></li>` is not the same as `<li :text="el.name" :each="el in els"></li>`
+* To prevent [FOUC](https://en.wikipedia.org/wiki/Flash_of_unstyled_content): `<style>[:each],[:if],[:else] {visibility: hidden}</style>`
+* Attributes order matters: `<li :each="el in els" :text="el.name"></li>` is not the same as `<li :text="el.name" :each="el in els"></li>`
+* Properties prefixed with `_` are untracked: `let state = sprae(el, {_x:2}); state._x++;`.
 * To destroy state and detach sprae handlers, call `element[Symbol.dispose]()`.
 * State getters/setters work as computed effects, eg. `sprae(el, { x:1, get x2(){ return this.x * 2} })`.
 * `this` keyword is not used, to get access to current element use `<input :ref="el" :text="el.value"/>`
