@@ -44,3 +44,9 @@ test("style: camel kebab", async () => {
   params.style.backgroundColor = 'green'
   is(el.outerHTML, `<x style="background-color: green;"></x>`);
 });
+
+test('style: #33', async () => {
+  let el = h`<header class="navbar" :style="{ color: 'white', backgroundColor: '#df0000' }" />`
+  sprae(el)
+  is(el.outerHTML, `<header class="navbar" style="color: white; background-color: rgb(223, 0, 0);"></header>`)
+})
