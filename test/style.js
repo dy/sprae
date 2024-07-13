@@ -12,9 +12,6 @@ test("style: basic", async () => {
   await tick();
   is(el.outerHTML, `<x style="left: 1px; top: 2px;"></x>`);
 
-  params.style = { "--x": 123 };
-  await tick();
-  is(el.style.getPropertyValue("--x"), "123");
 
   params.style = { top: "1px", bottom: "2px" };
   await tick();
@@ -23,8 +20,27 @@ test("style: basic", async () => {
   params.style = { top: "2px", bottom: null };
   await tick();
   is(el.outerHTML, `<x style="left: 1px; top: 2px;"></x>`);
+});
 
-  params.style = { backgroundColor: 'gray' };
+test("style: props", async () => {
+  let el = h`<x :style="style"></x>`;
+  let params = sprae(el, { style: {} });
+  is(el.outerHTML, `<x></x>`);
+
+  params.style = { "--x": 123 };
   await tick();
-  is(el.outerHTML, `<x style="left: 1px; background-color: gray;"></x>`);
+  is(el.style.getPropertyValue("--x"), "123");
+
+  params.style = { "--x": null };
+  await tick();
+  is(el.style.getPropertyValue("--x"), '');
+});
+
+test("style: camel kebab", async () => {
+  let el = h`<x :style="style"></x>`;
+  let params = sprae(el, { style: { backgroundColor: "red" } });
+  is(el.outerHTML, `<x style="background-color: red;"></x>`);
+
+  params.style.backgroundColor = 'green'
+  is(el.outerHTML, `<x style="background-color: green;"></x>`);
 });
