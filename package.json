@@ -4,7 +4,7 @@
   "version": "10.10.0",
   "main": "./sprae.js",
   "module": "./sprae.js",
-  "unpkg": "dist/sprae.umd.min.js",
+  "unpkg": "dist/sprae.auto.min.js",
   "type": "module",
   "files": [
     "core.js",
