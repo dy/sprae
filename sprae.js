@@ -22,9 +22,3 @@ sprae.use(signals)
 sprae.use({ compile: expr => sprae.constructor(`with (arguments[0]) { return ${expr} };`) })
 
 export default sprae
-
-// standalone run
-if (document?.currentScript) {
-  window.sprae = sprae
-  if (document.currentScript.hasAttribute('init')) sprae(document.documentElement);
-}

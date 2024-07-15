@@ -623,11 +623,6 @@ directive.fx = (el, evaluate, state) => {
 sprae.use(ulive_es_exports);
 sprae.use({ compile: (expr) => sprae.constructor(`with (arguments[0]) { return ${expr} };`) });
 var sprae_default = sprae;
-if (document?.currentScript) {
-  window.sprae = sprae;
-  if (document.currentScript.hasAttribute("init"))
-    sprae(document.documentElement);
-}
 export {
   sprae_default as default
 };
