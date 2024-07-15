@@ -1,4 +1,4 @@
-import t, { is, throws } from 'tst'
+import t, { is } from 'tst'
 import { signal, computed, effect, use } from '../signal.js'
 import { tick } from 'wait-please'
 import * as signals from 'ulive'
@@ -6,7 +6,7 @@ import * as signals from 'ulive'
 use(signals)
 
 // value
-t('signal: readme', async t => {
+t('signal: readme', async () => {
   let log = []
   let v1 = signal(0)
   is(v1.value, 0)
@@ -51,7 +51,7 @@ t('signal: readme', async t => {
   // ;[v3, v2, v1].map(v => v[Symbol.dispose]())
 })
 
-t('signal: callstack trouble', t => {
+t('signal: callstack trouble', () => {
   let v1 = signal(0)
   let v2 = computed(() => { console.log('v2.compute'); return v1.value })
   effect(() => { console.log('v2.subscribed'), v2.value })
@@ -59,7 +59,7 @@ t('signal: callstack trouble', t => {
   v1.value = 1
 })
 
-t('signal: core API', async t => {
+t('signal: core API', async () => {
   // warmup
   let v1 = signal(0)
   let v2 = computed(() => v1 * 2)
@@ -69,7 +69,7 @@ t('signal: core API', async t => {
   console.log('---start')
   let s = signal(0)
   let log = []
-  effect(value => log.push(s.value))
+  effect(() => log.push(s.value))
 
   is(log, [0], 'should publish the initial state')
 
@@ -107,7 +107,7 @@ t('signal: core API', async t => {
   is(log2.slice(-1), [5], 'secondary observer is fine')
 })
 
-t.skip('signal: should not expose technical/array symbols', async t => {
+t.skip('signal: should not expose technical/array symbols', async () => {
   let s = signal({ x: 1 })
   let log = []
   is(s.map, undefined)
@@ -115,18 +115,18 @@ t.skip('signal: should not expose technical/array symbols', async t => {
   is(log, [])
 })
 
-t('signal: multiple subscriptions should not inter-trigger', async t => {
+t('signal: multiple subscriptions should not inter-trigger', async () => {
   let value = signal(0)
   let log1 = [], log2 = [], log3 = []
-  effect(v => log1.push(value.value))
-  effect(v => log2.push(value.value))
+  effect(() => log1.push(value.value))
+  effect(() => log2.push(value.value))
   is(log1, [0])
   is(log2, [0])
   value.value = 1
   await tick()
   is(log1, [0, 1])
   is(log2, [0, 1])
-  effect(v => log3.push(value.value))
+  effect(() => log3.push(value.value))
   is(log1, [0, 1])
   is(log2, [0, 1])
   is(log3, [1])
@@ -137,7 +137,7 @@ t('signal: multiple subscriptions should not inter-trigger', async t => {
   is(log3, [1, 2])
 })
 
-t('signal: stores arrays', async t => {
+t('signal: stores arrays', async () => {
   let a = signal([])
   is(a.value, [])
   a.value = [1]
@@ -156,16 +156,16 @@ t('signal: stores arrays', async t => {
   is(a.value, [1])
 })
 
-t('signal: stringify', async t => {
+t('signal: stringify', async () => {
   let v1 = signal(1), v2 = signal({ x: 1 }), v3 = signal([1, 2, 3])
   is(JSON.stringify(v1), '1')
   is(JSON.stringify(v2), `{"x":1}`)
   is(JSON.stringify(v3), '[1,2,3]')
 })
 
-t('signal: subscribe value', async t => {
+t('signal: subscribe value', async () => {
   let v1 = signal(1), log = []
-  effect(v => log.push(v1.value))
+  effect(() => log.push(v1.value))
   is(log, [1])
   console.log('set 2')
   v1.value = 2
@@ -173,7 +173,7 @@ t('signal: subscribe value', async t => {
   is(log, [1, 2])
 })
 
-t('signal: internal effects', async t => {
+t('signal: internal effects', async () => {
   const s1 = signal(1), s2 = signal(2)
   let log1 = [], log2 = []
 
@@ -203,26 +203,26 @@ t('signal: internal effects', async t => {
 t.todo('signal: error in mapper', async t => {
   // NOTE: actually mb useful to have blocking error in mapper
   let x = signal(1)
-  let y = x.map(x => { throw Error('123') })
+  let y = x.map(() => { throw Error('123') })
   t.ok(y.error)
 })
 
-t.todo('signal: error in subscription', async t => {
+t.todo('signal: error in subscription', async () => {
   let x = signal(1)
   x.subscribe(() => { throw new Error('x') })
 })
 
-t.todo('signal: error in init', async t => {
-  let x = signal(() => { throw Error(123) })
+t.todo('signal: error in init', async () => {
+  signal(() => { throw Error(123) });
 })
 
-t.todo('signal: error in set', async t => {
+t.todo('signal: error in set', async () => {
   let x = signal(1)
-  x(x => { throw Error(123) })
+  x(() => { throw Error(123) })
 })
 
 // effect
-t('effect: single', async t => {
+t('effect: single', async () => {
   // NOTE: we don't init from anything. Use strui/from
   let log = [], v1 = signal(1)
   effect(() => log.push(v1.value))
@@ -232,7 +232,7 @@ t('effect: single', async t => {
   is(log, [1, 2])
 })
 
-t('effect: teardown', async t => {
+t('effect: teardown', async () => {
   const a = signal(0)
   const log = []
   let dispose = effect(() => {
@@ -252,14 +252,14 @@ t('effect: teardown', async t => {
 
 
 // computed
-t('computed: single', t => {
+t('computed: single', () => {
   let v1 = signal(1), v2 = computed(() => v1.value)
   is(v2.value, 1)
   v1.value = 2
   is(v2.value, 2)
 })
 
-t('computed: multiple', t => {
+t('computed: multiple', () => {
   let v1 = signal(1), v2 = signal(1), v3 = computed(() => v1.value + v2.value)
   is(v3.value, 2)
   v1.value = 2
@@ -268,7 +268,7 @@ t('computed: multiple', t => {
   is(v3.value, 4)
 })
 
-t('computed: chain', t => {
+t('computed: chain', () => {
   let a = signal(1),
     b = computed(() => (console.log('b'), a.value + 1)),
     c = computed(() => (console.log('c'), b.value + 1))

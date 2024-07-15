@@ -1,8 +1,8 @@
-import test, { is, any, throws } from "tst";
-import { tick, time } from "wait-please";
+import test, { is } from "tst";
+import { tick } from "wait-please";
 import sprae from '../sprae.js'
-import { signal, batch, untracked, effect } from '../signal.js'
-import store, { _change, _signals } from '../store.js'
+import { signal, batch, untracked } from '../signal.js'
+import store from '../store.js'
 import h from "hyperf";
 
 
@@ -408,7 +408,7 @@ test("each: expression as source", async () => {
 });
 
 test.skip("each: unmounted elements remove listeners", async () => {
-  // let's hope they get removed without memory leaks :')
+  // let's hope they get removed without memory leaks...
 });
 
 test("each: internal children get updated by state update, also: update by running again", async () => {
@@ -534,7 +534,7 @@ test("each: subscribe to modifying list", async () => {
   is(el.outerHTML, `<ul></ul>`);
 });
 
-test('each: unwanted extra subscription', async t => {
+test('each: unwanted extra subscription', async () => {
   let el = h`<div><x :each="item,i in (console.log('upd',_count),_count++, rows)"><a :text="item.label"></a></x></div>`
 
   const rows = signal(null)
@@ -568,7 +568,7 @@ test('each: unwanted extra subscription', async t => {
   is(el.innerHTML, `<x><a>4</a></x>`)
 });
 
-test('each: batched .length updates', async t => {
+test('each: batched .length updates', async () => {
   let c = 0
   let state = store({ list: [1, 2], count() { c++ } })
   let el = h`<a><b :each="x in (count(), list)" :text="x"/></a>`
@@ -588,9 +588,9 @@ test('each: batched .length updates', async t => {
   is(c, 2)
 })
 
-test('each: rewrite item', async t => {
+test('each: rewrite item', async () => {
   let el = h`<a><x :each="i in items" :text="i" :onx="e=>i++"/></a>`
-  let state = sprae(el, { items: [1, 2, 3] })
+  sprae(el, { items: [1, 2, 3] })
   is(el.innerHTML, `<x>1</x><x>2</x><x>3</x>`)
   el.childNodes[1].dispatchEvent(new window.Event("x"))
   is(el.innerHTML, `<x>1</x><x>3</x><x>3</x>`)

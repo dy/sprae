@@ -1,9 +1,8 @@
-import test, { is, any, throws } from "tst";
+import test, { is } from "tst";
 import { tick, time } from "wait-please";
 import sprae from '../sprae.js'
-import { signal, batch, untracked, effect } from '../signal.js'
+import { signal } from '../signal.js'
 import h from "hyperf";
-import store, { _change, _signals } from '../store.js'
 
 import * as signals from '@preact/signals-core'
 sprae.use(signals)
@@ -87,7 +86,7 @@ test("core: const in with", async () => {
 
 test("core: base", async () => {
   let el = h`<input :id="0" :="{for:1, title:2, help:3, type:4, placeholder: 5, value: 6, aB: 8}" :value="7"/>`;
-  let params = sprae(el);
+  sprae(el);
   is(el.outerHTML, `<input id="0" for="1" title="2" help="3" type="4" placeholder="5" value="7" a-b="8">`);
 });
 
@@ -100,7 +99,7 @@ test("core: sets prop", async () => {
 
 test("core: multiprop", async () => {
   let el = h`<input :id:name:for="0" />`;
-  let params = sprae(el);
+  sprae(el);
   is(el.outerHTML, `<input id="0" name="0" for="0">`);
 });
 
@@ -223,13 +222,13 @@ test("switch signals", async () => {
   is(el.innerHTML, '2')
 })
 
-test.skip('memory allocation', async e => {
+test.skip('memory allocation', async () => {
   let items = signal([])
   let el = h`<><x :each="item in items" :text="item.x"></x></>`
   let btn = document.createElement('button')
   document.body.appendChild(btn)
   btn.textContent = 'Allocate'
-  btn.onclick = e => {
+  btn.onclick = () => {
     let newItems = []
     for (let i = 0; i < 10000; i++) {
       let item = { x: i }
@@ -240,7 +239,7 @@ test.skip('memory allocation', async e => {
   sprae(el, { items });
 })
 
-test.todo('perf: must be fast', async e => {
+test.todo('perf: must be fast', async () => {
   let el = h`<a :l="l"><b :each="i in l"><c :text="i"/></b></a>`
   console.time('perf')
   for (let i = 0; i < 1e2; i++) {

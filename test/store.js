@@ -1,14 +1,13 @@
 import store, { _change, _signals } from '../store.js'
 import { effect, batch, use, signal } from '../signal.js'
 import * as signals from 'ulive'
-// import * as signals from '@preact/signals'
-import t, { is, ok, throws } from 'tst'
+import t, { is, ok } from 'tst'
 import { tick } from 'wait-please'
 
 use(signals)
 
 
-t('store: basic', async t => {
+t('store: basic', async () => {
   let s = store({ x: 0, y: 1 })
 
   let xy; effect(() => (xy = s.x + s.y))
@@ -24,7 +23,7 @@ t('store: basic', async t => {
   is(xy, 6, 'Eq')
 })
 
-t('store: signal-struct basics', async t => {
+t('store: signal-struct basics', async () => {
   let s = store({
     x: 0,
     y: 1,
@@ -294,7 +293,7 @@ t('store: set special object as prop', () => {
 
 t.skip('store: arrays retain reference', () => {
   // NOTE: not sure if we need it - in favor of simplicity say we don't
-  // arrays retain reference
+  // arrays: retain reference
   let list = [1, 2, 3]
   let s6 = store({ list })
   s6.list[1] = 4
@@ -374,7 +373,7 @@ t.skip('store: batch', async () => {
 
 t('store: inheritance does not change root', () => {
   const root = store({ x: 1, y: 2 })
-  const s = store({ x: 2 }, { ...root[_signals] })
+  store({ x: 2 }, { ...root[_signals] })
   is(root.x, 1)
 })
 
@@ -387,7 +386,7 @@ t('store: adding new props to object triggers effect', () => {
   is(log, [{ x: 1, y: 2 }, { x: 1, y: 2, z: 3 }])
 })
 
-t.skip('store: length is not triggered extra times', async t => {
+t.skip('store: length is not triggered extra times', async () => {
   // NOTE: we can handle it via each, even batch
   let s = store([1, 2])
   let log = []
@@ -398,24 +397,24 @@ t.skip('store: length is not triggered extra times', async t => {
   is(log, [2, 4])
 })
 
-t.skip('store: retain global objects as is', async t => {
+t.skip('store: retain global objects as is', async () => {
   let s = store({ console })
   ok(s.console === globalThis.console)
 })
 
-t('store: reading length or signals', async t => {
+t('store: reading length or signals', async () => {
   let o = store({}), l = store([])
   o[_signals], l[_signals]
   o[_change], l[_change]
 })
 
-t('store: array concat', async t => {
+t('store: array concat', async () => {
   let rows = store([1, 2])
   is(rows, [1, 2])
   is(rows.concat([3, 4]), [1, 2, 3, 4])
 })
 
-t('store: array subscribes to filtered', async t => {
+t('store: array subscribes to filtered', async () => {
   let list = store([1, 2]), result
   effect(() => result = list.filter(x => x > 1).length)
   is(result, 1)
@@ -423,7 +422,7 @@ t('store: array subscribes to filtered', async t => {
   is(result, 2)
 })
 
-t('store: untracked values', async t => {
+t('store: untracked values', async () => {
   let s = store({ x: 1, _y: 0 }), log = []
   effect(() => log.push(s.x, s._y))
   is(log, [1, 0])

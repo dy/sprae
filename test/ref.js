@@ -1,7 +1,7 @@
-import test, { is, any, throws } from "tst";
-import { tick, time } from "wait-please";
+import test, { is } from "tst";
+import { tick } from "wait-please";
 import sprae from '../sprae.js'
-import { signal, batch, untracked, effect } from '../signal.js'
+import { signal } from '../signal.js'
 import h from "hyperf";
 
 
