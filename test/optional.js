@@ -1,5 +1,5 @@
-import test, { is, any, throws } from "tst";
-import { tick, time } from "wait-please";
+import test, { is } from "tst";
+import { tick } from "wait-please";
 import sprae from '../sprae.js'
 import h from "hyperf";
 import '../directive/aria.js'
@@ -18,7 +18,7 @@ test("aria: base", async () => {
 
 test("data: base", async () => {
   let el = h`<input :data="{a:1, fooBar:2}"/>`;
-  let params = sprae(el);
+  sprae(el);
   is(el.outerHTML, `<input data-a="1" data-foo-bar="2">`);
 });
 
@@ -39,13 +39,13 @@ test("html: state", async () => {
 
 test("html: :with", async () => {
   let a = h`<template :ref="tpl"><div :text="text"></div></template><x :html="tpl" :with="{text:'abc'}" />`;
-  let state = sprae(a);
+  sprae(a);
   is(a.outerHTML, `<template><div :text="text"></div></template><x><div>abc</div></x>`);
 });
 
 test("html: nested items", async () => {
   let el = h`<template :ref="tpl"><div :each="item in items" :text="item.id"></div></template><x :html="tpl" :with="{items:[{id:'a'},{id:'b'}]}" />`;
-  let state = sprae(el);
+  sprae(el);
   is(
     el.outerHTML,
     `<template><div :each="item in items" :text="item.id"></div></template><x><div>a</div><div>b</div></x>`,
@@ -54,6 +54,6 @@ test("html: nested items", async () => {
 
 test.skip("html: template after use", async () => {
   let a = h`<x :html="tpl" :with="{text:'abc'}" /><template :ref="tpl"><div :text="text"></div></template>`;
-  let state = sprae(a);
+  sprae(a);
   is(a.outerHTML, `<x><div>abc</div></x><template><div :text="text"></div></template>`);
 });

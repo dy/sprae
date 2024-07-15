@@ -1,7 +1,7 @@
-import test, { is, any, throws } from "tst";
-import { tick, time } from "wait-please";
+import test, { is } from "tst";
+import { tick } from "wait-please";
 import sprae from '../sprae.js'
-import { signal, batch, untracked, effect } from '../signal.js'
+import { signal } from '../signal.js'
 import h from "hyperf";
 
 
@@ -66,13 +66,13 @@ test("with: writes to state", async () => {
 });
 
 test("with: one of children (internal number of iterations, cant see the result here)", async () => {
-  let a = h`<div><x :text="x"></x><x :with={x:2} :text="x"></x><x :text="y">3</x></div>`;
+  let a = h`<div><x :text="x"></x><x :with="{x:2}" :text="x"></x><x :text="y">3</x></div>`;
   sprae(a, { x: 1, y: 3 });
   is(a.innerHTML, `<x>1</x><x>2</x><x>3</x>`);
 });
 
 test("with: scope directives must come first", async () => {
-  // NOTE: we init attributes in order of definition
+  // NOTE: we have to init attributes in order of definition
   let a = h`<x :with="{y:1}" :text="y" :ref="x"></x>`;
   sprae(a, {});
   is(a.outerHTML, `<x>1</x>`);
