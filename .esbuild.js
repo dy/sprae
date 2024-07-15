@@ -18,7 +18,7 @@ esbuild.build({
 
 // Standalone build
 await esbuild.build({
-  entryPoints: ["sprae.js"],
+  entryPoints: ["sprae.auto.js"],
   outfile: "dist/sprae.auto.js",
   bundle: true,
   target: 'es2020',

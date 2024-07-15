@@ -624,9 +624,11 @@ ${dir}${expr ? `="${expr}"
   sprae.use(ulive_es_exports);
   sprae.use({ compile: (expr) => sprae.constructor(`with (arguments[0]) { return ${expr} };`) });
   var sprae_default = sprae;
-  if (document?.currentScript) {
-    window.sprae = sprae;
+
+  // sprae.auto.js
+  if (typeof document != "undefined" && document?.currentScript) {
+    window.sprae = sprae_default;
     if (document.currentScript.hasAttribute("init"))
-      sprae(document.documentElement);
+      sprae_default(document.documentElement);
   }
 })();
