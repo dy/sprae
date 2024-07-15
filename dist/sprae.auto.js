@@ -626,9 +626,7 @@ ${dir}${expr ? `="${expr}"
   var sprae_default = sprae;
 
   // sprae.auto.js
-  if (typeof document != "undefined" && document?.currentScript) {
-    window.sprae = sprae_default;
-    if (document.currentScript.hasAttribute("init"))
-      sprae_default(document.documentElement);
-  }
+  window.sprae = sprae_default;
+  if (document.currentScript?.hasAttribute("init"))
+    sprae_default(document.documentElement);
 })();
