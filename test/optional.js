@@ -17,9 +17,9 @@ test("aria: base", async () => {
 });
 
 test("data: base", async () => {
-  let el = h`<input :data="{a:1, fooBar:2}"/>`;
+  let el = h`<input :data="{a:1, fooBar:2, UpperCase:3}"/>`;
   sprae(el);
-  is(el.outerHTML, `<input data-a="1" data-foo-bar="2">`);
+  is(el.outerHTML, `<input data-a="1" data-foo-bar="2" data-upper-case="3">`);
 });
 
 test("html: by ref", async () => {
