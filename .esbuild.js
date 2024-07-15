@@ -1,4 +1,5 @@
 import esbuild from "esbuild";
+import { umdWrapper } from "esbuild-plugin-umd-wrapper"
 
 // ESM build
 await esbuild.build({
@@ -18,16 +19,19 @@ esbuild.build({
 
 // Standalone build
 await esbuild.build({
-  entryPoints: ["sprae.auto.js"],
-  outfile: "dist/sprae.auto.js",
+  entryPoints: ["sprae.umd.cjs"],
+  outfile: "dist/sprae.umd.js",
   bundle: true,
   target: 'es2020',
   sourcemap: 'external',
-  format: "iife"
+  format: "umd",
+  plugins: [umdWrapper({
+    libraryName: "sprae"
+  })]
 })
 esbuild.build({
-  entryPoints: ['dist/sprae.auto.js'],
-  outfile: "dist/sprae.auto.min.js",
+  entryPoints: ['dist/sprae.umd.js'],
+  outfile: "dist/sprae.umd.min.js",
   sourcemap: 'external',
   minify: true
 })
