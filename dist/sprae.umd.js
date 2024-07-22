@@ -36,15 +36,18 @@ var init_signal = __esm({
 
 // store.js
 function store(values, parent) {
-  if (!values) return values;
-  if (values[_signals]) return values;
-  if (Array.isArray(values)) return list(values);
-  if (values.constructor !== Object) return values;
+  if (!values)
+    return values;
+  if (values[_signals])
+    return values;
+  if (Array.isArray(values))
+    return list(values);
+  if (values.constructor !== Object)
+    return values;
   let signals = { ...parent?.[_signals] }, _len = signal(Object.values(values).length);
   const state = new Proxy(signals, {
     get: (_, key) => key === _change ? _len : key === _signals ? signals : signals[key]?.valueOf(),
     set: (_, key, v, s) => (s = signals[key], set(signals, key, v), s ?? ++_len.value, 1),
-    // bump length for new signal
     deleteProperty: (_, key) => (signals[key] && (del(signals, key), _len.value--), 1),
     ownKeys() {
       _len.value;
@@ -64,24 +67,31 @@ function store(values, parent) {
 }
 function list(values) {
   let lastProp;
-  if (values[_signals]) return values;
+  if (values[_signals])
+    return values;
   let _len = signal(values.length), signals = Array(values.length).fill();
   const state = new Proxy(signals, {
     get(_, key) {
-      if (typeof key === "symbol") return key === _change ? _len : key === _signals ? signals : signals[key];
-      if (key === "length") return mut[lastProp] ? _len.peek() : _len.value;
+      if (typeof key === "symbol")
+        return key === _change ? _len : key === _signals ? signals : signals[key];
+      if (key === "length")
+        return mut[lastProp] ? _len.peek() : _len.value;
       lastProp = key;
-      if (signals[key]) return signals[key].valueOf();
-      if (key < signals.length) return (signals[key] = signal(store(values[key]))).value;
+      if (signals[key])
+        return signals[key].valueOf();
+      if (key < signals.length)
+        return (signals[key] = signal(store(values[key]))).value;
     },
     set(_, key, v) {
       if (key === "length") {
-        for (let i = v, l = signals.length; i < l; i++) delete state[i];
+        for (let i = v, l = signals.length; i < l; i++)
+          delete state[i];
         _len.value = signals.length = v;
         return true;
       }
       set(signals, key, v);
-      if (key >= _len.peek()) _len.value = signals.length = Number(key) + 1;
+      if (key >= _len.peek())
+        _len.value = signals.length = Number(key) + 1;
       return true;
     },
     deleteProperty: (_, key) => (signals[key] && del(signals, key), 1)
@@ -90,20 +100,25 @@ function list(values) {
 }
 function set(signals, key, v) {
   let s = signals[key];
-  if (key[0] === "_") signals[key] = v;
+  if (key[0] === "_")
+    signals[key] = v;
   else if (!s) {
     signals[key] = s = v?.peek ? v : signal(store(v));
-  } else if (v === s.peek()) ;
-  else if (s._set) s._set(v);
+  } else if (v === s.peek())
+    ;
+  else if (s._set)
+    s._set(v);
   else if (Array.isArray(v) && Array.isArray(s.peek())) {
     const cur = s.peek();
-    if (cur[_change]) untracked(() => {
-      batch(() => {
-        let i = 0, l = v.length;
-        for (; i < l; i++) cur[i] = v[i];
-        cur.length = l;
+    if (cur[_change])
+      untracked(() => {
+        batch(() => {
+          let i = 0, l = v.length;
+          for (; i < l; i++)
+            cur[i] = v[i];
+          cur.length = l;
+        });
       });
-    });
     else {
       s.value = v;
     }
@@ -113,7 +128,8 @@ function set(signals, key, v) {
 }
 function del(signals, key) {
   const s = signals[key], del2 = s[Symbol.dispose];
-  if (del2) delete s[Symbol.dispose];
+  if (del2)
+    delete s[Symbol.dispose];
   delete signals[key];
   del2?.();
 }
@@ -129,20 +145,24 @@ var init_store = __esm({
 
 // core.js
 function sprae(el, values) {
-  if (!el?.childNodes) return;
+  if (!el?.childNodes)
+    return;
   if (memo.has(el)) {
     return Object.assign(memo.get(el), values);
   }
   const state = store(values || {}), disposes = [];
-  init(el);
-  if (!memo.has(el)) memo.set(el, state);
+  init2(el);
+  if (!memo.has(el))
+    memo.set(el, state);
   el[_dispose] = () => {
-    while (disposes.length) disposes.pop()();
+    while (disposes.length)
+      disposes.pop()();
     memo.delete(el);
   };
   return state;
-  function init(el2, parent = el2.parentNode) {
-    if (!el2.childNodes) return;
+  function init2(el2, parent = el2.parentNode) {
+    if (!el2.childNodes)
+      return;
     for (let i = 0; i < el2.attributes?.length; ) {
       let attr2 = el2.attributes[i];
       if (attr2.name[0] === ":") {
@@ -152,13 +172,18 @@ function sprae(el, values) {
           let dir = directive[name] || directive.default;
           let evaluate = (dir.parse || parse)(attr2.value);
           let dispose = dir(el2, evaluate, state, name);
-          if (dispose) disposes.push(dispose);
+          if (dispose)
+            disposes.push(dispose);
         }
-        if (memo.has(el2)) return el2[_dispose] && disposes.push(el2[_dispose]);
-        if (el2.parentNode !== parent) return;
-      } else i++;
+        if (memo.has(el2))
+          return el2[_dispose] && disposes.push(el2[_dispose]);
+        if (el2.parentNode !== parent)
+          return;
+      } else
+        i++;
     }
-    for (let child of [...el2.childNodes]) init(child, el2);
+    for (let child of [...el2.childNodes])
+      init2(child, el2);
   }
   ;
 }
@@ -172,7 +197,8 @@ var init_core = __esm({
     memo = /* @__PURE__ */ new WeakMap();
     evalMemo = {};
     parse = (expr, dir, fn) => {
-      if (fn = evalMemo[expr = expr.trim()]) return fn;
+      if (fn = evalMemo[expr = expr.trim()])
+        return fn;
       try {
         fn = compile(expr);
       } catch (e) {
@@ -192,14 +218,16 @@ ${dir}${expr ? `="${expr}"
       s.compile && (compile = s.compile);
     };
     frag = (tpl) => {
-      if (!tpl.nodeType) return tpl;
+      if (!tpl.nodeType)
+        return tpl;
       let content = tpl.content.cloneNode(true), attributes = [...tpl.attributes], ref = document.createTextNode(""), childNodes = (content.append(ref), [...content.childNodes]);
       return {
         childNodes,
         content,
         remove: () => content.append(...childNodes),
         replaceWith(el) {
-          if (el === ref) return;
+          if (el === ref)
+            return;
           ref.before(el);
           content.append(...childNodes);
         },
@@ -230,9 +258,11 @@ var init_ulive_es = __esm({
         return v;
       },
       set value(val) {
-        if (val === v) return;
+        if (val === v)
+          return;
         v = val;
-        for (let sub of obs) batched ? batched.add(sub) : sub();
+        for (let sub of obs)
+          batched ? batched.add(sub) : sub();
       },
       peek() {
         return v;
@@ -248,7 +278,8 @@ var init_ulive_es = __esm({
       }
     }, deps = fx.deps = [], fx(), (dep) => {
       teardown?.call?.();
-      while (dep = deps.pop()) dep.delete(fx);
+      while (dep = deps.pop())
+        dep.delete(fx);
     });
     computed2 = (fn, s = signal2(), c, e) => (c = {
       get value() {
@@ -259,14 +290,16 @@ var init_ulive_es = __esm({
     }, c.toJSON = c.then = c.toString = c.valueOf = () => c.value, c);
     batch2 = (fn) => {
       let fxs = batched;
-      if (!fxs) batched = /* @__PURE__ */ new Set();
+      if (!fxs)
+        batched = /* @__PURE__ */ new Set();
       try {
         fn();
       } finally {
         if (!fxs) {
           fxs = batched;
           batched = null;
-          for (const fx of fxs) fx();
+          for (const fx of fxs)
+            fx();
         }
       }
     };
@@ -288,11 +321,13 @@ var init_if = __esm({
       memo.set(ifEl, null);
       if (next?.hasAttribute(":else")) {
         next.removeAttribute(":else");
-        if (!next.hasAttribute(":if")) next.remove(), elseEl = next.content ? frag(next) : next, memo.set(elseEl, null);
+        if (!next.hasAttribute(":if"))
+          next.remove(), elseEl = next.content ? frag(next) : next, memo.set(elseEl, null);
       }
       return effect(() => {
         const newEl = evaluate(state) ? ifEl : el[_prevIf] ? null : elseEl;
-        if (next) next[_prevIf] = newEl === ifEl;
+        if (next)
+          next[_prevIf] = newEl === ifEl;
         if (curEl != newEl) {
           curEl?.remove();
           if (curEl = newEl) {
@@ -319,8 +354,10 @@ var init_each = __esm({
       const items = computed(() => {
         keys2 = null;
         let items2 = evaluate(state);
-        if (typeof items2 === "number") items2 = Array.from({ length: items2 }, (_, i) => i + 1);
-        if (items2?.constructor === Object) keys2 = Object.keys(items2), items2 = Object.values(items2);
+        if (typeof items2 === "number")
+          items2 = Array.from({ length: items2 }, (_, i) => i + 1);
+        if (items2?.constructor === Object)
+          keys2 = Object.keys(items2), items2 = Object.values(items2);
         return items2 || [];
       });
       const update = () => {
@@ -365,7 +402,8 @@ var init_each = __esm({
         if (!planned) {
           update();
           queueMicrotask(() => (planned && update(), planned = 0));
-        } else planned++;
+        } else
+          planned++;
       });
     };
     directive.each.parse = (expr) => {
@@ -411,7 +449,8 @@ var init_html = __esm({
     init_core();
     directive.html = (el, evaluate, state) => {
       let tpl = evaluate(state);
-      if (!tpl) return;
+      if (!tpl)
+        return;
       let content = (tpl.content || tpl).cloneNode(true);
       el.replaceChildren(content);
       sprae(el, state);
@@ -425,7 +464,8 @@ var init_text = __esm({
     init_core();
     init_signal();
     directive.text = (el, evaluate, state) => {
-      if (el.content) el.replaceWith(el = frag(el).childNodes[0]);
+      if (el.content)
+        el.replaceWith(el = frag(el).childNodes[0]);
       return effect(() => {
         let value = evaluate(state);
         el.textContent = value == null ? "" : value;
@@ -445,13 +485,20 @@ var init_class = __esm({
         let v = evaluate(state);
         let clsx = /* @__PURE__ */ new Set();
         if (v) {
-          if (typeof v === "string") v.split(" ").map((cls) => clsx.add(cls));
-          else if (Array.isArray(v)) v.map((v2) => v2 && clsx.add(v2));
-          else Object.entries(v).map(([k, v2]) => v2 && clsx.add(k));
+          if (typeof v === "string")
+            v.split(" ").map((cls) => clsx.add(cls));
+          else if (Array.isArray(v))
+            v.map((v2) => v2 && clsx.add(v2));
+          else
+            Object.entries(v).map(([k, v2]) => v2 && clsx.add(k));
         }
-        for (let cls of cur) if (clsx.has(cls)) clsx.delete(cls);
-        else el.classList.remove(cls);
-        for (let cls of cur = clsx) el.classList.add(cls);
+        for (let cls of cur)
+          if (clsx.has(cls))
+            clsx.delete(cls);
+          else
+            el.classList.remove(cls);
+        for (let cls of cur = clsx)
+          el.classList.add(cls);
       });
     };
   }
@@ -466,10 +513,13 @@ var init_style = __esm({
       let initStyle = el.getAttribute("style");
       return effect(() => {
         let v = evaluate(state);
-        if (typeof v === "string") el.setAttribute("style", initStyle + (initStyle.endsWith(";") ? "" : "; ") + v);
+        if (typeof v === "string")
+          el.setAttribute("style", initStyle + (initStyle.endsWith(";") ? "" : "; ") + v);
         else {
-          if (initStyle) el.setAttribute("style", initStyle);
-          for (let k in v) k[0] == "-" ? el.style.setProperty(k, v[k]) : el.style[k] = v[k];
+          if (initStyle)
+            el.setAttribute("style", initStyle);
+          for (let k in v)
+            k[0] == "-" ? el.style.setProperty(k, v[k]) : el.style[k] = v[k];
         }
       });
     };
@@ -483,11 +533,15 @@ var init_default = __esm({
     init_core();
     init_signal();
     directive.default = (target, evaluate, state, name) => {
-      if (!name.startsWith("on")) return effect(() => {
-        let value = evaluate(state);
-        if (name) attr(target, name, value);
-        else for (let key in value) attr(target, dashcase(key), value[key]);
-      });
+      if (!name.startsWith("on"))
+        return effect(() => {
+          let value = evaluate(state);
+          if (name)
+            attr(target, name, value);
+          else
+            for (let key in value)
+              attr(target, dashcase(key), value[key]);
+        });
       const ctxs = name.split("..").map((e) => {
         let ctx = { evt: "", target, test: () => true };
         ctx.evt = (e.startsWith("on") ? e.slice(2) : e).replace(
@@ -496,14 +550,16 @@ var init_default = __esm({
         );
         return ctx;
       });
-      if (ctxs.length == 1) return effect(() => addListener(evaluate(state), ctxs[0]));
+      if (ctxs.length == 1)
+        return effect(() => addListener(evaluate(state), ctxs[0]));
       let startFn, nextFn, off, idx = 0;
       const nextListener = (fn) => {
         off = addListener((e) => (off(), nextFn = fn?.(e), (idx = ++idx % ctxs.length) ? nextListener(nextFn) : startFn && nextListener(startFn)), ctxs[idx]);
       };
       return effect(() => (startFn = evaluate(state), !off && nextListener(startFn), () => startFn = null));
       function addListener(fn, { evt, target: target2, test, defer, stop, prevent, immediate, ...opts }) {
-        if (defer) fn = defer(fn);
+        if (defer)
+          fn = defer(fn);
         const cb = (e) => {
           try {
             test(e) && (stop && (immediate ? e.stopImmediatePropagation() : e.stopPropagation()), prevent && e.preventDefault(), fn?.(e));
@@ -517,7 +573,6 @@ var init_default = __esm({
       ;
     };
     mods = {
-      // actions
       prevent(ctx) {
         ctx.prevent = true;
       },
@@ -527,7 +582,6 @@ var init_default = __esm({
       immediate(ctx) {
         ctx.immediate = true;
       },
-      // options
       once(ctx) {
         ctx.once = true;
       },
@@ -537,7 +591,6 @@ var init_default = __esm({
       capture(ctx) {
         ctx.capture = true;
       },
-      // target
       window(ctx) {
         ctx.target = window;
       },
@@ -550,21 +603,21 @@ var init_default = __esm({
       debounce(ctx, wait) {
         ctx.defer = (fn) => debounce(fn, wait ? Number(wait) || 0 : 108);
       },
-      // test
       outside: (ctx) => (e) => {
         let target = ctx.target;
-        if (target.contains(e.target)) return false;
-        if (e.target.isConnected === false) return false;
-        if (target.offsetWidth < 1 && target.offsetHeight < 1) return false;
+        if (target.contains(e.target))
+          return false;
+        if (e.target.isConnected === false)
+          return false;
+        if (target.offsetWidth < 1 && target.offsetHeight < 1)
+          return false;
         return true;
       },
       self: (ctx) => (e) => e.target === ctx.target,
-      // keyboard
       ctrl: (_, ...param) => (e) => keys.ctrl(e) && param.every((p) => keys[p] ? keys[p](e) : e.key === p),
       shift: (_, ...param) => (e) => keys.shift(e) && param.every((p) => keys[p] ? keys[p](e) : e.key === p),
       alt: (_, ...param) => (e) => keys.alt(e) && param.every((p) => keys[p] ? keys[p](e) : e.key === p),
       meta: (_, ...param) => (e) => keys.meta(e) && param.every((p) => keys[p] ? keys[p](e) : e.key === p),
-      // NOTE: we don't expose up/left/right/down as too verbose: can and better be handled/differentiated at once
       arrow: () => keys.arrow,
       enter: () => keys.enter,
       esc: () => keys.esc,
@@ -591,19 +644,23 @@ var init_default = __esm({
       char: (e) => /^\S$/.test(e.key)
     };
     attr = (el, name, v) => {
-      if (v == null || v === false) el.removeAttribute(name);
-      else el.setAttribute(name, v === true ? "" : typeof v === "number" || typeof v === "string" ? v : "");
+      if (v == null || v === false)
+        el.removeAttribute(name);
+      else
+        el.setAttribute(name, v === true ? "" : typeof v === "number" || typeof v === "string" ? v : "");
     };
     throttle = (fn, limit) => {
       let pause, planned, block = (e) => {
         pause = true;
         setTimeout(() => {
           pause = false;
-          if (planned) return planned = false, block(e), fn(e);
+          if (planned)
+            return planned = false, block(e), fn(e);
         }, limit);
       };
       return (e) => {
-        if (pause) return planned = true;
+        if (pause)
+          return planned = true;
         block(e);
         return fn(e);
       };
@@ -631,11 +688,9 @@ var init_value = __esm({
     init_default();
     init_signal();
     directive.value = (el, [getValue, setValue], state) => {
-      const update = el.type === "text" || el.type === "" ? (value) => el.setAttribute("value", el.value = value == null ? "" : value) : el.tagName === "TEXTAREA" || el.type === "text" || el.type === "" ? (value, from, to) => (
-        // we retain selection in input
-        (from = el.selectionStart, to = el.selectionEnd, el.setAttribute("value", el.value = value == null ? "" : value), from && el.setSelectionRange(from, to))
-      ) : el.type === "checkbox" ? (value) => (el.checked = value, attr(el, "checked", value)) : el.type === "select-one" ? (value) => {
-        for (let option in el.options) option.removeAttribute("selected");
+      const update = el.type === "text" || el.type === "" ? (value) => el.setAttribute("value", el.value = value == null ? "" : value) : el.tagName === "TEXTAREA" || el.type === "text" || el.type === "" ? (value, from, to) => (from = el.selectionStart, to = el.selectionEnd, el.setAttribute("value", el.value = value == null ? "" : value), from && el.setSelectionRange(from, to)) : el.type === "checkbox" ? (value) => (el.checked = value, attr(el, "checked", value)) : el.type === "select-one" ? (value) => {
+        for (let option in el.options)
+          option.removeAttribute("selected");
         el.value = value;
         el.selectedOptions[0]?.setAttribute("selected", "");
       } : (value) => el.value = value;
@@ -702,7 +757,8 @@ var init_data = __esm({
     directive["data"] = (el, evaluate, state) => {
       return effect(() => {
         let value = evaluate(state);
-        for (let key in value) el.dataset[key] = value[key];
+        for (let key in value)
+          el.dataset[key] = value[key];
       });
     };
   }
@@ -717,7 +773,8 @@ var init_aria = __esm({
     init_signal();
     directive["aria"] = (el, evaluate, state) => {
       const update = (value) => {
-        for (let key in value) attr(el, "aria-" + dashcase(key), value[key] == null ? null : value[key] + "");
+        for (let key in value)
+          attr(el, "aria-" + dashcase(key), value[key] == null ? null : value[key] + "");
       };
       return effect(() => update(evaluate(state)));
     };
@@ -730,7 +787,9 @@ init_data();
 init_aria();
 init_html();
 module.exports = sprae2;
-if (document.currentScript?.hasAttribute("init")) sprae2(document.documentElement);
+var init = document.currentScript?.getAttribute("init") || null;
+if (init)
+  sprae2(document.documentElement, JSON.parse(init));
 ;if (typeof module.exports == "object" && typeof exports == "object") {
   var __cp = (to, from, except, desc) => {
     if ((from && typeof from === "object") || typeof from === "function") {
