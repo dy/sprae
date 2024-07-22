@@ -14,7 +14,7 @@ A light alternative to alpine, petite-vue etc.
 </div>
 
 <script type="module">
-  import sprae from 'sprae'
+  import sprae from './sprae.js'
 
   // init
   const container = document.querySelector('#container');
