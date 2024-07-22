@@ -10,7 +10,7 @@ A light alternative to alpine, petite-vue etc.
 
 ```html
 <div id="container" :if="user">
-  Hello <span :text="user.name">World</span>.
+  Hello <span :text="user.name">there</span>.
 </div>
 
 <script type="module">
@@ -18,10 +18,10 @@ A light alternative to alpine, petite-vue etc.
 
   // init
   const container = document.querySelector('#container');
-  const state = sprae(container, { user: { name: 'Kitty' } })
+  const state = sprae(container, { user: { name: 'friend' } })
 
   // update
-  state.user.name = 'Dolly'
+  state.user.name = 'love'
 </script>
 ```
 
@@ -32,8 +32,8 @@ Sprae evaluates `:`-directives and evaporates them, returning reactive state for
 UMD version enables sprae via CDN, as CJS, AMD etc.
 
 ```html
-<!-- `init` attribute autoinits sprae on document -->
-<script src="https://cdn.jsdelivr.net/npm/sprae/dist/sprae.umd.js" init></script>
+<!-- `init` attribute autoinits sprae on document with initial state (optional) -->
+<script src="https://cdn.jsdelivr.net/npm/sprae/dist/sprae.umd.js" init="{ user: 'buddy' }"></script>
 
 <script>
   window.sprae(el); // global standalone
