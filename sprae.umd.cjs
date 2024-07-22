@@ -11,4 +11,5 @@ require('./directive/html.js');
 module.exports = sprae
 
 // autoinit if wanted
-if (document.currentScript?.hasAttribute('init')) sprae(document.documentElement);
+const init = document.currentScript?.getAttribute('init') || null
+if (init) sprae(document.documentElement, JSON.parse(init));
