@@ -283,7 +283,7 @@ Trigger when element is connected / disconnected from DOM.
 
 ## Signals
 
-Sprae uses minimal _preact-flavored signals_ for reactivity and can take _signal_ values as inputs.<br/>
+Sprae uses _preact-flavored signals_ for reactivity and can take _signal_ values as inputs.<br/>
 Signals can be switched to any preact/compatible implementation:
 
 ```js
