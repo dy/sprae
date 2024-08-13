@@ -283,15 +283,15 @@ Trigger when element is connected / disconnected from DOM.
 
 ## Signals
 
-Sprae uses signals for reactivity and can take signal values as inputs.<br/>
-Signals provider can be switched to any preact-flavored implementation:
+Sprae uses minimal _preact-flavored signals_ for reactivity and can take _signal_ values as inputs.<br/>
+Signals can be switched to any preact/compatible implementation:
 
 ```js
 import sprae from 'sprae';
 import { signal, computed, effect, batch, untracked } from 'sprae/signal';
 import * as signals from '@preact/signals-core';
 
-// switch provider to @preact/signals-core
+// switch sprae signals to @preact/signals-core
 sprae.use(signals);
 
 // use signal as state value
