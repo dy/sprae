@@ -32,9 +32,16 @@ directive.value = (el, [getValue, setValue], state) => {
 
 directive.value.parse = expr => {
   let evaluate = [parse(expr)]
+  // catch wrong assigns like `123 = arguments[1]`, `foo?.bar = arguments[1]`
   try {
-    // for values like `123 = arguments[1]`, `foo?.bar = arguments[1]`
-    evaluate.push(parse(`${expr}=arguments[1];`))
+    const set = parse(`${expr}=__;`);
+    // FIXME: if there's a simpler way to set value in justin?
+    evaluate.push((state, value) => {
+      state.__ = value
+      let result = set(state, value)
+      delete state.__
+      return result
+    })
   }
   catch (e) { }
   return evaluate

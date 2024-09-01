@@ -538,7 +538,7 @@ test('each: unwanted extra subscription', async () => {
   let el = h`<div><x :each="item,i in (console.log('upd',_count),_count++, rows)"><a :text="item.label"></a></x></div>`
 
   const rows = signal(null)
-  const state = sprae(el, { rows, _count: 0 })
+  const state = sprae(el, { rows, _count: 0, console })
 
   console.log('------rows.value = [{id:0},{id:1}]')
   await tick()

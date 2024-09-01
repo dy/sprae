@@ -1,3 +1,5 @@
+// test signals only (not sprae)
+
 import t, { is } from 'tst'
 import { signal, computed, effect, use } from '../signal.js'
 import { tick } from 'wait-please'

@@ -5,7 +5,7 @@ import h from "hyperf";
 
 test("value: direct", async () => {
   let el = h`<input :value="a" />`;
-  let state = sprae(el, { a: 1 });
+  let state = sprae(el, { a: 1, console });
   is(el.value, "1");
   is(el.outerHTML, `<input value="1">`);
   state.a = 2;

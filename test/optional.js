@@ -6,6 +6,8 @@ import '../directive/aria.js'
 import '../directive/data.js'
 import '../directive/html.js'
 
+// import compile from "subscript/justin";
+// sprae.use({ compile })
 
 test("aria: base", async () => {
   let el = h`<input type="text" id="jokes" role="combobox" :aria="{controls:'joketypes', autocomplete:'list', expanded:false, activeOption:'item1', activedescendant:'', xxx:null}"/>`;

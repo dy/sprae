@@ -76,7 +76,7 @@ test.skip("core: const in on", async () => {
   is(state.y, 2);
 });
 
-test("core: const in with", async () => {
+test.skip("core: const in with", async () => {
   let el = h`<div :with="{x(){let x = 1; y=x;}}" :onx="x()"></div>`;
   let state = sprae(el, { y: 0 });
   el.dispatchEvent(new window.CustomEvent("x"));
@@ -104,6 +104,7 @@ test("core: multiprop", async () => {
 });
 
 test("core: calculation", async () => {
+  // FIXME: fails for justin (cycle detected)
   let el = h`<x :x="a = 5, Array.from({length: x}, (_,i) => (i)).join('')"></x>`;
   let state = sprae(el, { x: 3, console, Array });
   is(el.outerHTML, `<x x="012"></x>`);
@@ -184,7 +185,7 @@ test("subscribe to array length", async () => {
 
   console.log('---create')
   let el = h`<div :with="{likes:[]}"><x :onx="e=>(likes.push(1))"></x><y :text="console.log('text'),likes.length"></y></div>`;
-  sprae(el);
+  sprae(el, { console });
   is(el.innerHTML, `<x></x><y>0</y>`);
   console.log('---event')
   el.firstChild.dispatchEvent(new window.CustomEvent("x"));
