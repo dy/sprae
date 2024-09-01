@@ -702,7 +702,13 @@ var init_value = __esm({
     directive.value.parse = (expr) => {
       let evaluate = [parse(expr)];
       try {
-        evaluate.push(parse(`${expr}=arguments[1];`));
+        const set2 = parse(`${expr}=__;`);
+        evaluate.push((state, value) => {
+          state.__ = value;
+          let result = set2(state, value);
+          delete state.__;
+          return result;
+        });
       } catch (e) {
       }
       return evaluate;
