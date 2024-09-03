@@ -105,13 +105,13 @@ Set style value.
 
 ```html
 <!-- extends style -->
-<div style="foo: bar" :style="'baz-baz: qux'">
+<div style="foo: bar" :style="'bar-baz: qux'">
 
 <!-- object -->
-<div :style="{bazBaz: 'qux'}"></div>
+<div :style="{barBaz: 'qux'}"></div>
 
 <!-- CSS variable -->
-<div :style="{'--baz-baz': qux}"></div>
+<div :style="{'--bar-baz': qux}"></div>
 ```
 
 #### `:value="value"`
@@ -163,8 +163,8 @@ Expose element with `name`.
 <textarea :ref="text" placeholder="Enter text..."></textarea>
 
 <!-- iterable items -->
-<li :each="item in items" :ref="item">
-  <input :onfocus..onblur="e => (item.classList.add('editing'), e => item.classList.remove('editing'))"/>
+<li :each="item in items" :ref="li">
+  <input :onfocus..onblur="e => (li.classList.add('editing'), e => li.classList.remove('editing'))"/>
 </li>
 ```
 
