@@ -3,9 +3,8 @@
 import t, { is } from 'tst'
 import { signal, computed, effect, use } from '../signal.js'
 import { tick } from 'wait-please'
-import * as signals from 'ulive'
-
-use(signals)
+// import * as signals from '../signal.js'
+// use(signals)
 
 // value
 t('signal: readme', async () => {

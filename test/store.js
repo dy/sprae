@@ -2,11 +2,10 @@
 
 import store, { _change, _signals } from '../store.js'
 import { effect, batch, use, signal } from '../signal.js'
-import * as signals from 'ulive'
 import t, { is, ok } from 'tst'
 import { tick } from 'wait-please'
-
-use(signals)
+// import * as signals from 'ulive'
+// use(signals)
 
 
 t('store: basic', async () => {
