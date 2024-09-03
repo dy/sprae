@@ -176,7 +176,7 @@ Run effect, not changing any attribute.
 <div :fx="a.value ? foo() : bar()" />
 
 <!-- cleanup function -->
-<div :fx="id = setInterval(tick, interval), () => clearInterval(tick)" />
+<div :fx="id = setInterval(tick, 1000), () => clearInterval(id)" />
 ```
 
 #### `:on<event>="handler"`, `:on<in>..on<out>="handler"`
