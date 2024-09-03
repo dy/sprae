@@ -354,60 +354,60 @@
 
 ## [x] Store: sandbox? -> we need it anyways via Proxy, so yes
 
-- What for? We anyways expose almost everything.
-  + To make eval safer.
-    - we cannot provide absolute safety anyways
+  - What for? We anyways expose almost everything.
+    + To make eval safer.
+      - we cannot provide absolute safety anyways
 
-1. Use subscript?
-  + solves access to any internal signals on syntactic level
-    + can tentatively be faster than signal-struct
-    + could tentatively get rid of struct and just use signals as input
-      ~ Yep, it's a bit weird template converts data into some reactive state. Just expose an update method instead and current state like useState hook. This way you can avoid exposing signal-specific functions.
-  + Provides precisely controlled sandbox
-  - Some limited lang opportunities
-    - need to match many syntax quirks, can be tedious
-      ~ can be fine to limit expressions to meaningful default: no Proxy, generators, awaits, global access etc.
-  - Somewhat heavy to bundle
-    ~ 1-2kb is not super-heavy, besides kicks out signal-struct (with preact signals?)
-    + compared to including signals maybe not as much
-  + Allows detecting precisely deps from syntax level, not deep-live-detection, which can be unwanted
-  + Allows creating optimized evaluator, without proxy
-  + Scope is easier to provide: no need for signal proxy
-  + Can detect access errors in advance
-  + Syntax-level access to signals can be inavoidable: external signals still "leak in" (via arrays or etc.).
-  + Updating simple objects should also rerender the template parts, not just signals.
-  + Deps can be analyzed / implemented without signals
-  - Screwed up debugging / stacktrace (unless errored properly)
-    ~+ can actually provide better trace since no internal framework stuff is shown
-    + can let means to enhance subscript's logs
-  + that "unlimits" returned struct, so that any property can be added/deleted.
-  - doesn't really save from `new (()=>{}).constructor` hack: we gotta substitute objects too.
-    ~ Proxy doesn't save from that either
-    ~+ we can prohibit `new` and braces/functions in general, straight fn bodies
-  + allows easier handle of `:with="a=1,b=2,c=3"` - we just naturally get local variables without messup with global
-    + we can even define locals without `let`...
-  - not having "comfy" compatible JS at hand: cognitive load of whole language "layer" in-between
-    ~ `:each` is not js anyways
-    + it's unsafe feeling (also CSP) having JS straight in attributes
-    + there's certain hacks and limitations to JS anyways (we can't use let,const,var)
-    + there's some established convention for jessie, justin, jsep etc.
-    + not having full JS can be a good practice and protection agains unnecessary stuff
-    + that can be a very common syntax
-  + allows `let a = 1; a;` case instead of `let a = 1; return a;`
-  - we can't identify dynamic parts like `x[y]`, whereas Proxy subscribe dynamically
-    ~ we can detect dynamic parts and handle them on proxy
-    + at least we know about dynamic reads
-  + subscript allows subscriptions to async functions, unlike signals
-  +? we can detect `array.length`, not sure what for
-  * SO that can be a simplified subset of JS, like Jessie or Jason
+  1. Use subscript?
+    + solves access to any internal signals on syntactic level
+      + can tentatively be faster than signal-struct
+      + could tentatively get rid of struct and just use signals as input
+        ~ Yep, it's a bit weird template converts data into some reactive state. Just expose an update method instead and current state like useState hook. This way you can avoid exposing signal-specific functions.
+    + Provides precisely controlled sandbox
+    - Some limited lang opportunities
+      - need to match many syntax quirks, can be tedious
+        ~ can be fine to limit expressions to meaningful default: no Proxy, generators, awaits, global access etc.
+    - Somewhat heavy to bundle
+      ~ 1-2kb is not super-heavy, besides kicks out signal-struct (with preact signals?)
+      + compared to including signals maybe not as much
+    + Allows detecting precisely deps from syntax level, not deep-live-detection, which can be unwanted
+    + Allows creating optimized evaluator, without proxy
+    + Scope is easier to provide: no need for signal proxy
+    + Can detect access errors in advance
+    + Syntax-level access to signals can be inavoidable: external signals still "leak in" (via arrays or etc.).
+    + Updating simple objects should also rerender the template parts, not just signals.
+    + Deps can be analyzed / implemented without signals
+    - Screwed up debugging / stacktrace (unless errored properly)
+      ~+ can actually provide better trace since no internal framework stuff is shown
+      + can let means to enhance subscript's logs
+    + that "unlimits" returned struct, so that any property can be added/deleted.
+    - doesn't really save from `new (()=>{}).constructor` hack: we gotta substitute objects too.
+      ~ Proxy doesn't save from that either
+      ~+ we can prohibit `new` and braces/functions in general, straight fn bodies
+    + allows easier handle of `:with="a=1,b=2,c=3"` - we just naturally get local variables without messup with global
+      + we can even define locals without `let`...
+    - not having "comfy" compatible JS at hand: cognitive load of whole language "layer" in-between
+      ~ `:each` is not js anyways
+      + it's unsafe feeling (also CSP) having JS straight in attributes
+      + there's certain hacks and limitations to JS anyways (we can't use let,const,var)
+      + there's some established convention for jessie, justin, jsep etc.
+      + not having full JS can be a good practice and protection agains unnecessary stuff
+      + that can be a very common syntax
+    + allows `let a = 1; a;` case instead of `let a = 1; return a;`
+    - we can't identify dynamic parts like `x[y]`, whereas Proxy subscribe dynamically
+      ~ we can detect dynamic parts and handle them on proxy
+      + at least we know about dynamic reads
+    + subscript allows subscriptions to async functions, unlike signals
+    +? we can detect `array.length`, not sure what for
+    * SO that can be a simplified subset of JS, like Jessie or Jason
 
--> We can benchmark if updating set of known dependencies is faster than using preact subscriptions.
-  + it seems more logical min-ground to know in advance what we depend on, rather than detect by-call as signals do.
-  + it's safer not to depend on external tech, considering there's so much competition and changes in reactive land
-  ~ it indeed takes some reactive-struct, capable of notifying which paths have been changed
-    ? maybe define setters such that when they're set
+  -> We can benchmark if updating set of known dependencies is faster than using preact subscriptions.
+    + it seems more logical min-ground to know in advance what we depend on, rather than detect by-call as signals do.
+    + it's safer not to depend on external tech, considering there's so much competition and changes in reactive land
+    ~ it indeed takes some reactive-struct, capable of notifying which paths have been changed
+      ? maybe define setters such that when they're set
 
-2. Use sandboxed proxy
+  2. Use sandboxed proxy
   - tougher evaluation
   - no full protection (Function.constructor)
   - relatively slow
@@ -418,68 +418,68 @@
 
 ## [x] Store: how to organize array.length subscription? -> see signals-proxy
 
-* It causes recursion in `:x='array.push(x)'`
+  * It causes recursion in `:x='array.push(x)'`
 
-0. Ignore arrays as insubscribable
-+ allows signals-only store (signal-struct)
-+ fastest
-- ignores array mutations, unless explicitly called
+  0. Ignore arrays as insubscribable
+  + allows signals-only store (signal-struct)
+  + fastest
+  - ignores array mutations, unless explicitly called
 
-0.a Abandon returning single-property store, in favor of batch-update
-+ Simpler API
-+ Very precise diff-update
-+ No need for batch method
-~ essentially encourages signals-proxy or proxy, since
-  * why not exposing proxy as just props-access, that applies throttled batch-update (collects multiple updates and runs batch after)
-  * since API allows only batch, why not allowing signals as single-prop entries
+  0.a Abandon returning single-property store, in favor of batch-update
+  + Simpler API
+  + Very precise diff-update
+  + No need for batch method
+  ~ essentially encourages signals-proxy or proxy, since
+    * why not exposing proxy as just props-access, that applies throttled batch-update (collects multiple updates and runs batch after)
+    * since API allows only batch, why not allowing signals as single-prop entries
 
-1. Detect when `.length` is called within `.push/protoMethod` via method wrapping
-- doesn't solve generic implicit subscription, like `buf.write()` that calls implicitly subscribable `buf.size`
+  1. Detect when `.length` is called within `.push/protoMethod` via method wrapping
+  - doesn't solve generic implicit subscription, like `buf.write()` that calls implicitly subscribable `buf.size`
 
-2. Detect from source by subscript
-- limited syntax
-- heavier to bundle
-- messy stacktrace
-- no comfy js at hand
-- doesn't detect dynamic subs like `calc().length`
+  2. Detect from source by subscript
+  - limited syntax
+  - heavier to bundle
+  - messy stacktrace
+  - no comfy js at hand
+  - doesn't detect dynamic subs like `calc().length`
 
 ## [x] Store: strategies -> signals-proxy seems the most balanced for now
 
-1. Signals struct
-  + fastest
-  + limits access to not-existing props
-  + seals object
-  + no circular update trouble
-  - doesn't handle arrays
-  -~ no sandboxing
-  -~ no dynamic props
+  1. Signals struct
+    + fastest
+    + limits access to not-existing props
+    + seals object
+    + no circular update trouble
+    - doesn't handle arrays
+    -~ no sandboxing
+    -~ no dynamic props
 
-2. Proxy
-  + any-prop access, including not-existing
-  + modern-ish
-  + own tech
-  + allows handling arrays
-    - some mess with .length subscription
-  - doesn't take in individual signals
-  - slow-ish
-    ~ must be improved
-  - some mess with proto access
-    ~ must be improved
-  - no circular update detection
-  + allows detecting precisely what array ops were performed, to apply corresponding DOM updates
+  2. Proxy
+    + any-prop access, including not-existing
+    + modern-ish
+    + own tech
+    + allows handling arrays
+      - some mess with .length subscription
+    - doesn't take in individual signals
+    - slow-ish
+      ~ must be improved
+    - some mess with proto access
+      ~ must be improved
+    - no circular update detection
+    + allows detecting precisely what array ops were performed, to apply corresponding DOM updates
 
-3. Signals proxy
-  + medium performance
-  + no proxy store mess
-  + subscriptions handled via signals (proved)
-  + circular update detection
-  - heavy-ish
-  - not own tech
-    + hi-quality though
-  - doesn't solve recursive .length out of the box
-    ~ alleviated by tracking
+  3. Signals proxy
+    + medium performance
+    + no proxy store mess
+    + subscriptions handled via signals (proved)
+    + circular update detection
+    - heavy-ish
+    - not own tech
+      + hi-quality though
+    - doesn't solve recursive .length out of the box
+      ~ alleviated by tracking
 
-4. Subscript-based something
+  4. Subscript-based something
   * Eg. we pass simple object, not store.
     * Subscript wraps prop access into reading `.valueOf()`, so we don't have to deal with signals in templates
     * Or we can even expose signals as-is, since they cast to their value in expressions and whatnot
@@ -495,17 +495,16 @@
     ~ can be better for updates than full-update as it is now
     + we anyways enforce full-update for object changes
 
-
 ## [x] :each over/undersubscription -> proxy-signals store solves that
 
-* we must subscribe to each item from the list - it should update itself only, not the whole list. How?
+  * we must subscribe to each item from the list - it should update itself only, not the whole list. How?
 
-1. Async reconciliation part - it plans list rerendering (loop part) in the next tick, and this tick may have as many item changes as needed
+  1. Async reconciliation part - it plans list rerendering (loop part) in the next tick, and this tick may have as many item changes as needed
 
-2. Individual effects per-item `fx(() => {updateItem(list[idx])})`
-  * Can be created in advance, and list updates only cause effects changes
+  2. Individual effects per-item `fx(() => {updateItem(list[idx])})`
+    * Can be created in advance, and list updates only cause effects changes
 
-3. Nested effects: parent effects don't get subscribed in internal effects, so we just modify :each to create multiple internal effects per-item.
+  3. Nested effects: parent effects don't get subscribed in internal effects, so we just modify :each to create multiple internal effects per-item.
   + we might not need swapdom, since nodes manage themselves
   * note the untracked function
 
@@ -516,7 +515,7 @@
   + no need for arrow/regular functions syntax in templates
     - still need that syntax for filters, maps etc
   + can be made async by default
-  - illicit `event` object
+  - implicit `event` object
     + we don't seem to ever need that event argument, many cases are covered by `.prevent` or `.stop`
     ~+ generally `e=>` seem to conflict logically with modifiers sense
   + `e=>` brings syntax burden - we may not ever need functions
