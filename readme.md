@@ -375,6 +375,8 @@ sprae.use({ compile })
 * State getters/setters work as computed effects, eg. `sprae(el, { x:1, get x2(){ return this.x * 2} })`.
 * `this` keyword is not used, to get access to current element use `<input :ref="el" :text="el.value"/>`.
 * Async/await is not supported in attributes, it's a strong indicator you need to put these methods into state.
+* `:each` doesn't need `key` since it uses direct mapping, see [#44](https://github.com/dy/sprae/issues/44).
+* Event attributes always expect a function value `:onevt="event => handle()"`, see [#46](https://github.com/dy/sprae/issues/46).
 
 ## Justification
 
