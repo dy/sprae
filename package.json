@@ -14,9 +14,6 @@
     "directive",
     "dist"
   ],
-  "dependencies": {
-    "ulive": "^1.0.2"
-  },
   "devDependencies": {
     "@preact/signals": "^1.3.0",
     "@webreflection/signal": "^2.1.2",

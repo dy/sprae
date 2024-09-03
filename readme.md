@@ -304,7 +304,7 @@ name.value = 'Dolly';
 
 Provider | Size | Feature
 :---|:---|:---
-[`ulive`](https://ghub.io/ulive) (default) | 350b | Minimal implementation, basic performance, good for small states.
+[`ulive`](https://ghub.io/ulive) | 350b | Minimal implementation, basic performance, good for small states.
 [`@webreflection/signal`](https://ghub.io/@webreflection/signal) | 531b | Class-based, better performance, good for small-medium states.
 [`usignal`](https://ghub.io/usignal) | 850b | Class-based with optimizations, good for medium states.
 [`@preact/signals-core`](https://ghub.io/@preact/signals-core) | 1.47kb | Best performance, good for any states, industry standard.
