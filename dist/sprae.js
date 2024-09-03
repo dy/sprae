@@ -1,15 +1,58 @@
-var __defProp = Object.defineProperty;
-var __export = (target, all) => {
-  for (var name in all)
-    __defProp(target, name, { get: all[name], enumerable: true });
-};
-
 // signal.js
-var signal;
-var effect;
-var untracked;
-var batch;
-var computed;
+var current;
+var batched;
+var signal = (v, s, obs = /* @__PURE__ */ new Set()) => (s = {
+  get value() {
+    current?.deps.push(obs.add(current));
+    return v;
+  },
+  set value(val) {
+    if (val === v)
+      return;
+    v = val;
+    for (let sub of obs)
+      batched ? batched.add(sub) : sub();
+  },
+  peek() {
+    return v;
+  }
+}, s.toJSON = s.then = s.toString = s.valueOf = () => s.value, s);
+var effect = (fn, teardown, fx, deps) => (fx = (prev) => {
+  teardown?.call?.();
+  prev = current, current = fx;
+  try {
+    teardown = fn();
+  } finally {
+    current = prev;
+  }
+}, deps = fx.deps = [], fx(), (dep) => {
+  teardown?.call?.();
+  while (dep = deps.pop())
+    dep.delete(fx);
+});
+var computed = (fn, s = signal(), c, e) => (c = {
+  get value() {
+    e || (e = effect(() => s.value = fn()));
+    return s.value;
+  },
+  peek: s.peek
+}, c.toJSON = c.then = c.toString = c.valueOf = () => c.value, c);
+var batch = (fn) => {
+  let fxs = batched;
+  if (!fxs)
+    batched = /* @__PURE__ */ new Set();
+  try {
+    fn();
+  } finally {
+    if (!fxs) {
+      fxs = batched;
+      batched = null;
+      for (const fx of fxs)
+        fx();
+    }
+  }
+};
+var untracked = (fn, prev, v) => (prev = current, current = null, v = fn(), current = prev, v);
 function use(s) {
   signal = s.signal;
   effect = s.effect;
@@ -211,70 +254,6 @@ var frag = (tpl) => {
     }
   };
 };
-
-// node_modules/ulive/dist/ulive.es.js
-var ulive_es_exports = {};
-__export(ulive_es_exports, {
-  batch: () => batch2,
-  computed: () => computed2,
-  effect: () => effect2,
-  signal: () => signal2,
-  untracked: () => untracked2
-});
-var current;
-var batched;
-var signal2 = (v, s, obs = /* @__PURE__ */ new Set()) => (s = {
-  get value() {
-    current?.deps.push(obs.add(current));
-    return v;
-  },
-  set value(val) {
-    if (val === v)
-      return;
-    v = val;
-    for (let sub of obs)
-      batched ? batched.add(sub) : sub();
-  },
-  peek() {
-    return v;
-  }
-}, s.toJSON = s.then = s.toString = s.valueOf = () => s.value, s);
-var effect2 = (fn, teardown, fx, deps) => (fx = (prev) => {
-  teardown?.call?.();
-  prev = current, current = fx;
-  try {
-    teardown = fn();
-  } finally {
-    current = prev;
-  }
-}, deps = fx.deps = [], fx(), (dep) => {
-  teardown?.call?.();
-  while (dep = deps.pop())
-    dep.delete(fx);
-});
-var computed2 = (fn, s = signal2(), c, e) => (c = {
-  get value() {
-    e || (e = effect2(() => s.value = fn()));
-    return s.value;
-  },
-  peek: s.peek
-}, c.toJSON = c.then = c.toString = c.valueOf = () => c.value, c);
-var batch2 = (fn) => {
-  let fxs = batched;
-  if (!fxs)
-    batched = /* @__PURE__ */ new Set();
-  try {
-    fn();
-  } finally {
-    if (!fxs) {
-      fxs = batched;
-      batched = null;
-      for (const fx of fxs)
-        fx();
-    }
-  }
-};
-var untracked2 = (fn, prev, v) => (prev = current, current = null, v = fn(), current = prev, v);
 
 // directive/if.js
 var _prevIf = Symbol("if");
@@ -626,7 +605,6 @@ directive.fx = (el, evaluate, state) => {
 };
 
 // sprae.js
-sprae.use(ulive_es_exports);
 sprae.use({ compile: (expr) => sprae.constructor(`with (arguments[0]) { return ${expr} };`) });
 var sprae_default = sprae;
 export {

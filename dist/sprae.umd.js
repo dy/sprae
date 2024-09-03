@@ -28,9 +28,61 @@ function use(s) {
   batch = s.batch || ((fn) => fn());
   untracked = s.untracked || batch;
 }
-var signal, effect, untracked, batch, computed;
+var current, batched, signal, effect, computed, batch, untracked;
 var init_signal = __esm({
   "signal.js"() {
+    signal = (v, s, obs = /* @__PURE__ */ new Set()) => (s = {
+      get value() {
+        current?.deps.push(obs.add(current));
+        return v;
+      },
+      set value(val) {
+        if (val === v)
+          return;
+        v = val;
+        for (let sub of obs)
+          batched ? batched.add(sub) : sub();
+      },
+      peek() {
+        return v;
+      }
+    }, s.toJSON = s.then = s.toString = s.valueOf = () => s.value, s);
+    effect = (fn, teardown, fx, deps) => (fx = (prev) => {
+      teardown?.call?.();
+      prev = current, current = fx;
+      try {
+        teardown = fn();
+      } finally {
+        current = prev;
+      }
+    }, deps = fx.deps = [], fx(), (dep) => {
+      teardown?.call?.();
+      while (dep = deps.pop())
+        dep.delete(fx);
+    });
+    computed = (fn, s = signal(), c, e) => (c = {
+      get value() {
+        e || (e = effect(() => s.value = fn()));
+        return s.value;
+      },
+      peek: s.peek
+    }, c.toJSON = c.then = c.toString = c.valueOf = () => c.value, c);
+    batch = (fn) => {
+      let fxs = batched;
+      if (!fxs)
+        batched = /* @__PURE__ */ new Set();
+      try {
+        fn();
+      } finally {
+        if (!fxs) {
+          fxs = batched;
+          batched = null;
+          for (const fx of fxs)
+            fx();
+        }
+      }
+    };
+    untracked = (fn, prev, v) => (prev = current, current = null, v = fn(), current = prev, v);
   }
 });
 
@@ -237,73 +289,6 @@ ${dir}${expr ? `="${expr}"
         }
       };
     };
-  }
-});
-
-// node_modules/ulive/dist/ulive.es.js
-var ulive_es_exports = {};
-__export(ulive_es_exports, {
-  batch: () => batch2,
-  computed: () => computed2,
-  effect: () => effect2,
-  signal: () => signal2,
-  untracked: () => untracked2
-});
-var current, batched, signal2, effect2, computed2, batch2, untracked2;
-var init_ulive_es = __esm({
-  "node_modules/ulive/dist/ulive.es.js"() {
-    signal2 = (v, s, obs = /* @__PURE__ */ new Set()) => (s = {
-      get value() {
-        current?.deps.push(obs.add(current));
-        return v;
-      },
-      set value(val) {
-        if (val === v)
-          return;
-        v = val;
-        for (let sub of obs)
-          batched ? batched.add(sub) : sub();
-      },
-      peek() {
-        return v;
-      }
-    }, s.toJSON = s.then = s.toString = s.valueOf = () => s.value, s);
-    effect2 = (fn, teardown, fx, deps) => (fx = (prev) => {
-      teardown?.call?.();
-      prev = current, current = fx;
-      try {
-        teardown = fn();
-      } finally {
-        current = prev;
-      }
-    }, deps = fx.deps = [], fx(), (dep) => {
-      teardown?.call?.();
-      while (dep = deps.pop())
-        dep.delete(fx);
-    });
-    computed2 = (fn, s = signal2(), c, e) => (c = {
-      get value() {
-        e || (e = effect2(() => s.value = fn()));
-        return s.value;
-      },
-      peek: s.peek
-    }, c.toJSON = c.then = c.toString = c.valueOf = () => c.value, c);
-    batch2 = (fn) => {
-      let fxs = batched;
-      if (!fxs)
-        batched = /* @__PURE__ */ new Set();
-      try {
-        fn();
-      } finally {
-        if (!fxs) {
-          fxs = batched;
-          batched = null;
-          for (const fx of fxs)
-            fx();
-        }
-      }
-    };
-    untracked2 = (fn, prev, v) => (prev = current, current = null, v = fn(), current = prev, v);
   }
 });
 
@@ -736,7 +721,6 @@ var sprae_default;
 var init_sprae = __esm({
   "sprae.js"() {
     init_core();
-    init_ulive_es();
     init_if();
     init_each();
     init_ref();
@@ -748,7 +732,6 @@ var init_sprae = __esm({
     init_value();
     init_fx();
     init_default();
-    sprae.use(ulive_es_exports);
     sprae.use({ compile: (expr) => sprae.constructor(`with (arguments[0]) { return ${expr} };`) });
     sprae_default = sprae;
   }
