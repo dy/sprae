@@ -46,3 +46,18 @@ test("value: textarea", async () => {
   is(el.selectionStart, 1);
   is(el.selectionEnd, 4);
 });
+
+test('value: select each #48', async () => {
+  let el = h`
+  <select class="form-control" :name="field.name" :value="object[field.name]">
+      <option :each="option in field.options" :value="option.value"
+              :text="option.label"></option>
+  </select>`
+
+  sprae(el, {
+    field: { name: 'x', options: [{ value: 1, label: 'a' }, { value: 2, label: 'b' }] },
+    object: { x: 123 }
+  })
+
+  is(el.outerHTML, `<select class="form-control" name="x"><option value="1">a</option><option value="2">b</option></select>`)
+})

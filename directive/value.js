@@ -16,7 +16,7 @@ directive.value = (el, [getValue, setValue], state) => {
       )
         : (el.type === "checkbox") ? (value) => (el.checked = value, attr(el, "checked", value))
           : (el.type === "select-one") ? (value) => {
-            for (let option in el.options) option.removeAttribute("selected");
+            for (let option of el.options) option.removeAttribute("selected");
             el.value = value;
             el.selectedOptions[0]?.setAttribute("selected", "");
           }
