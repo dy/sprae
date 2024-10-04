@@ -14,7 +14,7 @@ A light alternative to alpine, petite-vue etc (see [why](#justification)).
 </div>
 
 <script type="module">
-  import sprae from './sprae.js'
+  import sprae from './sprae.js' // https://unpkg.com/sprae
 
   // init
   const container = document.querySelector('#container');
