@@ -370,7 +370,7 @@ sprae.use({ compile })
 
 * To prevent [FOUC](https://en.wikipedia.org/wiki/Flash_of_unstyled_content) add `<style>[:each],[:if],[:else] {visibility: hidden}</style>`.
 * Attributes order matters, eg. `<li :each="el in els" :text="el.name"></li>` is not the same as `<li :text="el.name" :each="el in els"></li>`.
-* Be mindful of self-closing tags, eg. <a :text="item" /> is invalid HTML and will cause error. Main valid self-closing tags are `li`, `p`, `dt`, `dd`, `option`, `tr`, `td`, `th`.
+* Mind invalid self-closing tags, eg. `<a :text="item" />` will cause an error. Main valid self-closing tags are `li`, `p`, `dt`, `dd`, `option`, `tr`, `td`, `th`.
 * Properties prefixed with `_` are untracked: `let state = sprae(el, {_x:2}); state._x++; // no effect`.
 * To destroy state and detach sprae handlers, call `element[Symbol.dispose]()`.
 * State getters/setters work as computed effects, eg. `sprae(el, { x:1, get x2(){ return this.x * 2} })`.
