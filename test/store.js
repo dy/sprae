@@ -135,6 +135,13 @@ t('store: bulk-update', async () => {
   is(len, 5, 'len after update')
 })
 
+t('store: array with objects', async () => {
+  let s = store({
+    list: [{ n: 'a' }, { n: 'b' }]
+  })
+  is(s, { list: [{ n: 'a' }, { n: 'b' }] })
+})
+
 t('store: type consistency', () => {
   let s = store({})
 
