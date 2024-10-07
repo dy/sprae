@@ -613,6 +613,7 @@ var init_default = __esm({
 var init_value = __esm({
   "directive/value.js"() {
     init_core();
+    init_core();
     init_default();
     init_signal();
     directive.value = (el, [getValue, setValue], state) => {
@@ -620,13 +621,16 @@ var init_value = __esm({
         // we retain selection in input
         (from = el.selectionStart, to = el.selectionEnd, el.setAttribute("value", el.value = value == null ? "" : value), from && el.setSelectionRange(from, to))
       ) : el.type === "checkbox" ? (value) => (el.checked = value, attr(el, "checked", value)) : el.type === "select-one" ? (value) => {
-        for (let option of el.options) option.removeAttribute("selected");
+        for (let o of el.options)
+          o.value == value ? o.setAttribute("selected", "") : o.removeAttribute("selected");
         el.value = value;
-        el.selectedOptions[0]?.setAttribute("selected", "");
+      } : el.type === "select-multiple" ? (value) => {
+        for (let o of el.options) o.removeAttribute("selected");
+        for (let v of value) el.querySelector(`[value="${v}"]`).setAttribute("selected", "");
       } : (value) => el.value = value;
-      const handleChange = el.type === "checkbox" ? (e) => setValue(state, el.checked) : (e) => setValue(state, el.value);
-      el.addEventListener("input", handleChange);
-      el.addEventListener("change", handleChange);
+      if (el.type?.startsWith("select")) sprae(el, state);
+      const handleChange = el.type === "checkbox" ? (e) => setValue(state, el.checked) : el.type === "select-multiple" ? (e) => setValue(state, [...el.selectedOptions].map((o) => o.value)) : (e) => setValue(state, el.value);
+      el.oninput = el.onchange = handleChange;
       return effect(() => update(getValue(state)));
     };
     directive.value.parse = (expr) => {
