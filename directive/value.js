@@ -20,21 +20,25 @@ directive.value = (el, [getValue, setValue], state) => {
           (value) => (el.checked = value, attr(el, "checked", value)) :
           (el.type === "select-one") ?
             (value) => {
-              for (let option of el.options) option.removeAttribute("selected");
+              for (let o of el.options)
+                o.value == value ? o.setAttribute("selected", '') : o.removeAttribute("selected");
               el.value = value;
-              el.selectedOptions[0]?.setAttribute("selected", "");
             } :
-            (value) => (el.value = value);
+            (el.type === 'select-multiple') ? (value) => {
+              for (let o of el.options) o.removeAttribute('selected')
+              for (let v of value) el.querySelector(`[value="${v}"]`).setAttribute('selected', '')
+            } :
+              (value) => (el.value = value);
 
   // select options must be initialized before calling an update
-  if (el.type === 'select-one') sprae(el, state)
+  if (el.type?.startsWith('select')) sprae(el, state)
 
-  // bind back
-  const handleChange = el.type === 'checkbox' ? e => setValue(state, el.checked) : e => setValue(state, el.value)
-  el.addEventListener('input', handleChange)
-  el.addEventListener('change', handleChange)
+  // bind ui back to value
+  const handleChange = el.type === 'checkbox' ? e => setValue(state, el.checked) : el.type === 'select-multiple' ? e => setValue(state, [...el.selectedOptions].map(o => o.value)) : e => setValue(state, el.value)
 
-  return effect(() => (update(getValue(state))));
+  el.oninput = el.onchange = handleChange; // hope user doesn't redefine these manually - it saves 5 loc
+
+  return effect(() => update(getValue(state)));
 };
 
 directive.value.parse = expr => {

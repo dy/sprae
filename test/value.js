@@ -47,17 +47,36 @@ test("value: textarea", async () => {
   is(el.selectionEnd, 4);
 });
 
-test('value: select each #48, #50', async () => {
+test('value: select one', async () => {
   let el = h`
-  <select class="form-control" :name="field.name" :value="object[field.name]">
+  <select :name="field.name" :value="object[field.name]">
       <option :each="option in field.options" :value="option.value"
               :text="option.label"></option>
   </select>`
 
-  sprae(el, {
+  let state = sprae(el, {
     field: { name: 'x', options: [{ value: 1, label: 'a' }, { value: 2, label: 'b' }] },
     object: { x: 2 }
   })
 
-  is(el.outerHTML, `<select class="form-control" name="x"><option value="1">a</option><option value="2" selected="">b</option></select>`)
+  is(el.outerHTML, `<select name="x"><option value="1">a</option><option value="2" selected="">b</option></select>`)
+  is(el.value, '2')
+  is(state.object.x, 2)
+})
+
+test('value: select multiple', async () => {
+  let el = h`
+  <select :id:name="field.name" :value="object[field.name]" multiple>
+    <option :each="option in field.options" :value="option.value"
+              :text="option.label"></option>
+  </select>`
+
+  // document.body.append(el)
+  sprae(el, {
+    field: { name: 'x', options: [{ value: 1, label: 'a' }, { value: 2, label: 'b' }, { value: 3, label: 'c' }] },
+    object: { x: [2, 3] }
+  })
+
+  is(el.outerHTML, `<select multiple="" id="x" name="x"><option value="1">a</option><option value="2" selected="">b</option><option value="3" selected="">c</option></select>`)
+  is([...el.selectedOptions], [el.children[1], el.children[2]])
 })
