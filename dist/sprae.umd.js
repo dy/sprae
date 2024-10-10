@@ -86,7 +86,7 @@ function store(values, parent) {
   if (!values) return values;
   if (values[_signals]) return values;
   if (Array.isArray(values)) return list(values);
-  if (values.constructor !== Object) return values;
+  if (values.constructor !== Object || values[Symbol.toStringTag]) return values;
   let signals = { ...parent?.[_signals] }, _len = signal(Object.values(values).length);
   const state = new Proxy(signals, {
     get: (_, key) => key === _change ? _len : key === _signals ? signals : signals[key]?.valueOf(),
