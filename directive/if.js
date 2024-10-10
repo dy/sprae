@@ -1,5 +1,4 @@
 import sprae, { directive, memo, frag } from "../core.js";
-import { effect } from "../signal.js";
 
 // :if is interchangeable with :each depending on order, :if :each or :each :if have different meanings
 // as for :if :with - :if must init first, since it is lazy, to avoid initializing component ahead of time by :with
@@ -21,17 +20,17 @@ directive.if = (el, evaluate, state) => {
     if (!next.hasAttribute(":if")) next.remove(), elseEl = next.content ? frag(next) : next, memo.set(elseEl, null)
   }
 
-  return effect(() => {
+  return () => {
     const newEl = evaluate(state) ? ifEl : el[_prevIf] ? null : elseEl;
     if (next) next[_prevIf] = newEl === ifEl
     if (curEl != newEl) {
-      // disable effects on removed elements to avoid internal effects from triggering on possibly null values
-      if (curEl) curEl.remove(), curEl[Symbol.dispose]?.()
+      // disable effects on removed elements to avoid internal effects from triggering on value changes
+      if (curEl) curEl.remove()
       if (curEl = newEl) {
         holder.before(curEl.content || curEl)
         memo.get(curEl) === null && memo.delete(curEl) // remove fake memo to sprae as new
         sprae(curEl, state)
       }
     }
-  });
+  };
 };

@@ -1,7 +1,6 @@
 import sprae from "../core.js";
 import { directive, parse } from "../core.js";
 import { attr } from './default.js';
-import { effect } from "../signal.js";
 
 // connect expr to element value
 directive.value = (el, [getValue, setValue], state) => {
@@ -38,7 +37,7 @@ directive.value = (el, [getValue, setValue], state) => {
 
   el.oninput = el.onchange = handleChange; // hope user doesn't redefine these manually - it saves 5 loc
 
-  return effect(() => update(getValue(state)));
+  return () => update(getValue(state));
 };
 
 directive.value.parse = expr => {

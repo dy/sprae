@@ -1,4 +1,4 @@
-import { use } from "./signal.js";
+import { use, effect } from "./signal.js";
 import store, { _signals } from './store.js';
 
 // polyfill
@@ -55,8 +55,8 @@ export default function sprae(el, values) {
         for (let name of names) {
           let dir = directive[name] || directive.default
           let evaluate = (dir.parse || parse)(attr.value)
-          let dispose = dir(el, evaluate, state, name);
-          if (dispose) disposes.push(dispose);
+          let init = dir(el, evaluate, state, name);
+          if (init) disposes.push(effect(init));
         }
 
         // stop if element was spraed by internal directive
@@ -72,7 +72,7 @@ export default function sprae(el, values) {
 }
 
 
-// compiler
+// parse expression into evaluator fn
 const evalMemo = {};
 export const parse = (expr, dir, fn) => {
   if (fn = evalMemo[expr = expr.trim()]) return fn

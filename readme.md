@@ -345,7 +345,6 @@ _Sprae_ can be tailored to project needs via `sprae/core`:
 ```js
 // sprae.custom.js
 import sprae, { directive } from 'sprae/core'
-import { effect } from 'sprae/signal'
 import * as signals from '@preact/signals'
 import compile from 'subscript'
 
@@ -356,7 +355,7 @@ import 'sprae/directive/text.js'
 
 // custom directive :id="expression"
 directive.id = (el, evaluate, state) => {
-  effect(() => el.id = evaluate(state))
+  return () => el.id = evaluate(state)
 }
 
 // configure signals

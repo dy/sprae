@@ -1,14 +1,13 @@
 import { directive, err } from "../core.js";
-import { effect } from "../signal.js";
 
 // set generic property directive
 directive.default = (target, evaluate, state, name) => {
   // simple prop
-  if (!name.startsWith('on')) return effect(() => {
+  if (!name.startsWith('on')) return () => {
     let value = evaluate(state);
     if (name) attr(target, name, value)
     else for (let key in value) attr(target, dashcase(key), value[key]);
-  });
+  };
 
   // bind event to a target
   // NOTE: if you decide to remove chain of events, thing again - that's unique feature of sprae, don't diminish your own value.
@@ -22,7 +21,7 @@ directive.default = (target, evaluate, state, name) => {
   });
 
   // single event
-  if (ctxs.length == 1) return effect(() => addListener(evaluate(state), ctxs[0]))
+  if (ctxs.length == 1) return () => addListener(evaluate(state), ctxs[0])
 
   // events cycler
   let startFn, nextFn, off, idx = 0
@@ -32,11 +31,11 @@ directive.default = (target, evaluate, state, name) => {
     ), ctxs[idx]);
   }
 
-  return effect(() => (
+  return () => (
     startFn = evaluate(state),
     !off && nextListener(startFn),
     () => startFn = null // nil startFn to autodispose chain
-  ))
+  )
 
   // add listener with the context
   function addListener(fn, { evt, target, test, defer, stop, prevent, immediate, ...opts }) {
@@ -153,5 +152,5 @@ const debounce = (fn, wait) => {
 };
 
 export const dashcase = (str) => {
-  return str.replace(/[A-Z\u00C0-\u00D6\u00D8-\u00DE]/g, (match, i) => (i?'-':'') + match.toLowerCase());
+  return str.replace(/[A-Z\u00C0-\u00D6\u00D8-\u00DE]/g, (match, i) => (i ? '-' : '') + match.toLowerCase());
 }

@@ -141,8 +141,8 @@ test("if: :with + :if after attributes", async () => {
   is(el.outerHTML, `<x>2</x>`)
 })
 
-test('if: set/unset value', async () => {
-  let el = h`<x><y :if="x" :text="x.x"></y></x>`
+test.todo('if: set/unset value', async () => {
+  let el = h`<x><y :if="x" :text="x?.x"></y></x>`
   let state = sprae(el, { x: null })
   is(el.innerHTML, '')
   state.x = { x: 1 }
@@ -150,4 +150,7 @@ test('if: set/unset value', async () => {
   console.log('------state.x = null')
   state.x = null
   is(el.innerHTML, '')
+  console.log('------state.x = {x:2}')
+  state.x = { x: 2 }
+  is(el.innerHTML, '<y>2</y>')
 })

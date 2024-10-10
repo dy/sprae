@@ -1,6 +1,6 @@
 import sprae, { directive, frag, parse } from "../core.js";
 import store, { _change, _signals } from "../store.js";
-import { effect, untracked, computed } from '../signal.js';
+import { untracked, computed } from '../signal.js';
 
 
 directive.each = (tpl, [itemVar, idxVar, evaluate], state) => {
@@ -73,7 +73,7 @@ directive.each = (tpl, [itemVar, idxVar, evaluate], state) => {
   }
 
   let planned = 0
-  return effect(() => {
+  return () => {
     // subscribe to items change (.length) - we do it every time (not just on init) since preact unsubscribes unused signals
     items.value[_change]?.value
 
@@ -82,7 +82,7 @@ directive.each = (tpl, [itemVar, idxVar, evaluate], state) => {
       update()
       queueMicrotask(() => (planned && update(), planned = 0))
     } else planned++
-  })
+  }
 }
 
 
