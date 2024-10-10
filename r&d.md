@@ -1106,7 +1106,7 @@
   - bad remembrance of JS with
     +~ not necessarily the case
 
-### [ ] Shoud we prohibit creation of new props?
+### [ ] store: should we prohibit creation of new props?
 
 + Structs make objects nice: small, fast, obvious
 - Difficulty for arrays: we cannot really avoid creating new props there
@@ -1119,34 +1119,48 @@
 
 1. define-element
 
-- templating uses django syntax - leads to verbatim conflict
-  ~ we're not necessarily going to use django
-- `<template>` within `<template>` is not nice, for the case of :each etc
-  ~ foreach works as `<template directive="foraeach" expression="...">xxx</template>`, so it shouldn't be a problem
-- no obvious way to import elements
-  - requires some bundling, likely for HTML
-- non-standard
+  - templating uses django syntax - leads to verbatim conflict
+    ~ we're not necessarily going to use django
+  - `<template>` within `<template>` is not nice, for the case of :each etc
+    ~ foreach works as `<template directive="foraeach" expression="...">xxx</template>`, so it shouldn't be a problem
+  - no obvious way to import elements
+    - requires some bundling, likely for HTML
+  - non-standard
 
 2. JS custom elements
 
-+ allows esm bundling of templates
-+ allows evaluatig sprae manually
-+ fine-grain control of attributes
-- requires innerHTML
-- direct competition with JSX, which is weird
+  + allows esm bundling of templates
+  + allows evaluatig sprae manually
+  + fine-grain control of attributes
+  - requires innerHTML
+  - direct competition with JSX, which is weird
   ~ we can make spraex extension for JSX to allow :on attributes
 
 3. No componentization
 
-+ discipline of tiny single-purpose apps
-+ factors componentization out to other libs
-- makes sprae less useful as dependency
+  + discipline of tiny single-purpose apps
+  + factors componentization out to other libs
+  - makes sprae less useful as dependency
 
 4. include / html / render
 
-+ gives intermediate solution
-+ classic
-- no components
-- a bit implicit
+  + gives intermediate solution
+  + classic
+  - no components
+  - a bit implicit
 
 5. htmx-like requests
+
+## [x] Pause/resume components (detached :if should not trigger internal fx) -> complete disposal cycle
+
+1. `paused` flag per-effect
+  - @preact/signals unsubscribes from previously subscribed props
+  - requires every single effect to handle `paused` flag
+
+2. keep track of effects, detach/reattach
+  - separate mechanism over _dispose - requires flags etc
+
+3. dispose / resprae via setAttributeNode
+  + completes disposal method
+  - requires storing initial `:` attributes
+  + `:each` already does that way: just stores initial element as template, untouched

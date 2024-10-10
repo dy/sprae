@@ -4,6 +4,7 @@ import store, { _signals } from './store.js';
 // polyfill
 const _dispose = (Symbol.dispose ||= Symbol("dispose"));
 
+
 // reserved directives - order matters!
 export const directive = {};
 
@@ -51,12 +52,12 @@ export default function sprae(el, values) {
         // multiple attributes like :id:for=""
         let names = attr.name.slice(1).split(':')
 
-        // NOTE: secondary directives don't stop flow nor extend state, so no need to check
         for (let name of names) {
           let dir = directive[name] || directive.default
           let evaluate = (dir.parse || parse)(attr.value)
-          let init = dir(el, evaluate, state, name);
-          if (init) disposes.push(effect(init));
+          let fn = dir(el, evaluate, state, name);
+          if (fn) disposes.push(effect(fn))
+          disposes.push(() => el.setAttributeNode(attr)) // recover attribute
         }
 
         // stop if element was spraed by internal directive
@@ -120,6 +121,7 @@ export const frag = (tpl) => {
       content.append(...childNodes)
     },
     attributes,
-    removeAttribute(name) { attributes.splice(attributes.findIndex(a => a.name === name), 1) }
+    removeAttribute(name) { attributes.splice(attributes.findIndex(a => a.name === name), 1) },
+    setAttributeNode() { }
   }
 }

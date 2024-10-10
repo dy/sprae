@@ -1,5 +1,5 @@
 // signals-based proxy
-import { signal, computed, effect, batch, untracked } from './signal.js'
+import { signal, computed, batch, untracked } from './signal.js'
 
 export const _signals = Symbol('signals'), _change = Symbol('length');
 

@@ -24,8 +24,8 @@ directive.if = (el, evaluate, state) => {
     const newEl = evaluate(state) ? ifEl : el[_prevIf] ? null : elseEl;
     if (next) next[_prevIf] = newEl === ifEl
     if (curEl != newEl) {
-      // disable effects on removed elements to avoid internal effects from triggering on value changes
-      if (curEl) curEl.remove()
+      // disable effects on child elements to avoid internal effects from triggering on value changes when element's not matched
+      if (curEl) curEl.remove(), curEl[Symbol.dispose]?.();
       if (curEl = newEl) {
         holder.before(curEl.content || curEl)
         memo.get(curEl) === null && memo.delete(curEl) // remove fake memo to sprae as new
