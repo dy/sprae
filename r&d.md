@@ -590,17 +590,21 @@
   + shorter and nicer syntax
   - possibly longer init
 
-## [x] Better :ref -> it's organical
+## [ ] Better :ref ->
 
-  + :ref="`a-${1}`"
-  + :id:ref="xyz"
-    - `:id` is string, `:ref` is var name
-  ? maybe id should have same signature
-  ? should it be very similar mechanism to `:with="a=1,b=2"`
-  ~ ref must be possible as `:fx="x=this"`
-    - returning non-null sets effect prop
-  * ref can have predefined signal as value, then signal must be set, not directly prop
-  * it can be generalized as `:set="x=this"` or `:with="{x:this}"`
+  1. should we merge `:ref` and `id`, eg. expose all ids by default?
+    + it saves code, eg. `id="artwork" :ref="artwork"` is very common construct
+    + `id` is exposed IN WINDOW even
+    + we don't use effect for ref anyways, it's once-set
+    - `id` has nothing to do with sprae attributes
+
+  2. should we make `ref` a string?
+    + allows `:ref:id="'some-value'"`
+    - dynamic ref is not what we want
+      - confusable with `:ref="abc"` which should be expect as variable
+
+  3. `:with="{x:this}"`
+    - we don't use `this`
 
 ## [x] Event modifiers :ona.once, `:ona` -> let's try, there's a lot of use for both props and event
 

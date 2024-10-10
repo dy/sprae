@@ -78,6 +78,19 @@ test("events: window, self", () => {
   is(state.log, [1, 2]);
 });
 
+test("events: parent, self", () => {
+  let el = h`<x><y :onx.parent="e => log.push(1)"></y><z></z></x>`;
+  let state = sprae(el, { log: [] });
+  el.firstChild.dispatchEvent(new window.Event("x", { bubbles: true }));
+  is(state.log, [1]);
+  el.dispatchEvent(new window.Event("x", { bubbles: true }));
+  is(state.log, [1, 1]);
+  window.dispatchEvent(new window.Event("x", { bubbles: true }));
+  is(state.log, [1, 1]);
+  el.lastChild.dispatchEvent(new window.Event("x", { bubbles: true }));
+  is(state.log, [1, 1, 1]);
+});
+
 test("events: keys", () => {
   let el = h`<x :onkeydown.enter="e => log.push(1)"></x>`;
   let state = sprae(el, { log: [] });

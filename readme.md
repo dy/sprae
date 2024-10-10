@@ -200,7 +200,7 @@ Attach event(s) listener with optional modifiers.
 
 * `.once`, `.passive`, `.capture` – listener [options](https://developer.mozilla.org/en-US/docs/Web/API/EventTarget/addEventListener#options).
 * `.prevent`, `.stop` (`.immediate`) – prevent default or stop (immediate) propagation.
-* `.window`, `.document`, `.outside`, `.self` – specify event target.
+* `.window`, `.document`, `.parent`, `.outside`, `.self` – specify event target.
 * `.throttle-<ms>`, `.debounce-<ms>` – defer function call with one of the methods.
 * `.<key>` – filtered by [`event.key`](https://developer.mozilla.org/en-US/docs/Web/API/UI_Events/Keyboard_event_key_values):
   * `.ctrl`, `.shift`, `.alt`, `.meta`, `.enter`, `.esc`, `.tab`, `.space` – direct key
