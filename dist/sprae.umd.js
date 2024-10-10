@@ -186,6 +186,7 @@ function sprae(el, values) {
   el[_dispose] = () => {
     while (disposes.length) disposes.pop()();
     memo.delete(el);
+    el[_dispose] = null;
   };
   return state;
   function init2(el2, parent = el2.parentNode) {
@@ -279,7 +280,7 @@ var init_if = __esm({
         const newEl = evaluate(state) ? ifEl : el[_prevIf] ? null : elseEl;
         if (next) next[_prevIf] = newEl === ifEl;
         if (curEl != newEl) {
-          curEl?.remove();
+          if (curEl) curEl.remove(), curEl[Symbol.dispose]?.();
           if (curEl = newEl) {
             holder.before(curEl.content || curEl);
             memo.get(curEl) === null && memo.delete(curEl);
@@ -337,7 +338,7 @@ var init_each = __esm({
               holder.before(el.content || el);
               sprae(el, scope);
               ((_b = cur[_a = _signals] || (cur[_a] = []))[i] || (_b[i] = {}))[Symbol.dispose] = () => {
-                el[Symbol.dispose](), el.remove();
+                el[Symbol.dispose]?.(), el.remove();
               };
             }
           }
