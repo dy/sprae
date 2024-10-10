@@ -13,8 +13,8 @@ export default function store(values, parent) {
   // redirect for optimized array store
   if (Array.isArray(values)) return list(values)
 
-  // ignore non-objects
-  if (values.constructor !== Object) return values;
+  // ignore non-objects or custom objects
+  if (values.constructor !== Object || values[Symbol.toStringTag]) return values;
 
   // NOTE: if you decide to unlazy values, think about large arrays - init upfront can be costly
   let signals = { ...parent?.[_signals] }, _len = signal(Object.values(values).length)

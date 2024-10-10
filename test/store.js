@@ -405,9 +405,10 @@ t.skip('store: length is not triggered extra times', async () => {
   is(log, [2, 4])
 })
 
-t.skip('store: retain global objects as is', async () => {
-  let s = store({ console })
-  ok(s.console === globalThis.console)
+t('store: retain global objects as is', async () => {
+  let s = store({ console, Math })
+  ok(s.console.log === globalThis.console.log)
+  ok(s.Math.max === Math.max)
 })
 
 t('store: reading length or signals', async () => {

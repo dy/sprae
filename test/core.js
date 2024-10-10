@@ -223,6 +223,21 @@ test("switch signals", async () => {
   is(el.innerHTML, '2')
 })
 
+test("Math / other globals available in template", async () => {
+  let el = h`<div :text="Math.max(2, 5, 1)"></div>`;
+  sprae(el, { Math });
+  is(el.innerHTML, '5');
+
+  el = h`<div :text="Math.PI.toFixed(2)"></div>`;
+  sprae(el, { Math });
+  is(el.innerHTML, '3.14');
+
+  el = h`<div :text="Math.sqrt(16)"></div>`;
+  sprae(el, { Math });
+  is(el.innerHTML, '4');
+});
+
+
 test.skip('memory allocation', async () => {
   let items = signal([])
   let el = h`<><x :each="item in items" :text="item.x"></x></>`
