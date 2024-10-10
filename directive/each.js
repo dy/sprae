@@ -63,7 +63,7 @@ directive.each = (tpl, [itemVar, idxVar, evaluate], state) => {
 
           // signal/holder disposal removes element
           ((cur[_signals] ||= [])[i] ||= {})[Symbol.dispose] = () => {
-            el[Symbol.dispose](), el.remove()
+            el[Symbol.dispose]?.(), el.remove()
           };
         }
       }

@@ -33,6 +33,7 @@ export default function sprae(el, values) {
   el[_dispose] = () => {
     while (disposes.length) disposes.pop()();
     memo.delete(el);
+    el[_dispose] = null;
   }
 
   return state;
