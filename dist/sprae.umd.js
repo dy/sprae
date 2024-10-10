@@ -199,8 +199,9 @@ function sprae(el, values) {
         for (let name of names) {
           let dir = directive[name] || directive.default;
           let evaluate = (dir.parse || parse)(attr2.value);
-          let dispose = dir(el2, evaluate, state, name);
-          if (dispose) disposes.push(dispose);
+          let fn = dir(el2, evaluate, state, name);
+          if (fn) disposes.push(effect(fn));
+          disposes.push(() => el2.setAttributeNode(attr2));
         }
         if (memo.has(el2)) return el2[_dispose] && disposes.push(el2[_dispose]);
         if (el2.parentNode !== parent) return;
@@ -254,6 +255,8 @@ ${dir}${expr ? `="${expr}"
         attributes,
         removeAttribute(name) {
           attributes.splice(attributes.findIndex((a) => a.name === name), 1);
+        },
+        setAttributeNode() {
         }
       };
     };
@@ -265,7 +268,6 @@ var _prevIf;
 var init_if = __esm({
   "directive/if.js"() {
     init_core();
-    init_signal();
     _prevIf = Symbol("if");
     directive.if = (el, evaluate, state) => {
       let next = el.nextElementSibling, holder = document.createTextNode(""), curEl, ifEl, elseEl;
@@ -276,7 +278,7 @@ var init_if = __esm({
         next.removeAttribute(":else");
         if (!next.hasAttribute(":if")) next.remove(), elseEl = next.content ? frag(next) : next, memo.set(elseEl, null);
       }
-      return effect(() => {
+      return () => {
         const newEl = evaluate(state) ? ifEl : el[_prevIf] ? null : elseEl;
         if (next) next[_prevIf] = newEl === ifEl;
         if (curEl != newEl) {
@@ -287,7 +289,7 @@ var init_if = __esm({
             sprae(curEl, state);
           }
         }
-      });
+      };
     };
   }
 });
@@ -346,13 +348,13 @@ var init_each = __esm({
         });
       };
       let planned = 0;
-      return effect(() => {
+      return () => {
         items.value[_change]?.value;
         if (!planned) {
           update();
           queueMicrotask(() => (planned && update(), planned = 0));
         } else planned++;
-      });
+      };
     };
     directive.each.parse = (expr) => {
       let [leftSide, itemsExpr] = expr.split(/\s+in\s+/);
@@ -379,13 +381,12 @@ var init_with = __esm({
   "directive/with.js"() {
     init_core();
     init_store();
-    init_signal();
     directive.with = (el, evaluate, rootState) => {
       let state;
-      return effect(() => {
+      return () => {
         let values = evaluate(rootState);
         sprae(el, state ? values : state = store(values, rootState));
-      });
+      };
     };
   }
 });
@@ -409,13 +410,12 @@ var init_html = __esm({
 var init_text = __esm({
   "directive/text.js"() {
     init_core();
-    init_signal();
     directive.text = (el, evaluate, state) => {
       if (el.content) el.replaceWith(el = frag(el).childNodes[0]);
-      return effect(() => {
+      return () => {
         let value = evaluate(state);
         el.textContent = value == null ? "" : value;
-      });
+      };
     };
   }
 });
@@ -424,10 +424,9 @@ var init_text = __esm({
 var init_class = __esm({
   "directive/class.js"() {
     init_core();
-    init_signal();
     directive.class = (el, evaluate, state) => {
       let cur = /* @__PURE__ */ new Set();
-      return effect(() => {
+      return () => {
         let v = evaluate(state);
         let clsx = /* @__PURE__ */ new Set();
         if (v) {
@@ -438,7 +437,7 @@ var init_class = __esm({
         for (let cls of cur) if (clsx.has(cls)) clsx.delete(cls);
         else el.classList.remove(cls);
         for (let cls of cur = clsx) el.classList.add(cls);
-      });
+      };
     };
   }
 });
@@ -447,17 +446,16 @@ var init_class = __esm({
 var init_style = __esm({
   "directive/style.js"() {
     init_core();
-    init_signal();
     directive.style = (el, evaluate, state) => {
       let initStyle = el.getAttribute("style");
-      return effect(() => {
+      return () => {
         let v = evaluate(state);
         if (typeof v === "string") el.setAttribute("style", initStyle + (initStyle.endsWith(";") ? "" : "; ") + v);
         else {
           if (initStyle) el.setAttribute("style", initStyle);
           for (let k in v) k[0] == "-" ? el.style.setProperty(k, v[k]) : el.style[k] = v[k];
         }
-      });
+      };
     };
   }
 });
@@ -467,13 +465,12 @@ var mods, keys, attr, throttle, debounce, dashcase;
 var init_default = __esm({
   "directive/default.js"() {
     init_core();
-    init_signal();
     directive.default = (target, evaluate, state, name) => {
-      if (!name.startsWith("on")) return effect(() => {
+      if (!name.startsWith("on")) return () => {
         let value = evaluate(state);
         if (name) attr(target, name, value);
         else for (let key in value) attr(target, dashcase(key), value[key]);
-      });
+      };
       const ctxs = name.split("..").map((e) => {
         let ctx = { evt: "", target, test: () => true };
         ctx.evt = (e.startsWith("on") ? e.slice(2) : e).replace(
@@ -482,12 +479,12 @@ var init_default = __esm({
         );
         return ctx;
       });
-      if (ctxs.length == 1) return effect(() => addListener(evaluate(state), ctxs[0]));
+      if (ctxs.length == 1) return () => addListener(evaluate(state), ctxs[0]);
       let startFn, nextFn, off, idx = 0;
       const nextListener = (fn) => {
         off = addListener((e) => (off(), nextFn = fn?.(e), (idx = ++idx % ctxs.length) ? nextListener(nextFn) : startFn && nextListener(startFn)), ctxs[idx]);
       };
-      return effect(() => (startFn = evaluate(state), !off && nextListener(startFn), () => startFn = null));
+      return () => (startFn = evaluate(state), !off && nextListener(startFn), () => startFn = null);
       function addListener(fn, { evt, target: target2, test, defer, stop, prevent, immediate, ...opts }) {
         if (defer) fn = defer(fn);
         const cb = (e) => {
@@ -616,7 +613,6 @@ var init_value = __esm({
     init_core();
     init_core();
     init_default();
-    init_signal();
     directive.value = (el, [getValue, setValue], state) => {
       const update = el.type === "text" || el.type === "" ? (value) => el.setAttribute("value", el.value = value == null ? "" : value) : el.tagName === "TEXTAREA" || el.type === "text" || el.type === "" ? (value, from, to) => (
         // we retain selection in input
@@ -632,7 +628,7 @@ var init_value = __esm({
       if (el.type?.startsWith("select")) sprae(el, state);
       const handleChange = el.type === "checkbox" ? (e) => setValue(state, el.checked) : el.type === "select-multiple" ? (e) => setValue(state, [...el.selectedOptions].map((o) => o.value)) : (e) => setValue(state, el.value);
       el.oninput = el.onchange = handleChange;
-      return effect(() => update(getValue(state)));
+      return () => update(getValue(state));
     };
     directive.value.parse = (expr) => {
       let evaluate = [parse(expr)];
@@ -655,9 +651,8 @@ var init_value = __esm({
 var init_fx = __esm({
   "directive/fx.js"() {
     init_core();
-    init_signal();
     directive.fx = (el, evaluate, state) => {
-      return effect(() => evaluate(state));
+      return () => evaluate(state);
     };
   }
 });
@@ -692,12 +687,11 @@ var data_exports = {};
 var init_data = __esm({
   "directive/data.js"() {
     init_core();
-    init_signal();
     directive["data"] = (el, evaluate, state) => {
-      return effect(() => {
+      return () => {
         let value = evaluate(state);
         for (let key in value) el.dataset[key] = value[key];
-      });
+      };
     };
   }
 });
@@ -708,12 +702,11 @@ var init_aria = __esm({
   "directive/aria.js"() {
     init_core();
     init_default();
-    init_signal();
     directive["aria"] = (el, evaluate, state) => {
       const update = (value) => {
         for (let key in value) attr(el, "aria-" + dashcase(key), value[key] == null ? null : value[key] + "");
       };
-      return effect(() => update(evaluate(state)));
+      return () => update(evaluate(state));
     };
   }
 });

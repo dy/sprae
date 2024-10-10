@@ -171,8 +171,9 @@ function sprae(el, values) {
         for (let name of names) {
           let dir = directive[name] || directive.default;
           let evaluate = (dir.parse || parse)(attr2.value);
-          let dispose = dir(el2, evaluate, state, name);
-          if (dispose) disposes.push(dispose);
+          let fn = dir(el2, evaluate, state, name);
+          if (fn) disposes.push(effect(fn));
+          disposes.push(() => el2.setAttributeNode(attr2));
         }
         if (memo.has(el2)) return el2[_dispose] && disposes.push(el2[_dispose]);
         if (el2.parentNode !== parent) return;
@@ -219,6 +220,8 @@ var frag = (tpl) => {
     attributes,
     removeAttribute(name) {
       attributes.splice(attributes.findIndex((a) => a.name === name), 1);
+    },
+    setAttributeNode() {
     }
   };
 };
@@ -234,7 +237,7 @@ directive.if = (el, evaluate, state) => {
     next.removeAttribute(":else");
     if (!next.hasAttribute(":if")) next.remove(), elseEl = next.content ? frag(next) : next, memo.set(elseEl, null);
   }
-  return effect(() => {
+  return () => {
     const newEl = evaluate(state) ? ifEl : el[_prevIf] ? null : elseEl;
     if (next) next[_prevIf] = newEl === ifEl;
     if (curEl != newEl) {
@@ -245,7 +248,7 @@ directive.if = (el, evaluate, state) => {
         sprae(curEl, state);
       }
     }
-  });
+  };
 };
 
 // directive/each.js
@@ -297,13 +300,13 @@ directive.each = (tpl, [itemVar, idxVar, evaluate], state) => {
     });
   };
   let planned = 0;
-  return effect(() => {
+  return () => {
     items.value[_change]?.value;
     if (!planned) {
       update();
       queueMicrotask(() => (planned && update(), planned = 0));
     } else planned++;
-  });
+  };
 };
 directive.each.parse = (expr) => {
   let [leftSide, itemsExpr] = expr.split(/\s+in\s+/);
@@ -320,10 +323,10 @@ directive.ref.parse = (expr) => expr;
 // directive/with.js
 directive.with = (el, evaluate, rootState) => {
   let state;
-  return effect(() => {
+  return () => {
     let values = evaluate(rootState);
     sprae(el, state ? values : state = store(values, rootState));
-  });
+  };
 };
 
 // directive/html.js
@@ -338,16 +341,16 @@ directive.html = (el, evaluate, state) => {
 // directive/text.js
 directive.text = (el, evaluate, state) => {
   if (el.content) el.replaceWith(el = frag(el).childNodes[0]);
-  return effect(() => {
+  return () => {
     let value = evaluate(state);
     el.textContent = value == null ? "" : value;
-  });
+  };
 };
 
 // directive/class.js
 directive.class = (el, evaluate, state) => {
   let cur = /* @__PURE__ */ new Set();
-  return effect(() => {
+  return () => {
     let v = evaluate(state);
     let clsx = /* @__PURE__ */ new Set();
     if (v) {
@@ -358,29 +361,29 @@ directive.class = (el, evaluate, state) => {
     for (let cls of cur) if (clsx.has(cls)) clsx.delete(cls);
     else el.classList.remove(cls);
     for (let cls of cur = clsx) el.classList.add(cls);
-  });
+  };
 };
 
 // directive/style.js
 directive.style = (el, evaluate, state) => {
   let initStyle = el.getAttribute("style");
-  return effect(() => {
+  return () => {
     let v = evaluate(state);
     if (typeof v === "string") el.setAttribute("style", initStyle + (initStyle.endsWith(";") ? "" : "; ") + v);
     else {
       if (initStyle) el.setAttribute("style", initStyle);
       for (let k in v) k[0] == "-" ? el.style.setProperty(k, v[k]) : el.style[k] = v[k];
     }
-  });
+  };
 };
 
 // directive/default.js
 directive.default = (target, evaluate, state, name) => {
-  if (!name.startsWith("on")) return effect(() => {
+  if (!name.startsWith("on")) return () => {
     let value = evaluate(state);
     if (name) attr(target, name, value);
     else for (let key in value) attr(target, dashcase(key), value[key]);
-  });
+  };
   const ctxs = name.split("..").map((e) => {
     let ctx = { evt: "", target, test: () => true };
     ctx.evt = (e.startsWith("on") ? e.slice(2) : e).replace(
@@ -389,12 +392,12 @@ directive.default = (target, evaluate, state, name) => {
     );
     return ctx;
   });
-  if (ctxs.length == 1) return effect(() => addListener(evaluate(state), ctxs[0]));
+  if (ctxs.length == 1) return () => addListener(evaluate(state), ctxs[0]);
   let startFn, nextFn, off, idx = 0;
   const nextListener = (fn) => {
     off = addListener((e) => (off(), nextFn = fn?.(e), (idx = ++idx % ctxs.length) ? nextListener(nextFn) : startFn && nextListener(startFn)), ctxs[idx]);
   };
-  return effect(() => (startFn = evaluate(state), !off && nextListener(startFn), () => startFn = null));
+  return () => (startFn = evaluate(state), !off && nextListener(startFn), () => startFn = null);
   function addListener(fn, { evt, target: target2, test, defer, stop, prevent, immediate, ...opts }) {
     if (defer) fn = defer(fn);
     const cb = (e) => {
@@ -531,7 +534,7 @@ directive.value = (el, [getValue, setValue], state) => {
   if (el.type?.startsWith("select")) sprae(el, state);
   const handleChange = el.type === "checkbox" ? (e) => setValue(state, el.checked) : el.type === "select-multiple" ? (e) => setValue(state, [...el.selectedOptions].map((o) => o.value)) : (e) => setValue(state, el.value);
   el.oninput = el.onchange = handleChange;
-  return effect(() => update(getValue(state)));
+  return () => update(getValue(state));
 };
 directive.value.parse = (expr) => {
   let evaluate = [parse(expr)];
@@ -550,7 +553,7 @@ directive.value.parse = (expr) => {
 
 // directive/fx.js
 directive.fx = (el, evaluate, state) => {
-  return effect(() => evaluate(state));
+  return () => evaluate(state);
 };
 
 // sprae.js
