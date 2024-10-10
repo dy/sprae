@@ -527,6 +527,9 @@ var init_default = __esm({
       document(ctx) {
         ctx.target = document;
       },
+      parent(ctx) {
+        ctx.target = ctx.target.parentNode;
+      },
       throttle(ctx, limit) {
         ctx.defer = (fn) => throttle(fn, limit ? Number(limit) || 0 : 108);
       },
