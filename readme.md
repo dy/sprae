@@ -171,13 +171,16 @@ Run effect, not changing any attribute.
 Get reference to element (instead of `this`).
 
 ```html
-<!-- initialize el (oninit) -->
-<textarea :ref="el => autoResize(el)" placeholder="Enter text..."></textarea>
+<!-- initialize element -->
+<textarea :ref="el => (/* onmount */, () => (/* onunmount */))" placeholder="Enter text..."></textarea>
 
 <!-- expose element in (sub)state -->
 <li :each="item in items" :with="{li:null}" :ref="el => li = el">
   <input :onfocus..onblur="e => (li.classList.add('editing'), e => li.classList.remove('editing'))"/>
 </li>
+
+<!-- set innerHTML -->
+<div :ref="el => el.innerHTML = '...'"></div>
 ```
 
 #### `:on<event>="handler"`, `:on<in>..on<out>="handler"`
@@ -352,12 +355,10 @@ sprae.use({ compile })
 * Properties prefixed with `_` are untracked: `let state = sprae(el, {_x:2}); state._x++; // no effect`.
 * To destroy state and detach sprae handlers, call `element[Symbol.dispose]()`.
 * State getters/setters work as computed effects, eg. `sprae(el, { x:1, get x2(){ return this.x * 2} })`.
-* `this` is not used, to get access to current element use `<input :ref="el" :text="el.value"/>`.
-* `event` is not used, `:on*` attributes expect a function with event object as first argument `:onevt="event => handle()"`, see [#46](https://github.com/dy/sprae/issues/46).
+* `this` is not used, to get access to current element use `<input :ref="el => (...)" :text="el.value"/>`.
+* `event` is not used, `:on*` attributes expect a function with event argument `:onevt="event => handle()"`, see [#46](https://github.com/dy/sprae/issues/46).
 * `key` is not used, `:each` uses direct list mapping instead of dom diffing.
 * `await` is not supported in attributes, it’s a strong indicator you need to put these methods into state.
-* `:ref` can be used as mount/unmount - returned function is called on dispose `:ref=el=>(init, ()=> dispose)`
-* To set innerHTML or instantiate a template do it manually `:ref="el=>el.innerHTML=..."`, `:ref="el=>el.replaceChildren(sprae(tpl.content))"`
 
 ## Justification
 
