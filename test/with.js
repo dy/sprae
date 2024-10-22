@@ -73,7 +73,7 @@ test("with: one of children (internal number of iterations, cant see the result 
 
 test("with: scope directives must come first", async () => {
   // NOTE: we have to init attributes in order of definition
-  let a = h`<x :with="{y:1}" :text="y" :ref="x"></x>`;
-  sprae(a, {});
+  let a = h`<x :with="{y:1}" :text="y" :ref="el=>x=el"></x>`;
+  sprae(a, { x: null });
   is(a.outerHTML, `<x>1</x>`);
 });

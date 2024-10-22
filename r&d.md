@@ -194,11 +194,13 @@
 -> Second, there's easier way to just "evaporate" directive = not initialize twice;
 -> Third, there's too much pollution with class markers
 
-## [ ] :html? ->  ~~Nope: can be implemented via any prop~~ -> let's try elements
+## [x] :html? ->  ~~Nope: can be implemented via any prop~~ remove it
 
   - introduces malign hole of including sprae inside of html
-  - nah: can easily be done manually as `:html="this.innerHTML = abc"`. Just need passing context
+  - can easily be done manually as `:ref="el => el.innerHTML = abc"`. Just need passing context
   + we may need non-strings, like DOM elements, templates, or just injecting element at particular place
+  ? how do we instantiate template
+    * `:ref => el => el.replaceChildren(sprae(tpl))`
 
 ## [x] :fx - to be or not to be? -> nah, already works. Just return `null` in any attr, that's it.
 
@@ -249,7 +251,7 @@
     - slows down domdiff
     - can be solved as `<x :if="xxx" :="xxx && (...)'">` automatically
 
-## [ ] :onmount/onunmount? ->
+## [x] :onmount/onunmount? -> see :ref=el=>el
 
   + useful for :if, :each
   + useful to dispose listeners via :onunmount (opposed to hidden symbols)
@@ -508,7 +510,6 @@
   + we might not need swapdom, since nodes manage themselves
   * note the untracked function
 
-
 ## [x] :onclick="direct code" ? -> no: immediately invoked.
 
   + compatible with direct `onclick=...`
@@ -580,7 +581,7 @@
 
 ## [x] Events chain (sequence): parallel or sequential? -> let's keep sequential, for parallel use stop.immediate.1
 
-* `:onclick..onclick="play"` - it doesn't work as toggle because we allow parallel execution, so second onclick gets superceded by first one. Do we need that?
+  * `:onclick..onclick="play"` - it doesn't work as toggle because we allow parallel execution, so second onclick gets superceded by first one. Do we need that?
   - we can limit parallel events pool via `:onclick.1..onclick :onclick.second..onclick`
   - `:onclick..onclick` is more obvious/explicit/uniform than `:onclick.toggle`
   ? do we ever need cases when we need parallel execution?
@@ -590,7 +591,7 @@
   + shorter and nicer syntax
   - possibly longer init
 
-## [ ] Better :ref ->
+## [x] Better :ref -> functional style like react
 
   1. should we merge `:ref` and `id`, eg. expose all ids by default?
     + it saves code, eg. `id="artwork" :ref="artwork"` is very common construct
@@ -605,6 +606,25 @@
 
   3. `:with="{x:this}"`
     - we don't use `this`
+
+  4. `:ref="el=>el.style='abc'"`
+    + we can use that to initialize element
+    + it looks like ref in react
+    + it allows for more robust initialization: no need to write to state
+    + it makes it more explicit to expose element in state `:ref="(el, state) => state[name] = el"`
+      - 2nd argument - not nice
+    - can be called `:oninit` or `:onconnected` with same effect
+    ? how to expose ref to state
+      * `sprae(el, {x:null})`, `<x :ref={el => x=el}></x>`
+    ? how to expose local ref
+      * `<li :each="el in list" :with={x:null} :ref={el=>x=el}>`
+
+## [x] Initializing element -> see :ref=el=>el
+
+  * The problem sprae has with initializing element: we need to run some code to init some handler (eg. autosize), similar to spect.
+  * But we don't have `:oninit`.
+  * Also, since we don't have `this` - it is problematic to get reference to element.
+  * We can try to use `:ref` for that, ref creates value in state, which is undesired.
 
 ## [x] Event modifiers :ona.once, `:ona` -> let's try, there's a lot of use for both props and event
 
@@ -923,9 +943,9 @@
 
 ## [x] Template syntax -> nice research, but outside of sprae scope, see define-element r&d
 
-1. `attr={{value}}`
-2. `:attr="value"`
-3. `attr="{value}"`
+  1. `attr={{value}}`
+  2. `:attr="value"`
+  3. `attr="{value}"`
 
 ## [x] #14: Should we introduce fragments rendering via template directives `<template :if="..."` -> yes, that's meaningful scope delineation: :if, :each, :scope etc
   * That seems to be in-line with `<tempalte :each="...">` - logically these both create placeholder element
@@ -936,147 +956,147 @@
 
 ## [x] Should we convert input init state to signals? -> no, only internal scopes
 
-+ unified output state API
-+ makes sense of returning modified state
-- doesn't modify initial state
-- performance hit: not everything needs to be a signal, also slows down rendering
+  + unified output state API
+  + makes sense of returning modified state
+  - doesn't modify initial state
+  - performance hit: not everything needs to be a signal, also slows down rendering
 
 ## [x] Init signals: how? -> `sprae.use(signals)`, but internally
 
-1. `sprae.config({signals})`, `sprae.setup({signals})`
-  + universal
-  + allows other configs: async, compare, compiler etc.
-    - some choices can be made beforehead (async, compare, compiler)
-  + points at 1-time call
-  - not optimal in terms of size
+  1. `sprae.config({signals})`, `sprae.setup({signals})`
+    + universal
+    + allows other configs: async, compare, compiler etc.
+      - some choices can be made beforehead (async, compare, compiler)
+    + points at 1-time call
+    - not optimal in terms of size
 
-2. `sprae.signals(signals)`
-  + short
-  + likely we're not going to need to configure anything else
-  - duplicate name `signals(signals)`
+  2. `sprae.signals(signals)`
+    + short
+    + likely we're not going to need to configure anything else
+    - duplicate name `signals(signals)`
 
-3. `sprae.set({signals})`, `sprae.use(signals)`
-  + mocha, express
-  + short
-  - doesn't work with other params like `sprae.use({async:true})`
+  3. `sprae.set({signals})`, `sprae.use(signals)`
+    + mocha, express
+    + short
+    - doesn't work with other params like `sprae.use({async:true})`
 
-4. `sprae.signals = signals`
+  4. `sprae.signals = signals`
 
 ## [x] How to export signals? -> ~~`sprae/signal` seems to be most meaningful~~, but keep .use, import sprae, {signal}
 
-1. `import sprae, {signal, effect} from 'sprae'`
+  1. `import sprae, {signal, effect} from 'sprae'`
 
-- not clear which signals are these
-- enforces signal exports
-- enforces `sprae.use` to switch signals
-  - which is also not small
-    + requiring / calling `sprae.signal` everywhere is more to size than once-assigning
-    + `sprae.use` is more obvious than `sprae.signal = xxx`
+  - not clear which signals are these
+  - enforces signal exports
+  - enforces `sprae.use` to switch signals
+    - which is also not small
+      + requiring / calling `sprae.signal` everywhere is more to size than once-assigning
+      + `sprae.use` is more obvious than `sprae.signal = xxx`
 
-2. `import sprae from 'sprae'; import { signal, effect } from 'sprae/signal'`
+  2. `import sprae from 'sprae'; import { signal, effect } from 'sprae/signal'`
 
-- separate import entry
-+ signal is automatically registered & coupled with sprae
-+ doesn't enforce `sprae.use` / `Object.assign(sprae, signals)`
-  - `sprae.use` is more compact than `sprae.signal` everywhere
-- directives depend on signals, we cannot throw them away = we don't need `sprae/signal` entry
+  - separate import entry
+  + signal is automatically registered & coupled with sprae
+  + doesn't enforce `sprae.use` / `Object.assign(sprae, signals)`
+    - `sprae.use` is more compact than `sprae.signal` everywhere
+  - directives depend on signals, we cannot throw them away = we don't need `sprae/signal` entry
 
-3. `import sprae from 'sprae'; import * as ulive from 'ulive'; Object.assign(sprae, ulive); const {signal} = ulive;`
+  3. `import sprae from 'sprae'; import * as ulive from 'ulive'; Object.assign(sprae, ulive); const {signal} = ulive;`
 
-- very verbose
-- no convenient destructuring
+  - very verbose
+  - no convenient destructuring
 
 ## [x] How do we organize updatable state? -> let's try to keep effects out of directives
 
-1. Make signals optional, update state via returned function
-  + no signals = smaller
-  - not clear how to organize the directives code: `effect` is still needed if we use signals
-  - enforcing signals config is too much, they must be available immediately
-2. Keep `state` as signal, register `state.value`
-  - harder dependence on signals
-  + solves issue
-  - a bit verbose: needs initializing with signal detection
-    - which adds to size
-  - it's also less clear: it causes some infinite loops hard to trace back
-    - generally understanding update dependency is harder
-3. we always return `effect` anyways: we can return `update` function instead and handle effect outside
+  1. Make signals optional, update state via returned function
+    + no signals = smaller
+    - not clear how to organize the directives code: `effect` is still needed if we use signals
+    - enforcing signals config is too much, they must be available immediately
+  2. Keep `state` as signal, register `state.value`
+    - harder dependence on signals
+    + solves issue
+    - a bit verbose: needs initializing with signal detection
+      - which adds to size
+    - it's also less clear: it causes some infinite loops hard to trace back
+      - generally understanding update dependency is harder
+  3. we always return `effect` anyways: we can return `update` function instead and handle effect outside
   + this way we'd be able to call update independent of effect
   + we handle effect disposal in centralized way, not per-directive
 
 
 ## [x] What should we return from `sprae` call? -> we return reactive state
 
-1. ~~state signal~~
-  - not clear what sort of signal is that
-  - no access to props: lame
-2. state.value
-  + actual state...
-3. dispose
-  + conventional
-  - no access to state
-4. element itself
+  1. ~~state signal~~
+    - not clear what sort of signal is that
+    - no access to props: lame
+  2. state.value
+    + actual state...
+  3. dispose
+    + conventional
+    - no access to state
+  4. element itself
   + chaining
 
 ## [x] CSP approaces -> ~~let's use wired-in justin until otherwise needed~~ -> we need to provide switchable compiler to make code smaller
 
-1. Wired-in by default (non-customizable)
-  + easier
-  + less maintenance efforts: sandboxing & syntax out of the box, less docs
-  + CSP by default
-  + subscript included as dependency
-  + minimal style
-  - size (>5kb), ~5.4kb
-  - doesn't really protect from constructor.constructor
-  - it makes code heavier for component applications where we don't care about unsafe eval
-2. Separate CSP entry
-  + similar to Alpine
-  + ability to choose best option
-    ~ not sure if that's a value - making user think
-  - maintaining separate entries
-    - risk of conflict / friction / non-identical code (discrepancies of justin/js)
-3. Customizable compiler by user
+  1. Wired-in by default (non-customizable)
+    + easier
+    + less maintenance efforts: sandboxing & syntax out of the box, less docs
+    + CSP by default
+    + subscript included as dependency
+    + minimal style
+    - size (>5kb), ~5.4kb
+    - doesn't really protect from constructor.constructor
+    - it makes code heavier for component applications where we don't care about unsafe eval
+  2. Separate CSP entry
+    + similar to Alpine
+    + ability to choose best option
+      ~ not sure if that's a value - making user think
+    - maintaining separate entries
+      - risk of conflict / friction / non-identical code (discrepancies of justin/js)
+  3. Customizable compiler by user
   + single CSP entry
   - formally non-CSP-enabled
   - even if CSP is configured, bundle can be detected as unsafe since it has `new Function`
 
 ## [x] Should we autosubscribe to direct signal read? -> nah, let's not create friction
 
-+ That's what preact authors wanted & encourage
-  - it will become different from preact effects code
-- That makes syntax incompatible with JS compiler
-- that blows up code a bit configuring subscript
-- that enforces writing signals too, we can't `a = value` anymore
-? is that obvious enough?
+  + That's what preact authors wanted & encourage
+    - it will become different from preact effects code
+  - That makes syntax incompatible with JS compiler
+  - that blows up code a bit configuring subscript
+  - that enforces writing signals too, we can't `a = value` anymore
+  ? is that obvious enough?
 
 ## [x] Signals store instead of explicit signals? -> yes, let's try, too many benefits
 
-+ bench shows arrays / objects better
-+ bench shows it's possibly better memory-wise
-+ it's way less code for array ops: no need to create signals here and there, no need for bumping prop
-+ it allows attributes code forget about signals
-+ no need for DOM swapper algo
-+ it makes sense as output from sprae to be reactive proxy store
-+ it allows internal code to care less about what's signal what's not
-+ generally it makes signals mechanism implicit and optional - API-wise user cares less about what should be a signal what not
-- possibly some bit more of memory/perf cost, since static values get wrapped into signals
+  + bench shows arrays / objects better
+  + bench shows it's possibly better memory-wise
+  + it's way less code for array ops: no need to create signals here and there, no need for bumping prop
+  + it allows attributes code forget about signals
+  + no need for DOM swapper algo
+  + it makes sense as output from sprae to be reactive proxy store
+  + it allows internal code to care less about what's signal what's not
+  + generally it makes signals mechanism implicit and optional - API-wise user cares less about what should be a signal what not
+  - possibly some bit more of memory/perf cost, since static values get wrapped into signals
   ? can we optimize static array values instead of being a bunch of signals instead be one signal?
 
 ## [x] Should we make store notify about diff props, rather than length? -> nah, too complex
 
 ## [x] Should we create per-object signal, instead of per-property? -> No
-- it gives less granular updates: full array gets diffed, all nodes get refreshed
+  - it gives less granular updates: full array gets diffed, all nodes get refreshed
 
 ## [x] ~~Should we replace `:each="item in items"` to `:each.item="items"`?~~ -> fixed via custom .parse
 
-- non-conventional
-+ `:each` is the only exception now that needs custom expr parsing
+  - non-conventional
+  + `:each` is the only exception now that needs custom expr parsing
 
 ### [x] When signal with array is used as store value {rows:signal([1,2,3])} - what's expected update? -> let's make it full reinit array, since it's most direct
 
-1. Remove all, replace all - store plain array
-2. Swap via swapdom etc
-  - heavy, makes no sense as store
-3. Force signal value into a store, update store
+  1. Remove all, replace all - store plain array
+  2. Swap via swapdom etc
+    - heavy, makes no sense as store
+  3. Force signal value into a store, update store
   + we anyways can even with regular stores rewrite to null
   - duplication: we'd need to store the store somewhere
     - we'd need to sync up array with internal store somehow
@@ -1084,26 +1104,26 @@
 
 ## [x] Should we separate store to array/struct? -> yes, cleaner logic
 
-+ different length tracking
-+ structs can be not lazy unlike arrays
-- store can change from object to array...
-  ~ we can prohibit that
-+ object/array have quite different diffing logic:
+  + different length tracking
+  + structs can be not lazy unlike arrays
+  - store can change from object to array...
+    ~ we can prohibit that
+  + object/array have quite different diffing logic:
   + objects don't need length
   + arrays don't need setters/getters
   + arrays don't usually have parent scopes
 
 ## [x] Can we use Object.create for :each scope? -> no, let's make it flat
 
-- We need `:ref="el"` to inject element instance per-item
-  + We don't really need to create a separate scope for that, we can just preset ref only for subscope
-- It's not good to expose per-item props like `:fx="x=123"` to the root
-  ~+ why? actually that allows to have access to both local scope and root scope
-- We can't really avoid creating new scopes in `:scope="{}"`, can we?
-  ? Is it better to keep root scope as mutation holder
-  + `:with={}` wasn't supposed to define scope, it's just defining variables
-+ It would allow us to get rid of `parent` in `store`, which is less static + dynamic trouble
-+ `:scope` defines only particular local variables, but generally access to root scope is preserved
+  - We need `:ref="el"` to inject element instance per-item
+    + We don't really need to create a separate scope for that, we can just preset ref only for subscope
+  - It's not good to expose per-item props like `:fx="x=123"` to the root
+    ~+ why? actually that allows to have access to both local scope and root scope
+  - We can't really avoid creating new scopes in `:scope="{}"`, can we?
+    ? Is it better to keep root scope as mutation holder
+    + `:with={}` wasn't supposed to define scope, it's just defining variables
+  + It would allow us to get rid of `parent` in `store`, which is less static + dynamic trouble
+  + `:scope` defines only particular local variables, but generally access to root scope is preserved
 
 ### [x] should we rename `:scope` to `:with` then, to avoid confusion? -> Yes, :with is flat, it's better
   + less confusion - doesn't create actual scope
@@ -1112,48 +1132,49 @@
 
 ### [ ] store: should we prohibit creation of new props?
 
-+ Structs make objects nice: small, fast, obvious
-- Difficulty for arrays: we cannot really avoid creating new props there
-  + What if we separate arrays to own `list` type of store?
-+ We can define scopes via `:with` for new props
-  + and that naturally prevents leaking variables
-? Do we need extending root scope? Like writing some new props to it?
+  + Structs make objects nice: small, fast, obvious
+  - Difficulty for arrays: we cannot really avoid creating new props there
+    + What if we separate arrays to own `list` type of store?
+  + We can define scopes via `:with` for new props
+    + and that naturally prevents leaking variables
+  ? Do we need extending root scope? Like writing some new props to it?
+  + `with` doesn't allow writing new props anyways
 
-## [ ] Componentization: what would be the most durable/meaningful/inspiring pattern?
+## [ ] Componentization: what would be the most durable/meaningful/inspiring pattern? -> likely no for now
 
-1. define-element
+  1. define-element
 
-  - templating uses django syntax - leads to verbatim conflict
-    ~ we're not necessarily going to use django
-  - `<template>` within `<template>` is not nice, for the case of :each etc
-    ~ foreach works as `<template directive="foraeach" expression="...">xxx</template>`, so it shouldn't be a problem
-  - no obvious way to import elements
-    - requires some bundling, likely for HTML
-  - non-standard
+    - templating uses django syntax - leads to verbatim conflict
+      ~ we're not necessarily going to use django
+    - `<template>` within `<template>` is not nice, for the case of :each etc
+      ~ foreach works as `<template directive="foraeach" expression="...">xxx</template>`, so it shouldn't be a problem
+    - no obvious way to import elements
+      - requires some bundling, likely for HTML
+    - non-standard
 
-2. JS custom elements
+  2. JS custom elements
 
-  + allows esm bundling of templates
-  + allows evaluatig sprae manually
-  + fine-grain control of attributes
-  - requires innerHTML
-  - direct competition with JSX, which is weird
-  ~ we can make spraex extension for JSX to allow :on attributes
+    + allows esm bundling of templates
+    + allows evaluatig sprae manually
+    + fine-grain control of attributes
+    - requires innerHTML
+    - direct competition with JSX, which is weird
+    ~ we can make spraex extension for JSX to allow :on attributes
 
-3. No componentization
+  3. No componentization
 
-  + discipline of tiny single-purpose apps
-  + factors componentization out to other libs
-  - makes sprae less useful as dependency
+    + discipline of tiny single-purpose apps
+    + factors componentization out to other libs
+    - makes sprae less useful as dependency
 
-4. include / html / render
+  4. include / html / render
 
-  + gives intermediate solution
-  + classic
-  - no components
-  - a bit implicit
+    + gives intermediate solution
+    + classic
+    - no components
+    - a bit implicit
 
-5. htmx-like requests
+  5. htmx-like requests
 
 ## [x] Pause/resume components (detached :if should not trigger internal fx) -> complete disposal cycle
 
@@ -1168,3 +1189,10 @@
   + completes disposal method
   - requires storing initial `:` attributes
   + `:each` already does that way: just stores initial element as template, untouched
+
+## [ ] Reasons against sprae
+
+  - requires loading script anyways - not native event callbacks
+  - ~~no `this` keyword makes it a bit cumbersome~~
+  - separate syntax space even with `:` prefix - conflicts
+  - perf-wise vanilla is still faster

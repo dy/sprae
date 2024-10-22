@@ -147,11 +147,12 @@
 * [x] ~~try debouncing / batching array.length writes~~ -> doesn't seem possible
 * [x] lodash for untracked values
 * [x] fix wavearea
-* [ ] fix :if within :each
+* [x] fix :if within :each
+* [x] make functional ref
 
 ## Backlog
 
 * [ ] :onvisible..oninvisible
-* [ ] :onmount..onunmount
+* [x] ~~:onmount..onunmount~~ - see :ref
 * [ ] :animate?
-* [ ] js-framework-bench push + example
+* [x] js-framework-bench push + example

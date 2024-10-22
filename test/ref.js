@@ -6,8 +6,8 @@ import h from "hyperf";
 
 
 test("ref: base", async () => {
-  let a = h`<a :ref="a" :fx="log.push(a)" :text="b"></a>`;
-  let state = sprae(a, { log: [], b: 1 });
+  let a = h`<a :ref="el => a=el" :fx="log.push(a)" :text="b"></a>`;
+  let state = sprae(a, { log: [], b: 1, a: null });
   await tick();
   is(state.log[0], a);
   is(a.outerHTML, `<a>1</a>`);
@@ -18,7 +18,7 @@ test("ref: base", async () => {
 });
 
 test("ref: signal", async () => {
-  let a = h`<a :ref="a" :text="b"></a>`;
+  let a = h`<a :ref="el => a=el" :text="b"></a>`;
   let state = sprae(a, { a: signal(), b: signal(1) });
   await tick();
   is(state.a, a);
@@ -30,15 +30,9 @@ test("ref: signal", async () => {
 });
 
 test("ref: with :each", async () => {
-  let a = h`<y><x :each="item in items" :ref="x" :text="log.push(x), item"/></y>`;
+  let a = h`<y><x :each="item in items" :with="{x:null}" :ref="el => x=el" :text="log.push(x), item"/></y>`;
   let state = sprae(a, { log: [], items: [1, 2, 3] });
   await tick();
   is(state.log, [...a.children]);
   is(a.innerHTML, `<x>1</x><x>2</x><x>3</x>`);
-});
-
-test("ref: t̵h̵i̵s̵ ̵r̵e̵f̵e̵r̵s̵ ̵t̵o̵ defines current element", async () => {
-  let el = h`<x :ref="x" :text="log.push(x)"></x>`;
-  let state = sprae(el, { log: [] });
-  is(state.log, [el]);
 });

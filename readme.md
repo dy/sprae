@@ -155,19 +155,6 @@ Define values for a subtree.
 </x>
 ```
 
-#### `:ref="name"`
-
-Expose element with `name`.
-
-```html
-<textarea :ref="text" placeholder="Enter text..."></textarea>
-
-<!-- iterable items -->
-<li :each="item in items" :ref="li">
-  <input :onfocus..onblur="e => (li.classList.add('editing'), e => li.classList.remove('editing'))"/>
-</li>
-```
-
 #### `:fx="code"`
 
 Run effect, not changing any attribute.
@@ -177,6 +164,20 @@ Run effect, not changing any attribute.
 
 <!-- cleanup function -->
 <div :fx="id = setInterval(tick, 1000), () => clearInterval(id)" />
+```
+
+#### `:ref="el => (...)"`
+
+Get reference to element (instead of `this`).
+
+```html
+<!-- initialize el (oninit) -->
+<textarea :ref="el => autoResize(el)" placeholder="Enter text..."></textarea>
+
+<!-- expose element in (sub)state -->
+<li :each="item in items" :with="{li:null}" :ref="el => li = el">
+  <input :onfocus..onblur="e => (li.classList.add('editing'), e => li.classList.remove('editing'))"/>
+</li>
 ```
 
 #### `:on<event>="handler"`, `:on<in>..on<out>="handler"`
@@ -212,9 +213,7 @@ Attach event(s) listener with optional modifiers.
   * `.ctrl-<key>, .alt-<key>, .meta-<key>, .shift-<key>` – key combinations, eg. `.ctrl-alt-delete` or `.meta-x`.
 * `.*` – any other modifier has no effect, but allows binding multiple handlers to same event (like jQuery event classes).
 
-#### `:data="values"` 🔌
-
-> Include as `import 'sprae/directive/data'`.
+#### `:data="values"`
 
 Set `data-*` attributes. CamelCase is converted to dash-case.
 
@@ -223,9 +222,7 @@ Set `data-*` attributes. CamelCase is converted to dash-case.
 <!-- <input data-foo="1" data-bar-baz /> -->
 ```
 
-#### `:aria="values"` 🔌
-
-> Include as `import 'sprae/directive/aria'`.
+#### `:aria="values"`
 
 Set `aria-*` attributes. Boolean values are stringified.
 
@@ -240,24 +237,6 @@ Set `aria-*` attributes. Boolean values are stringified.
 <!--
 <input role="combobox" aria-controls="joketypes" aria-autocomplete="list" aria-expanded="false" aria-active-option="item1" aria-activedescendant>
 -->
-```
-
-
-#### `:html="element"` 🔌 (experimental)
-
-> Include as `import 'sprae/directive/html'`.
-
-Set html content of an element or instantiate a template.
-
-```html
-Hello, <span :html="userElement">Guest</span>.
-
-<!-- fragment -->
-Hello, <template :html="user.name">Guest</template>.
-
-<!-- instantiate template -->
-<template :ref="tpl"><span :text="foo"></span></template>
-<div :html="tpl" :with="{foo:'bar'}">...inserted here...</div>
 ```
 
 <!--

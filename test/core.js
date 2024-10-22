@@ -91,8 +91,8 @@ test("core: base", async () => {
 });
 
 test("core: sets prop", async () => {
-  let el = h`<x :ref="el" :x="el.x=1" :y="el.y='abc'"></x>`;
-  sprae(el);
+  let el = h`<x :ref="e => el=e" :x="el.x=1" :y="el.y='abc'"></x>`;
+  sprae(el, { el: null });
   is(el.x, 1);
   is(el.y, "abc");
 });
@@ -208,7 +208,7 @@ test("csp: sandbox", async () => {
   Object.assign(globals, { self: window });
   console.log("--------- sprae again with globals");
   s = sprae(el.cloneNode(), state);
-  console.log(s.log)
+  // console.log(s.log)
   is(s.log, [window, console, undefined, undefined]);
 });
 
