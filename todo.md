@@ -149,6 +149,8 @@
 * [x] fix wavearea
 * [x] fix :if within :each
 * [x] make functional ref
+* [x] add hint about :html
+* [x] make v11 release
 
 ## Backlog
 

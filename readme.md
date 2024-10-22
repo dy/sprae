@@ -356,6 +356,8 @@ sprae.use({ compile })
 * `event` is not used, `:on*` attributes expect a function with event object as first argument `:onevt="event => handle()"`, see [#46](https://github.com/dy/sprae/issues/46).
 * `key` is not used, `:each` uses direct list mapping instead of dom diffing.
 * `await` is not supported in attributes, it’s a strong indicator you need to put these methods into state.
+* `:ref` can be used as mount/unmount - returned function is called on dispose `:ref=el=>(init, ()=> dispose)`
+* To set innerHTML or instantiate a template do it manually `:ref="el=>el.innerHTML=..."`, `:ref="el=>el.replaceChildren(sprae(tpl.content))"`
 
 ## Justification
 
