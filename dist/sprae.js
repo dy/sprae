@@ -315,10 +315,9 @@ directive.each.parse = (expr) => {
 };
 
 // directive/ref.js
-directive.ref = (el, expr, state) => {
-  state[expr] = el;
+directive.ref = (el, evaluate, state) => {
+  return () => evaluate(state)?.call?.(null, el);
 };
-directive.ref.parse = (expr) => expr;
 
 // directive/with.js
 directive.with = (el, evaluate, rootState) => {
@@ -327,15 +326,6 @@ directive.with = (el, evaluate, rootState) => {
     let values = evaluate(rootState);
     sprae(el, state ? values : state = store(values, rootState));
   };
-};
-
-// directive/html.js
-directive.html = (el, evaluate, state) => {
-  let tpl = evaluate(state);
-  if (!tpl) return;
-  let content = (tpl.content || tpl).cloneNode(true);
-  el.replaceChildren(content);
-  sprae(el, state);
 };
 
 // directive/text.js
@@ -557,6 +547,22 @@ directive.value.parse = (expr) => {
 // directive/fx.js
 directive.fx = (el, evaluate, state) => {
   return () => evaluate(state);
+};
+
+// directive/aria.js
+directive["aria"] = (el, evaluate, state) => {
+  const update = (value) => {
+    for (let key in value) attr(el, "aria-" + dashcase(key), value[key] == null ? null : value[key] + "");
+  };
+  return () => update(evaluate(state));
+};
+
+// directive/data.js
+directive["data"] = (el, evaluate, state) => {
+  return () => {
+    let value = evaluate(state);
+    for (let key in value) el.dataset[key] = value[key];
+  };
 };
 
 // sprae.js

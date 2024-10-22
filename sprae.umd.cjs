@@ -2,11 +2,6 @@
 
 const { default: sprae } = require("./sprae.js");
 
-// include everything
-require('./directive/data.js');
-require('./directive/aria.js');
-require('./directive/html.js');
-
 // expose global
 module.exports = sprae
 

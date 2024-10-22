@@ -368,11 +368,9 @@ var init_each = __esm({
 var init_ref = __esm({
   "directive/ref.js"() {
     init_core();
-    init_store();
-    directive.ref = (el, expr, state) => {
-      state[expr] = el;
+    directive.ref = (el, evaluate, state) => {
+      return () => evaluate(state)?.call?.(null, el);
     };
-    directive.ref.parse = (expr) => expr;
   }
 });
 
@@ -387,21 +385,6 @@ var init_with = __esm({
         let values = evaluate(rootState);
         sprae(el, state ? values : state = store(values, rootState));
       };
-    };
-  }
-});
-
-// directive/html.js
-var html_exports = {};
-var init_html = __esm({
-  "directive/html.js"() {
-    init_core();
-    directive.html = (el, evaluate, state) => {
-      let tpl = evaluate(state);
-      if (!tpl) return;
-      let content = (tpl.content || tpl).cloneNode(true);
-      el.replaceChildren(content);
-      sprae(el, state);
     };
   }
 });
@@ -660,47 +643,7 @@ var init_fx = __esm({
   }
 });
 
-// sprae.js
-var sprae_exports = {};
-__export(sprae_exports, {
-  default: () => sprae_default
-});
-var sprae_default;
-var init_sprae = __esm({
-  "sprae.js"() {
-    init_core();
-    init_if();
-    init_each();
-    init_ref();
-    init_with();
-    init_html();
-    init_text();
-    init_class();
-    init_style();
-    init_value();
-    init_fx();
-    init_default();
-    sprae.use({ compile: (expr) => sprae.constructor(`with (arguments[0]) { return ${expr} };`) });
-    sprae_default = sprae;
-  }
-});
-
-// directive/data.js
-var data_exports = {};
-var init_data = __esm({
-  "directive/data.js"() {
-    init_core();
-    directive["data"] = (el, evaluate, state) => {
-      return () => {
-        let value = evaluate(state);
-        for (let key in value) el.dataset[key] = value[key];
-      };
-    };
-  }
-});
-
 // directive/aria.js
-var aria_exports = {};
 var init_aria = __esm({
   "directive/aria.js"() {
     init_core();
@@ -714,11 +657,47 @@ var init_aria = __esm({
   }
 });
 
+// directive/data.js
+var init_data = __esm({
+  "directive/data.js"() {
+    init_core();
+    directive["data"] = (el, evaluate, state) => {
+      return () => {
+        let value = evaluate(state);
+        for (let key in value) el.dataset[key] = value[key];
+      };
+    };
+  }
+});
+
+// sprae.js
+var sprae_exports = {};
+__export(sprae_exports, {
+  default: () => sprae_default
+});
+var sprae_default;
+var init_sprae = __esm({
+  "sprae.js"() {
+    init_core();
+    init_if();
+    init_each();
+    init_ref();
+    init_with();
+    init_text();
+    init_class();
+    init_style();
+    init_value();
+    init_fx();
+    init_default();
+    init_aria();
+    init_data();
+    sprae.use({ compile: (expr) => sprae.constructor(`with (arguments[0]) { return ${expr} };`) });
+    sprae_default = sprae;
+  }
+});
+
 // sprae.umd.cjs
 var { default: sprae2 } = (init_sprae(), __toCommonJS(sprae_exports));
-init_data();
-init_aria();
-init_html();
 module.exports = sprae2;
 var init = document.currentScript?.getAttribute("init") || null;
 if (init) sprae2(document.documentElement, JSON.parse(init));
