@@ -73,7 +73,7 @@
 - We can use `:="{data}"` fro sprae autoinit, since scope has confusing name: `:scope={}`, `:sprae={}`, `:with={}`
 -> let's use :prop= for now, since `:={}` can have multiple interpretations
 
-## [ ] What's a use-case for `:={props}` - do we need it? -> likely yes
+## [x] What's a use-case for `:={props}` - do we need it? -> likely yes
 
 * {...props} is useful in react components to pass down all unmentioned or unknown props to children
   - but sprae is not about componentization
@@ -690,29 +690,29 @@
 ## [ ] Prop modifiers
 
   - overall seems code complication without much benefit
-  * [ ] value.bind? value.watch?
+  * value.bind? value.watch?
     - let's wait for use-case: value can be too big to set it every time
-  * [ ] prop.reflect, prop.observe
+  * prop.reflect, prop.observe
     - let's wait for use-case
-  * [ ] prop.boolean, .number, .string, .array, .object
+  * prop.boolean, .number, .string, .array, .object
     - let's wait for use-case
-  * [ ] prop.once, prop.fx ? prop.init?
+  * prop.once, prop.fx ? prop.init?
     - doesn't seem required, let's wait for use case
-  * [ ] prop.change - run only if value changes
+  * prop.change - run only if value changes
     - seems like unnecessary manual optimization that must be done always automatically
     ? are there cases where force-update is necessary?
-  * [ ] prop.throttle-xxx, prop.debounce-xxx
+  * prop.throttle-xxx, prop.debounce-xxx
     - let's wait until that's really a problem
-  * [ ] prop.class
+  * prop.class
     ? what's the use-case
-  * [ ] prop.next="" - run update after other DOM updates happen
-  * [ ] prop.fx="" - run effect without changing property
-  * [ ] x.prop="xyz" - set element property, rather than attribute (following topic)
-  * [ ] x.raf="abc" - run regularly?
-  * [ ] x.watch-a-b-c - update by change of any of the deps
-  * [ ] :x.always - update by _any_ dep change
-  * [ ] :class.active="active"
-  * [ ] :x.persist="v"
+  * prop.next="" - run update after other DOM updates happen
+  * prop.fx="" - run effect without changing property
+  * x.prop="xyz" - set element property, rather than attribute (following topic)
+  * x.raf="abc" - run regularly?
+  * x.watch-a-b-c - update by change of any of the deps
+  * :x.always - update by _any_ dep change
+  * :class.active="active"
+  * :x.persist="v"
     - solvable via nadis
 
 ## [x] Writing props on elements (like ones in :each) -> nah, just use `:x="this.x=abc"`

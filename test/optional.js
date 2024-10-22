@@ -21,6 +21,7 @@ test("data: base", async () => {
   is(el.outerHTML, `<input data-a="1" data-foo-bar="2" data--upper-case="3">`);
 });
 
+// NOTE: we don't have :html anymore
 test.skip("html: by ref", async () => {
   let a = h`<template :ref="abc"><div :text="123"></div></template><x :html="abc">456</x>`;
   sprae(a);
