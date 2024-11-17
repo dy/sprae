@@ -351,13 +351,13 @@ sprae.use({ compile })
 
 * To prevent [FOUC](https://en.wikipedia.org/wiki/Flash_of_unstyled_content) add `<style>[:each],[:if],[:else] {visibility: hidden}</style>`.
 * Attributes order matters, eg. `<li :each="el in els" :text="el.name"></li>` is not the same as `<li :text="el.name" :each="el in els"></li>`.
-* Mind invalid self-closing tags, eg. `<a :text="item" />` will cause an error. Main valid self-closing tags are `li`, `p`, `dt`, `dd`, `option`, `tr`, `td`, `th`.
+* Invalid self-closing tags like `<a :text="item" />` will cause error. Valid self-closing tags are: `li`, `p`, `dt`, `dd`, `option`, `tr`, `td`, `th`.
 * Properties prefixed with `_` are untracked: `let state = sprae(el, {_x:2}); state._x++; // no effect`.
 * To destroy state and detach sprae handlers, call `element[Symbol.dispose]()`.
 * State getters/setters work as computed effects, eg. `sprae(el, { x:1, get x2(){ return this.x * 2} })`.
-* `this` is not used, to get access to current element use `<input :ref="el => (...)" :text="el.value"/>`.
+* `this` is not used, to get access to current element use `<input :ref="el => (...)" />`.
 * `event` is not used, `:on*` attributes expect a function with event argument `:onevt="event => handle()"`, see [#46](https://github.com/dy/sprae/issues/46).
-* `key` is not used, `:each` uses direct list mapping instead of dom diffing.
+* `key` is not used, `:each` uses direct list mapping instead of DOM diffing.
 * `await` is not supported in attributes, it’s a strong indicator you need to put these methods into state.
 
 ## Justification
