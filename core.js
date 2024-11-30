@@ -41,7 +41,6 @@ export default function sprae(el, values) {
 
   function init(el, parent = el.parentNode) {
     if (!el.childNodes) return // ignore text nodes, comments etc
-
     // init generic-name attributes second
     for (let i = 0; i < el.attributes?.length;) {
       let attr = el.attributes[i];
@@ -63,12 +62,14 @@ export default function sprae(el, values) {
         // stop if element was spraed by internal directive
         if (memo.has(el)) return el[_dispose] && disposes.push(el[_dispose])
 
-        // stop if element is skipped (detached) like in case of :if or :each
+        // stop if element is skipped/detached like in case of :if or :each
         if (el.parentNode !== parent) return
       } else i++;
     }
 
-    for (let child of [...el.childNodes]) init(child, el);
+    for (let child of [...el.childNodes])
+      // adjust for template container - parent is overlooked
+      init(child, el.content ? el.childNodes[0].parentNode : el);
   };
 }
 
@@ -112,6 +113,7 @@ export const frag = (tpl) => {
     childNodes = (content.append(ref), [...content.childNodes])
 
   return {
+    // get parentNode() { return childNodes[0].parentNode },
     childNodes,
     content,
     remove: () => content.append(...childNodes),

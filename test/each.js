@@ -595,3 +595,16 @@ test('each: rewrite item', async () => {
   el.childNodes[1].dispatchEvent(new window.Event("x"))
   is(el.innerHTML, `<x>1</x><x>3</x><x>3</x>`)
 })
+
+test('each: init within template', async () => {
+  await tick()
+  let el = h`<div><template :each="a in [1,2]">
+      <a :x="a"><b :text="a"></b></a>
+  </template></div>`;
+
+  sprae(el);
+  is(el.innerHTML, `<a x="1"><b>1</b></a><a x="2"><b>2</b></a>`)
+
+  document.body.appendChild(el)
+  console.log(el.innerHTML)
+})
