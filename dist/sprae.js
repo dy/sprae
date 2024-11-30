@@ -179,7 +179,8 @@ function sprae(el, values) {
         if (el2.parentNode !== parent) return;
       } else i++;
     }
-    for (let child of [...el2.childNodes]) init(child, el2);
+    for (let child of [...el2.childNodes])
+      init(child, el2.content ? el2.childNodes[0].parentNode : el2);
   }
   ;
 }
@@ -209,6 +210,7 @@ var frag = (tpl) => {
   if (!tpl.nodeType) return tpl;
   let content = tpl.content.cloneNode(true), attributes = [...tpl.attributes], ref = document.createTextNode(""), childNodes = (content.append(ref), [...content.childNodes]);
   return {
+    // get parentNode() { return childNodes[0].parentNode },
     childNodes,
     content,
     remove: () => content.append(...childNodes),
