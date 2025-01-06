@@ -39,7 +39,7 @@ directive.value = (el, [getValue, setValue], state) => {
     sprae(el, state)
 
     // select element also must observe any added/removed options or changed values (outside of sprae)
-    new MutationObserver(handleChange).observe(el, { childList: true, subtree: true, attributes: true });
+    new MutationObserver(handleChange).observe(el, { subtree: true, attributes: true });
   }
 
   return () => update(getValue(state));
