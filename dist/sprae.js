@@ -530,7 +530,7 @@ directive.value = (el, [getValue, setValue], state) => {
   el.oninput = el.onchange = handleChange;
   if (el.type?.startsWith("select")) {
     sprae(el, state);
-    new MutationObserver(handleChange).observe(el, { childList: true, subtree: true, attributes: true });
+    new MutationObserver(handleChange).observe(el, { subtree: true, attributes: true });
   }
   return () => update(getValue(state));
 };
