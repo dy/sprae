@@ -80,3 +80,35 @@ test('value: select multiple', async () => {
   is(el.outerHTML, `<select multiple="" id="x" name="x"><option value="1">a</option><option value="2" selected="">b</option><option value="3" selected="">c</option></select>`)
   is([...el.selectedOptions], [el.children[1], el.children[2]])
 })
+
+test('value: select options change #52', async () => {
+  let el = h`
+  <select :value="selected">
+    <option :each="option in options" :value="option.value"
+              :text="option.label"></option>
+  </select>`
+
+  document.body.append(el)
+  let state = sprae(el, {
+    options: [],
+    selected: null
+  })
+
+  is(state.selected, null)
+  console.log('-------add')
+  state.options.push({ value: 1, label: 'a' })
+  await tick()
+  is(state.selected, '1')
+
+  console.log('----------change', state.selected)
+  state.options[0].value = 2
+  await tick()
+  is(state.selected, '2')
+
+  console.log('----------remove', state.selected)
+  state.options = []
+  await tick()
+  is(state.selected, null)
+  // is(el.outerHTML, `<select multiple="" id="x" name="x"><option value="1">a</option><option value="2" selected="">b</option><option value="3" selected="">c</option></select>`)
+  // is([...el.selectedOptions], [el.children[1], el.children[2]])
+})

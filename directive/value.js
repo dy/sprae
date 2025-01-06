@@ -29,13 +29,18 @@ directive.value = (el, [getValue, setValue], state) => {
             } :
               (value) => (el.value = value);
 
-  // select options must be initialized before calling an update
-  if (el.type?.startsWith('select')) sprae(el, state)
-
   // bind ui back to value
-  const handleChange = el.type === 'checkbox' ? e => setValue(state, el.checked) : el.type === 'select-multiple' ? e => setValue(state, [...el.selectedOptions].map(o => o.value)) : e => setValue(state, el.value)
+  const handleChange = el.type === 'checkbox' ? () => setValue(state, el.checked) : el.type === 'select-multiple' ? () => setValue(state, [...el.selectedOptions].map(o => o.value)) : (e) => setValue(state, el.selectedIndex < 0 ? null : el.value)
 
-  el.oninput = el.onchange = handleChange; // hope user doesn't redefine these manually - it saves 5 loc
+  el.oninput = el.onchange = handleChange; // hope user doesn't redefine these manually via `.oninput = somethingElse` - it saves 5 loc vs addEventListener
+
+  if (el.type?.startsWith('select')) {
+    // select options must be initialized before calling an update
+    sprae(el, state)
+
+    // select element also must observe any added/removed options or changed values (outside of sprae)
+    new MutationObserver(handleChange).observe(el, { childList: true, subtree: true, attributes: true });
+  }
 
   return () => update(getValue(state));
 };
@@ -44,13 +49,12 @@ directive.value.parse = expr => {
   let evaluate = [parse(expr)]
   // catch wrong assigns like `123 =...`, `foo?.bar =...`
   try {
-    const set = parse(`${expr}=__;`);
+    const set = parse(`${expr}=__`);
     // FIXME: if there's a simpler way to set value in justin?
     evaluate.push((state, value) => {
       state.__ = value
-      let result = set(state, value)
+      set(state, value)
       delete state.__
-      return result
     })
   }
   catch (e) { }

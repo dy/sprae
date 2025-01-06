@@ -21,7 +21,7 @@ export default function store(values, parent) {
 
   // proxy conducts prop access to signals
   const state = new Proxy(signals, {
-    get: (_, key) => key === _change ? _len : key === _signals ? signals : (signals[key]?.valueOf()),
+    get: (_, key) => key === _change ? _len : key === _signals ? signals : (signals[key] ? signals[key].valueOf() : signals[key]),
     set: (_, key, v, s) => (s = signals[key], set(signals, key, v), s ?? (++_len.value), 1), // bump length for new signal
     deleteProperty: (_, key) => (signals[key] && (del(signals, key), _len.value--), 1),
     ownKeys() {
@@ -72,7 +72,6 @@ export function list(values) {
       // covers Symbol.isConcatSpreadable etc.
       if (typeof key === 'symbol') return key === _change ? _len : key === _signals ? signals : signals[key]
 
-      // console.log('get', key)
       // if .length is read within .push/etc - peek signal to avoid recursive subscription
       if (key === 'length') return mut[lastProp] ? _len.peek() : _len.value;
 
@@ -85,7 +84,6 @@ export function list(values) {
     },
 
     set(_, key, v) {
-      // console.log('set', key, v)
       // .length
       if (key === 'length') {
         // force cleaning up tail
