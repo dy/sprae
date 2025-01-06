@@ -21,7 +21,7 @@ export default function store(values, parent) {
 
   // proxy conducts prop access to signals
   const state = new Proxy(signals, {
-    get: (_, key) => key === _change ? _len : key === _signals ? signals : (signals[key] ? signals[key].valueOf() : signals[key]),
+    get: (_, key) => key === _change ? _len : key === _signals ? signals : signals[key]?.valueOf(),
     set: (_, key, v, s) => (s = signals[key], set(signals, key, v), s ?? (++_len.value), 1), // bump length for new signal
     deleteProperty: (_, key) => (signals[key] && (del(signals, key), _len.value--), 1),
     ownKeys() {

@@ -613,20 +613,22 @@ var init_value = __esm({
         for (let o of el.options) o.removeAttribute("selected");
         for (let v of value) el.querySelector(`[value="${v}"]`).setAttribute("selected", "");
       } : (value) => el.value = value;
-      if (el.type?.startsWith("select")) sprae(el, state);
-      const handleChange = el.type === "checkbox" ? (e) => setValue(state, el.checked) : el.type === "select-multiple" ? (e) => setValue(state, [...el.selectedOptions].map((o) => o.value)) : (e) => setValue(state, el.value);
+      const handleChange = el.type === "checkbox" ? () => setValue(state, el.checked) : el.type === "select-multiple" ? () => setValue(state, [...el.selectedOptions].map((o) => o.value)) : (e) => setValue(state, el.selectedIndex < 0 ? null : el.value);
       el.oninput = el.onchange = handleChange;
+      if (el.type?.startsWith("select")) {
+        sprae(el, state);
+        new MutationObserver(handleChange).observe(el, { childList: true, subtree: true, attributes: true });
+      }
       return () => update(getValue(state));
     };
     directive.value.parse = (expr) => {
       let evaluate = [parse(expr)];
       try {
-        const set2 = parse(`${expr}=__;`);
+        const set2 = parse(`${expr}=__`);
         evaluate.push((state, value) => {
           state.__ = value;
-          let result = set2(state, value);
+          set2(state, value);
           delete state.__;
-          return result;
         });
       } catch (e) {
       }

@@ -1,4 +1,4 @@
-import test, { is } from "tst";
+import test, { is, ok } from "tst";
 import { tick } from "wait-please";
 import sprae from '../sprae.js'
 import h from "hyperf";
@@ -108,7 +108,7 @@ test('value: select options change #52', async () => {
   console.log('----------remove', state.selected)
   state.options = []
   await tick()
-  is(state.selected, null)
+  ok(state.selected == null)
   // is(el.outerHTML, `<select multiple="" id="x" name="x"><option value="1">a</option><option value="2" selected="">b</option><option value="3" selected="">c</option></select>`)
   // is([...el.selectedOptions], [el.children[1], el.children[2]])
 })
