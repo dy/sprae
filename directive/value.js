@@ -35,14 +35,16 @@ directive.value = (el, [getValue, setValue], state) => {
   el.oninput = el.onchange = handleChange; // hope user doesn't redefine these manually via `.oninput = somethingElse` - it saves 5 loc vs addEventListener
 
   if (el.type?.startsWith('select')) {
+    // select element also must observe any added/removed options or changed values (outside of sprae)
+    new MutationObserver(handleChange).observe(el, { childList: true, subtree: true, attributes: true });
+
     // select options must be initialized before calling an update
     sprae(el, state)
-
-    // select element also must observe any added/removed options or changed values (outside of sprae)
-    new MutationObserver(handleChange).observe(el, { subtree: true, attributes: true });
   }
 
-  return () => update(getValue(state));
+  return () => {
+    update(getValue(state));
+  }
 };
 
 directive.value.parse = expr => {
