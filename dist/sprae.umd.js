@@ -616,10 +616,12 @@ var init_value = __esm({
       const handleChange = el.type === "checkbox" ? () => setValue(state, el.checked) : el.type === "select-multiple" ? () => setValue(state, [...el.selectedOptions].map((o) => o.value)) : (e) => setValue(state, el.selectedIndex < 0 ? null : el.value);
       el.oninput = el.onchange = handleChange;
       if (el.type?.startsWith("select")) {
+        new MutationObserver(handleChange).observe(el, { childList: true, subtree: true, attributes: true });
         sprae(el, state);
-        new MutationObserver(handleChange).observe(el, { subtree: true, attributes: true });
       }
-      return () => update(getValue(state));
+      return () => {
+        update(getValue(state));
+      };
     };
     directive.value.parse = (expr) => {
       let evaluate = [parse(expr)];
