@@ -152,6 +152,12 @@
 * [x] add hint about :html
 * [x] make v11 release
 
+## [ ] Optimizations (https://krausest.github.io/js-framework-benchmark/current.html)
+
+* [ ] Append rows to large table is THE SLOWEST
+* [ ] Create many rows IS SLOW
+* [ ] Try reducing memory use
+
 ## Backlog
 
 * [ ] :onvisible..oninvisible
