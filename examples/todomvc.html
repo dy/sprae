@@ -18,7 +18,7 @@
     <section class="todoapp">
       <header class="header">
         <h1>todos</h1>
-        <input :ref="input" class="new-todo"
+        <input :with="{input:null}" :ref="el => input=el" class="new-todo"
                placeholder="What needs to be done?" autofocus :onkeypress.enter="e => {
                 save(todos = [...todos, { text: input.value, done: false}]);
                 input.value = ''
@@ -31,9 +31,9 @@
             )">
         <label for="toggle-all">Mark all as complete</label>
         <ul class="todo-list">
-          <li :each="item in todos" :ref="li" :class="{ completed: item.done }"
+          <li :each="item in todos" :class="{ completed: item.done }"
               :hidden="hash === '#/active' ? item.done : hash === '#/completed' ? !item.done : false"
-              :ondblclick="e => ( edit.focus(), li.classList.add('editing') )">
+              :ondblclick="e => ( edit.focus(), e.target.classList.add('editing') )">
             <div class="view">
               <input class="toggle" type="checkbox" :value="item.done"
                      :onchange="e => save(todos)" />
@@ -41,10 +41,10 @@
               <button class="destroy"
                       :onclick="e => save(todos = todos.filter(i => i !== item))"></button>
             </div>
-            <input :ref="edit" class="edit" :value="item.text"
+            <input class="edit" :value="item.text"
                    :oninput="e => (save(todos))"
-                   :onblur="e => (li.classList.remove('editing'))"
-                   :onkeypress.enter="e => (edit.blur())" />
+                   :onblur="e => (e.target.closest('li').classList.remove('editing'))"
+                   :onkeypress.enter="e => (e.target.blur())" />
           </li>
         </ul>
       </section>
