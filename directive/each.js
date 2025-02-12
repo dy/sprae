@@ -78,10 +78,7 @@ directive.each = (tpl, [itemVar, idxVar, evaluate], state) => {
     items.value[_change]?.value
 
     // make first render immediately, debounce subsequent renders
-    if (!planned) {
-      update()
-      queueMicrotask(() => (planned && update(), planned = 0))
-    } else planned++
+    if (!planned++) update(), queueMicrotask(() => (planned > 1 && update(), planned = 0));
   }
 }
 

@@ -1,6 +1,6 @@
 {
   "name": "sprae",
-  "description": "DOM microhydration.",
+  "description": "DOM microhydration",
   "version": "11.0.4",
   "main": "./sprae.js",
   "module": "./sprae.js",

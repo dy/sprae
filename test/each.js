@@ -272,6 +272,7 @@ test("each: fragments direct", async () => {
 
   console.log("b.value=[1,2]");
   b.value = [1, 2];
+  await tick()
   is(el.innerHTML, "12");
 
   console.log("b.value=[]");
@@ -291,9 +292,11 @@ test('each: fragment with condition', async () => {
 
   is(el.innerHTML, "2");
   b.value = [1];
+  await tick()
   is(el.innerHTML, "");
   console.log("b.value=[]");
   b.value = [];
+  await tick()
   is(el.innerHTML, "");
   params.b = null;
   is(el.innerHTML, "");
