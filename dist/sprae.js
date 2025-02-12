@@ -304,10 +304,7 @@ directive.each = (tpl, [itemVar, idxVar, evaluate], state) => {
   let planned = 0;
   return () => {
     items.value[_change]?.value;
-    if (!planned) {
-      update();
-      queueMicrotask(() => (planned && update(), planned = 0));
-    } else planned++;
+    if (!planned++) update(), queueMicrotask(() => (planned > 1 && update(), planned = 0));
   };
 };
 directive.each.parse = (expr) => {

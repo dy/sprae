@@ -154,7 +154,7 @@
 
 ## [ ] Optimizations (https://krausest.github.io/js-framework-benchmark/current.html)
 
-* [ ] Append rows to large table is THE SLOWEST
+* [x] Append rows to large table is THE SLOWEST
 * [ ] Create many rows IS SLOW
 * [ ] Try reducing memory use
 
