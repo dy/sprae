@@ -319,8 +319,6 @@
   * @sprae/visible?
     - can be solved externally
   * @sprae/intersect
-  * @sprae/aria
-  * @sprae/data
   * @sprae/persists - mb for signals?
   * @sprae/mount
   * @sprae/use?
