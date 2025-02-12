@@ -2,9 +2,9 @@
 
 > DOM tree microhydration
 
-_Sprae_ is open & minimalistic progressive enhancement framework.<br/>
+_Sprae_ is open & minimalistic progressive enhancement framework with _preact-signals_ based reactivity.<br/>
 Perfect for small-scale websites, static pages, landings, prototypes, or lightweight UI.<br/>
-A light alternative to alpine, petite-vue etc (see [why](#justification)).
+A light and fast alternative to _alpine_, _petite-vue_ etc (see [justification](#justification)).
 
 ## Usage
 
@@ -362,7 +362,7 @@ sprae.use({ compile })
 
 ## Justification
 
-Modern frontend stack (big frameworks with tooling) is unhealthy, like non-organic processed food. There are alternatives, but:
+Modern frontend stack is obese and unhealthy, like non-organic processed food. There are leaner alternatives, but:
 
 * [Template-parts](https://github.com/dy/template-parts) is stuck with native HTML quirks ([parsing table](https://github.com/github/template-parts/issues/24), [SVG attributes](https://github.com/github/template-parts/issues/25), [liquid syntax](https://shopify.github.io/liquid/tags/template/#raw) conflict etc).
 * [Alpine](https://github.com/alpinejs/alpine) / [petite-vue](https://github.com/vuejs/petite-vue) / [lucia](https://github.com/aidenyabi/lucia) escape native HTML quirks, but have excessive API (`:`, `x-`, `{}`, `@`, `$`), tend to [self-encapsulate](https://github.com/alpinejs/alpine/discussions/3223) and not care about size/performance.
