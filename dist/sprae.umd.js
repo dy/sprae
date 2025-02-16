@@ -181,7 +181,7 @@ function sprae(el, values) {
     return Object.assign(memo.get(el), values);
   }
   const state = store(values || {}), disposes = [];
-  init2(el);
+  init(el);
   if (!memo.has(el)) memo.set(el, state);
   el[_dispose] = () => {
     while (disposes.length) disposes.pop()();
@@ -189,7 +189,7 @@ function sprae(el, values) {
     el[_dispose] = null;
   };
   return state;
-  function init2(el2, parent = el2.parentNode) {
+  function init(el2, parent = el2.parentNode) {
     if (!el2.childNodes) return;
     for (let i = 0; i < el2.attributes?.length; ) {
       let attr2 = el2.attributes[i];
@@ -208,7 +208,7 @@ function sprae(el, values) {
       } else i++;
     }
     for (let child of [...el2.childNodes])
-      init2(child, el2.content ? el2.childNodes[0].parentNode : el2);
+      init(child, el2.content ? el2.childNodes[0].parentNode : el2);
   }
   ;
 }
@@ -702,8 +702,14 @@ var init_sprae = __esm({
 // sprae.umd.cjs
 var { default: sprae2 } = (init_sprae(), __toCommonJS(sprae_exports));
 module.exports = sprae2;
-var init = document.currentScript?.getAttribute("init") || null;
-if (init) sprae2(document.documentElement, JSON.parse(init));
+if (document.currentScript?.hasAttribute("init")) {
+  const props = JSON.parse(document.currentScript?.getAttribute("init") || "{}");
+  const init = () => {
+    sprae2(document.documentElement, props);
+  };
+  if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", init);
+  else init();
+}
 ;if (typeof module.exports == "object" && typeof exports == "object") {
   var __cp = (to, from, except, desc) => {
     if ((from && typeof from === "object") || typeof from === "function") {

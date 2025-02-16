@@ -6,5 +6,10 @@ const { default: sprae } = require("./sprae.js");
 module.exports = sprae
 
 // autoinit if wanted
-const init = document.currentScript?.getAttribute('init') || null
-if (init) sprae(document.documentElement, JSON.parse(init));
+if (document.currentScript?.hasAttribute('init')) {
+  const props = JSON.parse(document.currentScript?.getAttribute('init') || '{}')
+  const init = () => { sprae(document.documentElement, props) };
+
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);
+  else init();
+}
