@@ -43,7 +43,7 @@ directive.default = (target, evaluate, state, name) => {
 
     const cb = (e) => {
       try {
-        test(e) && (stop && (immediate ? e.stopImmediatePropagation() : e.stopPropagation()), prevent && e.preventDefault(), fn?.(e))
+        test(e) && (stop && (immediate ? e.stopImmediatePropagation() : e.stopPropagation()), prevent && e.preventDefault(), fn?.call(state, e))
       } catch (error) { err(error, `:on${evt}`, fn) }
     };
 

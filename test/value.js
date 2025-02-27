@@ -94,21 +94,32 @@ test('value: select options change #52', async () => {
     selected: null
   })
 
+  is(el.value, '')
   is(state.selected, null)
-  console.log('-------add')
+
+  console.log('-------add option 1')
   state.options.push({ value: 1, label: 'a' })
   await tick()
+  is(el.value, '1')
   is(state.selected, '1')
 
   console.log('----------change', state.selected)
   state.options[0].value = 2
   await tick()
+  is(el.value, '2')
   is(state.selected, '2')
+
+  // console.log('------value=1')
+  // el.value = 1, el.dispatchEvent(new Event('change'))
+  // is(el.value, '1')
+  // is(state.selected, '1')
 
   console.log('----------remove', state.selected)
   state.options = []
   await tick()
+  is(el.value, '')
   ok(state.selected == null)
+
   // is(el.outerHTML, `<select multiple="" id="x" name="x"><option value="1">a</option><option value="2" selected="">b</option><option value="3" selected="">c</option></select>`)
   // is([...el.selectedOptions], [el.children[1], el.children[2]])
 })
