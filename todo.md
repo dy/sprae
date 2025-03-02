@@ -151,11 +151,12 @@
 * [x] make functional ref
 * [x] add hint about :html
 * [x] make v11 release
+* [ ] make :ref accept name
 
 ## [ ] Optimizations (https://krausest.github.io/js-framework-benchmark/current.html)
 
 * [x] Append rows to large table is THE SLOWEST
-* [ ] Create many rows IS SLOW
+* [~] Create many rows IS SLOW
 * [ ] Try reducing memory use
 
 ## [ ] Website
