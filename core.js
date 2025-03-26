@@ -53,10 +53,10 @@ export default function sprae(el, values) {
 
         for (let name of names) {
           let dir = directive[name] || directive.default
-          let evaluate = (dir.parse || parse)(attr.value)
-          let fn = dir(el, evaluate, state, name);
-          if (fn) disposes.push(effect(fn))
-          disposes.push(() => el.setAttributeNode(attr)) // recover attribute
+          disposes.push(
+            effect(dir(el, (dir.parse || parse)(attr.value), state, name)), // dispose effect
+            () => (el.setAttributeNode(attr), console.log('dispose', el.isConnected)) // recover attribute
+          )
         }
 
         // stop if element was spraed by internal directive
