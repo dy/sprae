@@ -3,9 +3,8 @@ import store, { _signals } from './store.js';
 
 // polyfill
 const _dispose = (Symbol.dispose ||= Symbol("dispose"));
-export const _state = Symbol("state")
-export const _on = Symbol('on')
-export const _off = Symbol('off')
+
+export const _state = Symbol("state"), _on = Symbol('on'), _off = Symbol('off')
 
 // registered directives
 const directive = {}
@@ -21,7 +20,13 @@ export const dir = (name, create, p=parse) => directive[name] = (el, expr, state
   return () => update(evaluate(state))
 }
 
-// sprae element: apply directives
+/**
+ * Applies directives to an HTML element and manages its reactive state.
+ *
+ * @param {Element} el - The target HTML element to apply directives to.
+ * @param {Object} [values] - Initial values to populate the element's reactive state.
+ * @returns {Object} The reactive state object associated with the element.
+ */
 export default function sprae(el, values) {
   // text nodes, comments etc
   if (!el?.childNodes) return
@@ -79,9 +84,17 @@ export default function sprae(el, values) {
 }
 
 
-// parse expression into evaluator fn
 const memo = {};
-export const parse = (expr, dir, fn) => {
+/**
+ * Parses an expression into an evaluator function, caching the result for reuse.
+ *
+ * @param {string} expr - The expression to parse and compile into a function.
+ * @param {string} dir - The directive associated with the expression (used for error reporting).
+ * @returns {Function} The compiled evaluator function for the expression.
+ */
+export const parse = (expr, dir) => {
+  let fn
+
   if (fn = memo[expr = expr.trim()]) return fn
 
   // static-time errors
@@ -92,11 +105,23 @@ export const parse = (expr, dir, fn) => {
   return memo[expr] = fn
 }
 
-// wrapped call
+/**
+ * Branded sprae error with context about the directive and expression
+ *
+ * @param {Error} e - The original error object to enhance.
+ * @param {string} dir - The directive where the error occurred.
+ * @param {string} [expr=''] - The expression associated with the error, if any.
+ * @throws {Error} The enhanced error object with a formatted message.
+ */
 export const err = (e, dir, expr = '') => {
   throw Object.assign(e, { message: `∴ ${e.message}\n\n${dir}${expr ? `="${expr}"\n\n` : ""}`, expr })
 }
 
+/**
+ * Compiles an expression into an evaluator function.
+ *
+ * @type {(expr: string) => Function}
+ */
 export let compile
 
 // configure signals/compile
