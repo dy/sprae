@@ -4,11 +4,12 @@ import store, { _signals } from './store.js';
 // polyfill
 const _dispose = (Symbol.dispose ||= Symbol("dispose"));
 export const _state = Symbol("state")
+export const _on = Symbol('on')
+export const _off = Symbol('off')
 
 // reserved directives - order matters!
 export const directive = {};
 
-const nop = () => {};
 
 // sprae element: apply directives
 export default function sprae(el, values) {
@@ -22,26 +23,28 @@ export default function sprae(el, values) {
   }
 
   // take over existing state instead of creating clone
-  const state = store(values || {}), disposes = []
+  const state = store(values || {}), offs = [], fx = []
 
   init(el);
 
   // if element was spraed by inline :with instruction (meaning it has extended state) - skip, otherwise save _state
   if (!(_state in el)) {
-    // disposer unspraes all internal elements
-    el[_dispose] = () => {
-      while (disposes.length) disposes.pop()();
-      el[_dispose] = el[_state] = null;
-    }
-
     el[_state] = state
+
+    // on/off all effects
+    el[_off] = () => { while (offs.length) offs.pop()() }
+    el[_on] = () => offs.push(...fx.map(f => effect(f)))
+
+    // destroy
+    el[_dispose] = () => (el[_off](), el[_off] = el[_on] = el[_dispose] = el[_state] = null)
   }
 
   return state;
 
-  // FIXME: try making it inline loop, not function
   function init(el) {
-    if (!el.childNodes) return // ignore text nodes, comments etc
+    // ignore text nodes, comments etc
+    if (!el.childNodes) return
+
     // init generic-name attributes second
     for (let i = 0; i < el.attributes?.length;) {
       let attr = el.attributes[i];
@@ -50,18 +53,15 @@ export default function sprae(el, values) {
         el.removeAttribute(attr.name);
 
         // multiple attributes like :id:for=""
-        let names = attr.name.slice(1).split(':')
+        for (let name of attr.name.slice(1).split(':')) {
+          let dir = directive[name] || directive.default,
+              update = dir(el, (dir.parse || parse)(attr.value), state, name)
+          fx.push(update)
+          offs.push(effect(update))
 
-        for (let name of names) {
-          let dir = directive[name] || directive.default
-          const update = dir(el, (dir.parse || parse)(attr.value), state, name)
-          disposes.push(effect(update))
-
-          // FIXME: this should return to the root, if it was called in the root el, eg. :with :if
-          // stop if element was spraed by inline directive like :with or stopped by :if, :each
-          if (_state in el) return disposes.push(el[_dispose] || nop)
+          // stop after :each, :if, :with?
+          if (_state in el) return
         }
-
       } else i++;
     }
 
@@ -71,16 +71,16 @@ export default function sprae(el, values) {
 
 
 // parse expression into evaluator fn
-const evalMemo = {};
+const memo = {};
 export const parse = (expr, dir, fn) => {
-  if (fn = evalMemo[expr = expr.trim()]) return fn
+  if (fn = memo[expr = expr.trim()]) return fn
 
   // static-time errors
   try { fn = compile(expr) }
   catch (e) { err(e, dir, expr) }
 
   // runtime errors
-  return evalMemo[expr] = fn
+  return memo[expr] = fn
 }
 
 // wrapped call

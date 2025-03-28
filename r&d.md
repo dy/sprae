@@ -1194,3 +1194,34 @@
   - ~~no `this` keyword makes it a bit cumbersome~~
   - separate syntax space even with `:` prefix - conflicts
   - perf-wise vanilla is still faster
+
+# [x] If directive: #55 - dispose or not elements from not matching branch? -> let's try el[_off]
+
+  1. Keep alive
+
+    - keeping hidden alive is heavy for perf
+    - unexpected code gets executed
+    - non-intuitive to js logic: `if (x) x.x` is valid in js, but in sprae `<x :if="x"><t :text="x.x"></t></x>` still triggers
+
+  2. Dispose (turn off) / reinit
+
+    - `<:if><x :each="a in b"/></>` - we don't dispose/reinit internal :each, :if attributes properly
+      ~ needs a separate disposer?
+    - dispose/reinit is presumably worse for performance
+    - if there's `:if` inside of `:if`, it also needs to be disposed/reinited
+      - that may cause conflict if element is part of considition chain, like `:else :if`
+    - it's broken now already: if we dispose :if, we cannot reinit it nicely, since it loses connection with :else
+
+  3. Stop / resubscribe effects only, not full dispose.
+
+    + that's what we need: only disabling effects, not tackling nodes
+    + we need something like _stop / _start or _dispose returning _start
+    * instead of _on and _off funcs we can store all ons (effect fns) and offs(disposers) on element
+      - we'd force :if to run el[_fx].map(f=>effect(f))
+      - with storing _ons, _offs functions that'd be too memory-heavy
+    * so we store el[_on] and el[_off] that enables/disables all effects
+
+  4. Do clone in :if?
+
+    - :ref loses element, which isn't natural nor matches spirit of WYSIWYG
+    - not nice not to dispose properly

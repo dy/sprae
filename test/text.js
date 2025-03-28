@@ -41,3 +41,17 @@ test('text: condition with fragment', async () => {
   await tick();
   is(el.outerHTML, `ac`);
 })
+
+test('text: doesnt get side-triggered', async () => {
+  let el = h`
+    <div :text="_log++,str"></div>
+    <input type="checkbox" :value="bool"/>
+  `
+  let state = sprae(el, {str:'abc', bool:true, _log:0})
+  is(state._log, 1)
+  // debugger
+  state.bool = false
+  is(state._log, 1)
+  state.bool = true
+  is(state._log, 1)
+})

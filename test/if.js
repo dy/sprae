@@ -157,3 +157,27 @@ test('if: set/unset value', async () => {
 
   // FIXME: same test must be done to :each - an element can be removed and reattached again
 })
+
+
+test('if: set/unset 2', async () => {
+  let el = h`<root><x :if="x==1"><t :text="a"></t></x><y :else :if="x==2"><t :text="b"></t></y><z :else :text="c"></z></root>`
+  let state = sprae(el, { x: 1, a:'a', b:'b', c:'c' })
+  is(el.innerHTML, '<x><t>a</t></x>', 'x==1')
+  state.x = null
+  is(el.innerHTML, `<z>c</z>`, 'x==null')
+  state.x = 1
+  is(el.innerHTML, '<x><t>a</t></x>', 'x==1')
+  state.a = 'aa'
+  is(el.innerHTML, '<x><t>aa</t></x>', 'x==1')
+  state.x = 2
+  is(el.innerHTML, '<y><t>b</t></y>', 'x==2')
+  state.b = 'bb'
+  is(el.innerHTML, '<y><t>bb</t></y>', 'x==2')
+  state.a = 'aaa'
+  state.x = 1
+  is(el.innerHTML, '<x><t>aaa</t></x>', 'x==1')
+  state.x = 3
+  is(el.innerHTML, '<z>c</z>', 'x==9')
+
+  // FIXME: same test must be done to :each - an element can be removed and reattached again
+})

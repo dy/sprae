@@ -1,4 +1,4 @@
-import sprae, { directive, _state, frag } from "../core.js";
+import sprae, { directive, _state, _on, _off, frag } from "../core.js";
 
 // :if is interchangeable with :each depending on order, :if :each or :each :if have different meanings
 // as for :if :with - :if must init first, since it is lazy, to avoid initializing component ahead of time by :with
@@ -24,12 +24,13 @@ directive.if = (el, evaluate, state) => {
     const newEl = evaluate(state) ? ifEl : el[_prevIf] ? null : elseEl;
     if (next) next[_prevIf] = newEl === ifEl
     if (curEl != newEl) {
-      // disable effects on child elements to avoid internal effects from triggering on value changes when element's not matched
-      if (curEl) curEl.remove(), curEl[Symbol.dispose]?.();
+      // disable effects on child elements when element is not matched
+      if (curEl) curEl.remove(), curEl[_off]?.();
       if (curEl = newEl) {
         holder.before(curEl.content || curEl)
         curEl[_state] === null && delete curEl[_state] // remove fake memo to sprae as new
-        sprae(curEl, state)
+        // enable effects if branch is matched
+        curEl[_state] ? curEl[_on]() : sprae(curEl, state)
       }
     }
   };
