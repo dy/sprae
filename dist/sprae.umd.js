@@ -177,58 +177,57 @@ var init_store = __esm({
 // core.js
 function sprae(el, values) {
   if (!el?.childNodes) return;
-  if (memo.has(el)) {
-    return Object.assign(memo.get(el), values);
+  if (_state in el) {
+    return Object.assign(el[_state], values);
   }
-  const state = store(values || {}), disposes = [];
+  const state = store(values || {}), offs = [], fx = [];
   init(el);
-  if (!memo.has(el)) memo.set(el, state);
-  el[_dispose] = () => {
-    while (disposes.length) disposes.pop()();
-    memo.delete(el);
-    el[_dispose] = null;
-  };
+  if (!(_state in el)) {
+    el[_state] = state;
+    el[_off] = () => {
+      while (offs.length) offs.pop()();
+    };
+    el[_on] = () => offs.push(...fx.map((f) => effect(f)));
+    el[_dispose] = () => (el[_off](), el[_off] = el[_on] = el[_dispose] = el[_state] = null);
+  }
   return state;
-  function init(el2, parent = el2.parentNode) {
+  function init(el2) {
     if (!el2.childNodes) return;
     for (let i = 0; i < el2.attributes?.length; ) {
       let attr2 = el2.attributes[i];
       if (attr2.name[0] === ":") {
         el2.removeAttribute(attr2.name);
-        let names = attr2.name.slice(1).split(":");
-        for (let name of names) {
-          let dir = directive[name] || directive.default;
-          let evaluate = (dir.parse || parse)(attr2.value);
-          let fn = dir(el2, evaluate, state, name);
-          if (fn) disposes.push(effect(fn));
-          disposes.push(() => el2.setAttributeNode(attr2));
+        for (let name of attr2.name.slice(1).split(":")) {
+          let dir = directive[name] || directive.default, update = dir(el2, (dir.parse || parse)(attr2.value), state, name);
+          fx.push(update);
+          offs.push(effect(update));
+          if (_state in el2) return;
         }
-        if (memo.has(el2)) return el2[_dispose] && disposes.push(el2[_dispose]);
-        if (el2.parentNode !== parent) return;
       } else i++;
     }
-    for (let child of [...el2.childNodes])
-      init(child, el2.content ? el2.childNodes[0].parentNode : el2);
+    for (let child of [...el2.childNodes]) init(child);
   }
   ;
 }
-var _dispose, directive, memo, evalMemo, parse, err, compile, frag;
+var _dispose, _state, _on, _off, directive, memo, parse, err, compile, frag;
 var init_core = __esm({
   "core.js"() {
     init_signal();
     init_store();
     _dispose = Symbol.dispose || (Symbol.dispose = Symbol("dispose"));
+    _state = Symbol("state");
+    _on = Symbol("on");
+    _off = Symbol("off");
     directive = {};
-    memo = /* @__PURE__ */ new WeakMap();
-    evalMemo = {};
+    memo = {};
     parse = (expr, dir, fn) => {
-      if (fn = evalMemo[expr = expr.trim()]) return fn;
+      if (fn = memo[expr = expr.trim()]) return fn;
       try {
         fn = compile(expr);
       } catch (e) {
         err(e, dir, expr);
       }
-      return evalMemo[expr] = fn;
+      return memo[expr] = fn;
     };
     err = (e, dir, expr = "") => {
       throw Object.assign(e, { message: `\u2234 ${e.message}
@@ -275,20 +274,20 @@ var init_if = __esm({
       let next = el.nextElementSibling, holder = document.createTextNode(""), curEl, ifEl, elseEl;
       el.replaceWith(holder);
       ifEl = el.content ? frag(el) : el;
-      memo.set(ifEl, null);
+      ifEl[_state] = null;
       if (next?.hasAttribute(":else")) {
         next.removeAttribute(":else");
-        if (!next.hasAttribute(":if")) next.remove(), elseEl = next.content ? frag(next) : next, memo.set(elseEl, null);
+        if (!next.hasAttribute(":if")) next.remove(), elseEl = next.content ? frag(next) : next, elseEl[_state] = null;
       }
       return () => {
         const newEl = evaluate(state) ? ifEl : el[_prevIf] ? null : elseEl;
         if (next) next[_prevIf] = newEl === ifEl;
         if (curEl != newEl) {
-          if (curEl) curEl.remove(), curEl[Symbol.dispose]?.();
+          if (curEl) curEl.remove(), curEl[_off]?.();
           if (curEl = newEl) {
             holder.before(curEl.content || curEl);
-            memo.get(curEl) === null && memo.delete(curEl);
-            sprae(curEl, state);
+            curEl[_state] === null && delete curEl[_state];
+            curEl[_state] ? curEl[_on]() : sprae(curEl, state);
           }
         }
       };
@@ -305,6 +304,7 @@ var init_each = __esm({
     directive.each = (tpl, [itemVar, idxVar, evaluate], state) => {
       const holder = document.createTextNode("");
       tpl.replaceWith(holder);
+      tpl[_state] = null;
       let cur, keys2, prevl = 0;
       const items = computed(() => {
         keys2 = null;
@@ -471,7 +471,7 @@ var init_default = __esm({
         if (defer) fn = defer(fn);
         const cb = (e) => {
           try {
-            test(e) && (stop && (immediate ? e.stopImmediatePropagation() : e.stopPropagation()), prevent && e.preventDefault(), fn?.(e));
+            test(e) && (stop && (immediate ? e.stopImmediatePropagation() : e.stopPropagation()), prevent && e.preventDefault(), fn?.call(state, e));
           } catch (error) {
             err(error, `:on${evt}`, fn);
           }
