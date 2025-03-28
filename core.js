@@ -3,13 +3,13 @@ import store, { _signals } from './store.js';
 
 // polyfill
 const _dispose = (Symbol.dispose ||= Symbol("dispose"));
-
+export const _state = Symbol("state")
+export const _on = Symbol('on')
+export const _off = Symbol('off')
 
 // reserved directives - order matters!
 export const directive = {};
 
-// every element that's in cache === directly spraed and un subsequent sprae is just updated (like each)
-export const memo = new WeakMap();
 
 // sprae element: apply directives
 export default function sprae(el, values) {
@@ -17,30 +17,34 @@ export default function sprae(el, values) {
   if (!el?.childNodes) return
 
   // repeated call can be caused by :each with new objects with old keys needs an update
-  if (memo.has(el)) {
+  if (_state in el) {
     // we rewrite signals instead of update, because user should have what he provided
-    return Object.assign(memo.get(el), values)
+    return Object.assign(el[_state], values)
   }
 
   // take over existing state instead of creating clone
-  const state = store(values || {}), disposes = []
+  const state = store(values || {}), offs = [], fx = []
 
   init(el);
 
-  // if element was spraed by :with or :each instruction - skip, otherwise save
-  if (!memo.has(el)) memo.set(el, state);
+  // if element was spraed by inline :with instruction (meaning it has extended state) - skip, otherwise save _state
+  if (!(_state in el)) {
+    el[_state] = state
 
-  // disposer unspraes all internal elements
-  el[_dispose] = () => {
-    while (disposes.length) disposes.pop()();
-    memo.delete(el);
-    el[_dispose] = null;
+    // on/off all effects
+    el[_off] = () => { while (offs.length) offs.pop()() }
+    el[_on] = () => offs.push(...fx.map(f => effect(f)))
+
+    // destroy
+    el[_dispose] = () => (el[_off](), el[_off] = el[_on] = el[_dispose] = el[_state] = null)
   }
 
   return state;
 
-  function init(el, parent = el.parentNode) {
-    if (!el.childNodes) return // ignore text nodes, comments etc
+  function init(el) {
+    // ignore text nodes, comments etc
+    if (!el.childNodes) return
+
     // init generic-name attributes second
     for (let i = 0; i < el.attributes?.length;) {
       let attr = el.attributes[i];
@@ -49,42 +53,34 @@ export default function sprae(el, values) {
         el.removeAttribute(attr.name);
 
         // multiple attributes like :id:for=""
-        let names = attr.name.slice(1).split(':')
+        for (let name of attr.name.slice(1).split(':')) {
+          let dir = directive[name] || directive.default,
+              update = dir(el, (dir.parse || parse)(attr.value), state, name)
+          fx.push(update)
+          offs.push(effect(update))
 
-        for (let name of names) {
-          let dir = directive[name] || directive.default
-          let evaluate = (dir.parse || parse)(attr.value)
-          let fn = dir(el, evaluate, state, name);
-          if (fn) disposes.push(effect(fn))
-          disposes.push(() => el.setAttributeNode(attr)) // recover attribute
+          // stop after :each, :if, :with?
+          if (_state in el) return
         }
-
-        // stop if element was spraed by internal directive
-        if (memo.has(el)) return el[_dispose] && disposes.push(el[_dispose])
-
-        // stop if element is skipped/detached like in case of :if or :each
-        if (el.parentNode !== parent) return
       } else i++;
     }
 
-    for (let child of [...el.childNodes])
-      // adjust for template container - parent is overlooked
-      init(child, el.content ? el.childNodes[0].parentNode : el);
+    for (let child of [...el.childNodes]) init(child);
   };
 }
 
 
 // parse expression into evaluator fn
-const evalMemo = {};
+const memo = {};
 export const parse = (expr, dir, fn) => {
-  if (fn = evalMemo[expr = expr.trim()]) return fn
+  if (fn = memo[expr = expr.trim()]) return fn
 
   // static-time errors
   try { fn = compile(expr) }
   catch (e) { err(e, dir, expr) }
 
   // runtime errors
-  return evalMemo[expr] = fn
+  return memo[expr] = fn
 }
 
 // wrapped call
