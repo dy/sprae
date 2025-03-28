@@ -1,7 +1,7 @@
 // signals-based proxy
 import { signal, computed, batch, untracked } from './signal.js'
 
-export const _signals = Symbol('signals'), _change = Symbol('length');
+export const _signals = Symbol('signals'), _change = Symbol('change');
 
 // object store is not lazy
 export default function store(values, parent) {

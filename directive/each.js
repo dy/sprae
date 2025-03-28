@@ -1,13 +1,13 @@
 import sprae, { _state, dir, frag, parse } from "../core.js";
 import store, { _change, _signals } from "../store.js";
-import { untracked, effect } from '../signal.js';
+import { effect } from '../signal.js';
 
 
 dir('each', (tpl, state, expr) => {
     const [itemVar, idxVar = "$"] = expr.split(/\s+in\s+/)[0].split(/\s*,\s*/);
 
     // we need :if to be able to replace holder instead of tpl for :if :each case
-    const holder = (document.createTextNode(""));
+    const holder = document.createTextNode("");
     tpl.replaceWith(holder);
     tpl[_state] = null // mark as fake-spraed, to preserve :-attribs for template
 
@@ -15,48 +15,45 @@ dir('each', (tpl, state, expr) => {
     let cur, keys, items, prevl = 0
 
     const update = () => {
-      // NOTE: untracked avoids rerendering full list whenever internal items or props change
-      untracked(() => {
-        let i = 0, newItems = items, newl = newItems.length
+      let i = 0, newItems = items, newl = newItems.length
 
-        // plain array update, not store (signal with array) - updates full list
-        if (cur && !cur[_change]) {
-          for (let s of cur[_signals] || []) s[Symbol.dispose]()
-          cur = null, prevl = 0
+      // plain array update, not store (signal with array) - updates full list
+      if (cur && !cur[_change]) {
+        for (let s of cur[_signals] || []) s[Symbol.dispose]()
+        cur = null, prevl = 0
+      }
+
+      // delete
+      if (newl < prevl) cur.length = newl
+
+      // update, append, init
+      else {
+        // init
+        if (!cur) cur = newItems
+        // update
+        else while (i < prevl) cur[i] = newItems[i++]
+
+        // append
+        for (; i < newl; i++) {
+          cur[i] = newItems[i]
+          let idx = i,
+            scope = store({
+              [itemVar]: cur[_signals]?.[idx] || cur[idx],
+              [idxVar]: keys ? keys[idx] : idx
+            }, state),
+            el = tpl.content ? frag(tpl) : tpl.cloneNode(true);
+
+          holder.before(el.content || el);
+          sprae(el, scope);
+
+          // signal/holder disposal removes element
+          ((cur[_signals] ||= [])[i] ||= {})[Symbol.dispose] = () => {
+            el[Symbol.dispose]?.(), el.remove()
+          };
         }
+      }
 
-        // delete
-        if (newl < prevl) cur.length = newl
-
-        // update, append, init
-        else {
-          // init
-          if (!cur) cur = newItems
-          // update
-          else while (i < prevl) cur[i] = newItems[i++]
-
-          // append
-          for (; i < newl; i++) {
-            cur[i] = newItems[i]
-            let idx = i,
-              scope = store({
-                [itemVar]: cur[_signals]?.[idx] || cur[idx],
-                [idxVar]: keys ? keys[idx] : idx
-              }, state),
-              el = tpl.content ? frag(tpl) : tpl.cloneNode(true);
-
-            holder.before(el.content || el);
-            sprae(el, scope);
-
-            // signal/holder disposal removes element
-            ((cur[_signals] ||= [])[i] ||= {})[Symbol.dispose] = () => {
-              el[Symbol.dispose]?.(), el.remove()
-            };
-          }
-        }
-
-        prevl = newl
-      })
+      prevl = newl
     }
 
     // separate computed effect reduces number of needed updates for the effect
