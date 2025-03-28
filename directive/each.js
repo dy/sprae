@@ -1,6 +1,6 @@
-import sprae, { _state, directive, frag, parse } from "../core.js";
+import sprae, { _state, directive, dir, frag, parse } from "../core.js";
 import store, { _change, _signals } from "../store.js";
-import { untracked, computed } from '../signal.js';
+import { untracked, effect } from '../signal.js';
 
 
 directive.each = (tpl, expr, state) => {
@@ -14,44 +14,28 @@ directive.each = (tpl, expr, state) => {
   tpl[_state] = null // mark as fake-spraed, to preserve :-attribs for template
 
   // we re-create items any time new items are produced
-  let cur, keys, prevl = 0
-
-  // separate computed effect reduces number of needed updates for the effect
-  const items = computed(() => {
-    keys = null
-    let items = evaluate(state)
-    if (typeof items === "number") items = Array.from({ length: items }, (_, i) => i + 1)
-    if (items?.constructor === Object) keys = Object.keys(items), items = Object.values(items)
-    return items || []
-  })
+  let cur, keys, items, prevl = 0
 
   const update = () => {
     // NOTE: untracked avoids rerendering full list whenever internal items or props change
     untracked(() => {
-      let i = 0, newItems = items.value, newl = newItems.length
+      let i = 0, newItems = items, newl = newItems.length
 
       // plain array update, not store (signal with array) - updates full list
-      if (cur && !(cur[_change])) {
-        for (let s of cur[_signals] || []) { s[Symbol.dispose]() }
+      if (cur && !cur[_change]) {
+        for (let s of cur[_signals] || []) s[Symbol.dispose]()
         cur = null, prevl = 0
       }
 
       // delete
-      if (newl < prevl) {
-        cur.length = newl
-      }
+      if (newl < prevl) cur.length = newl
+
       // update, append, init
       else {
         // init
-        if (!cur) {
-          cur = newItems
-        }
+        if (!cur) cur = newItems
         // update
-        else {
-          for (; i < prevl; i++) {
-            cur[i] = newItems[i]
-          }
-        }
+        else while (i < prevl) cur[i] = newItems[i++]
 
         // append
         for (; i < newl; i++) {
@@ -77,12 +61,23 @@ directive.each = (tpl, expr, state) => {
     })
   }
 
-  let planned = 0
+  // separate computed effect reduces number of needed updates for the effect
+  // NOTE: this code is run only when list value changes (expr), not when list mutates or internal children rerun
   return () => {
-    // subscribe to items change (.length) - we do it every time (not just on init) since preact unsubscribes unused signals
-    items.value[_change]?.value
+    keys = null
+    let value = evaluate(state)
+    if (typeof value === "number") items = Array.from({ length: value }, (_, i) => i + 1)
+    else if (value?.constructor === Object) keys = Object.keys(value), items = Object.values(value)
+    else items = value || []
 
-    // make first render immediately, debounce subsequent renders
-    if (!planned++) update(), queueMicrotask(() => (planned > 1 && update(), planned = 0));
+    // whenever list changes, we rebind internal change effect
+    let planned = 0
+    return effect(() => {
+      // subscribe to items change (.length) - we do it every time (not just on init) since preact unsubscribes unused signals
+      items[_change]?.value
+
+      // make first render immediately, debounce subsequent renders
+      if (!planned++) update(), queueMicrotask(() => (planned > 1 && update(), planned = 0));
+    })
   }
 }

@@ -580,7 +580,11 @@ test('each: batched .length updates', async () => {
   is(c, 1)
   is(el.innerHTML, `<b>1</b><b>2</b>`)
 
+  console.log('--------list.push(3,4,5)')
   state.list.push(3, 4, 5)
+  await tick()
+  is(c, 1)
+
   // bump list
   batch(() => {
     let list = state.list
