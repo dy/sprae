@@ -7,7 +7,7 @@ directive.each = (tpl, [itemVar, idxVar, evaluate], state) => {
   // we need :if to be able to replace holder instead of tpl for :if :each case
   const holder = (document.createTextNode(""));
   tpl.replaceWith(holder);
-  tpl[_state] = null // mark as fake-spraed, to preserve attributes for instantiation
+  tpl[_state] = null // mark as fake-spraed, to preserve :-attribs for template
 
   // we re-create items any time new items are produced
   let cur, keys, prevl = 0
