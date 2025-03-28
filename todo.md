@@ -152,6 +152,9 @@
 * [x] add hint about :html
 * [x] make v11 release
 * [ ] make :ref accept name
+* [x] fix #55 - ifs omitment
+* [ ] get rid of dir.parse in favor of smth better
+* [ ] add test for jsperf adding multiple elements - make sure it's O(n), not n**2
 
 ## [ ] Optimizations (https://krausest.github.io/js-framework-benchmark/current.html)
 
