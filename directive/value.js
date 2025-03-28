@@ -3,7 +3,21 @@ import { directive, parse } from "../core.js";
 import { attr } from './default.js';
 
 // connect expr to element value
-directive.value = (el, [getValue, setValue], state) => {
+directive.value = (el, expr, state) => {
+  let getValue = parse(expr), setValue
+
+  // catch wrong assigns like `123 =...`, `foo?.bar =...`
+  try {
+    const set = parse(`${expr}=__`);
+    // FIXME: if there's a simpler way to set value in justin?
+    setValue = (state, value) => {
+      state.__ = value
+      set(state, value)
+      delete state.__
+    }
+  }
+  catch (e) { }
+
   const update =
     (el.type === "text" || el.type === "") ?
       (value) => el.setAttribute("value", (el.value = value == null ? "" : value)) :
@@ -46,19 +60,3 @@ directive.value = (el, [getValue, setValue], state) => {
     update(getValue(state));
   }
 };
-
-directive.value.parse = expr => {
-  let evaluate = [parse(expr)]
-  // catch wrong assigns like `123 =...`, `foo?.bar =...`
-  try {
-    const set = parse(`${expr}=__`);
-    // FIXME: if there's a simpler way to set value in justin?
-    evaluate.push((state, value) => {
-      state.__ = value
-      set(state, value)
-      delete state.__
-    })
-  }
-  catch (e) { }
-  return evaluate
-}

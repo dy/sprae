@@ -1,6 +1,7 @@
-import { directive } from "../core.js";
+import { directive, parse } from "../core.js";
 
-directive.style = (el, evaluate, state) => {
+directive.style = (el, expr, state) => {
+  const evaluate = parse(expr)
   let initStyle = el.getAttribute("style");
 
   return () => {

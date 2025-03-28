@@ -3,7 +3,11 @@ import store, { _change, _signals } from "../store.js";
 import { untracked, computed } from '../signal.js';
 
 
-directive.each = (tpl, [itemVar, idxVar, evaluate], state) => {
+directive.each = (tpl, expr, state) => {
+  const [leftSide, itemsExpr] = expr.split(/\s+in\s+/);
+  const [itemVar, idxVar = "$"] = leftSide.split(/\s*,\s*/);
+  const evaluate = parse(itemsExpr)
+
   // we need :if to be able to replace holder instead of tpl for :if :each case
   const holder = (document.createTextNode(""));
   tpl.replaceWith(holder);
@@ -81,13 +85,4 @@ directive.each = (tpl, [itemVar, idxVar, evaluate], state) => {
     // make first render immediately, debounce subsequent renders
     if (!planned++) update(), queueMicrotask(() => (planned > 1 && update(), planned = 0));
   }
-}
-
-
-// redefine parser to exclude `[a in] b`
-directive.each.parse = (expr) => {
-  let [leftSide, itemsExpr] = expr.split(/\s+in\s+/);
-  let [itemVar, idxVar = "$"] = leftSide.split(/\s*,\s*/);
-
-  return [itemVar, idxVar, parse(itemsExpr)]
 }

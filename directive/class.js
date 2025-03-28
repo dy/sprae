@@ -1,6 +1,7 @@
-import { directive } from "../core.js";
+import { directive, parse } from "../core.js";
 
-directive.class = (el, evaluate, state) => {
+directive.class = (el, expr, state) => {
+  const evaluate = parse(expr)
   let cur = new Set
   return () => {
     let v = evaluate(state);

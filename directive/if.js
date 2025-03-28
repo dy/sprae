@@ -1,12 +1,15 @@
-import sprae, { directive, _state, _on, _off, frag } from "../core.js";
+import sprae, { directive, _state, _on, _off, frag, parse } from "../core.js";
 
 // :if is interchangeable with :each depending on order, :if :each or :each :if have different meanings
 // as for :if :with - :if must init first, since it is lazy, to avoid initializing component ahead of time by :with
 // we consider :with={x} :if={x} case insignificant
 const _prevIf = Symbol("if");
-directive.if = (el, evaluate, state) => {
+
+directive.if = (el, expr, state) => {
+  const evaluate = parse(expr),
+      holder = document.createTextNode('')
+
   let next = el.nextElementSibling,
-    holder = document.createTextNode(''),
     curEl, ifEl, elseEl;
 
   el.replaceWith(holder)

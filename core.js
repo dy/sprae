@@ -55,7 +55,7 @@ export default function sprae(el, values) {
         // multiple attributes like :id:for=""
         for (let name of attr.name.slice(1).split(':')) {
           let dir = directive[name] || directive.default,
-              update = dir(el, (dir.parse || parse)(attr.value), state, name)
+              update = dir(el, attr.value, state, name)
           fx.push(update)
           offs.push(effect(update))
 

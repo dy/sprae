@@ -326,7 +326,7 @@ _Sprae_ can be tailored to project needs via `sprae/core`:
 
 ```js
 // sprae.custom.js
-import sprae, { directive } from 'sprae/core'
+import sprae, { directive, parse } from 'sprae/core'
 import * as signals from '@preact/signals'
 import compile from 'subscript'
 
@@ -336,7 +336,8 @@ import 'sprae/directive/if.js'
 import 'sprae/directive/text.js'
 
 // custom directive :id="expression"
-directive.id = (el, evaluate, state) => {
+directive.id = (el, expr, state) => {
+  const evaluate = parse(expr) // create evaluator for expression
   return () => el.id = evaluate(state)
 }
 
