@@ -1,13 +1,12 @@
-import sprae, { directive, _state, _on, _off, frag, parse } from "../core.js";
+import sprae, { dir, _state, _on, _off, frag } from "../core.js";
 
 // :if is interchangeable with :each depending on order, :if :each or :each :if have different meanings
 // as for :if :with - :if must init first, since it is lazy, to avoid initializing component ahead of time by :with
 // we consider :with={x} :if={x} case insignificant
 const _prevIf = Symbol("if");
 
-directive.if = (el, expr, state) => {
-  const evaluate = parse(expr),
-      holder = document.createTextNode('')
+dir('if', (el, state) => {
+  const holder = document.createTextNode('')
 
   let next = el.nextElementSibling,
     curEl, ifEl, elseEl;
@@ -23,8 +22,8 @@ directive.if = (el, expr, state) => {
     if (!next.hasAttribute(":if")) next.remove(), elseEl = next.content ? frag(next) : next, elseEl[_state] = null
   }
 
-  return () => {
-    const newEl = evaluate(state) ? ifEl : el[_prevIf] ? null : elseEl;
+  return (value) => {
+    const newEl = value ? ifEl : el[_prevIf] ? null : elseEl;
     if (next) next[_prevIf] = newEl === ifEl
     if (curEl != newEl) {
       // disable effects on child elements when element is not matched
@@ -37,4 +36,4 @@ directive.if = (el, expr, state) => {
       }
     }
   };
-};
+})
