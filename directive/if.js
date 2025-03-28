@@ -12,7 +12,7 @@ directive.if = (el, evaluate, state) => {
   el.replaceWith(holder)
 
   ifEl = el.content ? frag(el) : el
-  ifEl[_state] = null // mark all el as fake-spraed, because we have to sprae for real on insert
+  ifEl[_state] = null // mark el as fake-spraed to holdon init, since we sprae rest when branch matches
 
   if (next?.hasAttribute(":else")) {
     next.removeAttribute(":else");

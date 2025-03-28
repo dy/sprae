@@ -1,4 +1,4 @@
-import sprae, { directive, frag, parse } from "../core.js";
+import sprae, { _state, directive, frag, parse } from "../core.js";
 import store, { _change, _signals } from "../store.js";
 import { untracked, computed } from '../signal.js';
 
@@ -7,6 +7,7 @@ directive.each = (tpl, [itemVar, idxVar, evaluate], state) => {
   // we need :if to be able to replace holder instead of tpl for :if :each case
   const holder = (document.createTextNode(""));
   tpl.replaceWith(holder);
+  tpl[_state] = null // mark as fake-spraed, to preserve attributes for instantiation
 
   // we re-create items any time new items are produced
   let cur, keys, prevl = 0

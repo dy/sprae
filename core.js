@@ -8,6 +8,8 @@ export const _state = Symbol("state")
 // reserved directives - order matters!
 export const directive = {};
 
+const nop = () => {};
+
 // sprae element: apply directives
 export default function sprae(el, values) {
   // text nodes, comments etc
@@ -37,7 +39,8 @@ export default function sprae(el, values) {
 
   return state;
 
-  function init(el, parent = el.parentNode) {
+  // FIXME: try making it inline loop, not function
+  function init(el) {
     if (!el.childNodes) return // ignore text nodes, comments etc
     // init generic-name attributes second
     for (let i = 0; i < el.attributes?.length;) {
@@ -54,18 +57,15 @@ export default function sprae(el, values) {
           const update = dir(el, (dir.parse || parse)(attr.value), state, name)
           disposes.push(effect(update))
 
-          // stop if element was spraed by internal directive
-          if (_state in el) return el[_dispose] && disposes.push(el[_dispose])
+          // FIXME: this should return to the root, if it was called in the root el, eg. :with :if
+          // stop if element was spraed by inline directive like :with or stopped by :if, :each
+          if (_state in el) return disposes.push(el[_dispose] || nop)
         }
 
-        // stop if element is skipped/detached like in case of :if or :each
-        if (el.parentNode !== parent) return
       } else i++;
     }
 
-    for (let child of [...el.childNodes])
-      // adjust for template container - parent is overlooked
-      init(child, el.content ? el.childNodes[0].parentNode : el);
+    for (let child of [...el.childNodes]) init(child);
   };
 }
 
