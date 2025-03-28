@@ -53,15 +53,12 @@ export default function sprae(el, values) {
 
         for (let name of names) {
           let dir = directive[name] || directive.default
-          disposes.push(
-            effect(dir(el, (dir.parse || parse)(attr.value), state, name)), // dispose effect
-            () => (el.setAttributeNode(attr), console.log('dispose', el.isConnected)) // recover attribute
-          )
+          const update = dir(el, (dir.parse || parse)(attr.value), state, name)
+          disposes.push(effect(update))
 
           // stop if element was spraed by internal directive
           if (memo.has(el)) return el[_dispose] && disposes.push(el[_dispose])
         }
-
 
         // stop if element is skipped/detached like in case of :if or :each
         if (el.parentNode !== parent) return
