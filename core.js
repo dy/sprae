@@ -3,13 +3,10 @@ import store, { _signals } from './store.js';
 
 // polyfill
 const _dispose = (Symbol.dispose ||= Symbol("dispose"));
-
+export const _state = Symbol("state")
 
 // reserved directives - order matters!
 export const directive = {};
-
-// every element that's in cache === directly spraed and un subsequent sprae is just updated (like each)
-export const memo = new WeakMap();
 
 // sprae element: apply directives
 export default function sprae(el, values) {
@@ -17,9 +14,9 @@ export default function sprae(el, values) {
   if (!el?.childNodes) return
 
   // repeated call can be caused by :each with new objects with old keys needs an update
-  if (memo.has(el)) {
+  if (_state in el) {
     // we rewrite signals instead of update, because user should have what he provided
-    return Object.assign(memo.get(el), values)
+    return Object.assign(el[_state], values)
   }
 
   // take over existing state instead of creating clone
@@ -27,14 +24,15 @@ export default function sprae(el, values) {
 
   init(el);
 
-  // if element was spraed by :with or :each instruction - skip, otherwise save
-  if (!memo.has(el)) memo.set(el, state);
+  // if element was spraed by inline :with instruction (meaning it has extended state) - skip, otherwise save _state
+  if (!(_state in el)) {
+    // disposer unspraes all internal elements
+    el[_dispose] = () => {
+      while (disposes.length) disposes.pop()();
+      el[_dispose] = el[_state] = null;
+    }
 
-  // disposer unspraes all internal elements
-  el[_dispose] = () => {
-    while (disposes.length) disposes.pop()();
-    memo.delete(el);
-    el[_dispose] = null;
+    el[_state] = state
   }
 
   return state;
@@ -57,7 +55,7 @@ export default function sprae(el, values) {
           disposes.push(effect(update))
 
           // stop if element was spraed by internal directive
-          if (memo.has(el)) return el[_dispose] && disposes.push(el[_dispose])
+          if (_state in el) return el[_dispose] && disposes.push(el[_dispose])
         }
 
         // stop if element is skipped/detached like in case of :if or :each

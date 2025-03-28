@@ -1,4 +1,4 @@
-import sprae, { directive, memo, frag } from "../core.js";
+import sprae, { directive, _state, frag } from "../core.js";
 
 // :if is interchangeable with :each depending on order, :if :each or :each :if have different meanings
 // as for :if :with - :if must init first, since it is lazy, to avoid initializing component ahead of time by :with
@@ -12,12 +12,12 @@ directive.if = (el, evaluate, state) => {
   el.replaceWith(holder)
 
   ifEl = el.content ? frag(el) : el
-  memo.set(ifEl, null) // mark all el as fake-spraed, because we have to sprae for real on insert
+  ifEl[_state] = null // mark all el as fake-spraed, because we have to sprae for real on insert
 
   if (next?.hasAttribute(":else")) {
     next.removeAttribute(":else");
     // if next is :else :if - leave it for its own :if handler
-    if (!next.hasAttribute(":if")) next.remove(), elseEl = next.content ? frag(next) : next, memo.set(elseEl, null)
+    if (!next.hasAttribute(":if")) next.remove(), elseEl = next.content ? frag(next) : next, elseEl[_state] = null
   }
 
   return () => {
@@ -28,7 +28,7 @@ directive.if = (el, evaluate, state) => {
       if (curEl) curEl.remove(), curEl[Symbol.dispose]?.();
       if (curEl = newEl) {
         holder.before(curEl.content || curEl)
-        memo.get(curEl) === null && memo.delete(curEl) // remove fake memo to sprae as new
+        curEl[_state] === null && delete curEl[_state] // remove fake memo to sprae as new
         sprae(curEl, state)
       }
     }
