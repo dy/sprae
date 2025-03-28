@@ -326,7 +326,7 @@ _Sprae_ can be tailored to project needs via `sprae/core`:
 
 ```js
 // sprae.custom.js
-import sprae, { directive, parse } from 'sprae/core'
+import sprae, { dir, parse } from 'sprae/core'
 import * as signals from '@preact/signals'
 import compile from 'subscript'
 
@@ -336,10 +336,10 @@ import 'sprae/directive/if.js'
 import 'sprae/directive/text.js'
 
 // custom directive :id="expression"
-directive.id = (el, expr, state) => {
-  const evaluate = parse(expr) // create evaluator for expression
-  return () => el.id = evaluate(state)
-}
+dir('id', (el, state, expr) => {
+  // ...init
+  return value => el.id = value // update
+})
 
 // configure signals
 sprae.use(signals)
@@ -369,6 +369,7 @@ Modern frontend stack is obese and unhealthy, like non-organic processed food. T
 * [Alpine](https://github.com/alpinejs/alpine) / [petite-vue](https://github.com/vuejs/petite-vue) / [lucia](https://github.com/aidenyabi/lucia) escape native HTML quirks, but have excessive API (`:`, `x-`, `{}`, `@`, `$`), tend to [self-encapsulate](https://github.com/alpinejs/alpine/discussions/3223) and not care about size/performance.
 
 _Sprae_ holds open & minimalistic philosophy:
+
 * Slim `:` API, _signals_ for reactivity.
 * Pluggable directives & configurable internals.
 * Small, safe & performant.

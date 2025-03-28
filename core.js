@@ -7,9 +7,19 @@ export const _state = Symbol("state")
 export const _on = Symbol('on')
 export const _off = Symbol('off')
 
-// reserved directives - order matters!
-export const directive = {};
+// registered directives
+export const directive = {}
 
+/**
+ * Register a directive with a parsed expression and evaluator.
+ * @param {string} name - The name of the directive.
+ * @param {(el: Element, state: Object, expr: string) => (value: any) => void} create - A function to create the directive.
+ * @param {(expr: string) => (state: Object) => any} [p=parse] - Create evaluator from expression string.
+ */
+export const dir = (name, create, p=parse) => directive[name] = (el, expr, state) => {
+  const evaluate = p(expr), update = create(el, state, expr) // NOTE: don't add 3rd arg
+  return () => update(evaluate(state))
+}
 
 // sprae element: apply directives
 export default function sprae(el, values) {
@@ -54,10 +64,9 @@ export default function sprae(el, values) {
 
         // multiple attributes like :id:for=""
         for (let name of attr.name.slice(1).split(':')) {
-          let dir = directive[name] || directive.default,
-              update = dir(el, attr.value, state, name)
+          const update = (directive[name] || directive.default)(el, attr.value, state, name)
           fx.push(update)
-          offs.push(effect(update))
+          offs.push(effect(update)) // start effect
 
           // stop after :each, :if, :with?
           if (_state in el) return

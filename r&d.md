@@ -589,7 +589,7 @@
   + shorter and nicer syntax
   - possibly longer init
 
-## [x] Better :ref -> functional style like react
+## [x] Better :ref -> functional style like react + name style like :value
 
   1. should we merge `:ref` and `id`, eg. expose all ids by default?
     + it saves code, eg. `id="artwork" :ref="artwork"` is very common construct
@@ -616,6 +616,10 @@
       * `sprae(el, {x:null})`, `<x :ref={el => x=el}></x>`
     ? how to expose local ref
       * `<li :each="el in list" :with={x:null} :ref={el=>x=el}>`
+
+  5. 4 + 1
+    + `:value` can take simple prop path and will save value there
+    + same time `:ref` can take path and work in reverse
 
 ## [x] Initializing element -> see :ref=el=>el
 

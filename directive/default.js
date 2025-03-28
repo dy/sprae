@@ -3,6 +3,7 @@ import { directive, err, parse } from "../core.js";
 // set generic property directive
 directive.default = (target, expr, state, name) => {
   const evaluate = parse(expr)
+
   // simple prop
   if (!name.startsWith('on')) return () => {
     let value = evaluate(state);

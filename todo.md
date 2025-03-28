@@ -144,14 +144,14 @@
 * [x] fix todo mvc
   * [x] `todos.filter(xxx).length` - should be subscribable
   * [x] test `item = {...item}`
-* [x] ~~try debouncing / batching array.length writes~~ -> doesn't seem possible
+* [x] ~~try debouncing / batching array.length writes~~ doesn't seem possible
 * [x] lodash for untracked values
 * [x] fix wavearea
 * [x] fix :if within :each
 * [x] make functional ref
 * [x] add hint about :html
 * [x] make v11 release
-* [ ] make :ref accept name
+* [ ] make :ref accept path
 * [x] fix #55 - ifs omitment
 * [x] get rid of dir.parse in favor of smth better
 * [ ] add test for jsperf adding multiple elements - make sure it's O(n), not n**2

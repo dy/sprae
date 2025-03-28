@@ -1,18 +1,16 @@
 import sprae from "../core.js";
-import { directive, parse } from "../core.js";
+import { dir, parse } from "../core.js";
 import { attr } from './default.js';
 
-// connect expr to element value
-directive.value = (el, expr, state) => {
-  let getValue = parse(expr), setValue
-
+dir('value', (el, state, expr) => {
+  let set
   // catch wrong assigns like `123 =...`, `foo?.bar =...`
   try {
-    const set = parse(`${expr}=__`);
+    const _set = parse(`${expr}=__`);
     // FIXME: if there's a simpler way to set value in justin?
-    setValue = (state, value) => {
+    set = (state, value) => {
       state.__ = value
-      set(state, value)
+      _set(state, value)
       delete state.__
     }
   }
@@ -44,7 +42,7 @@ directive.value = (el, expr, state) => {
               (value) => (el.value = value);
 
   // bind ui back to value
-  const handleChange = el.type === 'checkbox' ? () => setValue(state, el.checked) : el.type === 'select-multiple' ? () => setValue(state, [...el.selectedOptions].map(o => o.value)) : (e) => setValue(state, el.selectedIndex < 0 ? null : el.value)
+  const handleChange = el.type === 'checkbox' ? () => set(state, el.checked) : el.type === 'select-multiple' ? () => set(state, [...el.selectedOptions].map(o => o.value)) : (e) => set(state, el.selectedIndex < 0 ? null : el.value)
 
   el.oninput = el.onchange = handleChange; // hope user doesn't redefine these manually via `.oninput = somethingElse` - it saves 5 loc vs addEventListener
 
@@ -56,7 +54,5 @@ directive.value = (el, expr, state) => {
     sprae(el, state)
   }
 
-  return () => {
-    update(getValue(state));
-  }
-};
+  return update
+})

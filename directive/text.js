@@ -1,13 +1,7 @@
-import { directive, frag, parse } from "../core.js";
+import { dir, frag } from "../core.js";
 
-// set text content
-directive.text = (el, expr, state) => {
-  const evaluate = parse(expr)
+dir('text', el => (
   // <template :text="a"/> or previously initialized template
-  if (el.content) el.replaceWith(el = frag(el).childNodes[0])
-
-  return () => {
-    let value = evaluate(state);
-    el.textContent = value == null ? "" : value;
-  };
-};
+  el.content && el.replaceWith(el = frag(el).childNodes[0]),
+  value => el.textContent = value == null ? "" : value
+))

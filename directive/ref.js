@@ -1,7 +1,4 @@
-import { directive, parse } from "../core.js";
+import { dir } from "../core.js";
 
 // ref must be last within primaries, since that must be skipped by :each, but before secondaries
-directive.ref = (el, expr, state) => {
-  const evaluate = parse(expr)
-  return () => evaluate(state)?.call?.(null, el)
-}
+dir('ref', (el, state) => v => typeof v === 'string' ? state[v] = el : v.call(null, el))

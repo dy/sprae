@@ -1,6 +1,3 @@
-import { directive, parse } from "../core.js";
+import { dir } from "../core.js";
 
-directive.fx = (el, expr, state) => {
-  const evaluate = parse(expr)
-  return () => evaluate(state);
-};
+dir('fx', _ => _ => _)

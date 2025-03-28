@@ -1,10 +1,8 @@
-import { directive, parse } from "../core.js";
+import { dir } from "../core.js";
 
-directive.class = (el, expr, state) => {
-  const evaluate = parse(expr)
-  let cur = new Set
-  return () => {
-    let v = evaluate(state);
+dir('class', (el, cur) => (
+  cur = new Set,
+  v => {
     let clsx = new Set;
     if (v) {
       if (typeof v === "string") v.split(' ').map(cls => clsx.add(cls));
@@ -13,5 +11,5 @@ directive.class = (el, expr, state) => {
     }
     for (let cls of cur) if (clsx.has(cls)) clsx.delete(cls); else el.classList.remove(cls);
     for (let cls of cur = clsx) el.classList.add(cls)
-  };
-};
+  })
+)
