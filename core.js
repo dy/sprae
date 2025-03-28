@@ -8,16 +8,16 @@ export const _on = Symbol('on')
 export const _off = Symbol('off')
 
 // registered directives
-export const directive = {}
+const directive = {}
 
 /**
  * Register a directive with a parsed expression and evaluator.
  * @param {string} name - The name of the directive.
- * @param {(el: Element, state: Object, expr: string) => (value: any) => void} create - A function to create the directive.
+ * @param {(el: Element, state: Object, attrValue: string, attrName: string) => (value: any) => void} create - A function to create the directive.
  * @param {(expr: string) => (state: Object) => any} [p=parse] - Create evaluator from expression string.
  */
-export const dir = (name, create, p=parse) => directive[name] = (el, expr, state) => {
-  const evaluate = p(expr), update = create(el, state, expr) // NOTE: don't add 3rd arg
+export const dir = (name, create, p=parse) => directive[name] = (el, expr, state, name) => {
+  const evaluate = p(expr), update = create(el, state, expr, name)
   return () => update(evaluate(state))
 }
 

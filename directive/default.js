@@ -1,15 +1,12 @@
-import { directive, err, parse } from "../core.js";
+// generic property directive
+import { dir, err } from "../core.js";
 
-// set generic property directive
-directive.default = (target, expr, state, name) => {
-  const evaluate = parse(expr)
-
+dir('default', (target, state, expr, name) => {
   // simple prop
-  if (!name.startsWith('on')) return () => {
-    let value = evaluate(state);
-    if (name) attr(target, name, value)
-    else for (let key in value) attr(target, dashcase(key), value[key]);
-  };
+  if (!name.startsWith('on'))
+    return name ?
+      value => attr(target, name, value) :
+      value => { for (let key in value) attr(target, dashcase(key), value[key]) };
 
   // bind event to a target
   // NOTE: if you decide to remove chain of events, thing again - that's unique feature of sprae, don't diminish your own value.
@@ -17,30 +14,13 @@ directive.default = (target, expr, state, name) => {
   const ctxs = name.split('..').map(e => {
     let ctx = { evt: '', target, test: () => true };
     ctx.evt = (e.startsWith('on') ? e.slice(2) : e).replace(/\.(\w+)?-?([-\w]+)?/g,
-      (match, mod, param = '') => (ctx.test = mods[mod]?.(ctx, ...param.split('-')) || ctx.test, '')
+      (_, mod, param = '') => (ctx.test = mods[mod]?.(ctx, ...param.split('-')) || ctx.test, '')
     );
     return ctx;
   });
 
-  // single event
-  if (ctxs.length == 1) return () => addListener(evaluate(state), ctxs[0])
-
-  // events cycler
-  let startFn, nextFn, off, idx = 0
-  const nextListener = (fn) => {
-    off = addListener((e) => (
-      off(), nextFn = fn?.(e), (idx = ++idx % ctxs.length) ? nextListener(nextFn) : (startFn && nextListener(startFn))
-    ), ctxs[idx]);
-  }
-
-  return () => (
-    startFn = evaluate(state),
-    !off && nextListener(startFn),
-    () => startFn = null // nil startFn to autodispose chain
-  )
-
   // add listener with the context
-  function addListener(fn, { evt, target, test, defer, stop, prevent, immediate, ...opts }) {
+  const addListener = (fn, { evt, target, test, defer, stop, prevent, immediate, ...opts }) => {
     if (defer) fn = defer(fn)
 
     const cb = (e) => {
@@ -53,7 +33,23 @@ directive.default = (target, expr, state, name) => {
     return () => target.removeEventListener(evt, cb, opts)
   };
 
-};
+  // single event
+  if (ctxs.length == 1) return v => addListener(v, ctxs[0])
+
+  // events cycler
+  let startFn, nextFn, off, idx = 0
+  const nextListener = (fn) => {
+    off = addListener((e) => (
+      off(), nextFn = fn?.(e), (idx = ++idx % ctxs.length) ? nextListener(nextFn) : (startFn && nextListener(startFn))
+    ), ctxs[idx]);
+  }
+
+  return value => (
+    startFn = value,
+    !off && nextListener(startFn),
+    () => startFn = null // nil startFn to autodispose chain
+  )
+})
 
 // event modifiers
 const mods = {
@@ -119,12 +115,6 @@ const keys = {
   char: (e) => /^\S$/.test(e.key),
 };
 
-// set attr
-export const attr = (el, name, v) => {
-  if (v == null || v === false) el.removeAttribute(name);
-  else el.setAttribute(name, v === true ? "" : typeof v === "number" || typeof v === "string" ? v : "");
-}
-
 // create delayed fns
 const throttle = (fn, limit) => {
   let pause, planned,
@@ -153,6 +143,12 @@ const debounce = (fn, wait) => {
     }, wait);
   };
 };
+
+// set attr
+export const attr = (el, name, v) => {
+  if (v == null || v === false) el.removeAttribute(name);
+  else el.setAttribute(name, v === true ? "" : typeof v === "number" || typeof v === "string" ? v : "");
+}
 
 export const dashcase = (str) => {
   return str.replace(/[A-Z\u00C0-\u00D6\u00D8-\u00DE]/g, (match, i) => (i ? '-' : '') + match.toLowerCase());

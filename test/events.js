@@ -179,16 +179,16 @@ test('events: in-out events', () => {
 test('events: toggle', async () => {
   let el = h`<x :onx..onx="e=>(log.push(1),e=>log.push(2))"></x>`
   let state = sprae(el, { log: [] })
-  console.log('dispatch')
+  console.log('dispatch x')
   el.dispatchEvent(new window.KeyboardEvent('x'));
   is(state.log, [1])
-  console.log('dispatch')
+  console.log('dispatch x')
   el.dispatchEvent(new window.KeyboardEvent('x'));
   is(state.log, [1, 2])
-  console.log('dispatch')
+  console.log('dispatch x')
   el.dispatchEvent(new window.KeyboardEvent('x'));
   is(state.log, [1, 2, 1])
-  console.log('dispatch')
+  console.log('dispatch x')
   el.dispatchEvent(new window.KeyboardEvent('x'));
   is(state.log, [1, 2, 1, 2])
 })
