@@ -56,8 +56,6 @@ dir('each', (tpl, state, expr) => {
       prevl = newl
     }
 
-    // separate computed effect reduces number of needed updates for the effect
-    // NOTE: this code is run only when list value changes (expr), not when list mutates or internal children rerun
     return value => {
       keys = null
       if (typeof value === "number") items = Array.from({ length: value }, (_, i) => i + 1)
@@ -67,7 +65,7 @@ dir('each', (tpl, state, expr) => {
       // whenever list changes, we rebind internal change effect
       let planned = 0
       return effect(() => {
-        // subscribe to items change (.length) - we do it every time (not just on init) since preact unsubscribes unused signals
+        // subscribe to items change (.length) - we do it every time (not just in update) since preact unsubscribes unused signals
         items[_change]?.value
 
         // make first render immediately, debounce subsequent renders

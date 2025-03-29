@@ -2,20 +2,8 @@ import sprae from "../core.js";
 import { dir, parse } from "../core.js";
 import { attr } from './default.js';
 
-dir('value', (el, state, expr) => {
-  let set
-  // catch wrong assigns like `123 =...`, `foo?.bar =...`
-  try {
-    const _set = parse(`${expr}=__`);
-    // FIXME: if there's a simpler way to set value in justin?
-    set = (state, value) => {
-      state.__ = value
-      _set(state, value)
-      delete state.__
-    }
-  }
-  catch (e) { }
 
+dir('value', (el, state, expr) => {
   const update =
     (el.type === "text" || el.type === "") ?
       (value) => el.setAttribute("value", (el.value = value == null ? "" : value)) :
@@ -42,7 +30,10 @@ dir('value', (el, state, expr) => {
               (value) => (el.value = value);
 
   // bind ui back to value
-  const handleChange = el.type === 'checkbox' ? () => set(state, el.checked) : el.type === 'select-multiple' ? () => set(state, [...el.selectedOptions].map(o => o.value)) : (e) => set(state, el.selectedIndex < 0 ? null : el.value)
+  let set = setter(expr)
+  const handleChange = el.type === 'checkbox' ? () => set(state, el.checked) :
+    el.type === 'select-multiple' ? () => set(state, [...el.selectedOptions].map(o => o.value)) :
+    () => set(state, el.selectedIndex < 0 ? null : el.value)
 
   el.oninput = el.onchange = handleChange; // hope user doesn't redefine these manually via `.oninput = somethingElse` - it saves 5 loc vs addEventListener
 
@@ -56,3 +47,18 @@ dir('value', (el, state, expr) => {
 
   return update
 })
+
+// create expression setter, reflecting value back to state
+export const setter = expr => {
+  // catch wrong assigns like `123 =...`, `foo?.bar =...`
+  try {
+    const set = parse(`${expr}=__`);
+    // FIXME: if there's a simpler way to set value in justin?
+    return (state, value) => {
+      state.__ = value
+      set(state, value)
+      delete state.__
+    }
+  }
+  catch (e) { }
+}

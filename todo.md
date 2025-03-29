@@ -155,6 +155,9 @@
 * [x] fix #55 - ifs omitment
 * [x] get rid of dir.parse in favor of smth better
 * [ ] add test for jsperf adding multiple elements - make sure it's O(n), not n**2
+  * [ ] maybe just add jsperf bench as tests
+* [x] remove ~~computed~~, batch, untracked -> simplify
+* [ ] fix plain update bug #55
 
 ## [ ] Optimizations (https://krausest.github.io/js-framework-benchmark/current.html)
 

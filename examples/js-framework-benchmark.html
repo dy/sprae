@@ -69,6 +69,8 @@
 
   <script type="module">
     import sprae from '../sprae.js'
+    // import sprae from 'https://unpkg.com/sprae@10.13.0/dist/sprae.js'
+    // import sprae from '../dist/sprae.js'
 
     const adjectives = ['pretty', 'large', 'big', 'small', 'tall', 'short', 'long', 'handsome', 'plain', 'quaint', 'clean', 'elegant', 'easy', 'angry', 'crazy', 'helpful', 'mushy', 'odd', 'unsightly', 'adorable', 'important', 'inexpensive', 'cheap', 'expensive', 'fancy']
     const colours = ['red', 'yellow', 'blue', 'green', 'pink', 'brown', 'purple', 'brown', 'white', 'black', 'orange']
@@ -126,8 +128,10 @@
       },
 
       runLots() {
+        console.time('10k')
         this.rows = buildData(10000)
         this.selected = null
+        console.timeEnd('10k')
       },
 
       clear() {

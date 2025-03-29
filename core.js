@@ -15,10 +15,8 @@ const directive = {}
  * @param {(el: Element, state: Object, attrValue: string, attrName: string) => (value: any) => void} create - A function to create the directive.
  * @param {(expr: string) => (state: Object) => any} [p=parse] - Create evaluator from expression string.
  */
-export const dir = (name, create, p=parse) => directive[name] = (el, expr, state, name) => {
-  const evaluate = p(expr), update = create(el, state, expr, name)
-  return () => update(evaluate(state))
-}
+export const dir = (name, create, p=parse) => directive[name] = (el, expr, state, name, update, evaluate) =>
+  (evaluate = p(expr), update = create(el, state, expr, name), () => update(evaluate(state)))
 
 /**
  * Applies directives to an HTML element and manages its reactive state.
@@ -62,16 +60,16 @@ export default function sprae(el, values) {
 
     // init generic-name attributes second
     for (let i = 0; i < el.attributes?.length;) {
-      let attr = el.attributes[i];
+      let attr = el.attributes[i], update;
 
       if (attr.name[0] === ':') {
         el.removeAttribute(attr.name);
 
         // multiple attributes like :id:for=""
         for (let name of attr.name.slice(1).split(':')) {
-          const update = (directive[name] || directive.default)(el, attr.value, state, name)
-          fx.push(update)
-          offs.push(effect(update)) // start effect
+          update = (directive[name] || directive.default)(el, attr.value, state, name)
+
+          fx.push(update), offs.push(effect(update)) // save & start effect
 
           // stop after :each, :if, :with?
           if (_state in el) return

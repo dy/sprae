@@ -154,8 +154,6 @@ test('if: set/unset value', async () => {
   console.log('------state.x = {x:2}')
   state.x = { x: 2 }
   is(el.innerHTML, '<y>2</y>')
-
-  // FIXME: same test must be done to :each - an element can be removed and reattached again
 })
 
 
@@ -178,6 +176,27 @@ test('if: set/unset 2', async () => {
   is(el.innerHTML, '<x><t>aaa</t></x>', 'x==1')
   state.x = 3
   is(el.innerHTML, '<z>c</z>', 'x==9')
+})
 
-  // FIXME: same test must be done to :each - an element can be removed and reattached again
+
+test.skip('if: lost effects', () => {
+  let el = h`<div>
+    <input type="checkbox" :value="showlist"/>
+    <button :onclick="() => {list.push(list.length)}">Add element</button>
+    <button :onclick="() => {list.pop()}">Remove element</button>
+    <button :onclick="() => {list[0]++}">Increment first element</button>
+    <br/>
+    <select :if="showlist" size="10" style="width:5rem">
+      <option :each="i in list" :text="i"></option>
+    </select>
+    <select :if="showlist" size="10" style="border: solid 1px orange; width:5rem">
+      <option :each="i in listFromFunc()" :text="i"></option>
+    </select>
+    </div>`
+  document.body.append(el)
+  sprae(el, {
+    showlist: true,
+    list: [],
+    listFromFunc() {return this.list.map(val => val)}
+  })
 })

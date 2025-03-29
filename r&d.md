@@ -813,7 +813,7 @@
 
   - Parent state can dynamically obtain new signal, and nested states won't have access to that
 
-## [x] Is there a way to predefine state static / dynamic props via signals? -> let's try no-store
+## [x] Is there a way to predefine store static / dynamic props via signals? -> let's try no-store
 
   * Since exposing signals in templates didn't seem to have worked well, we can predefine state values instead of creating a proxy.
   - props would need to be predefined in advance
@@ -1025,7 +1025,6 @@
   + this way we'd be able to call update independent of effect
   + we handle effect disposal in centralized way, not per-directive
 
-
 ## [x] What should we return from `sprae` call? -> we return reactive state
 
   1. ~~state signal~~
@@ -1199,7 +1198,7 @@
   - separate syntax space even with `:` prefix - conflicts
   - perf-wise vanilla is still faster
 
-# [x] If directive: #55 - dispose or not elements from not matching branch? -> let's try el[_off]
+## [x] If directive: #55 - dispose or not elements from not matching branch? -> let's try el[_off]
 
   1. Keep alive
 
@@ -1229,3 +1228,8 @@
 
     - :ref loses element, which isn't natural nor matches spirit of WYSIWYG
     - not nice not to dispose properly
+
+## [ ] Autoinit missing values: #53
+
+  + links to `:ref` accepting path instead of function.
+  * How would that work?

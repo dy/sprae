@@ -127,13 +127,13 @@ function set(signals, key, v) {
   else if (Array.isArray(v) && Array.isArray(s.peek())) {
     const cur = s.peek()
     // if we update plain array (stored in signal) - take over value instead
-    if (cur[_change]) untracked(() => {
+    if (cur[_change]) {
       batch(() => {
         let i = 0, l = v.length;
         for (; i < l; i++) cur[i] = v[i]
         cur.length = l // forces deleting tail signals
       })
-    })
+    }
     else {
       s.value = v
     }

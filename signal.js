@@ -1,5 +1,5 @@
 // ulive copy, stable minimal implementation
-let current, batched;
+let current;
 
 export let signal = (v, s, obs = new Set) => (
   s = {
@@ -10,7 +10,7 @@ export let signal = (v, s, obs = new Set) => (
     set value(val) {
       if (val === v) return
       v = val;
-      for (let sub of obs) batched ? batched.add(sub) : sub(); // notify effects
+      for (let sub of obs) sub(); // notify effects
     },
     peek() { return v },
   },
@@ -39,19 +39,8 @@ export let signal = (v, s, obs = new Set) => (
     c.toJSON = c.then = c.toString = c.valueOf = () => c.value,
     c
   ),
-  batch = (fn) => {
-    let fxs = batched;
-    if (!fxs) batched = new Set;
-    try { fn(); }
-    finally {
-      if (!fxs) {
-        fxs = batched;
-        batched = null;
-        for (const fx of fxs) fx();
-      }
-    }
-  },
-  untracked = (fn, prev, v) => (prev = current, current = null, v = fn(), current = prev, v);
+  batch = fn => fn(),
+  untracked = batch
 
 // signals adapter - allows switching signals implementation and not depend on core
 
@@ -59,6 +48,6 @@ export function use(s) {
   signal = s.signal
   effect = s.effect
   computed = s.computed
-  batch = s.batch || (fn => fn())
+  batch = s.batch || batch
   untracked = s.untracked || batch
 }
