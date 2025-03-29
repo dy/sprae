@@ -1,6 +1,5 @@
 // signal.js
 var current;
-var batched;
 var signal = (v, s, obs = /* @__PURE__ */ new Set()) => (s = {
   get value() {
     current?.deps.push(obs.add(current));
@@ -9,7 +8,7 @@ var signal = (v, s, obs = /* @__PURE__ */ new Set()) => (s = {
   set value(val) {
     if (val === v) return;
     v = val;
-    for (let sub of obs) batched ? batched.add(sub) : sub();
+    for (let sub of obs) sub();
   },
   peek() {
     return v;
@@ -34,31 +33,19 @@ var computed = (fn, s = signal(), c, e) => (c = {
   },
   peek: s.peek
 }, c.toJSON = c.then = c.toString = c.valueOf = () => c.value, c);
-var batch = (fn) => {
-  let fxs = batched;
-  if (!fxs) batched = /* @__PURE__ */ new Set();
-  try {
-    fn();
-  } finally {
-    if (!fxs) {
-      fxs = batched;
-      batched = null;
-      for (const fx of fxs) fx();
-    }
-  }
-};
-var untracked = (fn, prev, v) => (prev = current, current = null, v = fn(), current = prev, v);
+var batch = (fn) => fn();
+var untracked = batch;
 function use(s) {
   signal = s.signal;
   effect = s.effect;
   computed = s.computed;
-  batch = s.batch || ((fn) => fn());
+  batch = s.batch || batch;
   untracked = s.untracked || batch;
 }
 
 // store.js
 var _signals = Symbol("signals");
-var _change = Symbol("length");
+var _change = Symbol("change");
 function store(values, parent) {
   if (!values) return values;
   if (values[_signals]) return values;
@@ -122,14 +109,13 @@ function set(signals, key, v) {
   else if (s._set) s._set(v);
   else if (Array.isArray(v) && Array.isArray(s.peek())) {
     const cur = s.peek();
-    if (cur[_change]) untracked(() => {
+    if (cur[_change]) {
       batch(() => {
         let i = 0, l = v.length;
         for (; i < l; i++) cur[i] = v[i];
         cur.length = l;
       });
-    });
-    else {
+    } else {
       s.value = v;
     }
   } else {
@@ -149,6 +135,7 @@ var _state = Symbol("state");
 var _on = Symbol("on");
 var _off = Symbol("off");
 var directive = {};
+var dir = (name, create, p = parse) => directive[name] = (el, expr, state, name2, update, evaluate) => (evaluate = p(expr), update = create(el, state, expr, name2), () => update(evaluate(state)));
 function sprae(el, values) {
   if (!el?.childNodes) return;
   if (_state in el) {
@@ -168,13 +155,12 @@ function sprae(el, values) {
   function init(el2) {
     if (!el2.childNodes) return;
     for (let i = 0; i < el2.attributes?.length; ) {
-      let attr2 = el2.attributes[i];
+      let attr2 = el2.attributes[i], update;
       if (attr2.name[0] === ":") {
         el2.removeAttribute(attr2.name);
         for (let name of attr2.name.slice(1).split(":")) {
-          let dir = directive[name] || directive.default, update = dir(el2, (dir.parse || parse)(attr2.value), state, name);
-          fx.push(update);
-          offs.push(effect(update));
+          update = (directive[name] || directive.default)(el2, attr2.value, state, name);
+          fx.push(update), offs.push(effect(update));
           if (_state in el2) return;
         }
       } else i++;
@@ -184,19 +170,20 @@ function sprae(el, values) {
   ;
 }
 var memo = {};
-var parse = (expr, dir, fn) => {
+var parse = (expr, dir2) => {
+  let fn;
   if (fn = memo[expr = expr.trim()]) return fn;
   try {
     fn = compile(expr);
   } catch (e) {
-    err(e, dir, expr);
+    err(e, dir2, expr);
   }
   return memo[expr] = fn;
 };
-var err = (e, dir, expr = "") => {
+var err = (e, dir2, expr = "") => {
   throw Object.assign(e, { message: `\u2234 ${e.message}
 
-${dir}${expr ? `="${expr}"
+${dir2}${expr ? `="${expr}"
 
 ` : ""}`, expr });
 };
@@ -229,8 +216,9 @@ var frag = (tpl) => {
 
 // directive/if.js
 var _prevIf = Symbol("if");
-directive.if = (el, evaluate, state) => {
-  let next = el.nextElementSibling, holder = document.createTextNode(""), curEl, ifEl, elseEl;
+dir("if", (el, state) => {
+  const holder = document.createTextNode("");
+  let next = el.nextElementSibling, curEl, ifEl, elseEl;
   el.replaceWith(holder);
   ifEl = el.content ? frag(el) : el;
   ifEl[_state] = null;
@@ -238,8 +226,8 @@ directive.if = (el, evaluate, state) => {
     next.removeAttribute(":else");
     if (!next.hasAttribute(":if")) next.remove(), elseEl = next.content ? frag(next) : next, elseEl[_state] = null;
   }
-  return () => {
-    const newEl = evaluate(state) ? ifEl : el[_prevIf] ? null : elseEl;
+  return (value) => {
+    const newEl = value ? ifEl : el[_prevIf] ? null : elseEl;
     if (next) next[_prevIf] = newEl === ifEl;
     if (curEl != newEl) {
       if (curEl) curEl.remove(), curEl[_off]?.();
@@ -250,41 +238,28 @@ directive.if = (el, evaluate, state) => {
       }
     }
   };
-};
+});
 
 // directive/each.js
-directive.each = (tpl, [itemVar, idxVar, evaluate], state) => {
-  const holder = document.createTextNode("");
-  tpl.replaceWith(holder);
-  tpl[_state] = null;
-  let cur, keys2, prevl = 0;
-  const items = computed(() => {
-    keys2 = null;
-    let items2 = evaluate(state);
-    if (typeof items2 === "number") items2 = Array.from({ length: items2 }, (_, i) => i + 1);
-    if (items2?.constructor === Object) keys2 = Object.keys(items2), items2 = Object.values(items2);
-    return items2 || [];
-  });
-  const update = () => {
-    untracked(() => {
+dir(
+  "each",
+  (tpl, state, expr) => {
+    const [itemVar, idxVar = "$"] = expr.split(/\s+in\s+/)[0].split(/\s*,\s*/);
+    const holder = document.createTextNode("");
+    tpl.replaceWith(holder);
+    tpl[_state] = null;
+    let cur, keys2, items, prevl = 0;
+    const update = () => {
       var _a, _b;
-      let i = 0, newItems = items.value, newl = newItems.length;
+      let i = 0, newItems = items, newl = newItems.length;
       if (cur && !cur[_change]) {
-        for (let s of cur[_signals] || []) {
-          s[Symbol.dispose]();
-        }
+        for (let s of cur[_signals] || []) s[Symbol.dispose]();
         cur = null, prevl = 0;
       }
-      if (newl < prevl) {
-        cur.length = newl;
-      } else {
-        if (!cur) {
-          cur = newItems;
-        } else {
-          for (; i < prevl; i++) {
-            cur[i] = newItems[i];
-          }
-        }
+      if (newl < prevl) cur.length = newl;
+      else {
+        if (!cur) cur = newItems;
+        else while (i < prevl) cur[i] = newItems[i++];
         for (; i < newl; i++) {
           cur[i] = newItems[i];
           let idx = i, scope = store({
@@ -299,48 +274,39 @@ directive.each = (tpl, [itemVar, idxVar, evaluate], state) => {
         }
       }
       prevl = newl;
-    });
-  };
-  let planned = 0;
-  return () => {
-    items.value[_change]?.value;
-    if (!planned++) update(), queueMicrotask(() => (planned > 1 && update(), planned = 0));
-  };
-};
-directive.each.parse = (expr) => {
-  let [leftSide, itemsExpr] = expr.split(/\s+in\s+/);
-  let [itemVar, idxVar = "$"] = leftSide.split(/\s*,\s*/);
-  return [itemVar, idxVar, parse(itemsExpr)];
-};
+    };
+    return (value) => {
+      keys2 = null;
+      if (typeof value === "number") items = Array.from({ length: value }, (_, i) => i + 1);
+      else if (value?.constructor === Object) keys2 = Object.keys(value), items = Object.values(value);
+      else items = value || [];
+      let planned = 0;
+      return effect(() => {
+        items[_change]?.value;
+        if (!planned++) update(), queueMicrotask(() => (planned > 1 && update(), planned = 0));
+      });
+    };
+  },
+  // redefine evaluator to take second part of expression
+  (expr) => parse(expr.split(/\s+in\s+/)[1])
+);
 
 // directive/ref.js
-directive.ref = (el, evaluate, state) => {
-  return () => evaluate(state)?.call?.(null, el);
-};
+dir("ref", (el, state, expr) => (v) => v.call(null, el));
 
 // directive/with.js
-directive.with = (el, evaluate, rootState) => {
-  let state;
-  return () => {
-    let values = evaluate(rootState);
-    sprae(el, state ? values : state = store(values, rootState));
-  };
-};
+dir("with", (el, rootState, state) => (state = null, (values) => sprae(el, state ? values : state = store(values, rootState))));
 
 // directive/text.js
-directive.text = (el, evaluate, state) => {
-  if (el.content) el.replaceWith(el = frag(el).childNodes[0]);
-  return () => {
-    let value = evaluate(state);
-    el.textContent = value == null ? "" : value;
-  };
-};
+dir("text", (el) => (
+  // <template :text="a"/> or previously initialized template
+  (el.content && el.replaceWith(el = frag(el).childNodes[0]), (value) => el.textContent = value == null ? "" : value)
+));
 
 // directive/class.js
-directive.class = (el, evaluate, state) => {
-  let cur = /* @__PURE__ */ new Set();
-  return () => {
-    let v = evaluate(state);
+dir(
+  "class",
+  (el, cur) => (cur = /* @__PURE__ */ new Set(), (v) => {
     let clsx = /* @__PURE__ */ new Set();
     if (v) {
       if (typeof v === "string") v.split(" ").map((cls) => clsx.add(cls));
@@ -350,44 +316,36 @@ directive.class = (el, evaluate, state) => {
     for (let cls of cur) if (clsx.has(cls)) clsx.delete(cls);
     else el.classList.remove(cls);
     for (let cls of cur = clsx) el.classList.add(cls);
-  };
-};
+  })
+);
 
 // directive/style.js
-directive.style = (el, evaluate, state) => {
-  let initStyle = el.getAttribute("style");
-  return () => {
-    let v = evaluate(state);
+dir(
+  "style",
+  (el, initStyle) => (initStyle = el.getAttribute("style"), (v) => {
     if (typeof v === "string") el.setAttribute("style", initStyle + (initStyle.endsWith(";") ? "" : "; ") + v);
     else {
       if (initStyle) el.setAttribute("style", initStyle);
       for (let k in v) k[0] == "-" ? el.style.setProperty(k, v[k]) : el.style[k] = v[k];
     }
-  };
-};
+  })
+);
 
 // directive/default.js
-directive.default = (target, evaluate, state, name) => {
-  if (!name.startsWith("on")) return () => {
-    let value = evaluate(state);
-    if (name) attr(target, name, value);
-    else for (let key in value) attr(target, dashcase(key), value[key]);
-  };
+dir("default", (target, state, expr, name) => {
+  if (!name.startsWith("on"))
+    return name ? (value) => attr(target, name, value) : (value) => {
+      for (let key in value) attr(target, dashcase(key), value[key]);
+    };
   const ctxs = name.split("..").map((e) => {
     let ctx = { evt: "", target, test: () => true };
     ctx.evt = (e.startsWith("on") ? e.slice(2) : e).replace(
       /\.(\w+)?-?([-\w]+)?/g,
-      (match, mod, param = "") => (ctx.test = mods[mod]?.(ctx, ...param.split("-")) || ctx.test, "")
+      (_, mod, param = "") => (ctx.test = mods[mod]?.(ctx, ...param.split("-")) || ctx.test, "")
     );
     return ctx;
   });
-  if (ctxs.length == 1) return () => addListener(evaluate(state), ctxs[0]);
-  let startFn, nextFn, off, idx = 0;
-  const nextListener = (fn) => {
-    off = addListener((e) => (off(), nextFn = fn?.(e), (idx = ++idx % ctxs.length) ? nextListener(nextFn) : startFn && nextListener(startFn)), ctxs[idx]);
-  };
-  return () => (startFn = evaluate(state), !off && nextListener(startFn), () => startFn = null);
-  function addListener(fn, { evt, target: target2, test, defer, stop, prevent, immediate, ...opts }) {
+  const addListener = (fn, { evt, target: target2, test, defer, stop, prevent, immediate, ...opts }) => {
     if (defer) fn = defer(fn);
     const cb = (e) => {
       try {
@@ -398,9 +356,14 @@ directive.default = (target, evaluate, state, name) => {
     };
     target2.addEventListener(evt, cb, opts);
     return () => target2.removeEventListener(evt, cb, opts);
-  }
-  ;
-};
+  };
+  if (ctxs.length == 1) return (v) => addListener(v, ctxs[0]);
+  let startFn, nextFn, off, idx = 0;
+  const nextListener = (fn) => {
+    off = addListener((e) => (off(), nextFn = fn?.(e), (idx = ++idx % ctxs.length) ? nextListener(nextFn) : startFn && nextListener(startFn)), ctxs[idx]);
+  };
+  return (value) => (startFn = value, !off && nextListener(startFn), () => startFn = null);
+});
 var mods = {
   // actions
   prevent(ctx) {
@@ -478,10 +441,6 @@ var keys = {
   letter: (e) => /^\p{L}$/gu.test(e.key),
   char: (e) => /^\S$/.test(e.key)
 };
-var attr = (el, name, v) => {
-  if (v == null || v === false) el.removeAttribute(name);
-  else el.setAttribute(name, v === true ? "" : typeof v === "number" || typeof v === "string" ? v : "");
-};
 var throttle = (fn, limit) => {
   let pause, planned, block = (e) => {
     pause = true;
@@ -506,12 +465,16 @@ var debounce = (fn, wait) => {
     }, wait);
   };
 };
+var attr = (el, name, v) => {
+  if (v == null || v === false) el.removeAttribute(name);
+  else el.setAttribute(name, v === true ? "" : typeof v === "number" || typeof v === "string" ? v : "");
+};
 var dashcase = (str) => {
   return str.replace(/[A-Z\u00C0-\u00D6\u00D8-\u00DE]/g, (match, i) => (i ? "-" : "") + match.toLowerCase());
 };
 
 // directive/value.js
-directive.value = (el, [getValue, setValue], state) => {
+dir("value", (el, state, expr) => {
   const update = el.type === "text" || el.type === "" ? (value) => el.setAttribute("value", el.value = value == null ? "" : value) : el.tagName === "TEXTAREA" || el.type === "text" || el.type === "" ? (value, from, to) => (
     // we retain selection in input
     (from = el.selectionStart, to = el.selectionEnd, el.setAttribute("value", el.value = value == null ? "" : value), from && el.setSelectionRange(from, to))
@@ -523,50 +486,39 @@ directive.value = (el, [getValue, setValue], state) => {
     for (let o of el.options) o.removeAttribute("selected");
     for (let v of value) el.querySelector(`[value="${v}"]`).setAttribute("selected", "");
   } : (value) => el.value = value;
-  const handleChange = el.type === "checkbox" ? () => setValue(state, el.checked) : el.type === "select-multiple" ? () => setValue(state, [...el.selectedOptions].map((o) => o.value)) : (e) => setValue(state, el.selectedIndex < 0 ? null : el.value);
+  let set2 = setter(expr);
+  const handleChange = el.type === "checkbox" ? () => set2(state, el.checked) : el.type === "select-multiple" ? () => set2(state, [...el.selectedOptions].map((o) => o.value)) : () => set2(state, el.selectedIndex < 0 ? null : el.value);
   el.oninput = el.onchange = handleChange;
   if (el.type?.startsWith("select")) {
     new MutationObserver(handleChange).observe(el, { childList: true, subtree: true, attributes: true });
     sprae(el, state);
   }
-  return () => {
-    update(getValue(state));
-  };
-};
-directive.value.parse = (expr) => {
-  let evaluate = [parse(expr)];
+  return update;
+});
+var setter = (expr) => {
   try {
     const set2 = parse(`${expr}=__`);
-    evaluate.push((state, value) => {
+    return (state, value) => {
       state.__ = value;
       set2(state, value);
       delete state.__;
-    });
+    };
   } catch (e) {
   }
-  return evaluate;
 };
 
 // directive/fx.js
-directive.fx = (el, evaluate, state) => {
-  return () => evaluate(state);
-};
+dir("fx", (_) => (_2) => _2);
 
 // directive/aria.js
-directive["aria"] = (el, evaluate, state) => {
-  const update = (value) => {
-    for (let key in value) attr(el, "aria-" + dashcase(key), value[key] == null ? null : value[key] + "");
-  };
-  return () => update(evaluate(state));
-};
+dir("aria", (el) => (value) => {
+  for (let key in value) attr(el, "aria-" + dashcase(key), value[key] == null ? null : value[key] + "");
+});
 
 // directive/data.js
-directive["data"] = (el, evaluate, state) => {
-  return () => {
-    let value = evaluate(state);
-    for (let key in value) el.dataset[key] = value[key];
-  };
-};
+dir("data", (el) => (value) => {
+  for (let key in value) el.dataset[key] = value[key];
+});
 
 // sprae.js
 sprae.use({ compile: (expr) => sprae.constructor(`with (arguments[0]) { return ${expr} };`) });

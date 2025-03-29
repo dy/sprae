@@ -25,10 +25,10 @@ function use(s) {
   signal = s.signal;
   effect = s.effect;
   computed = s.computed;
-  batch = s.batch || ((fn) => fn());
+  batch = s.batch || batch;
   untracked = s.untracked || batch;
 }
-var current, batched, signal, effect, computed, batch, untracked;
+var current, signal, effect, computed, batch, untracked;
 var init_signal = __esm({
   "signal.js"() {
     signal = (v, s, obs = /* @__PURE__ */ new Set()) => (s = {
@@ -39,7 +39,7 @@ var init_signal = __esm({
       set value(val) {
         if (val === v) return;
         v = val;
-        for (let sub of obs) batched ? batched.add(sub) : sub();
+        for (let sub of obs) sub();
       },
       peek() {
         return v;
@@ -64,20 +64,8 @@ var init_signal = __esm({
       },
       peek: s.peek
     }, c.toJSON = c.then = c.toString = c.valueOf = () => c.value, c);
-    batch = (fn) => {
-      let fxs = batched;
-      if (!fxs) batched = /* @__PURE__ */ new Set();
-      try {
-        fn();
-      } finally {
-        if (!fxs) {
-          fxs = batched;
-          batched = null;
-          for (const fx of fxs) fx();
-        }
-      }
-    };
-    untracked = (fn, prev, v) => (prev = current, current = null, v = fn(), current = prev, v);
+    batch = (fn) => fn();
+    untracked = batch;
   }
 });
 
@@ -144,14 +132,13 @@ function set(signals, key, v) {
   else if (s._set) s._set(v);
   else if (Array.isArray(v) && Array.isArray(s.peek())) {
     const cur = s.peek();
-    if (cur[_change]) untracked(() => {
+    if (cur[_change]) {
       batch(() => {
         let i = 0, l = v.length;
         for (; i < l; i++) cur[i] = v[i];
         cur.length = l;
       });
-    });
-    else {
+    } else {
       s.value = v;
     }
   } else {
@@ -169,7 +156,7 @@ var init_store = __esm({
   "store.js"() {
     init_signal();
     _signals = Symbol("signals");
-    _change = Symbol("length");
+    _change = Symbol("change");
     mut = { push: 1, pop: 1, shift: 1, unshift: 1, splice: 1 };
   }
 });
@@ -194,13 +181,12 @@ function sprae(el, values) {
   function init(el2) {
     if (!el2.childNodes) return;
     for (let i = 0; i < el2.attributes?.length; ) {
-      let attr2 = el2.attributes[i];
+      let attr2 = el2.attributes[i], update;
       if (attr2.name[0] === ":") {
         el2.removeAttribute(attr2.name);
         for (let name of attr2.name.slice(1).split(":")) {
-          let dir = directive[name] || directive.default, update = dir(el2, (dir.parse || parse)(attr2.value), state, name);
-          fx.push(update);
-          offs.push(effect(update));
+          update = (directive[name] || directive.default)(el2, attr2.value, state, name);
+          fx.push(update), offs.push(effect(update));
           if (_state in el2) return;
         }
       } else i++;
@@ -209,7 +195,7 @@ function sprae(el, values) {
   }
   ;
 }
-var _dispose, _state, _on, _off, directive, memo, parse, err, compile, frag;
+var _dispose, _state, _on, _off, directive, dir, memo, parse, err, compile, frag;
 var init_core = __esm({
   "core.js"() {
     init_signal();
@@ -219,20 +205,22 @@ var init_core = __esm({
     _on = Symbol("on");
     _off = Symbol("off");
     directive = {};
+    dir = (name, create, p = parse) => directive[name] = (el, expr, state, name2, update, evaluate) => (evaluate = p(expr), update = create(el, state, expr, name2), () => update(evaluate(state)));
     memo = {};
-    parse = (expr, dir, fn) => {
+    parse = (expr, dir2) => {
+      let fn;
       if (fn = memo[expr = expr.trim()]) return fn;
       try {
         fn = compile(expr);
       } catch (e) {
-        err(e, dir, expr);
+        err(e, dir2, expr);
       }
       return memo[expr] = fn;
     };
-    err = (e, dir, expr = "") => {
+    err = (e, dir2, expr = "") => {
       throw Object.assign(e, { message: `\u2234 ${e.message}
 
-${dir}${expr ? `="${expr}"
+${dir2}${expr ? `="${expr}"
 
 ` : ""}`, expr });
     };
@@ -270,8 +258,9 @@ var init_if = __esm({
   "directive/if.js"() {
     init_core();
     _prevIf = Symbol("if");
-    directive.if = (el, evaluate, state) => {
-      let next = el.nextElementSibling, holder = document.createTextNode(""), curEl, ifEl, elseEl;
+    dir("if", (el, state) => {
+      const holder = document.createTextNode("");
+      let next = el.nextElementSibling, curEl, ifEl, elseEl;
       el.replaceWith(holder);
       ifEl = el.content ? frag(el) : el;
       ifEl[_state] = null;
@@ -279,8 +268,8 @@ var init_if = __esm({
         next.removeAttribute(":else");
         if (!next.hasAttribute(":if")) next.remove(), elseEl = next.content ? frag(next) : next, elseEl[_state] = null;
       }
-      return () => {
-        const newEl = evaluate(state) ? ifEl : el[_prevIf] ? null : elseEl;
+      return (value) => {
+        const newEl = value ? ifEl : el[_prevIf] ? null : elseEl;
         if (next) next[_prevIf] = newEl === ifEl;
         if (curEl != newEl) {
           if (curEl) curEl.remove(), curEl[_off]?.();
@@ -291,7 +280,7 @@ var init_if = __esm({
           }
         }
       };
-    };
+    });
   }
 });
 
@@ -301,38 +290,25 @@ var init_each = __esm({
     init_core();
     init_store();
     init_signal();
-    directive.each = (tpl, [itemVar, idxVar, evaluate], state) => {
-      const holder = document.createTextNode("");
-      tpl.replaceWith(holder);
-      tpl[_state] = null;
-      let cur, keys2, prevl = 0;
-      const items = computed(() => {
-        keys2 = null;
-        let items2 = evaluate(state);
-        if (typeof items2 === "number") items2 = Array.from({ length: items2 }, (_, i) => i + 1);
-        if (items2?.constructor === Object) keys2 = Object.keys(items2), items2 = Object.values(items2);
-        return items2 || [];
-      });
-      const update = () => {
-        untracked(() => {
+    dir(
+      "each",
+      (tpl, state, expr) => {
+        const [itemVar, idxVar = "$"] = expr.split(/\s+in\s+/)[0].split(/\s*,\s*/);
+        const holder = document.createTextNode("");
+        tpl.replaceWith(holder);
+        tpl[_state] = null;
+        let cur, keys2, items, prevl = 0;
+        const update = () => {
           var _a, _b;
-          let i = 0, newItems = items.value, newl = newItems.length;
+          let i = 0, newItems = items, newl = newItems.length;
           if (cur && !cur[_change]) {
-            for (let s of cur[_signals] || []) {
-              s[Symbol.dispose]();
-            }
+            for (let s of cur[_signals] || []) s[Symbol.dispose]();
             cur = null, prevl = 0;
           }
-          if (newl < prevl) {
-            cur.length = newl;
-          } else {
-            if (!cur) {
-              cur = newItems;
-            } else {
-              for (; i < prevl; i++) {
-                cur[i] = newItems[i];
-              }
-            }
+          if (newl < prevl) cur.length = newl;
+          else {
+            if (!cur) cur = newItems;
+            else while (i < prevl) cur[i] = newItems[i++];
             for (; i < newl; i++) {
               cur[i] = newItems[i];
               let idx = i, scope = store({
@@ -347,19 +323,22 @@ var init_each = __esm({
             }
           }
           prevl = newl;
-        });
-      };
-      let planned = 0;
-      return () => {
-        items.value[_change]?.value;
-        if (!planned++) update(), queueMicrotask(() => (planned > 1 && update(), planned = 0));
-      };
-    };
-    directive.each.parse = (expr) => {
-      let [leftSide, itemsExpr] = expr.split(/\s+in\s+/);
-      let [itemVar, idxVar = "$"] = leftSide.split(/\s*,\s*/);
-      return [itemVar, idxVar, parse(itemsExpr)];
-    };
+        };
+        return (value) => {
+          keys2 = null;
+          if (typeof value === "number") items = Array.from({ length: value }, (_, i) => i + 1);
+          else if (value?.constructor === Object) keys2 = Object.keys(value), items = Object.values(value);
+          else items = value || [];
+          let planned = 0;
+          return effect(() => {
+            items[_change]?.value;
+            if (!planned++) update(), queueMicrotask(() => (planned > 1 && update(), planned = 0));
+          });
+        };
+      },
+      // redefine evaluator to take second part of expression
+      (expr) => parse(expr.split(/\s+in\s+/)[1])
+    );
   }
 });
 
@@ -367,9 +346,7 @@ var init_each = __esm({
 var init_ref = __esm({
   "directive/ref.js"() {
     init_core();
-    directive.ref = (el, evaluate, state) => {
-      return () => evaluate(state)?.call?.(null, el);
-    };
+    dir("ref", (el, state, expr) => (v) => v.call(null, el));
   }
 });
 
@@ -378,13 +355,7 @@ var init_with = __esm({
   "directive/with.js"() {
     init_core();
     init_store();
-    directive.with = (el, evaluate, rootState) => {
-      let state;
-      return () => {
-        let values = evaluate(rootState);
-        sprae(el, state ? values : state = store(values, rootState));
-      };
-    };
+    dir("with", (el, rootState, state) => (state = null, (values) => sprae(el, state ? values : state = store(values, rootState))));
   }
 });
 
@@ -392,13 +363,10 @@ var init_with = __esm({
 var init_text = __esm({
   "directive/text.js"() {
     init_core();
-    directive.text = (el, evaluate, state) => {
-      if (el.content) el.replaceWith(el = frag(el).childNodes[0]);
-      return () => {
-        let value = evaluate(state);
-        el.textContent = value == null ? "" : value;
-      };
-    };
+    dir("text", (el) => (
+      // <template :text="a"/> or previously initialized template
+      (el.content && el.replaceWith(el = frag(el).childNodes[0]), (value) => el.textContent = value == null ? "" : value)
+    ));
   }
 });
 
@@ -406,10 +374,9 @@ var init_text = __esm({
 var init_class = __esm({
   "directive/class.js"() {
     init_core();
-    directive.class = (el, evaluate, state) => {
-      let cur = /* @__PURE__ */ new Set();
-      return () => {
-        let v = evaluate(state);
+    dir(
+      "class",
+      (el, cur) => (cur = /* @__PURE__ */ new Set(), (v) => {
         let clsx = /* @__PURE__ */ new Set();
         if (v) {
           if (typeof v === "string") v.split(" ").map((cls) => clsx.add(cls));
@@ -419,8 +386,8 @@ var init_class = __esm({
         for (let cls of cur) if (clsx.has(cls)) clsx.delete(cls);
         else el.classList.remove(cls);
         for (let cls of cur = clsx) el.classList.add(cls);
-      };
-    };
+      })
+    );
   }
 });
 
@@ -428,46 +395,38 @@ var init_class = __esm({
 var init_style = __esm({
   "directive/style.js"() {
     init_core();
-    directive.style = (el, evaluate, state) => {
-      let initStyle = el.getAttribute("style");
-      return () => {
-        let v = evaluate(state);
+    dir(
+      "style",
+      (el, initStyle) => (initStyle = el.getAttribute("style"), (v) => {
         if (typeof v === "string") el.setAttribute("style", initStyle + (initStyle.endsWith(";") ? "" : "; ") + v);
         else {
           if (initStyle) el.setAttribute("style", initStyle);
           for (let k in v) k[0] == "-" ? el.style.setProperty(k, v[k]) : el.style[k] = v[k];
         }
-      };
-    };
+      })
+    );
   }
 });
 
 // directive/default.js
-var mods, keys, attr, throttle, debounce, dashcase;
+var mods, keys, throttle, debounce, attr, dashcase;
 var init_default = __esm({
   "directive/default.js"() {
     init_core();
-    directive.default = (target, evaluate, state, name) => {
-      if (!name.startsWith("on")) return () => {
-        let value = evaluate(state);
-        if (name) attr(target, name, value);
-        else for (let key in value) attr(target, dashcase(key), value[key]);
-      };
+    dir("default", (target, state, expr, name) => {
+      if (!name.startsWith("on"))
+        return name ? (value) => attr(target, name, value) : (value) => {
+          for (let key in value) attr(target, dashcase(key), value[key]);
+        };
       const ctxs = name.split("..").map((e) => {
         let ctx = { evt: "", target, test: () => true };
         ctx.evt = (e.startsWith("on") ? e.slice(2) : e).replace(
           /\.(\w+)?-?([-\w]+)?/g,
-          (match, mod, param = "") => (ctx.test = mods[mod]?.(ctx, ...param.split("-")) || ctx.test, "")
+          (_, mod, param = "") => (ctx.test = mods[mod]?.(ctx, ...param.split("-")) || ctx.test, "")
         );
         return ctx;
       });
-      if (ctxs.length == 1) return () => addListener(evaluate(state), ctxs[0]);
-      let startFn, nextFn, off, idx = 0;
-      const nextListener = (fn) => {
-        off = addListener((e) => (off(), nextFn = fn?.(e), (idx = ++idx % ctxs.length) ? nextListener(nextFn) : startFn && nextListener(startFn)), ctxs[idx]);
-      };
-      return () => (startFn = evaluate(state), !off && nextListener(startFn), () => startFn = null);
-      function addListener(fn, { evt, target: target2, test, defer, stop, prevent, immediate, ...opts }) {
+      const addListener = (fn, { evt, target: target2, test, defer, stop, prevent, immediate, ...opts }) => {
         if (defer) fn = defer(fn);
         const cb = (e) => {
           try {
@@ -478,9 +437,14 @@ var init_default = __esm({
         };
         target2.addEventListener(evt, cb, opts);
         return () => target2.removeEventListener(evt, cb, opts);
-      }
-      ;
-    };
+      };
+      if (ctxs.length == 1) return (v) => addListener(v, ctxs[0]);
+      let startFn, nextFn, off, idx = 0;
+      const nextListener = (fn) => {
+        off = addListener((e) => (off(), nextFn = fn?.(e), (idx = ++idx % ctxs.length) ? nextListener(nextFn) : startFn && nextListener(startFn)), ctxs[idx]);
+      };
+      return (value) => (startFn = value, !off && nextListener(startFn), () => startFn = null);
+    });
     mods = {
       // actions
       prevent(ctx) {
@@ -558,10 +522,6 @@ var init_default = __esm({
       letter: (e) => /^\p{L}$/gu.test(e.key),
       char: (e) => /^\S$/.test(e.key)
     };
-    attr = (el, name, v) => {
-      if (v == null || v === false) el.removeAttribute(name);
-      else el.setAttribute(name, v === true ? "" : typeof v === "number" || typeof v === "string" ? v : "");
-    };
     throttle = (fn, limit) => {
       let pause, planned, block = (e) => {
         pause = true;
@@ -586,6 +546,10 @@ var init_default = __esm({
         }, wait);
       };
     };
+    attr = (el, name, v) => {
+      if (v == null || v === false) el.removeAttribute(name);
+      else el.setAttribute(name, v === true ? "" : typeof v === "number" || typeof v === "string" ? v : "");
+    };
     dashcase = (str) => {
       return str.replace(/[A-Z\u00C0-\u00D6\u00D8-\u00DE]/g, (match, i) => (i ? "-" : "") + match.toLowerCase());
     };
@@ -593,12 +557,13 @@ var init_default = __esm({
 });
 
 // directive/value.js
+var setter;
 var init_value = __esm({
   "directive/value.js"() {
     init_core();
     init_core();
     init_default();
-    directive.value = (el, [getValue, setValue], state) => {
+    dir("value", (el, state, expr) => {
       const update = el.type === "text" || el.type === "" ? (value) => el.setAttribute("value", el.value = value == null ? "" : value) : el.tagName === "TEXTAREA" || el.type === "text" || el.type === "" ? (value, from, to) => (
         // we retain selection in input
         (from = el.selectionStart, to = el.selectionEnd, el.setAttribute("value", el.value = value == null ? "" : value), from && el.setSelectionRange(from, to))
@@ -610,28 +575,25 @@ var init_value = __esm({
         for (let o of el.options) o.removeAttribute("selected");
         for (let v of value) el.querySelector(`[value="${v}"]`).setAttribute("selected", "");
       } : (value) => el.value = value;
-      const handleChange = el.type === "checkbox" ? () => setValue(state, el.checked) : el.type === "select-multiple" ? () => setValue(state, [...el.selectedOptions].map((o) => o.value)) : (e) => setValue(state, el.selectedIndex < 0 ? null : el.value);
+      let set2 = setter(expr);
+      const handleChange = el.type === "checkbox" ? () => set2(state, el.checked) : el.type === "select-multiple" ? () => set2(state, [...el.selectedOptions].map((o) => o.value)) : () => set2(state, el.selectedIndex < 0 ? null : el.value);
       el.oninput = el.onchange = handleChange;
       if (el.type?.startsWith("select")) {
         new MutationObserver(handleChange).observe(el, { childList: true, subtree: true, attributes: true });
         sprae(el, state);
       }
-      return () => {
-        update(getValue(state));
-      };
-    };
-    directive.value.parse = (expr) => {
-      let evaluate = [parse(expr)];
+      return update;
+    });
+    setter = (expr) => {
       try {
         const set2 = parse(`${expr}=__`);
-        evaluate.push((state, value) => {
+        return (state, value) => {
           state.__ = value;
           set2(state, value);
           delete state.__;
-        });
+        };
       } catch (e) {
       }
-      return evaluate;
     };
   }
 });
@@ -640,9 +602,7 @@ var init_value = __esm({
 var init_fx = __esm({
   "directive/fx.js"() {
     init_core();
-    directive.fx = (el, evaluate, state) => {
-      return () => evaluate(state);
-    };
+    dir("fx", (_) => (_2) => _2);
   }
 });
 
@@ -651,12 +611,9 @@ var init_aria = __esm({
   "directive/aria.js"() {
     init_core();
     init_default();
-    directive["aria"] = (el, evaluate, state) => {
-      const update = (value) => {
-        for (let key in value) attr(el, "aria-" + dashcase(key), value[key] == null ? null : value[key] + "");
-      };
-      return () => update(evaluate(state));
-    };
+    dir("aria", (el) => (value) => {
+      for (let key in value) attr(el, "aria-" + dashcase(key), value[key] == null ? null : value[key] + "");
+    });
   }
 });
 
@@ -664,12 +621,9 @@ var init_aria = __esm({
 var init_data = __esm({
   "directive/data.js"() {
     init_core();
-    directive["data"] = (el, evaluate, state) => {
-      return () => {
-        let value = evaluate(state);
-        for (let key in value) el.dataset[key] = value[key];
-      };
-    };
+    dir("data", (el) => (value) => {
+      for (let key in value) el.dataset[key] = value[key];
+    });
   }
 });
 
