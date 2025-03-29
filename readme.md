@@ -166,9 +166,17 @@ Run effect, not changing any attribute.
 <div :fx="id = setInterval(tick, 1000), () => clearInterval(id)" />
 ```
 
+<!-- #### `:ref="name"`, `:ref="el => (...)"` -->
 #### `:ref="el => (...)"`
 
-Get reference to element (instead of `this`).
+Expose element in state with `name` or get reference to element.
+<!--
+<textarea :ref="text" placeholder="Enter text..."></textarea>
+
+<!-- iterable items
+<li :each="item in items" :ref="item">
+  <input :onfocus..onblur="e => (item.classList.add('editing'), e => item.classList.remove('editing'))"/>
+</li> -->
 
 ```html
 <!-- initialize element -->
