@@ -32,20 +32,16 @@ export default function sprae(el, values) {
   // text nodes, comments etc
   if (!el?.childNodes) return
 
-  // repeated call can be caused by :each with new objects with old keys needs an update
-  if (el[_state]) {
-    // we rewrite signals instead of update, because user should have what he provided
-    return Object.assign(el[_state], values)
-  }
+  // repeated call can be caused by eg. :each with new objects with old keys
+  if (el[_state]) return Object.assign(el[_state], values)
 
-  // take over existing state instead of creating clone
+  // take over existing state instead of creating a clone
   const state = store(values || {}), offs = [], fx = []
 
   const init = el => {
     // ignore text nodes, comments etc
     if (!el.childNodes) return
 
-    // init generic-name attributes second
     for (let i = 0; i < el.attributes?.length;) {
       let attr = el.attributes[i], update;
 
@@ -55,10 +51,11 @@ export default function sprae(el, values) {
         // multiple attributes like :id:for=""
         for (let name of attr.name.slice(1).split(':')) {
           update = (directive[name] || directive.default)(el, attr.value, state, name)
+          
+          // save & start effect
+          fx.push(update), offs.push(effect(update))
 
-          fx.push(update), offs.push(effect(update)) // save & start effect
-
-          // stop after :each, :if, :with?
+          // stop after :each, :if, :with etc.
           if (el[_state]===null) return
         }
       } else i++;
@@ -84,9 +81,6 @@ export default function sprae(el, values) {
   return state;
 }
 
-
-const memo = {};
-
 /**
  * Parses an expression into an evaluator function, caching the result for reuse.
  *
@@ -94,18 +88,16 @@ const memo = {};
  * @param {string} dir - The directive associated with the expression (used for error reporting).
  * @returns {Function} The compiled evaluator function for the expression.
  */
-export const parse = (expr, dir) => {
-  let fn
-
+export const parse = (expr, dir, fn) => {
   if (fn = memo[expr = expr.trim()]) return fn
 
   // static-time errors
   try { fn = compile(expr) }
   catch (e) { err(e, dir, expr) }
 
-  // runtime errors
   return memo[expr] = fn
 }
+const memo = {};
 
 /**
  * Branded sprae error with context about the directive and expression
@@ -115,8 +107,8 @@ export const parse = (expr, dir) => {
  * @param {string} [expr=''] - The expression associated with the error, if any.
  * @throws {Error} The enhanced error object with a formatted message.
  */
-export const err = (e, dir, expr = '') => {
-  throw Object.assign(e, { message: `∴ ${e.message}\n\n${dir || ''}${expr ? `="${expr}"\n\n` : ""}`, expr })
+export const err = (e, dir='', expr='') => {
+  throw Object.assign(e, { message: `∴ ${e.message}\n\n${dir}${expr ? `="${expr}"\n\n` : ""}`, expr })
 }
 
 /**
