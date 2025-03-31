@@ -56,24 +56,22 @@ function store(values, parent) {
     get: (_, key) => key === _change ? _len : key === _signals ? signals : signals[key]?.valueOf(),
     set: (_, key, v, s) => (s = signals[key], set(signals, key, v), s ?? ++_len.value, 1),
     // bump length for new signal
-    deleteProperty: (_, key) => (signals[key] && (del(signals, key), _len.value--), 1),
-    ownKeys() {
-      _len.value;
-      return Reflect.ownKeys(signals);
-    }
+    deleteProperty: (_, key) => (signals[key] && (signals[key][Symbol.dispose]?.(), delete signals[key], _len.value--), 1),
+    // subscribe to length when object is spread
+    ownKeys: () => (_len.value, Reflect.ownKeys(signals))
   });
   for (let key in values) {
     const desc = Object.getOwnPropertyDescriptor(values, key);
     if (desc?.get) {
       (signals[key] = computed(desc.get.bind(state)))._set = desc.set?.bind(state);
     } else {
-      signals[key] = void 0;
+      signals[key] = null;
       set(signals, key, values[key]);
     }
   }
   return state;
 }
-var mut = { push: 1, pop: 1, shift: 1, unshift: 1, splice: 1 };
+var mut = ["push", "pop", "shift", "unshift", "splice"];
 function list(values) {
   let lastProp;
   if (values[_signals]) return values;
@@ -81,52 +79,39 @@ function list(values) {
   const state = new Proxy(signals, {
     get(_, key) {
       if (typeof key === "symbol") return key === _change ? _len : key === _signals ? signals : signals[key];
-      if (key === "length") return mut[lastProp] ? _len.peek() : _len.value;
+      if (key === "length") return mut.includes(lastProp) ? _len.peek() : _len.value;
       lastProp = key;
       if (signals[key]) return signals[key].valueOf();
       if (key < signals.length) return (signals[key] = signal(store(values[key]))).value;
     },
     set(_, key, v) {
       if (key === "length") {
-        for (let i = v, l = signals.length; i < l; i++) delete state[i];
+        for (let i = v; i < signals.length; i++) delete state[i];
         _len.value = signals.length = v;
         return true;
       }
       set(signals, key, v);
-      if (key >= _len.peek()) _len.value = signals.length = Number(key) + 1;
+      if (key >= _len.peek()) _len.value = signals.length = +key + 1;
       return true;
     },
-    deleteProperty: (_, key) => (signals[key] && del(signals, key), 1)
+    deleteProperty: (_, key) => (signals[key]?.[Symbol.dispose]?.(), delete signals[key], 1)
   });
   return state;
 }
 function set(signals, key, v) {
   let s = signals[key];
   if (key[0] === "_") signals[key] = v;
-  else if (!s) {
-    signals[key] = s = v?.peek ? v : signal(store(v));
-  } else if (v === s.peek()) ;
+  else if (!s) signals[key] = s = v?.peek ? v : signal(store(v));
+  else if (v === s.peek()) ;
   else if (s._set) s._set(v);
   else if (Array.isArray(v) && Array.isArray(s.peek())) {
     const cur = s.peek();
-    if (cur[_change]) {
-      batch(() => {
-        let i = 0, l = v.length;
-        for (; i < l; i++) cur[i] = v[i];
-        cur.length = l;
-      });
-    } else {
-      s.value = v;
-    }
-  } else {
-    s.value = store(v);
-  }
-}
-function del(signals, key) {
-  const s = signals[key], del2 = s[Symbol.dispose];
-  if (del2) delete s[Symbol.dispose];
-  delete signals[key];
-  del2?.();
+    if (cur[_change]) batch(() => {
+      for (let i = 0; i < v.length; i++) cur[i] = v[i];
+      cur.length = v.length;
+    });
+    else s.value = v;
+  } else s.value = store(v);
 }
 
 // core.js
@@ -138,9 +123,7 @@ var directive = {};
 var dir = (name, create, p = parse) => directive[name] = (el, expr, state, name2, update, evaluate) => (evaluate = p(expr), update = create(el, state, expr, name2, evaluate), () => update(evaluate(state)));
 function sprae(el, values) {
   if (!el?.childNodes) return;
-  if (el[_state]) {
-    return Object.assign(el[_state], values);
-  }
+  if (el[_state]) return Object.assign(el[_state], values);
   const state = store(values || {}), offs = [], fx = [];
   const init = (el2) => {
     if (!el2.childNodes) return;
@@ -168,9 +151,7 @@ function sprae(el, values) {
   }
   return state;
 }
-var memo = {};
-var parse = (expr, dir2) => {
-  let fn;
+var parse = (expr, dir2, fn) => {
   if (fn = memo[expr = expr.trim()]) return fn;
   try {
     fn = compile(expr);
@@ -179,10 +160,11 @@ var parse = (expr, dir2) => {
   }
   return memo[expr] = fn;
 };
-var err = (e, dir2, expr = "") => {
+var memo = {};
+var err = (e, dir2 = "", expr = "") => {
   throw Object.assign(e, { message: `\u2234 ${e.message}
 
-${dir2 || ""}${expr ? `="${expr}"
+${dir2}${expr ? `="${expr}"
 
 ` : ""}`, expr });
 };
@@ -207,9 +189,8 @@ var frag = (tpl) => {
     attributes,
     removeAttribute(name) {
       attributes.splice(attributes.findIndex((a) => a.name === name), 1);
-    },
-    setAttributeNode() {
     }
+    // setAttributeNode() { }
   };
 };
 
