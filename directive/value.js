@@ -35,7 +35,6 @@ dir('value', (el, state, expr) => {
   // bind ui back to value
   try {
     const set = setter(expr)
-
     const handleChange = el.type === 'checkbox' ? () => set(state, el.checked) :
       el.type === 'select-multiple' ? () => set(state, [...el.selectedOptions].map(o => o.value)) :
         () => set(state, el.selectedIndex < 0 ? null : el.value)

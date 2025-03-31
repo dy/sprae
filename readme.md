@@ -172,15 +172,15 @@ Expose element in state with `name` or get reference to element.
 
 ```html
 <!-- expose element in state -->
-<li :each="item in items" :ref="item">
-  <input :onfocus..onblur="e => (item.classList.add('editing'), e => item.classList.remove('editing'))"/>
+<li :each="item in items" :ref="li">
+  <input :onfocus..onblur="e => (li.classList.add('editing'), e => li.classList.remove('editing'))"/>
 </li>
 
 <!-- set innerHTML -->
 <div :ref="el => el.innerHTML = '...'"></div>
 
 <!-- initialize element -->
-<textarea :ref="el => (/* onmount */, () => (/* onunmount */))" placeholder="Enter text..."></textarea>
+<textarea :ref="el => (/* onmount */, () => (/* onunmount */))" :if="show"></textarea>
 ```
 
 #### `:on<event>="handler"`, `:on<in>..on<out>="handler"`

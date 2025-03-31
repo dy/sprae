@@ -3,6 +3,7 @@ import { tick } from "wait-please";
 import sprae from '../sprae.js'
 import { signal } from '../signal.js'
 import h from "hyperf";
+import { _off } from "../core.js";
 
 
 test("ref: base", async () => {
@@ -76,12 +77,14 @@ test("ref: fn with :each", async () => {
 });
 
 test("ref: fn unmount", async () => {
-  let a = h`<a :ref="el => (log.push('on'), () => log.push('off'))" :text="b"></a>`;
-  let state = sprae(a, { log: [], b: 1 });
+  let div = h`<div><a :if="a" :ref="el => (log.push('on'), () => log.push('off'))" :text="b"></a></div>`;
+  let state = sprae(div, { log: [], b: 1, a:1});
   await tick();
   is(state.log, ['on']);
-  is(a.outerHTML, `<a>1</a>`);
-  a[Symbol.dispose]()
+  is(div.innerHTML, `<a>1</a>`);
+  console.log('----state.a=0')
+  state.a = 0
   await tick();
+  is(div.innerHTML, ``);
   is(state.log, ['on', 'off']);
 });
