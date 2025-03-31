@@ -507,7 +507,7 @@ var init_value = __esm({
     );
     ensure = (state, expr, name = expr.match(/^\w+(?=\s*(?:\.|\[|$))/)) => {
       var _a;
-      return name && (state[_a = name[0]] || (state[_a] = null));
+      return name && (state[_a = name[0]] ?? (state[_a] = null));
     };
   }
 });
