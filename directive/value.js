@@ -64,4 +64,4 @@ export const setter = (expr, set = parse(`${expr}=__`)) => (
 )
 
 // make sure state contains first element of path, eg. `a` from `a.b[c]`
-export const ensure = (state, expr, name = expr.match(/^\w+(?=\s*(?:\.|\[|$))/)) => name && (state[name[0]] ||= null)
+export const ensure = (state, expr, name = expr.match(/^\w+(?=\s*(?:\.|\[|$))/)) => name && (state[name[0]] ??= null)

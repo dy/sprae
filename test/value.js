@@ -123,3 +123,10 @@ test('value: select options change #52', async () => {
   // is(el.outerHTML, `<select multiple="" id="x" name="x"><option value="1">a</option><option value="2" selected="">b</option><option value="3" selected="">c</option></select>`)
   // is([...el.selectedOptions], [el.children[1], el.children[2]])
 })
+
+test("value: reflect #57", async () => {
+  let el = h`<input :value="a" />`;
+  let state = sprae(el, { a: 0 });
+  is(state.a, 0);
+  is(el.outerHTML, `<input value="0">`);
+});
