@@ -23,7 +23,7 @@
     "hyperf": "^1.7.0",
     "jsdom": "^24.1.0",
     "signal-polyfill": "^0.1.1",
-    "subscript": "^8.4.0",
+    "subscript": "^9.1.0",
     "tst": "^7.2.0",
     "usignal": "^0.9.0",
     "wait-please": "^3.1.0"

@@ -51,7 +51,7 @@ export default function sprae(el, values) {
         // multiple attributes like :id:for=""
         for (let name of attr.name.slice(1).split(':')) {
           update = (directive[name] || directive.default)(el, attr.value, state, name)
-          
+
           // save & start effect
           fx.push(update), offs.push(effect(update))
 
@@ -148,6 +148,6 @@ export const frag = (tpl) => {
     },
     attributes,
     removeAttribute(name) { attributes.splice(attributes.findIndex(a => a.name === name), 1) },
-    setAttributeNode() { }
+    // setAttributeNode() { }
   }
 }

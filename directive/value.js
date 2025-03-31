@@ -32,7 +32,7 @@ dir('value', (el, state, expr) => {
   // make sure value exists in state
   ensure(state, expr)
 
-  // bind ui back to value
+  // bind back to value, but some values can be not bindable, eg. `:value="7"`
   try {
     const set = setter(expr)
     const handleChange = el.type === 'checkbox' ? () => set(state, el.checked) :

@@ -1,5 +1,5 @@
 // signals-based proxy
-import { signal, computed, batch, untracked } from './signal.js'
+import { signal, computed, batch } from './signal.js'
 
 export const _signals = Symbol('signals'), _change = Symbol('change');
 
@@ -23,12 +23,9 @@ export default function store(values, parent) {
   const state = new Proxy(signals, {
     get: (_, key) => key === _change ? _len : key === _signals ? signals : signals[key]?.valueOf(),
     set: (_, key, v, s) => (s = signals[key], set(signals, key, v), s ?? (++_len.value), 1), // bump length for new signal
-    deleteProperty: (_, key) => (signals[key] && (del(signals, key), _len.value--), 1),
-    ownKeys() {
-      // subscribe to length when object is spread
-      _len.value
-      return Reflect.ownKeys(signals);
-    },
+    deleteProperty: (_, key) => (signals[key] && (signals[key][Symbol.dispose]?.(), delete signals[key], _len.value--), 1),
+    // subscribe to length when object is spread
+    ownKeys: () => (_len.value, Reflect.ownKeys(signals)),
   })
 
   // init signals for values
@@ -42,7 +39,7 @@ export default function store(values, parent) {
     }
     else {
       // init blank signal - make sure we don't take prototype one
-      signals[key] = undefined
+      signals[key] = null
       set(signals, key, values[key]);
     }
   }
@@ -51,7 +48,7 @@ export default function store(values, parent) {
 }
 
 // length changing methods
-const mut = { push: 1, pop: 1, shift: 1, unshift: 1, splice: 1 }
+const mut = ['push', 'pop', 'shift', 'unshift', 'splice']
 
 // array store - signals are lazy since arrays can be very large & expensive
 export function list(values) {
@@ -73,7 +70,7 @@ export function list(values) {
       if (typeof key === 'symbol') return key === _change ? _len : key === _signals ? signals : signals[key]
 
       // if .length is read within .push/etc - peek signal to avoid recursive subscription
-      if (key === 'length') return mut[lastProp] ? _len.peek() : _len.value;
+      if (key === 'length') return mut.includes(lastProp) ? _len.peek() : _len.value;
 
       lastProp = key;
 
@@ -87,7 +84,7 @@ export function list(values) {
       // .length
       if (key === 'length') {
         // force cleaning up tail
-        for (let i = v, l = signals.length; i < l; i++) delete state[i]
+        for (let i = v; i < signals.length; i++) delete state[i]
         // .length = N directly
         _len.value = signals.length = v;
         return true
@@ -96,13 +93,12 @@ export function list(values) {
       set(signals, key, v)
 
       // force changing length, if eg. a=[]; a[1]=1 - need to come after setting the item
-      if (key >= _len.peek()) _len.value = signals.length = Number(key) + 1
+      if (key >= _len.peek()) _len.value = signals.length = +key + 1
 
       return true
     },
 
-    deleteProperty: (_, key) => (signals[key] && del(signals, key), 1),
-
+    deleteProperty: (_, key) => (signals[key]?.[Symbol.dispose]?.(), delete signals[key], 1),
   })
 
   return state
@@ -114,11 +110,8 @@ function set(signals, key, v) {
 
   // untracked
   if (key[0] === '_') signals[key] = v
-  // new property
-  else if (!s) {
-    // preserve signal value as is
-    signals[key] = s = v?.peek ? v : signal(store(v))
-  }
+  // new property. preserve signal value as is
+  else if (!s) signals[key] = s = v?.peek ? v : signal(store(v))
   // skip unchanged (although can be handled by last condition - we skip a few checks this way)
   else if (v === s.peek());
   // stashed _set for value with getter/setter
@@ -127,27 +120,12 @@ function set(signals, key, v) {
   else if (Array.isArray(v) && Array.isArray(s.peek())) {
     const cur = s.peek()
     // if we update plain array (stored in signal) - take over value instead
-    if (cur[_change]) {
-      batch(() => {
-        let i = 0, l = v.length;
-        for (; i < l; i++) cur[i] = v[i]
-        cur.length = l // forces deleting tail signals
-      })
-    }
-    else {
-      s.value = v
-    }
+    if (cur[_change]) batch(() => {
+      for (let i = 0; i < v.length; i++) cur[i] = v[i]
+      cur.length = v.length // forces deleting tail signals
+    })
+    else s.value = v
   }
   // .x = y
-  else {
-    s.value = store(v)
-  }
-}
-
-// delete signal
-function del(signals, key) {
-  const s = signals[key], del = s[Symbol.dispose]
-  if (del) delete s[Symbol.dispose]
-  delete signals[key]
-  del?.()
+  else s.value = store(v)
 }
