@@ -205,7 +205,7 @@ var init_core = __esm({
     _on = Symbol("on");
     _off = Symbol("off");
     directive = {};
-    dir = (name, create, p = parse) => directive[name] = (el, expr, state, name2, update, evaluate) => (evaluate = p(expr), update = create(el, state, expr, name2), () => update(evaluate(state)));
+    dir = (name, create, p = parse) => directive[name] = (el, expr, state, name2, update, evaluate) => (evaluate = p(expr), update = create(el, state, expr, name2, evaluate), () => update(evaluate(state)));
     memo = {};
     parse = (expr, dir2) => {
       let fn;
@@ -220,7 +220,7 @@ var init_core = __esm({
     err = (e, dir2, expr = "") => {
       throw Object.assign(e, { message: `\u2234 ${e.message}
 
-${dir2}${expr ? `="${expr}"
+${dir2 || ""}${expr ? `="${expr}"
 
 ` : ""}`, expr });
     };
@@ -338,72 +338,6 @@ var init_each = __esm({
       },
       // redefine evaluator to take second part of expression
       (expr) => parse(expr.split(/\s+in\s+/)[1])
-    );
-  }
-});
-
-// directive/ref.js
-var init_ref = __esm({
-  "directive/ref.js"() {
-    init_core();
-    dir("ref", (el, state, expr) => (v) => v.call(null, el));
-  }
-});
-
-// directive/with.js
-var init_with = __esm({
-  "directive/with.js"() {
-    init_core();
-    init_store();
-    dir("with", (el, rootState, state) => (state = null, (values) => sprae(el, state ? values : state = store(values, rootState))));
-  }
-});
-
-// directive/text.js
-var init_text = __esm({
-  "directive/text.js"() {
-    init_core();
-    dir("text", (el) => (
-      // <template :text="a"/> or previously initialized template
-      (el.content && el.replaceWith(el = frag(el).childNodes[0]), (value) => el.textContent = value == null ? "" : value)
-    ));
-  }
-});
-
-// directive/class.js
-var init_class = __esm({
-  "directive/class.js"() {
-    init_core();
-    dir(
-      "class",
-      (el, cur) => (cur = /* @__PURE__ */ new Set(), (v) => {
-        let clsx = /* @__PURE__ */ new Set();
-        if (v) {
-          if (typeof v === "string") v.split(" ").map((cls) => clsx.add(cls));
-          else if (Array.isArray(v)) v.map((v2) => v2 && clsx.add(v2));
-          else Object.entries(v).map(([k, v2]) => v2 && clsx.add(k));
-        }
-        for (let cls of cur) if (clsx.has(cls)) clsx.delete(cls);
-        else el.classList.remove(cls);
-        for (let cls of cur = clsx) el.classList.add(cls);
-      })
-    );
-  }
-});
-
-// directive/style.js
-var init_style = __esm({
-  "directive/style.js"() {
-    init_core();
-    dir(
-      "style",
-      (el, initStyle) => (initStyle = el.getAttribute("style"), (v) => {
-        if (typeof v === "string") el.setAttribute("style", initStyle + (initStyle.endsWith(";") ? "" : "; ") + v);
-        else {
-          if (initStyle) el.setAttribute("style", initStyle);
-          for (let k in v) k[0] == "-" ? el.style.setProperty(k, v[k]) : el.style[k] = v[k];
-        }
-      })
     );
   }
 });
@@ -557,7 +491,7 @@ var init_default = __esm({
 });
 
 // directive/value.js
-var setter;
+var setter, ensure;
 var init_value = __esm({
   "directive/value.js"() {
     init_core();
@@ -575,26 +509,94 @@ var init_value = __esm({
         for (let o of el.options) o.removeAttribute("selected");
         for (let v of value) el.querySelector(`[value="${v}"]`).setAttribute("selected", "");
       } : (value) => el.value = value;
-      let set2 = setter(expr);
-      const handleChange = el.type === "checkbox" ? () => set2(state, el.checked) : el.type === "select-multiple" ? () => set2(state, [...el.selectedOptions].map((o) => o.value)) : () => set2(state, el.selectedIndex < 0 ? null : el.value);
-      el.oninput = el.onchange = handleChange;
-      if (el.type?.startsWith("select")) {
-        new MutationObserver(handleChange).observe(el, { childList: true, subtree: true, attributes: true });
-        sprae(el, state);
+      ensure(state, expr);
+      try {
+        const set2 = setter(expr);
+        const handleChange = el.type === "checkbox" ? () => set2(state, el.checked) : el.type === "select-multiple" ? () => set2(state, [...el.selectedOptions].map((o) => o.value)) : () => set2(state, el.selectedIndex < 0 ? null : el.value);
+        el.oninput = el.onchange = handleChange;
+        if (el.type?.startsWith("select")) {
+          new MutationObserver(handleChange).observe(el, { childList: true, subtree: true, attributes: true });
+          sprae(el, state);
+        }
+      } catch {
       }
       return update;
     });
-    setter = (expr) => {
-      try {
-        const set2 = parse(`${expr}=__`);
-        return (state, value) => {
-          state.__ = value;
-          set2(state, value);
-          delete state.__;
-        };
-      } catch (e) {
-      }
+    setter = (expr, set2 = parse(`${expr}=__`)) => (
+      // FIXME: if there's a simpler way to set value in justin?
+      (state, value) => (state.__ = value, set2(state, value), delete state.__)
+    );
+    ensure = (state, expr, name = expr.match(/^\w+(?=\s*(?:\.|\[|$))/)) => {
+      var _a;
+      return name && (state[_a = name[0]] || (state[_a] = null));
     };
+  }
+});
+
+// directive/ref.js
+var init_ref = __esm({
+  "directive/ref.js"() {
+    init_core();
+    init_value();
+    dir("ref", (el, state, expr, _, ev) => (ensure(state, expr), ev(state) == null ? (setter(expr)(state, el), (_2) => _2) : (v) => v.call(null, el)));
+  }
+});
+
+// directive/with.js
+var init_with = __esm({
+  "directive/with.js"() {
+    init_core();
+    init_store();
+    dir("with", (el, rootState, state) => (state = null, (values) => sprae(el, state ? values : state = store(values, rootState))));
+  }
+});
+
+// directive/text.js
+var init_text = __esm({
+  "directive/text.js"() {
+    init_core();
+    dir("text", (el) => (
+      // <template :text="a"/> or previously initialized template
+      (el.content && el.replaceWith(el = frag(el).childNodes[0]), (value) => el.textContent = value == null ? "" : value)
+    ));
+  }
+});
+
+// directive/class.js
+var init_class = __esm({
+  "directive/class.js"() {
+    init_core();
+    dir(
+      "class",
+      (el, cur) => (cur = /* @__PURE__ */ new Set(), (v) => {
+        let clsx = /* @__PURE__ */ new Set();
+        if (v) {
+          if (typeof v === "string") v.split(" ").map((cls) => clsx.add(cls));
+          else if (Array.isArray(v)) v.map((v2) => v2 && clsx.add(v2));
+          else Object.entries(v).map(([k, v2]) => v2 && clsx.add(k));
+        }
+        for (let cls of cur) if (clsx.has(cls)) clsx.delete(cls);
+        else el.classList.remove(cls);
+        for (let cls of cur = clsx) el.classList.add(cls);
+      })
+    );
+  }
+});
+
+// directive/style.js
+var init_style = __esm({
+  "directive/style.js"() {
+    init_core();
+    dir(
+      "style",
+      (el, initStyle) => (initStyle = el.getAttribute("style"), (v) => {
+        if (typeof v === "string") el.setAttribute("style", initStyle + (initStyle.endsWith(";") ? "" : "; ") + v);
+        else {
+          if (initStyle) el.setAttribute("style", initStyle);
+          for (let k in v) k[0] == "-" ? el.style.setProperty(k, v[k]) : el.style[k] = v[k];
+        }
+      })
+    );
   }
 });
 
