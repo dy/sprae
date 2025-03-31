@@ -15,8 +15,11 @@ const directive = {}
  * @param {(el: Element, state: Object, attrValue: string, attrName: string) => (value: any) => void} create - A function to create the directive.
  * @param {(expr: string) => (state: Object) => any} [p=parse] - Create evaluator from expression string.
  */
-export const dir = (name, create, p=parse) => directive[name] = (el, expr, state, name, update, evaluate) =>
-  (evaluate = p(expr), update = create(el, state, expr, name), () => update(evaluate(state)))
+export const dir = (name, create, p = parse) => directive[name] = (el, expr, state, name, update, evaluate) => (
+  evaluate = p(expr),
+  update = create(el, state, expr, name, evaluate),
+  () => update(evaluate(state))
+)
 
 /**
  * Applies directives to an HTML element and manages its reactive state.
@@ -112,7 +115,7 @@ export const parse = (expr, dir) => {
  * @throws {Error} The enhanced error object with a formatted message.
  */
 export const err = (e, dir, expr = '') => {
-  throw Object.assign(e, { message: `∴ ${e.message}\n\n${dir}${expr ? `="${expr}"\n\n` : ""}`, expr })
+  throw Object.assign(e, { message: `∴ ${e.message}\n\n${dir || ''}${expr ? `="${expr}"\n\n` : ""}`, expr })
 }
 
 /**

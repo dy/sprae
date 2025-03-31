@@ -166,29 +166,21 @@ Run effect, not changing any attribute.
 <div :fx="id = setInterval(tick, 1000), () => clearInterval(id)" />
 ```
 
-<!-- #### `:ref="name"`, `:ref="el => (...)"` -->
-#### `:ref="el => (...)"`
+#### `:ref="name"`, `:ref="el => (...)"`
 
 Expose element in state with `name` or get reference to element.
-<!--
-<textarea :ref="text" placeholder="Enter text..."></textarea>
-
-<!-- iterable items
-<li :each="item in items" :ref="item">
-  <input :onfocus..onblur="e => (item.classList.add('editing'), e => item.classList.remove('editing'))"/>
-</li> -->
 
 ```html
-<!-- initialize element -->
-<textarea :ref="el => (/* onmount */, () => (/* onunmount */))" placeholder="Enter text..."></textarea>
-
-<!-- expose element in (sub)state -->
-<li :each="item in items" :with="{li:null}" :ref="el => li = el">
-  <input :onfocus..onblur="e => (li.classList.add('editing'), e => li.classList.remove('editing'))"/>
+<!-- expose element in state -->
+<li :each="item in items" :ref="item">
+  <input :onfocus..onblur="e => (item.classList.add('editing'), e => item.classList.remove('editing'))"/>
 </li>
 
 <!-- set innerHTML -->
 <div :ref="el => el.innerHTML = '...'"></div>
+
+<!-- initialize element -->
+<textarea :ref="el => (/* onmount */, () => (/* onunmount */))" placeholder="Enter text..."></textarea>
 ```
 
 #### `:on<event>="handler"`, `:on<in>..on<out>="handler"`

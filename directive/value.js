@@ -29,36 +29,40 @@ dir('value', (el, state, expr) => {
             } :
               (value) => (el.value = value);
 
+  // make sure value exists in state
+  ensure(state, expr)
+
   // bind ui back to value
-  let set = setter(expr)
-  const handleChange = el.type === 'checkbox' ? () => set(state, el.checked) :
-    el.type === 'select-multiple' ? () => set(state, [...el.selectedOptions].map(o => o.value)) :
-    () => set(state, el.selectedIndex < 0 ? null : el.value)
+  try {
+    const set = setter(expr)
 
-  el.oninput = el.onchange = handleChange; // hope user doesn't redefine these manually via `.oninput = somethingElse` - it saves 5 loc vs addEventListener
+    const handleChange = el.type === 'checkbox' ? () => set(state, el.checked) :
+      el.type === 'select-multiple' ? () => set(state, [...el.selectedOptions].map(o => o.value)) :
+        () => set(state, el.selectedIndex < 0 ? null : el.value)
 
-  if (el.type?.startsWith('select')) {
-    // select element also must observe any added/removed options or changed values (outside of sprae)
-    new MutationObserver(handleChange).observe(el, { childList: true, subtree: true, attributes: true });
+    el.oninput = el.onchange = handleChange; // hope user doesn't redefine these manually via `.oninput = somethingElse` - it saves 5 loc vs addEventListener
 
-    // select options must be initialized before calling an update
-    sprae(el, state)
-  }
+    if (el.type?.startsWith('select')) {
+      // select element also must observe any added/removed options or changed values (outside of sprae)
+      new MutationObserver(handleChange).observe(el, { childList: true, subtree: true, attributes: true });
+
+      // select options must be initialized before calling an update
+      sprae(el, state)
+    }
+  } catch {}
 
   return update
 })
 
 // create expression setter, reflecting value back to state
-export const setter = expr => {
-  // catch wrong assigns like `123 =...`, `foo?.bar =...`
-  try {
-    const set = parse(`${expr}=__`);
-    // FIXME: if there's a simpler way to set value in justin?
-    return (state, value) => {
-      state.__ = value
-      set(state, value)
-      delete state.__
-    }
-  }
-  catch (e) { }
-}
+export const setter = (expr, set = parse(`${expr}=__`)) => (
+  // FIXME: if there's a simpler way to set value in justin?
+  (state, value) => (
+    state.__ = value,
+    set(state, value),
+    delete state.__
+  )
+)
+
+// make sure state contains first element of path, eg. `a` from `a.b[c]`
+export const ensure = (state, expr, name = expr.match(/^\w+(?=\s*(?:\.|\[|$))/)) => name && (state[name[0]] ||= null)

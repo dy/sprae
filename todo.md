@@ -151,13 +151,13 @@
 * [x] make functional ref
 * [x] add hint about :html
 * [x] make v11 release
-* [ ] make :ref accept path
+* [x] make :ref accept path
 * [x] fix #55 - ifs omitment
 * [x] get rid of dir.parse in favor of smth better
+* [x] remove ~~computed~~, batch, untracked -> simplify
+* [x] fix plain update bug #55
 * [ ] add test for jsperf adding multiple elements - make sure it's O(n), not n**2
   * [ ] maybe just add jsperf bench as tests
-* [x] remove ~~computed~~, batch, untracked -> simplify
-* [ ] fix plain update bug #55
 
 ## [ ] Optimizations (https://krausest.github.io/js-framework-benchmark/current.html)
 

@@ -1131,7 +1131,7 @@
   - bad remembrance of JS with
     +~ not necessarily the case
 
-### [ ] store: should we prohibit creation of new props?
+### [x] store: should we prohibit creation of new props? -> no
 
   + Structs make objects nice: small, fast, obvious
   - Difficulty for arrays: we cannot really avoid creating new props there
@@ -1229,7 +1229,28 @@
     - :ref loses element, which isn't natural nor matches spirit of WYSIWYG
     - not nice not to dispose properly
 
-## [ ] Autoinit missing values: #53
+## [x] Autoinit missing values: #53 -> ensure first part of path exists
 
   + links to `:ref` accepting path instead of function.
   * How would that work?
+
+  1. `if (expr in state) fn; else state[expr] = el`; `if !(expr in state) state[expr]=null`
+    + the shortest
+    + covers most basic case
+    - doesn't support `:ref="x.y[z]"`, `:value="x.y[z]"`
+  2. `getter(expr)(state) ?`, `setter(expr)(state, value)`
+    - `setter` doesn't work: `with (state) {a=1}` sets to the global
+  3. dlv
+    -~ `dlv(o, k, def, p, undef) { k = k.split ? k.split('.') : k; for (p = 0; p < k.length; p++) { o = o ? o[k[p]] : undef; } return o === undef ? def : o; }`
+    - doesn't support `x[y]`
+  * We cannot force `x.y.z` to exist (for `state[expr]||=true`)
+  4. `parse('arguments[0].'+expr)`
+    + works?
+    - not going to work with justin
+  4.1 `parse('___.'+expr)` (standard state name)
+    - still not going to work, since justing evals state access on its own
+  5. `parse(expr+'||=null')(state)`
+    + proofs props
+    - no way to do `with (data) {}`
+  6. `state[expr.split(/.\[/)[0])]` - we make sure first element exists
+    + doesn't require heavy eval
