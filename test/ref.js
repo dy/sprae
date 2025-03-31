@@ -75,14 +75,13 @@ test("ref: fn with :each", async () => {
   is(a.innerHTML, `<x>1</x><x>2</x><x>3</x>`);
 });
 
-test.todo("ref: fn unmount", async () => {
-  let a = h`<a :ref="el => (log.push('on'), () => log.push('off'))" :if="a" :text="b"></a>`;
-  let state = sprae(a, { log: [], b: 1, a: null });
+test("ref: fn unmount", async () => {
+  let a = h`<a :ref="el => (log.push('on'), () => log.push('off'))" :text="b"></a>`;
+  let state = sprae(a, { log: [], b: 1 });
   await tick();
-  is(state.log[0], a);
+  is(state.log, ['on']);
   is(a.outerHTML, `<a>1</a>`);
-  state.b = 2;
+  a[Symbol.dispose]()
   await tick();
-  is(a.outerHTML, `<a>2</a>`);
-  is(state.a, a, "Exposes to the state");
+  is(state.log, ['on', 'off']);
 });
