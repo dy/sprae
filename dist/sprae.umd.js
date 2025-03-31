@@ -164,10 +164,25 @@ var init_store = __esm({
 // core.js
 function sprae(el, values) {
   if (!el?.childNodes) return;
-  if (_state in el) {
+  if (el[_state]) {
     return Object.assign(el[_state], values);
   }
   const state = store(values || {}), offs = [], fx = [];
+  const init = (el2) => {
+    if (!el2.childNodes) return;
+    for (let i = 0; i < el2.attributes?.length; ) {
+      let attr2 = el2.attributes[i], update;
+      if (attr2.name[0] === ":") {
+        el2.removeAttribute(attr2.name);
+        for (let name of attr2.name.slice(1).split(":")) {
+          update = (directive[name] || directive.default)(el2, attr2.value, state, name);
+          fx.push(update), offs.push(effect(update));
+          if (el2[_state] === null) return;
+        }
+      } else i++;
+    }
+    for (let child of [...el2.childNodes]) init(child);
+  };
   init(el);
   if (!(_state in el)) {
     el[_state] = state;
@@ -178,22 +193,6 @@ function sprae(el, values) {
     el[_dispose] = () => (el[_off](), el[_off] = el[_on] = el[_dispose] = el[_state] = null);
   }
   return state;
-  function init(el2) {
-    if (!el2.childNodes) return;
-    for (let i = 0; i < el2.attributes?.length; ) {
-      let attr2 = el2.attributes[i], update;
-      if (attr2.name[0] === ":") {
-        el2.removeAttribute(attr2.name);
-        for (let name of attr2.name.slice(1).split(":")) {
-          update = (directive[name] || directive.default)(el2, attr2.value, state, name);
-          fx.push(update), offs.push(effect(update));
-          if (_state in el2) return;
-        }
-      } else i++;
-    }
-    for (let child of [...el2.childNodes]) init(child);
-  }
-  ;
 }
 var _dispose, _state, _on, _off, directive, dir, memo, parse, err, compile, frag;
 var init_core = __esm({
@@ -275,8 +274,7 @@ var init_if = __esm({
           if (curEl) curEl.remove(), curEl[_off]?.();
           if (curEl = newEl) {
             holder.before(curEl.content || curEl);
-            curEl[_state] === null && delete curEl[_state];
-            curEl[_state] ? curEl[_on]() : sprae(curEl, state);
+            curEl[_state] === null ? (delete curEl[_state], sprae(curEl, state)) : curEl[_on]();
           }
         }
       };
