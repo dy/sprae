@@ -33,7 +33,7 @@ export default function sprae(el, values) {
   if (!el?.childNodes) return
 
   // repeated call can be caused by :each with new objects with old keys needs an update
-  if (_state in el) {
+  if (el[_state]) {
     // we rewrite signals instead of update, because user should have what he provided
     return Object.assign(el[_state], values)
   }
@@ -41,23 +41,7 @@ export default function sprae(el, values) {
   // take over existing state instead of creating clone
   const state = store(values || {}), offs = [], fx = []
 
-  init(el);
-
-  // if element was spraed by inline :with instruction (meaning it has extended state) - skip, otherwise save _state
-  if (!(_state in el)) {
-    el[_state] = state
-
-    // on/off all effects
-    el[_off] = () => { while (offs.length) offs.pop()() }
-    el[_on] = () => offs.push(...fx.map(f => effect(f)))
-
-    // destroy
-    el[_dispose] = () => (el[_off](), el[_off] = el[_on] = el[_dispose] = el[_state] = null)
-  }
-
-  return state;
-
-  function init(el) {
+  const init = el => {
     // ignore text nodes, comments etc
     if (!el.childNodes) return
 
@@ -75,17 +59,34 @@ export default function sprae(el, values) {
           fx.push(update), offs.push(effect(update)) // save & start effect
 
           // stop after :each, :if, :with?
-          if (_state in el) return
+          if (el[_state]===null) return
         }
       } else i++;
     }
 
     for (let child of [...el.childNodes]) init(child);
   };
+
+  init(el);
+
+  // if element was spraed by inline :with instruction (meaning it has extended state) - skip, otherwise save _state
+  if (!(_state in el)) {
+    el[_state] = state
+
+    // on/off all effects
+    el[_off] = () => { while (offs.length) offs.pop()() }
+    el[_on] = () => offs.push(...fx.map(f => effect(f)))
+
+    // destroy
+    el[_dispose] = () => (el[_off](), el[_off] = el[_on] = el[_dispose] = el[_state] = null)
+  }
+
+  return state;
 }
 
 
 const memo = {};
+
 /**
  * Parses an expression into an evaluator function, caching the result for reuse.
  *

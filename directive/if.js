@@ -30,9 +30,10 @@ dir('if', (el, state) => {
       if (curEl) curEl.remove(), curEl[_off]?.();
       if (curEl = newEl) {
         holder.before(curEl.content || curEl)
-        curEl[_state] === null && delete curEl[_state] // remove fake memo to sprae as new
+        // remove fake memo to sprae as new
+        curEl[_state] === null ? (delete curEl[_state], sprae(curEl, state))
         // enable effects if branch is matched
-        curEl[_state] ? curEl[_on]() : sprae(curEl, state)
+        : curEl[_on]()
       }
     }
   };
