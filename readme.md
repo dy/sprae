@@ -352,7 +352,7 @@ sprae.use({
   compile,
 
   // custom prefix
-  prefix: '-s'
+  prefix: 's-'
 })
 ```
 
@@ -462,7 +462,7 @@ npm run results
 
 Sprae can work with JSX via custom prefix `sprae.use({prefix:'s-'})`.
 
-It can be useful as Next.js companion for SSR. Next.js server components fail at dynamic UI, like active nav, tabs, sliders etc, which forces into client components. But that screws up data fetching, bloats hydration and adds overhead. Sprae can offload UI logic to keep server components intact.
+It can be useful as Next.js companion for SSR. Next.js server components fail at dynamic UI, like active nav, tabs, sliders etc. That forces into client components, which screws up data fetching, bloats hydration and adds overhead. Sprae can offload UI logic to keep server components intact.
 
 ```jsx
 // app/page.jsx - server component
