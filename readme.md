@@ -36,7 +36,7 @@ UMD version enables sprae via CDN, as CJS, AMD etc.
 <script src="https://cdn.jsdelivr.net/npm/sprae/dist/sprae.umd.js" init="{ user: 'buddy' }"></script>
 
 <script>
-  window.sprae(el); // global standalone
+  window.sprae; // global standalone
 </script>
 ```
 
