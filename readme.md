@@ -352,7 +352,7 @@ sprae.use({
   compile,
 
   // custom prefix
-  prefix: '-s'
+  prefix: 's-'
 })
 ```
 
