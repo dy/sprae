@@ -128,11 +128,11 @@ function sprae(el, values) {
   const init = (el2) => {
     if (!el2.childNodes) return;
     for (let i = 0; i < el2.attributes?.length; ) {
-      let attr2 = el2.attributes[i], update;
-      if (attr2.name[0] === ":") {
-        el2.removeAttribute(attr2.name);
-        for (let name of attr2.name.slice(1).split(":")) {
-          update = (directive[name] || directive.default)(el2, attr2.value, state, name);
+      let { name, value } = el2.attributes[i], update, pfx = name[0] === ":" ? 1 : name[0] === "s" && name[1] === "-" ? 2 : 0;
+      if (pfx) {
+        el2.removeAttribute(name);
+        for (let dir2 of name.slice(pfx).split(":")) {
+          update = (directive[dir2] || directive.default)(el2, value, state, dir2);
           fx.push(update), offs.push(effect(update));
           if (el2[_state] === null) return;
         }
