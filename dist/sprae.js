@@ -315,11 +315,11 @@ var mods = {
   parent(ctx) {
     ctx.target = ctx.target.parentNode;
   },
-  throttle(ctx, limit) {
-    ctx.defer = (fn) => throttle(fn, limit ? +limit || 0 : 108);
+  throttle(ctx, limit = 108) {
+    ctx.defer = (fn) => throttle(fn, limit);
   },
-  debounce(ctx, wait) {
-    ctx.defer = (fn) => debounce(fn, wait ? +wait || 0 : 108);
+  debounce(ctx, wait = 108) {
+    ctx.defer = (fn) => debounce(fn, wait);
   },
   // test
   outside: (ctx) => (e) => {
