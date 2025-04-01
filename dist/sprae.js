@@ -111,10 +111,10 @@ var sprae = (el, values) => {
   if (el[_state]) return Object.assign(el[_state], values);
   let state = store(values || {}), offs = [], fx = [], init = (el2, attrs = el2.attributes) => {
     if (attrs) for (let i = 0; i < attrs.length; ) {
-      let { name, value } = attrs[i], pfx, update, dir2;
-      if (pfx = name[0] === ":" ? 1 : name[0] === "s" && name[1] === "-" ? 2 : 0) {
+      let { name, value } = attrs[i], update, dir2;
+      if (name.startsWith(prefix)) {
         el2.removeAttribute(name);
-        for (dir2 of name.slice(pfx).split(":")) {
+        for (dir2 of name.slice(prefix.length).split(":")) {
           update = (directive[dir2] || directive.default)(el2, value, state, dir2);
           fx.push(update), offs.push(effect(update));
           if (el2[_state] === null) return;
@@ -132,10 +132,7 @@ var sprae = (el, values) => {
   }
   return state;
 };
-sprae.use = (s) => {
-  s.signal && use(s);
-  s.compile && (compile = s.compile);
-};
+sprae.use = (s) => (s.signal && use(s), s.compile && (compile = s.compile), s.prefix && (prefix = s.prefix));
 var parse = (expr, dir2, fn) => {
   if (fn = memo[expr = expr.trim()]) return fn;
   try {
@@ -154,6 +151,7 @@ ${dir2}${expr ? `="${expr}"
 ` : ""}`, expr });
 };
 var compile;
+var prefix = ":";
 var frag = (tpl) => {
   if (!tpl.nodeType) return tpl;
   let content = tpl.content.cloneNode(true), attributes = [...tpl.attributes], ref = document.createTextNode(""), childNodes = (content.append(ref), [...content.childNodes]);

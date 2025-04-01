@@ -133,7 +133,7 @@ var init_store = __esm({
 });
 
 // core.js
-var _dispose, _state, _on, _off, directive, dir, sprae, parse, memo, err, compile, frag, core_default;
+var _dispose, _state, _on, _off, directive, dir, sprae, parse, memo, err, compile, prefix, frag, core_default;
 var init_core = __esm({
   "core.js"() {
     init_signal();
@@ -148,10 +148,10 @@ var init_core = __esm({
       if (el[_state]) return Object.assign(el[_state], values);
       let state = store(values || {}), offs = [], fx = [], init = (el2, attrs = el2.attributes) => {
         if (attrs) for (let i = 0; i < attrs.length; ) {
-          let { name, value } = attrs[i], pfx, update, dir2;
-          if (pfx = name[0] === ":" ? 1 : name[0] === "s" && name[1] === "-" ? 2 : 0) {
+          let { name, value } = attrs[i], update, dir2;
+          if (name.startsWith(prefix)) {
             el2.removeAttribute(name);
-            for (dir2 of name.slice(pfx).split(":")) {
+            for (dir2 of name.slice(prefix.length).split(":")) {
               update = (directive[dir2] || directive.default)(el2, value, state, dir2);
               fx.push(update), offs.push(effect(update));
               if (el2[_state] === null) return;
@@ -169,10 +169,7 @@ var init_core = __esm({
       }
       return state;
     };
-    sprae.use = (s) => {
-      s.signal && use(s);
-      s.compile && (compile = s.compile);
-    };
+    sprae.use = (s) => (s.signal && use(s), s.compile && (compile = s.compile), s.prefix && (prefix = s.prefix));
     parse = (expr, dir2, fn) => {
       if (fn = memo[expr = expr.trim()]) return fn;
       try {
@@ -190,6 +187,7 @@ ${dir2}${expr ? `="${expr}"
 
 ` : ""}`, expr });
     };
+    prefix = ":";
     frag = (tpl) => {
       if (!tpl.nodeType) return tpl;
       let content = tpl.content.cloneNode(true), attributes = [...tpl.attributes], ref = document.createTextNode(""), childNodes = (content.append(ref), [...content.childNodes]);
@@ -617,15 +615,16 @@ var init_sprae = __esm({
 
 // sprae.umd.cjs
 var { default: sprae2 } = (init_sprae(), __toCommonJS(sprae_exports));
-module.exports = sprae2;
-if (document.currentScript?.hasAttribute("init")) {
-  const props = JSON.parse(document.currentScript?.getAttribute("init") || "{}");
+var config = document.currentScript?.getAttribute("init");
+if (config != null) {
+  const props = JSON.parse(config || "{}");
   const init = () => {
     sprae2(document.documentElement, props);
   };
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", init);
   else init();
 }
+module.exports = sprae2;
 ;if (typeof module.exports == "object" && typeof exports == "object") {
   var __cp = (to, from, except, desc) => {
     if ((from && typeof from === "object") || typeof from === "function") {
