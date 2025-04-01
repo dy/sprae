@@ -371,10 +371,10 @@ var init_default = __esm({
         ctx.target = ctx.target.parentNode;
       },
       throttle(ctx, limit) {
-        ctx.defer = (fn) => throttle(fn, limit ? Number(limit) || 0 : 108);
+        ctx.defer = (fn) => throttle(fn, limit ? +limit || 0 : 108);
       },
       debounce(ctx, wait) {
-        ctx.defer = (fn) => debounce(fn, wait ? Number(wait) || 0 : 108);
+        ctx.defer = (fn) => debounce(fn, wait ? +wait || 0 : 108);
       },
       // test
       outside: (ctx) => (e) => {
