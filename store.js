@@ -17,31 +17,29 @@ export const _signals = Symbol('signals'), _change = Symbol('change'),
     if (values.constructor !== Object || values[Symbol.toStringTag]) return values;
 
     // NOTE: if you decide to unlazy values, think about large arrays - init upfront can be costly
-    let signals = { ...parent?.[_signals] }, _len = signal(Object.values(values).length)
+    let signals = { ...parent?.[_signals] }, _len = signal(Object.values(values).length),
 
-    // proxy conducts prop access to signals
-    const state = new Proxy(signals, {
-      get: (_, key) => key === _change ? _len : key === _signals ? signals : signals[key]?.valueOf(),
-      set: (_, key, v, s) => (s = signals[key], set(signals, key, v), s ?? (++_len.value), 1), // bump length for new signal
-      deleteProperty: (_, key) => (signals[key] && (signals[key][Symbol.dispose]?.(), delete signals[key], _len.value--), 1),
-      // subscribe to length when object is spread
-      ownKeys: () => (_len.value, Reflect.ownKeys(signals)),
-    })
+      // proxy conducts prop access to signals
+      state = new Proxy(signals, {
+        get: (_, key) => key === _change ? _len : key === _signals ? signals : signals[key]?.valueOf(),
+        set: (_, key, v, s) => (s = signals[key], set(signals, key, v), s ?? (++_len.value), 1), // bump length for new signal
+        deleteProperty: (_, key) => (signals[key] && (signals[key][Symbol.dispose]?.(), delete signals[key], _len.value--), 1),
+        // subscribe to length when object is spread
+        ownKeys: () => (_len.value, Reflect.ownKeys(signals)),
+      }),
 
-    // init signals for values
+      // init signals for values
+      descs = Object.getOwnPropertyDescriptors(values), desc
+
     for (let key in values) {
-      const desc = Object.getOwnPropertyDescriptor(values, key)
-
       // getter turns into computed
-      if (desc?.get) {
+      if ((desc = descs[key])?.get)
         // stash setter
         (signals[key] = computed(desc.get.bind(state)))._set = desc.set?.bind(state);
-      }
-      else {
+
+      else
         // init blank signal - make sure we don't take prototype one
-        signals[key] = null
-        set(signals, key, values[key]);
-      }
+        signals[key] = null, set(signals, key, values[key]);
     }
 
     return state
