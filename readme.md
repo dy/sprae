@@ -456,7 +456,7 @@ npm run results
 
 ## JSX
 
-Sprae works with JSX, eg. Next.js companion for SSR via `s-` prefixed attributes.
+Sprae works with JSX via `s-` attributes, eg. Next.js companion for SSR.
 
 Next.js server components fail at dynamic UI, like active nav, tabs, sliders etc. That forces into client components, which screws up data fetching, bloats hydration and adds overhead.`<Script>` is heavy and clunky hack. Sprae can offload UI logic to keep server components intact.
 
