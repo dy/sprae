@@ -75,23 +75,19 @@ var init_store = __esm({
       if (values[_signals]) return values;
       if (Array.isArray(values)) return list(values);
       if (values.constructor !== Object || values[Symbol.toStringTag]) return values;
-      let signals = { ...parent?.[_signals] }, _len = signal(Object.values(values).length);
-      const state = new Proxy(signals, {
+      let signals = { ...parent?.[_signals] }, _len = signal(Object.values(values).length), state = new Proxy(signals, {
         get: (_, key) => key === _change ? _len : key === _signals ? signals : signals[key]?.valueOf(),
         set: (_, key, v, s) => (s = signals[key], set(signals, key, v), s ?? ++_len.value, 1),
         // bump length for new signal
         deleteProperty: (_, key) => (signals[key] && (signals[key][Symbol.dispose]?.(), delete signals[key], _len.value--), 1),
         // subscribe to length when object is spread
         ownKeys: () => (_len.value, Reflect.ownKeys(signals))
-      });
+      }), descs = Object.getOwnPropertyDescriptors(values), desc;
       for (let key in values) {
-        const desc = Object.getOwnPropertyDescriptor(values, key);
-        if (desc?.get) {
+        if ((desc = descs[key])?.get)
           (signals[key] = computed(desc.get.bind(state)))._set = desc.set?.bind(state);
-        } else {
-          signals[key] = null;
-          set(signals, key, values[key]);
-        }
+        else
+          signals[key] = null, set(signals, key, values[key]);
       }
       return state;
     };
