@@ -72,9 +72,8 @@ var init_store = __esm({
     _change = Symbol("change");
     store = (values, parent) => {
       if (!values) return values;
-      if (values[_signals]) return values;
-      if (Array.isArray(values)) return list(values);
-      if (values.constructor !== Object || values[Symbol.toStringTag]) return values;
+      if (values[_signals] || values[Symbol.toStringTag]) return values;
+      if (values.constructor !== Object) return Array.isArray(values) ? list(values) : values;
       let signals = { ...parent?.[_signals] }, _len = signal(Object.values(values).length), state = new Proxy(signals, {
         get: (_, key) => key === _change ? _len : key === _signals ? signals : signals[key]?.valueOf(),
         set: (_, key, v, s) => (s = signals[key], set(signals, key, v), s ?? ++_len.value, 1),
@@ -92,10 +91,7 @@ var init_store = __esm({
       return state;
     };
     list = (values) => {
-      let lastProp;
-      if (values[_signals]) return values;
-      let _len = signal(values.length), signals = Array(values.length).fill();
-      const state = new Proxy(signals, {
+      let lastProp, _len = signal(values.length), signals = Array(values.length).fill(), state = new Proxy(signals, {
         get(_, key) {
           if (typeof key === "symbol") return key === _change ? _len : key === _signals ? signals : signals[key];
           if (key === "length") return mut.includes(lastProp) ? _len.peek() : _len.value;
@@ -107,11 +103,11 @@ var init_store = __esm({
           if (key === "length") {
             for (let i = v; i < signals.length; i++) delete state[i];
             _len.value = signals.length = v;
-            return true;
+          } else {
+            set(signals, key, v);
+            if (key >= _len.peek()) _len.value = signals.length = +key + 1;
           }
-          set(signals, key, v);
-          if (key >= _len.peek()) _len.value = signals.length = +key + 1;
-          return true;
+          return 1;
         },
         deleteProperty: (_, key) => (signals[key]?.[Symbol.dispose]?.(), delete signals[key], 1)
       });
@@ -119,13 +115,12 @@ var init_store = __esm({
     };
     mut = ["push", "pop", "shift", "unshift", "splice"];
     set = (signals, key, v) => {
-      let s = signals[key];
+      let s = signals[key], cur;
       if (key[0] === "_") signals[key] = v;
       else if (!s) signals[key] = s = v?.peek ? v : signal(store(v));
-      else if (v === s.peek()) ;
+      else if (v === (cur = s.peek())) ;
       else if (s._set) s._set(v);
-      else if (Array.isArray(v) && Array.isArray(s.peek())) {
-        const cur = s.peek();
+      else if (Array.isArray(v) && Array.isArray(cur)) {
         if (cur[_change]) batch(() => {
           for (let i = 0; i < v.length; i++) cur[i] = v[i];
           cur.length = v.length;
@@ -138,35 +133,7 @@ var init_store = __esm({
 });
 
 // core.js
-function sprae(el, values) {
-  if (el[_state]) return Object.assign(el[_state], values);
-  const state = store(values || {}), offs = [], fx = [];
-  const init = (el2, attrs = el2.attributes) => {
-    if (attrs) for (let i = 0; i < attrs.length; ) {
-      let { name, value } = attrs[i], pfx, update, dir2;
-      if (pfx = name[0] === ":" ? 1 : name[0] === "s" && name[1] === "-" ? 2 : 0) {
-        el2.removeAttribute(name);
-        for (dir2 of name.slice(pfx).split(":")) {
-          update = (directive[dir2] || directive.default)(el2, value, state, dir2);
-          fx.push(update), offs.push(effect(update));
-          if (el2[_state] === null) return;
-        }
-      } else i++;
-    }
-    for (let child of el2.childNodes) child.nodeType == 1 && init(child);
-  };
-  init(el);
-  if (!(_state in el)) {
-    el[_state] = state;
-    el[_off] = () => {
-      while (offs.length) offs.pop()();
-    };
-    el[_on] = () => offs.push(...fx.map((f) => effect(f)));
-    el[_dispose] = () => (el[_off](), el[_off] = el[_on] = el[_dispose] = el[_state] = null);
-  }
-  return state;
-}
-var _dispose, _state, _on, _off, directive, dir, parse, memo, err, compile, frag;
+var _dispose, _state, _on, _off, directive, dir, sprae, parse, memo, err, compile, frag, core_default;
 var init_core = __esm({
   "core.js"() {
     init_signal();
@@ -177,6 +144,35 @@ var init_core = __esm({
     _off = Symbol("off");
     directive = {};
     dir = (name, create, p = parse) => directive[name] = (el, expr, state, name2, update, evaluate) => (evaluate = p(expr), update = create(el, state, expr, name2, evaluate), () => update(evaluate(state)));
+    sprae = (el, values) => {
+      if (el[_state]) return Object.assign(el[_state], values);
+      let state = store(values || {}), offs = [], fx = [], init = (el2, attrs = el2.attributes) => {
+        if (attrs) for (let i = 0; i < attrs.length; ) {
+          let { name, value } = attrs[i], pfx, update, dir2;
+          if (pfx = name[0] === ":" ? 1 : name[0] === "s" && name[1] === "-" ? 2 : 0) {
+            el2.removeAttribute(name);
+            for (dir2 of name.slice(pfx).split(":")) {
+              update = (directive[dir2] || directive.default)(el2, value, state, dir2);
+              fx.push(update), offs.push(effect(update));
+              if (el2[_state] === null) return;
+            }
+          } else i++;
+        }
+        for (let child of el2.childNodes) child.nodeType == 1 && init(child);
+      };
+      init(el);
+      if (!(_state in el)) {
+        el[_state] = state;
+        el[_off] = () => (offs.map((off) => off()), offs = []);
+        el[_on] = () => offs = fx.map((f) => effect(f));
+        el[_dispose] = () => (el[_off](), el[_off] = el[_on] = el[_dispose] = el[_state] = null);
+      }
+      return state;
+    };
+    sprae.use = (s) => {
+      s.signal && use(s);
+      s.compile && (compile = s.compile);
+    };
     parse = (expr, dir2, fn) => {
       if (fn = memo[expr = expr.trim()]) return fn;
       try {
@@ -193,10 +189,6 @@ var init_core = __esm({
 ${dir2}${expr ? `="${expr}"
 
 ` : ""}`, expr });
-    };
-    sprae.use = (s) => {
-      s.signal && use(s);
-      s.compile && (compile = s.compile);
     };
     frag = (tpl) => {
       if (!tpl.nodeType) return tpl;
@@ -218,6 +210,7 @@ ${dir2}${expr ? `="${expr}"
         // setAttributeNode() { }
       };
     };
+    core_default = sprae;
   }
 });
 
@@ -228,7 +221,7 @@ var init_if = __esm({
     init_core();
     _prevIf = Symbol("if");
     dir("if", (el, state) => {
-      const holder = document.createTextNode("");
+      let holder = document.createTextNode("");
       let next = el.nextElementSibling, curEl, ifEl, elseEl;
       el.replaceWith(holder);
       ifEl = el.content ? frag(el) : el;
@@ -237,14 +230,13 @@ var init_if = __esm({
         next.removeAttribute(":else");
         if (!next.hasAttribute(":if")) next.remove(), elseEl = next.content ? frag(next) : next, elseEl[_state] = null;
       }
-      return (value) => {
-        const newEl = value ? ifEl : el[_prevIf] ? null : elseEl;
+      return (value, newEl = value ? ifEl : el[_prevIf] ? null : elseEl) => {
         if (next) next[_prevIf] = newEl === ifEl;
         if (curEl != newEl) {
           if (curEl) curEl.remove(), curEl[_off]?.();
           if (curEl = newEl) {
             holder.before(curEl.content || curEl);
-            curEl[_state] === null ? (delete curEl[_state], sprae(curEl, state)) : curEl[_on]();
+            curEl[_state] === null ? (delete curEl[_state], core_default(curEl, state)) : curEl[_on]();
           }
         }
       };
@@ -261,12 +253,10 @@ var init_each = __esm({
     dir(
       "each",
       (tpl, state, expr) => {
-        const [itemVar, idxVar = "$"] = expr.split(/\s+in\s+/)[0].split(/\s*,\s*/);
-        const holder = document.createTextNode("");
-        tpl.replaceWith(holder);
-        tpl[_state] = null;
+        let [itemVar, idxVar = "$"] = expr.split(/\bin\b/)[0].trim().split(/\s*,\s*/);
+        let holder = document.createTextNode("");
         let cur, keys2, items, prevl = 0;
-        const update = () => {
+        let update = () => {
           var _a, _b;
           let i = 0, newItems = items, newl = newItems.length;
           if (cur && !cur[_change]) {
@@ -284,7 +274,7 @@ var init_each = __esm({
                 [idxVar]: keys2 ? keys2[idx] : idx
               }, state), el = tpl.content ? frag(tpl) : tpl.cloneNode(true);
               holder.before(el.content || el);
-              sprae(el, scope);
+              core_default(el, scope);
               ((_b = cur[_a = _signals] || (cur[_a] = []))[i] || (_b[i] = {}))[Symbol.dispose] = () => {
                 el[Symbol.dispose]?.(), el.remove();
               };
@@ -292,6 +282,8 @@ var init_each = __esm({
           }
           prevl = newl;
         };
+        tpl.replaceWith(holder);
+        tpl[_state] = null;
         return (value) => {
           keys2 = null;
           if (typeof value === "number") items = Array.from({ length: value }, (_, i) => i + 1);
@@ -305,7 +297,7 @@ var init_each = __esm({
         };
       },
       // redefine evaluator to take second part of expression
-      (expr) => parse(expr.split(/\s+in\s+/)[1])
+      (expr) => parse(expr.split(/\bin\b/)[1])
     );
   }
 });
@@ -320,7 +312,7 @@ var init_default = __esm({
         return name ? (value) => attr(target, name, value) : (value) => {
           for (let key in value) attr(target, dashcase(key), value[key]);
         };
-      const ctxs = name.split("..").map((e) => {
+      let ctxs = name.split("..").map((e) => {
         let ctx = { evt: "", target, test: () => true };
         ctx.evt = (e.startsWith("on") ? e.slice(2) : e).replace(
           /\.(\w+)?-?([-\w]+)?/g,
@@ -328,9 +320,9 @@ var init_default = __esm({
         );
         return ctx;
       });
-      const addListener = (fn, { evt, target: target2, test, defer, stop, prevent, immediate, ...opts }) => {
+      let addListener = (fn, { evt, target: target2, test, defer, stop, prevent, immediate, ...opts }, cb) => {
         if (defer) fn = defer(fn);
-        const cb = (e) => {
+        cb = (e) => {
           try {
             test(e) && (stop && (immediate ? e.stopImmediatePropagation() : e.stopPropagation()), prevent && e.preventDefault(), fn?.call(state, e));
           } catch (error) {
@@ -342,7 +334,7 @@ var init_default = __esm({
       };
       if (ctxs.length == 1) return (v) => addListener(v, ctxs[0]);
       let startFn, nextFn, off, idx = 0;
-      const nextListener = (fn) => {
+      let nextListener = (fn) => {
         off = addListener((e) => (off(), nextFn = fn?.(e), (idx = ++idx % ctxs.length) ? nextListener(nextFn) : startFn && nextListener(startFn)), ctxs[idx]);
       };
       return (value) => (startFn = value, !off && nextListener(startFn), () => startFn = null);
@@ -484,7 +476,7 @@ var init_value = __esm({
         el.oninput = el.onchange = handleChange;
         if (el.type?.startsWith("select")) {
           new MutationObserver(handleChange).observe(el, { childList: true, subtree: true, attributes: true });
-          sprae(el, state);
+          core_default(el, state);
         }
       } catch {
       }
@@ -515,7 +507,7 @@ var init_with = __esm({
   "directive/with.js"() {
     init_core();
     init_store();
-    dir("with", (el, rootState, state) => (state = null, (values) => sprae(el, state ? values : state = store_default(values, rootState))));
+    dir("with", (el, rootState, state) => (state = null, (values) => core_default(el, state ? values : state = store_default(values, rootState))));
   }
 });
 
@@ -618,8 +610,8 @@ var init_sprae = __esm({
     init_default();
     init_aria();
     init_data();
-    sprae.use({ compile: (expr) => sprae.constructor(`with (arguments[0]) { return ${expr} };`) });
-    sprae_default = sprae;
+    core_default.use({ compile: (expr) => core_default.constructor(`with (arguments[0]) { return ${expr} };`) });
+    sprae_default = core_default;
   }
 });
 

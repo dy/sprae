@@ -42,9 +42,8 @@ var _signals = Symbol("signals");
 var _change = Symbol("change");
 var store = (values, parent) => {
   if (!values) return values;
-  if (values[_signals]) return values;
-  if (Array.isArray(values)) return list(values);
-  if (values.constructor !== Object || values[Symbol.toStringTag]) return values;
+  if (values[_signals] || values[Symbol.toStringTag]) return values;
+  if (values.constructor !== Object) return Array.isArray(values) ? list(values) : values;
   let signals = { ...parent?.[_signals] }, _len = signal(Object.values(values).length), state = new Proxy(signals, {
     get: (_, key) => key === _change ? _len : key === _signals ? signals : signals[key]?.valueOf(),
     set: (_, key, v, s) => (s = signals[key], set(signals, key, v), s ?? ++_len.value, 1),
@@ -62,10 +61,7 @@ var store = (values, parent) => {
   return state;
 };
 var list = (values) => {
-  let lastProp;
-  if (values[_signals]) return values;
-  let _len = signal(values.length), signals = Array(values.length).fill();
-  const state = new Proxy(signals, {
+  let lastProp, _len = signal(values.length), signals = Array(values.length).fill(), state = new Proxy(signals, {
     get(_, key) {
       if (typeof key === "symbol") return key === _change ? _len : key === _signals ? signals : signals[key];
       if (key === "length") return mut.includes(lastProp) ? _len.peek() : _len.value;
@@ -77,11 +73,11 @@ var list = (values) => {
       if (key === "length") {
         for (let i = v; i < signals.length; i++) delete state[i];
         _len.value = signals.length = v;
-        return true;
+      } else {
+        set(signals, key, v);
+        if (key >= _len.peek()) _len.value = signals.length = +key + 1;
       }
-      set(signals, key, v);
-      if (key >= _len.peek()) _len.value = signals.length = +key + 1;
-      return true;
+      return 1;
     },
     deleteProperty: (_, key) => (signals[key]?.[Symbol.dispose]?.(), delete signals[key], 1)
   });
@@ -89,13 +85,12 @@ var list = (values) => {
 };
 var mut = ["push", "pop", "shift", "unshift", "splice"];
 var set = (signals, key, v) => {
-  let s = signals[key];
+  let s = signals[key], cur;
   if (key[0] === "_") signals[key] = v;
   else if (!s) signals[key] = s = v?.peek ? v : signal(store(v));
-  else if (v === s.peek()) ;
+  else if (v === (cur = s.peek())) ;
   else if (s._set) s._set(v);
-  else if (Array.isArray(v) && Array.isArray(s.peek())) {
-    const cur = s.peek();
+  else if (Array.isArray(v) && Array.isArray(cur)) {
     if (cur[_change]) batch(() => {
       for (let i = 0; i < v.length; i++) cur[i] = v[i];
       cur.length = v.length;
@@ -112,10 +107,9 @@ var _on = Symbol("on");
 var _off = Symbol("off");
 var directive = {};
 var dir = (name, create, p = parse) => directive[name] = (el, expr, state, name2, update, evaluate) => (evaluate = p(expr), update = create(el, state, expr, name2, evaluate), () => update(evaluate(state)));
-function sprae(el, values) {
+var sprae = (el, values) => {
   if (el[_state]) return Object.assign(el[_state], values);
-  const state = store(values || {}), offs = [], fx = [];
-  const init = (el2, attrs = el2.attributes) => {
+  let state = store(values || {}), offs = [], fx = [], init = (el2, attrs = el2.attributes) => {
     if (attrs) for (let i = 0; i < attrs.length; ) {
       let { name, value } = attrs[i], pfx, update, dir2;
       if (pfx = name[0] === ":" ? 1 : name[0] === "s" && name[1] === "-" ? 2 : 0) {
@@ -132,14 +126,16 @@ function sprae(el, values) {
   init(el);
   if (!(_state in el)) {
     el[_state] = state;
-    el[_off] = () => {
-      while (offs.length) offs.pop()();
-    };
-    el[_on] = () => offs.push(...fx.map((f) => effect(f)));
+    el[_off] = () => (offs.map((off) => off()), offs = []);
+    el[_on] = () => offs = fx.map((f) => effect(f));
     el[_dispose] = () => (el[_off](), el[_off] = el[_on] = el[_dispose] = el[_state] = null);
   }
   return state;
-}
+};
+sprae.use = (s) => {
+  s.signal && use(s);
+  s.compile && (compile = s.compile);
+};
 var parse = (expr, dir2, fn) => {
   if (fn = memo[expr = expr.trim()]) return fn;
   try {
@@ -158,10 +154,6 @@ ${dir2}${expr ? `="${expr}"
 ` : ""}`, expr });
 };
 var compile;
-sprae.use = (s) => {
-  s.signal && use(s);
-  s.compile && (compile = s.compile);
-};
 var frag = (tpl) => {
   if (!tpl.nodeType) return tpl;
   let content = tpl.content.cloneNode(true), attributes = [...tpl.attributes], ref = document.createTextNode(""), childNodes = (content.append(ref), [...content.childNodes]);
@@ -182,11 +174,12 @@ var frag = (tpl) => {
     // setAttributeNode() { }
   };
 };
+var core_default = sprae;
 
 // directive/if.js
 var _prevIf = Symbol("if");
 dir("if", (el, state) => {
-  const holder = document.createTextNode("");
+  let holder = document.createTextNode("");
   let next = el.nextElementSibling, curEl, ifEl, elseEl;
   el.replaceWith(holder);
   ifEl = el.content ? frag(el) : el;
@@ -195,14 +188,13 @@ dir("if", (el, state) => {
     next.removeAttribute(":else");
     if (!next.hasAttribute(":if")) next.remove(), elseEl = next.content ? frag(next) : next, elseEl[_state] = null;
   }
-  return (value) => {
-    const newEl = value ? ifEl : el[_prevIf] ? null : elseEl;
+  return (value, newEl = value ? ifEl : el[_prevIf] ? null : elseEl) => {
     if (next) next[_prevIf] = newEl === ifEl;
     if (curEl != newEl) {
       if (curEl) curEl.remove(), curEl[_off]?.();
       if (curEl = newEl) {
         holder.before(curEl.content || curEl);
-        curEl[_state] === null ? (delete curEl[_state], sprae(curEl, state)) : curEl[_on]();
+        curEl[_state] === null ? (delete curEl[_state], core_default(curEl, state)) : curEl[_on]();
       }
     }
   };
@@ -212,12 +204,10 @@ dir("if", (el, state) => {
 dir(
   "each",
   (tpl, state, expr) => {
-    const [itemVar, idxVar = "$"] = expr.split(/\s+in\s+/)[0].split(/\s*,\s*/);
-    const holder = document.createTextNode("");
-    tpl.replaceWith(holder);
-    tpl[_state] = null;
+    let [itemVar, idxVar = "$"] = expr.split(/\bin\b/)[0].trim().split(/\s*,\s*/);
+    let holder = document.createTextNode("");
     let cur, keys2, items, prevl = 0;
-    const update = () => {
+    let update = () => {
       var _a, _b;
       let i = 0, newItems = items, newl = newItems.length;
       if (cur && !cur[_change]) {
@@ -235,7 +225,7 @@ dir(
             [idxVar]: keys2 ? keys2[idx] : idx
           }, state), el = tpl.content ? frag(tpl) : tpl.cloneNode(true);
           holder.before(el.content || el);
-          sprae(el, scope);
+          core_default(el, scope);
           ((_b = cur[_a = _signals] || (cur[_a] = []))[i] || (_b[i] = {}))[Symbol.dispose] = () => {
             el[Symbol.dispose]?.(), el.remove();
           };
@@ -243,6 +233,8 @@ dir(
       }
       prevl = newl;
     };
+    tpl.replaceWith(holder);
+    tpl[_state] = null;
     return (value) => {
       keys2 = null;
       if (typeof value === "number") items = Array.from({ length: value }, (_, i) => i + 1);
@@ -256,7 +248,7 @@ dir(
     };
   },
   // redefine evaluator to take second part of expression
-  (expr) => parse(expr.split(/\s+in\s+/)[1])
+  (expr) => parse(expr.split(/\bin\b/)[1])
 );
 
 // directive/default.js
@@ -265,7 +257,7 @@ dir("default", (target, state, expr, name) => {
     return name ? (value) => attr(target, name, value) : (value) => {
       for (let key in value) attr(target, dashcase(key), value[key]);
     };
-  const ctxs = name.split("..").map((e) => {
+  let ctxs = name.split("..").map((e) => {
     let ctx = { evt: "", target, test: () => true };
     ctx.evt = (e.startsWith("on") ? e.slice(2) : e).replace(
       /\.(\w+)?-?([-\w]+)?/g,
@@ -273,9 +265,9 @@ dir("default", (target, state, expr, name) => {
     );
     return ctx;
   });
-  const addListener = (fn, { evt, target: target2, test, defer, stop, prevent, immediate, ...opts }) => {
+  let addListener = (fn, { evt, target: target2, test, defer, stop, prevent, immediate, ...opts }, cb) => {
     if (defer) fn = defer(fn);
-    const cb = (e) => {
+    cb = (e) => {
       try {
         test(e) && (stop && (immediate ? e.stopImmediatePropagation() : e.stopPropagation()), prevent && e.preventDefault(), fn?.call(state, e));
       } catch (error) {
@@ -287,7 +279,7 @@ dir("default", (target, state, expr, name) => {
   };
   if (ctxs.length == 1) return (v) => addListener(v, ctxs[0]);
   let startFn, nextFn, off, idx = 0;
-  const nextListener = (fn) => {
+  let nextListener = (fn) => {
     off = addListener((e) => (off(), nextFn = fn?.(e), (idx = ++idx % ctxs.length) ? nextListener(nextFn) : startFn && nextListener(startFn)), ctxs[idx]);
   };
   return (value) => (startFn = value, !off && nextListener(startFn), () => startFn = null);
@@ -421,7 +413,7 @@ dir("value", (el, state, expr) => {
     el.oninput = el.onchange = handleChange;
     if (el.type?.startsWith("select")) {
       new MutationObserver(handleChange).observe(el, { childList: true, subtree: true, attributes: true });
-      sprae(el, state);
+      core_default(el, state);
     }
   } catch {
   }
@@ -440,7 +432,7 @@ var ensure = (state, expr, name = expr.match(/^\w+(?=\s*(?:\.|\[|$))/)) => {
 dir("ref", (el, state, expr, _, ev) => (ensure(state, expr), ev(state) == null ? (setter(expr)(state, el), (_2) => _2) : (v) => v.call(null, el)));
 
 // directive/with.js
-dir("with", (el, rootState, state) => (state = null, (values) => sprae(el, state ? values : state = store_default(values, rootState))));
+dir("with", (el, rootState, state) => (state = null, (values) => core_default(el, state ? values : state = store_default(values, rootState))));
 
 // directive/text.js
 dir("text", (el) => (
@@ -490,8 +482,8 @@ dir("data", (el) => (value) => {
 });
 
 // sprae.js
-sprae.use({ compile: (expr) => sprae.constructor(`with (arguments[0]) { return ${expr} };`) });
-var sprae_default = sprae;
+core_default.use({ compile: (expr) => core_default.constructor(`with (arguments[0]) { return ${expr} };`) });
+var sprae_default = core_default;
 export {
   sprae_default as default
 };
