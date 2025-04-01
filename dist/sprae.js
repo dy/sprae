@@ -35,18 +35,12 @@ var computed = (fn, s = signal(), c, e) => (c = {
 }, c.toJSON = c.then = c.toString = c.valueOf = () => c.value, c);
 var batch = (fn) => fn();
 var untracked = batch;
-function use(s) {
-  signal = s.signal;
-  effect = s.effect;
-  computed = s.computed;
-  batch = s.batch || batch;
-  untracked = s.untracked || batch;
-}
+var use = (s) => (signal = s.signal, effect = s.effect, computed = s.computed, batch = s.batch || batch, untracked = s.untracked || untracked);
 
 // store.js
 var _signals = Symbol("signals");
 var _change = Symbol("change");
-function store(values, parent) {
+var store = (values, parent) => {
   if (!values) return values;
   if (values[_signals]) return values;
   if (Array.isArray(values)) return list(values);
@@ -70,9 +64,8 @@ function store(values, parent) {
     }
   }
   return state;
-}
-var mut = ["push", "pop", "shift", "unshift", "splice"];
-function list(values) {
+};
+var list = (values) => {
   let lastProp;
   if (values[_signals]) return values;
   let _len = signal(values.length), signals = Array(values.length).fill();
@@ -97,8 +90,9 @@ function list(values) {
     deleteProperty: (_, key) => (signals[key]?.[Symbol.dispose]?.(), delete signals[key], 1)
   });
   return state;
-}
-function set(signals, key, v) {
+};
+var mut = ["push", "pop", "shift", "unshift", "splice"];
+var set = (signals, key, v) => {
   let s = signals[key];
   if (key[0] === "_") signals[key] = v;
   else if (!s) signals[key] = s = v?.peek ? v : signal(store(v));
@@ -112,7 +106,8 @@ function set(signals, key, v) {
     });
     else s.value = v;
   } else s.value = store(v);
-}
+};
+var store_default = store;
 
 // core.js
 var _dispose = Symbol.dispose || (Symbol.dispose = Symbol("dispose"));
@@ -239,7 +234,7 @@ dir(
         else while (i < prevl) cur[i] = newItems[i++];
         for (; i < newl; i++) {
           cur[i] = newItems[i];
-          let idx = i, scope = store({
+          let idx = i, scope = store_default({
             [itemVar]: cur[_signals]?.[idx] || cur[idx],
             [idxVar]: keys2 ? keys2[idx] : idx
           }, state), el = tpl.content ? frag(tpl) : tpl.cloneNode(true);
@@ -449,7 +444,7 @@ var ensure = (state, expr, name = expr.match(/^\w+(?=\s*(?:\.|\[|$))/)) => {
 dir("ref", (el, state, expr, _, ev) => (ensure(state, expr), ev(state) == null ? (setter(expr)(state, el), (_2) => _2) : (v) => v.call(null, el)));
 
 // directive/with.js
-dir("with", (el, rootState, state) => (state = null, (values) => sprae(el, state ? values : state = store(values, rootState))));
+dir("with", (el, rootState, state) => (state = null, (values) => sprae(el, state ? values : state = store_default(values, rootState))));
 
 // directive/text.js
 dir("text", (el) => (

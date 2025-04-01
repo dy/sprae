@@ -21,14 +21,7 @@ var __copyProps = (to, from, except, desc) => {
 var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: true }), mod);
 
 // signal.js
-function use(s) {
-  signal = s.signal;
-  effect = s.effect;
-  computed = s.computed;
-  batch = s.batch || batch;
-  untracked = s.untracked || batch;
-}
-var current, signal, effect, computed, batch, untracked;
+var current, signal, effect, computed, batch, untracked, use;
 var init_signal = __esm({
   "signal.js"() {
     signal = (v, s, obs = /* @__PURE__ */ new Set()) => (s = {
@@ -66,83 +59,85 @@ var init_signal = __esm({
     }, c.toJSON = c.then = c.toString = c.valueOf = () => c.value, c);
     batch = (fn) => fn();
     untracked = batch;
+    use = (s) => (signal = s.signal, effect = s.effect, computed = s.computed, batch = s.batch || batch, untracked = s.untracked || untracked);
   }
 });
 
 // store.js
-function store(values, parent) {
-  if (!values) return values;
-  if (values[_signals]) return values;
-  if (Array.isArray(values)) return list(values);
-  if (values.constructor !== Object || values[Symbol.toStringTag]) return values;
-  let signals = { ...parent?.[_signals] }, _len = signal(Object.values(values).length);
-  const state = new Proxy(signals, {
-    get: (_, key) => key === _change ? _len : key === _signals ? signals : signals[key]?.valueOf(),
-    set: (_, key, v, s) => (s = signals[key], set(signals, key, v), s ?? ++_len.value, 1),
-    // bump length for new signal
-    deleteProperty: (_, key) => (signals[key] && (signals[key][Symbol.dispose]?.(), delete signals[key], _len.value--), 1),
-    // subscribe to length when object is spread
-    ownKeys: () => (_len.value, Reflect.ownKeys(signals))
-  });
-  for (let key in values) {
-    const desc = Object.getOwnPropertyDescriptor(values, key);
-    if (desc?.get) {
-      (signals[key] = computed(desc.get.bind(state)))._set = desc.set?.bind(state);
-    } else {
-      signals[key] = null;
-      set(signals, key, values[key]);
-    }
-  }
-  return state;
-}
-function list(values) {
-  let lastProp;
-  if (values[_signals]) return values;
-  let _len = signal(values.length), signals = Array(values.length).fill();
-  const state = new Proxy(signals, {
-    get(_, key) {
-      if (typeof key === "symbol") return key === _change ? _len : key === _signals ? signals : signals[key];
-      if (key === "length") return mut.includes(lastProp) ? _len.peek() : _len.value;
-      lastProp = key;
-      if (signals[key]) return signals[key].valueOf();
-      if (key < signals.length) return (signals[key] = signal(store(values[key]))).value;
-    },
-    set(_, key, v) {
-      if (key === "length") {
-        for (let i = v; i < signals.length; i++) delete state[i];
-        _len.value = signals.length = v;
-        return true;
-      }
-      set(signals, key, v);
-      if (key >= _len.peek()) _len.value = signals.length = +key + 1;
-      return true;
-    },
-    deleteProperty: (_, key) => (signals[key]?.[Symbol.dispose]?.(), delete signals[key], 1)
-  });
-  return state;
-}
-function set(signals, key, v) {
-  let s = signals[key];
-  if (key[0] === "_") signals[key] = v;
-  else if (!s) signals[key] = s = v?.peek ? v : signal(store(v));
-  else if (v === s.peek()) ;
-  else if (s._set) s._set(v);
-  else if (Array.isArray(v) && Array.isArray(s.peek())) {
-    const cur = s.peek();
-    if (cur[_change]) batch(() => {
-      for (let i = 0; i < v.length; i++) cur[i] = v[i];
-      cur.length = v.length;
-    });
-    else s.value = v;
-  } else s.value = store(v);
-}
-var _signals, _change, mut;
+var _signals, _change, store, list, mut, set, store_default;
 var init_store = __esm({
   "store.js"() {
     init_signal();
     _signals = Symbol("signals");
     _change = Symbol("change");
+    store = (values, parent) => {
+      if (!values) return values;
+      if (values[_signals]) return values;
+      if (Array.isArray(values)) return list(values);
+      if (values.constructor !== Object || values[Symbol.toStringTag]) return values;
+      let signals = { ...parent?.[_signals] }, _len = signal(Object.values(values).length);
+      const state = new Proxy(signals, {
+        get: (_, key) => key === _change ? _len : key === _signals ? signals : signals[key]?.valueOf(),
+        set: (_, key, v, s) => (s = signals[key], set(signals, key, v), s ?? ++_len.value, 1),
+        // bump length for new signal
+        deleteProperty: (_, key) => (signals[key] && (signals[key][Symbol.dispose]?.(), delete signals[key], _len.value--), 1),
+        // subscribe to length when object is spread
+        ownKeys: () => (_len.value, Reflect.ownKeys(signals))
+      });
+      for (let key in values) {
+        const desc = Object.getOwnPropertyDescriptor(values, key);
+        if (desc?.get) {
+          (signals[key] = computed(desc.get.bind(state)))._set = desc.set?.bind(state);
+        } else {
+          signals[key] = null;
+          set(signals, key, values[key]);
+        }
+      }
+      return state;
+    };
+    list = (values) => {
+      let lastProp;
+      if (values[_signals]) return values;
+      let _len = signal(values.length), signals = Array(values.length).fill();
+      const state = new Proxy(signals, {
+        get(_, key) {
+          if (typeof key === "symbol") return key === _change ? _len : key === _signals ? signals : signals[key];
+          if (key === "length") return mut.includes(lastProp) ? _len.peek() : _len.value;
+          lastProp = key;
+          if (signals[key]) return signals[key].valueOf();
+          if (key < signals.length) return (signals[key] = signal(store(values[key]))).value;
+        },
+        set(_, key, v) {
+          if (key === "length") {
+            for (let i = v; i < signals.length; i++) delete state[i];
+            _len.value = signals.length = v;
+            return true;
+          }
+          set(signals, key, v);
+          if (key >= _len.peek()) _len.value = signals.length = +key + 1;
+          return true;
+        },
+        deleteProperty: (_, key) => (signals[key]?.[Symbol.dispose]?.(), delete signals[key], 1)
+      });
+      return state;
+    };
     mut = ["push", "pop", "shift", "unshift", "splice"];
+    set = (signals, key, v) => {
+      let s = signals[key];
+      if (key[0] === "_") signals[key] = v;
+      else if (!s) signals[key] = s = v?.peek ? v : signal(store(v));
+      else if (v === s.peek()) ;
+      else if (s._set) s._set(v);
+      else if (Array.isArray(v) && Array.isArray(s.peek())) {
+        const cur = s.peek();
+        if (cur[_change]) batch(() => {
+          for (let i = 0; i < v.length; i++) cur[i] = v[i];
+          cur.length = v.length;
+        });
+        else s.value = v;
+      } else s.value = store(v);
+    };
+    store_default = store;
   }
 });
 
@@ -288,7 +283,7 @@ var init_each = __esm({
             else while (i < prevl) cur[i] = newItems[i++];
             for (; i < newl; i++) {
               cur[i] = newItems[i];
-              let idx = i, scope = store({
+              let idx = i, scope = store_default({
                 [itemVar]: cur[_signals]?.[idx] || cur[idx],
                 [idxVar]: keys2 ? keys2[idx] : idx
               }, state), el = tpl.content ? frag(tpl) : tpl.cloneNode(true);
@@ -524,7 +519,7 @@ var init_with = __esm({
   "directive/with.js"() {
     init_core();
     init_store();
-    dir("with", (el, rootState, state) => (state = null, (values) => sprae(el, state ? values : state = store(values, rootState))));
+    dir("with", (el, rootState, state) => (state = null, (values) => sprae(el, state ? values : state = store_default(values, rootState))));
   }
 });
 
