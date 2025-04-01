@@ -40,14 +40,13 @@ export let signal = (v, s, obs = new Set) => (
     c
   ),
   batch = fn => fn(),
-  untracked = batch
+  untracked = batch,
 
-// signals adapter - allows switching signals implementation and not depend on core
-
-export function use(s) {
-  signal = s.signal
-  effect = s.effect
-  computed = s.computed
-  batch = s.batch || batch
-  untracked = s.untracked || batch
-}
+  // signals adapter - allows switching signals implementation and not depend on core
+  use = (s) => (
+    signal = s.signal,
+    effect = s.effect,
+    computed = s.computed,
+    batch = s.batch || batch,
+    untracked = s.untracked || untracked
+  )
