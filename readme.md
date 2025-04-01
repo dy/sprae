@@ -3,7 +3,7 @@
 > DOM tree microhydration
 
 _Sprae_ is open & minimalistic progressive enhancement framework with _preact-signals_ based reactivity.<br/>
-Perfect for small-scale websites, static pages, landings, prototypes, lightweight UI or as [nextjs / SSR companion](#JSX).<br/>
+Perfect for small-scale websites, static pages, landings, prototypes, lightweight UI or as [SSR companion](#JSX).<br/>
 A light and fast alternative to _alpine_, _petite-vue_ etc (see [why](#justification)).
 
 ## Usage
@@ -366,7 +366,6 @@ sprae.use({ compile })
 * `key` is not used, `:each` uses direct list mapping instead of DOM diffing.
 * `await` is not supported in attributes, it’s a strong indicator you need to put these methods into state.
 * `:ref` comes after `:if` for mount/unmount events `<div :if="cond" :ref="(init(), ()=>dispose())"></div>`.
-* Directives be `s-` prefixed instead of `:` for JSX.
 
 ## Justification
 
@@ -457,21 +456,19 @@ npm run results
 
 ## JSX
 
-Sprae works with JSX, eg. Next.js companion for SSR via `s-` prefixed attributes.
+Sprae works with JSX via `s-` attributes, eg. Next.js companion for SSR.
 
-Next.js server components fall short for dynamic UI, like active nav items, collapsible sections, tabs etc. That forces into client components, which screws up data fetching, bloats hydration and adds overhead.`<Script>` is heavy and clunky hack.
-
-Sprae can offload UI logic to keep server components intact.
+Next.js server components fail at dynamic UI, like active nav, tabs, sliders etc. That forces into client components, which screws up data fetching, bloats hydration and adds overhead.`<Script>` is heavy and clunky hack. Sprae can offload UI logic to keep server components intact.
 
 ```jsx
-// app/page.jsx
+// app/page.jsx - server component
 export default function Page() {
   return <>
     <nav id="nav">
       <a href="/" s-class="location.path === '/' && 'active'">Home</a>
       <a href="/about" s-class="location.path === '/about' && 'active'">About</a>
     </nav>
-    <script src="https://unpkg.com/sprae" init></script>
+    ...
   </>
 }
 ```
