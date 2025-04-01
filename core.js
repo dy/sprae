@@ -43,14 +43,16 @@ export default function sprae(el, values) {
     if (!el.childNodes) return
 
     for (let i = 0; i < el.attributes?.length;) {
-      let attr = el.attributes[i], update;
+      let {name, value} = el.attributes[i], update, pfx = name[0] === ':' ? 1 : (name[0]==='s'&&name[1]==='-') ? 2 : 0
 
-      if (attr.name[0] === ':') {
-        el.removeAttribute(attr.name);
+      // if we have parts meaning there's attr needs to be spraed
+      // :id:name -> [,id,name]; s-text:id -> [,text,id]; ab-cd -> [ab-cd]
+      if (pfx) {
+        el.removeAttribute(name);
 
         // multiple attributes like :id:for=""
-        for (let name of attr.name.slice(1).split(':')) {
-          update = (directive[name] || directive.default)(el, attr.value, state, name)
+        for (let dir of name.slice(pfx).split(':')) {
+          update = (directive[dir] || directive.default)(el, value, state, dir)
 
           // save & start effect
           fx.push(update), offs.push(effect(update))

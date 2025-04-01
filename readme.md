@@ -3,7 +3,7 @@
 > DOM tree microhydration
 
 _Sprae_ is open & minimalistic progressive enhancement framework with _preact-signals_ based reactivity.<br/>
-Perfect for small-scale websites, static pages, landings, prototypes or lightweight UI.<br/>
+Perfect for small-scale websites, static pages, landings, prototypes, lightweight UI or as [nextjs / SSR companion](#JSX).<br/>
 A light and fast alternative to _alpine_, _petite-vue_ etc (see [why](#justification)).
 
 ## Usage
@@ -32,7 +32,7 @@ Sprae evaluates `:`-directives and evaporates them, returning reactive state for
 UMD version enables sprae via CDN, as CJS, AMD etc.
 
 ```html
-<!-- `init` attribute autoinits sprae on document with initial state (optional) -->
+<!-- `init` autoinits sprae on document with initial state (optional) -->
 <script src="https://cdn.jsdelivr.net/npm/sprae/dist/sprae.umd.js" init="{ user: 'buddy' }"></script>
 
 <script>
@@ -40,8 +40,9 @@ UMD version enables sprae via CDN, as CJS, AMD etc.
 </script>
 ```
 
-
 ## Directives
+
+Directives can be either `:` or `s-` prefixed, which is identical.
 
 #### `:if="condition"`, `:else`
 
@@ -365,6 +366,7 @@ sprae.use({ compile })
 * `key` is not used, `:each` uses direct list mapping instead of DOM diffing.
 * `await` is not supported in attributes, it’s a strong indicator you need to put these methods into state.
 * `:ref` comes after `:if` for mount/unmount events `<div :if="cond" :ref="(init(), ()=>dispose())"></div>`.
+* Directives be `s-` prefixed instead of `:` for JSX.
 
 ## Justification
 
@@ -453,6 +455,26 @@ npm run results
 * [nuejs](https://github.com/nuejs/nuejs)
  -->
 
+## JSX
+
+Sprae works with JSX, eg. Next.js companion for SSR via `s-` prefixed attributes.
+
+Next.js server components fall short for dynamic UI, like active nav items, collapsible sections, tabs etc. That forces into client components, which screws up data fetching, bloats hydration and adds overhead.`<Script>` is heavy and clunky hack.
+
+Sprae can offload UI logic to keep server components intact.
+
+```jsx
+// app/page.jsx
+export default function Page() {
+  return <>
+    <nav id="nav">
+      <a href="/" s-class="location.path === '/' && 'active'">Home</a>
+      <a href="/about" s-class="location.path === '/about' && 'active'">About</a>
+    </nav>
+    <script src="https://unpkg.com/sprae" init></script>
+  </>
+}
+```
 
 ## Examples
 

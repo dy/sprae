@@ -237,6 +237,11 @@ test("Math / other globals available in template", async () => {
   is(el.innerHTML, '4');
 });
 
+test("s-directive", async () => {
+  let el = h`<x s-text="a"></x>`;
+  sprae(el, {a:123});
+  is(el.outerHTML, `<x>123</x>`);
+})
 
 test.skip('memory allocation', async () => {
   let items = signal([])

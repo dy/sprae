@@ -1257,14 +1257,14 @@
   6. `state[expr.split(/.\[/)[0])]` - we make sure first element exists
     + doesn't require heavy eval
 
-## [ ] JSX compatible?
-
-  1. `s-attr`
-    * Nextjs doesn't support `:`-attributes.
-    + Seems to be the minimal spot https://grok.com/share/bGVnYWN5_bf6ecc59-1e28-43bf-983d-5422a956764b
-    - not clear how to make `onfocus..onblur`, `:id:name`
-  2. `$attr`
-    - `$id$name="value"` is ugly
+## [x] s-attr? -> low-hanging fruit, why not
+  * JSX doesn't support `:`-attributes.
+  + JSX compatible
+  + Seems to be the minimal spot https://grok.com/share/bGVnYWN5_bf6ecc59-1e28-43bf-983d-5422a956764b
+  - not clear how to make `onfocus..onblur`, `:id:name`
+    ~ mb skip it?
+    ~+ `s-id:name` is available
+  + it's low hanging fruit
 
 ## [ ] s-cloak? Hides contents until sprae finishes loading
 
@@ -1273,3 +1273,9 @@
 ## [ ] s-ignore? Excludes element from spraeing
 
   * wait until needed
+
+## [ ] :init? For autoinit elements
+
+  + makes init property on par with other sprae properties
+  + can init multiple entry points in document
+  - forces-sh autoinit (a matter of `querySelectorAll(':init')`)
