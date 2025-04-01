@@ -374,11 +374,14 @@ Modern frontend stack is obese and unhealthy, like non-organic processed food. T
 
 _Sprae_ holds open & minimalistic philosophy:
 
-* Slim `:` API, _signals_ for reactivity.
-* Pluggable directives & configurable internals.
+* Minimal syntax `:`.
+* _Signals_ for reactivity.
+* Pluggable directives, configurable internals.
 * Small, safe & performant.
 * Bits of organic sugar.
 * Aims at making developers happy 🫰
+
+> Perfection is not when there is nothing to add, but when there is nothing to take away.
 
 <!--
 |                       | [AlpineJS](https://github.com/alpinejs/alpine)          | [Petite-Vue](https://github.com/vuejs/petite-vue)        | Sprae            |
