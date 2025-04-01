@@ -364,6 +364,7 @@ sprae.use({ compile })
 * `event` is not used, `:on*` attributes expect a function with event argument `:onevt="event => handle()"`, see [#46](https://github.com/dy/sprae/issues/46).
 * `key` is not used, `:each` uses direct list mapping instead of DOM diffing.
 * `await` is not supported in attributes, it’s a strong indicator you need to put these methods into state.
+* `:ref` comes after `:if` for mount/unmount events `<div :if="cond" :ref="(init(), ()=>dispose())"></div>`.
 
 ## Justification
 
