@@ -1279,3 +1279,8 @@
   + makes init property on par with other sprae properties
   + can init multiple entry points in document
   - forces-sh autoinit (a matter of `querySelectorAll(':init')`)
+    ~ not a big task
+  + it's more useful for JSX, since components will be initialized separately as `<div s-init="...data"></div>`
+  + that's on-par with alpine
+  * we can actually have `sprae.auto` or `sprae.jsx` entries that autoinit sprae.
+    + that can predefine `s-` prefix
