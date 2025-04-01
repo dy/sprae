@@ -61,8 +61,7 @@ Control flow of elements.
 Multiply element.
 
 ```html
-<!-- :text order matters -->
-<ul><li :each="item in items" :text="item"/></ul>
+<ul><li :each="item in items" :text="item" /></ul>
 
 <!-- cases -->
 <li :each="item, idx in array" />
@@ -84,7 +83,7 @@ Set text content of an element.
 Welcome, <span :text="user.name">Guest</span>.
 
 <!-- fragment -->
-Welcome, <template :text="user.name" />.
+Welcome, <template :text="user.name"><template>.
 ```
 
 #### `:class="value"`
@@ -92,11 +91,13 @@ Welcome, <template :text="user.name" />.
 Set class value.
 
 ```html
-<!-- appends class -->
-<div class="foo" :class="bar"></div>
+<div :class="foo"></div>
+
+<!-- appends to static class -->
+<div class="bar" :class="baz"></div>
 
 <!-- array/object, a-la clsx -->
-<div :class="[foo && 'foo', {bar: bar}]"></div>
+<div :class="['foo', bar && 'bar', { baz }]"></div>
 ```
 
 #### `:style="value"`
@@ -104,13 +105,15 @@ Set class value.
 Set style value.
 
 ```html
-<!-- extends style -->
+<span style="'display: inline-block'"></span>
+
+<!-- extends static style -->
 <div style="foo: bar" :style="'bar-baz: qux'">
 
 <!-- object -->
 <div :style="{barBaz: 'qux'}"></div>
 
-<!-- CSS variable -->
+<!-- set CSS variable -->
 <div :style="{'--bar-baz': qux}"></div>
 ```
 
@@ -194,7 +197,7 @@ Attach event(s) listener with optional modifiers.
 <input :value="text" :oninput:onchange="e => text = e.target.value">
 
 <!-- sequence of events -->
-<button :onfocus..onblur="e => ( handleFocus(), e => handleBlur())">
+<button :onfocus..onblur="e => (handleFocus(), e => handleBlur())">
 
 <!-- modifiers -->
 <button :onclick.throttle-500="handler">Not too often</button>
@@ -309,9 +312,10 @@ sprae.use({compile: justin}) // set up justin as default compiler
 
 ###### Operators:
 
-`++ -- ! - + ** * / %  && || ??`<br/>
+`++ -- ! - + * / % ** && || ??`<br/>
 `= < <= > >= == != === !==`<br/>
-`<< >> & ^ | ~ ?: . ?. [] ()=>{} in`
+`<< >> >>> & ^ | ~ ?: . ?. [] ()=>{} in`<br/>
+`= += -= *= /= %= **= &&= ||= ??= ... ,`
 
 ###### Primitives:
 
