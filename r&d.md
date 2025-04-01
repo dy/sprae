@@ -294,6 +294,8 @@
     4. `:onfocus--blur="e => e => {}"`
       + reminds BEM
       - reminds BEM
+      + compatible with JSX as `s-onfocus--onblur="..."`
+        - not really
     5. `:onfocus..blur="e => e => {}"`
       + reminds range
       + literally means start..end
@@ -1254,3 +1256,20 @@
     - no way to do `with (data) {}`
   6. `state[expr.split(/.\[/)[0])]` - we make sure first element exists
     + doesn't require heavy eval
+
+## [ ] JSX compatible?
+
+  1. `s-attr`
+    * Nextjs doesn't support `:`-attributes.
+    + Seems to be the minimal spot https://grok.com/share/bGVnYWN5_bf6ecc59-1e28-43bf-983d-5422a956764b
+    - not clear how to make `onfocus..onblur`, `:id:name`
+  2. `$attr`
+    - `$id$name="value"` is ugly
+
+## [ ] s-cloak? Hides contents until sprae finishes loading
+
+  * wait until needed
+
+## [ ] s-ignore? Excludes element from spraeing
+
+  * wait until needed
