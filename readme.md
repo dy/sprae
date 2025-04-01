@@ -3,7 +3,7 @@
 > DOM tree microhydration
 
 _Sprae_ is open & minimalistic progressive enhancement framework with _preact-signals_ based reactivity.<br/>
-Perfect for small-scale websites, static pages, landings, prototypes, lightweight UI or as [nextjs / SSR companion](#JSX).<br/>
+Perfect for small-scale websites, static pages, landings, prototypes, lightweight UI or as [SSR companion](#JSX).<br/>
 A light and fast alternative to _alpine_, _petite-vue_ etc (see [why](#justification)).
 
 ## Usage
