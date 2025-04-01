@@ -42,8 +42,6 @@ UMD version enables sprae via CDN, as CJS, AMD etc.
 
 ## Directives
 
-Directives can be either `:` or `s-` prefixed, which is identical.
-
 #### `:if="condition"`, `:else`
 
 Control flow of elements.
@@ -346,11 +344,16 @@ dir('id', (el, state, expr) => {
   return value => el.id = value // update
 })
 
-// configure signals
-sprae.use(signals)
+sprae.use({
+  // configure signals
+  ...signals,
 
-// configure compiler
-sprae.use({ compile })
+  // configure compiler
+  compile,
+
+  // custom prefix
+  prefix: '-s'
+})
 ```
 
 ## Hints
@@ -452,13 +455,14 @@ npm run results
 * ~~[Lucia](https://github.com/aidenybai/lucia)~~ deprecated
 * [Petite-vue](https://github.com/vuejs/petite-vue)
 * [nuejs](https://github.com/nuejs/nuejs)
+* [hmpl](https://github.com/hmpl-language/hmpl)
  -->
 
 ## JSX
 
-Sprae works with JSX via `s-` attributes, eg. Next.js companion for SSR.
+Sprae can work with JSX via custom prefix `sprae.use({prefix:'s-'})`.
 
-Next.js server components fail at dynamic UI, like active nav, tabs, sliders etc. That forces into client components, which screws up data fetching, bloats hydration and adds overhead.`<Script>` is heavy and clunky hack. Sprae can offload UI logic to keep server components intact.
+It can be useful as Next.js companion for SSR. Next.js server components fail at dynamic UI, like active nav, tabs, sliders etc, which forces into client components. But that screws up data fetching, bloats hydration and adds overhead. Sprae can offload UI logic to keep server components intact.
 
 ```jsx
 // app/page.jsx - server component
@@ -472,6 +476,15 @@ export default function Page() {
   </>
 }
 ```
+<!--
+// layout.jsx
+export default function Layout({ children }) {
+  return <>
+    {children}
+    <Script type="module">{`import sprae from 'sprae'; sprae.use({ prefix: 's-' }); sprae(document.documentElement);`}</Script>
+  </>
+}
+``` -->
 
 ## Examples
 

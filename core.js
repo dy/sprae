@@ -38,15 +38,14 @@ export const sprae = (el, values) => {
     init = (el, attrs = el.attributes) => {
       // we iterate live collection (subsprae can init args)
       if (attrs) for (let i = 0; i < attrs.length;) {
-        let { name, value } = attrs[i], pfx, update, dir
+        let { name, value } = attrs[i], update, dir
 
         // if we have parts meaning there's attr needs to be spraed
-        // :id:name -> [,id,name]; s-text:id -> [,text,id]; ab-cd -> [ab-cd]
-        if (pfx = name[0] === ':' ? 1 : (name[0] === 's' && name[1] === '-') ? 2 : 0) {
+        if (name.startsWith(prefix)) {
           el.removeAttribute(name);
 
           // multiple attributes like :id:for=""
-          for (dir of name.slice(pfx).split(':')) {
+          for (dir of name.slice(prefix.length).split(':')) {
             update = (directive[dir] || directive.default)(el, value, state, dir)
 
             // save & start effect
@@ -81,10 +80,11 @@ export const sprae = (el, values) => {
 
 // configure signals/compile
 // it's more compact than using sprae.signal = signal etc.
-sprae.use = s => {
-  s.signal && use(s);
-  s.compile && (compile = s.compile);
-}
+sprae.use = s => (
+  s.signal && use(s),
+  s.compile && (compile = s.compile),
+  s.prefix && (prefix = s.prefix)
+)
 
 /**
  * Parses an expression into an evaluator function, caching the result for reuse.
@@ -122,6 +122,11 @@ export const err = (e, dir = '', expr = '') => {
  * @type {(expr: string) => Function}
  */
 export let compile
+
+/**
+ * Attributes prefix, by default ':'
+ */
+export let prefix = ':'
 
 // instantiated <template> fragment holder, like persisting fragment but with minimal API surface
 export const frag = (tpl) => {

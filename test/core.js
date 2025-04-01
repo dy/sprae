@@ -238,9 +238,11 @@ test("Math / other globals available in template", async () => {
 });
 
 test("s-directive", async () => {
+  sprae.use({prefix:'s-'})
   let el = h`<x s-text="a"></x>`;
   sprae(el, {a:123});
   is(el.outerHTML, `<x>123</x>`);
+  sprae.use({prefix:':'})
 })
 
 test.skip('memory allocation', async () => {
