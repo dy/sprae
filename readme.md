@@ -458,19 +458,16 @@ npm run results
 
 Sprae works with JSX, eg. Next.js companion for SSR via `s-` prefixed attributes.
 
-Next.js server components fail at dynamic UI like active nav items, tabs, sliders etc. That forces into client components, which screws up data fetching, bloats hydration and adds overhead.`<Script>` is heavy and clunky hack.
-
-Sprae can offload UI logic to keep server components intact.
+Next.js server components fail at dynamic UI, like active nav, tabs, sliders etc. That forces into client components, which screws up data fetching, bloats hydration and adds overhead.`<Script>` is heavy and clunky hack. Sprae can offload UI logic to keep server components intact.
 
 ```jsx
-// app/page.jsx
+// app/page.jsx - server component
 export default function Page() {
   return <>
     <nav id="nav">
       <a href="/" s-class="location.path === '/' && 'active'">Home</a>
       <a href="/about" s-class="location.path === '/about' && 'active'">About</a>
     </nav>
-    <script src="https://unpkg.com/sprae" init></script>
   </>
 }
 ```
