@@ -468,6 +468,7 @@ export default function Page() {
       <a href="/" s-class="location.path === '/' && 'active'">Home</a>
       <a href="/about" s-class="location.path === '/about' && 'active'">About</a>
     </nav>
+    ...
   </>
 }
 ```
