@@ -148,23 +148,21 @@ var init_store = __esm({
 
 // core.js
 function sprae(el, values) {
-  if (!el?.childNodes) return;
   if (el[_state]) return Object.assign(el[_state], values);
   const state = store(values || {}), offs = [], fx = [];
-  const init = (el2) => {
-    if (!el2.childNodes) return;
-    for (let i = 0; i < el2.attributes?.length; ) {
-      let { name, value } = el2.attributes[i], update, pfx = name[0] === ":" ? 1 : name[0] === "s" && name[1] === "-" ? 2 : 0;
-      if (pfx) {
+  const init = (el2, attrs = el2.attributes) => {
+    if (attrs) for (let i = 0; i < attrs.length; ) {
+      let { name, value } = attrs[i], pfx, update, dir2;
+      if (pfx = name[0] === ":" ? 1 : name[0] === "s" && name[1] === "-" ? 2 : 0) {
         el2.removeAttribute(name);
-        for (let dir2 of name.slice(pfx).split(":")) {
+        for (dir2 of name.slice(pfx).split(":")) {
           update = (directive[dir2] || directive.default)(el2, value, state, dir2);
           fx.push(update), offs.push(effect(update));
           if (el2[_state] === null) return;
         }
       } else i++;
     }
-    for (let child of [...el2.childNodes]) init(child);
+    for (let child of el2.childNodes) child.nodeType == 1 && init(child);
   };
   init(el);
   if (!(_state in el)) {
