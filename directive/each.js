@@ -4,17 +4,15 @@ import { effect } from '../signal.js';
 
 
 dir('each', (tpl, state, expr) => {
-    const [itemVar, idxVar = "$"] = expr.split(/\s+in\s+/)[0].split(/\s*,\s*/);
+    let [itemVar, idxVar = "$"] = expr.split(/\bin\b/)[0].trim().split(/\s*,\s*/);
 
     // we need :if to be able to replace holder instead of tpl for :if :each case
-    const holder = document.createTextNode("");
-    tpl.replaceWith(holder);
-    tpl[_state] = null // mark as fake-spraed, to preserve :-attribs for template
+    let holder = document.createTextNode("");
 
     // we re-create items any time new items are produced
     let cur, keys, items, prevl = 0
 
-    const update = () => {
+    let update = () => {
       let i = 0, newItems = items, newl = newItems.length
 
       // plain array update, not store (signal with array) - updates full list
@@ -56,7 +54,11 @@ dir('each', (tpl, state, expr) => {
       prevl = newl
     }
 
+    tpl.replaceWith(holder);
+    tpl[_state] = null // mark as fake-spraed, to preserve :-attribs for template
+
     return value => {
+      // obtain new items
       keys = null
       if (typeof value === "number") items = Array.from({ length: value }, (_, i) => i + 1)
       else if (value?.constructor === Object) keys = Object.keys(value), items = Object.values(value)
@@ -75,5 +77,5 @@ dir('each', (tpl, state, expr) => {
   },
 
   // redefine evaluator to take second part of expression
-  expr => parse(expr.split(/\s+in\s+/)[1])
+  expr => parse(expr.split(/\bin\b/)[1])
 )

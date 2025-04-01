@@ -11,7 +11,7 @@ dir('default', (target, state, expr, name) => {
   // bind event to a target
   // NOTE: if you decide to remove chain of events, thing again - that's unique feature of sprae, don't diminish your own value.
   // ona..onb
-  const ctxs = name.split('..').map(e => {
+  let ctxs = name.split('..').map(e => {
     let ctx = { evt: '', target, test: () => true };
     ctx.evt = (e.startsWith('on') ? e.slice(2) : e).replace(/\.(\w+)?-?([-\w]+)?/g,
       (_, mod, param = '') => (ctx.test = mods[mod]?.(ctx, ...param.split('-')) || ctx.test, '')
@@ -20,10 +20,10 @@ dir('default', (target, state, expr, name) => {
   });
 
   // add listener with the context
-  const addListener = (fn, { evt, target, test, defer, stop, prevent, immediate, ...opts }) => {
+  let addListener = (fn, { evt, target, test, defer, stop, prevent, immediate, ...opts }, cb) => {
     if (defer) fn = defer(fn)
 
-    const cb = (e) => {
+    cb = (e) => {
       try {
         test(e) && (stop && (immediate ? e.stopImmediatePropagation() : e.stopPropagation()), prevent && e.preventDefault(), fn?.call(state, e))
       } catch (error) { err(error, `:on${evt}`, fn) }
@@ -38,7 +38,7 @@ dir('default', (target, state, expr, name) => {
 
   // events cycler
   let startFn, nextFn, off, idx = 0
-  const nextListener = (fn) => {
+  let nextListener = (fn) => {
     off = addListener((e) => (
       off(), nextFn = fn?.(e), (idx = ++idx % ctxs.length) ? nextListener(nextFn) : (startFn && nextListener(startFn))
     ), ctxs[idx]);

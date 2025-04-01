@@ -6,7 +6,7 @@ import sprae, { dir, _state, _on, _off, frag } from "../core.js";
 const _prevIf = Symbol("if");
 
 dir('if', (el, state) => {
-  const holder = document.createTextNode('')
+  let holder = document.createTextNode('')
 
   let next = el.nextElementSibling,
     curEl, ifEl, elseEl;
@@ -22,8 +22,7 @@ dir('if', (el, state) => {
     if (!next.hasAttribute(":if")) next.remove(), elseEl = next.content ? frag(next) : next, elseEl[_state] = null
   }
 
-  return (value) => {
-    const newEl = value ? ifEl : el[_prevIf] ? null : elseEl;
+  return (value, newEl = value ? ifEl : el[_prevIf] ? null : elseEl) => {
     if (next) next[_prevIf] = newEl === ifEl
     if (curEl != newEl) {
       // disable effects on child elements when element is not matched

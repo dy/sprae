@@ -2,12 +2,12 @@ import { use, effect } from "./signal.js";
 import { store, _signals } from './store.js';
 
 // polyfill
-const _dispose = (Symbol.dispose ||= Symbol("dispose"));
+export const _dispose = (Symbol.dispose ||= Symbol("dispose"));
 
 export const _state = Symbol("state"), _on = Symbol('on'), _off = Symbol('off')
 
 // registered directives
-const directive = {}
+export const directive = {}
 
 /**
  * Register a directive with a parsed expression and evaluator.
@@ -28,39 +28,39 @@ export const dir = (name, create, p = parse) => directive[name] = (el, expr, sta
  * @param {Object} [values] - Initial values to populate the element's reactive state.
  * @returns {Object} The reactive state object associated with the element.
  */
-export default function sprae(el, values) {
+export const sprae = (el, values) => {
   // repeated call can be caused by eg. :each with new objects with old keys
   if (el[_state]) return Object.assign(el[_state], values)
 
   // take over existing state instead of creating a clone
-  const state = store(values || {}), offs = [], fx = []
+  let state = store(values || {}), offs = [], fx = [],
 
-  const init = (el, attrs=el.attributes) => {
-    // we iterate live collection (subsprae can init args)
-    if (attrs) for (let i = 0; i < attrs.length;) {
-      let {name, value} = attrs[i], pfx, update, dir
+    init = (el, attrs = el.attributes) => {
+      // we iterate live collection (subsprae can init args)
+      if (attrs) for (let i = 0; i < attrs.length;) {
+        let { name, value } = attrs[i], pfx, update, dir
 
-      // if we have parts meaning there's attr needs to be spraed
-      // :id:name -> [,id,name]; s-text:id -> [,text,id]; ab-cd -> [ab-cd]
-      if (pfx = name[0] === ':' ? 1 : (name[0]==='s' && name[1]==='-') ? 2 : 0) {
-        el.removeAttribute(name);
+        // if we have parts meaning there's attr needs to be spraed
+        // :id:name -> [,id,name]; s-text:id -> [,text,id]; ab-cd -> [ab-cd]
+        if (pfx = name[0] === ':' ? 1 : (name[0] === 's' && name[1] === '-') ? 2 : 0) {
+          el.removeAttribute(name);
 
-        // multiple attributes like :id:for=""
-        for (dir of name.slice(pfx).split(':')) {
-          update = (directive[dir] || directive.default)(el, value, state, dir)
+          // multiple attributes like :id:for=""
+          for (dir of name.slice(pfx).split(':')) {
+            update = (directive[dir] || directive.default)(el, value, state, dir)
 
-          // save & start effect
-          fx.push(update), offs.push(effect(update))
+            // save & start effect
+            fx.push(update), offs.push(effect(update))
 
-          // stop after :each, :if, :with etc.
-          if (el[_state]===null) return
-        }
-      } else i++
-    }
+            // stop after :each, :if, :with etc.
+            if (el[_state] === null) return
+          }
+        } else i++
+      }
 
-    // :if and :each replace element with text node, which tweaks .children length, but .childNodes length persists
-    for (let child of el.childNodes) child.nodeType==1 && init(child)
-  };
+      // :if and :each replace element with text node, which tweaks .children length, but .childNodes length persists
+      for (let child of el.childNodes) child.nodeType == 1 && init(child)
+    };
 
   init(el);
 
@@ -69,14 +69,21 @@ export default function sprae(el, values) {
     el[_state] = state
 
     // on/off all effects
-    el[_off] = () => { while (offs.length) offs.pop()() }
-    el[_on] = () => offs.push(...fx.map(f => effect(f)))
+    el[_off] = () => (offs.map(off => off()), offs = [])
+    el[_on] = () => offs = fx.map(f => effect(f))
 
     // destroy
     el[_dispose] = () => (el[_off](), el[_off] = el[_on] = el[_dispose] = el[_state] = null)
   }
 
   return state;
+}
+
+// configure signals/compile
+// it's more compact than using sprae.signal = signal etc.
+sprae.use = s => {
+  s.signal && use(s);
+  s.compile && (compile = s.compile);
 }
 
 /**
@@ -105,7 +112,7 @@ const memo = {};
  * @param {string} [expr=''] - The expression associated with the error, if any.
  * @throws {Error} The enhanced error object with a formatted message.
  */
-export const err = (e, dir='', expr='') => {
+export const err = (e, dir = '', expr = '') => {
   throw Object.assign(e, { message: `∴ ${e.message}\n\n${dir}${expr ? `="${expr}"\n\n` : ""}`, expr })
 }
 
@@ -115,14 +122,6 @@ export const err = (e, dir='', expr='') => {
  * @type {(expr: string) => Function}
  */
 export let compile
-
-// configure signals/compile
-// it's more compact than using sprae.signal = signal etc.
-sprae.use = s => {
-  s.signal && use(s);
-  s.compile && (compile = s.compile);
-}
-
 
 // instantiated <template> fragment holder, like persisting fragment but with minimal API surface
 export const frag = (tpl) => {
@@ -149,3 +148,5 @@ export const frag = (tpl) => {
     // setAttributeNode() { }
   }
 }
+
+export default sprae
