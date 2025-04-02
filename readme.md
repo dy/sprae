@@ -173,7 +173,9 @@ Run effect, not changing any attribute.
 Expose element in state with `name` or get reference to element.
 
 ```html
-<!-- expose element in state -->
+<div :ref="card" :fx="handle(card)"></div>
+
+<!-- each element gets own ref -->
 <li :each="item in items" :ref="li">
   <input :onfocus..onblur="e => (li.classList.add('editing'), e => li.classList.remove('editing'))"/>
 </li>
