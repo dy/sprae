@@ -494,7 +494,7 @@ import Script from 'next/script'
 export default function Layout({ children }) {
   return <>
     {children}
-    <Script type="module" src="https://unpkg.com/sprae/dist/sprae.auto" prefix="s-" />
+    <Script src="https://unpkg.com/sprae" prefix="s-" />
   </>
 }
 ```
