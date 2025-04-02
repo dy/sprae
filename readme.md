@@ -40,7 +40,7 @@ Sprae evaluates `:`-directives and evaporates them, returning reactive state for
 
 ### Autoinit
 
-`sprae.auto` autoinits sprae on document, which is useful for [SSR](#jsx) etc.
+`sprae.auto` autoinits sprae on document, which is useful for SPA, [SSR](#jsx) etc.
 
 ```html
 <!-- Optional attr `prefix` (by default ':'). -->
