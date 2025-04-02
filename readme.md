@@ -366,6 +366,37 @@ sprae.use({
 })
 ```
 
+## JSX
+
+Sprae can work with JSX via custom prefix, eg. `s-`.
+
+Useful as Next.js companion for SSR. Server components fail at dynamic UI – active nav, tabs, sliders etc. Converting to client components screws up data fetching and adds overhead. Sprae can offload UI logic to keep server components intact.
+
+```jsx
+// app/page.jsx - server component
+export default function Page() {
+  return <>
+    <nav id="nav">
+      <a href="/" s-class="location.path === '/' && 'active'">Home</a>
+      <a href="/about" s-class="location.path === '/about' && 'active'">About</a>
+    </nav>
+    ...
+  </>
+}
+```
+
+```jsx
+// layout.jsx
+import Script from 'next/script'
+
+export default function Layout({ children }) {
+  return <>
+    {children}
+    <Script src="https://unpkg.com/sprae" prefix="s-" />
+  </>
+}
+```
+
 ## Hints
 
 * To prevent [FOUC](https://en.wikipedia.org/wiki/Flash_of_unstyled_content) add `<style>[:each],[:if],[:else] {visibility: hidden}</style>`.
@@ -468,36 +499,6 @@ npm run results
 * [hmpl](https://github.com/hmpl-language/hmpl)
  -->
 
-## JSX
-
-Sprae can work with JSX via custom prefix, eg. `s-`.
-
-Useful as Next.js companion for SSR. Server components fail at dynamic UI – active nav, tabs, sliders etc. Converting to client components screws up data fetching and adds overhead. Sprae can offload UI logic to keep server components intact.
-
-```jsx
-// app/page.jsx - server component
-export default function Page() {
-  return <>
-    <nav id="nav">
-      <a href="/" s-class="location.path === '/' && 'active'">Home</a>
-      <a href="/about" s-class="location.path === '/about' && 'active'">About</a>
-    </nav>
-    ...
-  </>
-}
-```
-
-```jsx
-// layout.jsx
-import Script from 'next/script'
-
-export default function Layout({ children }) {
-  return <>
-    {children}
-    <Script src="https://unpkg.com/sprae" prefix="s-" />
-  </>
-}
-```
 
 ## Examples
 
