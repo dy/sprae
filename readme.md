@@ -44,7 +44,7 @@ Sprae evaluates `:`-directives and evaporates them, returning reactive state for
 
 ```html
 <!-- Optional attr `prefix` (by default ':'). -->
-<script src="https://unpkg.com/sprae.auto" prefix="s-"></script>
+<script src="https://unpkg.com/sprae/dist/sprae.auto" prefix="s-"></script>
 ```
 
 ## Directives
@@ -493,7 +493,7 @@ import Script from 'next/script'
 export default function Layout({ children }) {
   return <>
     {children}
-    <Script type="module" src="https://unpkg.com/sprae.auto" prefix="s-" />
+    <Script type="module" src="https://unpkg.com/sprae/dist/sprae.auto" prefix="s-" />
   </>
 }
 ```
