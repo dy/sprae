@@ -44,7 +44,8 @@ await esbuild.build({
   stdin: {
     contents: 'const sprae = require("./sprae.js").default;\n' +
     'sprae.use({prefix: document.currentScript.getAttribute("prefix")});\n' +
-    'document.readyState === "loading" ? document.addEventListener("DOMContentLoaded", () => sprae()) : sprae();',
+    'document.readyState === "loading" ? document.addEventListener("DOMContentLoaded", () => sprae()) : sprae();\n' +
+    'module.exports = require("./sprae.js").default;',
     resolveDir: '.'
   },
   outfile: "dist/sprae.auto.js",

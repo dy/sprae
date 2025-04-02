@@ -27,25 +27,26 @@ A light and fast alternative to _alpine_, _petite-vue_, _lucia_ etc (see [why](#
 
 Sprae evaluates `:`-directives and evaporates them, returning reactive state for updates.
 
-### Standalone
-
-`sprae.umd` enables sprae via CDN, as CJS, AMD etc.
-
-```html
-<script src="https://unpkg.com/sprae"></script>
-<script>
-  window.sprae(document.body, {foo: 'bar'}); // global standalone
-</script>
-```
-
 ### Autoinit
 
 `sprae.auto` autoinits sprae on document, which is useful for SPA, [SSR](#jsx) etc.
 
 ```html
 <!-- Optional attr `prefix` (by default ':'). -->
-<script src="https://unpkg.com/sprae/dist/sprae.auto" prefix="s-"></script>
+<script src="https://unpkg.com/sprae" prefix="s-"></script>
 ```
+
+### UMD
+
+`sprae.umd` enables sprae via CDN, as CJS, AMD etc.
+
+```html
+<script src="https://unpkg.com/sprae/dist/sprae.umd"></script>
+<script>
+  window.sprae; // global standalone
+</script>
+```
+
 
 ## Directives
 
