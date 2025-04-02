@@ -377,8 +377,8 @@ Useful as Next.js companion for SSR. Server components fail at dynamic UI – ac
 export default function Page() {
   return <>
     <nav id="nav">
-      <a href="/" s-class="location.path === '/' && 'active'">Home</a>
-      <a href="/about" s-class="location.path === '/about' && 'active'">About</a>
+      <a href="/" s-class="location.pathname === '/' && 'active'">Home</a>
+      <a href="/about" s-class="location.pathname === '/about' && 'active'">About</a>
     </nav>
     ...
   </>
