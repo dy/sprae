@@ -29,7 +29,7 @@ Sprae evaluates `:`-directives and evaporates them, returning reactive state for
 
 ### Autoinit
 
-`sprae.auto` autoinits sprae on document, which is useful for SPA, [SSR](#jsx) etc.
+`sprae.auto` autoinits sprae on document body.
 
 ```html
 <!-- Optional attr `prefix` (by default ':'). -->
@@ -38,7 +38,7 @@ Sprae evaluates `:`-directives and evaporates them, returning reactive state for
 
 ### UMD
 
-`sprae.umd` enables sprae via CDN, as CJS, AMD etc.
+`sprae.umd` enables sprae via CDN, CJS, AMD etc.
 
 ```html
 <script src="https://unpkg.com/sprae/dist/sprae.umd"></script>
