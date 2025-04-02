@@ -32,7 +32,7 @@ Sprae evaluates `:`-directives and evaporates them, returning reactive state for
 UMD version enables sprae via CDN, as CJS, AMD etc.
 
 ```html
-<!-- `init` autoinits sprae on element(s), by default document.body. Optionally provide attr prefix. -->
+<!-- `init` autoinits elements (by default body) with attr `prefix` (by default ':'). -->
 <script src="https://unpkg.com/sprae" init="#container" prefix="s-"></script>
 
 <script>
