@@ -107,7 +107,7 @@ var _on = Symbol("on");
 var _off = Symbol("off");
 var directive = {};
 var dir = (name, create, p = parse) => directive[name] = (el, expr, state, name2, update, evaluate) => (evaluate = p(expr), update = create(el, state, expr, name2, evaluate), () => update(evaluate(state)));
-var sprae = (el, values) => {
+var sprae = (el = document.body, values) => {
   if (el[_state]) return Object.assign(el[_state], values);
   let state = store(values || {}), offs = [], fx = [], init = (el2, attrs = el2.attributes) => {
     if (attrs) for (let i = 0; i < attrs.length; ) {

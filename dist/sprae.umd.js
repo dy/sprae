@@ -144,7 +144,7 @@ var init_core = __esm({
     _off = Symbol("off");
     directive = {};
     dir = (name, create, p = parse) => directive[name] = (el, expr, state, name2, update, evaluate) => (evaluate = p(expr), update = create(el, state, expr, name2, evaluate), () => update(evaluate(state)));
-    sprae = (el, values) => {
+    sprae = (el = document.body, values) => {
       if (el[_state]) return Object.assign(el[_state], values);
       let state = store(values || {}), offs = [], fx = [], init = (el2, attrs = el2.attributes) => {
         if (attrs) for (let i = 0; i < attrs.length; ) {
@@ -615,12 +615,11 @@ var init_sprae = __esm({
 
 // sprae.umd.cjs
 var { default: sprae2 } = (init_sprae(), __toCommonJS(sprae_exports));
-var config = document.currentScript?.getAttribute("init");
-if (config != null) {
-  const props = JSON.parse(config || "{}");
-  const init = () => {
-    sprae2(document.documentElement, props);
-  };
+var script = document.currentScript;
+if (script) {
+  const $ = script.getAttribute("init");
+  const init = () => document.querySelectorAll($ || "body").forEach((el) => sprae2(el));
+  sprae2.use({ prefix: script.getAttribute("prefix") });
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", init);
   else init();
 }
