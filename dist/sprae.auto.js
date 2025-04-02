@@ -614,7 +614,9 @@ var init_sprae = __esm({
 });
 
 // <stdin>
-module.exports = (init_sprae(), __toCommonJS(sprae_exports)).default;
+var sprae2 = (init_sprae(), __toCommonJS(sprae_exports)).default;
+sprae2.use({ prefix: document.currentScript.getAttribute("prefix") });
+document.readyState === "loading" ? document.addEventListener("DOMContentLoaded", () => sprae2()) : sprae2();
 ;if (typeof module.exports == "object" && typeof exports == "object") {
   var __cp = (to, from, except, desc) => {
     if ((from && typeof from === "object") || typeof from === "function") {
