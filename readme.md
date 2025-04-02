@@ -33,7 +33,7 @@ Sprae evaluates `:`-directives and evaporates them, returning reactive state for
 
 ```html
 <!-- Optional attr `prefix` (by default ':'). -->
-<script src="https://unpkg.com/sprae" prefix="s-"></script>
+<script src="https://unpkg.com/sprae/dist/sprae.auto" prefix="s-"></script>
 ```
 
 ### UMD
