@@ -175,7 +175,7 @@ Expose element in state with `name` or get reference to element.
 ```html
 <div :ref="card" :fx="handle(card)"></div>
 
-<!-- each element gets own ref -->
+<!-- local reference -->
 <li :each="item in items" :ref="li">
   <input :onfocus..onblur="e => (li.classList.add('editing'), e => li.classList.remove('editing'))"/>
 </li>
@@ -183,7 +183,7 @@ Expose element in state with `name` or get reference to element.
 <!-- set innerHTML -->
 <div :ref="el => el.innerHTML = '...'"></div>
 
-<!-- initialize element -->
+<!-- mount / unmount -->
 <textarea :ref="el => (/* onmount */, () => (/* onunmount */))" :if="show"></textarea>
 ```
 
@@ -366,7 +366,7 @@ sprae.use({
 * Properties prefixed with `_` are untracked: `let state = sprae(el, {_x:2}); state._x++; // no effect`.
 * To destroy state and detach sprae handlers, call `element[Symbol.dispose]()`.
 * State getters/setters work as computed effects, eg. `sprae(el, { x:1, get x2(){ return this.x * 2} })`.
-* `this` is not used, to get access to current element use `<input :ref="el => (...)" />`.
+* `this` is not used, to get current element use `:ref`.
 * `event` is not used, `:on*` attributes expect a function with event argument `:onevt="event => handle()"`, see [#46](https://github.com/dy/sprae/issues/46).
 * `key` is not used, `:each` uses direct list mapping instead of DOM diffing.
 * `await` is not supported in attributes, it’s a strong indicator you need to put these methods into state.
