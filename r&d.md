@@ -1275,7 +1275,7 @@
 
   * wait until needed
 
-## [ ] :init? For autoinit elements
+## [x] :init? For autoinit elements -> no, use `init` but keep data from `:with`
 
   + makes init property on par with other sprae properties
   + can init multiple entry points in document
@@ -1286,3 +1286,4 @@
   * we can actually have `sprae.auto` or `sprae.jsx` entries that autoinit sprae.
     + that can predefine `s-` prefix
   - that's same as `:with`
+  - `init` reads JSON, `:with` reads regular JS objects, they're not same

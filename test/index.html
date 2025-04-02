@@ -2,8 +2,8 @@
 <meta charset="utf-8" />
 <title>Test</title>
 
-<div :with="{data:'autoinit works'}">
-    <span :text="data">autoinit is broken</span>
+<div class="sprae" s-with="{data:'autoinit works'}">
+    <span s-text="data">autoinit is broken</span>
 </div>
 
 <script async
@@ -37,6 +37,7 @@
     }
 </script>
 
-<!-- <script src="../dist/sprae.umd.js" init></script>
-<script>console.log(window.sprae)</script> -->
+<script src="../dist/sprae.umd.js" init=".sprae" prefix="s-"></script>
+<script>console.log(window.sprae)</script>
+
 <script src="./test.js" type="module"></script>

@@ -32,8 +32,8 @@ Sprae evaluates `:`-directives and evaporates them, returning reactive state for
 UMD version enables sprae via CDN, as CJS, AMD etc.
 
 ```html
-<!-- `init` autoinits sprae on document.body with initial state (optional) -->
-<script src="https://cdn.jsdelivr.net/npm/sprae/dist/sprae.umd.js" init="{ user: 'buddy' }"></script>
+<!-- `init` autoinits sprae on element(s), by default document.body. Optionally provide attr prefix. -->
+<script src="https://cdn.jsdelivr.net/npm/sprae/dist/sprae.umd.js" init="#container" prefix="s-"></script>
 
 <script>
   window.sprae; // global standalone
@@ -460,9 +460,9 @@ npm run results
 
 ## JSX
 
-Sprae can work with JSX via custom prefix `sprae.use({prefix:'s-'})`.
+Sprae can work with JSX via custom prefix, eg. `s-`.
 
-It can be useful as Next.js companion for SSR. Next.js server components fail at dynamic UI, like active nav, tabs, sliders etc. That forces into client components, which screws up data fetching, bloats hydration and adds overhead. Sprae can offload UI logic to keep server components intact.
+It can be useful as Next.js companion for SSR. Server components fail at dynamic UI – active nav, tabs, sliders etc. Forcing into client components screws up data fetching, bloats hydration and adds overhead. Sprae can offload UI logic to keep server components intact.
 
 ```jsx
 // app/page.jsx - server component
@@ -476,15 +476,18 @@ export default function Page() {
   </>
 }
 ```
-<!--
+
+```jsx
 // layout.jsx
+import Script from 'next/script'
+
 export default function Layout({ children }) {
   return <>
     {children}
-    <Script type="module">{`import sprae from 'sprae'; sprae.use({ prefix: 's-' }); sprae(document.documentElement);`}</Script>
+    <Script type="module" src="https://unpkg.com/sprae" init prefix="s-" />
   </>
 }
-``` -->
+```
 
 ## Examples
 

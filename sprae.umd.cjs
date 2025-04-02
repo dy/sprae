@@ -3,11 +3,12 @@
 const { default: sprae } = require("./sprae.js");
 
 // autoinit if wanted
-const config = document.currentScript?.getAttribute('init')
-if (config != null) {
-  const props = JSON.parse(config || '{}')
-  const init = () => { sprae(document.body, props) };
+const script = document.currentScript
 
+if (script) {
+  const $ = script.getAttribute('init')
+  const init = () => document.querySelectorAll($ || 'body').forEach(el => sprae(el));
+  sprae.use({prefix: script.getAttribute('prefix')});
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);
   else init();
 }
