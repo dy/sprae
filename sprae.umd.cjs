@@ -6,7 +6,7 @@ const { default: sprae } = require("./sprae.js");
 const config = document.currentScript?.getAttribute('init')
 if (config != null) {
   const props = JSON.parse(config || '{}')
-  const init = () => { sprae(document.documentElement, props) };
+  const init = () => { sprae(document.body, props) };
 
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);
   else init();

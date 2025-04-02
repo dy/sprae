@@ -32,7 +32,7 @@ Sprae evaluates `:`-directives and evaporates them, returning reactive state for
 UMD version enables sprae via CDN, as CJS, AMD etc.
 
 ```html
-<!-- `init` autoinits sprae on document with initial state (optional) -->
+<!-- `init` autoinits sprae on document.body with initial state (optional) -->
 <script src="https://cdn.jsdelivr.net/npm/sprae/dist/sprae.umd.js" init="{ user: 'buddy' }"></script>
 
 <script>

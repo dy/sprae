@@ -24,11 +24,11 @@ export const dir = (name, create, p = parse) => directive[name] = (el, expr, sta
 /**
  * Applies directives to an HTML element and manages its reactive state.
  *
- * @param {Element} el - The target HTML element to apply directives to.
+ * @param {Element} [el=document.body] - The target HTML element to apply directives to.
  * @param {Object} [values] - Initial values to populate the element's reactive state.
  * @returns {Object} The reactive state object associated with the element.
  */
-export const sprae = (el, values) => {
+export const sprae = (el=document.body, values) => {
   // repeated call can be caused by eg. :each with new objects with old keys
   if (el[_state]) return Object.assign(el[_state], values)
 

@@ -1269,6 +1269,7 @@
 ## [ ] s-cloak? Hides contents until sprae finishes loading
 
   * wait until needed
+  + provided by lucia l-mask, alpine a-cloak, vue v-cloak
 
 ## [ ] s-ignore? Excludes element from spraeing
 
@@ -1279,8 +1280,9 @@
   + makes init property on par with other sprae properties
   + can init multiple entry points in document
   - forces-sh autoinit (a matter of `querySelectorAll(':init')`)
-    ~ not a big task
+    ~ not a big deal
   + it's more useful for JSX, since components will be initialized separately as `<div s-init="...data"></div>`
   + that's on-par with alpine
   * we can actually have `sprae.auto` or `sprae.jsx` entries that autoinit sprae.
     + that can predefine `s-` prefix
+  - that's same as `:with`
