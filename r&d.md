@@ -1287,3 +1287,7 @@
     + that can predefine `s-` prefix
   - that's same as `:with`
   - `init` reads JSON, `:with` reads regular JS objects, they're not same
+
+### [x] TS doesn't allow arbitrary attributes on `<Script>` tag, but prefix (surprise!) is allowed. -> sprae.auto.js
+  * Do we ever need UMD without autosprae?
+  * let's add auto entry.

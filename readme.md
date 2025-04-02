@@ -29,15 +29,22 @@ Sprae evaluates `:`-directives and evaporates them, returning reactive state for
 
 ### Standalone
 
-UMD version enables sprae via CDN, as CJS, AMD etc.
+`sprae.umd` enables sprae via CDN, as CJS, AMD etc.
 
 ```html
-<!-- `init` autoinits elements (by default body) with attr `prefix` (by default ':'). -->
-<script src="https://unpkg.com/sprae" init="#container" prefix="s-"></script>
-
+<script src="https://unpkg.com/sprae"></script>
 <script>
-  window.sprae; // global standalone
+  window.sprae(document.body, {foo: 'bar'}); // global standalone
 </script>
+```
+
+### Autoinit
+
+`sprae.auto` autoinits sprae on document, which is useful for [SSR](#jsx) etc.
+
+```html
+<!-- Optional attr `prefix` (by default ':'). -->
+<script src="https://unpkg.com/sprae.auto" prefix="s-"></script>
 ```
 
 ## Directives
