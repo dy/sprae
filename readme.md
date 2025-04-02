@@ -2,8 +2,8 @@
 
 > DOM tree microhydration
 
-_Sprae_ is open & minimalistic progressive enhancement framework with _preact-signals_ based reactivity.<br/>
-Perfect for small-scale websites, static pages, landings, prototypes, lightweight UI or SSR companion (see [JSX](#JSX)).<br/>
+_Sprae_ is open & minimalistic progressive enhancement framework with _preact-signals_ reactivity.<br/>
+Ideal for small sites, static pages, prototypes, light UI or SSR (see [JSX](#JSX)).<br/>
 A light and fast alternative to _alpine_, _petite-vue_, _lucia_ etc (see [why](#justification)).
 
 ## Usage
@@ -368,9 +368,9 @@ sprae.use({
 
 ## JSX
 
-Sprae can work with JSX via custom prefix, eg. `s-`.
+Sprae works with JSX via prefix `s-`.
 
-Useful as Next.js companion for SSR. Server components fail at dynamic UI – active nav, tabs, sliders etc. Converting to client components screws up data fetching and adds overhead. Sprae can offload UI logic to keep server components intact.
+Case: Next.js server components fail at dynamic UI – active nav, tabs, sliders etc. Converting to client components screws up data fetching and adds overhead. Sprae can offload UI logic to keep server components intact.
 
 ```jsx
 // app/page.jsx - server component
