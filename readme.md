@@ -464,7 +464,7 @@ npm run results
 
 Sprae can work with JSX via custom prefix, eg. `s-`.
 
-It can be useful as Next.js companion for SSR. Server components fail at dynamic UI – active nav, tabs, sliders etc. Forcing into client components screws up data fetching, bloats hydration and adds overhead. Sprae can offload UI logic to keep server components intact.
+Useful as Next.js companion for SSR. Server components fail at dynamic UI – active nav, tabs, sliders etc. Converting to client components screws up data fetching and adds overhead. Sprae can offload UI logic to keep server components intact.
 
 ```jsx
 // app/page.jsx - server component
