@@ -4,7 +4,7 @@
 
 _Sprae_ is open & minimalistic progressive enhancement framework with _preact-signals_ based reactivity.<br/>
 Perfect for small-scale websites, static pages, landings, prototypes, lightweight UI or SSR companion (see [JSX](#JSX)).<br/>
-A light and fast alternative to _alpine_, _petite-vue_ etc (see [why](#justification)).
+A light and fast alternative to _alpine_, _petite-vue_, _lucia_ etc (see [why](#justification)).
 
 ## Usage
 
