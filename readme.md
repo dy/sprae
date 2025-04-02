@@ -33,7 +33,7 @@ UMD version enables sprae via CDN, as CJS, AMD etc.
 
 ```html
 <!-- `init` autoinits sprae on element(s), by default document.body. Optionally provide attr prefix. -->
-<script src="https://cdn.jsdelivr.net/npm/sprae/dist/sprae.umd.js" init="#container" prefix="s-"></script>
+<script src="https://unpkg.com/sprae" init="#container" prefix="s-"></script>
 
 <script>
   window.sprae; // global standalone
