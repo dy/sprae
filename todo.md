@@ -156,6 +156,7 @@
 * [x] get rid of dir.parse in favor of smth better
 * [x] remove ~~computed~~, batch, untracked -> simplify
 * [x] fix plain update bug #55
+* [x] js-framework-bench push + example
 * [ ] add test for jsperf adding multiple elements - make sure it's O(n), not n**2
   * [ ] maybe just add jsperf bench as tests
 
@@ -179,9 +180,4 @@
 * [ ] Trust: contact, contributors, sponsor
 * [ ] JS-framework-benchmark ref
 
-## Backlog
-
-* [ ] :onvisible..oninvisible
-* [x] ~~:onmount..onunmount~~ - see :ref
-* [ ] :animate?
-* [x] js-framework-bench push + example
+## Integrations

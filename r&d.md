@@ -312,21 +312,6 @@
       - Less verbose and explicit
       - No way to customize sequences, eg.  custom events
 
-## [ ] Plugins
-
-  * ~~@sprae/tailwind: `<x :tw="mt-1 mx-2"></x>` - separate tailwind utility classes from main ones; allow conditional setters.~~
-  * @sprae/item: `<x :item="{type:a, scope:b}"` – provide microdata
-    - can be solved naturally, unless there's special meaning
-  * @sprae/hcodes: `<x :hcode=""` – provide microformats
-  * @sprae/visible?
-    - can be solved externally
-  * @sprae/intersect
-  * @sprae/persists - mb for signals?
-  * @sprae/mount
-  * @sprae/use?
-  * @sprae/input - for input values
-  * @sprae/
-
 ## [x] Write any-attributes via `:<prop>? -> yep`
 
 + Since we support attr walking, maybe instead of :on and :prop just allow any attributes?
@@ -694,13 +679,14 @@
 ## [ ] Prop modifiers
 
   - overall seems code complication without much benefit
-  * value.bind? value.watch?
+  * ~~value.bind? value.watch?~~ no sense beyound value/ref
     - let's wait for use-case: value can be too big to set it every time
-  * prop.reflect, prop.observe
+  * ~~prop.reflect, prop.observe~~ signals are autoobserved
     - let's wait for use-case
-  * prop.boolean, .number, .string, .array, .object
+  * ~~prop.boolean, .number, .string, .array, .object~~ defined per-property
     - let's wait for use-case
-  * prop.once, prop.fx ? prop.init?
+  * prop.once, prop.init
+  * ~~prop.fx ?~~ fx is there
     - doesn't seem required, let's wait for use case
   * prop.change - run only if value changes
     - seems like unnecessary manual optimization that must be done always automatically
@@ -1143,7 +1129,7 @@
   ? Do we need extending root scope? Like writing some new props to it?
   + `with` doesn't allow writing new props anyways
 
-## [ ] Componentization: what would be the most durable/meaningful/inspiring pattern? -> likely no for now
+## [ ] Componentization: what can be done? -> likely no for now. When html-include is there we can talk
 
   1. define-element
 
@@ -1192,13 +1178,6 @@
   + completes disposal method
   - requires storing initial `:` attributes
   + `:each` already does that way: just stores initial element as template, untouched
-
-## [ ] Reasons against sprae
-
-  - requires loading script anyways - not native event callbacks
-  - ~~no `this` keyword makes it a bit cumbersome~~
-  - separate syntax space even with `:` prefix - conflicts
-  - perf-wise vanilla is still faster
 
 ## [x] If directive: #55 - dispose or not elements from not matching branch? -> let's try el[_off]
 
@@ -1266,15 +1245,6 @@
     ~+ `s-id:name` is available
   + it's low hanging fruit
 
-## [ ] s-cloak? Hides contents until sprae finishes loading
-
-  * wait until needed
-  + provided by lucia l-mask, alpine a-cloak, vue v-cloak
-
-## [ ] s-ignore? Excludes element from spraeing
-
-  * wait until needed
-
 ## [x] :init? For autoinit elements -> no, use `init` but keep data from `:with`
 
   + makes init property on par with other sprae properties
@@ -1291,3 +1261,41 @@
 ### [x] TS doesn't allow arbitrary attributes on `<Script>` tag, but prefix (surprise!) is allowed. -> sprae.auto.js
   * Do we ever need UMD without autosprae?
   * let's add auto entry.
+
+## [ ] s-cloak? Hides contents until sprae finishes loading
+
+  * wait until needed
+  + provided by lucia l-mask, alpine a-cloak, vue v-cloak
+
+## [ ] s-ignore? Excludes element from spraeing
+
+  * wait until needed
+
+## [ ] Plugins
+
+  * @sprae/tailwins: `<x :tw="mt-1 mx-2"></x>` - separate tailwind utility classes from main ones; allow conditional setters.
+  * @sprae/item: `<x :item="{type:a, scope:b}"` – provide microdata
+    - can be solved naturally, unless there's special meaning
+  * @sprae/hcodes: `<x :hcode=""` – provide microformats
+  * @sprae/visible?
+    - can be solved externally
+  * @sprae/intersect
+  * @sprae/persists - mb for signals?
+  * @sprae/input - for input values
+  * @sprae/scroll - `:scroll.view.x="progress => "`
+  * @sprae/animate -
+  * @sprae/
+
+## [ ] Reasons against sprae
+
+  - requires loading script anyways - not native event callbacks
+  - ~~no `this` keyword makes it a bit cumbersome~~
+  -~ separate syntax space even with `:` prefix - conflicts
+  - perf-wise vanilla is still faster
+
+## [ ] Integrations
+
+  * Any personal SPA
+  * Wavearea
+  * Sprae website
+  *
