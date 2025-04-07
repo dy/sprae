@@ -139,6 +139,7 @@
   1.1 Slim `:with="{a,b,c}"` - just initializes vars
     - Doesn't give easy init syntax
     + Convevtional and not hard to implement
+    - `:with` creates unnecessary updates, like one property updates whole object, and is often an overkill for memory.
   2. Use `:let="x, y=2"`?
     + Doesn't pollute scope but instead cleanly declares local variables
     + Indicates only local initializer, not subscription
@@ -150,6 +151,7 @@
   3. `:with.x="1", :with.y="2"`
     + easier to parse, since init code can be _messy_
     - against paradigm
+
 
 ## [x] Should we inherit values from `init` in `sprae(el, init)`, instead of creating a snapshot of reactive values in `init`? -> nah, nice idea but too little use. Better create signals struct.
 
@@ -676,35 +678,6 @@
       * onkey.after, onkey.microtask, onkey.defer, onkey.immediate
       * onkey.tick-1?
 
-## [ ] Prop modifiers
-
-  - overall seems code complication without much benefit
-  * ~~value.bind? value.watch?~~ no sense beyound value/ref
-    - let's wait for use-case: value can be too big to set it every time
-  * ~~prop.reflect, prop.observe~~ signals are autoobserved
-    - let's wait for use-case
-  * ~~prop.boolean, .number, .string, .array, .object~~ defined per-property
-    - let's wait for use-case
-  * prop.once, prop.init
-  * ~~prop.fx ?~~ fx is there
-    - doesn't seem required, let's wait for use case
-  * prop.change - run only if value changes
-    - seems like unnecessary manual optimization that must be done always automatically
-    ? are there cases where force-update is necessary?
-  * prop.throttle-xxx, prop.debounce-xxx
-    - let's wait until that's really a problem
-  * prop.class
-    ? what's the use-case
-  * prop.next="" - run update after other DOM updates happen
-  * prop.fx="" - run effect without changing property
-  * x.prop="xyz" - set element property, rather than attribute (following topic)
-  * x.raf="abc" - run regularly?
-  * x.watch-a-b-c - update by change of any of the deps
-  * :x.always - update by _any_ dep change
-  * :class.active="active"
-  * :x.persist="v"
-    - solvable via nadis
-
 ## [x] Writing props on elements (like ones in :each) -> nah, just use `:x="this.x=abc"`
 
   1. `:x="abc"` creates property + attribute
@@ -731,7 +704,7 @@
   5. `:x="this.x=value"`
     + yepyepyep
 
-## [x] Insert content by reusing the node/template -> use ~~`:render="ref" :with="data"`~~ `:html="ref" :scope="{}"`
+## [x] Insert content by reusing the node/template -> use ~~`:render="ref" :with="data"`~~ ~~`:html="ref" :scope="{}"`~~ :ref="item=>item.innerHTML=..."
 
   * Makes easy use of repeatable fragments, instead of web-components
   + sort-of "detached" for-each
@@ -1114,7 +1087,7 @@
   + It would allow us to get rid of `parent` in `store`, which is less static + dynamic trouble
   + `:scope` defines only particular local variables, but generally access to root scope is preserved
 
-### [x] should we rename `:scope` to `:with` then, to avoid confusion? -> Yes, :with is flat, it's better. Also it doesn't conflict with attributes
+### [x] Should we rename `:scope` to `:with`, to avoid confusion? -> Yes, :with is flat, it's better. Also it doesn't conflict with attributes
 
   + less confusion - doesn't create actual scope
   - bad remembrance of JS with
@@ -1280,6 +1253,55 @@
 
   + Allows referring to newly created state from inside methods
   + Errors in effects in first run don't break sprae
+
+## [ ] Prop modifiers
+
+  - overall seems code complication without much benefit
+  * ~~value.bind? value.watch?~~ no sense beyound value/ref
+  * ~~prop.reflect, prop.observe~~ signals are autoobserved
+  * ~~prop.boolean, .number, .string, .array, .object~~ defined per-property
+  * prop.once, prop.init
+  * prop.change - run only if value changes
+    - seems like unnecessary manual optimization that must be done always automatically
+    ? are there cases where force-update is necessary?
+  * prop.throttle-xxx, prop.debounce-xxx
+    - let's wait until that's really a problem
+  * prop.tag
+  * prop.next="" - run update after other DOM updates happen
+  * ~~prop.fx="" - run effect without changing property~~ fx is there
+  * ~~x.prop="xyz" - set element property, rather than attribute (following topic)~~ do it via `:ref` or `:fx`
+  * x.raf="abc" - run regularly?
+  * ~~x.watch-a-b-c - update by change of any of the deps~~
+  * :x.always - update by _any_ state change
+  * :class.active="active"
+  * :style.--x="a"
+  * :data.x="a"
+  * :x.persist="v"
+    - solvable via nadis
+
+## [ ] Should we separate `k,v in b` to `k in b`, `v of b`
+
+  + likely perf optimizatino
+  + same as in JS
+  + we rarely need both key and value
+  + possibly less issue with store
+
+### [ ] ALT: keep only `k in b`
+
+  + will simplify state management: k doesn't change, unlike item
+  + if you want separate scope - just create via `:with.item="items[i]"`
+    ? can we make `:let="item=items[i]"` instead of `:with`?
+
+### [ ] `:let="a=1,b=2"` instead of with?
+  + shorter syntax
+  + on par with django
+  + avoids js with association
+  + enables per-variable effects
+
+### [ ] `:with.a="1" :with.b="2"`
+  + easier per-variable effects
+  + naturally makes use of `=`
+  + can extend pattern to `:data`, `:aria`, `:style`, `:class`
 
 ## [ ] s-cloak? Hides contents until sprae finishes loading
 

@@ -15,11 +15,10 @@ export const directive = {}
  * @param {(el: Element, state: Object, expr: string, name: string) => (value: any) => void} create - A function to create the directive.
  * @param {(expr: string) => (state: Object) => any} [p=parse] - Create evaluator from expression string.
  */
-export const dir = (name, create, p = parse) => directive[name] = (el, expr, state, name, update, evaluate) => (
-  update = create(el, state, expr, name),
-  evaluate = p(expr, ':'+name),
-  () => update(evaluate(state))
-)
+export const dir = (name, create, p = parse) => directive[name] = (el, expr, state, parts) => {
+  const evaluate = p(expr), update = create(el, state, expr, parts)
+  return () => update(evaluate(state))
+}
 
 /**
  * Applies directives to an HTML element and manages its reactive state.
@@ -38,7 +37,7 @@ export const sprae = (el=document.body, values) => {
   let init = (el, attrs = el.attributes) => {
       // we iterate live collection (subsprae can init args)
       if (attrs) for (let i = 0; i < attrs.length;) {
-        let { name, value } = attrs[i], update, dir
+        let { name, value } = attrs[i], update, dir, parts
 
         // if we have parts meaning there's attr needs to be spraed
         if (name.startsWith(prefix)) {
@@ -46,7 +45,8 @@ export const sprae = (el=document.body, values) => {
 
           // multiple attributes like :id:for=""
           for (dir of name.slice(prefix.length).split(':')) {
-            update = (directive[dir] || directive.default)(el, value, state, dir)
+            parts = dir.split('.')
+            update = (directive[parts[0]] || directive.default)(el, value, state, parts)
 
             // save & start effect
             fx.push(update)
