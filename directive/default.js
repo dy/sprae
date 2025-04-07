@@ -1,23 +1,24 @@
 // generic property directive
 import { dir, err } from "../core.js";
 
-dir('default', (target, state, expr, name) => {
+dir('default', (target, state, expr, parts) => {
   // simple prop
-  if (!name.startsWith('on'))
-    return name ?
-      value => attr(target, name, value) :
+  if (!parts[0].startsWith('on'))
+    return parts[0] ?
+      value => attr(target, parts[0], value) :
       value => { for (let key in value) attr(target, dashcase(key), value[key]) };
 
-  // bind event to a target
-  // NOTE: if you decide to remove chain of events, thing again - that's unique feature of sprae, don't diminish your own value.
+  // NOTE: if you decide to remove chain of events, thing again - that's unique feature of sprae, don't diminish its value.
   // ona..onb
-  let ctxs = name.split('..').map(e => {
-    let ctx = { evt: '', target, test: () => true };
-    ctx.evt = (e.startsWith('on') ? e.slice(2) : e).replace(/\.(\w+)?-?([-\w]+)?/g,
-      (_, mod, param = '') => (ctx.test = mods[mod]?.(ctx, ...param.split('-')) || ctx.test, '')
-    );
-    return ctx;
-  });
+  let ctx, ctxs = [ ], mod, params
+  for (let part of [,...parts]) {
+    // empty part means next event in chain ona..onb
+    if (!part) ctxs.push(ctx = {evt:'', target, test:_=>true});
+    // first part means event ona.x
+    else if (!ctx.evt) ctx.evt = part.slice(2)
+    // rest of parts apply modifiers
+    else ([mod, ...params]=part.split('-'), ctx.test = mods[mod]?.(ctx, params) || ctx.test)
+  }
 
   // add listener with the context
   let addListener = (fn, { evt, target, test, defer, stop, prevent, immediate, ...opts }, cb) => {
@@ -86,7 +87,7 @@ const mods = {
   shift: (_, ...param) => (e) => keys.shift(e) && param.every((p) => (keys[p] ? keys[p](e) : e.key === p)),
   alt: (_, ...param) => (e) => keys.alt(e) && param.every((p) => (keys[p] ? keys[p](e) : e.key === p)),
   meta: (_, ...param) => (e) => keys.meta(e) && param.every((p) => (keys[p] ? keys[p](e) : e.key === p)),
-  // NOTE: we don't expose up/left/right/down as too verbose: can and better be handled/differentiated at once
+  // NOTE: up/left/right/down would be too verbose: can and better be handled in one place
   arrow: () => keys.arrow,
   enter: () => keys.enter,
   esc: () => keys.esc,
