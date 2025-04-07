@@ -35,10 +35,14 @@ dir('each', (tpl, state, expr) => {
         for (; i < newl; i++) {
           cur[i] = newItems[i]
           let idx = i,
+            // FIXME: inherited state is cheaper in terms of memory and faster in terms of performance
+            // compared to cloning all parent signals and creating a proxy
+            // FIXME: besides try to avoid _signals access: we can optimize store then not checking for _signals key
             scope = store({
               [itemVar]: cur[_signals]?.[idx] || cur[idx],
               [idxVar]: keys ? keys[idx] : idx
             }, state),
+
             el = tpl.content ? frag(tpl) : tpl.cloneNode(true);
 
           holder.before(el.content || el);

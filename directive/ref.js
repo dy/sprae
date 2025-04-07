@@ -1,5 +1,5 @@
-import { dir, parse } from "../core.js";
-import { setter, ensure } from "./value.js";
+import { dir } from "../core.js";
+import { setter, ensure } from "../store.js";
 
 dir('ref', (el, state, expr, _, ev) => (
   ensure(state, expr),

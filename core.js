@@ -1,5 +1,5 @@
 import { use, effect } from "./signal.js";
-import { store, _signals } from './store.js';
+import { store } from './store.js';
 
 // polyfill
 export const _dispose = (Symbol.dispose ||= Symbol("dispose"));

@@ -1,5 +1,6 @@
 import sprae from "../core.js";
-import { dir, parse } from "../core.js";
+import { dir } from "../core.js";
+import { setter, ensure } from "../store.js";
 import { attr } from './default.js';
 
 
@@ -52,16 +53,3 @@ dir('value', (el, state, expr) => {
 
   return update
 })
-
-// create expression setter, reflecting value back to state
-export const setter = (expr, set = parse(`${expr}=__`)) => (
-  // FIXME: if there's a simpler way to set value in justin?
-  (state, value) => (
-    state.__ = value,
-    set(state, value),
-    delete state.__
-  )
-)
-
-// make sure state contains first element of path, eg. `a` from `a.b[c]`
-export const ensure = (state, expr, name = expr.match(/^\w+(?=\s*(?:\.|\[|$))/)) => name && (state[name[0]] ??= null)

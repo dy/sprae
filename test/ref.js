@@ -3,7 +3,7 @@ import { tick } from "wait-please";
 import sprae from '../sprae.js'
 import { signal } from '../signal.js'
 import h from "hyperf";
-import { _off } from "../core.js";
+import { _off, _state } from "../core.js";
 
 
 test("ref: base", async () => {
@@ -88,3 +88,18 @@ test("ref: fn unmount", async () => {
   is(div.innerHTML, ``);
   is(state.log, ['on', 'off']);
 });
+
+test('ref: create in state as untracked', async () => {
+  let div = h`<div :with="{_x:null,log(){console.log(_x)}}" :onx="log"><x :ref="_x" :text="_x?.tagName"></x></div>`;
+  let state = sprae(div)
+  is(div[_state]._x, div.firstChild)
+  // div.dispatchEvent(new window.CustomEvent("x"));
+})
+
+test.todo('ref: create in state as direct', async () => {
+  let div = h`<div :with="{x:null,log(){console.log(x)}}" :onx="log"><x :ref="x" :text="x?.tagName"></x></div>`;
+  let state = sprae(div)
+  // FIXME: something causes unnecessary update that overwrites x to null. What's that?
+  is(div[_state].x, div.firstChild)
+  // div.dispatchEvent(new window.CustomEvent("x"));
+})

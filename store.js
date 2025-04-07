@@ -1,7 +1,10 @@
 // signals-based proxy
 import { signal, computed, batch } from './signal.js'
+import { parse } from './core.js';
 
-export const _signals = Symbol('signals'), _change = Symbol('change'),
+export const _signals = Symbol('signals'),
+    _change = Symbol('change'),
+    _stash = '__',
 
   // object store is not lazy
   store = (values, parent) => {
@@ -13,27 +16,27 @@ export const _signals = Symbol('signals'), _change = Symbol('change'),
     // non-objects: for array redirect to list
     if (values.constructor !== Object) return Array.isArray(values) ? list(values) : values
 
-    // NOTE: if you decide to unlazy values, think about large arrays - init upfront can be costly
-    let signals = { ...parent?.[_signals] }, _len = signal(Object.values(values).length),
+    let signals = { ...parent?.[_signals] },
+        _len = signal(Object.keys(values).length),
+        stash,
 
       // proxy conducts prop access to signals
       state = new Proxy(signals, {
-        get: (_, k) => k === _change ? _len : k === _signals ? signals : signals[k]?.valueOf(),
-        set: (_, k, v, s) => (s = k in signals, set(signals, k, v), s || ++_len.value), // bump length for new signal
+        get: (_, k) => k === _change ? _len : k === _signals ? signals : k === _stash ? stash : signals[k]?.valueOf(),
+        set: (_, k, v, s) => (k === _stash ? stash = v : s = k in signals, set(signals, k, v), s || ++_len.value), // bump length for new signal
         deleteProperty: (_, k) => (signals[k] && (signals[k][Symbol.dispose]?.(), delete signals[k], _len.value--), 1),
         // subscribe to length when object is spread
         ownKeys: () => (_len.value, Reflect.ownKeys(signals)),
       }),
 
       // init signals for values
-      descs = Object.getOwnPropertyDescriptors(values),
-      desc
+      descs = Object.getOwnPropertyDescriptors(values)
 
     for (let k in values) {
       // getter turns into computed
-      if ((desc = descs[k])?.get)
+      if (descs[k]?.get)
         // stash setter
-        (signals[k] = computed(desc.get.bind(state)))._set = desc.set?.bind(state);
+        (signals[k] = computed(descs[k].get.bind(state)))._set = descs[k].set?.bind(state);
 
       else
         // init blank signal - make sure we don't take prototype one
@@ -65,10 +68,9 @@ export const _signals = Symbol('signals'), _change = Symbol('change'),
 
           lastProp = k;
 
-          if (signals[k]) return signals[k].valueOf()
-
-          // I hope reading values here won't diverge from signals
-          if (k < signals.length) return (signals[k] = signal(store(values[k]))).value
+          // create signal (lazy)
+          // NOTE: if you decide to unlazy values, think about large arrays - init upfront can be costly
+          return (signals[k] ?? (signals[k] = signal(store(values[k])))).valueOf()
         },
 
         set(_, k, v) {
@@ -122,5 +124,16 @@ const set = (signals, k, v) => {
   // .x = y
   else s.value = store(v)
 }
+
+// create expression setter, reflecting value back to state
+export const setter = (expr, set = parse(`${expr}=${_stash}`)) => (
+  (state, value) => (
+    state[_stash] = value, // save value to stash
+    set(state)
+  )
+)
+
+// make sure state contains first element of path, eg. `a` from `a.b[c]`
+export const ensure = (state, expr, name = expr.match(/^\w+(?=\s*(?:\.|\[|$))/)) => name && (state[_signals][name[0]] ??= null)
 
 export default store
