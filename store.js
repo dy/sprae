@@ -18,9 +18,9 @@ export const _signals = Symbol('signals'), _change = Symbol('change'),
 
       // proxy conducts prop access to signals
       state = new Proxy(signals, {
-        get: (_, key) => key === _change ? _len : key === _signals ? signals : signals[key]?.valueOf(),
-        set: (_, key, v, s) => (s = signals[key], set(signals, key, v), s ?? (++_len.value), 1), // bump length for new signal
-        deleteProperty: (_, key) => (signals[key] && (signals[key][Symbol.dispose]?.(), delete signals[key], _len.value--), 1),
+        get: (_, k) => k === _change ? _len : k === _signals ? signals : signals[k]?.valueOf(),
+        set: (_, k, v, s) => (s = signals[k], set(signals, k, v), s ?? (++_len.value), 1), // bump length for new signal
+        deleteProperty: (_, k) => (signals[k] && (signals[k][Symbol.dispose]?.(), delete signals[k], _len.value--), 1),
         // subscribe to length when object is spread
         ownKeys: () => (_len.value, Reflect.ownKeys(signals)),
       }),
@@ -29,15 +29,15 @@ export const _signals = Symbol('signals'), _change = Symbol('change'),
       descs = Object.getOwnPropertyDescriptors(values),
       desc
 
-    for (let key in values) {
+    for (let k in values) {
       // getter turns into computed
-      if ((desc = descs[key])?.get)
+      if ((desc = descs[k])?.get)
         // stash setter
-        (signals[key] = computed(desc.get.bind(state)))._set = desc.set?.bind(state);
+        (signals[k] = computed(desc.get.bind(state)))._set = desc.set?.bind(state);
 
       else
         // init blank signal - make sure we don't take prototype one
-        signals[key] = null, set(signals, key, values[key]);
+        signals[k] = null, set(signals, k, values[k]);
     }
 
     return state
@@ -56,40 +56,40 @@ export const _signals = Symbol('signals'), _change = Symbol('change'),
 
       // proxy conducts prop access to signals
       state = new Proxy(signals, {
-        get(_, key) {
+        get(_, k) {
           // covers Symbol.isConcatSpreadable etc.
-          if (typeof key === 'symbol') return key === _change ? _len : key === _signals ? signals : signals[key]
+          if (typeof k === 'symbol') return k === _change ? _len : k === _signals ? signals : signals[k]
 
           // if .length is read within .push/etc - peek signal to avoid recursive subscription
-          if (key === 'length') return mut.includes(lastProp) ? _len.peek() : _len.value;
+          if (k === 'length') return mut.includes(lastProp) ? _len.peek() : _len.value;
 
-          lastProp = key;
+          lastProp = k;
 
-          if (signals[key]) return signals[key].valueOf()
+          if (signals[k]) return signals[k].valueOf()
 
           // I hope reading values here won't diverge from signals
-          if (key < signals.length) return (signals[key] = signal(store(values[key]))).value
+          if (k < signals.length) return (signals[k] = signal(store(values[k]))).value
         },
 
-        set(_, key, v) {
+        set(_, k, v) {
           // .length
-          if (key === 'length') {
+          if (k === 'length') {
             // force cleaning up tail
             for (let i = v; i < signals.length; i++) delete state[i]
             // .length = N directly
             _len.value = signals.length = v;
           }
           else {
-            set(signals, key, v)
+            set(signals, k, v)
 
             // force changing length, if eg. a=[]; a[1]=1 - need to come after setting the item
-            if (key >= _len.peek()) _len.value = signals.length = +key + 1
+            if (k >= _len.peek()) _len.value = signals.length = +k + 1
           }
 
           return 1
         },
 
-        deleteProperty: (_, key) => (signals[key]?.[Symbol.dispose]?.(), delete signals[key], 1),
+        deleteProperty: (_, k) => (signals[k]?.[Symbol.dispose]?.(), delete signals[k], 1),
       })
 
     return state
@@ -99,13 +99,13 @@ export const _signals = Symbol('signals'), _change = Symbol('change'),
 const mut = ['push', 'pop', 'shift', 'unshift', 'splice']
 
 // set/update signal value
-const set = (signals, key, v) => {
-  let s = signals[key], cur
+const set = (signals, k, v) => {
+  let s = signals[k], cur
 
   // untracked
-  if (key[0] === '_') signals[key] = v
+  if (k[0] === '_') signals[k] = v
   // new property. preserve signal value as is
-  else if (!s) signals[key] = s = v?.peek ? v : signal(store(v))
+  else if (!s) signals[k] = s = v?.peek ? v : signal(store(v))
   // skip unchanged (although can be handled by last condition - we skip a few checks this way)
   else if (v === (cur = s.peek()));
   // stashed _set for value with getter/setter
