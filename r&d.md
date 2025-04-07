@@ -1114,10 +1114,15 @@
   + It would allow us to get rid of `parent` in `store`, which is less static + dynamic trouble
   + `:scope` defines only particular local variables, but generally access to root scope is preserved
 
-### [x] should we rename `:scope` to `:with` then, to avoid confusion? -> Yes, :with is flat, it's better
+### [x] should we rename `:scope` to `:with` then, to avoid confusion? -> Yes, :with is flat, it's better. Also it doesn't conflict with attributes
+
   + less confusion - doesn't create actual scope
   - bad remembrance of JS with
     +~ not necessarily the case
+  - `js:scope` makes more sense
+  - on par with petite-vue
+  + scope attribute is used for th
+  + also :scope/@scope is used in CSS - too much for the concept
 
 ### [x] store: should we prohibit creation of new props? -> no
 

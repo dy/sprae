@@ -44,7 +44,7 @@ Sprae evaluates `:`-directives and evaporates them, returning reactive state for
 
 ```html
 <!-- Optional attr `prefix` (by default ':'). -->
-<script src="https://unpkg.com/sprae/dist/sprae.auto" prefix="s-"></script>
+<script src="https://unpkg.com/sprae/dist/sprae.auto" prefix="js:"></script>
 ```
 
 
@@ -362,13 +362,13 @@ sprae.use({
   compile,
 
   // custom prefix
-  prefix: 's-'
+  prefix: 'js:'
 })
 ```
 
 ## JSX
 
-Sprae works with JSX via prefix `s-`.
+Sprae works with JSX via prefix `js:`.
 
 Case: Next.js server components fail at dynamic UI – active nav, tabs, sliders etc. Converting to client components screws up data fetching and adds overhead. Sprae can offload UI logic to keep server components intact.
 
@@ -377,8 +377,8 @@ Case: Next.js server components fail at dynamic UI – active nav, tabs, sliders
 export default function Page() {
   return <>
     <nav id="nav">
-      <a href="/" s-class="location.pathname === '/' && 'active'">Home</a>
-      <a href="/about" s-class="location.pathname === '/about' && 'active'">About</a>
+      <a href="/" js:class="location.pathname === '/' && 'active'">Home</a>
+      <a href="/about" js:class="location.pathname === '/about' && 'active'">About</a>
     </nav>
     ...
   </>
@@ -392,7 +392,7 @@ import Script from 'next/script'
 export default function Layout({ children }) {
   return <>
     {children}
-    <Script src="https://unpkg.com/sprae" prefix="s-" />
+    <Script src="https://unpkg.com/sprae" prefix="js:" />
   </>
 }
 ```

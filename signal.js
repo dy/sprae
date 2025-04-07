@@ -41,6 +41,7 @@ export let signal = (v, s, obs = new Set) => (
   ),
   batch = fn => fn(),
   untracked = batch,
+  // untracked = (fn, prev, v) => (prev = current, current = null, v = fn(), current = prev, v),
 
   // signals adapter - allows switching signals implementation and not depend on core
   use = (s) => (

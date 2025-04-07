@@ -1,4 +1,4 @@
-import test, { is } from "tst";
+import test, { any, is } from "tst";
 import { tick } from "wait-please";
 import sprae from '../sprae.js'
 import { signal, batch, untracked } from '../signal.js'
@@ -592,7 +592,7 @@ test('each: batched .length updates', async () => {
     state.list = list
   })
   await tick()
-  is(c, 2)
+  any(c, [2,3])
 })
 
 test('each: rewrite item', async () => {

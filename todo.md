@@ -159,6 +159,8 @@
 * [x] js-framework-bench push + example
 * [ ] add test for jsperf adding multiple elements - make sure it's O(n), not n**2
   * [ ] maybe just add jsperf bench as tests
+* [ ] immediate scope
+* [x] ref doesnt add to with -> it forces null init
 
 ## [ ] Optimizations (https://krausest.github.io/js-framework-benchmark/current.html)
 
@@ -180,4 +182,6 @@
 * [ ] Trust: contact, contributors, sponsor
 * [ ] JS-framework-benchmark ref
 
-## Integrations
+## Backlog
+
+* [ ] jz compiler
