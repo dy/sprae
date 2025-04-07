@@ -361,14 +361,14 @@ sprae.use({
   // configure compiler
   compile,
 
-  // custom prefix
+  // custom prefix, default is `:`
   prefix: 'js:'
 })
 ```
 
 ## JSX
 
-Sprae works with JSX via prefix `js:`.
+Sprae works with JSX via custom prefix.
 
 Case: Next.js server components fail at dynamic UI – active nav, tabs, sliders etc. Converting to client components screws up data fetching and adds overhead. Sprae can offload UI logic to keep server components intact.
 
