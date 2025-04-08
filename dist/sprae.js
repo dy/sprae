@@ -40,54 +40,54 @@ var use = (s) => (signal = s.signal, effect = s.effect, computed = s.computed, b
 // store.js
 var _signals = Symbol("signals");
 var _change = Symbol("change");
+var _stash = "__";
 var store = (values, parent) => {
   if (!values) return values;
   if (values[_signals] || values[Symbol.toStringTag]) return values;
   if (values.constructor !== Object) return Array.isArray(values) ? list(values) : values;
-  let signals = { ...parent?.[_signals] }, _len = signal(Object.values(values).length), state = new Proxy(signals, {
-    get: (_, key) => key === _change ? _len : key === _signals ? signals : signals[key]?.valueOf(),
-    set: (_, key, v, s) => (s = signals[key], set(signals, key, v), s ?? ++_len.value, 1),
+  let signals = { ...parent?.[_signals] }, _len = signal(Object.keys(values).length), stash, state = new Proxy(signals, {
+    get: (_, k) => k === _change ? _len : k === _signals ? signals : k === _stash ? stash : signals[k]?.valueOf(),
+    set: (_, k, v, s) => (k === _stash ? stash = v : s = k in signals, set(signals, k, v), s || ++_len.value),
     // bump length for new signal
-    deleteProperty: (_, key) => (signals[key] && (signals[key][Symbol.dispose]?.(), delete signals[key], _len.value--), 1),
+    deleteProperty: (_, k) => (signals[k] && (signals[k][Symbol.dispose]?.(), delete signals[k], _len.value--), 1),
     // subscribe to length when object is spread
     ownKeys: () => (_len.value, Reflect.ownKeys(signals))
-  }), descs = Object.getOwnPropertyDescriptors(values), desc;
-  for (let key in values) {
-    if ((desc = descs[key])?.get)
-      (signals[key] = computed(desc.get.bind(state)))._set = desc.set?.bind(state);
+  }), descs = Object.getOwnPropertyDescriptors(values);
+  for (let k in values) {
+    if (descs[k]?.get)
+      (signals[k] = computed(descs[k].get.bind(state)))._set = descs[k].set?.bind(state);
     else
-      signals[key] = null, set(signals, key, values[key]);
+      signals[k] = null, set(signals, k, values[k]);
   }
   return state;
 };
 var list = (values) => {
   let lastProp, _len = signal(values.length), signals = Array(values.length).fill(), state = new Proxy(signals, {
-    get(_, key) {
-      if (typeof key === "symbol") return key === _change ? _len : key === _signals ? signals : signals[key];
-      if (key === "length") return mut.includes(lastProp) ? _len.peek() : _len.value;
-      lastProp = key;
-      if (signals[key]) return signals[key].valueOf();
-      if (key < signals.length) return (signals[key] = signal(store(values[key]))).value;
+    get(_, k) {
+      if (typeof k === "symbol") return k === _change ? _len : k === _signals ? signals : signals[k];
+      if (k === "length") return mut.includes(lastProp) ? _len.peek() : _len.value;
+      lastProp = k;
+      return (signals[k] ?? (signals[k] = signal(store(values[k])))).valueOf();
     },
-    set(_, key, v) {
-      if (key === "length") {
+    set(_, k, v) {
+      if (k === "length") {
         for (let i = v; i < signals.length; i++) delete state[i];
         _len.value = signals.length = v;
       } else {
-        set(signals, key, v);
-        if (key >= _len.peek()) _len.value = signals.length = +key + 1;
+        set(signals, k, v);
+        if (k >= _len.peek()) _len.value = signals.length = +k + 1;
       }
       return 1;
     },
-    deleteProperty: (_, key) => (signals[key]?.[Symbol.dispose]?.(), delete signals[key], 1)
+    deleteProperty: (_, k) => (signals[k]?.[Symbol.dispose]?.(), delete signals[k], 1)
   });
   return state;
 };
 var mut = ["push", "pop", "shift", "unshift", "splice"];
-var set = (signals, key, v) => {
-  let s = signals[key], cur;
-  if (key[0] === "_") signals[key] = v;
-  else if (!s) signals[key] = s = v?.peek ? v : signal(store(v));
+var set = (signals, k, v) => {
+  let s = signals[k], cur;
+  if (k[0] === "_") signals[k] = v;
+  else if (!s) signals[k] = s = v?.peek ? v : signal(store(v));
   else if (v === (cur = s.peek())) ;
   else if (s._set) s._set(v);
   else if (Array.isArray(v) && Array.isArray(cur)) {
@@ -97,6 +97,12 @@ var set = (signals, key, v) => {
     });
     else s.value = v;
   } else s.value = store(v);
+};
+var setter = (expr, set2 = parse(`${expr}=${_stash}`)) => (state, value) => (state[_stash] = value, // save value to stash
+set2(state));
+var ensure = (state, expr, name = expr.match(/^\w+(?=\s*(?:\.|\[|$))/)) => {
+  var _a, _b;
+  return name && ((_a = state[_signals])[_b = name[0]] ?? (_a[_b] = null));
 };
 var store_default = store;
 
@@ -247,6 +253,47 @@ dir(
   },
   // redefine evaluator to take second part of expression
   (expr) => parse(expr.split(/\bin\b/)[1])
+);
+
+// directive/ref.js
+dir("ref", (el, state, expr, _, ev) => (ensure(state, expr), ev(state) == null ? (setter(expr)(state, el), (_2) => _2) : (v) => v.call(null, el)));
+
+// directive/with.js
+dir("with", (el, rootState, state) => (state = null, (values) => core_default(el, state ? values : state = store_default(values, rootState))));
+
+// directive/text.js
+dir("text", (el) => (
+  // <template :text="a"/> or previously initialized template
+  (el.content && el.replaceWith(el = frag(el).childNodes[0]), (value) => el.textContent = value == null ? "" : value)
+));
+
+// directive/class.js
+dir(
+  "class",
+  (el, cur) => (cur = /* @__PURE__ */ new Set(), (v) => {
+    let clsx = /* @__PURE__ */ new Set();
+    if (v) {
+      if (typeof v === "string") v.split(" ").map((cls) => clsx.add(cls));
+      else if (Array.isArray(v)) v.map((v2) => v2 && clsx.add(v2));
+      else Object.entries(v).map(([k, v2]) => v2 && clsx.add(k));
+    }
+    for (let cls of cur) if (clsx.has(cls)) clsx.delete(cls);
+    else el.classList.remove(cls);
+    for (let cls of cur = clsx) el.classList.add(cls);
+  })
+);
+directive.className = directive.class;
+
+// directive/style.js
+dir(
+  "style",
+  (el, initStyle) => (initStyle = el.getAttribute("style"), (v) => {
+    if (typeof v === "string") el.setAttribute("style", initStyle + (initStyle.endsWith(";") ? "" : "; ") + v);
+    else {
+      if (initStyle) el.setAttribute("style", initStyle);
+      for (let k in v) k[0] == "-" ? el.style.setProperty(k, v[k]) : el.style[k] = v[k];
+    }
+  })
 );
 
 // directive/default.js
@@ -417,54 +464,6 @@ dir("value", (el, state, expr) => {
   }
   return update;
 });
-var setter = (expr, set2 = parse(`${expr}=__`)) => (
-  // FIXME: if there's a simpler way to set value in justin?
-  (state, value) => (state.__ = value, set2(state, value), delete state.__)
-);
-var ensure = (state, expr, name = expr.match(/^\w+(?=\s*(?:\.|\[|$))/)) => {
-  var _a;
-  return name && (state[_a = name[0]] ?? (state[_a] = null));
-};
-
-// directive/ref.js
-dir("ref", (el, state, expr, _, ev) => (ensure(state, expr), ev(state) == null ? (setter(expr)(state, el), (_2) => _2) : (v) => v.call(null, el)));
-
-// directive/with.js
-dir("with", (el, rootState, state) => (state = null, (values) => core_default(el, state ? values : state = store_default(values, rootState))));
-
-// directive/text.js
-dir("text", (el) => (
-  // <template :text="a"/> or previously initialized template
-  (el.content && el.replaceWith(el = frag(el).childNodes[0]), (value) => el.textContent = value == null ? "" : value)
-));
-
-// directive/class.js
-dir(
-  "class",
-  (el, cur) => (cur = /* @__PURE__ */ new Set(), (v) => {
-    let clsx = /* @__PURE__ */ new Set();
-    if (v) {
-      if (typeof v === "string") v.split(" ").map((cls) => clsx.add(cls));
-      else if (Array.isArray(v)) v.map((v2) => v2 && clsx.add(v2));
-      else Object.entries(v).map(([k, v2]) => v2 && clsx.add(k));
-    }
-    for (let cls of cur) if (clsx.has(cls)) clsx.delete(cls);
-    else el.classList.remove(cls);
-    for (let cls of cur = clsx) el.classList.add(cls);
-  })
-);
-
-// directive/style.js
-dir(
-  "style",
-  (el, initStyle) => (initStyle = el.getAttribute("style"), (v) => {
-    if (typeof v === "string") el.setAttribute("style", initStyle + (initStyle.endsWith(";") ? "" : "; ") + v);
-    else {
-      if (initStyle) el.setAttribute("style", initStyle);
-      for (let k in v) k[0] == "-" ? el.style.setProperty(k, v[k]) : el.style[k] = v[k];
-    }
-  })
-);
 
 // directive/fx.js
 dir("fx", (_) => (_2) => _2);
