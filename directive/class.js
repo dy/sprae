@@ -1,4 +1,4 @@
-import { dir } from "../core.js";
+import { dir, directive } from "../core.js";
 
 dir('class', (el, cur) => (
   cur = new Set,
@@ -13,3 +13,5 @@ dir('class', (el, cur) => (
     for (let cls of cur = clsx) el.classList.add(cls)
   })
 )
+
+directive.className = directive.class // JSX alias

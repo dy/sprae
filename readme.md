@@ -44,7 +44,7 @@ Sprae evaluates `:`-directives and evaporates them, returning reactive state for
 
 ```html
 <!-- Optional attr `prefix` (by default ':'). -->
-<script src="https://unpkg.com/sprae/dist/sprae.auto" prefix="js:"></script>
+<script src="https://unpkg.com/sprae/dist/sprae.auto" prefix="js-"></script>
 ```
 
 
@@ -362,7 +362,7 @@ sprae.use({
   compile,
 
   // custom prefix, default is `:`
-  prefix: 'js:'
+  prefix: 'js-'
 })
 ```
 
@@ -377,8 +377,8 @@ Case: Next.js server components fail at dynamic UI – active nav, tabs, sliders
 export default function Page() {
   return <>
     <nav id="nav">
-      <a href="/" js:class="location.pathname === '/' && 'active'">Home</a>
-      <a href="/about" js:class="location.pathname === '/about' && 'active'">About</a>
+      <a href="/" js-class="location.pathname === '/' && 'active'">Home</a>
+      <a href="/about" js-class="location.pathname === '/about' && 'active'">About</a>
     </nav>
     ...
   </>
@@ -392,7 +392,7 @@ import Script from 'next/script'
 export default function Layout({ children }) {
   return <>
     {children}
-    <Script src="https://unpkg.com/sprae" prefix="js:" />
+    <Script src="https://unpkg.com/sprae" prefix="js-" />
   </>
 }
 ```
