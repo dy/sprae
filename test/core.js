@@ -16,6 +16,15 @@ test('core: pre-create store', async () => {
   is(el.outerHTML, `<x>2</x>`)
 })
 
+test('core: immediate store', async () => {
+  let el = h`<x :text="get()"></x>`
+  let state = sprae(el, {x:1,get(){return state.x}})
+  is(el.outerHTML, `<x>1</x>`)
+  state.x=2
+  is(el.outerHTML, `<x>2</x>`)
+})
+
+
 test("core: simple hidden attr", async () => {
   let el = h`<div :hidden="hidden"></div>`;
   let params = sprae(el, { hidden: true });

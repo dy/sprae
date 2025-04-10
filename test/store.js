@@ -139,6 +139,7 @@ t('store: array with objects', async () => {
   let s = store({
     list: [{ n: 'a' }, { n: 'b' }]
   })
+
   is(s, { list: [{ n: 'a' }, { n: 'b' }] })
 })
 

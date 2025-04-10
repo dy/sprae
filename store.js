@@ -16,7 +16,8 @@ export const _signals = Symbol('signals'),
     // non-objects: for array redirect to list
     if (values.constructor !== Object) return Array.isArray(values) ? list(values) : values
 
-    let signals = { ...parent?.[_signals] },
+    // we must inherit signals to allow dynamic extend of parent state
+    let signals = Object.create(parent?.[_signals] || {}),
         _len = signal(Object.keys(values).length),
         stash,
 

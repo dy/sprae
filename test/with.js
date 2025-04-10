@@ -77,3 +77,13 @@ test("with: scope directives must come first", async () => {
   sprae(a, { x: null });
   is(a.outerHTML, `<x>1</x>`);
 });
+
+test("with: new prop added to superstore", async () => {
+  let a = h`<x :with="{y:0}" :ony="()=>y=1"><a :if="y" :text="x"></a></x>`
+  let state = sprae(a, {})
+  is(a.innerHTML, ``)
+  state.x = 1
+  a.dispatchEvent(new window.Event('y'))
+  await tick()
+  is(a.innerHTML, `<a>1</a>`)
+})
