@@ -23,11 +23,12 @@ export const _signals = Symbol('signals'),
 
       // proxy conducts prop access to signals
       state = new Proxy(signals, {
-        get: (_, k) => k === _change ? _len : k === _signals ? signals : k === _stash ? stash : signals[k]?.valueOf(),
+        get: (_, k) => k === _change ? _len : k === _signals ? signals : k === _stash ? stash : k in signals ? signals[k]?.valueOf() : globalThis[k],
         set: (_, k, v, s) => (k === _stash ? stash = v : s = k in signals, set(signals, k, v), s || ++_len.value), // bump length for new signal
         deleteProperty: (_, k) => (signals[k] && (signals[k][Symbol.dispose]?.(), delete signals[k], _len.value--), 1),
         // subscribe to length when object is spread
         ownKeys: () => (_len.value, Reflect.ownKeys(signals)),
+        has: _ => true // sandbox prevents writing to global
       }),
 
       // init signals for values

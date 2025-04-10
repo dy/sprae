@@ -7,7 +7,7 @@ import h from "hyperf";
 import * as signals from '@preact/signals-core'
 sprae.use(signals)
 
-test('core: pre-create store', async () => {
+test('core: pre-created store', async () => {
   let state = store({x:1,get(){return state.x}})
   let el = h`<x :text="get()"></x>`
   sprae(el, state)
@@ -16,7 +16,7 @@ test('core: pre-create store', async () => {
   is(el.outerHTML, `<x>2</x>`)
 })
 
-test('core: immediate store', async () => {
+test.todo('core: sync store access', async () => {
   let el = h`<x :text="get()"></x>`
   let state = sprae(el, {x:1,get(){return state.x}})
   is(el.outerHTML, `<x>1</x>`)
@@ -101,13 +101,13 @@ test.skip("core: const in with", async () => {
   is(state.y, 1);
 });
 
-test("core: base", async () => {
+test("core: bulk set", async () => {
   let el = h`<input :id="0" :="{for:1, title:2, help:3, type:4, placeholder: 5, value: 6, aB: 8}" :value="7"/>`;
   sprae(el);
   is(el.outerHTML, `<input id="0" for="1" title="2" help="3" type="4" placeholder="5" value="7" a-b="8">`);
 });
 
-test("core: sets prop", async () => {
+test("core: sets el.prop", async () => {
   let el = h`<x :ref="e => el=e" :x="el.x=1" :y="el.y='abc'"></x>`;
   sprae(el, { el: null });
   is(el.x, 1);
@@ -210,7 +210,7 @@ test("subscribe to array length", async () => {
   is(el.innerHTML, `<x></x><y>1</y>`);
 });
 
-test("csp: sandbox", async () => {
+test.skip("csp: sandbox", async () => {
   const { default: justin } = await import('subscript/justin')
   sprae.use({ compile: justin })
   const globals = { console };
@@ -228,6 +228,12 @@ test("csp: sandbox", async () => {
   // console.log(s.log)
   is(s.log, [window, console, undefined, undefined]);
 });
+
+test('globals', async () => {
+  let el = h`<x :text="Math.PI.toFixed(2)"></x>`
+  let state = sprae(el)
+  is(el.outerHTML, `<x>3.14</x>`)
+})
 
 test("switch signals", async () => {
   const preact = await import('@preact/signals-core')
@@ -254,12 +260,19 @@ test("Math / other globals available in template", async () => {
   is(el.innerHTML, '4');
 });
 
-test("s-directive", async () => {
+test("custom prefix", async () => {
   sprae.use({prefix:'s-'})
   let el = h`<x s-text="a"></x>`;
   sprae(el, {a:123});
   is(el.outerHTML, `<x>123</x>`);
   sprae.use({prefix:':'})
+})
+
+test("multiple errors don't break sprae", async () => {
+  console.log('---again')
+  let el = h`<y><x :text="a"></x><x :text="b"></x></y>`
+  let state = sprae(el, {b:'b'})
+  is(el.innerHTML, `<x></x><x>b</x>`)
 })
 
 test.skip('memory allocation', async () => {

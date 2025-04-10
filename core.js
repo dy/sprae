@@ -16,8 +16,8 @@ export const directive = {}
  * @param {(expr: string) => (state: Object) => any} [p=parse] - Create evaluator from expression string.
  */
 export const dir = (name, create, p = parse) => directive[name] = (el, expr, state, name, update, evaluate) => (
-  evaluate = p(expr),
-  update = create(el, state, expr, name, evaluate),
+    evaluate = p(expr),
+    update = create(el, state, expr, name, evaluate),
   () => update(evaluate(state))
 )
 
@@ -49,7 +49,9 @@ export const sprae = (el=document.body, values) => {
             update = (directive[dir] || directive.default)(el, value, state, dir)
 
             // save & start effect
-            fx.push(update), offs.push(effect(update))
+            fx.push(update)
+            // FIXME: since effect can have async start, we can just use el[_on]
+            offs.push(effect(update))
 
             // stop after :each, :if, :with etc.
             if (el[_state] === null) return
@@ -96,11 +98,15 @@ sprae.use = s => (
 export const parse = (expr, dir, fn) => {
   if (fn = memo[expr = expr.trim()]) return fn
 
-  // static-time errors
+  // static time errors
   try { fn = compile(expr) }
   catch (e) { err(e, dir, expr) }
 
-  return memo[expr] = fn
+  // run time errors
+  return memo[expr] = s => {
+    try { return fn(s) }
+    catch(e) { err(e, dir, expr) }
+  }
 }
 const memo = {};
 
