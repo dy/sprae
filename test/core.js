@@ -1,14 +1,22 @@
 import test, { is } from "tst";
 import { tick, time } from "wait-please";
-import sprae from '../sprae.js'
+import sprae, {store} from '../sprae.js'
 import { signal } from '../signal.js'
 import h from "hyperf";
 
 import * as signals from '@preact/signals-core'
 sprae.use(signals)
 
+test('core: pre-create store', async () => {
+  let state = store({x:1,get(){return state.x}})
+  let el = h`<x :text="get()"></x>`
+  sprae(el, state)
+  is(el.outerHTML, `<x>1</x>`)
+  state.x=2
+  is(el.outerHTML, `<x>2</x>`)
+})
 
-test("core: hidden", async () => {
+test("core: simple hidden attr", async () => {
   let el = h`<div :hidden="hidden"></div>`;
   let params = sprae(el, { hidden: true });
   is(el.outerHTML, `<div hidden=""></div>`);

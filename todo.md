@@ -161,6 +161,10 @@
   * [ ] maybe just add jsperf bench as tests
 * [ ] immediate scope
 * [x] ref doesnt add to with -> it forces null init
+* [x] test: create store separately case
+* [ ] test: new prop/signal added to root store: substore doesn't have it
+* [ ] test: one effect error (like wrong syntax) should not break all subsequent effects
+* [ ] test: two refs with same name, like `list`.
 
 ## [ ] Optimizations (https://krausest.github.io/js-framework-benchmark/current.html)
 
