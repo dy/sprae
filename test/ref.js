@@ -103,3 +103,9 @@ test.todo('ref: create in state as direct', async () => {
   is(div[_state].x, div.firstChild)
   // div.dispatchEvent(new window.CustomEvent("x"));
 })
+
+test('ref: duplicates', async () => {
+  let el = h`<x><y :ref="y"></y><z :ref="y"></z></x>`
+  let state = sprae(el)
+  is(state.y, el.lastChild)
+})
