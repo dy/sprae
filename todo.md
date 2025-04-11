@@ -162,9 +162,11 @@
 * [ ] immediate scope
 * [x] ref doesnt add to with -> it forces null init
 * [x] test: create store separately case
-* [ ] test: new prop/signal added to root store: substore doesn't have it
-* [ ] test: one effect error (like wrong syntax) should not break all subsequent effects
-* [ ] test: two refs with same name, like `list`.
+  * [ ] make async effects init?
+* [x] test: new prop/signal added to root store: substore doesn't have it
+* [x] test: one effect error (like wrong syntax) should not break all subsequent effects
+* [x] test: two refs with same name, like `list`.
+* [x] sandbox property for store
 
 ## [ ] Optimizations (https://krausest.github.io/js-framework-benchmark/current.html)
 

@@ -93,15 +93,17 @@ test('ref: create in state as untracked', async () => {
   let div = h`<div :with="{_x:null,log(){console.log(_x)}}" :onx="log"><x :ref="_x" :text="_x?.tagName"></x></div>`;
   let state = sprae(div)
   is(div[_state]._x, div.firstChild)
-  // div.dispatchEvent(new window.CustomEvent("x"));
+  div.dispatchEvent(new window.CustomEvent("x"));
+  is(div[_state]._x, div.firstChild)
 })
 
-test.todo('ref: create in state as direct', async () => {
+test('ref: create in state as direct', async () => {
   let div = h`<div :with="{x:null,log(){console.log(x)}}" :onx="log"><x :ref="x" :text="x?.tagName"></x></div>`;
   let state = sprae(div)
-  // FIXME: something causes unnecessary update that overwrites x to null. What's that?
   is(div[_state].x, div.firstChild)
-  // div.dispatchEvent(new window.CustomEvent("x"));
+  // reading :ref=x normally (one level) would not subscribe root, but nested one may subscribe parent :with
+  div.dispatchEvent(new window.CustomEvent("x"));
+  is(div[_state].x, div.firstChild)
 })
 
 test('ref: duplicates', async () => {

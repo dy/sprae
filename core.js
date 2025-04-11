@@ -33,9 +33,9 @@ export const sprae = (el=document.body, values) => {
   if (el[_state]) return Object.assign(el[_state], values)
 
   // take over existing state instead of creating a clone
-  let state = store(values || {}), offs = [], fx = [],
+  let state = store(values || {}), offs = [], fx = []
 
-    init = (el, attrs = el.attributes) => {
+  let init = (el, attrs = el.attributes) => {
       // we iterate live collection (subsprae can init args)
       if (attrs) for (let i = 0; i < attrs.length;) {
         let { name, value } = attrs[i], update, dir

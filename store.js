@@ -18,11 +18,11 @@ export const _signals = Symbol('signals'),
 
     // we must inherit signals to allow dynamic extend of parent state
     let signals = Object.create(parent?.[_signals] || {}),
-        _len = signal(Object.keys(values).length),
-        stash,
+    _len = signal(Object.keys(values).length),
+    stash
 
       // proxy conducts prop access to signals
-      state = new Proxy(signals, {
+    let state = new Proxy(signals, {
         get: (_, k) => k === _change ? _len : k === _signals ? signals : k === _stash ? stash : k in signals ? signals[k]?.valueOf() : globalThis[k],
         set: (_, k, v, s) => (k === _stash ? stash = v : s = k in signals, set(signals, k, v), s || ++_len.value), // bump length for new signal
         deleteProperty: (_, k) => (signals[k] && (signals[k][Symbol.dispose]?.(), delete signals[k], _len.value--), 1),
