@@ -64,7 +64,7 @@ var init_signal = __esm({
 });
 
 // store.js
-var _signals, _change, _stash, store, list, mut, set, setter, ensure, store_default;
+var _signals, _change, _stash, store, list, mut, set, setter, store_default;
 var init_store = __esm({
   "store.js"() {
     init_signal();
@@ -76,13 +76,16 @@ var init_store = __esm({
       if (!values) return values;
       if (values[_signals] || values[Symbol.toStringTag]) return values;
       if (values.constructor !== Object) return Array.isArray(values) ? list(values) : values;
-      let signals = { ...parent?.[_signals] }, _len = signal(Object.keys(values).length), stash, state = new Proxy(signals, {
-        get: (_, k) => k === _change ? _len : k === _signals ? signals : k === _stash ? stash : signals[k]?.valueOf(),
-        set: (_, k, v, s) => (k === _stash ? stash = v : s = k in signals, set(signals, k, v), s || ++_len.value),
+      let signals = Object.create(parent?.[_signals] || {}), _len = signal(Object.keys(values).length), stash;
+      let state = new Proxy(signals, {
+        get: (_, k) => k === _change ? _len : k === _signals ? signals : k === _stash ? stash : k in signals ? signals[k]?.valueOf() : globalThis[k],
+        set: (_, k, v, s) => k === _stash ? (stash = v, 1) : (s = k in signals, set(signals, k, v), s || ++_len.value),
         // bump length for new signal
         deleteProperty: (_, k) => (signals[k] && (signals[k][Symbol.dispose]?.(), delete signals[k], _len.value--), 1),
         // subscribe to length when object is spread
-        ownKeys: () => (_len.value, Reflect.ownKeys(signals))
+        ownKeys: () => (_len.value, Reflect.ownKeys(signals)),
+        has: (_) => true
+        // sandbox prevents writing to global
       }), descs = Object.getOwnPropertyDescriptors(values);
       for (let k in values) {
         if (descs[k]?.get)
@@ -131,10 +134,6 @@ var init_store = __esm({
     };
     setter = (expr, set2 = parse(`${expr}=${_stash}`)) => (state, value) => (state[_stash] = value, // save value to stash
     set2(state));
-    ensure = (state, expr, name = expr.match(/^\w+(?=\s*(?:\.|\[|$))/)) => {
-      var _a, _b;
-      return name && ((_a = state[_signals])[_b = name[0]] ?? (_a[_b] = null));
-    };
     store_default = store;
   }
 });
@@ -150,17 +149,19 @@ var init_core = __esm({
     _on = Symbol("on");
     _off = Symbol("off");
     directive = {};
-    dir = (name, create, p = parse) => directive[name] = (el, expr, state, name2, update, evaluate) => (evaluate = p(expr), update = create(el, state, expr, name2, evaluate), () => update(evaluate(state)));
+    dir = (name, create, p = parse) => directive[name] = (el, expr, state, name2, update, evaluate) => (update = create(el, state, expr, name2), evaluate = p(expr), () => update(evaluate(state)));
     sprae = (el = document.body, values) => {
       if (el[_state]) return Object.assign(el[_state], values);
-      let state = store(values || {}), offs = [], fx = [], init = (el2, attrs = el2.attributes) => {
+      let state = store(values || {}), offs = [], fx = [];
+      let init = (el2, attrs = el2.attributes) => {
         if (attrs) for (let i = 0; i < attrs.length; ) {
           let { name, value } = attrs[i], update, dir2;
           if (name.startsWith(prefix)) {
             el2.removeAttribute(name);
             for (dir2 of name.slice(prefix.length).split(":")) {
               update = (directive[dir2] || directive.default)(el2, value, state, dir2);
-              fx.push(update), offs.push(effect(update));
+              fx.push(update);
+              offs.push(effect(update));
               if (el2[_state] === null) return;
             }
           } else i++;
@@ -184,7 +185,13 @@ var init_core = __esm({
       } catch (e) {
         err(e, dir2, expr);
       }
-      return memo[expr] = fn;
+      return memo[expr] = (s) => {
+        try {
+          return fn(s);
+        } catch (e) {
+          err(e, dir2, expr);
+        }
+      };
     };
     memo = {};
     err = (e, dir2 = "", expr = "") => {
@@ -311,8 +318,12 @@ var init_each = __esm({
 var init_ref = __esm({
   "directive/ref.js"() {
     init_core();
+    init_signal();
     init_store();
-    dir("ref", (el, state, expr, _, ev) => (ensure(state, expr), ev(state) == null ? (setter(expr)(state, el), (_2) => _2) : (v) => v.call(null, el)));
+    dir("ref", (el, state, expr) => (
+      // FIXME: ideally we don't use untracked here, but ev may have internal refs that will subscribe root effect
+      untracked(() => typeof parse(expr)(state) == "function") ? (v) => v.call(null, el) : (setter(expr)(state, el), (_) => _)
+    ));
   }
 });
 
@@ -320,8 +331,12 @@ var init_ref = __esm({
 var init_with = __esm({
   "directive/with.js"() {
     init_core();
+    init_signal();
     init_store();
-    dir("with", (el, rootState, state) => (state = null, (values) => core_default(el, state ? values : state = store_default(values, rootState))));
+    dir("with", (el, rootState, state) => (state = null, (values) => (
+      //untracked(() => (
+      core_default(el, state ? values : state = store_default(values, rootState))
+    )));
   }
 });
 
@@ -528,6 +543,7 @@ var init_value = __esm({
   "directive/value.js"() {
     init_core();
     init_core();
+    init_signal();
     init_store();
     init_default();
     dir("value", (el, state, expr) => {
@@ -542,7 +558,6 @@ var init_value = __esm({
         for (let o of el.options) o.removeAttribute("selected");
         for (let v of value) el.querySelector(`[value="${v}"]`).setAttribute("selected", "");
       } : (value) => el.value = value;
-      ensure(state, expr);
       try {
         const set2 = setter(expr);
         const handleChange = el.type === "checkbox" ? () => set2(state, el.checked) : el.type === "select-multiple" ? () => set2(state, [...el.selectedOptions].map((o) => o.value)) : () => set2(state, el.selectedIndex < 0 ? null : el.value);
@@ -551,6 +566,7 @@ var init_value = __esm({
           new MutationObserver(handleChange).observe(el, { childList: true, subtree: true, attributes: true });
           core_default(el, state);
         }
+        untracked(() => parse(expr)(state)) ?? handleChange();
       } catch {
       }
       return update;
@@ -590,7 +606,19 @@ var init_data = __esm({
 // sprae.js
 var sprae_exports = {};
 __export(sprae_exports, {
-  default: () => sprae_default
+  _change: () => _change,
+  _signals: () => _signals,
+  _stash: () => _stash,
+  batch: () => batch,
+  computed: () => computed,
+  default: () => sprae_default,
+  effect: () => effect,
+  list: () => list,
+  setter: () => setter,
+  signal: () => signal,
+  store: () => store,
+  untracked: () => untracked,
+  use: () => use
 });
 var sprae_default;
 var init_sprae = __esm({
@@ -608,6 +636,8 @@ var init_sprae = __esm({
     init_default();
     init_aria();
     init_data();
+    init_store();
+    init_signal();
     core_default.use({ compile: (expr) => core_default.constructor(`with (arguments[0]) { return ${expr} };`) });
     sprae_default = core_default;
   }
