@@ -1267,6 +1267,11 @@
   * Do we ever need UMD without autosprae?
   * let's add auto entry.
 
+## [ ] Async effects init?
+
+  + Allows referring to newly created state from inside methods
+  + Errors in effects in first run don't break sprae
+
 ## [ ] s-cloak? Hides contents until sprae finishes loading
 
   * wait until needed
