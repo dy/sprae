@@ -146,3 +146,10 @@ test("value: reflect #57", async () => {
   is(state.a, 0);
   is(el.outerHTML, `<input value="0">`);
 });
+
+test("value: reflect ensure value", async () => {
+  let el = h`<input :value="a" />`;
+  let state = sprae(el, { });
+  is(state.a, '');
+  is(el.outerHTML, `<input value="">`);
+});
