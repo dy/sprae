@@ -1,6 +1,7 @@
-import sprae from "../core.js";
+import sprae, { parse } from "../core.js";
 import { dir } from "../core.js";
-import { setter, ensure } from "../store.js";
+import { untracked } from "../signal.js";
+import { setter } from "../store.js";
 import { attr } from './default.js';
 
 
@@ -30,9 +31,6 @@ dir('value', (el, state, expr) => {
             } :
               (value) => (el.value = value);
 
-  // make sure value exists in state
-  ensure(state, expr)
-
   // bind back to value, but some values can be not bindable, eg. `:value="7"`
   try {
     const set = setter(expr)
@@ -49,6 +47,9 @@ dir('value', (el, state, expr) => {
       // select options must be initialized before calling an update
       sprae(el, state)
     }
+
+    // initial state value
+    untracked(()=>parse(expr)(state)) ?? handleChange()
   } catch {}
 
   return update

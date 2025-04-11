@@ -1,4 +1,4 @@
-import { use, effect } from "./signal.js";
+import { use, effect, untracked } from "./signal.js";
 import { store } from './store.js';
 
 // polyfill
@@ -16,8 +16,8 @@ export const directive = {}
  * @param {(expr: string) => (state: Object) => any} [p=parse] - Create evaluator from expression string.
  */
 export const dir = (name, create, p = parse) => directive[name] = (el, expr, state, name, update, evaluate) => (
-    evaluate = p(expr),
-    update = create(el, state, expr, name, evaluate),
+  update = create(el, state, expr, name),
+  evaluate = p(expr),
   () => update(evaluate(state))
 )
 

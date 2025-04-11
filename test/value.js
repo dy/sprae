@@ -124,6 +124,22 @@ test('value: select options change #52', async () => {
   // is([...el.selectedOptions], [el.children[1], el.children[2]])
 })
 
+test('value: keep initial selected element #53', t => {
+  let el = h`<div id="container">
+      <select class="form-control" :value="obj">
+          <option value="1">Test 1</option>
+          <option value="2" selected="true">Test 2</option>
+          <option value="3">Test 3</option>
+      </select>
+      <input :if="obj == 3" type="text" class="form-control"/>
+  </div>`
+
+  let s = sprae(el)
+
+  is(el.outerHTML, `<div id="container"><select class="form-control"><option value="1">Test 1</option><option value="2" selected="">Test 2</option><option value="3">Test 3</option></select></div>`)
+  is(s, {obj:'2'})
+})
+
 test("value: reflect #57", async () => {
   let el = h`<input :value="a" />`;
   let state = sprae(el, { a: 0 });

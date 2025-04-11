@@ -24,7 +24,7 @@ export const _signals = Symbol('signals'),
       // proxy conducts prop access to signals
     let state = new Proxy(signals, {
         get: (_, k) => k === _change ? _len : k === _signals ? signals : k === _stash ? stash : k in signals ? signals[k]?.valueOf() : globalThis[k],
-        set: (_, k, v, s) => (k === _stash ? stash = v : s = k in signals, set(signals, k, v), s || ++_len.value), // bump length for new signal
+        set: (_, k, v, s) => k === _stash ? (stash = v, 1) : (s = k in signals, set(signals, k, v), s || ++_len.value), // bump length for new signal
         deleteProperty: (_, k) => (signals[k] && (signals[k][Symbol.dispose]?.(), delete signals[k], _len.value--), 1),
         // subscribe to length when object is spread
         ownKeys: () => (_len.value, Reflect.ownKeys(signals)),
@@ -136,6 +136,7 @@ export const setter = (expr, set = parse(`${expr}=${_stash}`)) => (
 )
 
 // make sure state contains first element of path, eg. `a` from `a.b[c]`
-export const ensure = (state, expr, name = expr.match(/^\w+(?=\s*(?:\.|\[|$))/)) => name && (state[_signals][name[0]] ??= null)
+// NOTE: we don't need since we force proxy sandbox
+// export const ensure = (state, expr, name = expr.match(/^\w+(?=\s*(?:\.|\[|$))/)) => name && (state[_signals][name[0]] ??= null)
 
 export default store
