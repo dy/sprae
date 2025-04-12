@@ -1057,7 +1057,7 @@
   - that enforces writing signals too, we can't `a = value` anymore
   ? is that obvious enough?
 
-## [x] Signals store instead of explicit signals? -> yes, let's try, too many benefits
+## [x] Signals-store instead of explicit signals? -> yes, let's try, too many benefits
 
   + bench shows arrays / objects better
   + bench shows it's possibly better memory-wise
@@ -1266,6 +1266,15 @@
 ### [x] TS doesn't allow arbitrary attributes on `<Script>` tag, but prefix (surprise!) is allowed. -> sprae.auto.js
   * Do we ever need UMD without autosprae?
   * let's add auto entry.
+
+## [ ] What's the best place for `untracked` to prevent faux root subscription in :with > :ref?
+
+  1. Whole sprae
+    - overkill-ish
+  2. Inside of :with
+
+  3. Each pre-eval call, :ref, :value
+    - doesn't generally save the issue
 
 ## [ ] Async effects init?
 

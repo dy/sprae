@@ -87,3 +87,11 @@ test("with: new prop added to superstore", async () => {
   await tick()
   is(a.innerHTML, `<a>1</a>`)
 })
+
+test.todo('with: parasitic updates', async () => {
+  let a = h`<x :with="{x:'',y}"><y :fx="x='x'" :text="x+y"></y></x>`
+  let s = sprae(a, {y:'y'})
+  is(a.innerHTML, `<y>xy</y>`)
+  s.y = 'yy'
+  is(a.innerHTML, `<y>xyy</y>`)
+})

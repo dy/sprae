@@ -1,6 +1,7 @@
 import test, { is } from "tst";
 import { tick, time } from "wait-please";
-import sprae, {store} from '../sprae.js'
+import sprae from '../sprae.js'
+import store from '../store.js'
 import { signal } from '../signal.js'
 import h from "hyperf";
 
