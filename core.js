@@ -83,19 +83,21 @@ sprae.prefix = ':'
  */
 sprae.use = use
 
-// registered directives
-export const directive = {}
-
 /**
  * Register a directive with a parsed expression and evaluator.
  * @param {string} name - The name of the directive.
  * @param {(el: Element, state: Object, expr: string, name: string) => (value: any) => void} create - A function to create the directive.
  * @param {(expr: string) => (state: Object) => any} [p=parse] - Create evaluator from expression string.
  */
-export const dir = (name, create, p = parse) => directive[name] = (el, expr, state, parts) => {
+sprae.dir = (name, create, p = parse) => directive[name] = (el, expr, state, parts) => {
   const evaluate = p(expr), update = create(el, state, expr, parts)
   return () => update(evaluate(state))
 }
+
+export const dir = sprae.dir
+
+// registered directives
+export const directive = {}
 
 /**
  * Parses an expression into an evaluator function, caching the result for reuse.

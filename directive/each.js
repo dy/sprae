@@ -1,4 +1,4 @@
-import sprae, { _state, dir, frag, parse } from "../core.js";
+import sprae, { _state, frag, parse } from "../core.js";
 import store, { _change, _signals } from "../store.js";
 import { effect } from '../signal.js';
 

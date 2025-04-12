@@ -15,8 +15,7 @@ import _on from './directive/on.js'
 
 // directives
 dir('if', _if)
-// redefine evaluator to take second part of expression
-dir('each', _each, expr => parse(expr.split(/\b(?:in|of)\b/)[1]))
+dir('each', _each, expr => parse(expr.split(/\b(?:in|of)\b/)[1])) // redefine evaluator to take second part of expression
 dir('ref', _ref)
 dir('with', _with)
 dir('text', _text)
@@ -25,6 +24,7 @@ dir('style', _style)
 dir('value', _value)
 dir('fx', _fx)
 dir('', _all)
+// dir('*', _any)
 dir('*', (e, s, x, n) => (n[0].startsWith('on') ? _on : _any)(e, s, x, n))
 
 export default sprae

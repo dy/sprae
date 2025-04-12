@@ -27,24 +27,21 @@ A light and fast alternative to _alpine_, _petite-vue_, _lucia_ etc (see [why](#
 
 Sprae evaluates `:`-directives and evaporates them, returning reactive state for updates.
 
-### UMD
+### Autoinit
 
-`sprae.umd` enables sprae via CDN, CJS, AMD etc.
+Sprae CDN autoinits on document body:
 
 ```html
-<script src="https://unpkg.com/sprae/dist/sprae.umd"></script>
+<div :with="{hello:'Hello world'}">
+  <template :text="hello"></template>
+</div>
+
+<!-- Optional attr `prefix` (by default ':'). -->
+<script src="https://unpkg.com/sprae" prefix="js-"></script>
+
 <script>
   window.sprae; // global standalone
 </script>
-```
-
-### Autoinit
-
-`sprae.auto` autoinits sprae on document body.
-
-```html
-<!-- Optional attr `prefix` (by default ':'). -->
-<script src="https://unpkg.com/sprae/dist/sprae.auto" prefix="js-"></script>
 ```
 
 
@@ -68,7 +65,7 @@ Control flow of elements.
 Multiply element.
 
 ```html
-<ul><li :each="item in items" :text="item" /></ul>
+<ul><li :each="item of items" :text="item" /></ul>
 
 <!-- cases -->
 <li :each="item, idx in array" />
@@ -228,13 +225,24 @@ Attach event(s) listener with optional modifiers.
   * `.ctrl-<key>, .alt-<key>, .meta-<key>, .shift-<key>` – key combinations, eg. `.ctrl-alt-delete` or `.meta-x`.
 * `.*` – any other modifier has no effect, but allows binding multiple handlers to same event (like jQuery event classes).
 
+
+#### Extra
+
+Additional directives from [sprae/directive](sprae/directive) can be plugged in as
+
+```js
+import data from 'sprae/directive/data.js'
+sprae.dir('data', data)
+```
+
+<!--
 #### `:data="values"`
 
 Set `data-*` attributes. CamelCase is converted to dash-case.
 
 ```html
 <input :data="{foo: 1, barBaz: true}" />
-<!-- <input data-foo="1" data-bar-baz /> -->
+<!-- <input data-foo="1" data-bar-baz />
 ```
 
 #### `:aria="values"`
@@ -251,8 +259,8 @@ Set `aria-*` attributes. Boolean values are stringified.
 }" />
 <!--
 <input role="combobox" aria-controls="joketypes" aria-autocomplete="list" aria-expanded="false" aria-active-option="item1" aria-activedescendant>
--->
 ```
+-->
 
 <!--
 #### `:onvisible..oninvisible="e => e => {}"`
@@ -307,14 +315,14 @@ Provider | Size | Feature
 
 ## Evaluator
 
-Expressions use _new Function_ as default evaluator, which is fast & compact way, but violates "unsafe-eval" CSP.
-To make eval stricter & safer, as well as sandbox expressions, an alternative evaluator can be used, eg. _justin_:
+Expressions use _new Function_ as default evaluator, which is fast & compact, but violates "unsafe-eval" CSP.
+To make eval stricter & safer, an alternative evaluator can be used, eg. _justin_:
 
 ```js
 import sprae from 'sprae'
 import justin from 'subscript/justin'
 
-sprae.use({compile: justin}) // set up justin as default compiler
+sprae.compile = justin; // set up justin as default compiler
 ```
 
 [_Justin_](https://github.com/dy/subscript#justin) is minimal JS subset that avoids "unsafe-eval" CSP and provides sandboxing.
@@ -335,18 +343,23 @@ sprae.use({compile: justin}) // set up justin as default compiler
 
 ## Custom Build
 
-_Sprae_ can be tailored to project needs via `sprae/core`:
+_Sprae_ can be tailored to project needs:
 
 ```js
 // sprae.custom.js
-import sprae, { dir, parse } from 'sprae/core'
+import sprae, {dir} from 'sprae/core'
 import * as signals from '@preact/signals'
-import compile from 'subscript'
+import subscript from 'subscript'
 
-// standard directives
-import 'sprae/directive/default.js'
-import 'sprae/directive/if.js'
-import 'sprae/directive/text.js'
+// standard directives from sprae/directive
+import _any from 'sprae/directive/any.js'
+import _if from 'sprae/directive/if.js'
+import _text from 'sprae/directive/text.js'
+
+// register directives
+dir('if', _if)
+dir('text', _text)
+dir('*', _any)
 
 // custom directive :id="expression"
 dir('id', (el, state, expr) => {
@@ -354,16 +367,14 @@ dir('id', (el, state, expr) => {
   return value => el.id = value // update
 })
 
-sprae.use({
-  // configure signals
-  ...signals,
+// configure signals
+sprae.use(signals)
 
-  // configure compiler
-  compile,
+// configure compiler
+sprae.compile = subscript
 
-  // custom prefix, default is `:`
-  prefix: 'js-'
-})
+// custom prefix, default is `:`
+sprae.prefix = 'js-'
 ```
 
 ## JSX
@@ -410,6 +421,16 @@ export default function Layout({ children }) {
 * `key` is not used, `:each` uses direct list mapping instead of DOM diffing.
 * `await` is not supported in attributes, it’s a strong indicator you need to put these methods into state.
 * `:ref` comes after `:if` for mount/unmount events `<div :if="cond" :ref="(init(), ()=>dispose())"></div>`.
+
+<!--
+## Flavors
+
+* sprae.auto.js – autoinit sprae on document
+* sprae.umd.js - UMD entry
+* sprae.micro.js - under 5kb version
+* sprae.alpine.js - AlpineJS API with sprae
+* sprae.vue.js - petite-vue API with sprae
+-->
 
 ## Justification
 
@@ -497,6 +518,7 @@ npm run results
 * [Petite-vue](https://github.com/vuejs/petite-vue)
 * [nuejs](https://github.com/nuejs/nuejs)
 * [hmpl](https://github.com/hmpl-language/hmpl)
+* [unpoly](https://unpoly.com/up.link)
  -->
 
 
