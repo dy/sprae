@@ -162,11 +162,24 @@
 * [ ] immediate scope
 * [x] ref doesnt add to with -> it forces null init
 * [x] test: create store separately case
-  * [ ] make async effects init?
 * [x] test: new prop/signal added to root store: substore doesn't have it
 * [x] test: one effect error (like wrong syntax) should not break all subsequent effects
 * [x] test: two refs with same name, like `list`.
 * [x] sandbox property for store
+
+## [ ] v12
+
+* [x] get rid of :data, :aria
+* [ ] async effects init
+* [ ] simplify nested store: just object inheritance
+* [ ] expose sprae.compile, .prefix, .dir for UMD version
+* [ ] `a in b` -> no key
+* [ ] `(a,b) in c`
+* [ ] make :each use inheritance instead of Proxy
+* [ ] make :each not access _signals
+* [ ] iterate :each with single state, not multiple ones
+* [ ] alpine, petite-vue etc flavors
+
 
 ## [ ] Optimizations (https://krausest.github.io/js-framework-benchmark/current.html)
 
