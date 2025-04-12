@@ -36,8 +36,7 @@ Sprae CDN autoinits on document body:
   <template :text="hello"></template>
 </div>
 
-<!-- Optional attr `prefix` (by default ':'). -->
-<script src="https://unpkg.com/sprae" prefix="js-"></script>
+<script src="https://unpkg.com/sprae"></script>
 
 <script>
   window.sprae; // global standalone
