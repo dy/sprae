@@ -1,6 +1,6 @@
-import { dir } from "../core.js";
+// :class="..."
 
-dir('class', (el, cur) => (
+export default (el, cur) => (
   cur = new Set,
   v => {
     let clsx = new Set;
@@ -11,5 +11,5 @@ dir('class', (el, cur) => (
     }
     for (let cls of cur) if (clsx.has(cls)) clsx.delete(cls); else el.classList.remove(cls);
     for (let cls of cur = clsx) el.classList.add(cls)
-  })
+  }
 )

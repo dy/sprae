@@ -1,6 +1,7 @@
-import { dir } from "../core.js";
-import { attr, dashcase } from './default.js'
+// :aria="{...}"
 
-dir('aria', (el) => value => {
+import { attr, dashcase } from './all.js'
+
+export default (el) => value => {
   for (let key in value) attr(el, 'aria-' + dashcase(key), value[key] == null ? null : value[key] + '')
-})
+}

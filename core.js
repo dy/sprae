@@ -1,4 +1,4 @@
-import { use, effect, untracked } from "./signal.js";
+import { use, effect } from "./signal.js";
 import { store } from './store.js';
 
 // polyfill
@@ -32,7 +32,7 @@ export const sprae = (el=document.body, values) => {
   if (el[_state]) return Object.assign(el[_state], values)
 
   // take over existing state instead of creating a clone
-  let state = store(values || {}), offs = [], fx = []
+  let state = store(values || {}), offs = [], fx = [], {prefix} = sprae
 
   let init = (el, attrs = el.attributes) => {
       // we iterate live collection (subsprae can init args)
@@ -46,7 +46,7 @@ export const sprae = (el=document.body, values) => {
           // multiple attributes like :id:for=""
           for (dir of name.slice(prefix.length).split(':')) {
             parts = dir.split('.')
-            update = (directive[parts[0]] || directive.default)(el, value, state, parts)
+            update = (directive[parts[0]] || directive['*'])(el, value, state, parts)
 
             // save & start effect
             fx.push(update)
@@ -80,13 +80,22 @@ export const sprae = (el=document.body, values) => {
   return state;
 }
 
-// configure signals/compile
-// it's more compact than using sprae.signal = signal etc.
-sprae.use = s => (
-  s.signal && use(s),
-  s.compile && (compile = s.compile),
-  s.prefix && (prefix = s.prefix)
-)
+/**
+ * Compiles an expression into an evaluator function.
+ *
+ * @type {(expr: string) => Function}
+ */
+sprae.compile = null
+
+/**
+ * Attributes prefix, by default ':'
+ */
+sprae.prefix = ':'
+
+/**
+ * Configure signals
+ */
+sprae.use = use
 
 /**
  * Parses an expression into an evaluator function, caching the result for reuse.
@@ -99,7 +108,7 @@ export const parse = (expr, dir, fn) => {
   if (fn = memo[expr = expr.trim()]) return fn
 
   // static time errors
-  try { fn = compile(expr) }
+  try { fn = sprae.compile(expr) }
   catch (e) { err(e, dir, expr) }
 
   // run time errors
@@ -121,18 +130,6 @@ const memo = {};
 export const err = (e, dir = '', expr = '') => {
   throw Object.assign(e, { message: `∴ ${e.message}\n\n${dir}${expr ? `="${expr}"\n\n` : ""}`, expr })
 }
-
-/**
- * Compiles an expression into an evaluator function.
- *
- * @type {(expr: string) => Function}
- */
-export let compile
-
-/**
- * Attributes prefix, by default ':'
- */
-export let prefix = ':'
 
 // instantiated <template> fragment holder, like persisting fragment but with minimal API surface
 export const frag = (tpl) => {

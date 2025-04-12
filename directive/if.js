@@ -1,11 +1,11 @@
-import sprae, { dir, _state, _on, _off, frag } from "../core.js";
+import sprae, { _state, _on, _off, frag } from "../core.js";
 
 // :if is interchangeable with :each depending on order, :if :each or :each :if have different meanings
 // as for :if :with - :if must init first, since it is lazy, to avoid initializing component ahead of time by :with
 // we consider :with={x} :if={x} case insignificant
 const _prevIf = Symbol("if");
 
-dir('if', (el, state) => {
+export default (el, state) => {
   let holder = document.createTextNode('')
 
   let nextEl = el.nextElementSibling,
@@ -38,4 +38,4 @@ dir('if', (el, state) => {
       }
     }
   };
-})
+}

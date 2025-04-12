@@ -1,20 +1,37 @@
-import sprae from './core.js'
+import sprae, { dir, parse } from './core.js'
 
-// default directives
-import './directive/if.js'
-import './directive/each.js'
-import './directive/ref.js'
-import './directive/with.js'
-import './directive/text.js'
-import './directive/class.js'
-import './directive/style.js'
-import './directive/value.js'
-import './directive/fx.js'
-import './directive/default.js'
-import './directive/aria.js'
-import './directive/data.js'
+import _if from './directive/if.js'
+import _each from './directive/each.js'
+import _ref from './directive/ref.js'
+import _with from './directive/with.js'
+import _text from './directive/text.js'
+import _class from './directive/class.js'
+import _style from './directive/style.js'
+import _value from './directive/value.js'
+import _data from './directive/data.js'
+import _aria from './directive/aria.js'
+import _fx from './directive/fx.js'
+import _any from './directive/any.js'
+import _all from './directive/all.js'
+import _on from './directive/on.js'
 
-// default compiler (indirect new Function to avoid detector)
-sprae.use({ compile: expr => sprae.constructor(`with (arguments[0]) { return ${expr} };`) })
+// directives
+dir('if', _if)
+// redefine evaluator to take second part of expression
+dir('each', _each, expr => parse(expr.split(/\b(?:in|of)\b/)[1]))
+dir('ref', _ref)
+dir('with', _with)
+dir('text', _text)
+dir('class', _class)
+dir('style', _style)
+dir('value', _value)
+dir('fx', _fx)
+dir('data', _data)
+dir('aria', _aria)
+dir('', _all)
+dir('*', (e, s, x, n) => (n[0].startsWith('on') ? _on : _any)(e, s, x, n))
+
+// compiler (indirect new Function to avoid detector)
+sprae.compile = expr => sprae.constructor(`with (arguments[0]) { return ${expr} };`)
 
 export default sprae

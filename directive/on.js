@@ -1,14 +1,6 @@
-// generic property directive
-import { dir, err } from "../core.js";
 
-dir('default', (target, state, expr, parts) => {
-  // simple prop
-  if (!parts[0].startsWith('on'))
-    return parts[0] ?
-      value => attr(target, parts[0], value) :
-      value => { for (let key in value) attr(target, dashcase(key), value[key]) };
-
-  // NOTE: if you decide to remove chain of events, thing again - that's unique feature of sprae, don't diminish its value.
+export default (target, state, expr, parts) => {
+  // NOTE: if you decide to remove chain of events, think again - that's unique feature of sprae, don't diminish its value.
   // ona..onb
   let ctx, ctxs = [ ], mod, params
   for (let part of [,...parts]) {
@@ -50,7 +42,7 @@ dir('default', (target, state, expr, parts) => {
     !off && nextListener(startFn),
     () => startFn = null // nil startFn to autodispose chain
   )
-})
+}
 
 // event modifiers
 const mods = {
@@ -144,13 +136,3 @@ const debounce = (fn, wait) => {
     }, wait);
   };
 };
-
-// set attr
-export const attr = (el, name, v) => {
-  if (v == null || v === false) el.removeAttribute(name);
-  else el.setAttribute(name, v === true ? "" : typeof v === "number" || typeof v === "string" ? v : "");
-}
-
-export const dashcase = (str) => {
-  return str.replace(/[A-Z\u00C0-\u00D6\u00D8-\u00DE]/g, (match, i) => (i ? '-' : '') + match.toLowerCase());
-}

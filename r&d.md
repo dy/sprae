@@ -1285,6 +1285,7 @@
   + same as in JS
   + we rarely need both key and value
   + possibly less issue with store
+  + it's hard to remember if it's k,v or v,k
 
 ### [ ] ALT: keep only `k in b`
 
@@ -1292,16 +1293,26 @@
   + if you want separate scope - just create via `:with.item="items[i]"`
     ? can we make `:let="item=items[i]"` instead of `:with`?
 
-### [ ] `:let="a=1,b=2"` instead of with?
+### [x] `:with="a=1,b=2"` instead of with="{...}"? -> no
+
   + shorter syntax
   + on par with django
   + avoids js with association
   + enables per-variable effects
+  - unclear/complicated parsing
+  ? or `:define="a=1, b=2"`, `:let="a=1"`
+  - doesn't create a scope
+  - can simply be done via `:fx="a=1, b=2"`
 
-### [ ] `:with.a="1" :with.b="2"`
-  + easier per-variable effects
-  + naturally makes use of `=`
-  + can extend pattern to `:data`, `:aria`, `:style`, `:class`
+### [x] Should we extend `:with-<x>`, `:class-<x>`, `:style-<x>`, `:data-<x>`? -> no
+
+  - just aliases for objects
+  - unnecessarily complicates API
+  - `:with-<x>` exposes variable name into attribute space, which is bad
+  - `:data-<x>` is literally covered by default attribute handler
+  - `:style---bar` is hard to parse and hard to read
+  - all we need to solve is - make with not update whole thing
+  ~ but what's the other way? we have to split per-variable effects...
 
 ## [ ] s-cloak? Hides contents until sprae finishes loading
 
@@ -1311,6 +1322,8 @@
 ## [ ] s-ignore? Excludes element from spraeing
 
   * wait until needed
+
+## [ ] s-include?
 
 ## [ ] Plugins
 

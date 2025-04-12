@@ -1,3 +1,1 @@
-import { dir } from "../core.js";
-
-dir('fx', _ => _ => _)
+export default _ => _ => _

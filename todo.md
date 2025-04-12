@@ -173,10 +173,9 @@
 * [ ] async effects init
 * [ ] simplify nested store: just object inheritance
 * [ ] expose sprae.compile, .prefix, .dir for UMD version
-* [ ] `a in b` -> no key
-* [ ] `(a,b) in c`
+* [ ] `a in b`, `a of b` -> no key, `(a,b) in c`
 * [ ] make :each use inheritance instead of Proxy
-* [ ] make :each not access _signals
+* [ ] make :each not access _signals - use weakstore
 * [ ] iterate :each with single state, not multiple ones
 * [ ] alpine, petite-vue etc flavors
 
