@@ -1,10 +1,13 @@
 import test, { is } from "tst";
 import { tick } from "wait-please";
 import sprae from '../sprae.js'
+import { dir } from '../core.js'
 import h from "hyperf";
+import _aria from '../directive/aria.js'
+import _data from '../directive/data.js'
 
-// import compile from "subscript/justin";
-// sprae.use({ compile })
+dir('aria', _aria)
+dir('data', _data)
 
 test("aria: base", async () => {
   let el = h`<input type="text" id="jokes" role="combobox" :aria="{controls:'joketypes', autocomplete:'list', expanded:false, activeOption:'item1', activedescendant:'', xxx:null}"/>`;

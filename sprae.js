@@ -8,8 +8,6 @@ import _text from './directive/text.js'
 import _class from './directive/class.js'
 import _style from './directive/style.js'
 import _value from './directive/value.js'
-import _data from './directive/data.js'
-import _aria from './directive/aria.js'
 import _fx from './directive/fx.js'
 import _any from './directive/any.js'
 import _all from './directive/all.js'
@@ -26,12 +24,7 @@ dir('class', _class)
 dir('style', _style)
 dir('value', _value)
 dir('fx', _fx)
-dir('data', _data)
-dir('aria', _aria)
 dir('', _all)
 dir('*', (e, s, x, n) => (n[0].startsWith('on') ? _on : _any)(e, s, x, n))
-
-// compiler (indirect new Function to avoid detector)
-sprae.compile = expr => sprae.constructor(`with (arguments[0]) { return ${expr} };`)
 
 export default sprae

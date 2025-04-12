@@ -6,20 +6,6 @@ export const _dispose = (Symbol.dispose ||= Symbol("dispose"));
 
 export const _state = Symbol("state"), _on = Symbol('on'), _off = Symbol('off')
 
-// registered directives
-export const directive = {}
-
-/**
- * Register a directive with a parsed expression and evaluator.
- * @param {string} name - The name of the directive.
- * @param {(el: Element, state: Object, expr: string, name: string) => (value: any) => void} create - A function to create the directive.
- * @param {(expr: string) => (state: Object) => any} [p=parse] - Create evaluator from expression string.
- */
-export const dir = (name, create, p = parse) => directive[name] = (el, expr, state, parts) => {
-  const evaluate = p(expr), update = create(el, state, expr, parts)
-  return () => update(evaluate(state))
-}
-
 /**
  * Applies directives to an HTML element and manages its reactive state.
  *
@@ -85,7 +71,7 @@ export const sprae = (el=document.body, values) => {
  *
  * @type {(expr: string) => Function}
  */
-sprae.compile = null
+sprae.compile = expr => sprae.constructor(`with (arguments[0]) { return ${expr} };`) // (indirect new Function to avoid detector)
 
 /**
  * Attributes prefix, by default ':'
@@ -96,6 +82,20 @@ sprae.prefix = ':'
  * Configure signals
  */
 sprae.use = use
+
+// registered directives
+export const directive = {}
+
+/**
+ * Register a directive with a parsed expression and evaluator.
+ * @param {string} name - The name of the directive.
+ * @param {(el: Element, state: Object, expr: string, name: string) => (value: any) => void} create - A function to create the directive.
+ * @param {(expr: string) => (state: Object) => any} [p=parse] - Create evaluator from expression string.
+ */
+export const dir = (name, create, p = parse) => directive[name] = (el, expr, state, parts) => {
+  const evaluate = p(expr), update = create(el, state, expr, parts)
+  return () => update(evaluate(state))
+}
 
 /**
  * Parses an expression into an evaluator function, caching the result for reuse.
