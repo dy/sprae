@@ -12,7 +12,7 @@ export const directive = {}
 /**
  * Register a directive with a parsed expression and evaluator.
  * @param {string} name - The name of the directive.
- * @param {(el: Element, state: Object, attrValue: string, attrName: string) => (value: any) => void} create - A function to create the directive.
+ * @param {(el: Element, state: Object, expr: string, name: string) => (value: any) => void} create - A function to create the directive.
  * @param {(expr: string) => (state: Object) => any} [p=parse] - Create evaluator from expression string.
  */
 export const dir = (name, create, p = parse) => directive[name] = (el, expr, state, name, update, evaluate) => (

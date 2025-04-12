@@ -49,7 +49,7 @@ dir('value', (el, state, expr) => {
     }
 
     // initial state value
-    untracked(()=>parse(expr)(state)) ?? handleChange()
+    parse(expr)(state) ?? handleChange()
   } catch {}
 
   return update

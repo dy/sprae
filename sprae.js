@@ -17,7 +17,4 @@ import './directive/data.js'
 // default compiler (indirect new Function to avoid detector)
 sprae.use({ compile: expr => sprae.constructor(`with (arguments[0]) { return ${expr} };`) })
 
-export * from './store.js'
-export * from './signal.js'
-
 export default sprae
