@@ -226,7 +226,7 @@ Attach event(s) listener with optional modifiers.
 * `.*` – any other modifier has no effect, but allows binding multiple handlers to same event (like jQuery event classes).
 
 
-#### Extra
+### Extra
 
 Additional directives from [sprae/directive](sprae/directive) can be plugged in as
 
