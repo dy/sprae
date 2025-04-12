@@ -342,11 +342,11 @@ sprae.compile = justin; // set up justin as default compiler
 
 ## Custom Build
 
-_Sprae_ can be tailored to project needs:
+_Sprae_ can be tailored to project needs as:
 
 ```js
 // sprae.custom.js
-import sprae, {dir} from 'sprae/core'
+import sprae from 'sprae/core'
 import * as signals from '@preact/signals'
 import subscript from 'subscript'
 
@@ -356,12 +356,12 @@ import _if from 'sprae/directive/if.js'
 import _text from 'sprae/directive/text.js'
 
 // register directives
-dir('if', _if)
-dir('text', _text)
-dir('*', _any)
+sprae.dir('if', _if)
+sprae.dir('text', _text)
+sprae.dir('*', _any)
 
 // custom directive :id="expression"
-dir('id', (el, state, expr) => {
+sprae.dir('id', (el, state, expr) => {
   // ...init
   return value => el.id = value // update
 })
@@ -411,10 +411,10 @@ export default function Layout({ children }) {
 
 * To prevent [FOUC](https://en.wikipedia.org/wiki/Flash_of_unstyled_content) add `<style>[\:each],[\:if],[\:else] {visibility: hidden}</style>`.
 * Attributes order matters, eg. `<li :each="el in els" :text="el.name"></li>` is not the same as `<li :text="el.name" :each="el in els"></li>`.
-* Invalid self-closing tags like `<a :text="item" />` will cause error. Valid self-closing tags are: `li`, `p`, `dt`, `dd`, `option`, `tr`, `td`, `th`, `input`, `img`, `br`.
+* Invalid self-closing tags like `<a :text="item" />` cause error. Valid self-closing tags are: `li`, `p`, `dt`, `dd`, `option`, `tr`, `td`, `th`, `input`, `img`, `br`.
 * Properties prefixed with `_` are untracked: `let state = sprae(el, {_x:2}); state._x++; // no effect`.
 * To destroy state and detach sprae handlers, call `element[Symbol.dispose]()`.
-* State getters/setters work as computed effects, eg. `sprae(el, { x:1, get x2(){ return this.x * 2} })`.
+* State getters/setters work as computed effects, eg. `sprae(el, { x:1, get x2(){ return this.x * 2 } })`.
 * `this` is not used, to get current element use `:ref`.
 * `event` is not used, `:on*` attributes expect a function with event argument `:onevt="event => handle()"`, see [#46](https://github.com/dy/sprae/issues/46).
 * `key` is not used, `:each` uses direct list mapping instead of DOM diffing.
