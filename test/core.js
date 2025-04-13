@@ -269,10 +269,19 @@ test("custom prefix", async () => {
   sprae.prefix = ':'
 })
 
-test("multiple errors don't break sprae", async () => {
+test("static errors don't break sprae", async () => {
   console.log('---again')
-  let el = h`<y><x :text="a"></x><x :text="b"></x></y>`
+  let el = h`<y><x :text="0.toFixed(2)"></x><x :text="b"></x></y>`
   let state = sprae(el, {b:'b'})
+  await tick()
+  is(el.innerHTML, `<x></x><x>b</x>`)
+})
+
+test("runtime errors don't break sprae", async () => {
+  console.log('---again')
+  let el = h`<y><x :text="a.b"></x><x :text="b"></x></y>`
+  let state = sprae(el, {b:'b'})
+  await tick()
   is(el.innerHTML, `<x></x><x>b</x>`)
 })
 

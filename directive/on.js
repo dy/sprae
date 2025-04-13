@@ -1,3 +1,4 @@
+import { safe } from "../core.js";
 
 export default (target, state, expr, parts) => {
   // NOTE: if you decide to remove chain of events, think again - that's unique feature of sprae, don't diminish its value.
@@ -16,11 +17,9 @@ export default (target, state, expr, parts) => {
   let addListener = (fn, { evt, target, test, defer, stop, prevent, immediate, ...opts }, cb) => {
     if (defer) fn = defer(fn)
 
-    cb = (e) => {
-      try {
-        test(e) && (stop && (immediate ? e.stopImmediatePropagation() : e.stopPropagation()), prevent && e.preventDefault(), fn?.call(state, e))
-      } catch (error) { err(error, `:on${evt}`, fn) }
-    };
+    cb = safe((e) =>
+      test(e) && (stop && (immediate ? e.stopImmediatePropagation() : e.stopPropagation()), prevent && e.preventDefault(), fn?.call(state, e))
+    , 'on', expr);
 
     target.addEventListener(evt, cb, opts)
     return () => target.removeEventListener(evt, cb, opts)

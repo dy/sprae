@@ -6,6 +6,8 @@ export const _dispose = (Symbol.dispose ||= Symbol("dispose"));
 
 export const _state = Symbol("state"), _on = Symbol('on'), _off = Symbol('off')
 
+let cur // current directive
+
 /**
  * Applies directives to an HTML element and manages its reactive state.
  *
@@ -25,15 +27,15 @@ export const sprae = (el = document.body, values) => {
   let init = (el, attrs = el.attributes) => {
     // we iterate live collection (subsprae can init args)
     if (attrs) for (let i = 0; i < attrs.length;) {
-      let { name, value } = attrs[i], update, dir, parts
+      let { name, value } = attrs[i], update, parts
 
       // if we have parts meaning there's attr needs to be spraed
       if (name.startsWith(prefix)) {
         el.removeAttribute(name);
 
         // multiple attributes like :id:for=""
-        for (dir of name.slice(prefix.length).split(':')) {
-          parts = dir.split('.')
+        for (cur of name.slice(prefix.length).split(':')) {
+          parts = cur.split('.')
           update = (directive[parts[0]] || directive['*'])(el, value, state, parts)
 
           // save effect
@@ -50,7 +52,7 @@ export const sprae = (el = document.body, values) => {
   };
 
   let offs = [],
-    on = () => offs = fx.map(f => effect(f)),
+    on = () => offs = fx.map(effect),
     off = () => (offs.map(off => off()), offs = [])
   // prevOn = el[_on], prevOff = el[_off],
 
@@ -111,34 +113,23 @@ export const directive = {}
  * Parses an expression into an evaluator function, caching the result for reuse.
  *
  * @param {string} expr - The expression to parse and compile into a function.
- * @param {string} dir - The directive associated with the expression (used for error reporting).
  * @returns {Function} The compiled evaluator function for the expression.
  */
-export const parse = (expr, dir, fn) => {
+export const parse = (expr, fn) => {
   if (fn = memo[expr = expr.trim()]) return fn
 
   // static time errors
-  try { fn = sprae.compile(expr) }
-  catch (e) { err(e, dir, expr) }
+  fn = safe(() => sprae.compile(expr), cur, expr)()
 
   // run time errors
-  return memo[expr] = s => {
-    try { return fn(s) }
-    catch (e) { err(e, dir, expr) }
-  }
+  return memo[expr] = safe(fn, cur, expr)
 }
 const memo = {};
 
-/**
- * Branded sprae error with context about the directive and expression
- *
- * @param {Error} e - The original error object to enhance.
- * @param {string} dir - The directive where the error occurred.
- * @param {string} [expr=''] - The expression associated with the error, if any.
- * @throws {Error} The enhanced error object with a formatted message.
- */
-export const err = (e, dir = '', expr = '') => {
-  throw Object.assign(e, { message: `∴ ${e.message}\n\n${dir}${expr ? `="${expr}"\n\n` : ""}`, expr })
+// create wrapped function call
+export const safe = (fn, dir, expr) => state => {
+  try { return fn?.(state) }
+  catch (e) { console.error(`∴ ${e}\n\n${sprae.prefix + dir}="${expr}"`) }
 }
 
 // instantiated <template> fragment holder, like persisting fragment but with minimal API surface
