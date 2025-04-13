@@ -27,4 +27,9 @@ dir('', _all)
 // dir('*', _any)
 dir('*', (e, s, x, n) => (n[0].startsWith('on') ? _on : _any)(e, s, x, n))
 
+
+// simple eval (indirect new Function to avoid detector)
+sprae.compile = expr => sprae.constructor(`with (arguments[0]) { return ${expr} };`)
+
+
 export default sprae

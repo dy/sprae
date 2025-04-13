@@ -170,14 +170,17 @@
 ## [ ] v12
 
 * [x] get rid of :data, :aria
+* [x] run effects after collecting them
 * [ ] async effects init
 * [ ] simplify nested store: just object inheritance
-* [ ] expose sprae.compile, .prefix, .dir for UMD version
+* [x] expose sprae.compile, .prefix, .dir
 * [ ] `a in b`, `a of b` -> no key, `(a,b) in c`
 * [ ] make :each use inheritance instead of Proxy
 * [ ] make :each not access _signals - use weakstore
 * [ ] iterate :each with single state, not multiple ones
-* [ ] alpine, petite-vue etc flavors
+* [ ] flavors: alpine, vue, micro, secure
+* [ ] all tests, with enabled preact/signals
+* [ ] microjs contribution
 
 
 ## [ ] Optimizations (https://krausest.github.io/js-framework-benchmark/current.html)

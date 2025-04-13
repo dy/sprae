@@ -61,7 +61,7 @@ test("core: reactive", async () => {
 });
 
 test.skip('core: multiple elements', async () => {
-  // NOTE: we don't support that anymore - no much value, just pass container
+  // NOTE: we don't support that anymore - no much value at price of complexity, just pass container
   let el = h`<a><x :text="'x'"></x><y :text="'y'"></y></a>`
   sprae(el.childNodes)
   is(el.innerHTML, `<x>x</x><y>y</y>`)

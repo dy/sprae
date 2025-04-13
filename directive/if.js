@@ -28,7 +28,7 @@ export default (el, state) => {
     if (nextEl) nextEl[_prevIf] = el[_prevIf] || newEl == ifEl
     if (curEl != newEl) {
       // disable effects on child elements when element is not matched
-      if (curEl) curEl.remove(), curEl[_off]?.();
+      if (curEl) curEl.remove(), curEl[_off]?.()
       if (curEl = newEl) {
         holder.before(curEl.content || curEl)
         // remove fake memo to sprae as new

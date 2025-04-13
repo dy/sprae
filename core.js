@@ -13,55 +13,63 @@ export const _state = Symbol("state"), _on = Symbol('on'), _off = Symbol('off')
  * @param {Object} [values] - Initial values to populate the element's reactive state.
  * @returns {Object} The reactive state object associated with the element.
  */
-export const sprae = (el=document.body, values) => {
+export const sprae = (el = document.body, values) => {
   // repeated call can be caused by eg. :each with new objects with old keys
   if (el[_state]) return Object.assign(el[_state], values)
 
   // take over existing state instead of creating a clone
-  let state = store(values || {}), offs = [], fx = [], {prefix} = sprae
+  let state = store(values || {}),
+    { prefix } = sprae,
+    fx = []
 
   let init = (el, attrs = el.attributes) => {
-      // we iterate live collection (subsprae can init args)
-      if (attrs) for (let i = 0; i < attrs.length;) {
-        let { name, value } = attrs[i], update, dir, parts
+    // we iterate live collection (subsprae can init args)
+    if (attrs) for (let i = 0; i < attrs.length;) {
+      let { name, value } = attrs[i], update, dir, parts
 
-        // if we have parts meaning there's attr needs to be spraed
-        if (name.startsWith(prefix)) {
-          el.removeAttribute(name);
+      // if we have parts meaning there's attr needs to be spraed
+      if (name.startsWith(prefix)) {
+        el.removeAttribute(name);
 
-          // multiple attributes like :id:for=""
-          for (dir of name.slice(prefix.length).split(':')) {
-            parts = dir.split('.')
-            update = (directive[parts[0]] || directive['*'])(el, value, state, parts)
+        // multiple attributes like :id:for=""
+        for (dir of name.slice(prefix.length).split(':')) {
+          parts = dir.split('.')
+          update = (directive[parts[0]] || directive['*'])(el, value, state, parts)
 
-            // save & start effect
-            fx.push(update)
-            // FIXME: since effect can have async start, we can just use el[_on]
-            offs.push(effect(update))
+          // save effect
+          fx.push(update)
 
-            // stop after :each, :if, :with etc.
-            if (el[_state] === null) return
-          }
-        } else i++
-      }
+          // stop after :each, :if, :with etc.
+          if (el[_state] === null) return
+        }
+      } else i++
+    }
 
-      // :if and :each replace element with text node, which tweaks .children length, but .childNodes length persists
-      for (let child of el.childNodes) child.nodeType == 1 && init(child)
-    };
+    // :if and :each replace element with text node, which tweaks .children length, but .childNodes length persists
+    for (let child of el.childNodes) child.nodeType == 1 && init(child)
+  };
 
+  let offs = [],
+    on = () => offs = fx.map(f => effect(f)),
+    off = () => (offs.map(off => off()), offs = [])
+  // prevOn = el[_on], prevOff = el[_off],
+
+  // on/off all effects
+  // FIXME: we're supposed to call prevOn/prevOff, but I can't find a test case. Some combination of :if/:with/:each/:ref
+  el[_on] = on //() => (prevOn?.(), on())
+  el[_off] = off //() => (prevOff?.(), off())
+
+  // destroy
+  el[_dispose] ||= () => (el[_off](), el[_off] = el[_on] = el[_dispose] = el[_state] = null)
+
+  // init
   init(el);
 
-  // if element was spraed by inline :with instruction (meaning it has extended state) - skip, otherwise save _state
-  if (!(_state in el)) {
-    el[_state] = state
+  // if element was spraed by inline :with/:if/:each/etc instruction (meaning it has state placeholder) - skip, otherwise save _state
+  if (!(_state in el)) el[_state] = state
 
-    // on/off all effects
-    el[_off] = () => (offs.map(off => off()), offs = [])
-    el[_on] = () => offs = fx.map(f => effect(f))
-
-    // destroy
-    el[_dispose] = () => (el[_off](), el[_off] = el[_on] = el[_dispose] = el[_state] = null)
-  }
+  // start local effects
+  on()
 
   return state;
 }
@@ -71,7 +79,7 @@ export const sprae = (el=document.body, values) => {
  *
  * @type {(expr: string) => Function}
  */
-sprae.compile = expr => sprae.constructor(`with (arguments[0]) { return ${expr} };`) // (indirect new Function to avoid detector)
+sprae.compile = null
 
 /**
  * Attributes prefix, by default ':'
@@ -116,7 +124,7 @@ export const parse = (expr, dir, fn) => {
   // run time errors
   return memo[expr] = s => {
     try { return fn(s) }
-    catch(e) { err(e, dir, expr) }
+    catch (e) { err(e, dir, expr) }
   }
 }
 const memo = {};

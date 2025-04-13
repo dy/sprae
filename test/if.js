@@ -3,6 +3,7 @@ import { tick } from "wait-please";
 import sprae from '../sprae.js'
 import { signal } from '../signal.js'
 import h from "hyperf";
+import { _dispose } from "../core.js";
 
 test("if: base", async () => {
   let el = h`<p>
@@ -150,24 +151,40 @@ test("if: + :with doesnt prevent secondary effects from happening", async () => 
   state.x = "123";
   await tick();
   is(el.innerHTML, `<x>123</x>`);
-
-  // NOTE: we ignore this case
-  // let el2 = h`<div><x :if="x" :with="{x:cond}" :text="x"></x></div>`
-  // let state2 = sprae(el, {cond:''})
-  // is(el2.innerHTML, ``)
-  // state2.cond = '123'
-  // is(el2.innerHTML, `<x>123</x>`)
 });
 
+test("if: + :with back-forth", async () => {
+  let el = h`<div><x :if="x" :with="{}" :text="x" :onx="()=>x+=x"></x><y :else :with="{t:'y'}" :text="t" :onx="()=>t+=t"></y></div>`;
+  let state = sprae(el, { x: "" });
+  is(el.innerHTML, `<y>y</y>`);
+  el.firstChild.dispatchEvent(new CustomEvent('x'))
+  is(el.innerHTML, `<y>yy</y>`);
+
+  console.log("state.x=x");
+  state.x = "x";
+  await tick();
+  is(el.innerHTML, `<x>x</x>`);
+  el.firstChild.dispatchEvent(new CustomEvent('x'))
+  is(el.innerHTML, `<x>xx</x>`);
+  state.x = ''
+  is(el.innerHTML, `<y>yy</y>`);
+  el.firstChild.dispatchEvent(new CustomEvent('x'))
+  is(el.innerHTML, `<y>yyyy</y>`);
+
+  el[_dispose]()
+  is(el.innerHTML, `<y>yyyy</y>`);
+});
+
+
 test("if: :with + :if after attributes", async () => {
-  let el = h`<x :with="{x:1}" :if="cur === 1" :text="x"></x><x :with="{x:2}" :if="cur === 2" :text="x"></x>`
+  let el = h`<c><x :with="{x:1}" :if="cur === 1" :text="x"></x><y :with="{x:2}" :if="cur === 2" :text="x"></y></c>`
 
   let s = sprae(el, { cur: 1 })
-  is(el.outerHTML, `<x>1</x>`)
+  is(el.innerHTML, `<x>1</x>`)
 
   console.log('------- s.cur = 2')
   s.cur = 2
-  is(el.outerHTML, `<x>2</x>`)
+  is(el.innerHTML, `<y>2</y>`)
 })
 
 test('if: set/unset value', async () => {

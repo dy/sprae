@@ -92,6 +92,7 @@ test("ref: fn unmount", async () => {
 test('ref: create in state as untracked', async () => {
   let div = h`<div :with="{_x:null,log(){console.log(_x)}}" :onx="log"><x :ref="_x" :text="_x?.tagName"></x></div>`;
   let state = sprae(div)
+
   is(div[_state]._x, div.firstChild)
   div.dispatchEvent(new window.CustomEvent("x"));
   is(div[_state]._x, div.firstChild)
