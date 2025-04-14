@@ -64,6 +64,16 @@ var init_signal = __esm({
 });
 
 // store.js
+var store_exports = {};
+__export(store_exports, {
+  _change: () => _change,
+  _signals: () => _signals,
+  _stash: () => _stash,
+  default: () => store_default,
+  list: () => list,
+  setter: () => setter,
+  store: () => store
+});
 var _signals, _change, _stash, store, list, mut, set, setter, store_default;
 var init_store = __esm({
   "store.js"() {
@@ -320,10 +330,7 @@ var init_ref = __esm({
     init_core();
     init_signal();
     init_store();
-    dir("ref", (el, state, expr) => (
-      // FIXME: ideally we don't use untracked here, but ev may have internal refs that will subscribe root effect
-      untracked(() => typeof parse(expr)(state) == "function") ? (v) => v.call(null, el) : (setter(expr)(state, el), (_) => _)
-    ));
+    dir("ref", (el, state, expr) => typeof parse(expr)(state) == "function" ? (v) => v.call(null, el) : (setter(expr)(state, el), (_) => _));
   }
 });
 
@@ -333,10 +340,11 @@ var init_with = __esm({
     init_core();
     init_signal();
     init_store();
-    dir("with", (el, rootState, state) => (state = null, (values) => (
-      //untracked(() => (
-      core_default(el, state ? values : state = store_default(values, rootState))
-    )));
+    dir("with", (el, rootState, state) => (state = null, (values) => !state ? (
+      // NOTE: we force untracked because internal directives can eval outside of effects (like ref etc) that would cause unwanted subscribe
+      // FIXME: since this can be async effect, we should create & sprae it in advance.
+      untracked(() => core_default(el, state = store_default(values, rootState)))
+    ) : core_default(el, values)));
   }
 });
 
@@ -369,7 +377,6 @@ var init_class = __esm({
         for (let cls of cur = clsx) el.classList.add(cls);
       })
     );
-    directive.className = directive.class;
   }
 });
 
@@ -566,7 +573,7 @@ var init_value = __esm({
           new MutationObserver(handleChange).observe(el, { childList: true, subtree: true, attributes: true });
           core_default(el, state);
         }
-        untracked(() => parse(expr)(state)) ?? handleChange();
+        parse(expr)(state) ?? handleChange();
       } catch {
       }
       return update;
@@ -606,19 +613,7 @@ var init_data = __esm({
 // sprae.js
 var sprae_exports = {};
 __export(sprae_exports, {
-  _change: () => _change,
-  _signals: () => _signals,
-  _stash: () => _stash,
-  batch: () => batch,
-  computed: () => computed,
-  default: () => sprae_default,
-  effect: () => effect,
-  list: () => list,
-  setter: () => setter,
-  signal: () => signal,
-  store: () => store,
-  untracked: () => untracked,
-  use: () => use
+  default: () => sprae_default
 });
 var sprae_default;
 var init_sprae = __esm({
@@ -636,8 +631,6 @@ var init_sprae = __esm({
     init_default();
     init_aria();
     init_data();
-    init_store();
-    init_signal();
     core_default.use({ compile: (expr) => core_default.constructor(`with (arguments[0]) { return ${expr} };`) });
     sprae_default = core_default;
   }
@@ -645,9 +638,10 @@ var init_sprae = __esm({
 
 // <stdin>
 var sprae2 = (init_sprae(), __toCommonJS(sprae_exports)).default;
+sprae2.store = (init_store(), __toCommonJS(store_exports)).default;
 sprae2.use({ prefix: document.currentScript.getAttribute("prefix") });
 document.readyState === "loading" ? document.addEventListener("DOMContentLoaded", () => sprae2()) : sprae2();
-module.exports = (init_sprae(), __toCommonJS(sprae_exports)).default;
+module.exports = sprae2;
 ;if (typeof module.exports == "object" && typeof exports == "object") {
   var __cp = (to, from, except, desc) => {
     if ((from && typeof from === "object") || typeof from === "function") {

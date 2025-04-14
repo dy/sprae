@@ -20,7 +20,10 @@ esbuild.build({
 // UMD build
 await esbuild.build({
   stdin: {
-    contents: `module.exports = require("./sprae.js").default;`,
+    contents:
+    'var sprae = require("./sprae.js").default;\n' +
+    'sprae.store = require("./store.js").default;\n' +
+    'module.exports = sprae;',
     resolveDir: '.'
   },
   outfile: "dist/sprae.umd.js",
@@ -43,9 +46,10 @@ esbuild.build({
 await esbuild.build({
   stdin: {
     contents: 'const sprae = require("./sprae.js").default;\n' +
+    'sprae.store = require("./store.js").default;\n' +
     'sprae.use({prefix: document.currentScript.getAttribute("prefix")});\n' +
     'document.readyState === "loading" ? document.addEventListener("DOMContentLoaded", () => sprae()) : sprae();\n' +
-    'module.exports = require("./sprae.js").default;',
+    'module.exports = sprae;',
     resolveDir: '.'
   },
   outfile: "dist/sprae.auto.js",

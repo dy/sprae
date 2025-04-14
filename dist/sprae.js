@@ -263,16 +263,14 @@ dir(
 );
 
 // directive/ref.js
-dir("ref", (el, state, expr) => (
-  // FIXME: ideally we don't use untracked here, but ev may have internal refs that will subscribe root effect
-  untracked(() => typeof parse(expr)(state) == "function") ? (v) => v.call(null, el) : (setter(expr)(state, el), (_) => _)
-));
+dir("ref", (el, state, expr) => typeof parse(expr)(state) == "function" ? (v) => v.call(null, el) : (setter(expr)(state, el), (_) => _));
 
 // directive/with.js
-dir("with", (el, rootState, state) => (state = null, (values) => (
-  //untracked(() => (
-  core_default(el, state ? values : state = store_default(values, rootState))
-)));
+dir("with", (el, rootState, state) => (state = null, (values) => !state ? (
+  // NOTE: we force untracked because internal directives can eval outside of effects (like ref etc) that would cause unwanted subscribe
+  // FIXME: since this can be async effect, we should create & sprae it in advance.
+  untracked(() => core_default(el, state = store_default(values, rootState)))
+) : core_default(el, values)));
 
 // directive/text.js
 dir("text", (el) => (
@@ -295,7 +293,6 @@ dir(
     for (let cls of cur = clsx) el.classList.add(cls);
   })
 );
-directive.className = directive.class;
 
 // directive/style.js
 dir(
@@ -472,7 +469,7 @@ dir("value", (el, state, expr) => {
       new MutationObserver(handleChange).observe(el, { childList: true, subtree: true, attributes: true });
       core_default(el, state);
     }
-    untracked(() => parse(expr)(state)) ?? handleChange();
+    parse(expr)(state) ?? handleChange();
   } catch {
   }
   return update;
@@ -495,17 +492,5 @@ dir("data", (el) => (value) => {
 core_default.use({ compile: (expr) => core_default.constructor(`with (arguments[0]) { return ${expr} };`) });
 var sprae_default = core_default;
 export {
-  _change,
-  _signals,
-  _stash,
-  batch,
-  computed,
-  sprae_default as default,
-  effect,
-  list,
-  setter,
-  signal,
-  store,
-  untracked,
-  use
+  sprae_default as default
 };
