@@ -17,8 +17,10 @@ A light and fast alternative to _alpine_, _petite-vue_, _lucia_ etc (see [why](#
   import sprae from './sprae.js' // https://unpkg.com/sprae/dist/sprae.min.js
 
   // init
-  const container = document.querySelector('#container');
-  const state = sprae(container, { user: { name: 'friend' } })
+  const state = sprae(
+    document.getElementById('container'),
+    { user: { name: 'friend' } }
+  )
 
   // update
   state.user.name = 'love'
@@ -32,7 +34,7 @@ Sprae evaluates `:`-directives and evaporates them, returning reactive state for
 
 * [sprae.js](dist/sprae.js) – standard ESM
 * [sprae.umd.js](dist/sprae.umd.js) – CJS / UMD / standalone
-* [sprae.auto.js](dist/sprae.auto.js) – autoinit document, useful for SSR
+* [sprae.auto.js](dist/sprae.auto.js) – CDN with autoinit `:scope` elements, useful for [SSR](#jsx)
 * [sprae.micro.js](dist/sprae.micro.js) – microjs <2.5kb bundle with `:scope`, `:ref`, `:fx`, `:on*`, `:*`
 * [sprae.secure.js](dist/sprae.secure.js) - CSP-enabled with [secure eval](#evaluator)
 <!-- * sprae.async.js - sprae with async events -->
@@ -175,6 +177,9 @@ Run effect, not changing any attribute.
 ```html
 <div :fx="a.value ? foo() : bar()" />
 
+<!-- define variables -->
+<div :fx="a=1, b=2" :text="a + b"></div>
+
 <!-- cleanup function -->
 <div :fx="id = setInterval(tick, 1000), () => clearInterval(id)" />
 ```
@@ -188,7 +193,7 @@ Expose element in state with `name` or get element.
 
 <!-- local reference -->
 <li :each="item in items" :scope :ref="li">
-  <input :onfocus..onblur="e => (li.classList.add('editing'), e => li.classList.remove('editing'))"/>
+  <input :onfocus="e => li.classList.add('editing')"/>
 </li>
 
 <!-- set innerHTML -->
@@ -231,15 +236,6 @@ Attach event(s) listener with optional modifiers.
   * `.ctrl-<key>, .alt-<key>, .meta-<key>, .shift-<key>` – key combinations, eg. `.ctrl-alt-delete` or `.meta-x`.
 * `.*` – any other modifier has no effect, but allows binding multiple handlers to same event (like jQuery event classes).
 
-
-### Extra
-
-Additional directives from [sprae/directive](sprae/directive) can be plugged in as
-
-```js
-import data from 'sprae/directive/data.js'
-sprae.dir('data', data)
-```
 
 <!--
 #### `:data="values"`
@@ -289,6 +285,23 @@ Trigger when element is connected / disconnected from DOM.
 ```
 -->
 
+## Store
+
+Sprae uses _signals_-based store for reactivity with sandboxing and inheritance.
+
+```js
+import sprae from 'sprae'
+import store from 'sprae/store'
+
+// pre-create store with globals
+const state = store({count: 0, inc(){ state.count++ } }, globalThis)
+
+sprae(element, state)
+
+state.Math === globalThis.Math // true
+```
+
+
 ## Signals
 
 Sprae uses _preact-flavored signals_ for reactivity and can take _signal_ values as inputs.<br/>
@@ -314,7 +327,7 @@ Provider | Size | Feature
 :---|:---|:---
 [`ulive`](https://ghub.io/ulive) | 350b | Minimal implementation, basic performance, good for small states.
 [`@webreflection/signal`](https://ghub.io/@webreflection/signal) | 531b | Class-based, better performance, good for small-medium states.
-[`usignal`](https://ghub.io/usignal) | 850b | Class-based with optimizations, good for medium states.
+[`usignal`](https://ghub.io/usignal) | 850b | Class-based with optimizations, good for medium states, enables async effects.
 [`@preact/signals-core`](https://ghub.io/@preact/signals-core) | 1.47kb | Best performance, good for any states, industry standard.
 [`signal-polyfill`](https://ghub.io/signal-polyfill) | 2.5kb | Proposal signals. Use via [adapter](https://gist.github.com/dy/bbac687464ccf5322ab0e2fd0680dc4d).
 
@@ -348,6 +361,8 @@ sprae.compile = justin; // set up justin as default compiler
 
 
 ## Custom Build
+
+Sprae can be tailored to project needs / size:
 
 ```js
 // sprae.custom.js

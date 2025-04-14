@@ -173,6 +173,7 @@
 * [x] run effects after collecting them
 * [ ] :scope instead of :with
 * [ ] simplify nested store: just object inheritance
+* [ ] pass globals to store
 * [x] expose sprae.compile, .prefix, .dir
 * [ ] async effects?
 * [ ] `a in b`, `a of b` -> no key, `(a,b) in c`
@@ -184,6 +185,7 @@
 * [ ] microjs contribution
 * [ ] export only dist, not source
 * [ ] make sure umd min bundle works
+* [ ] test usignal/async effects
 
 
 ## [ ] Optimizations (https://krausest.github.io/js-framework-benchmark/current.html)

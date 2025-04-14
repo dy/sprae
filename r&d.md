@@ -158,7 +158,6 @@
     * rather than creating a layer of storage
   - unclear/complicated parsing
   ? or `:define="a=1, b=2"`, `:let="a=1"`
-  - doesn't create a scope
   - can simply be done via `:fx="a=1, b=2"`
 
 ### [x] What's the best name for :scope/:with/:data? -> :scope
@@ -173,6 +172,7 @@
     + `js-scope` makes sense
     + can be used without data, just to indicate a separate scope
     + on par with petit-vue
+    + allows sprae.auto to init only :scope parts
     - scope attribute is used for th
       ~ rare, but can be set via `:={scope:'xyz'}`
     - :scope/@scope is used in CSS
@@ -1278,7 +1278,7 @@
   3. Each pre-eval call, :ref, :value
     - doesn't generally save the issue
 
-## [ ] Immediate state access #58
+## [ ] Immediate state access #58 -> pre-create store
 
   1. Async effects init
     + Allows referring to newly created state from inside methods
