@@ -143,8 +143,8 @@ test("if: (#3) subsequent content is not abandoned", async () => {
   is(x.outerHTML, `<x><z>123</z></x>`);
 });
 
-test("if: + :with doesnt prevent secondary effects from happening", async () => {
-  let el = h`<div><x :if="x" :with="{}" :text="x"></x></div>`;
+test("if: + :scope doesnt prevent secondary effects from happening", async () => {
+  let el = h`<div><x :if="x" :scope="{}" :text="x"></x></div>`;
   let state = sprae(el, { x: "" });
   is(el.innerHTML, ``);
   console.log("state.x=123");
@@ -153,8 +153,8 @@ test("if: + :with doesnt prevent secondary effects from happening", async () => 
   is(el.innerHTML, `<x>123</x>`);
 });
 
-test("if: + :with back-forth", async () => {
-  let el = h`<div><x :if="x" :with="{}" :text="x" :onx="()=>x+=x"></x><y :else :with="{t:'y'}" :text="t" :onx="()=>t+=t"></y></div>`;
+test("if: + :scope back-forth", async () => {
+  let el = h`<div><x :if="x" :scope="{}" :text="x" :onx="()=>x+=x"></x><y :else :scope="{t:'y'}" :text="t" :onx="()=>t+=t"></y></div>`;
   let state = sprae(el, { x: "" });
   is(el.innerHTML, `<y>y</y>`);
   el.firstChild.dispatchEvent(new window.CustomEvent('x'))
@@ -176,8 +176,8 @@ test("if: + :with back-forth", async () => {
 });
 
 
-test("if: :with + :if after attributes", async () => {
-  let el = h`<c><x :with="{x:1}" :if="cur === 1" :text="x"></x><y :with="{x:2}" :if="cur === 2" :text="x"></y></c>`
+test("if: :scope + :if after attributes", async () => {
+  let el = h`<c><x :scope="{x:1}" :if="cur === 1" :text="x"></x><y :scope="{x:2}" :if="cur === 2" :text="x"></y></c>`
 
   let s = sprae(el, { cur: 1 })
   is(el.innerHTML, `<x>1</x>`)

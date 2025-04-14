@@ -41,14 +41,14 @@ test.skip("html: state", async () => {
   is(a.outerHTML, `<template><div :text="text"></div></template><x><div>def</div></x>`);
 });
 
-test.skip("html: :with", async () => {
-  let a = h`<template :ref="tpl"><div :text="text"></div></template><x :html="tpl" :with="{text:'abc'}" />`;
+test.skip("html: :scope", async () => {
+  let a = h`<template :ref="tpl"><div :text="text"></div></template><x :html="tpl" :scope="{text:'abc'}" />`;
   sprae(a);
   is(a.outerHTML, `<template><div :text="text"></div></template><x><div>abc</div></x>`);
 });
 
 test.skip("html: nested items", async () => {
-  let el = h`<template :ref="tpl"><div :each="item in items" :text="item.id"></div></template><x :html="tpl" :with="{items:[{id:'a'},{id:'b'}]}" />`;
+  let el = h`<template :ref="tpl"><div :each="item in items" :text="item.id"></div></template><x :html="tpl" :scope="{items:[{id:'a'},{id:'b'}]}" />`;
   sprae(el);
   is(
     el.outerHTML,
@@ -57,7 +57,7 @@ test.skip("html: nested items", async () => {
 });
 
 test.skip("html: template after use", async () => {
-  let a = h`<x :html="tpl" :with="{text:'abc'}" /><template :ref="tpl"><div :text="text"></div></template>`;
+  let a = h`<x :html="tpl" :scope="{text:'abc'}" /><template :ref="tpl"><div :text="text"></div></template>`;
   sprae(a);
   is(a.outerHTML, `<x><div>abc</div></x><template><div :text="text"></div></template>`);
 });

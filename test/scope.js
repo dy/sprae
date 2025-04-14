@@ -5,8 +5,8 @@ import { signal } from '../signal.js'
 import h from "hyperf";
 
 
-test("with: inline assign", async () => {
-  let el = h`<x :with="{foo:'bar'}"><y :text="foo + baz"></y></x>`;
+test("scope: inline assign", async () => {
+  let el = h`<x :scope="{foo:'bar'}"><y :text="foo + baz"></y></x>`;
   let state = sprae(el, { baz: signal("qux") });
   is(el.innerHTML, `<y>barqux</y>`);
   state.baz = "quux";
@@ -14,8 +14,9 @@ test("with: inline assign", async () => {
   is(el.innerHTML, `<y>barquux</y>`);
 });
 
-test("with: inline assign reactive", async () => {
-  let el = h`<x :with="{foo:'bar'}"><y :text="foo + baz"></y></x>`;
+
+test("scope: inline assign reactive", async () => {
+  let el = h`<x :scope="{foo:'bar'}"><y :text="foo + baz"></y></x>`;
   let baz = signal("qux");
   sprae(el, { baz });
   is(el.innerHTML, `<y>barqux</y>`);
@@ -24,8 +25,8 @@ test("with: inline assign reactive", async () => {
   is(el.innerHTML, `<y>barquux</y>`);
 });
 
-test("with: assign data", async () => {
-  let el = h`<x :with="{foo:x.foo}"><y :text="foo"></y></x>`;
+test("scope: assign data", async () => {
+  let el = h`<x :scope="{foo:x.foo}"><y :text="foo"></y></x>`;
   let state = sprae(el, { console, x: { foo: "bar" } });
   is(el.innerHTML, `<y>bar</y>`);
   state.x.foo = "baz";
@@ -34,8 +35,8 @@ test("with: assign data", async () => {
   is(el.innerHTML, `<y>baz</y>`);
 });
 
-test("with: assign transparency", async () => {
-  let el = h`<x :with="{foo:'foo'}"><y :with="{bar:b.bar}" :text="foo+bar"></y></x>`;
+test("scope: assign transparency", async () => {
+  let el = h`<x :scope="{foo:'foo'}"><y :scope="{bar:b.bar}" :text="foo+bar"></y></x>`;
   let params = sprae(el, { b: { bar: "bar" } });
   is(el.innerHTML, `<y>foobar</y>`);
   params.b.bar = "baz";
@@ -43,8 +44,8 @@ test("with: assign transparency", async () => {
   is(el.innerHTML, `<y>foobaz</y>`);
 });
 
-test("with: reactive transparency", async () => {
-  let el = h`<x :with="{foo:1}"><y :with="{bar:b.c.bar}" :text="foo+bar"></y></x>`;
+test("scope: reactive transparency", async () => {
+  let el = h`<x :scope="{foo:1}"><y :scope="{bar:b.c.bar}" :text="foo+bar"></y></x>`;
   const bar = signal("2");
   sprae(el, { b: { c: { bar } } });
   is(el.innerHTML, `<y>12</y>`);
@@ -53,8 +54,8 @@ test("with: reactive transparency", async () => {
   is(el.innerHTML, `<y>13</y>`);
 });
 
-test("with: writes to state", async () => {
-  let a = h`<x :with="{a:1}"><y :onx="e=>(a+=1)" :text="a"></y></x>`;
+test("scope: writes to state", async () => {
+  let a = h`<x :scope="{a:1}"><y :onx="e=>(a+=1)" :text="a"></y></x>`;
   sprae(a, { console, signal });
   is(a.innerHTML, `<y>1</y>`);
   a.firstChild.dispatchEvent(new window.Event("x"));
@@ -65,21 +66,21 @@ test("with: writes to state", async () => {
   is(a.innerHTML, `<y>3</y>`);
 });
 
-test("with: one of children (internal number of iterations, cant see the result here)", async () => {
-  let a = h`<div><x :text="x"></x><x :with="{x:2}" :text="x"></x><x :text="y">3</x></div>`;
+test("scope: one of children (internal number of iterations, cant see the result here)", async () => {
+  let a = h`<div><x :text="x"></x><x :scope="{x:2}" :text="x"></x><x :text="y">3</x></div>`;
   sprae(a, { x: 1, y: 3 });
   is(a.innerHTML, `<x>1</x><x>2</x><x>3</x>`);
 });
 
-test("with: scope directives must come first", async () => {
+test("scope: scope directives must come first", async () => {
   // NOTE: we have to init attributes in order of definition
-  let a = h`<x :with="{y:1}" :text="y" :ref="el=>x=el"></x>`;
+  let a = h`<x :scope="{y:1}" :text="y" :ref="el=>x=el"></x>`;
   sprae(a, { x: null });
   is(a.outerHTML, `<x>1</x>`);
 });
 
-test("with: new prop added to superstore", async () => {
-  let a = h`<x :with="{y:0}" :ony="()=>y=1"><a :if="y" :text="x"></a></x>`
+test("scope: new prop added to superstore", async () => {
+  let a = h`<x :scope="{y:0}" :ony="()=>y=1"><a :if="y" :text="x"></a></x>`
   let state = sprae(a, {})
   is(a.innerHTML, ``)
   state.x = 1
@@ -88,8 +89,8 @@ test("with: new prop added to superstore", async () => {
   is(a.innerHTML, `<a>1</a>`)
 })
 
-test.todo('with: parasitic updates', async () => {
-  let a = h`<x :with="{x:'',y}"><y :fx="x='x'" :text="x+y"></y></x>`
+test.todo('scope: parasitic updates', async () => {
+  let a = h`<x :scope="{x:'',y}"><y :fx="x='x'" :text="x+y"></y></x>`
   let s = sprae(a, {y:'y'})
   is(a.innerHTML, `<y>xy</y>`)
   s.y = 'yy'

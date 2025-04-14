@@ -94,8 +94,8 @@ test.skip("core: const in on", async () => {
   is(state.y, 2);
 });
 
-test.skip("core: const in with", async () => {
-  let el = h`<div :with="{x(){let x = 1; y=x;}}" :onx="x()"></div>`;
+test.skip("core: const in scope", async () => {
+  let el = h`<div :scope="{x(){let x = 1; y=x;}}" :onx="x()"></div>`;
   let state = sprae(el, { y: 0 });
   el.dispatchEvent(new window.CustomEvent("x"));
   await tick();
@@ -175,7 +175,7 @@ test(":: null result does nothing", async () => {
 });
 
 test.skip("immediate scope", async () => {
-  let el = h`<x :with="{arr:[], inc(){ arr.push(1) }}" :onx="e=>inc()" :text="arr[0]"></x>`;
+  let el = h`<x :scope="{arr:[], inc(){ arr.push(1) }}" :onx="e=>inc()" :text="arr[0]"></x>`;
   sprae(el);
   is(el.outerHTML, `<x></x>`);
   el.dispatchEvent(new window.CustomEvent("x"));
@@ -202,7 +202,7 @@ test("subscribe to array length", async () => {
   sprae(h`<x :fx="(log.push(1))"></x>`, { log: [] });
 
   console.log('---create')
-  let el = h`<div :with="{likes:[]}"><x :onx="e=>(likes.push(1))"></x><y :text="console.log('text'),likes.length"></y></div>`;
+  let el = h`<div :scope="{likes:[]}"><x :onx="e=>(likes.push(1))"></x><y :text="console.log('text'),likes.length"></y></div>`;
   sprae(el, { console });
   is(el.innerHTML, `<x></x><y>0</y>`);
   console.log('---event')

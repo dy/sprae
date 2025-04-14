@@ -10,7 +10,7 @@ import './ref.js'
 import './style.js'
 import './text.js'
 import './value.js'
-import './with.js'
+import './scope.js'
 import './events.js'
 
 

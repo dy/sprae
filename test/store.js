@@ -179,7 +179,7 @@ t.skip('store: store from store', () => {
 })
 
 t.skip('store: inheritance', () => {
-  // NOTE: we do manual inheritance in :with
+  // NOTE: we do manual inheritance in :scope
   let s = store({ x: 0 })
   //s.x;
   let s1 = store({ y: 2 }, Object.create(s[_signals]))

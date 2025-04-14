@@ -39,7 +39,7 @@ export const sprae = (el = document.body, values) => {
           // save effect
           fx.push((directive[parts[0]] || directive['*'])(el, value, state, parts))
 
-          // stop after :each, :if, :with etc.
+          // stop after :each, :if, :scope etc.
           if (el[_state] === null) return
         }
       } else i++
@@ -55,7 +55,7 @@ export const sprae = (el = document.body, values) => {
   // prevOn = el[_on], prevOff = el[_off],
 
   // on/off all effects
-  // FIXME: we're supposed to call prevOn/prevOff, but I can't find a test case. Some combination of :if/:with/:each/:ref
+  // FIXME: we're supposed to call prevOn/prevOff, but I can't find a test case. Some combination of :if/:scope/:each/:ref
   el[_on] = on //() => (prevOn?.(), on())
   el[_off] = off //() => (prevOff?.(), off())
 

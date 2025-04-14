@@ -381,7 +381,7 @@ test("each: condition within loop", async () => {
 
 test('each: items refer to current el', async () => {
   // NOTE: the problem here is that the next items can subscribe to `el` defined in root state (if each hasn't created scope), that will cause unnecessary :x effect
-  let el = h`<div><x :each="x in 3" :data-x="x" :with="{el:null}" :ref="e=>el=e" :x="log.push(x, el.dataset.x)"></x></div>`;
+  let el = h`<div><x :each="x in 3" :data-x="x" :scope="{el:null}" :ref="e=>el=e" :x="log.push(x, el.dataset.x)"></x></div>`;
   let log = signal([]);
   let state = sprae(el, { log, untracked });
   is([...state.log], [1, "1", 2, "2", 3, "3"]);
@@ -511,8 +511,8 @@ test("each: swapping", async () => {
   is(el.outerHTML, `<table><tr>1</tr><tr>4</tr><tr>3</tr><tr>2</tr><tr>5</tr></table>`);
 });
 
-test("each: with :with", () => {
-  let el = h`<ul><li :each="i in 3" :with="{x:i}" :text="x"></li></ul>`;
+test("each: with :scope", () => {
+  let el = h`<ul><li :each="i in 3" :scope="{x:i}" :text="x"></li></ul>`;
   sprae(el);
   is(el.outerHTML, `<ul><li>1</li><li>2</li><li>3</li></ul>`);
 });

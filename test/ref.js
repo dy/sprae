@@ -69,7 +69,7 @@ test("ref: fn signal", async () => {
 });
 
 test("ref: fn with :each", async () => {
-  let a = h`<y><x :each="item in items" :with="{x:null}" :ref="el => x=el" :text="log.push(x), item"/></y>`;
+  let a = h`<y><x :each="item in items" :scope="{x:null}" :ref="el => x=el" :text="log.push(x), item"/></y>`;
   let state = sprae(a, { log: [], items: [1, 2, 3] });
   await tick();
   is(state.log, [...a.children]);
@@ -90,7 +90,7 @@ test("ref: fn unmount", async () => {
 });
 
 test('ref: create in state as untracked', async () => {
-  let div = h`<div :with="{_x:null,log(){console.log(_x)}}" :onx="log"><x :ref="_x" :text="_x?.tagName"></x></div>`;
+  let div = h`<div :scope="{_x:null,log(){console.log(_x)}}" :onx="log"><x :ref="_x" :text="_x?.tagName"></x></div>`;
   let state = sprae(div)
 
   is(div[_state]._x, div.firstChild)
@@ -99,10 +99,10 @@ test('ref: create in state as untracked', async () => {
 })
 
 test('ref: create in state as direct', async () => {
-  let div = h`<div :with="{x:null,log(){console.log(x)}}" :onx="log"><x :ref="x" :text="x?.tagName"></x></div>`;
+  let div = h`<div :scope="{x:null,log(){console.log(x)}}" :onx="log"><x :ref="x" :text="x?.tagName"></x></div>`;
   let state = sprae(div)
   is(div[_state].x, div.firstChild)
-  // reading :ref=x normally (one level) would not subscribe root, but nested one may subscribe parent :with
+  // reading :ref=x normally (one level) would not subscribe root, but nested one may subscribe parent :scope
   div.dispatchEvent(new window.CustomEvent("x"));
   is(div[_state].x, div.firstChild)
 })

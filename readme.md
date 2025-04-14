@@ -42,6 +42,16 @@ Sprae evaluates `:`-directives and evaporates them, returning reactive state for
 
 ## Directives
 
+#### `:scope="values"`
+
+Define variable scope for a subtree.
+
+```html
+<x :scope="foo='bar'">
+  <y :scope="baz='qux'" :text="foo + baz"></y>
+</x>
+```
+
 #### `:if="condition"`, `:else`
 
 Control flow of elements.
@@ -133,28 +143,29 @@ Set value to/from an input, textarea or select (like alpinejs `x-model`).
 <input type="checkbox" :value="item.done" />
 ```
 
-#### `:*="value"`, `:="values"`
+#### `:*="value"`
 
-Set any attribute(s).
+Set any attribute.
 
 ```html
 <label :for="name" :text="name" />
 
 <!-- multiple attributes -->
 <input :id:name="name" />
-
-<!-- spread attributes -->
-<input :="{ id: name, name, type: 'text', value }" />
 ```
 
-#### `:scope="values"`
+#### `:="values"`
 
-Define variable scope for a subtree.
+Set multiple attributes
 
 ```html
-<x :scope="foo='bar'">
-  <y :scope="baz='qux'" :text="foo + baz"></y>
-</x>
+<input :="{ id: name, name, type: 'text', value  }" />
+
+<!-- spread -->
+<input :="{ ...props }" />
+
+<!-- reserved names -->
+<input :="{ ref:'x', fx:'y', each: 'z' }" />
 ```
 
 #### `:fx="code"`
@@ -170,13 +181,13 @@ Run effect, not changing any attribute.
 
 #### `:ref="name"`, `:ref="el => (...)"`
 
-Expose element in state with `name` or get reference to element.
+Expose element in state with `name` or get element.
 
 ```html
 <div :ref="card" :fx="handle(card)"></div>
 
 <!-- local reference -->
-<li :each="item in items" :ref="li">
+<li :each="item in items" :scope :ref="li">
   <input :onfocus..onblur="e => (li.classList.add('editing'), e => li.classList.remove('editing'))"/>
 </li>
 
@@ -338,8 +349,6 @@ sprae.compile = justin; // set up justin as default compiler
 
 ## Custom Build
 
-_Sprae_ can be tailored to project needs as:
-
 ```js
 // sprae.custom.js
 import sprae from 'sprae/core'
@@ -347,14 +356,14 @@ import * as signals from '@preact/signals'
 import subscript from 'subscript'
 
 // standard directives from sprae/directive
-import _any from 'sprae/directive/any.js'
+import _attr from 'sprae/directive/attr.js'
 import _if from 'sprae/directive/if.js'
 import _text from 'sprae/directive/text.js'
 
 // register directives
 sprae.dir('if', _if)
 sprae.dir('text', _text)
-sprae.dir('*', _any)
+sprae.dir('*', _attr)
 
 // custom directive :id="expression"
 sprae.dir('id', (el, state, expr) => {
