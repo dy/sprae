@@ -2,4 +2,4 @@
 
 import { attr } from "./all.js"
 
-export default (target, state, expr, parts) => value => attr(target, parts[0], value)
+export default (el, s, e, parts) => value => attr(el, parts[0], value)

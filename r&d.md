@@ -1249,14 +1249,37 @@
   3. Each pre-eval call, :ref, :value
     - doesn't generally save the issue
 
-## [ ] Async effects init?
+## [ ] Immediate state access #58
 
-  + Allows referring to newly created state from inside methods
-  + Errors in effects in first run don't break sprae
+  1. Async effects init
+    + Allows referring to newly created state from inside methods
+    + Errors in effects in first run don't break sprae
+      - we still brand errors
+    + Possible batch update
+    + Possible await in effects
+    - First blank frame
+    - delay in init
+    - all other frameworks are sync
+    - grok conclusion is no https://grok.com/share/bGVnYWN5_8d145672-9faf-4df9-8b5a-9f190ac7e58f
+      - size bloat, not sprae philosophy, existing alternatives
+
+  2. `x.async` prop modifier
+    - whole syntax conceptual space
+    + we already do `parts`
+    + it's `async func` directly
+
+  3. `sprae.async` flag
+    - unmade decision
+
+  4. `async.sprae` flavor
+    - not sufficient for a separate flavor
+    ~+ unless we make batch, async effects
+
+  5. Just export `sprae.store`
 
 ## [ ] Prop modifiers
 
-  - overall seems code complication without much benefit
+  * Main variants
   * ~~value.bind? value.watch?~~ no sense beyound value/ref
   * ~~prop.reflect, prop.observe~~ signals are autoobserved
   * ~~prop.boolean, .number, .string, .array, .object~~ defined per-property
@@ -1266,18 +1289,21 @@
     ? are there cases where force-update is necessary?
   * prop.throttle-xxx, prop.debounce-xxx
     - let's wait until that's really a problem
-  * prop.tag
+  * prop.* – multiple values for same prop
   * prop.next="" - run update after other DOM updates happen
+    + helps resolving calling a fn with state access
   * ~~prop.fx="" - run effect without changing property~~ fx is there
   * ~~x.prop="xyz" - set element property, rather than attribute (following topic)~~ do it via `:ref` or `:fx`
   * x.raf="abc" - run regularly?
   * ~~x.watch-a-b-c - update by change of any of the deps~~
-  * :x.always - update by _any_ state change
-  * :class.active="active"
-  * :style.--x="a"
-  * :data.x="a"
+  * :x.any - update by _any_ state change
   * :x.persist="v"
-    - solvable via nadis
+    - solvable via nadis - persisted signal
+  * :x.lazy?
+  * :x.memo?
+
+  ~ so props have to do with describing how effect is triggered.
+  - overall seems code complication without much benefit
 
 ## [ ] Should we separate `k,v in b` to `k in b`, `v of b`
 

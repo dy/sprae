@@ -1,10 +1,10 @@
-import sprae, { _state, frag, parse } from "../core.js";
+import sprae, { _state, frag } from "../core.js";
 import store, { _change, _signals } from "../store.js";
 import { effect } from '../signal.js';
 
 
 export default (tpl, state, expr) => {
-  let [itemVar, idxVar = "$"] = expr.split(/\bin\b/)[0].trim().split(/\s*,\s*/);
+  let [itemVar, idxVar = "$"] = expr.split(/\b(?:in|of)\b/)[0].trim().split(/\s*,\s*/);
 
   // we need :if to be able to replace holder instead of tpl for :if :each case
   let holder = document.createTextNode("");
@@ -38,12 +38,16 @@ export default (tpl, state, expr) => {
           // FIXME: inherited state is cheaper in terms of memory and faster in terms of performance
           // compared to cloning all parent signals and creating a proxy
           // FIXME: besides try to avoid _signals access: we can optimize store then not checking for _signals key
-          scope = store({
-            [itemVar]: cur[_signals]?.[idx] || cur[idx],
-            [idxVar]: keys ? keys[idx] : idx
-          }, state),
+          // scope = store({
+          //   [itemVar]: cur[_signals]?.[idx] || cur[idx],
+          //   // [idxVar]: keys ? keys[idx] : idx
+          // }, state)
+          scope = Object.create(state, {
+            [itemVar]: {get: () => cur[idx]},
+            [idxVar]: {value: keys ? keys[idx] : idx}
+          })
 
-          el = tpl.content ? frag(tpl) : tpl.cloneNode(true);
+        let el = tpl.content ? frag(tpl) : tpl.cloneNode(true);
 
         holder.before(el.content || el);
         sprae(el, scope);

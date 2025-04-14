@@ -23,12 +23,12 @@ export const _signals = Symbol('signals'),
 
       // proxy conducts prop access to signals
     let state = new Proxy(signals, {
-        get: (_, k) => k === _change ? _len : k === _signals ? signals : k === _stash ? stash : k in signals ? signals[k]?.valueOf() : globalThis[k],
+        get: (_, k) => k === _change ? _len : k === _signals ? signals : k === _stash ? stash : k in signals ? signals[k]?.valueOf?.() : globalThis[k],
         set: (_, k, v, s) => k === _stash ? (stash = v, 1) : (s = k in signals, set(signals, k, v), s || ++_len.value), // bump length for new signal
         deleteProperty: (_, k) => (signals[k] && (signals[k][Symbol.dispose]?.(), delete signals[k], _len.value--), 1),
         // subscribe to length when object is spread
         ownKeys: () => (_len.value, Reflect.ownKeys(signals)),
-        has: _ => true // sandbox prevents writing to global
+        has: _ => 1 // sandbox prevents writing to global
       }),
 
       // init signals for values
@@ -38,7 +38,7 @@ export const _signals = Symbol('signals'),
       // getter turns into computed
       if (descs[k]?.get)
         // stash setter
-        (signals[k] = computed(descs[k].get.bind(state)))._set = descs[k].set?.bind(state);
+        (signals[k] = computed(descs[k].get.bind(state)))[_change] = descs[k].set?.bind(state);
 
       else
         // init blank signal - make sure we don't take prototype one
@@ -93,6 +93,7 @@ export const _signals = Symbol('signals'),
           return 1
         },
 
+        // dispose notifies any signal deps, like :each
         deleteProperty: (_, k) => (signals[k]?.[Symbol.dispose]?.(), delete signals[k], 1),
       })
 
@@ -113,7 +114,7 @@ const set = (signals, k, v) => {
   // skip unchanged (although can be handled by last condition - we skip a few checks this way)
   else if (v === (cur = s.peek()));
   // stashed _set for value with getter/setter
-  else if (s._set) s._set(v)
+  else if (s[_change]) s[_change](v)
   // patch array
   else if (Array.isArray(v) && Array.isArray(cur)) {
     // if we update plain array (stored in signal) - take over value instead

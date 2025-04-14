@@ -37,12 +37,9 @@ Sprae CDN autoinits on document body:
 </div>
 
 <script src="https://unpkg.com/sprae"></script>
-
-<script>
-  window.sprae; // global standalone
-</script>
 ```
 
+There are [multiple flavors](#flavors).
 
 ## Directives
 
@@ -137,7 +134,7 @@ Set value to/from an input, textarea or select (like alpinejs `x-model`).
 <input type="checkbox" :value="item.done" />
 ```
 
-#### `:<prop>="value"`, `:="values"`
+#### `:*="value"`, `:="values"`
 
 Set any attribute(s).
 
@@ -191,7 +188,7 @@ Expose element in state with `name` or get reference to element.
 <textarea :ref="el => (/* onmount */, () => (/* onunmount */))" :if="show"></textarea>
 ```
 
-#### `:on<event>="handler"`, `:on<in>..on<out>="handler"`
+#### `:on*="handler"`, `:on*..on*="handler"`
 
 Attach event(s) listener with optional modifiers.
 
@@ -421,15 +418,19 @@ export default function Layout({ children }) {
 * `await` is not supported in attributes, it’s a strong indicator you need to put these methods into state.
 * `:ref` comes after `:if` for mount/unmount events `<div :if="cond" :ref="(init(), ()=>dispose())"></div>`.
 
-<!--
+
 ## Flavors
 
-* sprae.auto.js – autoinit sprae on document
-* sprae.umd.js - UMD entry
-* sprae.micro.js - under 5kb version
-* sprae.alpine.js - AlpineJS API with sprae
-* sprae.vue.js - petite-vue API with sprae
--->
+* sprae.js – standard ESM
+* sprae.umd.js – CJS / UMD / standalone `sprae`
+* auto.sprae.js – autoinit document
+* micro.sprae.js – microjs 1.5kb sprae with `:with`, `:ref`, `:fx`, `:on*`, `:*`
+* secure.sprae.js - CSP-enabled sprae with [secure eval](#evaluator)
+* async.sprae.js - sprae with async events
+* alpine.sprae.js - alpine sprae, drop-in alpinejs replacement
+* vue.sprae.js - vue sprae, drop-in petite-vue replacement
+* preact.sprae.js - sprae with preact-signals
+
 
 ## Justification
 

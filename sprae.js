@@ -1,4 +1,5 @@
 import sprae, { dir, parse } from './core.js'
+import store from './store.js'
 
 import _if from './directive/if.js'
 import _each from './directive/each.js'

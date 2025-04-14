@@ -27,19 +27,17 @@ export const sprae = (el = document.body, values) => {
   let init = (el, attrs = el.attributes) => {
     // we iterate live collection (subsprae can init args)
     if (attrs) for (let i = 0; i < attrs.length;) {
-      let { name, value } = attrs[i], update, parts
+      let { name, value } = attrs[i], parts
 
-      // if we have parts meaning there's attr needs to be spraed
       if (name.startsWith(prefix)) {
         el.removeAttribute(name);
 
         // multiple attributes like :id:for=""
         for (cur of name.slice(prefix.length).split(':')) {
           parts = cur.split('.')
-          update = (directive[parts[0]] || directive['*'])(el, value, state, parts)
 
           // save effect
-          fx.push(update)
+          fx.push((directive[parts[0]] || directive['*'])(el, value, state, parts))
 
           // stop after :each, :if, :with etc.
           if (el[_state] === null) return
@@ -96,13 +94,13 @@ sprae.use = use
 /**
  * Register a directive with a parsed expression and evaluator.
  * @param {string} name - The name of the directive.
- * @param {(el: Element, state: Object, expr: string, name: string) => (value: any) => void} create - A function to create the directive.
+ * @param {(el: Element, state: Object, expr: string, parts: string[]) => (value: any) => void} create - A function to create the directive.
  * @param {(expr: string) => (state: Object) => any} [p=parse] - Create evaluator from expression string.
  */
-sprae.dir = (name, create, p = parse) => directive[name] = (el, expr, state, parts) => {
-  const evaluate = p(expr), update = create(el, state, expr, parts)
-  return () => update(evaluate(state))
-}
+sprae.dir = (name, create, p = parse) => directive[name] = (el, expr, state, parts, _eval, _update) => (
+  _eval = p(expr), _update = create(el, state, expr, parts),
+  () => _update(_eval(state))
+)
 
 export const dir = sprae.dir
 

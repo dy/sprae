@@ -157,18 +157,18 @@ test("if: + :with back-forth", async () => {
   let el = h`<div><x :if="x" :with="{}" :text="x" :onx="()=>x+=x"></x><y :else :with="{t:'y'}" :text="t" :onx="()=>t+=t"></y></div>`;
   let state = sprae(el, { x: "" });
   is(el.innerHTML, `<y>y</y>`);
-  el.firstChild.dispatchEvent(new CustomEvent('x'))
+  el.firstChild.dispatchEvent(new window.CustomEvent('x'))
   is(el.innerHTML, `<y>yy</y>`);
 
   console.log("state.x=x");
   state.x = "x";
   await tick();
   is(el.innerHTML, `<x>x</x>`);
-  el.firstChild.dispatchEvent(new CustomEvent('x'))
+  el.firstChild.dispatchEvent(new window.CustomEvent('x'))
   is(el.innerHTML, `<x>xx</x>`);
   state.x = ''
   is(el.innerHTML, `<y>yy</y>`);
-  el.firstChild.dispatchEvent(new CustomEvent('x'))
+  el.firstChild.dispatchEvent(new window.CustomEvent('x'))
   is(el.innerHTML, `<y>yyyy</y>`);
 
   el[_dispose]()

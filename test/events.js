@@ -96,6 +96,7 @@ test("events: keys", () => {
   let state = sprae(el, { log: [] });
   el.dispatchEvent(new window.KeyboardEvent("keydown", { key: "" }));
   is(state.log, []);
+  console.log('---- Enter')
   el.dispatchEvent(new window.KeyboardEvent("keydown", { key: "Enter" }));
   el.dispatchEvent(new window.KeyboardEvent("keydown", { key: "" }));
   is(state.log, [1]);
