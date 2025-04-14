@@ -32,11 +32,11 @@ Sprae evaluates `:`-directives and evaporates them, returning reactive state for
 
 ### Flavors
 
-* [sprae.js](dist/sprae.js) – standard ESM
-* [sprae.umd.js](dist/sprae.umd.js) – CJS / UMD / standalone
-* [sprae.auto.js](dist/sprae.auto.js) – CDN with autoinit `:scope` elements, useful for [SSR](#jsx)
-* [sprae.micro.js](dist/sprae.micro.js) – microjs <2.5kb bundle with `:scope`, `:ref`, `:fx`, `:on*`, `:*`
-* [sprae.secure.js](dist/sprae.secure.js) - CSP-enabled with [secure eval](#evaluator)
+* [sprae.js](dist/sprae.js) – standard ESM.
+* [sprae.umd.js](dist/sprae.umd.js) – CJS / UMD / standalone `sprae`.
+* [sprae.auto.js](dist/sprae.auto.js) – CDN with autoinit `:scope` elements, useful for [SSR](#jsx).
+* [sprae.micro.js](dist/sprae.micro.js) – microjs <2.5kb bundle with `:scope`, `:ref`, `:fx`, `:on*`, `:*`.
+* [sprae.secure.js](dist/sprae.secure.js) - CSP-enabled with [secure eval](#evaluator).
 <!-- * sprae.async.js - sprae with async events -->
 <!-- * sprae.alpine.js - alpine sprae, drop-in alpinejs replacement -->
 <!-- * sprae.vue.js - vue sprae, drop-in petite-vue replacement -->
