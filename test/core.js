@@ -301,3 +301,12 @@ test.todo('perf: must be fast', async () => {
   }
   console.timeEnd('perf')
 })
+
+test.todo('setTimeout illegal invokation', async () => {
+  let el = h`<div :with="{c:0,x(){setTimeout(() => (this.c++))}}" :onx="x" :text="c"></div>`
+  sprae(el)
+  is(el.innerHTML, '0')
+  el.dispatchEvent(new window.CustomEvent('x'))
+  await new Promise(ok => setTimeout(ok))
+  is(el.innerHTML, '1')
+})
