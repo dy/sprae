@@ -88,25 +88,25 @@
 
 ## [x] Scopes mechanism: prototype inheritance chain vs multiple `with` wrappers -> init subtrees, no need for explicit mechanism
 
-- prototype inheritance chain causes deps update difficulties
-- prototype chain is messy-ish
-- prototype chain is a bit more difficult to provide multiple parent scopes
-- prototype state object is inheritance mess - can be super-hard to analyze
-~ `with(a) with(b) with(c)` is the same as `with(a)` with prototype inheritance in terms of access.
-- `with` chain allows runtime update of scopes, eg. child scope was updated to something new.
-  - `prototype` chain is fixed from the time of init.
-- `prototype` chain hails to unidentified root scope and inherits from that. Maybe we should clarify scopes inhertiance and first implement reactive store (see next item).
+  - prototype inheritance chain causes deps update difficulties
+  - prototype chain is messy-ish
+  - prototype chain is a bit more difficult to provide multiple parent scopes
+  - prototype state object is inheritance mess - can be super-hard to analyze
+  ~ `with(a) with(b) with(c)` is the same as `with(a)` with prototype inheritance in terms of access.
+  - `with` chain allows runtime update of scopes, eg. child scope was updated to something new.
+    - `prototype` chain is fixed from the time of init.
+  - `prototype` chain hails to unidentified root scope and inherits from that. Maybe we should clarify scopes inhertiance and first implement reactive store (see next item).
 
-? what if we avoid scope inheritance mechanism (what's the real use for it?) and instead just make reactive store object, so that :with directive subscribes to any input props, but "shadows" subtree?
-  ? are there uses for inheritance
+  ? what if we avoid scope inheritance mechanism (what's the real use for it?) and instead just make reactive store object, so that :with directive subscribes to any input props, but "shadows" subtree?
+    ? are there uses for inheritance
 
-? Do we need scopes at all? Only for the purpose of autoinit?
-- it seems scopes can introduce more confusion and mess in templates: indicating full paths is more beneficial
-  + unless we introduce proper ":with="item.x as x""
-+ prototype chain is a single object:
-  + meaning updators receive one actual-for-element scope instance
-  + that makes external API easier
-  + that allows handling store via single reactive object
+  ? Do we need scopes at all? Only for the purpose of autoinit?
+  - it seems scopes can introduce more confusion and mess in templates: indicating full paths is more beneficial
+    + unless we introduce proper ":with="item.x as x""
+  + prototype chain is a single object:
+    + meaning updators receive one actual-for-element scope instance
+    + that makes external API easier
+    + that allows handling store via single reactive object
 
 -> possibly we have to just subscribe via mechanism of signals-like deps, and :with just initializes subtree with extended object
 
@@ -172,7 +172,7 @@
     + `js-scope` makes sense
     + can be used without data, just to indicate a separate scope
     + on par with petit-vue
-    + allows sprae.auto to init only :scope parts
+    + allows autoinit only :scope parts
     - scope attribute is used for th
       ~ rare, but can be set via `:={scope:'xyz'}`
     - :scope/@scope is used in CSS
@@ -1252,7 +1252,7 @@
     ~+ `s-id:name` is available
   + it's low hanging fruit
 
-## [x] :init? For autoinit elements -> no, use autoinit but keep data from `:with`
+## [x] :init? For autoinit elements -> no, use autoinit but keep data from `:scope`
 
   + makes init property on par with other sprae properties
   + can init multiple entry points in document
@@ -1265,9 +1265,30 @@
   - that's same as `:with`
   - `init` reads JSON, `:with` reads regular JS objects, they're not same
 
-### [x] TS doesn't allow arbitrary attributes on `<Script>` tag, but prefix (surprise!) is allowed. -> sprae.auto.js
-  * Do we ever need UMD without autosprae?
-  * let's add auto entry.
+## [x] Autoinit - how? inert? sprae? init?
+
+  * TS doesn't allow arbitrary attributes on `<Script>` tag, but prefix (surprise!) is allowed.
+
+  0. Do we ever need UMD without autosprae?
+    + alpine autoinits, it doesn't wait
+
+  1. sprae.auto.js
+    - redundancy of entry - essentially just UMD with auto flag
+
+  2. `<script init>`
+    + petit-vue way
+    - TS errors on that attribute
+
+  3. `<script inert>`
+    + resolves nextjs issue
+    + we are unlikely to use that anyways
+    - grok advices against it
+
+  4. `<script data-sprae-init data-sprae-prefix="js-">`
+    + standard way
+    + allows other props
+    - verbose
+    - doesn't use prefix
 
 ## [ ] What's the best place for `untracked` to prevent faux root subscription in :with > :ref?
 

@@ -171,7 +171,8 @@
 
 * [x] get rid of :data, :aria
 * [x] run effects after collecting them
-* [ ] :scope instead of :with
+* [x] :scope instead of :with
+* [ ] fix :each :scope tests
 * [ ] simplify nested store: just object inheritance
 * [ ] pass globals to store
 * [x] expose sprae.compile, .prefix, .dir
@@ -186,6 +187,7 @@
 * [ ] export only dist, not source
 * [ ] make sure umd min bundle works
 * [ ] test usignal/async effects
+* [ ] finish ajamila poll with v12
 
 
 ## [ ] Optimizations (https://krausest.github.io/js-framework-benchmark/current.html)

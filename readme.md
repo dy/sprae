@@ -8,6 +8,8 @@ A light and fast alternative to _alpine_, _petite-vue_, _lucia_ etc (see [why](#
 
 ## Usage
 
+## As a module
+
 ```html
 <div id="container" :if="user">
   Hello <span :text="user.name">there</span>.
@@ -30,12 +32,25 @@ A light and fast alternative to _alpine_, _petite-vue_, _lucia_ etc (see [why](#
 Sprae evaluates `:`-directives and evaporates them, returning reactive state for updates.
 
 
+### As a script
+
+```html
+<h1 :scope="{message:'Hello World!'}" :text="message"></h1>
+
+<script src="https://cdn.jsdelivr.net/npm/sprae@12.x.x"></script>
+<script>
+  window.sprae; // global standalone
+</script>
+```
+
+Sprae CDN script autoinits document and exposes `sprae` with `sprae.*`.
+
+
 ### Flavors
 
 * [sprae.js](dist/sprae.js) – standard ESM.
-* [sprae.umd.js](dist/sprae.umd.js) – CJS / UMD / standalone `sprae`.
-* [sprae.auto.js](dist/sprae.auto.js) – CDN with autoinit `:scope` elements, useful for [SSR](#jsx).
-* [sprae.micro.js](dist/sprae.micro.js) – microjs <2.5kb bundle with `:scope`, `:ref`, `:fx`, `:on*`, `:*`.
+* [sprae.umd.js](dist/sprae.umd.js) – CJS / UMD / standalone with autoinit.
+* [sprae.micro.js](dist/sprae.micro.js) – microjs <2.5kb with `:scope`, `:ref`, `:fx`, `:on*`, `:*`.
 * [sprae.secure.js](dist/sprae.secure.js) - CSP-enabled with [secure eval](#evaluator).
 <!-- * sprae.async.js - sprae with async events -->
 <!-- * sprae.alpine.js - alpine sprae, drop-in alpinejs replacement -->
@@ -440,7 +455,7 @@ export default function Layout({ children }) {
 * `key` is not used, `:each` uses direct list mapping instead of DOM diffing.
 * `await` is not supported in attributes, it’s a strong indicator you need to put these methods into state.
 * `:ref` comes after `:if` for mount/unmount events `<div :if="cond" :ref="(init(), ()=>dispose())"></div>`.
-
+* `inert` attribute can disable autoinit `<script src='./sprae.js' inert/>`.
 
 ## Justification
 
@@ -476,6 +491,9 @@ _Sprae_ holds open & minimalistic philosophy:
 | _Fragments_ | Yes | No | Yes |
 | _Plugins_ | Yes | No | Yes |
 | _Modifiers_ | Yes | No | Yes |
+
+_Nested directives_ Yes
+_Inline directives_ Yes
 -->
 
 <!--

@@ -9,8 +9,8 @@ import _class from './directive/class.js'
 import _style from './directive/style.js'
 import _value from './directive/value.js'
 import _fx from './directive/fx.js'
-import _any from './directive/*.js'
-import _spread from './directive/.js'
+import _any from './directive/attr.js'
+import _spread from './directive/_.js'
 import _on from './directive/on.js'
 
 // directives
