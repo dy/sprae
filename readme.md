@@ -27,19 +27,18 @@ A light and fast alternative to _alpine_, _petite-vue_, _lucia_ etc (see [why](#
 
 Sprae evaluates `:`-directives and evaporates them, returning reactive state for updates.
 
-### Autoinit
 
-Sprae CDN autoinits on document body:
+### Flavors
 
-```html
-<div :with="{hello:'Hello world'}">
-  <template :text="hello"></template>
-</div>
-
-<script src="https://unpkg.com/sprae"></script>
-```
-
-There are [multiple flavors](#flavors).
+* [sprae.js](dist/sprae.js) – standard ESM
+* [sprae.umd.js](dist/sprae.umd.js) – CJS / UMD / standalone
+* [sprae.auto.js](dist/sprae.auto.js) – autoinit document, useful for SSR
+* [sprae.micro.js](dist/sprae.micro.js) – microjs <2.5kb bundle with `:scope`, `:ref`, `:fx`, `:on*`, `:*`
+* [sprae.secure.js](dist/sprae.secure.js) - CSP-enabled with [secure eval](#evaluator)
+<!-- * sprae.async.js - sprae with async events -->
+<!-- * sprae.alpine.js - alpine sprae, drop-in alpinejs replacement -->
+<!-- * sprae.vue.js - vue sprae, drop-in petite-vue replacement -->
+<!-- * sprae.preact.js - sprae with preact-signals -->
 
 ## Directives
 
@@ -56,7 +55,7 @@ Control flow of elements.
 <template :if="foo">foo <span>bar</span> baz</template>
 ```
 
-#### `:each="item, index? in items"`
+#### `:each="item, idx? of items"`
 
 Multiply element.
 
@@ -64,9 +63,9 @@ Multiply element.
 <ul><li :each="item of items" :text="item" /></ul>
 
 <!-- cases -->
-<li :each="item, idx in array" />
-<li :each="value, key in object" />
-<li :each="count, idx in number" />
+<li :each="item, idx? of array" />
+<li :each="key, value? in object" />
+<li :each="count of number" />
 
 <!-- fragment -->
 <template :each="item in items">
@@ -148,13 +147,13 @@ Set any attribute(s).
 <input :="{ id: name, name, type: 'text', value }" />
 ```
 
-#### `:with="values"`
+#### `:scope="values"`
 
-Define values for a subtree.
+Define variable scope for a subtree.
 
 ```html
-<x :with="{ foo: 'bar' }">
-  <y :with="{ baz: 'qux' }" :text="foo + baz"></y>
+<x :scope="foo='bar'">
+  <y :scope="baz='qux'" :text="foo + baz"></y>
 </x>
 ```
 
@@ -417,19 +416,6 @@ export default function Layout({ children }) {
 * `key` is not used, `:each` uses direct list mapping instead of DOM diffing.
 * `await` is not supported in attributes, it’s a strong indicator you need to put these methods into state.
 * `:ref` comes after `:if` for mount/unmount events `<div :if="cond" :ref="(init(), ()=>dispose())"></div>`.
-
-
-## Flavors
-
-* sprae.js – standard ESM
-* sprae.umd.js – CJS / UMD / standalone `sprae`
-* auto.sprae.js – autoinit document
-* micro.sprae.js – microjs 1.5kb sprae with `:with`, `:ref`, `:fx`, `:on*`, `:*`
-* secure.sprae.js - CSP-enabled sprae with [secure eval](#evaluator)
-* async.sprae.js - sprae with async events
-* alpine.sprae.js - alpine sprae, drop-in alpinejs replacement
-* vue.sprae.js - vue sprae, drop-in petite-vue replacement
-* preact.sprae.js - sprae with preact-signals
 
 
 ## Justification
