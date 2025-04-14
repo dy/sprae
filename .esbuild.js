@@ -8,15 +8,9 @@ await esbuild.build({
   outfile: "dist/sprae.js",
   format: "esm",
   bundle: true,
+  minify: true,
   target: 'es2020',
   sourcemap: 'external'
-})
-esbuild.build({
-  entryPoints: ['dist/sprae.js'],
-  outfile: "dist/sprae.js",
-  sourcemap: 'external',
-  minify: true,
-  allowOverwrite: true
 })
 
 
@@ -31,19 +25,13 @@ await esbuild.build({
   },
   outfile: "dist/sprae.umd.js",
   bundle: true,
+  minify: true,
   target: 'es2020',
   sourcemap: 'external',
   format: "umd",
   plugins: [umdWrapper({
     libraryName: "sprae"
   })]
-})
-esbuild.build({
-  entryPoints: ['dist/sprae.umd.js'],
-  outfile: "dist/sprae.umd.js",
-  sourcemap: 'external',
-  minify: true,
-  allowOverwrite: true
 })
 
 
@@ -59,19 +47,13 @@ await esbuild.build({
   },
   outfile: "dist/sprae.auto.js",
   bundle: true,
+  minify: true,
   target: 'es2020',
   sourcemap: 'external',
   format: "umd",
   plugins: [umdWrapper({
     libraryName: "sprae"
   })]
-})
-esbuild.build({
-  entryPoints: ['dist/sprae.auto.js'],
-  outfile: "dist/sprae.auto.js",
-  sourcemap: 'external',
-  minify: true,
-  allowOverwrite: true
 })
 
 
@@ -93,20 +75,14 @@ await esbuild.build({
     dir('*', (e, s, x, n) => (n[0].startsWith('on') ? _on : _any)(e, s, x, n))
 
     sprae.compile = expr => Function(\`with (arguments[0]) { return \${expr} };\`)
+
     export default sprae
     `,
     resolveDir: '.'
   },
   outfile: "dist/sprae.micro.js",
   bundle: true,
-  target: 'es2020',
+  minify: true,
   sourcemap: 'external',
   format: "esm",
-})
-esbuild.build({
-  entryPoints: ['dist/sprae.micro.js'],
-  outfile: "dist/sprae.micro.js",
-  sourcemap: 'external',
-  minify: true,
-  allowOverwrite: true
 })

@@ -3,8 +3,8 @@ import { signal, computed, batch } from './signal.js'
 import { parse } from './core.js';
 
 export const _signals = Symbol('signals'),
-    _change = Symbol('change'),
-    _stash = '__',
+  _change = Symbol('change'),
+  _stash = '__',
 
   // object store is not lazy
   store = (values, parent) => {
@@ -18,18 +18,18 @@ export const _signals = Symbol('signals'),
 
     // we must inherit signals to allow dynamic extend of parent state
     let signals = Object.create(parent?.[_signals] || {}),
-    _len = signal(Object.keys(values).length),
-    stash
+      _len = signal(Object.keys(values).length),
+      stash
 
-      // proxy conducts prop access to signals
+    // proxy conducts prop access to signals
     let state = new Proxy(signals, {
-        get: (_, k) => k === _change ? _len : k === _signals ? signals : k === _stash ? stash : k in signals ? signals[k]?.valueOf?.() : globalThis[k],
-        set: (_, k, v, s) => k === _stash ? (stash = v, 1) : (s = k in signals, set(signals, k, v), s || ++_len.value), // bump length for new signal
-        deleteProperty: (_, k) => (signals[k] && (signals[k][Symbol.dispose]?.(), delete signals[k], _len.value--), 1),
-        // subscribe to length when object is spread
-        ownKeys: () => (_len.value, Reflect.ownKeys(signals)),
-        has: _ => 1 // sandbox prevents writing to global
-      }),
+      get: (_, k) => k === _change ? _len : k === _signals ? signals : k === _stash ? stash : k in signals ? signals[k]?.valueOf?.() : globalThis[k],
+      set: (_, k, v, s) => k === _stash ? (stash = v, 1) : (s = k in signals, set(signals, k, v), s || ++_len.value), // bump length for new signal
+      deleteProperty: (_, k) => (signals[k] && (signals[k][Symbol.dispose]?.(), delete signals[k], _len.value--), 1),
+      // subscribe to length when object is spread
+      ownKeys: () => (_len.value, Reflect.ownKeys(signals)),
+      has: _ => 1 // sandbox prevents writing to global
+    }),
 
       // init signals for values
       descs = Object.getOwnPropertyDescriptors(values)
@@ -65,8 +65,8 @@ export const _signals = Symbol('signals'),
           // covers Symbol.isConcatSpreadable etc.
           if (typeof k === 'symbol') return k === _change ? _len : k === _signals ? signals : signals[k]
 
-          // if .length is read within .push/etc - peek signal to avoid recursive subscription
-          if (k === 'length') return mut.includes(lastProp) ? _len.peek() : _len.value;
+          // if .length is read within mutators - peek signal to avoid recursive subscription
+          if (k === 'length') return 'push pop shift unshift splice'.includes(lastProp) ? _len.peek() : _len.value;
 
           lastProp = k;
 
@@ -99,9 +99,6 @@ export const _signals = Symbol('signals'),
 
     return state
   }
-
-// length changing methods
-const mut = ['push', 'pop', 'shift', 'unshift', 'splice']
 
 // set/update signal value
 const set = (signals, k, v) => {

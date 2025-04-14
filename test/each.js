@@ -379,7 +379,7 @@ test("each: condition within loop", async () => {
   is(el.innerHTML, "");
 });
 
-test.only('each: items refer to current el', async () => {
+test('each: items refer to current el', async () => {
   // NOTE: the problem here is that the next items can subscribe to `el` defined in root state (if each hasn't created scope), that will cause unnecessary :x effect
   let el = h`<div><x :each="x in 3" :data-x="x" :with="{el:null}" :ref="e=>el=e" :x="log.push(x, el.dataset.x)"></x></div>`;
   let log = signal([]);
