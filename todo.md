@@ -159,7 +159,7 @@
 * [x] js-framework-bench push + example
 * [ ] add test for jsperf adding multiple elements - make sure it's O(n), not n**2
   * [ ] maybe just add jsperf bench as tests
-* [ ] immediate scope
+* [x] ~~immediate scope~~ -> :scope
 * [x] ref doesnt add to with -> it forces null init
 * [x] test: create store separately case
 * [x] test: new prop/signal added to root store: substore doesn't have it
@@ -171,9 +171,10 @@
 
 * [x] get rid of :data, :aria
 * [x] run effects after collecting them
-* [ ] async effects?
+* [ ] :scope instead of :with
 * [ ] simplify nested store: just object inheritance
 * [x] expose sprae.compile, .prefix, .dir
+* [ ] async effects?
 * [ ] `a in b`, `a of b` -> no key, `(a,b) in c`
 * [ ] make :each use inheritance instead of Proxy
 * [ ] make :each not access _signals - use weakstore
