@@ -26,6 +26,35 @@ test("if: base", async () => {
   is(el.innerHTML, "<else>c</else>");
 });
 
+test("if: overlapping conditions", async () => {
+  let el = h`<p>
+    <if :if="a<1">a</if>
+    <elif :else :if="a<2">b</elif>
+    <elif :else :if="a<3">c</elif>
+    <else :else >d</else>
+  </p>`;
+
+  const params = sprae(el, { a: 0 });
+
+  is(el.innerHTML, "<if>a</if>");
+  console.log('---a.value = 1')
+  params.a = 1;
+  await tick();
+  is(el.innerHTML, "<elif>b</elif>");
+  console.log('---a.value = 2')
+  params.a = 2;
+  await tick();
+  is(el.innerHTML, "<elif>c</elif>");
+  console.log('---a.value = 3')
+  params.a = 3;
+  await tick();
+  is(el.innerHTML, "<else>d</else>");
+  console.log('---a.value = null')
+  params.a = null;
+  await tick();
+  is(el.innerHTML, "<if>a</if>");
+});
+
 test("if: template / fragment", async () => {
   let el = h`<p>
     <template :if="a==1">a<x>1</x></template>
