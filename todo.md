@@ -171,7 +171,7 @@
 
 * [x] get rid of :data, :aria
 * [x] run effects after collecting them
-* [ ] async effects
+* [ ] async effects?
 * [ ] simplify nested store: just object inheritance
 * [x] expose sprae.compile, .prefix, .dir
 * [ ] `a in b`, `a of b` -> no key, `(a,b) in c`
@@ -182,6 +182,7 @@
 * [ ] all tests, with enabled preact/signals
 * [ ] microjs contribution
 * [ ] export only dist, not source
+* [ ] make sure umd min bundle works
 
 
 ## [ ] Optimizations (https://krausest.github.io/js-framework-benchmark/current.html)

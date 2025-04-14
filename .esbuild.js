@@ -24,7 +24,7 @@ esbuild.build({
 await esbuild.build({
   stdin: {
     contents:
-    'var sprae = require("./sprae.js").default;\n' +
+    `var sprae = require("./sprae.js").default;\n` +
     'sprae.store = require("./store.js").default;\n' +
     'module.exports = sprae;',
     resolveDir: '.'
@@ -50,7 +50,7 @@ esbuild.build({
 // Autoinit
 await esbuild.build({
   stdin: {
-    contents: 'const sprae = require("./sprae.js").default;\n' +
+    contents: 'var sprae = require("./sprae.js").default;\n' +
     'sprae.store = require("./store.js").default;\n' +
     'sprae.use({prefix: document.currentScript.getAttribute("prefix")});\n' +
     'document.readyState === "loading" ? document.addEventListener("DOMContentLoaded", () => sprae()) : sprae();\n' +
