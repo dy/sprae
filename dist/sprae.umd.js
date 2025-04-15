@@ -159,7 +159,7 @@ var init_core = __esm({
     _on = Symbol("on");
     _off = Symbol("off");
     directive = {};
-    dir = (name, create, p = parse) => directive[name] = (el, expr, state, name2, update, evaluate) => (update = create(el, state, expr, name2), evaluate = p(expr), () => update(evaluate(state)));
+    dir = (name, create, p = parse) => directive[name] = (el, expr, state, name2, update, evaluate) => (update = create(el, state, expr, name2), evaluate = p(expr, ":" + name2), () => update(evaluate(state)));
     sprae = (el = document.body, values) => {
       if (el[_state]) return Object.assign(el[_state], values);
       let state = store(values || {}), offs = [], fx = [];
@@ -251,7 +251,7 @@ var init_if = __esm({
       if (nextEl?.hasAttribute(":else")) {
         nextEl.removeAttribute(":else");
         if (!nextEl.hasAttribute(":if")) nextEl.remove(), elseEl = nextEl.content ? frag(nextEl) : nextEl, elseEl[_state] = null;
-      }
+      } else nextEl = null;
       return (value, newEl = el[_prevIf] ? null : value ? ifEl : elseEl) => {
         if (nextEl) nextEl[_prevIf] = el[_prevIf] || newEl == ifEl;
         if (curEl != newEl) {
