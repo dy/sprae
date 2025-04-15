@@ -16,11 +16,13 @@ dir('if', (el, state) => {
   ifEl = el.content ? frag(el) : el
   ifEl[_state] = null // mark el as fake-spraed to hold-on init, since we sprae rest when branch matches
 
+  // FIXME: instead of nextEl / el we should use elseEl / ifEl
   if (nextEl?.hasAttribute(":else")) {
     nextEl.removeAttribute(":else");
     // if nextEl is :else :if - leave it for its own :if handler
     if (!nextEl.hasAttribute(":if")) nextEl.remove(), elseEl = nextEl.content ? frag(nextEl) : nextEl, elseEl[_state] = null
   }
+  else nextEl = null
 
   return (value, newEl = el[_prevIf] ? null : value ? ifEl : elseEl) => {
     if (nextEl) nextEl[_prevIf] = el[_prevIf] || newEl == ifEl

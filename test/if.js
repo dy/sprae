@@ -229,3 +229,13 @@ test.skip('if: lost effects', () => {
     listFromFunc() {return this.list.map(val => val)}
   })
 })
+
+test('if: #59', () => {
+  let el = h`<div id="container">
+    <div :if="test()">123</div>
+    ABC
+    <div :if="test()">456</div>
+  </div>`
+  sprae(el, {test:()=>true})
+  is(el.innerHTML, `<div>123</div>ABC<div>456</div>`)
+})

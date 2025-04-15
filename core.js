@@ -17,7 +17,7 @@ export const directive = {}
  */
 export const dir = (name, create, p = parse) => directive[name] = (el, expr, state, name, update, evaluate) => (
   update = create(el, state, expr, name),
-  evaluate = p(expr),
+  evaluate = p(expr, ':'+name),
   () => update(evaluate(state))
 )
 
@@ -138,7 +138,7 @@ export let prefix = ':'
 export const frag = (tpl) => {
   if (!tpl.nodeType) return tpl // existing tpl
 
-  let content = tpl.content.cloneNode(true),
+  let content = tpl.content.cloneNode(true), // document fragment holder of content
     attributes = [...tpl.attributes],
     ref = document.createTextNode(''),
     // ensure at least one node
