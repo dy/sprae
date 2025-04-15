@@ -172,11 +172,11 @@
 * [x] get rid of :data, :aria
 * [x] run effects after collecting them
 * [x] :scope instead of :with
+* [ ] learn scope mechanism from lucia, alpine, petit-vue
 * [ ] fix :each :scope tests
 * [ ] simplify nested store: just object inheritance
 * [ ] pass globals to store
 * [x] expose sprae.compile, .prefix, .dir
-* [ ] async effects?
 * [ ] `a in b`, `a of b` -> no key, `(a,b) in c`
 * [ ] make :each use inheritance instead of Proxy
 * [ ] make :each not access _signals - use weakstore

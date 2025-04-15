@@ -17,9 +17,10 @@ await esbuild.build({
 // UMD with autoinit
 await esbuild.build({
   stdin: {
-    contents: 'var sprae = require("./sprae.js").default;\n' +
+    contents:
+    'var sprae = require("./sprae.js").default;\n' +
     'sprae.store = require("./store.js").default;\n' +
-    'sprae.prefix=document.currentScript.getAttribute("prefix")||":";\n' +
+    'sprae.prefix=document.currentScript.getAttribute("prefix")||document.currentScript.dataset.spraePrefix||":";\n' +
     'if (!document.currentScript.hasAttribute("inert")) document.readyState === "loading" ? document.addEventListener("DOMContentLoaded", () => sprae()) : sprae();\n' +
     'module.exports = sprae;',
     resolveDir: '.'

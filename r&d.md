@@ -1265,7 +1265,7 @@
   - that's same as `:with`
   - `init` reads JSON, `:with` reads regular JS objects, they're not same
 
-## [x] Autoinit - how? inert? sprae? init?
+## [ ] Autoinit - how? inert? sprae? init? -> wait until first request to not autoinit
 
   * TS doesn't allow arbitrary attributes on `<Script>` tag, but prefix (surprise!) is allowed.
 
@@ -1289,6 +1289,9 @@
     + allows other props
     - verbose
     - doesn't use prefix
+
+  5. Autoinit until first request.
+    + ESM entry is best alternative for such case
 
 ## [ ] What's the best place for `untracked` to prevent faux root subscription in :with > :ref?
 

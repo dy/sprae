@@ -3,8 +3,8 @@
 > DOM tree microhydration
 
 _Sprae_ is open & minimalistic progressive enhancement framework with _preact-signals_ reactivity.<br/>
-Perfect for small websites, static pages, prototypes, lightweight UI or SSR (see [JSX](#jsx)).<br/>
-A light and fast alternative to _alpine_, _petite-vue_, _lucia_ etc (see [why](#justification)).
+Perfect for small websites, static pages, prototypes, lightweight UI or SSR.<br/>
+A light and fast alternative to _alpine_, _petite-vue_, _lucia_ etc.
 
 ## Usage
 
@@ -43,14 +43,14 @@ Sprae evaluates `:`-directives and evaporates them, returning reactive state for
 </script>
 ```
 
-Sprae CDN script autoinits document and exposes `sprae` with `sprae.*`.
+Sprae CDN script autoinits document and exposes `sprae` global.
 
 
 ### Flavors
 
 * [sprae.js](dist/sprae.js) – standard ESM.
 * [sprae.umd.js](dist/sprae.umd.js) – CJS / UMD / standalone with autoinit.
-* [sprae.micro.js](dist/sprae.micro.js) – microjs <2.5kb with `:scope`, `:ref`, `:fx`, `:on*`, `:*`.
+* [sprae.micro.js](dist/sprae.micro.js) – <2.5kb with only `:scope`, `:ref`, `:fx`, `:on<event>`, `:<attr>`.
 * [sprae.secure.js](dist/sprae.secure.js) - CSP-enabled with [secure eval](#evaluator).
 <!-- * sprae.async.js - sprae with async events -->
 <!-- * sprae.alpine.js - alpine sprae, drop-in alpinejs replacement -->
@@ -160,7 +160,7 @@ Set value to/from an input, textarea or select (like alpinejs `x-model`).
 <input type="checkbox" :value="item.done" />
 ```
 
-#### `:*="value"`
+#### `:<attr>="value"`
 
 Set any attribute.
 
@@ -173,7 +173,7 @@ Set any attribute.
 
 #### `:="values"`
 
-Set multiple attributes
+Set multiple attributes.
 
 ```html
 <input :="{ id: name, name, type: 'text', value  }" />
@@ -218,7 +218,7 @@ Expose element in state with `name` or get element.
 <textarea :ref="el => (/* onmount */, () => (/* onunmount */))" :if="show"></textarea>
 ```
 
-#### `:on*="handler"`, `:on*..on*="handler"`
+#### `:on<event>="handler"`, `:on<in>..on<out>="handler"`
 
 Attach event(s) listener with optional modifiers.
 
@@ -308,7 +308,7 @@ Sprae uses _signals_-based store for reactivity with sandboxing and inheritance.
 import sprae from 'sprae'
 import store from 'sprae/store'
 
-// pre-create store with globals
+// create store with globals
 const state = store({count: 0, inc(){ state.count++ } }, globalThis)
 
 sprae(element, state)
