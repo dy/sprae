@@ -314,7 +314,7 @@ Trigger when element is connected / disconnected from DOM.
 
 - `.debounce-<ms>` – defer update until `<ms>` after last change.
 - `.throttle-<ms>` – limit updates to once every `<ms>`.
-- `.once` – run once on init.
+- `.once` – run only once on init.
 - `.interval-<ms>` – run effect every `<ms>`.
 - `.raf` – run `requestAnimationFrame` (~60fps).
 - `.next` – defer to next microtask.
