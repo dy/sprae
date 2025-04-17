@@ -14,7 +14,7 @@ A light and fast alternative to _alpine_, _petite-vue_, _lucia_ etc.
 </div>
 
 <script type="module">
-  import sprae from './sprae.js' // https://unpkg.com/sprae/dist/sprae.min.js
+  import sprae from './sprae.js' // https://unpkg.com/sprae/dist/sprae.js
 
   // init
   const state = sprae(
@@ -32,6 +32,8 @@ Sprae evaluates `:`-directives and evaporates them, returning reactive state for
 
 ### As a script
 
+Sprae CDN script autoinits document and exposes `sprae` global.
+
 ```html
 <h1 :scope="{message:'Hello World!'}" :text="message"></h1>
 
@@ -40,9 +42,6 @@ Sprae evaluates `:`-directives and evaporates them, returning reactive state for
   window.sprae; // global standalone
 </script>
 ```
-
-Sprae CDN script autoinits document and exposes `sprae` global.
-
 
 ### Flavors
 
@@ -69,9 +68,6 @@ Welcome, <template :text="user.name"><template>.
 
 <!-- function -->
 <span :text="text => text + value"></span>
-
-<!-- modifier -->
-<span :text.once="user.name || 'Fail'"></span>
 ```
 
 #### `:class="value"`
@@ -87,8 +83,8 @@ Set class value.
 <!-- array/object, a-la clsx -->
 <div :class="['foo', bar && 'bar', { baz }]"></div>
 
-<!-- function with modifier -->
-<div :class.interval-1000="cls => ({...cls, active:!cls.active})"></div>
+<!-- function -->
+<div :class="classList => classList.add('active')"></div>
 ```
 
 #### `:style="value"`
@@ -104,11 +100,11 @@ Set style value.
 <!-- object -->
 <div :style="{barBaz: 'qux'}"></div>
 
-<!-- set CSS variable -->
+<!-- CSS variable -->
 <div :style="{'--bar': baz}"></div>
 
-<!-- function with modifier -->
-<div :style.raf="s => s.setProperty('--bar', s.getPropertyValue('--bar') + 1) "></div>
+<!-- function -->
+<div :style="s => s.setProperty('--bar', 'qux')"></div>
 ```
 
 #### `:value="value"`
@@ -119,12 +115,12 @@ Set value to/from an input, textarea or select.
 <input :value="value" />
 <textarea :value="value" />
 
-<!-- selects right option & handles selected attr -->
+<!-- option & selected attr -->
 <select :value="selected">
   <option :each="i in 5" :value="i" :text="i"></option>
 </select>
 
-<!-- handles checked attr -->
+<!-- checked attr -->
 <input type="checkbox" :value="item.done" />
 
 <!-- function with modifier -->
@@ -136,9 +132,10 @@ Set value to/from an input, textarea or select.
 Attach event(s) listener with optional [modifiers](#modifiers).
 
 ```html
+<!-- inline -->
 <button :onclick="submitForm()">Submit</button>
 
-<!-- function -->
+<!-- event -->
 <input type="checkbox" :onchange="event => isChecked = event.target.value">
 
 <!-- multiple events -->
@@ -161,8 +158,8 @@ Set any attribute.
 <!-- multiple -->
 <input :id:name="name" />
 
-<!-- function with modifier -->
-<div :hidden.interval-1000="hidden => !hidden"></div>
+<!-- function -->
+<div :hidden="hidden => !hidden"></div>
 ```
 
 #### `:="values"`
@@ -173,7 +170,7 @@ Set multiple attributes.
 <input :="{ id: name, name, type: 'text', value, ...props  }" />
 
 <!-- function -->
-<input :="attrs => attr.special.value = specialValue">
+<input :="attributes => attributes.special.value = specialValue">
 ```
 
 #### `:if="condition"`, `:else`
@@ -221,11 +218,14 @@ Define scope for a subtree.
   <y :scope="{baz: 'qux'}" :text="foo + bar + baz"></y>
 </x>
 
-<!-- define variables -->
+<!-- blank scope -->
+<x :scope :ref="id"></x>
+
+<!-- variables -->
 <x :scope="x=1, y=2" :text="x+y"></x>
 
-<!-- blank scope for locals -->
-<x :scope :ref="id"></x>
+<!-- function -->
+<x :scope="state => ({})" :text="x+y"></x>
 ```
 
 #### `:fx="code"`
@@ -238,7 +238,7 @@ Run effect, not changing any attribute.
 <!-- cleanup -->
 <div :fx="id = setInterval(tick, 1000), () => clearInterval(id)" />
 
-<!-- as function -->
+<!-- function -->
 <div :fx="() => ...">
 ```
 
@@ -260,8 +260,6 @@ Expose element in state with `name` or get element.
 <!-- mount / unmount -->
 <textarea :ref="el => (/* onmount */, () => (/* onunmount */))" :if="show"></textarea>
 ```
-
-
 
 
 <!--
@@ -314,7 +312,7 @@ Trigger when element is connected / disconnected from DOM.
 
 ## Modifiers
 
-Modifiers adjust execuion of any directive (e.g., `:text.throttle-500`, `:style.raf`).
+Modifiers adjust execuion of any directive.
 
 - `.debounce-<ms>` – defer update until `<ms>` after last change.
 - `.throttle-<ms>` – limit updates to once every `<ms>`.
@@ -326,12 +324,10 @@ Modifiers adjust execuion of any directive (e.g., `:text.throttle-500`, `:style.
 
 ### Event modifiers
 
-For `:on<event>`, additional event-specific modifiers apply:
-
 * `.once`, `.passive`, `.capture` – listener [options](https://developer.mozilla.org/en-US/docs/Web/API/EventTarget/addEventListener#options).
 * `.prevent`, `.stop` (`.immediate`) – prevent default or stop (immediate) propagation.
 * `.window`, `.document`, `.parent`, `.outside`, `.self` – specify event target.
-* `.throttle-<ms>`, `.debounce-<ms>` – defer function call with one of the methods.
+* `.throttle-<ms>`, `.debounce-<ms>` – defer callback with one of the methods.
 * `.<key>` – filtered by [`event.key`](https://developer.mozilla.org/en-US/docs/Web/API/UI_Events/Keyboard_event_key_values):
   * `.ctrl`, `.shift`, `.alt`, `.meta`, `.enter`, `.esc`, `.tab`, `.space` – direct key
   * `.delete` – delete or backspace
