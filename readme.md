@@ -316,9 +316,9 @@ Trigger when element is connected / disconnected from DOM.
 - `.throttle-<ms>` – limit updates to once every `<ms>`.
 - `.once` – run once on init.
 - `.interval-<ms>` – run effect every `<ms>`.
-- `.raf` – run on each `requestAnimationFrame` (~60fps). Example: `<div :ref.raf="el => el.scollLeft -= 1">`.
-- `.next` – defer to next microtask. Example: `<div :text.next="prev => state.x">`.
-- `.async` – await async results. Example: `<div :text.async="await fetch(state.url)">`.
+- `.raf` – run `requestAnimationFrame` (~60fps).
+- `.next` – defer to next microtask.
+- `.async` – await async results.
 
 ### Event modifiers
 
