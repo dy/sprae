@@ -148,7 +148,7 @@
     ? how to extend state
     + It already just works via `:fx="x=1, y=2"` since we do sandboxing...
 
-### [ ] `:scope="a=1,b=2"` instead of with="{...}"? -> yes
+### [x] `:scope="a=1,b=2"` instead of with="{...}"? -> yes, but better do both
 
   + shorter syntax
   + on par with django, liquid
@@ -160,7 +160,7 @@
   ? or `:define="a=1, b=2"`, `:let="a=1"`
   - can simply be done via `:fx="a=1, b=2"`
 
-### [x] What's the best name for :scope/:with/:data? -> :scope
+### [x] What's the best name for :scope/:with/:data? -> :scope, but :with is different directive.
 
   1. :with
     - bad remembrance of JS with
@@ -180,6 +180,7 @@
     - cannot be used on its own
   4. :local=""
   5. :ctx=""
+  6. `:scope` and `:with` are different directives. First creates a block scope, second extends state with an object.
 
 ### [x] Should we extend `:with-<x>`, `:class-<x>`, `:style-<x>`, `:data-<x>`? -> no: duplication, syntax mismatch
 
@@ -190,7 +191,6 @@
   - `:style---bar` is hard to parse and hard to read
   - all we need to solve is - make with not update whole thing
   ~ but what's the other way? we have to split per-variable effects...
-
 
 ## [x] Should we inherit values from `init` in `sprae(el, init)`, instead of creating a snapshot of reactive values in `init`? -> nah, nice idea but too little use. Better create signals struct.
 
@@ -1293,7 +1293,7 @@
   5. Autoinit until first request.
     + ESM entry is best alternative for such case
 
-## [ ] What's the best place for `untracked` to prevent faux root subscription in :with > :ref?
+## [x] What's the best place for `untracked` to prevent faux root subscription in :with > :ref? -> best way to init outside of parent effect
 
   1. Whole sprae
     - overkill-ish
@@ -1302,7 +1302,10 @@
   3. Each pre-eval call, :ref, :value
     - doesn't generally save the issue
 
-## [ ] Immediate state access #58 -> pre-create store
+  4. Outside of parent effect:
+    + effect can be async, so it must not cause async init
+
+## [x] Immediate state access #58 -> pre-create store
 
   1. Async effects init
     + Allows referring to newly created state from inside methods
@@ -1330,58 +1333,97 @@
 
   5. Just export `sprae.store`
 
-## [ ] Prop modifiers
-
-  * Main variants
-  * ~~value.bind? value.watch?~~ no sense beyound value/ref
-  * ~~prop.reflect, prop.observe~~ signals are autoobserved
-  * ~~prop.boolean, .number, .string, .array, .object~~ defined per-property
-  * prop.once, prop.init
-  * prop.change - run only if value changes
-    - seems like unnecessary manual optimization that must be done always automatically
-    ? are there cases where force-update is necessary?
-  * prop.throttle-xxx, prop.debounce-xxx
-    - let's wait until that's really a problem
-  * prop.* – multiple values for same prop
-  * prop.next="" - run update after other DOM updates happen
-    + helps resolving calling a fn with state access
-  * ~~prop.fx="" - run effect without changing property~~ fx is there
-  * ~~x.prop="xyz" - set element property, rather than attribute (following topic)~~ do it via `:ref` or `:fx`
-  * x.raf="abc" - run regularly?
-  * ~~x.watch-a-b-c - update by change of any of the deps~~
-  * :x.any - update by _any_ state change
-  * :x.persist="v"
-    - solvable via nadis - persisted signal
-  * :x.lazy?
-  * :x.memo?
-
-  ~ so props have to do with describing how effect is triggered.
-  - overall seems code complication without much benefit
-
-## [ ] Should we separate `k,v in b` to `k in b`, `v of b`
+## [x] Should we separate `k,v in b` to `k in b`, `v of b` -> no. Use k,v in b, as all other frameworks do
 
   + likely perf optimizatino
   + same as in JS
   + we rarely need both key and value
   + possibly less issue with store
   + it's hard to remember if it's k,v or v,k
+  - contrary to all-frameworks convention
+  - js should've had it
+  - it's called `each`, not `for`
 
-### [ ] ALT: keep only `k in b`
+### [x] ALT: keep only `k in b` -> no
 
   + will simplify state management: k doesn't change, unlike item
   + if you want separate scope - just create via `:with.item="items[i]"`
     ? can we make `:let="item=items[i]"` instead of `:with`?
 
-## [ ] s-cloak? Hides contents until sprae finishes loading
+## [ ] Prop modifiers
 
-  * wait until needed
-  + provided by lucia l-mask, alpine a-cloak, vue v-cloak
+  * Main variants
+  * ~~value.bind? value.watch?~~ no sense beyound value/ref
+  * ~~prop.reflect, prop.observe~~ signals are autoobserved
+  * ~~prop.boolean, .number, .string, .array, .object~~ defined per-property
+  * prop.once
+    + actually it's existing event modifier
+  * ~~prop.change - run only if value changes~~
+    - seems like unnecessary manual optimization that must be done always automatically
+    - some values don't change, like class or style
+    ? are there cases where force-update is necessary?
+  * prop.throttle-xxx, prop.debounce-xxx
+    - let's wait until that's really a problem
+  * prop.interval-500
+    + `:fx.interval-500="el.scrollLeft += 10"`
+  * prop.* – multiple values for same prop
+  * prop.next="" - run update after other DOM updates happen
+    + helps resolving calling a fn with state access
+  * ~~prop.fx="" - run effect without changing property~~ fx is there
+  * ~~x.prop="xyz" - set element property, rather than attribute (following topic)~~ do it via `:ref` or `:fx`
+  * x.raf="abc" - run regularly?
+    + can be useful for live anim effects
+  * ~~x.watch-a-b-c - update by change of any of the deps~~
+  * :x.any - update by _any_ state change
+  * :x.persist="v"
+    - solvable via nadis - persisted signal
+  * :x.lazy?
+  * :x.memo?
+  * :x.trim?
 
-## [ ] s-ignore? Excludes element from spraeing
+  ~ so props have to do with describing how effect is triggered.
+  + It seems event modifiers can be applied to any props: interval, debounce,
 
-  * wait until needed
+## [ ] Conditional queries: md:onclick, lg:onclick etc?
 
-## [ ] s-include?
+  + tailwind-like
+  + can be handy I suppose
+  - must be
+
+## [x] Should we make all directives accept function? `:x="()=>{}"` -> yes, makes sense for tapping prev value, like :ref
+
+  + #60 and others, sort-of natural expectation
+  + solves the issue with flat events: we can write it without event right away, if event is not needed
+    * `:onclick="a+1"`
+  + we already sort-of do that in `:ref` - value writes to state, func taps into element
+  + that would allow access to previous value
+    * `:text="prev => !prev ? start : prev+1"` in counter
+    * `:text.throttle-500="v => v + '-'"` for progress bar
+      ~+ there's no easy way to do that via state but create a scope with manual setInterval
+    + acts as reducer
+  + works well with prop modifiers
+    + that would unify prop modifiers with event modifiers
+  - code redundancy, syntax complexity
+  +~ allows calling methods with different params, like `next="x=>goto(p+1)"`, `prev="p=>goto(p-1)"`
+    ~ not sure if that's good example
+  + react setState allows function
+  + it's more like inserting computed property
+  + easier switch between branches `:style="() => a ? {...a} : {...b}"`
+    - can do the same flat
+  + timer is as easy as `:text.interval-1000="prev => (prev ??= 0, prev + 1)"`
+  + we can for style actually pass el.style object instead, possibly with .computed property
+
+## [ ] Directives
+
+  * s-cloak? Hides contents until sprae finishes loading
+    * wait until needed
+    + provided by lucia l-mask, alpine a-cloak, vue v-cloak
+
+  * s-ignore? Excludes element from spraeing
+  * s-include / s-html?
+  * s-teleport
+  * s-modelable
+  * ~~s-show?~~ use hidden attribute
 
 ## [ ] Plugins
 
@@ -1391,23 +1433,24 @@
   * @sprae/hcodes: `<x :hcode=""` – provide microformats
   * @sprae/visible?
     - can be solved externally
+    * cannot be a modifier: it's onvisible/oninvisible events
+    + pluggable directive
   * @sprae/intersect
+    + pluggable directive
   * @sprae/persists - mb for signals?
-  * @sprae/input - for input values
+    + pluggable modifier
   * @sprae/scroll - `:scroll.view.x="progress => "`
   * @sprae/animate -
-  * @sprae/
 
 ## [ ] Reasons against sprae
 
   - requires loading script anyways - not native event callbacks
   - ~~no `this` keyword makes it a bit cumbersome~~
   -~ separate syntax space even with `:` prefix - conflicts
-  - perf-wise vanilla is still faster
+  - perf-wise vanilla is faster
 
 ## [ ] Integrations
 
   * Any personal SPA
   * Wavearea
   * Sprae website
-  *

@@ -59,48 +59,6 @@ Sprae CDN script autoinits document and exposes `sprae` global.
 
 ## Directives
 
-#### `:scope="values"`
-
-Define variable scope for a subtree.
-
-```html
-<x :scope="foo='bar'">
-  <y :scope="baz='qux'" :text="foo + baz"></y>
-</x>
-```
-
-#### `:if="condition"`, `:else`
-
-Control flow of elements.
-
-```html
-<span :if="foo">foo</span>
-<span :else :if="bar">bar</span>
-<span :else>baz</span>
-
-<!-- fragment -->
-<template :if="foo">foo <span>bar</span> baz</template>
-```
-
-#### `:each="item, idx? of items"`
-
-Multiply element.
-
-```html
-<ul><li :each="item of items" :text="item" /></ul>
-
-<!-- cases -->
-<li :each="item, idx? of array" />
-<li :each="key, value? in object" />
-<li :each="count of number" />
-
-<!-- fragment -->
-<template :each="item in items">
-  <dt :text="item.term"/>
-  <dd :text="item.definition"/>
-</template>
-```
-
 #### `:text="value"`
 
 Set text content of an element.
@@ -110,6 +68,12 @@ Welcome, <span :text="user.name">Guest</span>.
 
 <!-- fragment -->
 Welcome, <template :text="user.name"><template>.
+
+<!-- function -->
+<span :text="text => text + value"></span>
+
+<!-- modifier -->
+<span :text.once="user.name || 'Fail'"></span>
 ```
 
 #### `:class="value"`
@@ -124,6 +88,9 @@ Set class value.
 
 <!-- array/object, a-la clsx -->
 <div :class="['foo', bar && 'bar', { baz }]"></div>
+
+<!-- function with modifier -->
+<div :class.interval-1000="cls => ({...cls, active:!cls.active})"></div>
 ```
 
 #### `:style="value"`
@@ -140,12 +107,15 @@ Set style value.
 <div :style="{barBaz: 'qux'}"></div>
 
 <!-- set CSS variable -->
-<div :style="{'--bar-baz': qux}"></div>
+<div :style="{'--bar': baz}"></div>
+
+<!-- function with modifier -->
+<div :style.raf="s => s.setProperty('--bar', s.getPropertyValue('--bar') + 1) "></div>
 ```
 
 #### `:value="value"`
 
-Set value to/from an input, textarea or select (like alpinejs `x-model`).
+Set value to/from an input, textarea or select.
 
 ```html
 <input :value="value" />
@@ -158,6 +128,29 @@ Set value to/from an input, textarea or select (like alpinejs `x-model`).
 
 <!-- handles checked attr -->
 <input type="checkbox" :value="item.done" />
+
+<!-- function with modifier -->
+<input :value.defer-300="value => value + query" />
+```
+
+#### `:on<event>="code"`
+
+Attach event(s) listener with optional [modifiers](#modifiers).
+
+```html
+<button :onclick="submitForm()">Submit</button>
+
+<!-- function -->
+<input type="checkbox" :onchange="event => isChecked = event.target.value">
+
+<!-- multiple events -->
+<input :value="text" :oninput:onchange="event => text = event.target.value">
+
+<!-- sequence of events -->
+<button :onfocus..onblur="event => (handleFocus(), event => handleBlur())">
+
+<!-- modifiers -->
+<button :onclick.throttle-500="handler">Not too often</button>
 ```
 
 #### `:<attr>="value"`
@@ -167,8 +160,11 @@ Set any attribute.
 ```html
 <label :for="name" :text="name" />
 
-<!-- multiple attributes -->
+<!-- multiple -->
 <input :id:name="name" />
+
+<!-- function with modifier -->
+<div :hidden.interval-1000="hidden => !hidden"></div>
 ```
 
 #### `:="values"`
@@ -176,13 +172,62 @@ Set any attribute.
 Set multiple attributes.
 
 ```html
-<input :="{ id: name, name, type: 'text', value  }" />
+<input :="{ id: name, name, type: 'text', value, ...props  }" />
 
-<!-- spread -->
-<input :="{ ...props }" />
+<!-- function -->
+<input :="attrs => attr.special.value = specialValue">
+```
 
-<!-- reserved names -->
-<input :="{ ref:'x', fx:'y', each: 'z' }" />
+#### `:if="condition"`, `:else`
+
+Control flow of elements.
+
+```html
+<span :if="foo">foo</span>
+<span :else :if="bar">bar</span>
+<span :else>baz</span>
+
+<!-- fragment -->
+<template :if="foo">foo <span>bar</span> baz</template>
+
+<!-- function -->
+<span :if="() => foo"></span>
+```
+
+#### `:each="item, idx in items"`
+
+Multiply element.
+
+```html
+<ul><li :each="item in items" :text="item" /></ul>
+
+<!-- cases -->
+<li :each="item, idx? in array" />
+<li :each="value, key? in object" />
+<li :each="count, idx0? in number" />
+<li :each="value, key? in func" />
+
+<!-- fragment -->
+<template :each="item in items">
+  <dt :text="item.term"/>
+  <dd :text="item.definition"/>
+</template>
+```
+
+#### `:scope="values"`
+
+Define scope for a subtree.
+
+```html
+<x :scope="{foo: 'foo', bar}">
+  <y :scope="{baz: 'qux'}" :text="foo + bar + baz"></y>
+</x>
+
+<!-- define variables -->
+<x :scope="x=1, y=2" :text="x+y"></x>
+
+<!-- blank scope for locals -->
+<x :scope :ref="id"></x>
 ```
 
 #### `:fx="code"`
@@ -192,11 +237,11 @@ Run effect, not changing any attribute.
 ```html
 <div :fx="a.value ? foo() : bar()" />
 
-<!-- define variables -->
-<div :fx="a=1, b=2" :text="a + b"></div>
-
-<!-- cleanup function -->
+<!-- cleanup -->
 <div :fx="id = setInterval(tick, 1000), () => clearInterval(id)" />
+
+<!-- as function -->
+<div :fx="() => ...">
 ```
 
 #### `:ref="name"`, `:ref="el => (...)"`
@@ -218,38 +263,7 @@ Expose element in state with `name` or get element.
 <textarea :ref="el => (/* onmount */, () => (/* onunmount */))" :if="show"></textarea>
 ```
 
-#### `:on<event>="handler"`, `:on<in>..on<out>="handler"`
 
-Attach event(s) listener with optional modifiers.
-
-```html
-<input type="checkbox" :onchange="e => isChecked = e.target.value">
-
-<!-- multiple events -->
-<input :value="text" :oninput:onchange="e => text = e.target.value">
-
-<!-- sequence of events -->
-<button :onfocus..onblur="e => (handleFocus(), e => handleBlur())">
-
-<!-- modifiers -->
-<button :onclick.throttle-500="handler">Not too often</button>
-```
-
-##### Modifiers:
-
-* `.once`, `.passive`, `.capture` – listener [options](https://developer.mozilla.org/en-US/docs/Web/API/EventTarget/addEventListener#options).
-* `.prevent`, `.stop` (`.immediate`) – prevent default or stop (immediate) propagation.
-* `.window`, `.document`, `.parent`, `.outside`, `.self` – specify event target.
-* `.throttle-<ms>`, `.debounce-<ms>` – defer function call with one of the methods.
-* `.<key>` – filtered by [`event.key`](https://developer.mozilla.org/en-US/docs/Web/API/UI_Events/Keyboard_event_key_values):
-  * `.ctrl`, `.shift`, `.alt`, `.meta`, `.enter`, `.esc`, `.tab`, `.space` – direct key
-  * `.delete` – delete or backspace
-  * `.arrow` – up, right, down or left arrow
-  * `.digit` – 0-9
-  * `.letter` – A-Z, a-z or any [unicode letter](https://unicode.org/reports/tr18/#General_Category_Property)
-  * `.char` – any non-space character
-  * `.ctrl-<key>, .alt-<key>, .meta-<key>, .shift-<key>` – key combinations, eg. `.ctrl-alt-delete` or `.meta-x`.
-* `.*` – any other modifier has no effect, but allows binding multiple handlers to same event (like jQuery event classes).
 
 
 <!--
@@ -300,6 +314,38 @@ Trigger when element is connected / disconnected from DOM.
 ```
 -->
 
+## Modifiers
+
+Modifiers adjust execuion of any directive (e.g., `:text.throttle-500`, `:style.raf`).
+
+- `.debounce-<ms>` – defer update until `<ms>` after last change.
+- `.throttle-<ms>` – limit updates to once every `<ms>`.
+- `.once` – run once on init.
+- `.interval-<ms>` – run effect every `<ms>`.
+- `.raf` – run on each `requestAnimationFrame` (~60fps). Example: `<div :ref.raf="el => el.scollLeft -= 1">`.
+- `.next` – defer to next microtask. Example: `<div :text.next="prev => state.x">`.
+- `.async` – await async results. Example: `<div :text.async="await fetch(state.url)">`.
+
+### Event modifiers
+
+For `:on<event>`, additional event-specific modifiers apply:
+
+* `.once`, `.passive`, `.capture` – listener [options](https://developer.mozilla.org/en-US/docs/Web/API/EventTarget/addEventListener#options).
+* `.prevent`, `.stop` (`.immediate`) – prevent default or stop (immediate) propagation.
+* `.window`, `.document`, `.parent`, `.outside`, `.self` – specify event target.
+* `.throttle-<ms>`, `.debounce-<ms>` – defer function call with one of the methods.
+* `.<key>` – filtered by [`event.key`](https://developer.mozilla.org/en-US/docs/Web/API/UI_Events/Keyboard_event_key_values):
+  * `.ctrl`, `.shift`, `.alt`, `.meta`, `.enter`, `.esc`, `.tab`, `.space` – direct key
+  * `.delete` – delete or backspace
+  * `.arrow` – up, right, down or left arrow
+  * `.digit` – 0-9
+  * `.letter` – A-Z, a-z or any [unicode letter](https://unicode.org/reports/tr18/#General_Category_Property)
+  * `.char` – any non-space character
+  * `.ctrl-<key>, .alt-<key>, .meta-<key>, .shift-<key>` – key combinations, eg. `.ctrl-alt-delete` or `.meta-x`.
+* `.*` – any other modifier has no effect, but allows binding multiple handlers to same event (like jQuery event classes).
+
+
+
 ## Store
 
 Sprae uses _signals_-based store for reactivity with sandboxing and inheritance.
@@ -308,12 +354,38 @@ Sprae uses _signals_-based store for reactivity with sandboxing and inheritance.
 import sprae from 'sprae'
 import store from 'sprae/store'
 
-// create store with globals
-const state = store({count: 0, inc(){ state.count++ } }, globalThis)
+// create store
+const state = store(
+  {
+    count: 0,
 
+    // computed
+    get twice(){ return this.count * 2 },
+
+    // method
+    inc(){ state.count++, state._i++ },
+
+    // untracked
+    _i: 0,
+  },
+
+  // globals
+  { Math }
+)
+
+// init sprae
 sprae(element, state)
 
-state.Math === globalThis.Math // true
+// update
+state.inc()
+state.count++
+
+// bulk update
+sprae(element, { count: 2 })
+
+// sandbox
+state.Math       // globalThis.Math
+state.navigator  // undefined
 ```
 
 
@@ -447,15 +519,11 @@ export default function Layout({ children }) {
 * To prevent [FOUC](https://en.wikipedia.org/wiki/Flash_of_unstyled_content) add `<style>[\:each],[\:if],[\:else] {visibility: hidden}</style>`.
 * Attributes order matters, eg. `<li :each="el in els" :text="el.name"></li>` is not the same as `<li :text="el.name" :each="el in els"></li>`.
 * Invalid self-closing tags like `<a :text="item" />` cause error. Valid self-closing tags are: `li`, `p`, `dt`, `dd`, `option`, `tr`, `td`, `th`, `input`, `img`, `br`.
-* Properties prefixed with `_` are untracked: `let state = sprae(el, {_x:2}); state._x++; // no effect`.
 * To destroy state and detach sprae handlers, call `element[Symbol.dispose]()`.
-* State getters/setters work as computed effects, eg. `sprae(el, { x:1, get x2(){ return this.x * 2 } })`.
-* `this` is not used, to get current element use `:ref`.
-* `event` is not used, `:on*` attributes expect a function with event argument `:onevt="event => handle()"`, see [#46](https://github.com/dy/sprae/issues/46).
+* `this` is not used, to get element reference use `:ref`.
 * `key` is not used, `:each` uses direct list mapping instead of DOM diffing.
-* `await` is not supported in attributes, it’s a strong indicator you need to put these methods into state.
 * `:ref` comes after `:if` for mount/unmount events `<div :if="cond" :ref="(init(), ()=>dispose())"></div>`.
-* `inert` attribute can disable autoinit `<script src='./sprae.js' inert/>`.
+<!-- * `inert` attribute can disable autoinit `<script src='./sprae.js' inert/>`. -->
 
 ## Justification
 
