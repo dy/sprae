@@ -312,8 +312,6 @@ Trigger when element is connected / disconnected from DOM.
 
 ## Modifiers
 
-Modifiers adjust execuion of any directive.
-
 - `.debounce-<ms>` – defer update until `<ms>` after last change.
 - `.throttle-<ms>` – limit updates to once every `<ms>`.
 - `.once` – run once on init.
