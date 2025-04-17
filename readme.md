@@ -8,8 +8,6 @@ A light and fast alternative to _alpine_, _petite-vue_, _lucia_ etc.
 
 ## Usage
 
-## As a module
-
 ```html
 <div id="container" :if="user">
   Hello <span :text="user.name">there</span>.
