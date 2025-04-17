@@ -321,7 +321,6 @@ Modifiers adjust execuion of any directive.
 * `.interval-<ms>` – run effect every `<ms>`.
 * `.raf` – run `requestAnimationFrame` (~60fps).
 * `.async` – await callback results.
-* `.*` – any other modifier has no effect, but allows binding multiple handlers.
 
 ### Event modifiers
 
@@ -338,6 +337,7 @@ For `:on<event>`, additional modifiers apply:
   * `.letter` – A-Z, a-z or any [unicode letter](https://unicode.org/reports/tr18/#General_Category_Property)
   * `.char` – any non-space character
   * `.ctrl-<key>, .alt-<key>, .meta-<key>, .shift-<key>` – key combinations, eg. `.ctrl-alt-delete` or `.meta-x`.
+* `.*` – any other modifier has no effect, but allows binding multiple handlers.
 
 
 ## Store
