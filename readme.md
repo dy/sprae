@@ -353,11 +353,10 @@ const state = store(
   {
     count: 0,
 
+    inc(){ state.count++, state._i++ },
+
     // computed
     get twice(){ return this.count * 2 },
-
-    // method
-    inc(){ state.count++, state._i++ },
 
     // untracked
     _i: 0,
@@ -408,7 +407,7 @@ Provider | Size | Feature
 :---|:---|:---
 [`ulive`](https://ghub.io/ulive) | 350b | Minimal implementation, basic performance, good for small states.
 [`@webreflection/signal`](https://ghub.io/@webreflection/signal) | 531b | Class-based, better performance, good for small-medium states.
-[`usignal`](https://ghub.io/usignal) | 850b | Class-based with optimizations, good for medium states, enables async effects.
+[`usignal`](https://ghub.io/usignal) | 850b | Class-based with optimizations and optional async effects.
 [`@preact/signals-core`](https://ghub.io/@preact/signals-core) | 1.47kb | Best performance, good for any states, industry standard.
 [`signal-polyfill`](https://ghub.io/signal-polyfill) | 2.5kb | Proposal signals. Use via [adapter](https://gist.github.com/dy/bbac687464ccf5322ab0e2fd0680dc4d).
 
