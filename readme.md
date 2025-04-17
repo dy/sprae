@@ -312,15 +312,20 @@ Trigger when element is connected / disconnected from DOM.
 
 ## Modifiers
 
-- `.debounce-<ms>` – defer update until `<ms>` after last change.
-- `.throttle-<ms>` – limit updates to once every `<ms>`.
-- `.once` – run only once on init.
-- `.next` – defer to next microtask.
-- `.interval-<ms>` – run effect every `<ms>`.
-- `.raf` – run `requestAnimationFrame` (~60fps).
-- `.async` – await callback results.
+Modifiers adjust execuion of any directive.
+
+* `.debounce-<ms>` – defer update until `<ms>` after last change.
+* `.throttle-<ms>` – limit updates to once every `<ms>`.
+* `.once` – run only once on init.
+* `.next` – defer to next microtask.
+* `.interval-<ms>` – run effect every `<ms>`.
+* `.raf` – run `requestAnimationFrame` (~60fps).
+* `.async` – await callback results.
+* `.*` – any other modifier has no effect, but allows binding multiple handlers.
 
 ### Event modifiers
+
+For `:on<event>`, additional modifiers apply:
 
 * `.passive`, `.capture` – listener [options](https://developer.mozilla.org/en-US/docs/Web/API/EventTarget/addEventListener#options).
 * `.prevent`, `.stop` (`.immediate`) – prevent default or stop (immediate) propagation.
@@ -333,8 +338,6 @@ Trigger when element is connected / disconnected from DOM.
   * `.letter` – A-Z, a-z or any [unicode letter](https://unicode.org/reports/tr18/#General_Category_Property)
   * `.char` – any non-space character
   * `.ctrl-<key>, .alt-<key>, .meta-<key>, .shift-<key>` – key combinations, eg. `.ctrl-alt-delete` or `.meta-x`.
-* `.*` – any other modifier has no effect, but allows binding multiple handlers to same event (like jQuery event classes).
-
 
 
 ## Store
