@@ -8,7 +8,7 @@ A light and fast alternative to _alpine_ or _petite-vue_.
 
 ## Usage
 
-### As a script 
+### As a script
 
 ```html
 <h1 :scope="{message:'Hello World!'}" :text="message"></h1>
@@ -40,7 +40,7 @@ Sprae evaluates `:`-directives, removes them, and returns a reactive state for u
 
 ## Directives
 
-#### `:text="value"`
+#### `:text="value"`, `:text="value => value"`
 
 Set element text content.
 
@@ -76,7 +76,7 @@ Set class.
 Set styles.
 
 ```html
-<span style="'display: inline-block'"></span>
+<span :style="'display: inline-block'"></span>
 
 <!-- extends static style -->
 <div style="foo: bar" :style="'bar-baz: qux'">
@@ -99,7 +99,7 @@ Bind input, textarea or select value.
 <input :value="value" />
 <textarea :value="value" />
 
-<!-- option & selected attr -->
+<!-- handles option & selected attr -->
 <select :value="selected">
   <option :each="i in 5" :value="i" :text="i"></option>
 </select>
@@ -108,7 +108,7 @@ Bind input, textarea or select value.
 <input type="checkbox" :value="item.done" />
 
 <!-- function with modifier -->
-<input :value.defer-300="value => value + query" />
+<input :value.defer-300="value => value + str" />
 ```
 
 #### `:on<event>="code"`
@@ -116,20 +116,19 @@ Bind input, textarea or select value.
 Attach event listener with optional [modifiers](#modifiers).
 
 ```html
-<!-- inline -->
 <button :onclick="submitForm()">Submit</button>
 
 <!-- event -->
 <input type="checkbox" :onchange="event => isChecked = event.target.value">
 
-<!-- multiple events -->
+<!-- multiple -->
 <input :value="text" :oninput:onchange="event => text = event.target.value">
 
-<!-- sequence of events -->
+<!-- sequence -->
 <button :onfocus..onblur="event => (handleFocus(), event => handleBlur())">
 
 <!-- modifiers -->
-<button :onclick.throttle-500="handler">Not too often</button>
+<button :onclick.throttle-500="handle()">Not too often</button>
 ```
 
 #### `:<attr>="value"`
@@ -226,20 +225,20 @@ Run effect, not changing any attribute.
 <div :fx="() => ...">
 ```
 
-#### `:ref="name"`, `:ref="el => (...)"`
+#### `:ref="value"`, `:ref="el => (...)"`
 
-Expose element in state with `name` or get element.
+Expose element in state with `name` or get reference to element.
 
 ```html
 <div :ref="card" :fx="handle(card)"></div>
+
+<!-- reference -->
+<div :ref="el => el.innerHTML = '...'"></div>
 
 <!-- local reference -->
 <li :each="item in items" :scope :ref="li">
   <input :onfocus="e => li.classList.add('editing')"/>
 </li>
-
-<!-- set innerHTML -->
-<div :ref="el => el.innerHTML = '...'"></div>
 
 <!-- mount / unmount -->
 <textarea :ref="el => (/* onmount */, () => (/* onunmount */))" :if="show"></textarea>
@@ -296,11 +295,11 @@ Trigger when element is connected / disconnected from DOM.
 
 ## Modifiers
 
-* `.debounce-<ms>` – defer update for `<ms>` after last change.
-* `.throttle-<ms>` – limit updates to once every `<ms>`.
-* `.once` – run once on init.
+* `.debounce-<ms>` – defer for `<ms>`.
+* `.throttle-<ms>` – limit to once every `<ms>`.
+* `.once` – run only once.
 * `.tick` – defer to next microtask.
-* `.interval-<ms>` – run effect every `<ms>`.
+* `.interval-<ms>` – run every `<ms>`.
 * `.raf` – run `requestAnimationFrame` loop (~60fps).
 * `.async` – await callback results.
 
@@ -320,20 +319,25 @@ Trigger when element is connected / disconnected from DOM.
 * `.*` – any other modifier has no effect, but allows binding multiple handlers.
 
 
-## Store
+## Reactivity
 
-Sprae uses _signals_-based store for reactivity with sandboxing and inheritance.
+Sprae uses _preact-flavored signals_ store for reactivity with sandboxing and inheritance.
 
 ```js
 import sprae from 'sprae'
 import store from 'sprae/store'
+import { signal } from 'sprae/signal'
 
-// create store
+const name = signal('foo')
+
 const state = store(
   {
     count: 0,
 
-    inc(){ state.count++, state._i++ },
+    inc(){ state.count++ },
+
+    // signal
+    name,
 
     // computed
     get twice(){ return this.count * 2 },
@@ -346,22 +350,23 @@ const state = store(
   { Math }
 )
 
-// init sprae
 sprae(element, state)
 
 // update
 state.inc()
 state.count++
 
+// signal update
+name.value = 'bar'
+
+// no update
+state._i++
+
 // sandbox
 state.Math       // globalThis.Math
 state.navigator  // undefined
 ```
 
-
-## Signals
-
-Sprae uses _preact-flavored signals_ for reactivity and can take _signal_ values as inputs.<br/>
 Signals can be switched to an alternative preact/compatible implementation:
 
 ```js
@@ -371,13 +376,6 @@ import * as signals from '@preact/signals-core';
 
 // switch sprae signals to @preact/signals-core
 sprae.use(signals);
-
-// use signal as state value
-const name = signal('Kitty')
-sprae(el, { name });
-
-// update state
-name.value = 'Dolly';
 ```
 
 Provider | Size | Feature
