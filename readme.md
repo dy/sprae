@@ -321,7 +321,7 @@ Trigger when element is connected / disconnected from DOM.
 
 ## Reactivity
 
-Sprae uses _preact-flavored signals_ store for reactivity with sandboxing and inheritance.
+Sprae uses _preact-flavored signals_ store for reactivity with sandboxing.
 
 ```js
 import sprae from 'sprae'
