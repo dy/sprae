@@ -312,19 +312,15 @@ Trigger when element is connected / disconnected from DOM.
 
 ## Modifiers
 
-Modifiers adjust execuion of any directive.
-
-* `.debounce-<ms>` – defer update until `<ms>` after last change.
+* `.debounce-<ms>` – defer update for `<ms>` after last change.
 * `.throttle-<ms>` – limit updates to once every `<ms>`.
-* `.once` – run only once on init.
-* `.next` – defer to next microtask.
+* `.once` – run once on init.
+* `.tick` – defer to next microtask.
 * `.interval-<ms>` – run effect every `<ms>`.
-* `.raf` – run `requestAnimationFrame` (~60fps).
+* `.raf` – run `requestAnimationFrame` loop (~60fps).
 * `.async` – await callback results.
 
 ### Event modifiers
-
-For `:on<event>`, additional modifiers apply:
 
 * `.passive`, `.capture` – listener [options](https://developer.mozilla.org/en-US/docs/Web/API/EventTarget/addEventListener#options).
 * `.prevent`, `.stop` (`.immediate`) – prevent default or stop (immediate) propagation.
@@ -372,9 +368,6 @@ sprae(element, state)
 // update
 state.inc()
 state.count++
-
-// bulk update
-sprae(element, { count: 2 })
 
 // sandbox
 state.Math       // globalThis.Math
