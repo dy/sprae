@@ -482,6 +482,18 @@ export default function Layout({ children }) {
 }
 ```
 
+## Hints
+
+* To prevent [FOUC](https://en.wikipedia.org/wiki/Flash_of_unstyled_content) add `<style>[\:each],[\:if],[\:else] {visibility: hidden}</style>`.
+* Attributes order matters, eg. `<li :each="el in els" :text="el.name"></li>` is not the same as `<li :text="el.name" :each="el in els"></li>`.
+* Invalid self-closing tags like `<a :text="item" />` cause error. Valid self-closing tags are: `li`, `p`, `dt`, `dd`, `option`, `tr`, `td`, `th`, `input`, `img`, `br`.
+* To destroy state and detach sprae handlers, call `element[Symbol.dispose]()`.
+* `this` is not used, to get element reference use `:ref`.
+* `key` is not used, `:each` uses direct list mapping instead of DOM diffing.
+* `:ref` comes after `:if` for mount/unmount events `<div :if="cond" :ref="(init(), ()=>dispose())"></div>`.
+<!-- * `inert` attribute can disable autoinit `<script src='./sprae.js' inert/>`. -->
+
+
 
 ### Flavors
 
@@ -493,18 +505,6 @@ export default function Layout({ children }) {
 <!-- * sprae.alpine.js - alpine sprae, drop-in alpinejs replacement -->
 <!-- * sprae.vue.js - vue sprae, drop-in petite-vue replacement -->
 <!-- * sprae.preact.js - sprae with preact-signals -->
-
-
-## Hints
-
-* To prevent [FOUC](https://en.wikipedia.org/wiki/Flash_of_unstyled_content) add `<style>[\:each],[\:if],[\:else] {visibility: hidden}</style>`.
-* Attributes order matters, eg. `<li :each="el in els" :text="el.name"></li>` is not the same as `<li :text="el.name" :each="el in els"></li>`.
-* Invalid self-closing tags like `<a :text="item" />` cause error. Valid self-closing tags are: `li`, `p`, `dt`, `dd`, `option`, `tr`, `td`, `th`, `input`, `img`, `br`.
-* To destroy state and detach sprae handlers, call `element[Symbol.dispose]()`.
-* `this` is not used, to get element reference use `:ref`.
-* `key` is not used, `:each` uses direct list mapping instead of DOM diffing.
-* `:ref` comes after `:if` for mount/unmount events `<div :if="cond" :ref="(init(), ()=>dispose())"></div>`.
-<!-- * `inert` attribute can disable autoinit `<script src='./sprae.js' inert/>`. -->
 
 ## Justification
 
