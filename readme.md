@@ -1,10 +1,10 @@
 # ∴ spræ [![tests](https://github.com/dy/sprae/actions/workflows/node.js.yml/badge.svg)](https://github.com/dy/sprae/actions/workflows/node.js.yml) [![npm bundle size](https://img.shields.io/bundlephobia/minzip/sprae)](https://bundlephobia.com/package/sprae) [![npm](https://img.shields.io/npm/v/sprae?color=orange)](https://www.npmjs.com/package/sprae)
 
-> DOM tree microhydration
+> light reactive hydration for DOM tree
 
-_Sprae_ is open & minimalistic progressive enhancement framework with _preact-signals_ reactivity.<br/>
-Perfect for small websites, static pages, prototypes, lightweight UI or SSR.<br/>
-A light and fast alternative to _alpine_, _petite-vue_, _lucia_ etc.
+_Sprae_ is open & minimalistic progressive enhancement framework using _preact-signals_ reactivity.<br/>
+Perfect for small websites, static pages, prototypes, or SSR.<br/>
+A light and fast alternative to _alpine_ or _petite-vue_.
 
 ## Usage
 
@@ -19,46 +19,28 @@ A light and fast alternative to _alpine_, _petite-vue_, _lucia_ etc.
   // init
   const state = sprae(
     document.getElementById('container'),
-    { user: { name: 'friend' } }
+    { user: { name: 'Friend' } }
   )
 
   // update
-  state.user.name = 'love'
+  state.user.name = 'Love'
 </script>
 ```
 
-Sprae evaluates `:`-directives and evaporates them, returning reactive state for updates.
+Sprae evaluates `:`-directives, removes them, and returns a reactive state for updates.
 
-
-### As a script
-
-Sprae CDN script autoinits document and exposes `sprae` global.
+### CDN
 
 ```html
 <h1 :scope="{message:'Hello World!'}" :text="message"></h1>
-
 <script src="https://cdn.jsdelivr.net/npm/sprae@12.x.x"></script>
-<script>
-  window.sprae; // global standalone
-</script>
 ```
-
-### Flavors
-
-* [sprae.js](dist/sprae.js) – standard ESM.
-* [sprae.umd.js](dist/sprae.umd.js) – CJS / UMD / standalone with autoinit.
-* [sprae.micro.js](dist/sprae.micro.js) – <2.5kb with only `:scope`, `:ref`, `:fx`, `:on<event>`, `:<attr>`.
-* [sprae.secure.js](dist/sprae.secure.js) - CSP-enabled with [secure eval](#evaluator).
-<!-- * sprae.async.js - sprae with async events -->
-<!-- * sprae.alpine.js - alpine sprae, drop-in alpinejs replacement -->
-<!-- * sprae.vue.js - vue sprae, drop-in petite-vue replacement -->
-<!-- * sprae.preact.js - sprae with preact-signals -->
 
 ## Directives
 
 #### `:text="value"`
 
-Set text content of an element.
+Set element text content.
 
 ```html
 Welcome, <span :text="user.name">Guest</span>.
@@ -72,7 +54,7 @@ Welcome, <template :text="user.name"><template>.
 
 #### `:class="value"`
 
-Set class value.
+Set class.
 
 ```html
 <div :class="foo"></div>
@@ -89,7 +71,7 @@ Set class value.
 
 #### `:style="value"`
 
-Set style value.
+Set styles.
 
 ```html
 <span style="'display: inline-block'"></span>
@@ -109,7 +91,7 @@ Set style value.
 
 #### `:value="value"`
 
-Set value to/from an input, textarea or select.
+Bind input, textarea or select value.
 
 ```html
 <input :value="value" />
@@ -129,7 +111,7 @@ Set value to/from an input, textarea or select.
 
 #### `:on<event>="code"`
 
-Attach event(s) listener with optional [modifiers](#modifiers).
+Attach event listener with optional [modifiers](#modifiers).
 
 ```html
 <!-- inline -->
@@ -499,6 +481,19 @@ export default function Layout({ children }) {
   </>
 }
 ```
+
+
+### Flavors
+
+* [sprae.js](dist/sprae.js) – standard ESM.
+* [sprae.umd.js](dist/sprae.umd.js) – CJS / UMD / standalone with autoinit.
+* [sprae.micro.js](dist/sprae.micro.js) – <2.5kb with only `:scope`, `:ref`, `:fx`, `:on<event>`, `:<attr>`.
+* [sprae.secure.js](dist/sprae.secure.js) - CSP-enabled with [secure eval](#evaluator).
+<!-- * sprae.async.js - sprae with async events -->
+<!-- * sprae.alpine.js - alpine sprae, drop-in alpinejs replacement -->
+<!-- * sprae.vue.js - vue sprae, drop-in petite-vue replacement -->
+<!-- * sprae.preact.js - sprae with preact-signals -->
+
 
 ## Hints
 
