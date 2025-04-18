@@ -29,10 +29,19 @@ A light and fast alternative to _alpine_ or _petite-vue_.
 
 Sprae evaluates `:`-directives, removes them, and returns a reactive state for updates.
 
-## Flavors
+### Autoinit
+
+Sprae can be used as CDN script:
+
+```html
+<h1 :scope="{message:'Hello World!'}" :text="message"></h1>
+<script src="https://cdn.jsdelivr.net/npm/sprae@12.x.x"></script>
+```
+
+### Flavors
 
 * [sprae.js](dist/sprae.js) – standard ESM.
-* [sprae.umd.js](dist/sprae.umd.js) – CJS / UMD / standalone with document autoinit.
+* [sprae.umd.js](dist/sprae.umd.js) – CJS / UMD / standalone with autoinit.
 * [sprae.micro.js](dist/sprae.micro.js) – <2.5kb with only `:scope`, `:ref`, `:fx`, `:on<event>`, `:<attr>`.
 * [sprae.secure.js](dist/sprae.secure.js) - CSP-enabled with [secure eval](#evaluator).
 <!-- * sprae.async.js - sprae with async events -->
@@ -134,7 +143,7 @@ Attach event listener.
 <button :onclick.throttle-500="handle()">Not too often</button>
 ```
 
-#### `:<attr>`
+#### `:<attr>`, `:`
 
 Set any attribute.
 
@@ -146,17 +155,9 @@ Set any attribute.
 
 <!-- function -->
 <div :hidden="hidden => !hidden"></div>
-```
 
-#### `:`
-
-Set multiple attributes.
-
-```html
+<!-- spread -->
 <input :="{ id: name, name, type: 'text', value, ...props  }" />
-
-<!-- function -->
-<input :="attributes => attributes.special.value = specialValue">
 ```
 
 #### `:if`, `:else`
@@ -170,9 +171,6 @@ Control flow of elements.
 
 <!-- fragment -->
 <template :if="foo">foo <span>bar</span> baz</template>
-
-<!-- function -->
-<span :if="() => foo"></span>
 ```
 
 #### `:each`
@@ -186,7 +184,6 @@ Multiply element.
 <li :each="item, idx? in array" />
 <li :each="value, key? in object" />
 <li :each="count, idx0? in number" />
-<li :each="value, key? in func" />
 
 <!-- fragment -->
 <template :each="item in items">
@@ -209,9 +206,6 @@ Define scope for a subtree.
 
 <!-- variables -->
 <x :scope="x=1, y=2" :text="x+y"></x>
-
-<!-- function -->
-<x :scope="state => ({})" :text="x+y"></x>
 ```
 
 #### `:fx`
@@ -223,9 +217,6 @@ Run effect, not changing any attribute.
 
 <!-- cleanup -->
 <div :fx="id = setInterval(tick, 1000), () => clearInterval(id)" />
-
-<!-- function -->
-<div :fx="() => ...">
 ```
 
 #### `:ref`
