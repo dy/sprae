@@ -8,6 +8,8 @@ A light and fast alternative to _alpine_ or _petite-vue_.
 
 ## Usage
 
+### As a script 
+
 ```html
 <h1 :scope="{message:'Hello World!'}" :text="message"></h1>
 <script src="https://cdn.jsdelivr.net/npm/sprae@12.x.x"></script>
@@ -21,7 +23,7 @@ A light and fast alternative to _alpine_ or _petite-vue_.
 </div>
 
 <script type="module">
-  import sprae from './sprae.js' // https://unpkg.com/sprae/dist/sprae.js
+  import sprae from './sprae.js'
 
   // init
   const state = sprae(
