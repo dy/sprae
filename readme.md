@@ -29,14 +29,16 @@ A light and fast alternative to _alpine_ or _petite-vue_.
 
 Sprae evaluates `:`-directives, removes them, and returns a reactive state for updates.
 
-### As a script
+## Flavors
 
-```html
-<h1 :scope="{message:'Hello World!'}" :text="message"></h1>
-<script src="https://cdn.jsdelivr.net/npm/sprae@12.x.x"></script>
-```
-
-Sprae autoinits document and exposes `sprae` global standalone.
+* [sprae.js](dist/sprae.js) – standard ESM.
+* [sprae.umd.js](dist/sprae.umd.js) – CJS / UMD / standalone with document autoinit.
+* [sprae.micro.js](dist/sprae.micro.js) – <2.5kb with only `:scope`, `:ref`, `:fx`, `:on<event>`, `:<attr>`.
+* [sprae.secure.js](dist/sprae.secure.js) - CSP-enabled with [secure eval](#evaluator).
+<!-- * sprae.async.js - sprae with async events -->
+<!-- * sprae.alpine.js - alpine sprae, drop-in alpinejs replacement -->
+<!-- * sprae.vue.js - vue sprae, drop-in petite-vue replacement -->
+<!-- * sprae.preact.js - sprae with preact-signals -->
 
 
 ## Directives
@@ -494,18 +496,6 @@ export default function Layout({ children }) {
 * `:ref` comes after `:if` for mount/unmount events `<div :if="cond" :ref="(init(), ()=>dispose())"></div>`.
 <!-- * `inert` attribute can disable autoinit `<script src='./sprae.js' inert/>`. -->
 
-
-
-## Flavors
-
-* [sprae.js](dist/sprae.js) – standard ESM.
-* [sprae.umd.js](dist/sprae.umd.js) – CJS / UMD / standalone with autoinit.
-* [sprae.micro.js](dist/sprae.micro.js) – <2.5kb with only `:scope`, `:ref`, `:fx`, `:on<event>`, `:<attr>`.
-* [sprae.secure.js](dist/sprae.secure.js) - CSP-enabled with [secure eval](#evaluator).
-<!-- * sprae.async.js - sprae with async events -->
-<!-- * sprae.alpine.js - alpine sprae, drop-in alpinejs replacement -->
-<!-- * sprae.vue.js - vue sprae, drop-in petite-vue replacement -->
-<!-- * sprae.preact.js - sprae with preact-signals -->
 
 ## Justification
 
