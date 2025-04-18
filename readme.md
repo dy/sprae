@@ -9,6 +9,13 @@ A light and fast alternative to _alpine_ or _petite-vue_.
 ## Usage
 
 ```html
+<h1 :scope="{message:'Hello World!'}" :text="message"></h1>
+<script src="https://cdn.jsdelivr.net/npm/sprae@12.x.x"></script>
+```
+
+### As a module
+
+```html
 <div id="container" :if="user">
   Hello <span :text="user.name">there</span>.
 </div>
@@ -28,13 +35,6 @@ A light and fast alternative to _alpine_ or _petite-vue_.
 ```
 
 Sprae evaluates `:`-directives, removes them, and returns a reactive state for updates.
-
-### CDN
-
-```html
-<h1 :scope="{message:'Hello World!'}" :text="message"></h1>
-<script src="https://cdn.jsdelivr.net/npm/sprae@12.x.x"></script>
-```
 
 ## Directives
 
