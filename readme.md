@@ -8,15 +8,6 @@ A light and fast alternative to _alpine_ or _petite-vue_.
 
 ## Usage
 
-### As a script
-
-```html
-<h1 :scope="{message:'Hello World!'}" :text="message"></h1>
-<script src="https://cdn.jsdelivr.net/npm/sprae@12.x.x"></script>
-```
-
-### As a module
-
 ```html
 <div id="container" :if="user">
   Hello <span :text="user.name">there</span>.
@@ -38,9 +29,19 @@ A light and fast alternative to _alpine_ or _petite-vue_.
 
 Sprae evaluates `:`-directives, removes them, and returns a reactive state for updates.
 
+### As a script
+
+```html
+<h1 :scope="{message:'Hello World!'}" :text="message"></h1>
+<script src="https://cdn.jsdelivr.net/npm/sprae@12.x.x"></script>
+```
+
+Sprae autoinits document and exposes `sprae` global standalone.
+
+
 ## Directives
 
-#### `:text="value"`, `:text="value => value"`
+#### `:text`
 
 Set element text content.
 
@@ -51,10 +52,10 @@ Welcome, <span :text="user.name">Guest</span>.
 Welcome, <template :text="user.name"><template>.
 
 <!-- function -->
-<span :text="text => text + value"></span>
+<span :text="val => val + text"></span>
 ```
 
-#### `:class="value"`
+#### `:class`
 
 Set class.
 
@@ -71,7 +72,7 @@ Set class.
 <div :class="classList => classList.add('active')"></div>
 ```
 
-#### `:style="value"`
+#### `:style`
 
 Set styles.
 
@@ -91,7 +92,7 @@ Set styles.
 <div :style="s => s.setProperty('--bar', 'qux')"></div>
 ```
 
-#### `:value="value"`
+#### `:value`
 
 Bind input, textarea or select value.
 
@@ -111,9 +112,9 @@ Bind input, textarea or select value.
 <input :value.defer-300="value => value + str" />
 ```
 
-#### `:on<event>="code"`
+#### `:on<event>`
 
-Attach event listener with optional [modifiers](#modifiers).
+Attach event listener.
 
 ```html
 <button :onclick="submitForm()">Submit</button>
@@ -131,7 +132,7 @@ Attach event listener with optional [modifiers](#modifiers).
 <button :onclick.throttle-500="handle()">Not too often</button>
 ```
 
-#### `:<attr>="value"`
+#### `:<attr>`
 
 Set any attribute.
 
@@ -145,7 +146,7 @@ Set any attribute.
 <div :hidden="hidden => !hidden"></div>
 ```
 
-#### `:="values"`
+#### `:`
 
 Set multiple attributes.
 
@@ -156,7 +157,7 @@ Set multiple attributes.
 <input :="attributes => attributes.special.value = specialValue">
 ```
 
-#### `:if="condition"`, `:else`
+#### `:if`, `:else`
 
 Control flow of elements.
 
@@ -172,7 +173,7 @@ Control flow of elements.
 <span :if="() => foo"></span>
 ```
 
-#### `:each="item, idx in items"`
+#### `:each`
 
 Multiply element.
 
@@ -192,7 +193,7 @@ Multiply element.
 </template>
 ```
 
-#### `:scope="values"`
+#### `:scope`
 
 Define scope for a subtree.
 
@@ -211,7 +212,7 @@ Define scope for a subtree.
 <x :scope="state => ({})" :text="x+y"></x>
 ```
 
-#### `:fx="code"`
+#### `:fx`
 
 Run effect, not changing any attribute.
 
@@ -225,7 +226,7 @@ Run effect, not changing any attribute.
 <div :fx="() => ...">
 ```
 
-#### `:ref="value"`, `:ref="el => (...)"`
+#### `:ref`
 
 Expose element in state with `name` or get reference to element.
 
@@ -495,7 +496,7 @@ export default function Layout({ children }) {
 
 
 
-### Flavors
+## Flavors
 
 * [sprae.js](dist/sprae.js) – standard ESM.
 * [sprae.umd.js](dist/sprae.umd.js) – CJS / UMD / standalone with autoinit.
@@ -508,7 +509,7 @@ export default function Layout({ children }) {
 
 ## Justification
 
-Modern frontend stack is obese and unhealthy, like non-organic processed food. There are healthy alternatives, but:
+Modern frontend stack is non-organic & processed. There are healthy alternatives, but:
 
 * [Template-parts](https://github.com/dy/template-parts) is stuck with native HTML quirks ([parsing table](https://github.com/github/template-parts/issues/24), [SVG attributes](https://github.com/github/template-parts/issues/25), [liquid syntax](https://shopify.github.io/liquid/tags/template/#raw) conflict etc).
 * [Alpine](https://github.com/alpinejs/alpine) / [petite-vue](https://github.com/vuejs/petite-vue) / [lucia](https://github.com/aidenybai/lucia) escape native HTML quirks, but have excessive API (`:`, `x-`, `{}`, `@`, `$`), tend to [self-encapsulate](https://github.com/alpinejs/alpine/discussions/3223) and not care about size/performance.
