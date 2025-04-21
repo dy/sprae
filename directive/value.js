@@ -1,6 +1,5 @@
-import sprae, { parse } from "../core.js";
+import sprae, { parse, attr } from "../core.js";
 import { setter } from "../store.js";
-import { attr } from './attrs.js';
 
 export default (el, state, expr) => {
   // bind back to value, but some values can be not bindable, eg. `:value="7"`

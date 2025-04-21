@@ -1,5 +1,5 @@
 import sprae, { _state, frag } from "../core.js";
-import store, { _change, _signals } from "../store.js";
+import store, { _change, memo } from "../store.js";
 import { effect } from '../signal.js';
 
 
@@ -17,7 +17,7 @@ export default (tpl, state, expr) => {
 
     // plain array update, not store (signal with array) - updates full list
     if (cur && !cur[_change]) {
-      for (let s of cur[_signals] || []) s[Symbol.dispose]()
+      for (let s of memo.get(cur) || []) s[Symbol.dispose]()
       cur = null, prevl = 0
     }
 
@@ -34,6 +34,7 @@ export default (tpl, state, expr) => {
       // append
       for (; i < newl; i++) {
         cur[i] = newItems[i]
+
         let idx = i,
           // FIXME: inherited state is cheaper in terms of memory and faster in terms of performance
           // compared to cloning all parent signals and creating a proxy
@@ -53,7 +54,7 @@ export default (tpl, state, expr) => {
         sprae(el, subscope);
 
         // signal/holder disposal removes element
-        ((cur[_signals] ||= [])[i] ||= {})[Symbol.dispose] = () => {
+        ((memo.get(cur) || (memo.set(cur,[]), memo.get(cur)))[i] ||= {})[Symbol.dispose] = () => {
           el[Symbol.dispose]?.(), el.remove()
         };
       }

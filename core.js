@@ -22,7 +22,7 @@ export const sprae = (el = document.body, values) => {
   // take over existing state instead of creating a clone
   let state = store(values || {}),
     { prefix } = sprae,
-    fx = []
+    fx = [], fn
 
   let init = (el, attrs = el.attributes) => {
     // we iterate live collection (subsprae can init args)
@@ -30,17 +30,18 @@ export const sprae = (el = document.body, values) => {
       let { name, value } = attrs[i], parts
 
       if (name.startsWith(prefix)) {
-        el.removeAttribute(name);
+        attr(el, name, null) // remove attribute
 
         // multiple attributes like :id:for=""
-        for (cur of name.slice(prefix.length).split(':')) {
+        for (cur of name.slice(prefix.length).split(prefix)) {
           parts = cur.split('.')
 
           // save effect
-          fx.push((directive[parts[0]] || directive['*'])(el, value, state, parts))
+          fn = (directive[parts[0]] || directive['*'])(el, value, state, parts)
+          fn && fx.push(fn)
 
           // stop after :each, :if, :scope etc.
-          if (el[_state] === null) return
+          if (_state in el) return console.log('skip')
         }
       } else i++
     }
@@ -71,8 +72,21 @@ export const sprae = (el = document.body, values) => {
   // start local effects
   on()
 
+
   return state;
 }
+
+/**
+ * Register a directive with a parsed expression and evaluator.
+ * @param {string} name - The name of the directive.
+ * @param {(el: Element, state: Object, expr: string, parts: string[]) => (value: any) => void} create - A function to create the directive.
+ * @param {(expr: string) => (state: Object) => any} [p=parse] - Create evaluator from expression string.
+ */
+sprae.dir = (name, create, p = parse) => directive[name] = (el, expr, state, parts, _eval, _update) => (
+  _eval = p(expr),
+  _update = create(el, state, expr, parts),
+  _update ? Object.assign(() => (console.log('update', parts[0],name),_update(_eval(state))), {displayName:name}) : null
+)
 
 /**
  * Compiles an expression into an evaluator function.
@@ -91,16 +105,6 @@ sprae.prefix = ':'
  */
 sprae.use = use
 
-/**
- * Register a directive with a parsed expression and evaluator.
- * @param {string} name - The name of the directive.
- * @param {(el: Element, state: Object, expr: string, parts: string[]) => (value: any) => void} create - A function to create the directive.
- * @param {(expr: string) => (state: Object) => any} [p=parse] - Create evaluator from expression string.
- */
-sprae.dir = (name, create, p = parse) => directive[name] = (el, expr, state, parts, _eval, _update) => (
-  _eval = p(expr), _update = create(el, state, expr, parts),
-  () => _update(_eval(state))
-)
 
 export const dir = sprae.dir
 
@@ -155,5 +159,12 @@ export const frag = (tpl) => {
     // setAttributeNode() { }
   }
 }
+
+// camel to kebab
+export const dashcase = (str) => str.replace(/[A-Z\u00C0-\u00D6\u00D8-\u00DE]/g, (match, i) => (i ? '-' : '') + match.toLowerCase());
+
+// set attr
+export const attr = (el, name, v) => (v == null || v === false) ? el.removeAttribute(name) : el.setAttribute(name, v === true ? "" : v);
+
 
 export default sprae

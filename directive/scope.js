@@ -1,13 +1,11 @@
-import sprae, { _state } from "../core.js";
-import { untracked } from "../signal.js";
+import sprae, { _state, attr } from "../core.js";
 import store from '../store.js';
 
-export default (el, rootState) => (
-  el[_state] = null,
-  // NOTE: we force untracked because internal directives can eval outside of effects (like ref etc) that would cause unwanted subscribe
-  // FIXME: since this can be async effect, we should create & sprae it in advance.
-  values => untracked( () => el[_state] ?
-    (sprae(el, values)) :
-    (delete el[_state], sprae(el, store(values, rootState)))
-  )
-)
+// :scope creates variables scope for a subtree
+export default (el, rootState, expr) => {
+  // :scope="expr" -> :scope :with="expr"
+  // we need effect to be run within new scope
+  expr && attr(el, sprae.prefix + 'with', expr),
+  sprae(el, store({}, rootState)),
+  null
+}

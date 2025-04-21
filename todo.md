@@ -172,6 +172,7 @@
 * [x] get rid of :data, :aria
 * [x] run effects after collecting them
 * [x] :scope instead of :with
+* [ ] :scope + :with
 * [ ] learn scope mechanism from lucia, alpine, petit-vue
 * [ ] fix :each :scope tests
 * [ ] simplify nested store: just object inheritance
@@ -188,7 +189,8 @@
 * [ ] make sure umd min bundle works
 * [ ] test usignal/async effects
 * [ ] finish ajamila poll with v12
-
+* [ ] generalize prop modifiers
+* [ ] make dirs accept functions
 
 ## [ ] Optimizations (https://krausest.github.io/js-framework-benchmark/current.html)
 
@@ -196,19 +198,6 @@
 * [~] Create many rows IS SLOW
 * [ ] Try reducing memory use
 
-## [ ] Website
-
-* [ ] Intro: core philosophy, features, quick meaningful example, "Get started"
-* [ ] Why?: comparison, benefits (no build step, light, fast, SEO-friendly, no SSR needed), use-cases, testimonials, cases
-* [ ] Docs: installing, core concepts, directives, recipes (forms, routing, animations), best practices (tips for perf, debugging, maintaining)
-* [ ] Examples: todo, counter, dynamic form
-* [ ] Showcase gallery?
-* [ ] Playground: share/download
-* [ ] Community: github, blog, tutorials, announcements
-* [ ] FAQ: What's PE? How sprae compares to <framework>? Can I use with other FW? Is it suitable for large scale?
-* [ ] Friends: related libs
-* [ ] Trust: contact, contributors, sponsor
-* [ ] JS-framework-benchmark ref
 
 ## Backlog
 

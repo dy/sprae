@@ -1,33 +1,38 @@
 // signals-based proxy
-import { signal, computed, batch } from './signal.js'
+import { signal, computed, batch, untracked } from './signal.js'
 import { parse } from './core.js';
 
-export const _signals = Symbol('signals'),
+const _stash = '__',
+  mut = ['push', 'pop', 'shift', 'unshift', 'splice']
+
+export const memo = new WeakMap,
   _change = Symbol('change'),
-  _stash = '__',
+  _set = Symbol('set'),
 
   // object store is not lazy
-  store = (values, parent) => {
+  // parent defines parent scope or sandbox
+  store = (values, parent = globalThis) => {
     if (!values) return values
 
     // ignore existing state as argument or globals
-    if (values[_signals] || values[Symbol.toStringTag]) return values;
+    // FIXME: toStringTag is not needed since we read global as parent
+    if (memo.has(values) || values[Symbol.toStringTag]) return values;
 
     // non-objects: for array redirect to list
     if (values.constructor !== Object) return Array.isArray(values) ? list(values) : values
 
-    // we must inherit signals to allow dynamic extend of parent state
-    let signals = Object.create(parent?.[_signals] || {}),
-      _len = signal(Object.keys(values).length),
-      stash
+    // _change stores total number of keys to track new props
+    // NOTE: be careful
+    let len = Object.keys(values).length, signals = { [_change]: signal(len) }
 
     // proxy conducts prop access to signals
     let state = new Proxy(signals, {
-      get: (_, k) => k === _change ? _len : k === _signals ? signals : k === _stash ? stash : k in signals ? signals[k]?.valueOf?.() : globalThis[k],
-      set: (_, k, v, s) => k === _stash ? (stash = v, 1) : (s = k in signals, set(signals, k, v), s || ++_len.value), // bump length for new signal
-      deleteProperty: (_, k) => (signals[k] && (signals[k][Symbol.dispose]?.(), delete signals[k], _len.value--), 1),
+      get: (_, k) => k in signals ? signals[k]?.valueOf?.() : parent[k],
+      set: (_, k, v, _s) => (k in signals ? (k[0] === '_' ? signals[k] = v : set(signals, k, v)) :
+        (create(signals, k, v), signals[_change].value = ++len), 1), // bump length for new signal
+      deleteProperty: (_, k) => (k in signals && (signals[k][Symbol.dispose]?.(), delete signals[k], signals[_change].value = --len), 1),
       // subscribe to length when object is spread
-      ownKeys: () => (_len.value, Reflect.ownKeys(signals)),
+      ownKeys: () => (signals[_change].value, Reflect.ownKeys(signals)),
       has: _ => 1 // sandbox prevents writing to global
     }),
 
@@ -38,41 +43,35 @@ export const _signals = Symbol('signals'),
       // getter turns into computed
       if (descs[k]?.get)
         // stash setter
-        (signals[k] = computed(descs[k].get.bind(state)))[_change] = descs[k].set?.bind(state);
+        (signals[k] = computed(descs[k].get.bind(state)))[_set] = descs[k].set?.bind(state);
 
-      else
-        // init blank signal - make sure we don't take prototype one
-        signals[k] = null, set(signals, k, values[k]);
+      // init blank signal - make sure we don't take prototype one
+      else create(signals, k, values[k])
     }
 
     return state
   },
 
   // array store - signals are lazy since arrays can be very large & expensive
-  list = values => {
+  list = (values, parent = globalThis) => {
+
     // track last accessed property to find out if .length was directly accessed from expression or via .push/etc method
     let lastProp,
-
-      // .length signal is stored separately, since it cannot be replaced on array
-      _len = signal(values.length),
 
       // gotta fill with null since proto methods like .reduce may fail
       signals = Array(values.length).fill(),
 
       // proxy conducts prop access to signals
-      state = new Proxy(signals, {
+      state = new Proxy((signals[_change] = signal(signals.length), signals), {
         get(_, k) {
-          // covers Symbol.isConcatSpreadable etc.
-          if (typeof k === 'symbol') return k === _change ? _len : k === _signals ? signals : signals[k]
-
           // if .length is read within mutators - peek signal to avoid recursive subscription
-          if (k === 'length') return 'push pop shift unshift splice'.includes(lastProp) ? _len.peek() : _len.value;
+          if (k === 'length') return mut.includes(lastProp) ? signals.length : signals[_change].value;
 
           lastProp = k;
 
           // create signal (lazy)
           // NOTE: if you decide to unlazy values, think about large arrays - init upfront can be costly
-          return (signals[k] ?? (signals[k] = signal(store(values[k])))).valueOf()
+          return signals[k] ? signals[k].valueOf() : k in signals ? (signals[k] = signal(store(values[k]))).valueOf() : parent[k]
         },
 
         set(_, k, v) {
@@ -81,14 +80,14 @@ export const _signals = Symbol('signals'),
             // force cleaning up tail
             for (let i = v; i < signals.length; i++) delete state[i]
             // .length = N directly
-            _len.value = signals.length = v;
+            signals[_change].value = signals.length = v;
           }
-          else {
-            set(signals, k, v)
 
-            // force changing length, if eg. a=[]; a[1]=1 - need to come after setting the item
-            if (k >= _len.peek()) _len.value = signals.length = +k + 1
-          }
+          // force changing length, if eg. a=[]; a[1]=1 - need to come after setting the item
+          else if (k >= signals.length) create(signals, k, v), state.length = +k + 1
+
+          // existing signal
+          else set(signals, k, v)
 
           return 1
         },
@@ -98,39 +97,37 @@ export const _signals = Symbol('signals'),
       })
 
     return state
-  }
 
-// set/update signal value
-const set = (signals, k, v) => {
-  let s = signals[k], cur
+  },
 
-  // untracked
-  if (k[0] === '_') signals[k] = v
-  // new property. preserve signal value as is
-  else if (!s) signals[k] = s = v?.peek ? v : signal(store(v))
-  // skip unchanged (although can be handled by last condition - we skip a few checks this way)
-  else if (v === (cur = s.peek()));
-  // stashed _set for value with getter/setter
-  else if (s[_change]) s[_change](v)
-  // patch array
-  else if (Array.isArray(v) && Array.isArray(cur)) {
-    // if we update plain array (stored in signal) - take over value instead
-    if (cur[_change]) batch(() => {
-      for (let i = 0; i < v.length; i++) cur[i] = v[i]
-      cur.length = v.length // forces deleting tail signals
-    })
-    else s.value = v
+  // create signal value
+  create = (signals, k, v) => signals[k] = v?.peek ? v : signal(store(v)),
+
+  // set/update signal value
+  set = (signals, k, v, _s = signals[k], _v = _s.peek()) => {
+    // skip unchanged (although can be handled by last condition - we skip a few checks this way)
+    return (v !== _v) && (
+      // stashed _set for value with getter/setter
+      _s[_set] ? _s[_set](v) :
+        // patch array
+        Array.isArray(v) && Array.isArray(_v) ?
+          // if we update plain array (stored in signal) - take over value instead
+          // since input value can be store, we have to make sure we don't subscribe to its length or values
+          _v[_change] ? untracked(() => batch(() => {
+            for (let i = 0; i < v.length; i++) _v[i] = v[i]
+            _v.length = v.length // forces deleting tail signals
+          })) : _s.value = v :
+          // .x = y
+          _s.value = store(v)
+    )
   }
-  // .x = y
-  else s.value = store(v)
-}
 
 // create expression setter, reflecting value back to state
 export const setter = (expr, set = parse(`${expr}=${_stash}`)) => (
-  (state, value) => (
+  (state, value) => {
     state[_stash] = value, // save value to stash
-    set(state)
-  )
+      set(state)
+  }
 )
 
 // make sure state contains first element of path, eg. `a` from `a.b[c]`

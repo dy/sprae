@@ -1,6 +1,6 @@
 // test store only (not sprae)
 
-import store, { _change, _signals } from '../store.js'
+import store, { _change, memo } from '../store.js'
 import { effect, batch, use, signal } from '../signal.js'
 import t, { is, ok } from 'tst'
 import { tick } from 'wait-please'
@@ -382,7 +382,7 @@ t.skip('store: batch', async () => {
 
 t('store: inheritance does not change root', () => {
   const root = store({ x: 1, y: 2 })
-  store({ x: 2 }, { ...root[_signals] })
+  store({ x: 2 }, memo.get(root))
   is(root.x, 1)
 })
 
@@ -412,9 +412,8 @@ t('store: retain global objects as is', async () => {
   ok(s.Math.max === Math.max)
 })
 
-t('store: reading length or signals', async () => {
+t('store: reading length', async () => {
   let o = store({}), l = store([])
-  o[_signals], l[_signals]
   o[_change], l[_change]
 })
 

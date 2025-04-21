@@ -6,7 +6,7 @@ import h from "hyperf";
 
 
 test("scope: inline assign", async () => {
-  let el = h`<x :scope="{foo:'bar'}"><y :text="foo + baz"></y></x>`;
+  let el = h`<x :scope="foo='bar'"><y :text="console.log('effect text',foo),foo + baz"></y></x>`;
   let state = sprae(el, { baz: signal("qux") });
   is(el.innerHTML, `<y>barqux</y>`);
   state.baz = "quux";

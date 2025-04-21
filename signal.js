@@ -1,16 +1,17 @@
 // ulive copy, stable minimal implementation
 let current;
 
-export let signal = (v, s, obs = new Set) => (
+export let signal = (v, s, _obs = new Set) => (
   s = {
     get value() {
-      current?.deps.push(obs.add(current));
+      current?.deps.push(_obs.add(current));
       return v
     },
     set value(val) {
       if (val === v) return
       v = val;
-      for (let sub of obs) sub(); // notify effects
+      // console.log('set signal', v)
+      for (let sub of _obs) sub(); // notify effects
     },
     peek() { return v },
   },

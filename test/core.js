@@ -205,6 +205,7 @@ test("subscribe to array length", async () => {
   let el = h`<div :scope="{likes:[]}"><x :onx="e=>(likes.push(1))"></x><y :text="console.log('text'),likes.length"></y></div>`;
   sprae(el, { console });
   is(el.innerHTML, `<x></x><y>0</y>`);
+
   console.log('---event')
   el.firstChild.dispatchEvent(new window.CustomEvent("x"));
   await tick();

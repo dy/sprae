@@ -1454,3 +1454,76 @@
   * Any personal SPA
   * Wavearea
   * Sprae website
+
+## [ ] Example ideas
+
+  * Hello world
+  * Day/night switch
+  ```html
+    <script src="https://cdn.jsdelivr.net/npm/sprae@12.x.x"></script>
+
+    <div :scope="{ isDark: false }">
+      <button :onclick="isDark = !isDark">
+        <span :text="isDark ? '🌙' : '☀️'"></span>
+      </button>
+      <div :class="isDark ? 'dark' : 'light'">Welcome to Spræ!</div>
+    </div>
+
+    <style>
+      .light { background: #fff; color: #000; }
+      .dark { background: #333; color: #fff; }
+    </style>
+  ```
+  * Namaste / Hello World
+  * Japa counter
+  * Animated scroll
+  * Slider
+  * Todo list
+  ```html
+    <div :state="{ value: '', todo: [] }">
+      <input :value="value" />
+      <button :onclick="todo.push(value)">Create</button>
+      <ul :each="task in todo">
+        <li :text="this.task">My Example Task</li>
+      </ul>
+    </div>
+  ```
+  * Status indicator on/off
+  * Breathe in / out
+  * Rotation animation
+  * Progress animation
+  * Marquee
+  * Waveform indicator
+  * Details like in alpine
+  * Tabs (+ filters switch like in tw example)
+  * Click to copy
+  * Tooltip
+  * Scroll animation
+  * Motion adjustment
+  * Autotype
+  * Any plugins from jquery hoard et
+  * 7GUIs https://eugenkiss.github.io/7guis/
+  * forms
+  * routing
+  * animations
+
+## [ ] FAQ
+
+  * https://grok.com/share/bGVnYWN5_4fb0e9f5-af5f-44b2-97f6-6327b7b540d1
+  ! compare implementation of all frameworks
+
+## [ ] Website
+
+* refs: https://poolside.ai/, https://alpinejs.dev/
+* [ ] Intro: core philosophy, features, quick meaningful example, "Get started"
+* [ ] Why?: comparison, benefits (no build step, light, fast, SEO-friendly, no SSR needed), use-cases, testimonials, cases
+* [ ] Docs: installing, core concepts, directives, recipes (forms, routing, animations), best practices (tips for perf, debugging, maintaining)
+* [ ] Examples: todo, counter, dynamic form. Very common els
+* [ ] Showcase gallery?
+* [ ] Playground: share/download
+* [ ] Community: github, blog, tutorials, announcements
+* [ ] FAQ: What's PE? How sprae compares to <framework>? Can I use with other FW? Is it suitable for large scale?
+* [ ] Friends: related libs
+* [ ] Trust: contact, contributors, sponsor; built with: links
+* [ ] JS-framework-benchmark ref
+* [ ] Transition guide from alpine/petit
