@@ -7,6 +7,57 @@ import test, { any, is } from "tst";
 import { signal, batch, untracked } from '../signal.js'
 
 
+test("any: basic", async () => {
+  let el = h`<label :for="name" :text="name" ></label><input type='text' :type="t => (log.push(t),name)" :id="name" :name="name" :disabled="!name"/><a :href="url"></a><img :src="url"/>`;
+  let params = sprae(el, { name: 'text', url: "//google.com", log:[] });
+  is(
+    el.outerHTML,
+    `<label for="text">text</label><input type="text" id="text" name="text"><a href="//google.com"></a><img src="//google.com">`,
+  );
+  is(params.log, ['text'])
+  params.name = "email";
+  await tick();
+  is(
+    el.outerHTML,
+    `<label for="email">email</label><input type="email" id="email" name="email"><a href="//google.com"></a><img src="//google.com">`,
+  );
+});
+
+test("any: signal", async () => {
+  let a = signal();
+  setTimeout(() => (a.value = 2), 10);
+
+  let el = h`<x :text="a">1</x>`;
+  sprae(el, { a });
+  is(el.outerHTML, `<x></x>`);
+
+  await time(20);
+  is(el.outerHTML, `<x>2</x>`);
+});
+
+test("any: null result does nothing", async () => {
+  let a = h`<x :="undefined"></x>`;
+  sprae(a);
+  is(a.outerHTML, `<x></x>`);
+});
+
+
+test("fx: effects", async () => {
+  let el = h`<x :fx="(log.push(x), () => (log.push('out')))"></x>`;
+  let x = signal(1)
+  let state = sprae(el, { log: [], x, console });
+  is(el.outerHTML, `<x></x>`);
+  is(state.log, [1])
+  console.log('upd value')
+  x.value = 2
+  await tick()
+  is(el.outerHTML, `<x></x>`);
+  is(state.log, [1, 'out', 2])
+  el[Symbol.dispose]()
+  is(state.log, [1, 'out', 2, 'out'])
+});
+
+
 
 test('class: basic', async () => {
   let el = h`<x class="base" :class="a"></x><y :class="[b, c]"></y><z :class="{c:d}"></z>`;
@@ -74,7 +125,7 @@ test.skip("class: interpolation", async () => {
 
 
 
-test.only("style: basic", async () => {
+test("style: basic", async () => {
   let el = h`<x style="left: 1px" :style="style"></x>`;
   let params = sprae(el, { style: "top: 1px" });
   is(el.outerHTML, `<x style="left: 1px; top: 1px"></x>`);
@@ -93,7 +144,7 @@ test.only("style: basic", async () => {
   is(el.outerHTML, `<x style="left: 1px; top: 2px;"></x>`);
 });
 
-test.only("style: props", async () => {
+test("style: props", async () => {
   let el = h`<x :style="style"></x>`;
   let params = sprae(el, { style: {} });
   is(el.outerHTML, `<x></x>`);
@@ -107,7 +158,7 @@ test.only("style: props", async () => {
   is(el.style.getPropertyValue("--x"), '');
 });
 
-test.only("style: camel kebab", async () => {
+test("style: camel kebab", async () => {
   let el = h`<x :style="style"></x>`;
   let params = sprae(el, { style: { backgroundColor: "red" } });
   is(el.outerHTML, `<x style="background-color: red;"></x>`);
@@ -116,13 +167,13 @@ test.only("style: camel kebab", async () => {
   is(el.outerHTML, `<x style="background-color: green;"></x>`);
 });
 
-test.only("style: #33", async () => {
+test("style: #33", async () => {
   let el = h`<header class="navbar" :style="{ color: 'white', backgroundColor: '#df0000' }" />`
   sprae(el)
   is(el.outerHTML, `<header class="navbar" style="color: white; background-color: rgb(223, 0, 0);"></header>`)
 })
 
-test.only("style: function", async () => {
+test("style: function", async () => {
   // NOTE: ...s is intentional mistake here
   let el = h`<x :style="s => (log.push(s),{...s, '--i':i})"></x>`;
   let s = sprae(el, { log:[], i:0 });
@@ -155,6 +206,17 @@ test("text: core", async () => {
   is(el.outerHTML, `<div></div>`);
 });
 
+test("text: function", async () => {
+  let el = h`<div :text="t => t + s"></div>`;
+  let params = sprae(el, { s: 'a' });
+  is(el.outerHTML, `<div>a</div>`);
+  params.s = 'b';
+  await tick();
+  is(el.outerHTML, `<div>ab</div>`);
+  params.s = 'c';
+  is(el.outerHTML, `<div>abc</div>`);
+});
+
 test("text: fragment", async () => {
   let el = h`a<template :text="text"/>`;
   let params = sprae(el, { text: "b" });
@@ -164,7 +226,7 @@ test("text: fragment", async () => {
   is(el.outerHTML, `abc`);
 });
 
-test('text: fragment with condition', async () => {
+test("text: fragment with condition", async () => {
   // NOTE: this ignores condition
   let el = h`a<template :text="text" :if="text!='b'"/>`;
   let params = sprae(el, { text: "b" });
@@ -174,7 +236,7 @@ test('text: fragment with condition', async () => {
   is(el.outerHTML, `ac`);
 })
 
-test('text: condition with fragment', async () => {
+test("text: condition with fragment", async () => {
   let el = h`a<template :if="text!='b'" :text="text"/>`;
   let params = sprae(el, { text: "b" });
   is(el.outerHTML, `a`);
@@ -184,7 +246,7 @@ test('text: condition with fragment', async () => {
   is(el.outerHTML, `ac`);
 })
 
-test('text: doesnt get side-triggered', async () => {
+test("text: doesnt get side-triggered", async () => {
   let el = h`
     <div :text="_log++,str"></div>
     <input type="checkbox" :value="bool"/>
@@ -1173,7 +1235,7 @@ test('ref: duplicates', async () => {
 
 
 
-test.only("scope: inline assign", async () => {
+test("scope: inline assign", async () => {
   let el = h`<x :scope="foo='bar'"><y :text="console.log('effect text',foo),foo + baz"></y></x>`;
   let state = sprae(el, { baz: signal("qux") });
   is(el.innerHTML, `<y>barqux</y>`);

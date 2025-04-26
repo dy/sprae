@@ -2,6 +2,7 @@ import sprae, { _state, parse, _on, _off } from "../core.js";
 import store, { _change, _signals } from "../store.js";
 import { effect } from '../signal.js';
 
+// FIXME: we gen generalize typeof v==='function ? call() into called(v, param)
 
 
 // :if is interchangeable with :each depending on order, :if :each or :each :if have different meanings
@@ -11,7 +12,7 @@ const _prevIf = Symbol("if");
 
 export const dir = {
   // :<any>="expr" or :on="expr" – default property setter
-  '*': (el, s, e, parts) => parts[0].startsWith('on') ? on(el, s, e, parts) : value => attr(el, parts[0], value),
+  '*': (el, s, e, name) => name.startsWith('on') ? on(el, s, e) : v => attr(el, name, called(v, el.getAttribute(name))),
 
   // :="{a,b,c}"
   '': (target) => value => { for (let key in value) attr(target, dashcase(key), value[key]) },
@@ -21,7 +22,7 @@ export const dir = {
     _cur = new Set,
     (v) => {
       _new = new Set
-      if (v) clsx(typeof v === 'function' ? v(el.className) : v).split(' ').map(c => c && _new.add(c))
+      if (v) clsx(called(v, el.className)).split(' ').map(c => c && _new.add(c))
       for (let c of _cur) if (_new.has(c)) _new.delete(c); else el.classList.remove(c);
       for (let c of _cur = _new) el.classList.add(c)
     }
@@ -32,14 +33,14 @@ export const dir = {
     // <template :text="a"/> or previously initialized template
     // FIXME: replace with content maybe?
     el.content && el.replaceWith(el = frag(el).childNodes[0]),
-    value => (typeof value === 'function' && (value = value(el.textContent)), el.textContent = value == null ? "" : value)
+    v => (v = called(v, el.textContent), el.textContent = v == null ? "" : v)
   ),
 
   // :style="..."
   style: (el, _static) => (
     _static = el.getAttribute("style"),
     v => {
-      if (typeof v === 'function') v = v(el.style)
+      v = called(v, el.style)
       if (typeof v === "string") attr(el, "style", _static + '; ' + v);
       else {
         if (_static) attr(el, "style", _static);
@@ -48,6 +49,26 @@ export const dir = {
 
       }
     }
+  ),
+
+  // :fx="..."
+  fx: _ => _ => _,
+
+  // :ref="..."
+  ref: (el, state, expr) => (
+    typeof parse(expr)(state) == 'function' ?
+      v => v(el) :
+      setter(expr)(state, el)
+  ),
+
+  // :with directive extends current state with vars
+  with: (_, state) => values => console.log(1232345, values) || Object.assign(state, values),
+
+  // :scope creates variables scope for a subtree
+  scope: (el, rootState, expr, _init) => (
+    // NOTE: we cannot do :scope="expr" -> :scope :with="expr" because there's no way to prepend attribute in DOM
+    sprae(el, store(parse(expr)(rootState), rootState)),
+    values => (_init ? sprae(el, values) : _init = true)
   ),
 
   // :each="v,k in src"
@@ -138,23 +159,6 @@ export const dir = {
     }
   },
 
-  // :fx="..."
-  fx: _ => _ => _,
-
-  // :ref="..."
-  ref: (el, state, expr) => (
-    typeof parse(expr)(state) == 'function' ?
-      v => v(el) :
-      setter(expr)(state, el)
-  ),
-
-  // :scope creates variables scope for a subtree
-  scope: (el, rootState, expr, _init) => (
-    // NOTE: we cannot do :scope="expr" -> :scope :with="expr" because there's no way to prepend attribute in DOM
-    sprae(el, store(parse(expr)(rootState), rootState)),
-    values => (_init ? sprae(el, values) : _init = true)
-  ),
-
   // :if="a" :else
   if: (el, state) => {
     let holder = document.createTextNode('')
@@ -190,9 +194,6 @@ export const dir = {
       }
     };
   },
-
-  // :with directive extends current state with vars
-  with: (_, state) => values => console.log(1232345, values) || Object.assign(state, values),
 
   // :value - 2 way binding like x-model
   value: (el, state, expr) => {
@@ -322,8 +323,7 @@ const on = (target, state, expr, parts) => {
 
   // we don't need an effect here to rebind listener: we only read state inside of events
   nextListener((event) => {
-    startFn = evaluate(state)
-    if (typeof startFn === 'function') startFn = startFn(event)
+    startFn = called(evaluate(state), event)
 
     !off && nextListener(startFn)
   })
@@ -403,6 +403,9 @@ const frag = (tpl) => {
     // setAttributeNode() { }
   }
 }
+
+// if value is function - return result of its call
+const called = (v, arg) => typeof v === 'function' ? v(arg) : v
 
 // camel to kebab
 const dashcase = (str) => str.replace(/[A-Z\u00C0-\u00D6\u00D8-\u00DE]/g, (match, i) => (i ? '-' : '') + match.toLowerCase());

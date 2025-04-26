@@ -26,7 +26,6 @@ test.todo('core: sync store access', async () => {
   is(el.outerHTML, `<x>2</x>`)
 })
 
-
 test("core: simple hidden attr", async () => {
   let el = h`<div :hidden="hidden"></div>`;
   let params = sprae(el, { hidden: true });
@@ -46,20 +45,6 @@ test("core: hidden reactive", async () => {
   is(el.outerHTML, `<div></div>`);
 });
 
-test("core: reactive", async () => {
-  let el = h`<label :for="name" :text="name" ></label><input :id="name" :name="name" :type="name" :disabled="!name"/><a :href="url"></a><img :src="url"/>`;
-  let params = sprae(el, { name: 'text', url: "//google.com" });
-  is(
-    el.outerHTML,
-    `<label for="text">text</label><input id="text" name="text" type="text"><a href="//google.com"></a><img src="//google.com">`,
-  );
-  params.name = "email";
-  await tick();
-  is(
-    el.outerHTML,
-    `<label for="email">email</label><input id="email" name="email" type="email"><a href="//google.com"></a><img src="//google.com">`,
-  );
-});
 
 test.skip('core: multiple elements', async () => {
   // NOTE: we don't support that anymore - no much value at price of complexity, just pass container
@@ -142,40 +127,7 @@ test.skip("core: semicols in expression", async () => {
   // is(el.outerHTML, `<x x="0123"></x>`);
 });
 
-test("fx: effects", async () => {
-  let el = h`<x :fx="(log.push(x), () => (log.push('out')))"></x>`;
-  let x = signal(1)
-  let state = sprae(el, { log: [], x, console });
-  is(el.outerHTML, `<x></x>`);
-  is(state.log, [1])
-  console.log('upd value')
-  x.value = 2
-  await tick()
-  is(el.outerHTML, `<x></x>`);
-  is(state.log, [1, 'out', 2])
-  el[Symbol.dispose]()
-  is(state.log, [1, 'out', 2, 'out'])
-});
-
-test(":: reactive values", async () => {
-  let a = signal();
-  setTimeout(() => (a.value = 2), 10);
-
-  let el = h`<x :text="a">1</x>`;
-  sprae(el, { a });
-  is(el.outerHTML, `<x></x>`);
-
-  await time(20);
-  is(el.outerHTML, `<x>2</x>`);
-});
-
-test(":: null result does nothing", async () => {
-  let a = h`<x :="undefined"></x>`;
-  sprae(a);
-  is(a.outerHTML, `<x></x>`);
-});
-
-test.skip("immediate scope", async () => {
+test.skip("core: immediate scope", async () => {
   let el = h`<x :scope="{arr:[], inc(){ arr.push(1) }}" :onx="e=>inc()" :text="arr[0]"></x>`;
   sprae(el);
   is(el.outerHTML, `<x></x>`);
@@ -184,7 +136,7 @@ test.skip("immediate scope", async () => {
   is(el.outerHTML, `<x>1</x>`);
 });
 
-test("getters", async () => {
+test("core: getters", async () => {
   let x = h`<h2 :text="doubledCount >= 1 ? 1 : 0"></h2>`;
   let state = sprae(x, {
     count: signal(0),
@@ -198,7 +150,7 @@ test("getters", async () => {
   is(x.outerHTML, `<h2>1</h2>`);
 });
 
-test("subscribe to array length", async () => {
+test("core: subscribe to array length", async () => {
   // pre-heat can cause error
   sprae(h`<x :fx="(log.push(1))"></x>`, { log: [] });
 
@@ -238,7 +190,7 @@ test('globals', async () => {
   is(el.outerHTML, `<x>3.14</x>`)
 })
 
-test("switch signals", async () => {
+test("core: switch signals", async () => {
   const preact = await import('@preact/signals-core')
   sprae.use(preact)
 
@@ -249,7 +201,7 @@ test("switch signals", async () => {
   is(el.innerHTML, '2')
 })
 
-test("Math / other globals available in template", async () => {
+test("core: Math / other globals available in template", async () => {
   let el = h`<div :text="Math.max(2, 5, 1)"></div>`;
   sprae(el, { Math });
   is(el.innerHTML, '5');
@@ -263,7 +215,7 @@ test("Math / other globals available in template", async () => {
   is(el.innerHTML, '4');
 });
 
-test("custom prefix", async () => {
+test("core: custom prefix", async () => {
   sprae.prefix='s-'
   let el = h`<x s-text="a"></x>`;
   sprae(el, {a:123});
@@ -271,7 +223,7 @@ test("custom prefix", async () => {
   sprae.prefix = ':'
 })
 
-test("static errors don't break sprae", async () => {
+test("core: static errors don't break sprae", async () => {
   console.log('---again')
   let el = h`<y><x :text="0.toFixed(2)"></x><x :text="b"></x></y>`
   let state = sprae(el, {b:'b'})
@@ -279,7 +231,7 @@ test("static errors don't break sprae", async () => {
   is(el.innerHTML, `<x></x><x>b</x>`)
 })
 
-test("runtime errors don't break sprae", async () => {
+test("core: runtime errors don't break sprae", async () => {
   console.log('---again')
   let el = h`<y><x :text="a.b"></x><x :text="b"></x></y>`
   let state = sprae(el, {b:'b'})
@@ -287,7 +239,7 @@ test("runtime errors don't break sprae", async () => {
   is(el.innerHTML, `<x></x><x>b</x>`)
 })
 
-test.skip('memory allocation', async () => {
+test.skip('core: memory allocation', async () => {
   let items = signal([])
   let el = h`<><x :each="item in items" :text="item.x"></x></>`
   let btn = document.createElement('button')
