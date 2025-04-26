@@ -100,7 +100,7 @@ Set styles.
 <div :style="{'--bar': baz}"></div>
 
 <!-- function -->
-<div :style="s => ({...s, '--bar': baz})"></div>
+<div :style="s => ({'--bar': baz})"></div>
 ```
 
 #### `:value`

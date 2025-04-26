@@ -36,14 +36,16 @@ export const dir = {
   ),
 
   // :style="..."
-  style: (el, initStyle) => (
-    initStyle = el.getAttribute("style"),
+  style: (el, _static) => (
+    _static = el.getAttribute("style"),
     v => {
       if (typeof v === 'function') v = v(el.style)
-      else if (typeof v === "string") attr(el, "style", initStyle + (initStyle.endsWith(';') ? '' : '; ') + v);
+      if (typeof v === "string") attr(el, "style", _static + '; ' + v);
       else {
-        if (initStyle) attr(el, "style", initStyle);
-        for (let k in v) k[0] == '-' ? (el.style.setProperty(k, v[k])) : el.style[k] = v[k]
+        if (_static) attr(el, "style", _static);
+        // NOTE: we skip names not starting with a letter - eg. el.style stores properties as { 0: --x }
+        for (let k in v) k[0] == '-' ? el.style.setProperty(k, v[k]) : k[0] > 'A' && (el.style[k] = v[k])
+
       }
     }
   ),
@@ -370,12 +372,6 @@ const debounce = (fn, wait, _timeout) => (e) => (
   ), wait)
 )
 
-// convert any-arg to className string
-const clsx = (c, _out = []) => !c ? '' : typeof c === 'string' ? c : (
-  Array.isArray(c) ? c.map(clsx) :
-    Object.entries(c).reduce((s, [k, v]) => !v ? s : [...s, k], [])
-).join(' ')
-
 // create expression setter, reflecting value back to state
 const setter = (expr, _set = parse(`${expr}=__`)) => (state, value) => {
   // save value to stash
@@ -413,3 +409,9 @@ const dashcase = (str) => str.replace(/[A-Z\u00C0-\u00D6\u00D8-\u00DE]/g, (match
 
 // set attr
 const attr = (el, name, v) => (v == null || v === false) ? el.removeAttribute(name) : el.setAttribute(name, v === true ? "" : v);
+
+// convert any-arg to className string
+const clsx = (c, _out = []) => !c ? '' : typeof c === 'string' ? c : (
+  Array.isArray(c) ? c.map(clsx) :
+    Object.entries(c).reduce((s, [k, v]) => !v ? s : [...s, k], [])
+).join(' ')
