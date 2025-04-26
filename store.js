@@ -1,11 +1,10 @@
 // signals-based proxy
 import { signal, computed, batch, untracked } from './signal.js'
-import { parse } from './core.js';
 
-const _stash = '__',
-  mut = ['push', 'pop', 'shift', 'unshift', 'splice']
+const mut = ['push', 'pop', 'shift', 'unshift', 'splice']
 
-export const memo = new WeakMap,
+// _signals allows both storing signals and checking instance, which would be difficult with WeakMap
+export const _signals = Symbol('signals'),
   _change = Symbol('change'),
   _set = Symbol('set'),
 
@@ -16,17 +15,20 @@ export const memo = new WeakMap,
 
     // ignore existing state as argument or globals
     // FIXME: toStringTag is not needed since we read global as parent
-    if (memo.has(values) || values[Symbol.toStringTag]) return values;
+    if (values[Symbol.toStringTag]) return values;
+
+    // bypass existing store
+    if (values[_signals]) return values
 
     // non-objects: for array redirect to list
     if (values.constructor !== Object) return Array.isArray(values) ? list(values) : values
 
     // _change stores total number of keys to track new props
     // NOTE: be careful
-    let len = Object.keys(values).length, signals = { [_change]: signal(len) }
+    let len = Object.keys(values).length, signals = {}
 
     // proxy conducts prop access to signals
-    let state = new Proxy(signals, {
+    let state = new Proxy(Object.assign(signals, { [_change]: signal(len), [_signals]: signals }), {
       get: (_, k) => k in signals ? signals[k]?.valueOf?.() : parent[k],
       set: (_, k, v, _s) => (k in signals ? (k[0] === '_' ? signals[k] = v : set(signals, k, v)) :
         (create(signals, k, v), signals[_change].value = ++len), 1), // bump length for new signal
@@ -59,45 +61,46 @@ export const memo = new WeakMap,
     let lastProp,
 
       // gotta fill with null since proto methods like .reduce may fail
-      signals = Array(values.length).fill(),
+      signals = Array(values.length).fill(null),
 
       // proxy conducts prop access to signals
-      state = new Proxy((signals[_change] = signal(signals.length), signals), {
-        get(_, k) {
-          // if .length is read within mutators - peek signal to avoid recursive subscription
-          if (k === 'length') return mut.includes(lastProp) ? signals.length : signals[_change].value;
+      state = new Proxy(
+        Object.assign(signals, { [_change]: signal(signals.length), [_signals]: signals }),
+        {
+          get(_, k) {
+            // if .length is read within mutators - peek signal to avoid recursive subscription
+            if (k === 'length') return mut.includes(lastProp) ? signals.length : signals[_change].value;
 
-          lastProp = k;
+            lastProp = k;
 
-          // create signal (lazy)
-          // NOTE: if you decide to unlazy values, think about large arrays - init upfront can be costly
-          return signals[k] ? signals[k].valueOf() : k in signals ? (signals[k] = signal(store(values[k]))).valueOf() : parent[k]
-        },
+            // create signal (lazy)
+            // NOTE: if you decide to unlazy values, think about large arrays - init upfront can be costly
+            return signals[k] ? signals[k].valueOf() : k in signals ? (signals[k] = signal(store(values[k]))).valueOf() : parent[k]
+          },
 
-        set(_, k, v) {
-          // .length
-          if (k === 'length') {
-            // force cleaning up tail
-            for (let i = v; i < signals.length; i++) delete state[i]
-            // .length = N directly
-            signals[_change].value = signals.length = v;
-          }
+          set(_, k, v) {
+            // .length
+            if (k === 'length') {
+              // force cleaning up tail
+              for (let i = v; i < signals.length; i++) delete state[i]
+              // .length = N directly
+              signals[_change].value = signals.length = v;
+            }
 
-          // force changing length, if eg. a=[]; a[1]=1 - need to come after setting the item
-          else if (k >= signals.length) create(signals, k, v), state.length = +k + 1
+            // force changing length, if eg. a=[]; a[1]=1 - need to come after setting the item
+            else if (k >= signals.length) create(signals, k, v), state.length = +k + 1
 
-          // existing signal
-          else set(signals, k, v)
+            // existing signal
+            else signals[k] ? set(signals, k, v) : create(signals, k, v)
 
-          return 1
-        },
+            return 1
+          },
 
-        // dispose notifies any signal deps, like :each
-        deleteProperty: (_, k) => (signals[k]?.[Symbol.dispose]?.(), delete signals[k], 1),
-      })
+          // dispose notifies any signal deps, like :each
+          deleteProperty: (_, k) => (signals[k]?.[Symbol.dispose]?.(), delete signals[k], 1),
+        })
 
     return state
-
   },
 
   // create signal value
@@ -122,13 +125,6 @@ export const memo = new WeakMap,
     )
   }
 
-// create expression setter, reflecting value back to state
-export const setter = (expr, set = parse(`${expr}=${_stash}`)) => (
-  (state, value) => {
-    state[_stash] = value, // save value to stash
-      set(state)
-  }
-)
 
 // make sure state contains first element of path, eg. `a` from `a.b[c]`
 // NOTE: we don't need since we force proxy sandbox

@@ -1,6 +1,6 @@
 // test store only (not sprae)
 
-import store, { _change, memo } from '../store.js'
+import store, { _change, _signals } from '../store.js'
 import { effect, batch, use, signal } from '../signal.js'
 import t, { is, ok } from 'tst'
 import { tick } from 'wait-please'
@@ -178,17 +178,17 @@ t.skip('store: store from store', () => {
   ok(s1 === s2)
 })
 
-t.skip('store: inheritance', () => {
+t('store: inheritance', () => {
   // NOTE: we do manual inheritance in :scope
   let s = store({ x: 0 })
   //s.x;
-  let s1 = store({ y: 2 }, Object.create(s[_signals]))
+  let s1 = store({ y: 2 }, Object.create(s))
   is(s1.x, 0)
   is(s1.y, 2)
 
   // descendants are detected as instances
-  // let s3 = Object.create(s1), s3s = store(s3)
-  // is(s3, s3s)
+  let s3 = Object.create(s1), s3s = store(s3)
+  is(s3, s3s)
 
   // can subscribe to reactive sources too
   // let s4 = store({
@@ -208,10 +208,11 @@ t.skip('store: inheritance', () => {
 
 t.skip('store: inheritance: updating values in chain', async () => {
   let s1 = store({ x: 1 })
+  console.log('---- create s2')
   let s2 = store(s1, Object.create({ y: signal(2) }))
-  console.log(s2.y)
+  console.log('----', s2.y)
   // console.group('fx')
-  let xy = 0; effect(() => (console.log(s2.y), xy = s2.x + s2.y));
+  // let xy = 0; effect(() => (console.log(s2.y), xy = s2.x + s2.y));
   // console.groupEnd('fx')
   await tick()
   is(xy, 3)
@@ -247,9 +248,9 @@ t.skip('store: inheritance: lazy init', async () => {
   is(x.foo, 'qux')
 })
 
-t.skip('store: inheritance subscribes to parent getter', async () => {
+t('store: inheritance subscribes to parent getter', async () => {
   let s = store({ x: 1 })
-  let s1 = store({}, Object.create(s[_signals]))
+  let s1 = store({}, s)
   let log = []
   effect(() => log.push(s1.z))
   is(log, [undefined])
@@ -259,7 +260,7 @@ t.skip('store: inheritance subscribes to parent getter', async () => {
   is(log, [undefined, 1, 2])
 })
 
-t.skip('store: sandbox', async () => {
+t('store: sandbox', async () => {
   // NOTE: handled via custom compiler
   let s = store({ x: 1 })
   is(s.window, window)
@@ -382,7 +383,7 @@ t.skip('store: batch', async () => {
 
 t('store: inheritance does not change root', () => {
   const root = store({ x: 1, y: 2 })
-  store({ x: 2 }, memo.get(root))
+  store({ x: 2 }, root[_signals])
   is(root.x, 1)
 })
 

@@ -8,6 +8,9 @@ export const _state = Symbol("state"), _on = Symbol('on'), _off = Symbol('off')
 
 let cur // current directive
 
+// compiled cache
+const cache = {};
+
 /**
  * Applies directives to an HTML element and manages its reactive state.
  *
@@ -19,6 +22,7 @@ export const sprae = (el = document.body, values) => {
   // repeated call can be caused by eg. :each with new objects with old keys
   if (el[_state]) return Object.assign(el[_state], values)
 
+  console.group('sprae', el)
   // take over existing state instead of creating a clone
   let state = store(values || {}),
     { prefix } = sprae,
@@ -27,18 +31,29 @@ export const sprae = (el = document.body, values) => {
   let init = (el, attrs = el.attributes) => {
     // we iterate live collection (subsprae can init args)
     if (attrs) for (let i = 0; i < attrs.length;) {
-      let { name, value } = attrs[i], parts
+      let { name, value } = attrs[i]
 
       if (name.startsWith(prefix)) {
-        attr(el, name, null) // remove attribute
+        el.removeAttribute(name)
 
         // multiple attributes like :id:for=""
-        for (cur of name.slice(prefix.length).split(prefix)) {
-          parts = cur.split('.')
-
+        for (cur of name.slice(prefix.length).split(':')) {
           // save effect
-          fn = (directive[parts[0]] || directive['*'])(el, value, state, parts)
-          fn && fx.push(fn)
+          console.group('directive', cur, value);
+
+          let [dirName, ...mods] = cur.split('.'),
+            dir = sprae.dir[dirName] || sprae.dir['*'],
+            ev = parse(value),
+            update = dir(el, value, state, dir)
+
+          if (update) {
+            let fn = () => update(ev(state)), name, param
+            // apply modifiers to update fn
+            for (let mod of mods) [name, param] = mod.split('-'), fn = modifiers[name](fn, param)
+            fx.push(fn), offs.push(effect(fn))
+          }
+
+          console.groupEnd()
 
           // stop after :each, :if, :scope etc.
           if (_state in el) return console.log('skip')
@@ -63,30 +78,21 @@ export const sprae = (el = document.body, values) => {
   // destroy
   el[_dispose] ||= () => (el[_off](), el[_off] = el[_on] = el[_dispose] = el[_state] = null)
 
-  // init
   init(el);
 
   // if element was spraed by inline :with/:if/:each/etc instruction (meaning it has state placeholder) - skip, otherwise save _state
   if (!(_state in el)) el[_state] = state
 
-  // start local effects
-  on()
-
+  console.groupEnd();
 
   return state;
 }
 
-/**
- * Register a directive with a parsed expression and evaluator.
- * @param {string} name - The name of the directive.
- * @param {(el: Element, state: Object, expr: string, parts: string[]) => (value: any) => void} create - A function to create the directive.
- * @param {(expr: string) => (state: Object) => any} [p=parse] - Create evaluator from expression string.
- */
-sprae.dir = (name, create, p = parse) => directive[name] = (el, expr, state, parts, _eval, _update) => (
-  _eval = p(expr),
-  _update = create(el, state, expr, parts),
-  _update ? Object.assign(() => (console.log('update', parts[0],name),_update(_eval(state))), {displayName:name}) : null
-)
+/** Registered directives */
+sprae.dir = {}
+
+/** Registered modifiers */
+sprae.mod = {}
 
 /**
  * Compiles an expression into an evaluator function.
@@ -96,7 +102,7 @@ sprae.dir = (name, create, p = parse) => directive[name] = (el, expr, state, par
 sprae.compile = null
 
 /**
- * Attributes prefix, by default ':'
+ * Attributes prefix
  */
 sprae.prefix = ':'
 
@@ -105,66 +111,26 @@ sprae.prefix = ':'
  */
 sprae.use = use
 
-
-export const dir = sprae.dir
-
-// registered directives
-export const directive = {}
-
 /**
  * Parses an expression into an evaluator function, caching the result for reuse.
  *
- * @param {string} expr - The expression to parse and compile into a function.
+ * @param {string} expr The expression to parse and compile into a function.
  * @returns {Function} The compiled evaluator function for the expression.
  */
-export const parse = (expr, fn) => {
-  if (fn = memo[expr = expr.trim()]) return fn
+export const parse = (expr, _fn) => {
+  if (_fn = cache[expr = expr.trim()]) return _fn
 
   // static time errors
-  fn = safe(() => sprae.compile(expr), cur, expr)()
+  _fn = safe(() => sprae.compile(expr), expr)()
 
   // run time errors
-  return memo[expr] = safe(fn, cur, expr)
+  return cache[expr] = safe(_fn, expr)
 }
-const memo = {};
 
 // create wrapped function call
-export const safe = (fn, dir, expr) => state => {
+export const safe = (fn, expr, dir = cur) => state => {
   try { return fn?.(state) }
   catch (e) { console.error(`∴ ${e}\n\n${sprae.prefix + dir}="${expr}"`) }
 }
-
-// instantiated <template> fragment holder, like persisting fragment but with minimal API surface
-export const frag = (tpl) => {
-  if (!tpl.nodeType) return tpl // existing tpl
-
-  let content = tpl.content.cloneNode(true), // document fragment holder of content
-    attributes = [...tpl.attributes],
-    ref = document.createTextNode(''),
-    // ensure at least one node
-    childNodes = (content.append(ref), [...content.childNodes])
-
-  return {
-    // get parentNode() { return childNodes[0].parentNode },
-    childNodes,
-    content,
-    remove: () => content.append(...childNodes),
-    replaceWith(el) {
-      if (el === ref) return
-      ref.before(el)
-      content.append(...childNodes)
-    },
-    attributes,
-    removeAttribute(name) { attributes.splice(attributes.findIndex(a => a.name === name), 1) },
-    // setAttributeNode() { }
-  }
-}
-
-// camel to kebab
-export const dashcase = (str) => str.replace(/[A-Z\u00C0-\u00D6\u00D8-\u00DE]/g, (match, i) => (i ? '-' : '') + match.toLowerCase());
-
-// set attr
-export const attr = (el, name, v) => (v == null || v === false) ? el.removeAttribute(name) : el.setAttribute(name, v === true ? "" : v);
-
 
 export default sprae

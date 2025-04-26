@@ -74,7 +74,7 @@
 -> let's use :prop= for now, since `:={}` can have multiple interpretations
 -
 
-## [x] What's a use-case for `:={props}` - do we need it? -> likely yes
+## [x] What's a use-case for `:={props}` - do we need it? -> yes - setting reserved props or spread
 
   * {...props} is useful in react components to pass down all unmentioned or unknown props to children
     - but sprae is not about componentization
@@ -243,7 +243,7 @@
   ? how do we instantiate template
     * `:ref => el => el.replaceChildren(sprae(tpl))`
 
-## [x] :fx - to be or not to be? -> nah, already works. Just return `null` in any attr, that's it.
+## [x] :fx - to be or not to be? -> yes, useful
 
   * let's wait for use-case
   + allows avoiding `void` in justin
@@ -580,13 +580,15 @@
           ? what about temporaries like `@a..@b="id=setTimeout(),()=>clearTimeout(id)"` or `@a.toggle="stop=play(),stop"`
             . use `:with={id:null} @a="id=setTimeout()" @b="clearTimeout(id)"`
   - imposes illicit `event` variable ~ although compatible with standard, still obscure
+    ~+ not always needed
   - `@` prefix is unchangeable ~ can be removed, not set, but still on the verge.
+    ~+ can be customized
   - `@click.toggle="code"` has same problem as `@a..@b` - how can we make code separation in attribute?
     + remove toggle
   + overall less code
     - unless user prefers `:onclick="e=>()"`
   - just a synonym to `:onclick="e=>()"` which doesn't bring own value
-  - `:onclick=e=()` is self-obvious (more obvious)
+  - `:onclick=e=>()` is self-obvious (more obvious)
   - `@click="something, e => somethingOut"` is weird code and makes implicit event explicit
 
 ## [x] Multiple chain events resolution -> redirect to main event for now
@@ -717,7 +719,7 @@
       * onkey.after, onkey.microtask, onkey.defer, onkey.immediate
       * onkey.tick-1?
 
-## [x] Writing props on elements (like ones in :each) -> nah, just use `:x="this.x=abc"`
+## [x] Writing props on elements (like ones in :each) -> nah, ~~just use `:x="this.x=abc"`~~ use ref
 
   1. `:x="abc"` creates property + attribute
     - can be excessive pollution
@@ -1114,7 +1116,7 @@
   + arrays don't need setters/getters
   + arrays don't usually have parent scopes
 
-## [x] Can we use Object.create for :each scope? -> no, let's make it flat
+## [x] Can we use Object.create for :each scope? -> ~~no, let's make it flat~~ - yes, it's more performant
 
   - We need `:ref="el"` to inject element instance per-item
     + We don't really need to create a separate scope for that, we can just preset ref only for subscope
@@ -1333,7 +1335,7 @@
 
   5. Just export `sprae.store`
 
-## [x] Should we separate `k,v in b` to `k in b`, `v of b` -> no. Use k,v in b, as all other frameworks do
+## [x] Should we separate `k,v in b` to `k in b`, `v of b` -> no. Use v,k in b, as all other frameworks do
 
   + likely perf optimizatino
   + same as in JS
@@ -1350,7 +1352,103 @@
   + if you want separate scope - just create via `:with.item="items[i]"`
     ? can we make `:let="item=items[i]"` instead of `:with`?
 
-## [ ] Prop modifiers
+## [ ] Conditional queries: md:onclick, lg:onclick etc?
+
+  + tailwind-like
+  + can be handy I suppose
+
+## [x] Should we make all directives accept function? `:x="()=>{}"` -> yes, makes sense for tapping prev value, like :ref
+
+  + #60 and others, sort-of natural expectation
+  + solves the issue with flat events: we can write it without event right away, if event is not needed
+    * `:onclick="a+1"`
+  + we already sort-of do that in `:ref` - value writes to state, func taps into element
+  + that would allow access to previous value
+    * `:text="prev => !prev ? start : prev+1"` in counter
+    * `:text.throttle-500="v => v + '-'"` for progress bar
+      ~+ there's no easy way to do that via state but create a scope with manual setInterval
+    + acts as reducer
+  + works well with prop modifiers
+    + that would unify prop modifiers with event modifiers
+  - code redundancy, syntax complexity
+  +~ allows calling methods with different params, like `next="x=>goto(p+1)"`, `prev="p=>goto(p-1)"`
+    ~ not sure if that's good example
+  + react setState allows function
+  + it's more like inserting computed property
+  + easier switch between branches `:style="() => a ? {...a} : {...b}"`
+    - can do the same flat
+  + timer is as easy as `:text.interval-1000="prev => (prev ??= 0, prev + 1)"`
+  + we can for style actually pass el.style object instead, possibly with .computed property
+  - incoherent signature
+    - sometimes it takes prev value and updates with returned value `:text="prev => newValue"`
+    - sometimes it takes native object and updates it, ignoring return `:style="style => style.x = 123"`
+      ~+ we can make arg immutable, `obj` for style, `str` for class.
+    - `:fx="a => b => c"` vs `:fx="..., b => c"`
+    - `:ref="el => (mount, () => unmount)"`
+    - `:ona..onb="..., b => c"`
+
+## [ ] How to detect function vs direct code `:x="x=>x"` vs `:x=x`? -> let's just try invoking the result if that's a function
+
+  - generally mixing things up like that is generally a mess (sorry vue, that's f*d up)
+
+  0. If effect returns a function, we call that function (continuation of normal effect flow) that's it.
+    * We can create a subeffect for returned function
+    + that makes events both inline or by-method
+    + that enables other effects to be functions
+    ~- that screws up fx cleanup, since it becomes `:fx="() => () => cleanup()"`
+      - `:fx` doesn't have argument, so we enforce fn without a good reason
+
+  1. Make all directives via events
+    + unified code
+    - `:onx` event vs `:x` property becomes the same, not different
+      -~ `:click` and `:onclick` are potentially different things
+      +~ but they never intersect in HTML, besides spread is there for that
+    - possibly a bit heavier - triggering events for props
+    + allows subscribing directly to props change, like `onstyle`, `onclass`, `ontext`, `onif`!, `oneach` - useful!
+      + `.emit` modifier for that purpose
+
+  2. `:on`, `@` for events, `:` for else
+    - `:` props has code that detects a function, same as event
+    + `@` allows binding multiple events to props change
+
+  3. detect statically
+    - doesn't detect property from state `:x="xEffectFn"`
+    + allows unified way to pre-parse expr, as `:each` does
+
+## [x] Should directives return `dispose` (instead of forcing effect `update` loop)? -> no, we need to on/off effects, so we need update fn
+  + generally speaking directives don't have to follow single-effect update schema
+    + eg. events don't need to react to every effect change
+    + scope, fx doesn't have a return
+    + directives can be async, interval etc - they generally define behavior
+    - we decide async logic my modifiers, not arbitrarily by effects. Effects are supposed to be direct sync call.
+  - takes more space
+  - we should have control over disabling / re-enabling effects (on/off), so we need update fn as well
+  - we control evaluation via standard mods, so we need update
+
+## [ ] Should we have a separate event handler like `@`, or that's just a kind of directive?
+
+  + allows easier alpine, vue entries
+  + allows cleaner `sprae` code
+  - performs extra check per-attribute
+
+## [ ] Should we register full name of directive `:x`?
+  - No way to customize prefix
+    - Complicates JSX entry
+
+## [x] Flat directives.js instead of directives/ -> yes
+
+  + simpler code, less weight
+  + we need to _finish_ project, not continue, so we must not leave "extension" capabilities as much
+  + copy-paste for custom bundle
+  + directives are interconnected
+
+## [x] Should we make :* any attr part of core? -> no, let's add on*, * wildcards instead
+  + allows special arg (name) case not needed for other attribs
+  + allows better separation of events directive (no need for condition)
+  - probibits no-any bundles
+    + vue, alpine ship default-fallback `:*` always anyways
+
+## [ ] Prop modifiers -> yes,
 
   * Main variants
   * ~~value.bind? value.watch?~~ no sense beyound value/ref
@@ -1383,35 +1481,7 @@
 
   ~ so props have to do with describing how effect is triggered.
   + It seems event modifiers can be applied to any props: interval, debounce,
-
-## [ ] Conditional queries: md:onclick, lg:onclick etc?
-
-  + tailwind-like
-  + can be handy I suppose
-  - must be
-
-## [x] Should we make all directives accept function? `:x="()=>{}"` -> yes, makes sense for tapping prev value, like :ref
-
-  + #60 and others, sort-of natural expectation
-  + solves the issue with flat events: we can write it without event right away, if event is not needed
-    * `:onclick="a+1"`
-  + we already sort-of do that in `:ref` - value writes to state, func taps into element
-  + that would allow access to previous value
-    * `:text="prev => !prev ? start : prev+1"` in counter
-    * `:text.throttle-500="v => v + '-'"` for progress bar
-      ~+ there's no easy way to do that via state but create a scope with manual setInterval
-    + acts as reducer
-  + works well with prop modifiers
-    + that would unify prop modifiers with event modifiers
-  - code redundancy, syntax complexity
-  +~ allows calling methods with different params, like `next="x=>goto(p+1)"`, `prev="p=>goto(p-1)"`
-    ~ not sure if that's good example
-  + react setState allows function
-  + it's more like inserting computed property
-  + easier switch between branches `:style="() => a ? {...a} : {...b}"`
-    - can do the same flat
-  + timer is as easy as `:text.interval-1000="prev => (prev ??= 0, prev + 1)"`
-  + we can for style actually pass el.style object instead, possibly with .computed property
+  + it allows factoring them our
 
 ## [ ] Directives
 
@@ -1441,6 +1511,7 @@
     + pluggable modifier
   * @sprae/scroll - `:scroll.view.x="progress => "`
   * @sprae/animate -
+  * @sprae/mount
 
 ## [ ] Reasons against sprae
 
@@ -1477,6 +1548,7 @@
   * Namaste / Hello World
   * Japa counter
   * Animated scroll
+  * Random palette for theme
   * Slider
   * Todo list
   ```html

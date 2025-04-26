@@ -4,6 +4,7 @@ let current;
 export let signal = (v, s, _obs = new Set) => (
   s = {
     get value() {
+      // current && console.log('get signal', current)
       current?.deps.push(_obs.add(current));
       return v
     },

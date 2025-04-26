@@ -169,28 +169,27 @@
 
 ## [ ] v12
 
+* [ ] Don't do unnecessary customization like on*, *. Just do minimal workable bundle.
+
+
+* [ ] generalize prop modifiers
+* [ ] make dirs accept functions
+* [ ] website
+* [ ] flat directives
 * [x] get rid of :data, :aria
 * [x] run effects after collecting them
 * [x] :scope instead of :with
-* [ ] :scope + :with
-* [ ] learn scope mechanism from lucia, alpine, petit-vue
 * [ ] fix :each :scope tests
-* [ ] simplify nested store: just object inheritance
-* [ ] pass globals to store
+* [x] simplify nested store: just object inheritance
+* [x] pass globals to store
 * [x] expose sprae.compile, .prefix, .dir
-* [ ] `a in b`, `a of b` -> no key, `(a,b) in c`
-* [ ] make :each use inheritance instead of Proxy
-* [ ] make :each not access _signals - use weakstore
-* [ ] iterate :each with single state, not multiple ones
+* [x] make :each use inheritance instead of Proxy
 * [ ] flavors: alpine, vue, micro, secure
 * [ ] all tests, with enabled preact/signals
 * [ ] microjs contribution
-* [ ] export only dist, not source
 * [ ] make sure umd min bundle works
 * [ ] test usignal/async effects
 * [ ] finish ajamila poll with v12
-* [ ] generalize prop modifiers
-* [ ] make dirs accept functions
 
 ## [ ] Optimizations (https://krausest.github.io/js-framework-benchmark/current.html)
 

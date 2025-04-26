@@ -5,8 +5,9 @@ import store from '../store.js'
 import { signal } from '../signal.js'
 import h from "hyperf";
 
-import * as signals from '@preact/signals-core'
-sprae.use(signals)
+// FIXME: enable signals back
+// import * as signals from '@preact/signals-core'
+// sprae.use(signals)
 
 test('core: pre-created store', async () => {
   let state = store({x:1,get(){return state.x}})
@@ -202,7 +203,7 @@ test("subscribe to array length", async () => {
   sprae(h`<x :fx="(log.push(1))"></x>`, { log: [] });
 
   console.log('---create')
-  let el = h`<div :scope="{likes:[]}"><x :onx="e=>(likes.push(1))"></x><y :text="console.log('text'),likes.length"></y></div>`;
+  let el = h`<div :scope="{likes:[]}"><x :onx="e=>(console.log('onx'),likes.push(1))"></x><y :text="console.log('text'),likes.length"></y></div>`;
   sprae(el, { console });
   is(el.innerHTML, `<x></x><y>0</y>`);
 

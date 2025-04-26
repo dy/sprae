@@ -80,7 +80,7 @@ Set class.
 <div :class="['foo', bar && 'bar', { baz }]"></div>
 
 <!-- function -->
-<div :class="classList => classList.add('active')"></div>
+<div :class="str => [str, 'active']"></div>
 ```
 
 #### `:style`
@@ -100,7 +100,7 @@ Set styles.
 <div :style="{'--bar': baz}"></div>
 
 <!-- function -->
-<div :style="s => s.setProperty('--bar', 'qux')"></div>
+<div :style="s => ({...s, '--bar': baz})"></div>
 ```
 
 #### `:value`
@@ -123,26 +123,6 @@ Bind input, textarea or select value.
 <input :value.defer-300="value => value + str" />
 ```
 
-#### `:on<event>`
-
-Attach event listener.
-
-```html
-<button :onclick="submitForm()">Submit</button>
-
-<!-- event -->
-<input type="checkbox" :onchange="event => isChecked = event.target.value">
-
-<!-- multiple -->
-<input :value="text" :oninput:onchange="event => text = event.target.value">
-
-<!-- sequence -->
-<button :onfocus..onblur="event => (handleFocus(), event => handleBlur())">
-
-<!-- modifiers -->
-<button :onclick.throttle-500="handle()">Not too often</button>
-```
-
 #### `:<attr>`, `:`
 
 Set any attribute.
@@ -160,6 +140,27 @@ Set any attribute.
 <input :="{ id: name, name, type: 'text', value, ...props  }" />
 ```
 
+#### `:on<event>`
+
+Attach event listener.
+
+```html
+<!-- inline -->
+<button :onclick="count++">Up</button>
+
+<!-- function -->
+<input type="checkbox" :onchange="event => isChecked = event.target.value">
+
+<!-- multiple -->
+<input :value="text" :oninput:onchange="event => text = event.target.value">
+
+<!-- sequence -->
+<button :onfocus..onblur="event => (handleFocus(), event => handleBlur())">
+
+<!-- modifiers -->
+<button :onclick.throttle-500="handle()">Not too often</button>
+```
+
 #### `:if`, `:else`
 
 Control flow of elements.
@@ -171,6 +172,9 @@ Control flow of elements.
 
 <!-- fragment -->
 <template :if="foo">foo <span>bar</span> baz</template>
+
+<!-- function -->
+<span :if="active => test()"></span>
 ```
 
 #### `:each`
@@ -183,7 +187,8 @@ Multiply element.
 <!-- cases -->
 <li :each="item, idx? in array" />
 <li :each="value, key? in object" />
-<li :each="count, idx0? in number" />
+<li :each="count, idx? in number" />
+<li :each="item, idx? in function" />
 
 <!-- fragment -->
 <template :each="item in items">
@@ -197,8 +202,8 @@ Multiply element.
 Define scope for a subtree.
 
 ```html
-<x :scope="{foo: 'foo', bar}">
-  <y :scope="{baz: 'qux'}" :text="foo + bar + baz"></y>
+<x :scope="{foo: 'foo'}">
+  <y :scope="{bar: 'bar'}" :text="foo + bar"></y>
 </x>
 
 <!-- blank scope -->
@@ -216,7 +221,7 @@ Run effect, not changing any attribute.
 <div :fx="a.value ? foo() : bar()" />
 
 <!-- cleanup -->
-<div :fx="id = setInterval(tick, 1000), () => clearInterval(id)" />
+<div :fx="() => (id = setInterval(tick, 1000), () => clearInterval(id))" />
 ```
 
 #### `:ref`
@@ -292,16 +297,18 @@ Trigger when element is connected / disconnected from DOM.
 * `.debounce-<ms>` – defer for `<ms>`.
 * `.throttle-<ms>` – limit to once every `<ms>`.
 * `.once` – run only once.
-* `.tick` – defer to next microtask.
+* `.tick` – defer to next microtask, useful for batching.
 * `.interval-<ms>` – run every `<ms>`.
 * `.raf` – run `requestAnimationFrame` loop (~60fps).
+* `.idle` – run when system is idle.
 * `.async` – await callback results.
+* `.emit` – emit event on each update.
 
 ### Event modifiers
 
-* `.passive`, `.capture` – listener [options](https://developer.mozilla.org/en-US/docs/Web/API/EventTarget/addEventListener#options).
+* `.window`, `.document`, `.parent`, `.outside`, `.self` – specify target.
+* `.passive`, `.capture`, `.once` – listener [options](https://developer.mozilla.org/en-US/docs/Web/API/EventTarget/addEventListener#options).
 * `.prevent`, `.stop` (`.immediate`) – prevent default or stop (immediate) propagation.
-* `.window`, `.document`, `.parent`, `.outside`, `.self` – specify event target.
 * `.<key>` – filtered by [`event.key`](https://developer.mozilla.org/en-US/docs/Web/API/UI_Events/Keyboard_event_key_values):
   * `.ctrl`, `.shift`, `.alt`, `.meta`, `.enter`, `.esc`, `.tab`, `.space` – direct key
   * `.delete` – delete or backspace
@@ -369,7 +376,7 @@ import { signal, computed, effect, batch, untracked } from 'sprae/signal';
 import * as signals from '@preact/signals-core';
 
 // switch sprae signals to @preact/signals-core
-sprae.use(signals);
+Object.assign(sprae, signals);
 ```
 
 Provider | Size | Feature
@@ -415,7 +422,7 @@ Sprae can be tailored to project needs / size:
 
 ```js
 // sprae.custom.js
-import sprae from 'sprae/core'
+import sprae, {directive} from 'sprae/core'
 import * as signals from '@preact/signals'
 import subscript from 'subscript'
 
@@ -425,15 +432,19 @@ import _if from 'sprae/directive/if.js'
 import _text from 'sprae/directive/text.js'
 
 // register directives
-sprae.dir('if', _if)
-sprae.dir('text', _text)
-sprae.dir('*', _attr)
+directive['if'] = _if
+directive['text'] = _text
+directive['*'] = _attr
 
 // custom directive :id="expression"
-sprae.dir('id', (el, state, expr) => {
+directive['id'] = (el, state, expr) => {
   // ...init
-  return value => el.id = value // update
-})
+  return newValue => {
+    // ...update
+    let nextValue = el.id = newValue
+    return nextValue
+  }
+}
 
 // configure signals
 sprae.use(signals)
