@@ -306,8 +306,8 @@ Trigger when element is connected / disconnected from DOM.
 
 ### Event modifiers
 
-* `.window`, `.document`, `.parent`, `.outside`, `.self` – specify target.
-* `.passive`, `.capture`, `.once` – listener [options](https://developer.mozilla.org/en-US/docs/Web/API/EventTarget/addEventListener#options).
+* `.window`, `.document`, `.parent`, `.outside`, `.self` – specify event target.
+* `.passive`, `.capture`, `.once` – event listener [options](https://developer.mozilla.org/en-US/docs/Web/API/EventTarget/addEventListener#options).
 * `.prevent`, `.stop` (`.immediate`) – prevent default or stop (immediate) propagation.
 * `.<key>` – filtered by [`event.key`](https://developer.mozilla.org/en-US/docs/Web/API/UI_Events/Keyboard_event_key_values):
   * `.ctrl`, `.shift`, `.alt`, `.meta`, `.enter`, `.esc`, `.tab`, `.space` – direct key
@@ -322,7 +322,7 @@ Trigger when element is connected / disconnected from DOM.
 
 ## Reactivity
 
-Sprae uses _preact-flavored signals_ store for reactivity with sandboxing.
+Sprae uses _signals_ store for reactivity with sandboxing.
 
 ```js
 import sprae from 'sprae'

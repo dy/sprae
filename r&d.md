@@ -1138,7 +1138,7 @@
   ? Do we need extending root scope? Like writing some new props to it?
   + `with` doesn't allow writing new props anyways
 
-## [ ] Componentization: what can be done? -> likely no for now. When html-include is there we can talk
+## [x] Componentization: what can be done? -> likely no for now. When html-include is there we can talk
 
   1. define-element
 
@@ -1267,7 +1267,7 @@
   - that's same as `:with`
   - `init` reads JSON, `:with` reads regular JS objects, they're not same
 
-## [ ] Autoinit - how? inert? sprae? init? -> wait until first request to not autoinit
+## [x] Autoinit - how? inert? sprae? init? -> wait until first request to not autoinit -> autoinit UMD by default
 
   * TS doesn't allow arbitrary attributes on `<Script>` tag, but prefix (surprise!) is allowed.
 
@@ -1387,7 +1387,7 @@
     - `:ref="el => (mount, () => unmount)"`
     - `:ona..onb="..., b => c"`
 
-## [ ] How to detect function vs direct code `:x="x=>x"` vs `:x=x`? -> let's just try invoking the result if that's a function
+## [x] How to detect function vs direct code `:x="x=>x"` vs `:x=x`? -> let's just try invoking the result if that's a function
 
   - generally mixing things up like that is generally a mess (sorry vue, that's f*d up)
 
@@ -1431,9 +1431,10 @@
   + allows cleaner `sprae` code
   - performs extra check per-attribute
 
-## [ ] Should we register full name of directive `:x`?
+## [x] Should we register full name of directive `:x`? -> no, let's keep things simple
   - No way to customize prefix
     - Complicates JSX entry
+  - No much perf profit if not less
 
 ## [x] Flat directives.js instead of directives/ -> yes
 
@@ -1447,6 +1448,11 @@
   + allows better separation of events directive (no need for condition)
   - probibits no-any bundles
     + vue, alpine ship default-fallback `:*` always anyways
+
+## [x] Should :scope wait for modifier? -> yes: we may need to postpone execution
+  * debounce, throttle, tick, async, raf, idle
+  + natural way to postpone init of a subtree, eg. waiting for API response
+  + standard way to provide `el[_state] = null`
 
 ## [ ] Prop modifiers -> yes,
 

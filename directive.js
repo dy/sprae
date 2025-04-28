@@ -12,7 +12,7 @@ const _prevIf = Symbol("if");
 
 export const dir = {
   // :<any>="expr" or :on="expr" – default property setter
-  '*': (el, s, e, name) => name.startsWith('on') ? on(el, s, e) : v => attr(el, name, called(v, el.getAttribute(name))),
+  '*': (el, s, expr, name) => name.startsWith('on') ? on(el, s, expr) : v => attr(el, name, called(v, el.getAttribute(name))),
 
   // :="{a,b,c}"
   '': (target) => value => { for (let key in value) attr(target, dashcase(key), value[key]) },
@@ -65,99 +65,15 @@ export const dir = {
   with: (_, state) => values => console.log(1232345, values) || Object.assign(state, values),
 
   // :scope creates variables scope for a subtree
-  scope: (el, rootState, expr, _init) => (
-    // NOTE: we cannot do :scope="expr" -> :scope :with="expr" because there's no way to prepend attribute in DOM
-    sprae(el, store(parse(expr)(rootState), rootState)),
-    values => (_init ? sprae(el, values) : _init = true)
+  // NOTE: we cannot do :scope="expr" -> :scope :with="expr" because there's no way to prepend attribute in DOM
+  scope: (el, rootState, _scope) => (
+    // prevent subsequent effects
+    el[_state] = null,
+    // 0 run pre-creates state to provide scope for the first effect - it can write vars in it, so we should already have it
+    _scope = store({}, rootState),
+    // 1 run spraes subtree with values from scope - it can be postponed by modifiers
+    values => (Object.assign(_scope, values), el[_state] ?? (delete el[_state], sprae(el, _scope)))
   ),
-
-  // :each="v,k in src"
-  each: (tpl, state, ev) => {
-    // FIXME: we can add fake-keys for plain arrays
-    // NOTE: it's cheaper to parse again, rather than  invent
-    parse(ev.expr.split(/\bin\b/)[1])
-
-    let [itemVar, idxVar = "$"] = expr.split(/\bin\b/)[0].trim().replace(/\(|\)/g, '').split(/\s*,\s*/);
-
-    // we need :if to be able to replace holder instead of tpl for :if :each case
-    let holder = document.createTextNode("");
-
-    // we re-create items any time new items are produced
-    let cur, keys, items, prevl = 0
-
-    let update = () => {
-      let i = 0, newItems = items, newl = newItems.length
-
-      // plain array update, not store (signal with array) - updates full list
-      if (cur && !cur[_change]) {
-        for (let s of cur[_signals] || []) s[Symbol.dispose]()
-        cur = null, prevl = 0
-      }
-
-      // delete
-      if (newl < prevl) cur.length = newl
-
-      // update, append, init
-      else {
-        // init
-        if (!cur) cur = newItems
-        // update
-        else while (i < prevl) cur[i] = newItems[i++]
-
-        // append
-        for (; i < newl; i++) {
-          cur[i] = newItems[i]
-
-          let idx = i,
-            // FIXME: inherited state is cheaper in terms of memory and faster in terms of performance
-            // compared to cloning all parent signals and creating a proxy
-            // FIXME: besides try to avoid _signals access: we can optimize store then not checking for _signals key
-            // scope = store({
-            //   [itemVar]: cur[_signals]?.[idx] || cur[idx],
-            //   // [idxVar]: keys ? keys[idx] : idx
-            // }, state)
-            subscope = Object.create(state, {
-              [itemVar]: { get: () => cur[idx] },
-              [idxVar]: { value: keys ? keys[idx] : idx }
-            })
-
-          let el = tpl.content ? frag(tpl) : tpl.cloneNode(true);
-
-          holder.before(el.content || el);
-          sprae(el, subscope);
-
-          // signal/holder disposal removes element
-          ((cur[_signals] ||= [])[i] ||= {})[Symbol.dispose] = () => {
-            el[Symbol.dispose]?.(), el.remove()
-          };
-        }
-      }
-
-      prevl = newl
-    }
-
-    tpl.replaceWith(holder);
-    tpl[_state] = null // mark as fake-spraed, to preserve :-attribs for template
-
-    return value => {
-      // obtain new items
-      keys = null
-
-      if (typeof value === "number") items = Array.from({ length: value }, (_, i) => i + 1)
-      else if (value?.constructor === Object) keys = Object.keys(value), items = Object.values(value)
-      else items = value || []
-
-      // whenever list changes, we rebind internal change effect
-      let planned = 0
-      return effect(() => {
-        // subscribe to items change (.length) - we do it every time (not just in update) since preact unsubscribes unused signals
-        items[_change]?.value
-
-        // make first render immediately, debounce subsequent renders
-        if (!planned++) update(), queueMicrotask(() => (planned > 1 && update(), planned = 0));
-      })
-    }
-  },
 
   // :if="a" :else
   if: (el, state) => {
@@ -241,7 +157,96 @@ export const dir = {
               for (let v of value) el.querySelector(`[value="${v}"]`).setAttribute('selected', '')
             } :
               (value) => (el.value = value);
-  }
+  },
+
+  // :each="v,k in src"
+  each: (tpl, state, expr) => {
+    // FIXME: we can add fake-keys for plain arrays
+    // NOTE: it's cheaper to parse again, rather than introduce workarounds: effect is anyways subscribed to full expression
+    // FIXME: oversubscription in eg. <x :scope="k=1"><y :each="v,k in list"></y></x> - whenever outer k changes list updates
+    parse(expr.split(/\bin\b/)[1])
+
+    let [itemVar, idxVar = "$"] = expr.split(/\bin\b/)[0].trim().replace(/\(|\)/g, '').split(/\s*,\s*/);
+
+    // we need :if to be able to replace holder instead of tpl for :if :each case
+    let holder = document.createTextNode("");
+
+    // we re-create items any time new items are produced
+    let cur, keys, items, prevl = 0
+
+    let update = () => {
+      let i = 0, newItems = items, newl = newItems.length
+
+      // plain array update, not store (signal with array) - updates full list
+      if (cur && !cur[_change]) {
+        for (let s of cur[_signals] || []) s[Symbol.dispose]()
+        cur = null, prevl = 0
+      }
+
+      // delete
+      if (newl < prevl) cur.length = newl
+
+      // update, append, init
+      else {
+        // init
+        if (!cur) cur = newItems
+        // update
+        else while (i < prevl) cur[i] = newItems[i++]
+
+        // append
+        for (; i < newl; i++) {
+          cur[i] = newItems[i]
+
+          let idx = i,
+            // FIXME: inherited state is cheaper in terms of memory and faster in terms of performance
+            // compared to cloning all parent signals and creating a proxy
+            // FIXME: besides try to avoid _signals access: we can optimize store then not checking for _signals key
+            // scope = store({
+            //   [itemVar]: cur[_signals]?.[idx] || cur[idx],
+            //   // [idxVar]: keys ? keys[idx] : idx
+            // }, state)
+            subscope = Object.create(state, {
+              [itemVar]: { get: () => cur[idx] },
+              [idxVar]: { value: keys ? keys[idx] : idx }
+            })
+
+          let el = tpl.content ? frag(tpl) : tpl.cloneNode(true);
+
+          holder.before(el.content || el);
+          sprae(el, subscope);
+
+          // signal/holder disposal removes element
+          ((cur[_signals] ||= [])[i] ||= {})[Symbol.dispose] = () => {
+            el[Symbol.dispose]?.(), el.remove()
+          };
+        }
+      }
+
+      prevl = newl
+    }
+
+    tpl.replaceWith(holder);
+    tpl[_state] = null // mark as fake-spraed, to preserve :-attribs for template
+
+    return value => {
+      // obtain new items
+      keys = null
+
+      if (typeof value === "number") items = Array.from({ length: value }, (_, i) => i + 1)
+      else if (value?.constructor === Object) keys = Object.keys(value), items = Object.values(value)
+      else items = value || []
+
+      // whenever list changes, we rebind internal change effect
+      let planned = 0
+      return effect(() => {
+        // subscribe to items change (.length) - we do it every time (not just in update) since preact unsubscribes unused signals
+        items[_change]?.value
+
+        // make first render immediately, debounce subsequent renders
+        if (!planned++) update(), queueMicrotask(() => (planned > 1 && update(), planned = 0));
+      })
+    }
+  },
 }
 
 // FIXME: make throttle/debounce via direct mod fn, not defer

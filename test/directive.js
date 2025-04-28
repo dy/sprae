@@ -513,6 +513,365 @@ test('if: #59', () => {
 
 
 
+
+test("ref: base", async () => {
+  let a = h`<a :ref="a" :fx="log.push(a)" :text="b"></a>`;
+  let state = sprae(a, { log: [], b: 1 });
+  await tick();
+  is(state.log[0], a);
+  is(a.outerHTML, `<a>1</a>`);
+  state.b = 2;
+  await tick();
+  is(a.outerHTML, `<a>2</a>`);
+  is(state.a, a, "Exposes to the state");
+});
+
+test("ref: signal", async () => {
+  let a = h`<a :ref="a" :text="b"></a>`;
+  let state = sprae(a, { a: signal(), b: signal(1) });
+  await tick();
+  is(state.a, a);
+  is(a.outerHTML, `<a>1</a>`);
+  state.b = 2;
+  await tick();
+  is(a.outerHTML, `<a>2</a>`);
+  is(state.a, a, "Exposes to the state");
+});
+
+test("ref: with :each", async () => {
+  let a = h`<y><x :each="item in items" :ref="x" :text="log.push(x), item"/></y>`;
+  let state = sprae(a, { log: [], items: [1, 2, 3] });
+  await tick();
+  is(state.log, [...a.children]);
+  is(a.innerHTML, `<x>1</x><x>2</x><x>3</x>`);
+});
+
+test("ref: t̵h̵i̵s̵ ̵r̵e̵f̵e̵r̵s̵ ̵t̵o̵ defines current element", async () => {
+  let el = h`<x :ref="x" :text="log.push(x)"></x>`;
+  let state = sprae(el, { log: [] });
+  is(state.log, [el]);
+});
+
+test("ref: fn base", async () => {
+  let a = h`<a :ref="el => a=el" :fx="log.push(a)" :text="b"></a>`;
+  let state = sprae(a, { log: [], b: 1, a: null });
+  await tick();
+  is(state.log[0], a);
+  is(a.outerHTML, `<a>1</a>`);
+  state.b = 2;
+  await tick();
+  is(a.outerHTML, `<a>2</a>`);
+  is(state.a, a, "Exposes to the state");
+});
+
+test("ref: fn signal", async () => {
+  let a = h`<a :ref="el => a=el" :text="b"></a>`;
+  let state = sprae(a, { a: signal(), b: signal(1) });
+  await tick();
+  is(state.a, a);
+  is(a.outerHTML, `<a>1</a>`);
+  state.b = 2;
+  await tick();
+  is(a.outerHTML, `<a>2</a>`);
+  is(state.a, a, "Exposes to the state");
+});
+
+test("ref: fn with :each", async () => {
+  let a = h`<y><x :each="item in items" :scope="{x:null}" :ref="el => x=el" :text="log.push(x), item"/></y>`;
+  let state = sprae(a, { log: [], items: [1, 2, 3] });
+  await tick();
+  is(state.log, [...a.children]);
+  is(a.innerHTML, `<x>1</x><x>2</x><x>3</x>`);
+});
+
+test("ref: fn unmount", async () => {
+  let div = h`<div><a :if="a" :ref="el => (log.push('on'), () => log.push('off'))" :text="b"></a></div>`;
+  let state = sprae(div, { log: [], b: 1, a: 1 });
+  await tick();
+  is(state.log, ['on']);
+  is(div.innerHTML, `<a>1</a>`);
+  console.log('----state.a=0')
+  state.a = 0
+  await tick();
+  is(div.innerHTML, ``);
+  is(state.log, ['on', 'off']);
+});
+
+test('ref: create in state as untracked', async () => {
+  let div = h`<div :scope="{_x:null,log(){console.log(_x)}}" :onx="log"><x :ref="_x" :text="_x?.tagName"></x></div>`;
+  let state = sprae(div)
+
+  is(div[_state]._x, div.firstChild)
+  div.dispatchEvent(new window.CustomEvent("x"));
+  is(div[_state]._x, div.firstChild)
+})
+
+test('ref: create in state as direct', async () => {
+  let div = h`<div :scope="{x:null,log(){console.log(x)}}" :onx="log"><x :ref="x" :text="x?.tagName"></x></div>`;
+  let state = sprae(div)
+  is(div[_state].x, div.firstChild)
+  // reading :ref=x normally (one level) would not subscribe root, but nested one may subscribe parent :scope
+  div.dispatchEvent(new window.CustomEvent("x"));
+  is(div[_state].x, div.firstChild)
+})
+
+test('ref: duplicates', async () => {
+  let el = h`<x><y :ref="y"></y><z :ref="y"></z></x>`
+  let state = sprae(el)
+  is(state.y, el.lastChild)
+})
+
+
+
+test.only("scope: inline assign", async () => {
+  let el = h`<x :scope="foo='bar'"><y :text="console.log('effect text',foo),foo + baz"></y></x>`;
+  let state = sprae(el, { baz: signal("qux") });
+  is(el.innerHTML, `<y>barqux</y>`);
+  state.baz = "quux";
+  await tick();
+  is(el.innerHTML, `<y>barquux</y>`);
+});
+
+test.only("scope: inline assign reactive", async () => {
+  let el = h`<x :scope="{foo:'bar'}"><y :text="foo + baz"></y></x>`;
+  let baz = signal("qux");
+  sprae(el, { baz });
+  is(el.innerHTML, `<y>barqux</y>`);
+  baz.value = "quux";
+  await tick()
+  is(el.innerHTML, `<y>barquux</y>`);
+});
+
+test.only("scope: assign data", async () => {
+  let el = h`<x :scope="{foo:x.foo}"><y :text="foo"></y></x>`;
+  let state = sprae(el, { console, x: { foo: "bar" } });
+  is(el.innerHTML, `<y>bar</y>`);
+  state.x.foo = "baz";
+  await tick();
+  // Object.assign(state, { x: { foo: 'baz' } })
+  is(el.innerHTML, `<y>baz</y>`);
+});
+
+test.only("scope: assign transparency", async () => {
+  let el = h`<x :scope="{foo:'foo'}"><y :scope="{bar:b.bar}" :text="foo+bar"></y></x>`;
+  let params = sprae(el, { b: { bar: "bar" } });
+  is(el.innerHTML, `<y>foobar</y>`);
+  params.b.bar = "baz";
+  await tick();
+  is(el.innerHTML, `<y>foobaz</y>`);
+});
+
+test.only("scope: reactive transparency", async () => {
+  let el = h`<x :scope="{foo:1}"><y :scope="{bar:b.c.bar}" :text="foo+bar"></y></x>`;
+  const bar = signal("2");
+  sprae(el, { b: { c: { bar } } });
+  is(el.innerHTML, `<y>12</y>`);
+
+  console.log('------------ bar.value = 3')
+  bar.value = "3";
+  await tick()
+  is(el.innerHTML, `<y>13</y>`);
+});
+
+test.only("scope: writes to state", async () => {
+  let a = h`<x :scope="{a:1}"><y :onx="e=>(a+=1)" :text="a"></y></x>`;
+  sprae(a, { console, signal });
+  is(a.innerHTML, `<y>1</y>`);
+  a.firstChild.dispatchEvent(new window.Event("x"));
+  await tick();
+  is(a.innerHTML, `<y>2</y>`);
+  a.firstChild.dispatchEvent(new window.Event("x"));
+  await tick();
+  is(a.innerHTML, `<y>3</y>`);
+});
+
+test.only("scope: one of children (internal number of iterations, cant see the result here)", async () => {
+  let a = h`<div><x :text="x"></x><x :scope="{x:2}" :text="x"></x><x :text="y">3</x></div>`;
+  sprae(a, { x: 1, y: 3 });
+  is(a.innerHTML, `<x>1</x><x>2</x><x>3</x>`);
+});
+
+test.only("scope: scope directives must come first", async () => {
+  // NOTE: we have to init attributes in order of definition
+  let a = h`<x :scope="{y:1}" :text="y" :ref="el=>x=el"></x>`;
+  sprae(a, { x: null });
+  is(a.outerHTML, `<x>1</x>`);
+});
+
+test.only("scope: new prop added to superstore", async () => {
+  let a = h`<x :scope="{y:0}" :ony="()=>y=1"><a :if="y" :text="x"></a></x>`
+  let state = sprae(a, {})
+  is(a.innerHTML, ``)
+  state.x = 1
+  a.dispatchEvent(new window.Event('y'))
+  await tick()
+  is(a.innerHTML, `<a>1</a>`)
+})
+
+test.only('scope: parasitic updates', async () => {
+  let a = h`<x :scope="{x:'',y}"><y :fx="x='x'" :text="x+y"></y></x>`
+  let s = sprae(a, { y: 'y' })
+  is(a.innerHTML, `<y>xy</y>`)
+  s.y = 'yy'
+  is(a.innerHTML, `<y>xyy</y>`)
+})
+
+
+
+test("value: direct", async () => {
+  let el = h`<input :value="a" />`;
+  let state = sprae(el, { a: 1, console });
+  is(el.value, "1");
+  is(el.outerHTML, `<input value="1">`);
+  state.a = 2;
+  await tick();
+  is(el.value, "2");
+  is(el.outerHTML, `<input value="2">`);
+
+  el.value = 3;
+  el.dispatchEvent(new window.Event('change'))
+  is(state.a, '3')
+});
+
+test("value: checkbox", async () => {
+  let el = h`<input type="checkbox" :value="a" />`;
+  let state = sprae(el, { a: true });
+  is(el.value, 'on');
+  is(el.outerHTML, `<input type="checkbox" checked="">`);
+  is(el.checked, true);
+  state.a = false
+  await tick()
+  is(el.checked, false);
+  is(el.outerHTML, `<input type="checkbox">`);
+
+  el.checked = true;
+  el.dispatchEvent(new window.Event('change'))
+  is(state.a, true)
+});
+
+test("value: textarea", async () => {
+  let el = h`<textarea :value="a"></textarea>`;
+  let state = sprae(el, { a: "abcdefgh" });
+  is(el.selectionStart, 8);
+  is(el.selectionEnd, 8);
+  el.setSelectionRange(1, 4);
+  is(el.selectionStart, 1);
+  is(el.selectionEnd, 4);
+  state.a = "xyzyvw";
+  is(el.selectionStart, 1);
+  is(el.selectionEnd, 4);
+});
+
+test('value: select one', async () => {
+  let el = h`
+  <select :name="field.name" :value="object[field.name]">
+      <option :each="option in field.options" :value="option.value"
+              :text="option.label"></option>
+  </select>`
+
+  let state = sprae(el, {
+    field: { name: 'x', options: [{ value: 1, label: 'a' }, { value: 2, label: 'b' }] },
+    object: { x: 2 }
+  })
+
+  is(el.outerHTML, `<select name="x"><option value="1">a</option><option value="2" selected="">b</option></select>`)
+  is(el.value, '2')
+  is(state.object.x, 2)
+})
+
+test('value: select multiple', async () => {
+  let el = h`
+  <select :id:name="field.name" :value="object[field.name]" multiple>
+    <option :each="option in field.options" :value="option.value"
+              :text="option.label"></option>
+  </select>`
+
+  // document.body.append(el)
+  sprae(el, {
+    field: { name: 'x', options: [{ value: 1, label: 'a' }, { value: 2, label: 'b' }, { value: 3, label: 'c' }] },
+    object: { x: [2, 3] }
+  })
+
+  is(el.outerHTML, `<select multiple="" id="x" name="x"><option value="1">a</option><option value="2" selected="">b</option><option value="3" selected="">c</option></select>`)
+  is([...el.selectedOptions], [el.children[1], el.children[2]])
+})
+
+test('value: select options change #52', async () => {
+  let el = h`
+  <select :value="selected">
+    <option :each="option in options" :value="option.value"
+              :text="option.label"></option>
+  </select>`
+
+  document.body.append(el)
+  let state = sprae(el, {
+    options: [],
+    selected: null
+  })
+
+  is(el.value, '')
+  is(state.selected, null)
+
+  console.log('-------add option 1')
+  state.options.push({ value: 1, label: 'a' })
+  await tick()
+  is(el.value, '1')
+  is(state.selected, '1')
+
+  console.log('----------change', state.selected)
+  state.options[0].value = 2
+  await tick()
+  is(el.value, '2')
+  is(state.selected, '2')
+
+  // console.log('------value=1')
+  // el.value = 1, el.dispatchEvent(new Event('change'))
+  // is(el.value, '1')
+  // is(state.selected, '1')
+
+  console.log('----------remove', state.selected)
+  state.options = []
+  await tick()
+  is(el.value, '')
+  ok(state.selected == null)
+
+  // is(el.outerHTML, `<select multiple="" id="x" name="x"><option value="1">a</option><option value="2" selected="">b</option><option value="3" selected="">c</option></select>`)
+  // is([...el.selectedOptions], [el.children[1], el.children[2]])
+})
+
+test('value: keep initial selected element #53', t => {
+  let el = h`<div id="container">
+      <select class="form-control" :value="obj">
+          <option value="1">Test 1</option>
+          <option value="2" selected="true">Test 2</option>
+          <option value="3">Test 3</option>
+      </select>
+      <input :if="obj == 3" type="text" class="form-control"/>
+  </div>`
+
+  let s = sprae(el)
+
+  is(el.outerHTML, `<div id="container"><select class="form-control"><option value="1">Test 1</option><option value="2" selected="">Test 2</option><option value="3">Test 3</option></select></div>`)
+  is(s, { obj: '2' })
+})
+
+test("value: reflect #57", async () => {
+  let el = h`<input :value="a" />`;
+  let state = sprae(el, { a: 0 });
+  is(state.a, 0);
+  is(el.outerHTML, `<input value="0">`);
+});
+
+test("value: reflect ensure value", async () => {
+  let el = h`<input :value="a" />`;
+  let state = sprae(el, {});
+  is(state.a, '');
+  is(el.outerHTML, `<input value="">`);
+});
+
+
+
+
 test.skip('each: top-level list', async () => {
   let el = h`<x :each="item in items" :text="item.x"/>`
   sprae(el, { items: [{ x: 1 }] })
@@ -1123,363 +1482,6 @@ test('each: init within template', async () => {
   document.body.appendChild(el)
   console.log(el.innerHTML)
 })
-
-
-
-test("ref: base", async () => {
-  let a = h`<a :ref="a" :fx="log.push(a)" :text="b"></a>`;
-  let state = sprae(a, { log: [], b: 1 });
-  await tick();
-  is(state.log[0], a);
-  is(a.outerHTML, `<a>1</a>`);
-  state.b = 2;
-  await tick();
-  is(a.outerHTML, `<a>2</a>`);
-  is(state.a, a, "Exposes to the state");
-});
-
-test("ref: signal", async () => {
-  let a = h`<a :ref="a" :text="b"></a>`;
-  let state = sprae(a, { a: signal(), b: signal(1) });
-  await tick();
-  is(state.a, a);
-  is(a.outerHTML, `<a>1</a>`);
-  state.b = 2;
-  await tick();
-  is(a.outerHTML, `<a>2</a>`);
-  is(state.a, a, "Exposes to the state");
-});
-
-test("ref: with :each", async () => {
-  let a = h`<y><x :each="item in items" :ref="x" :text="log.push(x), item"/></y>`;
-  let state = sprae(a, { log: [], items: [1, 2, 3] });
-  await tick();
-  is(state.log, [...a.children]);
-  is(a.innerHTML, `<x>1</x><x>2</x><x>3</x>`);
-});
-
-test("ref: t̵h̵i̵s̵ ̵r̵e̵f̵e̵r̵s̵ ̵t̵o̵ defines current element", async () => {
-  let el = h`<x :ref="x" :text="log.push(x)"></x>`;
-  let state = sprae(el, { log: [] });
-  is(state.log, [el]);
-});
-
-test("ref: fn base", async () => {
-  let a = h`<a :ref="el => a=el" :fx="log.push(a)" :text="b"></a>`;
-  let state = sprae(a, { log: [], b: 1, a: null });
-  await tick();
-  is(state.log[0], a);
-  is(a.outerHTML, `<a>1</a>`);
-  state.b = 2;
-  await tick();
-  is(a.outerHTML, `<a>2</a>`);
-  is(state.a, a, "Exposes to the state");
-});
-
-test("ref: fn signal", async () => {
-  let a = h`<a :ref="el => a=el" :text="b"></a>`;
-  let state = sprae(a, { a: signal(), b: signal(1) });
-  await tick();
-  is(state.a, a);
-  is(a.outerHTML, `<a>1</a>`);
-  state.b = 2;
-  await tick();
-  is(a.outerHTML, `<a>2</a>`);
-  is(state.a, a, "Exposes to the state");
-});
-
-test("ref: fn with :each", async () => {
-  let a = h`<y><x :each="item in items" :scope="{x:null}" :ref="el => x=el" :text="log.push(x), item"/></y>`;
-  let state = sprae(a, { log: [], items: [1, 2, 3] });
-  await tick();
-  is(state.log, [...a.children]);
-  is(a.innerHTML, `<x>1</x><x>2</x><x>3</x>`);
-});
-
-test("ref: fn unmount", async () => {
-  let div = h`<div><a :if="a" :ref="el => (log.push('on'), () => log.push('off'))" :text="b"></a></div>`;
-  let state = sprae(div, { log: [], b: 1, a: 1 });
-  await tick();
-  is(state.log, ['on']);
-  is(div.innerHTML, `<a>1</a>`);
-  console.log('----state.a=0')
-  state.a = 0
-  await tick();
-  is(div.innerHTML, ``);
-  is(state.log, ['on', 'off']);
-});
-
-test('ref: create in state as untracked', async () => {
-  let div = h`<div :scope="{_x:null,log(){console.log(_x)}}" :onx="log"><x :ref="_x" :text="_x?.tagName"></x></div>`;
-  let state = sprae(div)
-
-  is(div[_state]._x, div.firstChild)
-  div.dispatchEvent(new window.CustomEvent("x"));
-  is(div[_state]._x, div.firstChild)
-})
-
-test('ref: create in state as direct', async () => {
-  let div = h`<div :scope="{x:null,log(){console.log(x)}}" :onx="log"><x :ref="x" :text="x?.tagName"></x></div>`;
-  let state = sprae(div)
-  is(div[_state].x, div.firstChild)
-  // reading :ref=x normally (one level) would not subscribe root, but nested one may subscribe parent :scope
-  div.dispatchEvent(new window.CustomEvent("x"));
-  is(div[_state].x, div.firstChild)
-})
-
-test('ref: duplicates', async () => {
-  let el = h`<x><y :ref="y"></y><z :ref="y"></z></x>`
-  let state = sprae(el)
-  is(state.y, el.lastChild)
-})
-
-
-
-test("scope: inline assign", async () => {
-  let el = h`<x :scope="foo='bar'"><y :text="console.log('effect text',foo),foo + baz"></y></x>`;
-  let state = sprae(el, { baz: signal("qux") });
-  is(el.innerHTML, `<y>barqux</y>`);
-  state.baz = "quux";
-  await tick();
-  is(el.innerHTML, `<y>barquux</y>`);
-});
-
-test("scope: inline assign reactive", async () => {
-  let el = h`<x :scope="{foo:'bar'}"><y :text="foo + baz"></y></x>`;
-  let baz = signal("qux");
-  sprae(el, { baz });
-  is(el.innerHTML, `<y>barqux</y>`);
-  baz.value = "quux";
-  await tick()
-  is(el.innerHTML, `<y>barquux</y>`);
-});
-
-test("scope: assign data", async () => {
-  let el = h`<x :scope="{foo:x.foo}"><y :text="foo"></y></x>`;
-  let state = sprae(el, { console, x: { foo: "bar" } });
-  is(el.innerHTML, `<y>bar</y>`);
-  state.x.foo = "baz";
-  await tick();
-  // Object.assign(state, { x: { foo: 'baz' } })
-  is(el.innerHTML, `<y>baz</y>`);
-});
-
-test("scope: assign transparency", async () => {
-  let el = h`<x :scope="{foo:'foo'}"><y :scope="{bar:b.bar}" :text="foo+bar"></y></x>`;
-  let params = sprae(el, { b: { bar: "bar" } });
-  is(el.innerHTML, `<y>foobar</y>`);
-  params.b.bar = "baz";
-  await tick();
-  is(el.innerHTML, `<y>foobaz</y>`);
-});
-
-test("scope: reactive transparency", async () => {
-  let el = h`<x :scope="{foo:1}"><y :scope="{bar:b.c.bar}" :text="foo+bar"></y></x>`;
-  const bar = signal("2");
-  sprae(el, { b: { c: { bar } } });
-  is(el.innerHTML, `<y>12</y>`);
-
-  console.log('------------ bar.value = 3')
-  bar.value = "3";
-  await tick()
-  is(el.innerHTML, `<y>13</y>`);
-});
-
-test("scope: writes to state", async () => {
-  let a = h`<x :scope="{a:1}"><y :onx="e=>(a+=1)" :text="a"></y></x>`;
-  sprae(a, { console, signal });
-  is(a.innerHTML, `<y>1</y>`);
-  a.firstChild.dispatchEvent(new window.Event("x"));
-  await tick();
-  is(a.innerHTML, `<y>2</y>`);
-  a.firstChild.dispatchEvent(new window.Event("x"));
-  await tick();
-  is(a.innerHTML, `<y>3</y>`);
-});
-
-test("scope: one of children (internal number of iterations, cant see the result here)", async () => {
-  let a = h`<div><x :text="x"></x><x :scope="{x:2}" :text="x"></x><x :text="y">3</x></div>`;
-  sprae(a, { x: 1, y: 3 });
-  is(a.innerHTML, `<x>1</x><x>2</x><x>3</x>`);
-});
-
-test("scope: scope directives must come first", async () => {
-  // NOTE: we have to init attributes in order of definition
-  let a = h`<x :scope="{y:1}" :text="y" :ref="el=>x=el"></x>`;
-  sprae(a, { x: null });
-  is(a.outerHTML, `<x>1</x>`);
-});
-
-test("scope: new prop added to superstore", async () => {
-  let a = h`<x :scope="{y:0}" :ony="()=>y=1"><a :if="y" :text="x"></a></x>`
-  let state = sprae(a, {})
-  is(a.innerHTML, ``)
-  state.x = 1
-  a.dispatchEvent(new window.Event('y'))
-  await tick()
-  is(a.innerHTML, `<a>1</a>`)
-})
-
-test.todo('scope: parasitic updates', async () => {
-  let a = h`<x :scope="{x:'',y}"><y :fx="x='x'" :text="x+y"></y></x>`
-  let s = sprae(a, { y: 'y' })
-  is(a.innerHTML, `<y>xy</y>`)
-  s.y = 'yy'
-  is(a.innerHTML, `<y>xyy</y>`)
-})
-
-
-
-test("value: direct", async () => {
-  let el = h`<input :value="a" />`;
-  let state = sprae(el, { a: 1, console });
-  is(el.value, "1");
-  is(el.outerHTML, `<input value="1">`);
-  state.a = 2;
-  await tick();
-  is(el.value, "2");
-  is(el.outerHTML, `<input value="2">`);
-
-  el.value = 3;
-  el.dispatchEvent(new window.Event('change'))
-  is(state.a, '3')
-});
-
-test("value: checkbox", async () => {
-  let el = h`<input type="checkbox" :value="a" />`;
-  let state = sprae(el, { a: true });
-  is(el.value, 'on');
-  is(el.outerHTML, `<input type="checkbox" checked="">`);
-  is(el.checked, true);
-  state.a = false
-  await tick()
-  is(el.checked, false);
-  is(el.outerHTML, `<input type="checkbox">`);
-
-  el.checked = true;
-  el.dispatchEvent(new window.Event('change'))
-  is(state.a, true)
-});
-
-test("value: textarea", async () => {
-  let el = h`<textarea :value="a"></textarea>`;
-  let state = sprae(el, { a: "abcdefgh" });
-  is(el.selectionStart, 8);
-  is(el.selectionEnd, 8);
-  el.setSelectionRange(1, 4);
-  is(el.selectionStart, 1);
-  is(el.selectionEnd, 4);
-  state.a = "xyzyvw";
-  is(el.selectionStart, 1);
-  is(el.selectionEnd, 4);
-});
-
-test('value: select one', async () => {
-  let el = h`
-  <select :name="field.name" :value="object[field.name]">
-      <option :each="option in field.options" :value="option.value"
-              :text="option.label"></option>
-  </select>`
-
-  let state = sprae(el, {
-    field: { name: 'x', options: [{ value: 1, label: 'a' }, { value: 2, label: 'b' }] },
-    object: { x: 2 }
-  })
-
-  is(el.outerHTML, `<select name="x"><option value="1">a</option><option value="2" selected="">b</option></select>`)
-  is(el.value, '2')
-  is(state.object.x, 2)
-})
-
-test('value: select multiple', async () => {
-  let el = h`
-  <select :id:name="field.name" :value="object[field.name]" multiple>
-    <option :each="option in field.options" :value="option.value"
-              :text="option.label"></option>
-  </select>`
-
-  // document.body.append(el)
-  sprae(el, {
-    field: { name: 'x', options: [{ value: 1, label: 'a' }, { value: 2, label: 'b' }, { value: 3, label: 'c' }] },
-    object: { x: [2, 3] }
-  })
-
-  is(el.outerHTML, `<select multiple="" id="x" name="x"><option value="1">a</option><option value="2" selected="">b</option><option value="3" selected="">c</option></select>`)
-  is([...el.selectedOptions], [el.children[1], el.children[2]])
-})
-
-test('value: select options change #52', async () => {
-  let el = h`
-  <select :value="selected">
-    <option :each="option in options" :value="option.value"
-              :text="option.label"></option>
-  </select>`
-
-  document.body.append(el)
-  let state = sprae(el, {
-    options: [],
-    selected: null
-  })
-
-  is(el.value, '')
-  is(state.selected, null)
-
-  console.log('-------add option 1')
-  state.options.push({ value: 1, label: 'a' })
-  await tick()
-  is(el.value, '1')
-  is(state.selected, '1')
-
-  console.log('----------change', state.selected)
-  state.options[0].value = 2
-  await tick()
-  is(el.value, '2')
-  is(state.selected, '2')
-
-  // console.log('------value=1')
-  // el.value = 1, el.dispatchEvent(new Event('change'))
-  // is(el.value, '1')
-  // is(state.selected, '1')
-
-  console.log('----------remove', state.selected)
-  state.options = []
-  await tick()
-  is(el.value, '')
-  ok(state.selected == null)
-
-  // is(el.outerHTML, `<select multiple="" id="x" name="x"><option value="1">a</option><option value="2" selected="">b</option><option value="3" selected="">c</option></select>`)
-  // is([...el.selectedOptions], [el.children[1], el.children[2]])
-})
-
-test('value: keep initial selected element #53', t => {
-  let el = h`<div id="container">
-      <select class="form-control" :value="obj">
-          <option value="1">Test 1</option>
-          <option value="2" selected="true">Test 2</option>
-          <option value="3">Test 3</option>
-      </select>
-      <input :if="obj == 3" type="text" class="form-control"/>
-  </div>`
-
-  let s = sprae(el)
-
-  is(el.outerHTML, `<div id="container"><select class="form-control"><option value="1">Test 1</option><option value="2" selected="">Test 2</option><option value="3">Test 3</option></select></div>`)
-  is(s, { obj: '2' })
-})
-
-test("value: reflect #57", async () => {
-  let el = h`<input :value="a" />`;
-  let state = sprae(el, { a: 0 });
-  is(state.a, 0);
-  is(el.outerHTML, `<input value="0">`);
-});
-
-test("value: reflect ensure value", async () => {
-  let el = h`<input :value="a" />`;
-  let state = sprae(el, {});
-  is(state.a, '');
-  is(el.outerHTML, `<input value="">`);
-});
 
 
 

@@ -44,7 +44,7 @@ export const sprae = (el = document.body, values) => {
           let [dirName, ...mods] = cur.split('.'),
             dir = sprae.dir[dirName] || sprae.dir['*'],
             ev = parse(value),
-            update = dir(el, value, state, dirName)
+            update = dir(el, state, value, dirName)
 
           if (update) {
             let fn = () => update(ev(state)), name, param
