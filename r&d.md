@@ -1138,7 +1138,7 @@
   ? Do we need extending root scope? Like writing some new props to it?
   + `with` doesn't allow writing new props anyways
 
-## [x] Componentization: what can be done? -> likely no for now. When html-include is there we can talk
+## [ ] Componentization: what can be done? -> likely no for now. When html-include is there we can talk
 
   1. define-element
 
@@ -1173,6 +1173,9 @@
     - a bit implicit
 
   5. htmx-like requests
+
+  6. https://github.com/jhuddle/ponys
+    + takes the toll of including, enabling, defining components in minimal way
 
 ## [x] Pause/resume components (detached :if should not trigger internal fx) -> complete disposal cycle
 
@@ -1425,11 +1428,13 @@
   - we should have control over disabling / re-enabling effects (on/off), so we need update fn as well
   - we control evaluation via standard mods, so we need update
 
-## [ ] Should we have a separate event handler like `@`, or that's just a kind of directive?
+## [x] Should we have a separate event handler/prefix like `@`, or that's just a kind of directive? -> no, let's keep : and alpine entry separate
 
   + allows easier alpine, vue entries
   + allows cleaner `sprae` code
   - performs extra check per-attribute
+  - way more lengthy to implement and support
+  - indecisiveness
 
 ## [x] Should we register full name of directive `:x`? -> no, let's keep things simple
   - No way to customize prefix
@@ -1453,6 +1458,26 @@
   * debounce, throttle, tick, async, raf, idle
   + natural way to postpone init of a subtree, eg. waiting for API response
   + standard way to provide `el[_state] = null`
+
+## [x] Does it make sense to have :ona..onb for any attrs, as :foo..bar? What would be the cases? -> yes, but technicality. let's try
+  - bloats up core a bit
+    + shorter code in total
+  - looks useless, no clear idea what for
+  + reduces load from events handler
+  + makes generic tool: altering attrs
+  - `:text..text="() => () => 'b'"` - is returned value a text or a function for next effect?
+  + if we convert all effects to events, then we'll have unified handling `:ontext..ontext`
+    + `:click` will be same as `:onclick`
+  ~ We can do `sprae.init` that handles kinds of syntax.
+
+## [x] `:ona:onb..onc:ond` -> `:ona:onb .. :onc:ond`
+  + this allows binding multiple cross-related events
+
+## [ ] Should we convert directives like :text to events and subscribe to them? -> likely no: there's no way to decouple effect
+  - slower interval methods
+  + unified code handling for events / modifiers
+  + no need for `.emit` modifier
+    + which saves args passing to mods as well - its code wouldn't be obvious
 
 ## [ ] Prop modifiers -> yes,
 

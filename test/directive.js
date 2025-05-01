@@ -623,7 +623,7 @@ test('ref: duplicates', async () => {
 
 
 
-test.only("scope: inline assign", async () => {
+test("scope: inline assign", async () => {
   let el = h`<x :scope="foo='bar'"><y :text="console.log('effect text',foo),foo + baz"></y></x>`;
   let state = sprae(el, { baz: signal("qux") });
   is(el.innerHTML, `<y>barqux</y>`);
@@ -632,7 +632,7 @@ test.only("scope: inline assign", async () => {
   is(el.innerHTML, `<y>barquux</y>`);
 });
 
-test.only("scope: inline assign reactive", async () => {
+test("scope: inline assign reactive", async () => {
   let el = h`<x :scope="{foo:'bar'}"><y :text="foo + baz"></y></x>`;
   let baz = signal("qux");
   sprae(el, { baz });
@@ -642,7 +642,7 @@ test.only("scope: inline assign reactive", async () => {
   is(el.innerHTML, `<y>barquux</y>`);
 });
 
-test.only("scope: assign data", async () => {
+test("scope: assign data", async () => {
   let el = h`<x :scope="{foo:x.foo}"><y :text="foo"></y></x>`;
   let state = sprae(el, { console, x: { foo: "bar" } });
   is(el.innerHTML, `<y>bar</y>`);
@@ -652,7 +652,7 @@ test.only("scope: assign data", async () => {
   is(el.innerHTML, `<y>baz</y>`);
 });
 
-test.only("scope: assign transparency", async () => {
+test("scope: assign transparency", async () => {
   let el = h`<x :scope="{foo:'foo'}"><y :scope="{bar:b.bar}" :text="foo+bar"></y></x>`;
   let params = sprae(el, { b: { bar: "bar" } });
   is(el.innerHTML, `<y>foobar</y>`);
@@ -661,7 +661,7 @@ test.only("scope: assign transparency", async () => {
   is(el.innerHTML, `<y>foobaz</y>`);
 });
 
-test.only("scope: reactive transparency", async () => {
+test("scope: reactive transparency", async () => {
   let el = h`<x :scope="{foo:1}"><y :scope="{bar:b.c.bar}" :text="foo+bar"></y></x>`;
   const bar = signal("2");
   sprae(el, { b: { c: { bar } } });
@@ -673,7 +673,7 @@ test.only("scope: reactive transparency", async () => {
   is(el.innerHTML, `<y>13</y>`);
 });
 
-test.only("scope: writes to state", async () => {
+test("scope: writes to state", async () => {
   let a = h`<x :scope="{a:1}"><y :onx="e=>(a+=1)" :text="a"></y></x>`;
   sprae(a, { console, signal });
   is(a.innerHTML, `<y>1</y>`);
@@ -685,20 +685,20 @@ test.only("scope: writes to state", async () => {
   is(a.innerHTML, `<y>3</y>`);
 });
 
-test.only("scope: one of children (internal number of iterations, cant see the result here)", async () => {
+test("scope: one of children (internal number of iterations, cant see the result here)", async () => {
   let a = h`<div><x :text="x"></x><x :scope="{x:2}" :text="x"></x><x :text="y">3</x></div>`;
   sprae(a, { x: 1, y: 3 });
   is(a.innerHTML, `<x>1</x><x>2</x><x>3</x>`);
 });
 
-test.only("scope: scope directives must come first", async () => {
+test("scope: scope directives must come first", async () => {
   // NOTE: we have to init attributes in order of definition
   let a = h`<x :scope="{y:1}" :text="y" :ref="el=>x=el"></x>`;
   sprae(a, { x: null });
   is(a.outerHTML, `<x>1</x>`);
 });
 
-test.only("scope: new prop added to superstore", async () => {
+test("scope: new prop added to superstore", async () => {
   let a = h`<x :scope="{y:0}" :ony="()=>y=1"><a :if="y" :text="x"></a></x>`
   let state = sprae(a, {})
   is(a.innerHTML, ``)
@@ -708,7 +708,7 @@ test.only("scope: new prop added to superstore", async () => {
   is(a.innerHTML, `<a>1</a>`)
 })
 
-test.only('scope: parasitic updates', async () => {
+test('scope: parasitic updates', async () => {
   let a = h`<x :scope="{x:'',y}"><y :fx="x='x'" :text="x+y"></y></x>`
   let s = sprae(a, { y: 'y' })
   is(a.innerHTML, `<y>xy</y>`)
@@ -1501,7 +1501,7 @@ test.skip("on: async", async () => {
   is(state2.log, [1]);
 });
 
-test("on: t̵h̵i̵s̵ ̵c̵o̵n̵t̵e̵x̵t̵ event target", () => {
+test.only("on: t̵h̵i̵s̵ ̵c̵o̵n̵t̵e̵x̵t̵ event target", () => {
   // NOTE: we disregard this context, since we can obtain it from event target
   let el = h`<div :onx="event => log.push(event.target)"></div>`;
   let state = sprae(el, { log: [] });
