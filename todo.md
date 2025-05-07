@@ -172,14 +172,19 @@
 * [ ] Don't do unnecessary customization like on*, *. Just do minimal workable bundle.
 
 
-* [ ] generalize prop modifiers
-* [ ] make dirs accept functions
+* [x] generalize prop modifiers
+* [x] make dirs accept functions
+* [ ] separate events from props from mods
 * [ ] website
-* [ ] flat directives
+* [x] flat directives
 * [x] get rid of :data, :aria
 * [x] run effects after collecting them
 * [x] :scope instead of :with
 * [ ] fix :each :scope tests
+* [ ] async callbacks
+* [ ] emit modifier tests
+* [ ] event modifiers for props
+* [ ] prop modifiers for events
 * [x] simplify nested store: just object inheritance
 * [x] pass globals to store
 * [x] expose sprae.compile, .prefix, .dir

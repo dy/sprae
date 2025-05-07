@@ -1,49 +1,46 @@
-// ulive copy, stable minimal implementation
-let current;
+// preact-signals minimal implementation
+let current, depth = 0;
 
-export let signal = (v, s, _obs = new Set) => (
-  s = {
+export let signal = (v, _s, _obs = new Set, _v = () => _s.value) => (
+  _s = {
     get value() {
-      // current && console.log('get signal', current)
       current?.deps.push(_obs.add(current));
       return v
     },
     set value(val) {
       if (val === v) return
       v = val;
-      // console.log('set signal', v)
       for (let sub of _obs) sub(); // notify effects
     },
     peek() { return v },
-  },
-  s.toJSON = s.then = s.toString = s.valueOf = () => s.value,
-  s
+    toJSON: _v, then: _v, toString: _v, valueOf: _v
+  }
 ),
-  effect = (fn, teardown, fx, deps) => (
-    fx = (prev) => {
-      teardown?.call?.();
-      prev = current, current = fx;
-      try { teardown = fn(); } finally { current = prev; }
+  effect = (fn, _teardown, _fx, _deps) => (
+    _fx = (prev) => {
+      _teardown?.call?.();
+      prev = current, current = _fx
+      // if (depth++ > 10) throw 'Effect cycle';
+      try { _teardown = fn(); } finally { current = prev; depth-- }
     },
-    deps = fx.deps = [],
+    _deps = _fx.deps = [],
 
-    fx(),
-    (dep) => { teardown?.call?.(); while (dep = deps.pop()) dep.delete(fx); }
+    _fx(),
+    (dep) => { _teardown?.call?.(); while (dep = _deps.pop()) dep.delete(_fx); }
   ),
-  computed = (fn, s = signal(), c, e) => (
-    c = {
+  computed = (fn, _s = signal(), _c, _e, _v = () => _c.value) => (
+    _c = {
       get value() {
-        e ||= effect(() => s.value = fn());
-        return s.value
+        _e ||= effect(() => _s.value = fn());
+        return _s.value
       },
-      peek: s.peek
-    },
-    c.toJSON = c.then = c.toString = c.valueOf = () => c.value,
-    c
+      peek: _s.peek,
+      toJSON: _v, then: _v, toString: _v, valueOf: _v
+    }
   ),
   batch = fn => fn(),
   // untracked = batch,
-  untracked = (fn, prev, v) => (prev = current, current = null, v = fn(), current = prev, v),
+  untracked = (fn, _prev, _v) => (_prev = current, current = null, _v = fn(), current = _prev, _v),
 
   // signals adapter - allows switching signals implementation and not depend on core
   use = (s) => (

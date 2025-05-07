@@ -1,63 +1,62 @@
 // standard sprae entry
 
-import sprae from './core.js'
 import sprae, { _state, parse, _on, _off } from "../core.js";
 import store, { _change, _signals } from "../store.js";
 import { effect } from '../signal.js';
+import { signal, untracked } from "./signal.js";
 
 export default sprae
 
 // multiprop sequences initializer, eg. :a:b..c:d
 // micro version has single-prop direct initializer, way simpler
 sprae.init = (el, attr, expr, state) => {
-  let steps = attr.split('..').map(step =>
-    // multiple attributes like :id:for=""
-    step.slice(sprae.prefix.length).split(':').reduce((prev, str) => {
-      let [dir, ...mods] = str.split('.')
+  let cur = call, // current step callback
+    off // current step disposal
 
-      let evaluate = parse(expr),
-        // event is either :click or :onclick, since on* events never intersect with * attribs
-        isEvent = dir.startsWith('on') || el['on' + dir],
+  // FIXME: events don't need effects.
+  // FIXME: separate cases: async, event, sequence, single attr
 
-        // apply event, directive or any-attr settter
-        update = isEvent ? call : sprae.dir[dir]?.(el, state, value) ?? (v => attr(el, dir, call(v, el.getAttribute(dir)))),
+  let steps = attr.split('..').map((step, i, stepNames) => (
+      // multiple attributes like :id:for=""
+      step.slice(sprae.prefix.length).split(':').reduce((prev, str) => {
+        let [name, ...mods] = str.split('.'),
+          // event is either :click or :onclick, since on* events never intersect with * attribs
+          isEvent = (name.startsWith('on') && (name = name.slice(2), 1)) || el['on' + name],
+          evaluate = parse(expr),
+          len = stepNames.length,
+          update = !isEvent ? sprae.dir[name]?.(el, state, value) ?? (v => attr(el, name, call(v, el.getAttribute(name)))) : // attribute
+            len == 1 ? call : // single event
+            (e) => (cur = cur?.(e), off(), !(idx = ++idx % len) && (cur = call), off = steps[idx]()), // event cycler
+            dispose;
 
-        // update caller decorated with modifiers
-        fn = (arg) => update(evaluate(state), arg)
+        // simple attr shortcut
+        // if (!prev && !isEvent && !mods.length) return () => effect(() => (update(evaluate(state), arg)))
 
-      // apply modifiers to update fn
-      for (let mod of mods) {
-        let [mname, ...params] = mod.split('-')
-        fn = Object.assign(sprae.mod[mname]?.(fn, ...params) ?? fn, fn) // transfer context
-      }
+        // special signal authorized to trigger effect: 0 = init; >0 = trigger
+        let change = signal(-1), count,
+          // effect applier - first time it applies the effect, next times effect is triggered by change signal
+          fn = (arg) => { if (!++change.value) dispose = effect(() => { change.value != count ? (update(evaluate(state), arg), count=change.value) : trigger(arg) })  },
 
-      // link to prev function, if any
-      return isEvent ?
-        (_poff) => (_poff = prev?.(), el.addEventListener(dir, fn, fn.ctx), () => (_poff?.(), el.removeEventListener(dir, fn))) :
-        (_poff, _off) => (_poff = prev?.(), _off = effect(fn), () => (_poff?.(), _off?.()))
-    })
-  );
+          // calling context: we apply dynamic functions from sequence
+          ctx = { target: el, call, off:null },
 
-  // single event :a:b
-  if (steps.length == 1) return steps[0]
+          // whenever dir is triggered, we cancel pending modifiers
+          trigger = (e) => (ctx.off?.(), ctx.off = ctx.call(fn, e) )
 
-  // events cycler :a:b..c:d
-  let startFn, nextFn, off, idx = 0
-  let nextListener = (fn) => {
-    off = addListener((e) => (
-      off(), nextFn = fn?.(e), (idx = ++idx % ctxs.length) ? nextListener(nextFn) : (startFn && nextListener(startFn))
-    ), ctxs[idx]);
-  }
+        // apply modifiers to context
+        for (let mod of mods) {
+          let [name, ...params] = mod.split('-')
+          sprae.mod[name]?.(ctx, ...params)
+        }
 
+        // enables adjacent directives as well, like :a:b
+        return !isEvent ? (_poff) => (_poff = prev?.(), trigger(), () => (_poff(), call(dispose))) :
+          (_poff) => (_poff = prev?.(), ctx.target.addEventListener(name, trigger, ctx), () => (_poff?.(), ctx.target.removeEventListener(name, trigger)))
+      }, null)
+    ));
 
-  // we don't need an effect here to rebind listener: we only read state inside of events
-  nextListener((event) => {
-    startFn = called(evaluate(state), event)
-
-    !off && nextListener(startFn)
-  })
-
-  return () => (off?.(), startFn = 0) // nil startFn to autodispose chain
+  // off can be changed on the go
+  return () => (off = steps[0](), () => off())
 }
 
 // simple eval (indirect new Function to avoid detector)
@@ -70,9 +69,6 @@ const _prevIf = Symbol("if");
 
 // standard directives
 sprae.dir = {
-  // :<any>="expr"  – default property setter
-  '*': (el, s, expr, name) => ,
-
   // :="{a,b,c}"
   '': (target) => value => { for (let key in value) attr(target, dashcase(key), value[key]) },
 
@@ -307,41 +303,45 @@ sprae.dir = {
 
 // standard modifiers
 sprae.mod = {
-  // regular modifiers - act as decorators for fn, called by effect immediately, return clearup called in-between transitions, so that we have to call destructor
-  debounce: (fn, wait = 108, _id) => (e) => (_id = setTimeout(() => (_id = null, _out = fn(e)), wait), () => (clearTimeout(_id), call(_out))),
+  // FIXME: add -s, -m, -l classes with values
+  debounce: (ctx, wait = 108, _call = ctx.call) => (ctx.call = (fn, e, _id, _out) => (_id = setTimeout(() => (_id = null, _out = _call(fn, e)), wait), () => (clearTimeout(_id), call(_out)))),
+  once: (ctx, _done, _out, _call = ctx.call) => (ctx.once = true, ctx.call = (fn, a) => !_done ? (_done = 1, _out = _call(fn, a)) : _out ),
   // FIXME: make throttle
-  throttle: (fn, limit = 108) => throttle(fn, limit),
-  once: (fn, _out) => (e) => !_out ? _out = fn(e) || true : _out,
+  throttle: (ctx, limit = 108) => throttle(ctx, limit),
   tick: (fn) => (a, _cancel, _out) => (_cancel = false, queueMicrotask(() => !_cancel && (_out = fn(a))), () => (_cancel = true, call(_out))),
-  interval: (fn, interval = 1080, _id, _out) => (a) => (_id = setInterval(() => _out = fn(a), interval), () => (clearInterval(_id), call(_out))),
-  raf: (fn, _out, _id, _tick, _out) => (_tick = a => (_out = fn(a), _id = requestAnimationFrame(_tick)), a => (_tick(a), () => (cancelAnimationFrame(_id), call(_out)))),
-  idle: (fn, _id, _out) => (a) => (_id = requestIdleCallback(() => _out = fn(a), interval), () => (cancelIdleCallback(_id), call(_out))),
+  interval: (ctx, interval = 1080, _id, _out) => (a) => (_id = setInterval(() => _out = fn(a), interval), () => (clearInterval(_id), call(_out))),
+  raf: (ctx, _out, _id, _tick) => (_tick = a => (_out = fn(a), _id = requestAnimationFrame(_tick)), a => (_tick(a), () => (cancelAnimationFrame(_id), call(_out)))),
+  idle: (ctx, _id, _out) => (a) => (_id = requestIdleCallback(() => _out = fn(a), interval), () => (cancelIdleCallback(_id), call(_out))),
+  // emit: (fn) => (a) => (fn.target.dispatchEvent(new CustomEvent(fn.name)), fn(a)),
   // FIXME:
-  async: (fn) => (fn.ctx.async = true, fn),
-  emit: (fn) => (fn.ctx.emit = true, fn),
+  // async: (fn) => (fn.async = true, fn),
 
   // event modifiers
   // actions
-  prevent: fn => e => (e?.preventDefault(), fn(e)),
-  stop: fn => e => (e?.stopPropagation(), fn(e)),
-  immediate: fn => e => (e?.stopImmediatePropagation(), fn(e)),
+  prevent: (ctx, _call=ctx.call) => ( ctx.call = (fn, e) => (e?.preventDefault(), _call(fn, e))),
+  stop: (ctx, _call=ctx.call) => ( ctx.call = (fn, e) => (e?.stopPropagation(), _call(fn, e))),
+  immediate: (ctx, _call=ctx.call) => ( ctx.call = (fn, e) => (e?.stopImmediatePropagation(), _call(fn, e))),
 
   // options
-  passive: fn => (fn.ctx.passive = 1, fn),
-  capture: fn => (fn.ctx.capture = 1, fn),
+  passive: ctx => (ctx.passive = true),
+  capture: ctx => (ctx.capture = true),
 
   // target
-  window: fn => (fn.ctx.target = window, fn),
-  document: fn => (fn.ctx.target = document, fn),
-  parent: fn => (fn.ctx.target = fn.ctx.target.parentNode, fn),
+  window: ctx => (ctx.target = window),
+  document: ctx => (ctx.target = document),
+  parent: ctx => (ctx.target = ctx.target.parentNode),
+
 
   // test
-  self: (fn, _out) => e => e && (e.target === fn.ctx.target && (_out = fn(e)), () => call(_out)),
+  self: (ctx, _out, _call = ctx.call) => ( ctx.call = (fn,e) => (e.target === ctx.target ? (_out = _call(fn, e)) : _out) ),
   // FIXME
   outside: (fn) => (e, _target) => (
-    _target = fn.ctx.target,
+    _target = fn.target,
     !_target.contains(e.target) && e.target.isConnected && (_target.offsetWidth || _target.offsetHeight)
   ),
+
+  // FIXME:
+  //screen: fn => ()
 };
 
 // key testers

@@ -1,9 +1,10 @@
 // test signals only (not sprae)
 
 import t, { is } from 'tst'
-import { signal, computed, effect, use } from '../signal.js'
+import { signal, computed, effect, use, batch } from '../signal.js'
 import { tick } from 'wait-please'
-// import * as signals from '../signal.js'
+
+// import * as signals from '@preact/signals-core'
 // use(signals)
 
 // value
@@ -251,6 +252,49 @@ t('effect: teardown', async () => {
   is(log, ['in', 0, 'out', 0, 'in', 1, 'out', 1])
 })
 
+t('effect: subscribe to new props', () => {
+  let a = signal(0), b = signal(0)
+
+  let i = 0
+  effect(() => {
+    i++
+    if (a.value > 0) {
+      b.value
+    }
+  })
+
+  is(i, 1)
+  b.value++
+  is(i, 1)
+  b.value++
+  a.value++
+  is(i, 2)
+  b.value++
+  is(i, 3)
+})
+
+t.skip('effect: subscribe to new props async', async () => {
+  let a = signal(0), b = signal(0)
+
+  let i = 0
+  effect(async () => {
+    i++
+    await new Promise(ok => {
+      queueMicrotask(() => {if (a.value > 0) b.value; ok()})
+    })
+  })
+
+  is(i, 1)
+  b.value++
+  is(i, 1)
+  b.value++
+  a.value++
+  await tick()
+  is(i, 2)
+  b.value++
+  await tick()
+  is(i, 3)
+})
 
 // computed
 t('computed: single', () => {
@@ -279,4 +323,19 @@ t('computed: chain', () => {
   is(c.value, 4)
   a.value = 3
   is(c.value, 5)
+})
+
+
+// batch
+t.skip('batch: reversed change', () => {
+  let s = signal(0), c = 0
+  effect(() => (s.value,c++))
+
+  batch(() => {s.value++})
+  is(s.value, 1)
+  is(c, 2, 'number of calls')
+
+  batch(() => {s.value++;s.value--})
+  is(s.value, 1)
+  is(c, 3, 'number of calls')
 })

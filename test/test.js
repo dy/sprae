@@ -2,6 +2,7 @@ import './signal.js'
 import './store.js'
 import './core.js'
 import './directive.js'
+import './event.js'
 
 
 Object.defineProperty(DocumentFragment.prototype, "outerHTML", {

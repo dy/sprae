@@ -42,8 +42,8 @@ Sprae can be used as CDN script:
 
 * [sprae.js](dist/sprae.js) – standard ESM.
 * [sprae.umd.js](dist/sprae.umd.js) – CJS / UMD / standalone with autoinit.
-* [sprae.micro.js](dist/sprae.micro.js) – <2.5kb with only `:scope`, `:ref`, `:fx`, `:on<event>`, `:<attr>`.
-* [sprae.secure.js](dist/sprae.secure.js) - CSP-enabled with [secure eval](#evaluator).
+* [sprae.micro.js](dist/sprae.micro.js) – <2.5kb [micro version](#micro).
+* [sprae.secure.js](dist/sprae.secure.js) - CSP-enabled version with [secure eval](#evaluator).
 <!-- * sprae.async.js - sprae with async events -->
 <!-- * sprae.alpine.js - alpine sprae, drop-in alpinejs replacement -->
 <!-- * sprae.vue.js - vue sprae, drop-in petite-vue replacement -->
@@ -382,10 +382,11 @@ Object.assign(sprae, signals);
 Provider | Size | Feature
 :---|:---|:---
 [`ulive`](https://ghub.io/ulive) | 350b | Minimal implementation, basic performance, good for small states.
-[`@webreflection/signal`](https://ghub.io/@webreflection/signal) | 531b | Class-based, better performance, good for small-medium states.
-[`usignal`](https://ghub.io/usignal) | 850b | Class-based with optimizations and optional async effects.
+[`signal`](https://ghub.io/@webreflection/signal) | 633b | Class-based, better performance, good for small-medium states.
+[`usignal`](https://ghub.io/usignal) | 955b | Class-based with optimizations and optional async effects.
 [`@preact/signals-core`](https://ghub.io/@preact/signals-core) | 1.47kb | Best performance, good for any states, industry standard.
 [`signal-polyfill`](https://ghub.io/signal-polyfill) | 2.5kb | Proposal signals. Use via [adapter](https://gist.github.com/dy/bbac687464ccf5322ab0e2fd0680dc4d).
+[`alien-signals`](https://github.com/WebReflection/alien-signals) | 2.67kb | Preact-flavored [alien signals](https://github.com/stackblitz/alien-signals).
 
 
 ## Evaluator
@@ -455,6 +456,16 @@ sprae.compile = subscript
 // custom prefix, default is `:`
 sprae.prefix = 'js-'
 ```
+
+## Micro
+
+Micro sprae version is 2.5kb bundle with essentials:
+
+* no multieffects `:a:b`
+* no modifiers `:a.x.y`
+* no sequences `:ona..onb`
+* no `:each`, `:if`, `:value`
+* async effects by default
 
 ## JSX
 

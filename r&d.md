@@ -1473,11 +1473,46 @@
 ## [x] `:ona:onb..onc:ond` -> `:ona:onb .. :onc:ond`
   + this allows binding multiple cross-related events
 
-## [ ] Should we convert directives like :text to events and subscribe to them? -> likely no: there's no way to decouple effect
-  - slower interval methods
+## [x] Should we convert directives like :text to events and subscribe to them? -> no, events have no effects
+  - slower
   + unified code handling for events / modifiers
+    - not really
   + no need for `.emit` modifier
     + which saves args passing to mods as well - its code wouldn't be obvious
+  - events are separate branch, they don't depend on effects
+
+## [x] Delayed effects: how do we subscribe to out-of-context debounced calls? -> we should have _change signal and trigger effect only by it
+
+  * https://grok.com/share/bGVnYWN5_dc406b06-2dca-470a-9931-7dc4ef83b4a6
+  1. Init call is immediate, all subsequent calls are scheduled
+    - scheduled calls still lose the context
+    - it schedules multiple calls for multiple changes, instead it should batch
+  2. Modifiers belong to store: it collects all changes until the next "commit", which triggers all async signals
+    ~ we have to decouple signal writes from secondary effect calls
+    * so it must be self-calling effect, but it must check if it comes from direct prop change it should just schedule itself and recall in proper scheduled way
+  2.1 Trigger effects only coming from events
+    * We can check if first argument in effect is event, then we trigger it, otherwise we dispatch an event (or schedule)
+    + solves the issue above
+    + covers .emit out of the box
+    - by the time of second (deferred) call we have to run effect in the same (initial) context.
+      ~ for that we need to have a special "authorized" signal that will trigger the effect, not regular signals
+      ~ it will be similar to 2. - we'll have "staged" state and "commit" state.
+      ? how do we find out that the effect was triggered by _commit/_change signal?
+  2.2 We run effect only by _change signal.
+    * That signal is set only through scheduler.
+    * Every effect has its own `_change` signal.
+  3. ~~We wrap async call into same effect~~
+    - it doesn't deduplicate, second function is subscribed along with the first one
+  4. Attribute controller
+    + Can be simplified in microsprae: sync, no modifiers
+
+### [ ] Should we apply .tick and .emit automatically?
+
+  + less API
+  + automatic batching
+  + events out of box, used for effects
+  - tick is not necessary
+  - makes updates slightly heavier
 
 ## [ ] Prop modifiers -> yes,
 
@@ -1528,7 +1563,8 @@
 
 ## [ ] Plugins
 
-  * @sprae/tailwins: `<x :tw="mt-1 mx-2"></x>` - separate tailwind utility classes from main ones; allow conditional setters.
+  * @sprae/data, /item, /aria
+  * @sprae/tw: `<x :tw="mt-1 mx-2"></x>` - separate tailwind utility classes from main ones; allow conditional setters.
   * @sprae/item: `<x :item="{type:a, scope:b}"` – provide microdata
     - can be solved naturally, unless there's special meaning
   * @sprae/hcodes: `<x :hcode=""` – provide microformats
@@ -1542,7 +1578,8 @@
     + pluggable modifier
   * @sprae/scroll - `:scroll.view.x="progress => "`
   * @sprae/animate -
-  * @sprae/mount
+  * @sprae/mount -
+  * media - .screen-md
 
 ## [ ] Reasons against sprae
 
