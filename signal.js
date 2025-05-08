@@ -20,7 +20,7 @@ export let signal = (v, _s, _obs = new Set, _v = () => _s.value) => (
     _fx = (prev) => {
       _teardown?.call?.();
       prev = current, current = _fx
-      // if (depth++ > 10) throw 'Effect cycle';
+      if (depth++ > 10) throw 'Cycle detected';
       try { _teardown = fn(); } finally { current = prev; depth-- }
     },
     _deps = _fx.deps = [],

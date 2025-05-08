@@ -95,14 +95,14 @@ sprae.use = use
  * @param {string} expr The expression to parse and compile into a function.
  * @returns {Function} The compiled evaluator function for the expression.
  */
-export const parse = (expr, _fn) => {
+export const parse = (expr, dir, _fn) => {
   if (_fn = cache[expr = expr.trim()]) return _fn
 
   // static time errors
-  _fn = safe(() => sprae.compile(expr), expr)()
+  _fn = safe(() => sprae.compile(expr), expr, dir)()
 
   // run time errors
-  return cache[expr] = safe(_fn, expr)
+  return cache[expr] = safe(_fn, expr, dir)
 }
 
 // create wrapped function call

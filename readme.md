@@ -302,14 +302,11 @@ Trigger when element is connected / disconnected from DOM.
 * `.raf` – run `requestAnimationFrame` loop (~60fps).
 * `.idle` – run when system is idle.
 * `.async` – await callback results.
-* `.emit` – emit event on each update, can be default prevented to skip update.
-
-### Event modifiers
-
-* `.window`, `.document`, `.parent`, `.outside`, `.self` – specify event target.
+* `.emit` – emit event for each update, preventDefault to skip.
+* `.window`, `.document`, `.parent`, `.outside`, `.self` – event target.
 * `.passive`, `.capture`, `.once` – event listener [options](https://developer.mozilla.org/en-US/docs/Web/API/EventTarget/addEventListener#options).
-* `.prevent`, `.stop` (`.immediate`) – prevent default or stop (immediate) propagation.
-* `.<key>` – filtered by [`event.key`](https://developer.mozilla.org/en-US/docs/Web/API/UI_Events/Keyboard_event_key_values):
+* `.prevent`, `.stop` (`.immediate`) – event prevent default or stop (immediate) propagation.
+* `.<key>` – filter event by [`event.key`](https://developer.mozilla.org/en-US/docs/Web/API/UI_Events/Keyboard_event_key_values):
   * `.ctrl`, `.shift`, `.alt`, `.meta`, `.enter`, `.esc`, `.tab`, `.space` – direct key
   * `.delete` – delete or backspace
   * `.arrow` – up, right, down or left arrow

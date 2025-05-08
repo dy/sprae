@@ -22,7 +22,7 @@ sprae.init = (el, attrName, expr, state) => {
       let [name, ...mods] = str.split('.'),
         // event is either :click or :onclick, since on* events never intersect with * attribs
         isEvent = (name.startsWith('on') && (name = name.slice(2), true)) || el['on' + name],
-        evaluate = parse(expr)
+        evaluate = parse(expr, name)
 
       // events have no effects and can be sequenced
       if (isEvent) {
@@ -49,14 +49,14 @@ sprae.init = (el, attrName, expr, state) => {
       // signal authorized to trigger effect: 0 = init; >0 = trigger
       let change = signal(-1), count,
         // effect applier - first time it applies the effect, next times effect is triggered by change signal
-        fn = applyMods(() => { if (!++change.value) dispose = effect(() => { change.value != count ? (update(evaluate(state)), count = change.value) : fn() }) }, mods)
+        fn = applyMods(() => { if (!++change.value) dispose = effect(() => {change.value != count ? (count = change.value, update(evaluate(state))) : fn() }) }, mods)
 
-      return (_poff) => (_poff = prev?.(), fn(), () => (_poff(), dispose()))
+      return (_poff) => (_poff = prev?.(), fn(), () => (_poff?.(), dispose()))
     }, null)
   ));
 
   // off can be changed on the go
-  return () => off = steps[0]()
+  return () => (off = steps[0]())
 }
 
 // apply modifiers to context (from the end due to nature of wrapping ctx.call)
@@ -119,12 +119,13 @@ sprae.dir = {
   ),
 
   // :fx="..."
-  fx: _ => _ => _,
+  fx: (_,state) => _ => _,
 
   // :ref="..."
-  ref: (el, state, expr) => (
-    typeof parse(expr)(state) == 'function' ?
+  ref: (el, state, expr, _prev) => (
+    typeof parse(expr, 'ref')(state) == 'function' ?
       v => v(el) :
+      // v => (call(_prev), _prev = v(el), console.log(_prev)) :
       setter(expr)(state, el)
   ),
 
@@ -135,8 +136,8 @@ sprae.dir = {
     el[_state] = null,
     // 0 run pre-creates state to provide scope for the first effect - it can write vars in it, so we should already have it
     _scope = store({}, rootState),
-    // 1 run spraes subtree with values from scope - it can be postponed by modifiers
-    values => (Object.assign(_scope, values), el[_state] ?? (delete el[_state], sprae(el, _scope)))
+    // 1 run spraes subtree with values from scope - it can be postponed by modifiers (we isolate reads from parent effect)
+    values => (Object.assign(_scope, values), el[_state] ?? (delete el[_state], untracked(() => sprae(el, _scope)) ))
   ),
 
   // :if="a" :else
@@ -195,7 +196,7 @@ sprae.dir = {
       }
 
       // initial state value
-      parse(expr)(state) ?? handleChange()
+      parse(expr, 'value')(state) ?? handleChange()
     } catch { }
 
     return (el.type === "text" || el.type === "") ?
@@ -228,7 +229,7 @@ sprae.dir = {
     // FIXME: we can add fake-keys for plain arrays
     // NOTE: it's cheaper to parse again, rather than introduce workarounds: effect is anyways subscribed to full expression
     // FIXME: oversubscription in eg. <x :scope="k=1"><y :each="v,k in list"></y></x> - whenever outer k changes list updates
-    parse(expr.split(/\bin\b/)[1])
+    parse(expr.split(/\bin\b/)[1], 'each')
 
     let [itemVar, idxVar = "$"] = expr.split(/\bin\b/)[0].trim().replace(/\(|\)/g, '').split(/\s*,\s*/);
 
@@ -333,6 +334,8 @@ sprae.mod = {
 
   // make batched
   tick: (fn, _planned) => (e) => !_planned && (_planned=1, queueMicrotask(() => (fn(e), _planned=0))),
+
+  // FIXME
   interval: (ctx, interval = 1080, _id, _cancel) => (a) => (_id = setInterval(() => _cancel = fn(a), interval), () => (clearInterval(_id), call(_cancel))),
   raf: (ctx, _cancel, _id, _tick) => (_tick = a => (_cancel = fn(a), _id = requestAnimationFrame(_tick)), a => (_tick(a), () => (cancelAnimationFrame(_id), call(_cancel)))),
   idle: (ctx, _id, _cancel) => (a) => (_id = requestIdleCallback(() => _cancel = fn(a), interval), () => (cancelIdleCallback(_id), call(_cancel))),

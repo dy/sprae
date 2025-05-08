@@ -169,29 +169,28 @@
 
 ## [ ] v12
 
-* [ ] Don't do unnecessary customization like on*, *. Just do minimal workable bundle.
-
-
+* [x] Don't do unnecessary customization like on*, *. Just do minimal workable bundle.
 * [x] generalize prop modifiers
 * [x] make dirs accept functions
-* [ ] separate events from props from mods
+* [x] separate events from props
+* [ ] event all modifiers tests
+* [ ] prop modifiers tests
+* [ ] fix :each :scope tests
+* [ ] async callbacks
+* [ ] emit modifier tests
+* [ ] event modifiers for props
 * [ ] website
 * [x] flat directives
 * [x] get rid of :data, :aria
 * [x] run effects after collecting them
 * [x] :scope instead of :with
-* [ ] fix :each :scope tests
-* [ ] async callbacks
-* [ ] emit modifier tests
-* [ ] event modifiers for props
-* [ ] prop modifiers for events
 * [x] simplify nested store: just object inheritance
 * [x] pass globals to store
 * [x] expose sprae.compile, .prefix, .dir
 * [x] make :each use inheritance instead of Proxy
+* [ ] microjs tests
 * [ ] flavors: alpine, vue, micro, secure
 * [ ] all tests, with enabled preact/signals
-* [ ] microjs contribution
 * [ ] make sure umd min bundle works
 * [ ] test usignal/async effects
 * [ ] finish ajamila poll with v12

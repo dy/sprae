@@ -58,7 +58,6 @@ test("fx: effects", async () => {
 });
 
 
-
 test('class: basic', async () => {
   let el = h`<x class="base" :class="a"></x><y :class="[b, c]"></y><z :class="{c:d}"></z>`;
   const c = signal("z");
@@ -513,7 +512,6 @@ test('if: #59', () => {
 
 
 
-
 test("ref: base", async () => {
   let a = h`<a :ref="a" :fx="log.push(a)" :text="b"></a>`;
   let state = sprae(a, { log: [], b: 1 });
@@ -709,7 +707,7 @@ test("scope: new prop added to superstore", async () => {
 })
 
 test('scope: parasitic updates', async () => {
-  let a = h`<x :scope="{x:'',y}"><y :fx="x='x'" :text="x+y"></y></x>`
+  let a = h`<x :scope="x=''"><y :fx="x='x'" :text="x+y"></y></x>`
   let s = sprae(a, { y: 'y' })
   is(a.innerHTML, `<y>xy</y>`)
   s.y = 'yy'
