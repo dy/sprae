@@ -1506,13 +1506,14 @@
   4. Attribute controller
     + Can be simplified in microsprae: sync, no modifiers
 
-### [ ] Should we apply .tick and .emit automatically?
+### [x] Should we apply .tick and .emit automatically?
 
   + less API
   + automatic batching
   + events out of box, used for effects
   - tick is not necessary
   - makes updates slightly heavier
+  - .emit manually can be default prevented to skip update, so no use
 
 ## [ ] Prop modifiers -> yes,
 

@@ -9,55 +9,67 @@ export default sprae
 
 // multiprop sequences initializer, eg. :a:b..c:d
 // micro version has single-prop direct initializer, way simpler
-sprae.init = (el, attr, expr, state) => {
-  let cur = call, // current step callback
+sprae.init = (el, attrName, expr, state) => {
+  let cur, // current step callback
     off // current step disposal
 
   // FIXME: events don't need effects.
   // FIXME: separate cases: async, event, sequence, single attr
 
-  let steps = attr.split('..').map((step, i, stepNames) => (
-      // multiple attributes like :id:for=""
-      step.slice(sprae.prefix.length).split(':').reduce((prev, str) => {
-        let [name, ...mods] = str.split('.'),
-          // event is either :click or :onclick, since on* events never intersect with * attribs
-          isEvent = (name.startsWith('on') && (name = name.slice(2), 1)) || el['on' + name],
-          evaluate = parse(expr),
-          len = stepNames.length,
-          update = !isEvent ? sprae.dir[name]?.(el, state, value) ?? (v => attr(el, name, call(v, el.getAttribute(name)))) : // attribute
-            len == 1 ? call : // single event
-            (e) => (cur = cur?.(e), off(), !(idx = ++idx % len) && (cur = call), off = steps[idx]()), // event cycler
-            dispose;
+  let steps = attrName.slice(sprae.prefix.length).split('..').map((step, i, { length }) => (
+    // multiple attributes like :id:for=""
+    step.split(':').reduce((prev, str) => {
+      let [name, ...mods] = str.split('.'),
+        // event is either :click or :onclick, since on* events never intersect with * attribs
+        isEvent = (name.startsWith('on') && (name = name.slice(2), true)) || el['on' + name],
+        evaluate = parse(expr)
 
-        // simple attr shortcut
-        // if (!prev && !isEvent && !mods.length) return () => effect(() => (update(evaluate(state), arg)))
+      // events have no effects and can be sequenced
+      if (isEvent) {
+        let first = e => (call(evaluate(state), e)),
+          fn = applyMods(
+            Object.assign(
+              // single event vs chain
+              length == 1 ? first :
+                e => (cur = (!i ? first : cur)(e), off(), off = steps[(i + 1) % length]()),
+              { target: el, type: name }
+            ),
+            mods);
 
-        // special signal authorized to trigger effect: 0 = init; >0 = trigger
-        let change = signal(-1), count,
-          // effect applier - first time it applies the effect, next times effect is triggered by change signal
-          fn = (arg) => { if (!++change.value) dispose = effect(() => { change.value != count ? (update(evaluate(state), arg), count=change.value) : trigger(arg) })  },
+        return (_poff) => (_poff = prev?.(), fn.target.addEventListener(name, fn, fn), () => (_poff?.(), fn.target.removeEventListener(name, fn)))
+      }
 
-          // calling context: we apply dynamic functions from sequence
-          ctx = { target: el, call, off:null },
+      // props have no sequences and can be sync
+      let update = sprae.dir[name]?.(el, state, expr) ?? (v => attr(el, name, call(v, el.getAttribute(name)))),
+          dispose
 
-          // whenever dir is triggered, we cancel pending modifiers
-          trigger = (e) => (ctx.off?.(), ctx.off = ctx.call(fn, e) )
+      // sync shortcut
+      // if (!prev && !isEvent && !mods.length) return () => effect(() => (update(evaluate(state), arg)))
 
-        // apply modifiers to context
-        for (let mod of mods) {
-          let [name, ...params] = mod.split('-')
-          sprae.mod[name]?.(ctx, ...params)
-        }
+      // signal authorized to trigger effect: 0 = init; >0 = trigger
+      let change = signal(-1), count,
+        // effect applier - first time it applies the effect, next times effect is triggered by change signal
+        fn = applyMods(() => { if (!++change.value) dispose = effect(() => { change.value != count ? (update(evaluate(state)), count = change.value) : fn() }) }, mods)
 
-        // enables adjacent directives as well, like :a:b
-        return !isEvent ? (_poff) => (_poff = prev?.(), trigger(), () => (_poff(), call(dispose))) :
-          (_poff) => (_poff = prev?.(), ctx.target.addEventListener(name, trigger, ctx), () => (_poff?.(), ctx.target.removeEventListener(name, trigger)))
-      }, null)
-    ));
+      return (_poff) => (_poff = prev?.(), fn(), () => (_poff(), dispose()))
+    }, null)
+  ));
 
   // off can be changed on the go
-  return () => (off = steps[0](), () => off())
+  return () => off = steps[0]()
 }
+
+// apply modifiers to context (from the end due to nature of wrapping ctx.call)
+const applyMods = (fn, mods) => {
+  while (mods.length) {
+    let [name, ...params] = mods.pop().split('-')
+    fn = sx(sprae.mod[name]?.(fn, ...params) ?? fn, fn)
+  }
+  return fn
+}
+
+// soft extend missing props
+const sx = (a, b) => { if (a != b) for (let k in b) a[k] ??= b[k]; return a }
 
 // simple eval (indirect new Function to avoid detector)
 sprae.compile = expr => sprae.constructor(`with (arguments[0]) { return ${expr} };`)
@@ -304,36 +316,48 @@ sprae.dir = {
 // standard modifiers
 sprae.mod = {
   // FIXME: add -s, -m, -l classes with values
-  debounce: (ctx, wait = 108, _call = ctx.call) => (ctx.call = (fn, e, _id, _out) => (_id = setTimeout(() => (_id = null, _out = _call(fn, e)), wait), () => (clearTimeout(_id), call(_out)))),
-  once: (ctx, _done, _out, _call = ctx.call) => (ctx.once = true, ctx.call = (fn, a) => !_done ? (_done = 1, _out = _call(fn, a)) : _out ),
-  // FIXME: make throttle
-  throttle: (ctx, limit = 108) => throttle(ctx, limit),
-  tick: (fn) => (a, _cancel, _out) => (_cancel = false, queueMicrotask(() => !_cancel && (_out = fn(a))), () => (_cancel = true, call(_out))),
-  interval: (ctx, interval = 1080, _id, _out) => (a) => (_id = setInterval(() => _out = fn(a), interval), () => (clearInterval(_id), call(_out))),
-  raf: (ctx, _out, _id, _tick) => (_tick = a => (_out = fn(a), _id = requestAnimationFrame(_tick)), a => (_tick(a), () => (cancelAnimationFrame(_id), call(_out)))),
-  idle: (ctx, _id, _out) => (a) => (_id = requestIdleCallback(() => _out = fn(a), interval), () => (cancelIdleCallback(_id), call(_out))),
-  // emit: (fn) => (a) => (fn.target.dispatchEvent(new CustomEvent(fn.name)), fn(a)),
+  debounce: (fn, wait = 108, _t) => e => (clearTimeout(_t), _t = setTimeout(() => (fn(e)), wait)),
+  once: (fn, _done) => Object.assign((e) => !_done && (_done = 1, fn(e)), {once: true}),
+
+  throttle: (fn, limit = 108, _pause, _planned, _t, _block) => (
+    _block = (e) => (
+      _pause = 1,
+      _t = setTimeout(() => (
+        _pause = 0,
+        // if event happened during blocked time, it schedules call by the end
+        _planned && (_planned = 0, _block(e), fn(e))
+      ), limit)
+    ),
+    e => _pause ? _planned = 1 : (_block(e), fn(e))
+  ),
+
+  // make batched
+  tick: (fn, _planned) => (e) => !_planned && (_planned=1, queueMicrotask(() => (fn(e), _planned=0))),
+  interval: (ctx, interval = 1080, _id, _cancel) => (a) => (_id = setInterval(() => _cancel = fn(a), interval), () => (clearInterval(_id), call(_cancel))),
+  raf: (ctx, _cancel, _id, _tick) => (_tick = a => (_cancel = fn(a), _id = requestAnimationFrame(_tick)), a => (_tick(a), () => (cancelAnimationFrame(_id), call(_cancel)))),
+  idle: (ctx, _id, _cancel) => (a) => (_id = requestIdleCallback(() => _cancel = fn(a), interval), () => (cancelIdleCallback(_id), call(_cancel))),
+
+  emit: (fn) => (e) => e ? fn(e) : (fn.target.dispatchEvent(e = new CustomEvent(fn.type, { bubbles: true, cancelable: true })), !e.defaultPrevented && fn()),
   // FIXME:
   // async: (fn) => (fn.async = true, fn),
 
   // event modifiers
   // actions
-  prevent: (ctx, _call=ctx.call) => ( ctx.call = (fn, e) => (e?.preventDefault(), _call(fn, e))),
-  stop: (ctx, _call=ctx.call) => ( ctx.call = (fn, e) => (e?.stopPropagation(), _call(fn, e))),
-  immediate: (ctx, _call=ctx.call) => ( ctx.call = (fn, e) => (e?.stopImmediatePropagation(), _call(fn, e))),
+  prevent: (fn) => (e) => (e?.preventDefault(), fn(e)),
+  stop: (fn) => (e) => (e?.stopPropagation(), fn(e)),
+  immediate: (fn) => (e) => (e?.stopImmediatePropagation(), fn(e)),
 
   // options
-  passive: ctx => (ctx.passive = true),
-  capture: ctx => (ctx.capture = true),
+  passive: fn => (fn.passive = true, fn),
+  capture: fn => (fn.capture = true, fn),
 
   // target
-  window: ctx => (ctx.target = window),
-  document: ctx => (ctx.target = document),
-  parent: ctx => (ctx.target = ctx.target.parentNode),
-
+  window: fn => (fn.target = window, fn),
+  document: fn => (fn.target = document, fn),
+  parent: fn => (fn.target = fn.target.parentNode, fn),
 
   // test
-  self: (ctx, _out, _call = ctx.call) => ( ctx.call = (fn,e) => (e.target === ctx.target ? (_out = _call(fn, e)) : _out) ),
+  self: (fn) => (e) => (e.target === fn.target && fn(e)),
   // FIXME
   outside: (fn) => (e, _target) => (
     _target = fn.target,
@@ -362,21 +386,7 @@ const keys = {
 };
 
 // augment modifiers with key testers
-for (let k in keys) sprae.mod[k] = (fn, params) => e => keys[k](e) && params.every(k => keys[k]?.(e) ?? e.key === k)
-
-
-// create delayed fns
-const throttle = (fn, limit, _pause, _planned, _block) => (
-  _block = (e) => (
-    _pause = 1,
-    setTimeout(() => (
-      _pause = 0,
-      // if event happened during blocked time, it schedules call by the end
-      _planned && (_planned = 0, _block(e), fn(e))
-    ), limit)
-  ),
-  (e) => _pause ? _planned = 1 : (_block(e), fn(e))
-)
+for (let k in keys) sprae.mod[k] = (fn, ...params) => (e) => keys[k](e) && params.every(k => keys[k]?.(e) ?? e.key === k) && fn(e)
 
 // create expression setter, reflecting value back to state
 const setter = (expr, _set = parse(`${expr}=__`)) => (state, value) => {

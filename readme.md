@@ -294,15 +294,15 @@ Trigger when element is connected / disconnected from DOM.
 
 ## Modifiers
 
-* `.debounce-<ms>` – defer for `<ms>`.
-* `.throttle-<ms>` – limit to once every `<ms>`.
+* `.debounce-<ms?>` – defer for `ms` (default 108).
+* `.throttle-<ms?>` – limit to once every `ms` (default 108).
 * `.once` – run only once.
 * `.tick` – defer to next microtask, useful for batching.
-* `.interval-<ms>` – run every `<ms>`.
+* `.interval-<ms?>` – run every `ms` (default 108).
 * `.raf` – run `requestAnimationFrame` loop (~60fps).
 * `.idle` – run when system is idle.
 * `.async` – await callback results.
-* `.emit` – emit event on each update.
+* `.emit` – emit event on each update, can be default prevented to skip update.
 
 ### Event modifiers
 

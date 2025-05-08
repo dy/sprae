@@ -73,6 +73,7 @@ test("on: capture, stop, prevent", () => {
 test("on: window, self", () => {
   let el = h`<x :onx.self="e => log.push(1)"><y :onx.window="e => log.push(2)"></y></x>`;
   let state = sprae(el, { log: [] });
+  console.log('----dispatch el x')
   el.firstChild.dispatchEvent(new window.Event("x", { bubbles: true }));
   is(state.log, []);
   console.log('----dispatch el x')
@@ -100,7 +101,7 @@ test("on: parent, self", () => {
   is(state.log, [1, 1, 1]);
 });
 
-test.only("on: keys", () => {
+test("on: keys", () => {
   let el = h`<x :onkeydown.enter="e => log.push(1)"></x>`;
   let state = sprae(el, { log: [] });
   el.dispatchEvent(new window.KeyboardEvent("keydown", { key: "" }));
@@ -187,18 +188,18 @@ test('on: in-out events', () => {
 })
 
 test('on: toggle', async () => {
-  let el = h`<x :onx..onx="e=>(log.push(1),e=>log.push(2))"></x>`
+  let el = h`<x :onx..onx="e=>(log.push(1),e=>(log.push(2)))"></x>`
   let state = sprae(el, { log: [] })
-  console.log('dispatch x')
+  console.log('----- dispatch x')
   el.dispatchEvent(new window.KeyboardEvent('x'));
   is(state.log, [1])
-  console.log('dispatch x')
+  console.log('----- dispatch x')
   el.dispatchEvent(new window.KeyboardEvent('x'));
   is(state.log, [1, 2])
-  console.log('dispatch x')
+  console.log('----- dispatch x')
   el.dispatchEvent(new window.KeyboardEvent('x'));
   is(state.log, [1, 2, 1])
-  console.log('dispatch x')
+  console.log('----- dispatch x')
   el.dispatchEvent(new window.KeyboardEvent('x'));
   is(state.log, [1, 2, 1, 2])
 })
@@ -251,33 +252,6 @@ test('on: parallel chains', () => {
   is(log, ['in', 'out', 'in', 'in', 'out', 'out'])
 })
 
-test.skip('on: parallel chains', () => {
-  // NOTE: covered above
-  let el = h`<div :onx..ony..onz="e=>('x',log.push(e.type),e=>('y',log.push(e.type),e=>('z',log.push(e.type))))"></div>`
-  let state = sprae(el, { log: [] })
-
-  console.log('emit x')
-  el.dispatchEvent(new window.Event('x'));
-  is(state.log, ['x'])
-  console.log('emit x')
-  el.dispatchEvent(new window.Event('x'));
-  is(state.log, ['x', 'x'])
-  console.log('emit y')
-  el.dispatchEvent(new window.Event('y'));
-  is(state.log, ['x', 'x', 'y', 'y'])
-  console.log('emit y')
-  el.dispatchEvent(new window.Event('y'));
-  is(state.log, ['x', 'x', 'y', 'y'])
-  console.log('emit z')
-  el.dispatchEvent(new window.Event('z'));
-  console.log('emit y')
-  el.dispatchEvent(new window.Event('y'));
-  is(state.log, ['x', 'x', 'y', 'y', 'z', 'z'])
-  el.dispatchEvent(new window.Event('z'));
-  is(state.log, ['x', 'x', 'y', 'y', 'z', 'z']);
-  el.dispatchEvent(new window.Event('x'));
-  is(state.log, ['x', 'x', 'y', 'y', 'z', 'z', 'x']);
-})
 
 test('on: state changes between chain of events', async () => {
   let el = h`<x :onx..ony="fn"></x>`
@@ -318,4 +292,51 @@ test('on: modifiers chain', async () => {
   is(state.log, ['x'])
   el.dispatchEvent(new window.KeyboardEvent('keyup', { key: 'x', bubbles: true }));
   is(state.log, ['x', 'x'])
+})
+
+
+test('on: alias sequence', async () => {
+  let el = h`<x :ona.tick:onb.tick..onc.tick:ond.tick="e=>(log.push(e.type),(e)=>log.push(e.type))"></x>`
+  let state = sprae(el, { log: [] })
+  console.log('---------- emit a')
+  el.dispatchEvent(new window.CustomEvent('a', { bubbles: true }));
+  is(state.log, [])
+  await tick()
+  is(state.log, ['a'])
+  console.log('---------- emit a, b')
+  el.dispatchEvent(new window.CustomEvent('a', { bubbles: true }));
+  el.dispatchEvent(new window.CustomEvent('b', { bubbles: true }));
+  await tick()
+  is(state.log, ['a'])
+  console.log('---------- emit d')
+  el.dispatchEvent(new window.CustomEvent('d', { bubbles: true }));
+  is(state.log, ['a'])
+  await tick()
+  is(state.log, ['a','d'], 'd fulfilled')
+  console.log('---------- emit c, d')
+  el.dispatchEvent(new window.CustomEvent('c', { bubbles: true }));
+  el.dispatchEvent(new window.CustomEvent('d', { bubbles: true }));
+  await tick()
+  is(state.log, ['a','d'])
+  console.log('---------- emit b')
+  el.dispatchEvent(new window.CustomEvent('b', { bubbles: true }));
+  is(state.log, ['a','d'])
+  await tick()
+  is(state.log, ['a','d','b'])
+  el.dispatchEvent(new window.CustomEvent('b', { bubbles: true }));
+  el.dispatchEvent(new window.CustomEvent('a', { bubbles: true }));
+  await tick()
+  is(state.log, ['a','d','b'])
+  el.dispatchEvent(new window.CustomEvent('c', { bubbles: true }));
+  is(state.log, ['a','d','b'])
+  await tick()
+  is(state.log, ['a','d','b','c'])
+
+  el[_dispose]()
+  el.dispatchEvent(new window.CustomEvent('a', { bubbles: true }));
+  el.dispatchEvent(new window.CustomEvent('b', { bubbles: true }));
+  el.dispatchEvent(new window.CustomEvent('c', { bubbles: true }));
+  el.dispatchEvent(new window.CustomEvent('d', { bubbles: true }));
+  await tick()
+  is(state.log, ['a','d','b','c'])
 })

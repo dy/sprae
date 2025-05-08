@@ -20,7 +20,6 @@ export const sprae = (el = document.body, values) => {
   // repeated call can be caused by eg. :each with new objects with old keys
   if (el[_state]) return Object.assign(el[_state], values)
 
-  console.group('sprae', el)
   // take over existing state instead of creating a clone
   let state = store(values || {}),
     fx = [], offs = [], fn,
@@ -63,8 +62,6 @@ export const sprae = (el = document.body, values) => {
   // if element was spraed by inline :with/:if/:each/etc instruction (meaning it has state placeholder) - skip, otherwise save _state
   // FIXME: can check for null instead
   if (!(_state in el)) el[_state] = state
-
-  console.groupEnd();
 
   return state;
 }
