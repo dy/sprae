@@ -24,14 +24,14 @@ export const sprae = (el = document.body, values) => {
   let state = store(values || {}),
     fx = [], offs = [], fn,
     // FIXME: on generally needs to account for events, although we call it only in :if
-    on = () => offs = fx.map(fn => fn()),
+    on = () => (offs = fx.map(fn => fn())),
     off = () => (offs.map(off => off()), offs = [])
-  // prevOn = el[_on], prevOff = el[_off],
+    // prevOn = el[_on], prevOff = el[_off]
 
   // on/off all effects
   // FIXME: we're supposed to call prevOn/prevOff, but I can't find a test case. Some combination of :if/:scope/:each/:ref
-  el[_on] = on //() => (prevOn?.(), on())
-  el[_off] = off //() => (prevOff?.(), off())
+  el[_on] = on// () => (prevOn?.(), on())
+  el[_off] = off// () => (prevOff?.(), off())
 
   // destroy
   el[_dispose] ||= () => (el[_off](), el[_off] = el[_on] = el[_dispose] = el[_state] = null)

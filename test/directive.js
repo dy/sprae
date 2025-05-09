@@ -409,21 +409,24 @@ test("if: + :scope doesnt prevent secondary effects from happening", async () =>
   is(el.innerHTML, `<x>123</x>`);
 });
 
-test("if: + :scope back-forth", async () => {
-  let el = h`<div><x :if="x" :scope="{}" :text="x" :onx="()=>x+=x"></x><y :else :scope="{t:'y'}" :text="t" :onx="()=>t+=t"></y></div>`;
+test("if: + :scope back-forth on/off", async () => {
+  let el = h`<div><x :if="x" :scope="{x}" :text="console.log('--text'),x" :onx="()=>(x+=x)"></x><y :else :scope="console.log('--scope2'),{t:'y'}" :text="console.log('--text'),t" :onx="()=>(console.log('--onx',t),t+=t)"></y></div>`;
   let state = sprae(el, { x: "" });
   is(el.innerHTML, `<y>y</y>`);
   el.firstChild.dispatchEvent(new window.CustomEvent('x'))
   is(el.innerHTML, `<y>yy</y>`);
 
-  console.log("state.x=x");
+  console.log("----x='x'");
   state.x = "x";
   await tick();
   is(el.innerHTML, `<x>x</x>`);
+  console.log('----dispatch child x')
   el.firstChild.dispatchEvent(new window.CustomEvent('x'))
   is(el.innerHTML, `<x>xx</x>`);
+  console.log('----x=""')
   state.x = ''
   is(el.innerHTML, `<y>yy</y>`);
+  console.log('----dispatch child x', el.firstChild)
   el.firstChild.dispatchEvent(new window.CustomEvent('x'))
   is(el.innerHTML, `<y>yyyy</y>`);
 
@@ -442,7 +445,7 @@ test("if: :scope + :if after attributes", async () => {
   is(el.innerHTML, `<y>2</y>`)
 })
 
-test('if: set/unset value', async () => {
+test("if: set/unset value", async () => {
   let el = h`<x><y :if="x" :text="x.x"></y></x>`
   let state = sprae(el, { x: null })
   is(el.innerHTML, '')
@@ -457,7 +460,7 @@ test('if: set/unset value', async () => {
   is(el.innerHTML, '<y>2</y>')
 })
 
-test('if: set/unset 2', async () => {
+test("if: set/unset 2", async () => {
   let el = h`<root><x :if="x==1"><t :text="a"></t></x><y :else :if="x==2"><t :text="b"></t></y><z :else :text="c"></z></root>`
   let state = sprae(el, { x: 1, a: 'a', b: 'b', c: 'c' })
   is(el.innerHTML, '<x><t>a</t></x>', 'x==1')
@@ -478,29 +481,7 @@ test('if: set/unset 2', async () => {
   is(el.innerHTML, '<z>c</z>', 'x==9')
 })
 
-test.skip('if: lost effects', () => {
-  let el = h`<div>
-    <input type="checkbox" :value="showlist"/>
-    <button :onclick="() => {list.push(list.length)}">Add element</button>
-    <button :onclick="() => {list.pop()}">Remove element</button>
-    <button :onclick="() => {list[0]++}">Increment first element</button>
-    <br/>
-    <select :if="showlist" size="10" style="width:5rem">
-      <option :each="i in list" :text="i"></option>
-    </select>
-    <select :if="showlist" size="10" style="border: solid 1px orange; width:5rem">
-      <option :each="i in listFromFunc()" :text="i"></option>
-    </select>
-    </div>`
-  document.body.append(el)
-  sprae(el, {
-    showlist: true,
-    list: [],
-    listFromFunc() { return this.list.map(val => val) }
-  })
-})
-
-test('if: #59', () => {
+test("if: #59", () => {
   let el = h`<div id="container">
     <div :if="test()">123</div>
     ABC

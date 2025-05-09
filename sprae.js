@@ -51,7 +51,7 @@ sprae.init = (el, attrName, expr, state) => {
         // effect applier - first time it applies the effect, next times effect is triggered by change signal
         fn = applyMods(() => { if (!++change.value) dispose = effect(() => {change.value != count ? (count = change.value, update(evaluate(state))) : fn() }) }, mods)
 
-      return (_poff) => (_poff = prev?.(), fn(), () => (_poff?.(), dispose()))
+      return (_poff) => (_poff = prev?.(), fn(), () => (_poff?.(), dispose(), change.value = -1, count = null))
     }, null)
   ));
 
