@@ -1,20 +1,439 @@
-import sprae from './core.js'
+// standard sprae entry
 
-// default directives
-import './directive/if.js'
-import './directive/each.js'
-import './directive/ref.js'
-import './directive/with.js'
-import './directive/text.js'
-import './directive/class.js'
-import './directive/style.js'
-import './directive/value.js'
-import './directive/fx.js'
-import './directive/default.js'
-import './directive/aria.js'
-import './directive/data.js'
-
-// default compiler (indirect new Function to avoid detector)
-sprae.use({ compile: expr => sprae.constructor(`with (arguments[0]) { return ${expr} };`) })
+import sprae, { _state, parse, _on, _off } from "../core.js";
+import store, { _change, _signals } from "../store.js";
+import { effect } from '../signal.js';
+import { signal, untracked } from "./signal.js";
 
 export default sprae
+
+// multiprop sequences initializer, eg. :a:b..c:d
+// micro version has single-prop direct initializer, way simpler
+sprae.init = (el, attrName, expr, state) => {
+  let cur, // current step callback
+    off // current step disposal
+
+  // FIXME: events don't need effects.
+  // FIXME: separate cases: async, event, sequence, single attr
+
+  let steps = attrName.slice(sprae.prefix.length).split('..').map((step, i, { length }) => (
+    // multiple attributes like :id:for=""
+    step.split(':').reduce((prev, str) => {
+      let [name, ...mods] = str.split('.'),
+        // event is either :click or :onclick, since on* events never intersect with * attribs
+        isEvent = (name.startsWith('on') && (name = name.slice(2), true)) || el['on' + name],
+        evaluate = parse(expr, name)
+
+      // events have no effects and can be sequenced
+      if (isEvent) {
+        let first = e => (call(evaluate(state), e)),
+          fn = applyMods(
+            Object.assign(
+              // single event vs chain
+              length == 1 ? first :
+                e => (cur = (!i ? first : cur)(e), off(), off = steps[(i + 1) % length]()),
+              { target: el, type: name }
+            ),
+            mods);
+
+        return (_poff) => (_poff = prev?.(), fn.target.addEventListener(name, fn, fn), () => (_poff?.(), fn.target.removeEventListener(name, fn)))
+      }
+
+      // props have no sequences and can be sync
+      let update = sprae.dir[name]?.(el, state, expr) ?? (v => attr(el, name, call(v, el.getAttribute(name)))),
+          dispose
+
+      // sync shortcut
+      // if (!prev && !isEvent && !mods.length) return () => effect(() => (update(evaluate(state), arg)))
+
+      // signal authorized to trigger effect: 0 = init; >0 = trigger
+      let change = signal(-1), count,
+        // effect applier - first time it applies the effect, next times effect is triggered by change signal
+        fn = applyMods(() => { if (!++change.value) dispose = effect(() => {change.value != count ? (count = change.value, update(evaluate(state))) : fn() }) }, mods)
+
+      return (_poff) => (_poff = prev?.(), fn(), () => (_poff?.(), dispose(), change.value = -1, count = null))
+    }, null)
+  ));
+
+  // off can be changed on the go
+  return () => (off = steps[0]())
+}
+
+// apply modifiers to context (from the end due to nature of wrapping ctx.call)
+const applyMods = (fn, mods) => {
+  while (mods.length) {
+    let [name, ...params] = mods.pop().split('-')
+    fn = sx(sprae.mod[name]?.(fn, ...params) ?? fn, fn)
+  }
+  return fn
+}
+
+// soft extend missing props
+const sx = (a, b) => { if (a != b) for (let k in b) a[k] ??= b[k]; return a }
+
+// simple eval (indirect new Function to avoid detector)
+sprae.compile = expr => sprae.constructor(`with (arguments[0]) { return ${expr} };`)
+
+// :if is interchangeable with :each depending on order, :if :each or :each :if have different meanings
+// as for :if :scope - :if must init first, since it is lazy, to avoid initializing component ahead of time by :scope
+// we consider :scope={x} :if={x} case insignificant
+const _prevIf = Symbol("if");
+
+// standard directives
+sprae.dir = {
+  // :="{a,b,c}"
+  '': (target) => value => { for (let key in value) attr(target, dashcase(key), value[key]) },
+
+  // :class="[a, b, c]"
+  class: (el, _cur, _new) => (
+    _cur = new Set,
+    (v) => {
+      _new = new Set
+      if (v) clsx(call(v, el.className)).split(' ').map(c => c && _new.add(c))
+      for (let c of _cur) if (_new.has(c)) _new.delete(c); else el.classList.remove(c);
+      for (let c of _cur = _new) el.classList.add(c)
+    }
+  ),
+
+  // :text="..."
+  text: el => (
+    // <template :text="a"/> or previously initialized template
+    // FIXME: replace with content maybe?
+    el.content && el.replaceWith(el = frag(el).childNodes[0]),
+    v => (v = call(v, el.textContent), el.textContent = v == null ? "" : v)
+  ),
+
+  // :style="..."
+  style: (el, _static) => (
+    _static = el.getAttribute("style"),
+    v => {
+      v = call(v, el.style)
+      if (typeof v === "string") attr(el, "style", _static + '; ' + v);
+      else {
+        if (_static) attr(el, "style", _static);
+        // NOTE: we skip names not starting with a letter - eg. el.style stores properties as { 0: --x }
+        for (let k in v) k[0] == '-' ? el.style.setProperty(k, v[k]) : k[0] > 'A' && (el.style[k] = v[k])
+
+      }
+    }
+  ),
+
+  // :fx="..."
+  fx: (_,state) => _ => _,
+
+  // :ref="..."
+  ref: (el, state, expr, _prev) => (
+    typeof parse(expr, 'ref')(state) == 'function' ?
+      v => v(el) :
+      // v => (call(_prev), _prev = v(el), console.log(_prev)) :
+      setter(expr)(state, el)
+  ),
+
+  // :scope creates variables scope for a subtree
+  // NOTE: we cannot do :scope="expr" -> :scope :with="expr" because there's no way to prepend attribute in DOM
+  scope: (el, rootState, _scope) => (
+    // prevent subsequent effects
+    el[_state] = null,
+    // 0 run pre-creates state to provide scope for the first effect - it can write vars in it, so we should already have it
+    _scope = store({}, rootState),
+    // 1 run spraes subtree with values from scope - it can be postponed by modifiers (we isolate reads from parent effect)
+    values => (Object.assign(_scope, values), el[_state] ?? (delete el[_state], untracked(() => sprae(el, _scope)) ))
+  ),
+
+  // :if="a" :else
+  if: (el, state) => {
+    let holder = document.createTextNode('')
+
+    let nextEl = el.nextElementSibling,
+      curEl, ifEl, elseEl;
+
+    el.replaceWith(holder)
+
+    ifEl = el.content ? frag(el) : el
+    ifEl[_state] = null // mark el as fake-spraed to hold-on init, since we sprae rest when branch matches
+
+    // FIXME: instead of nextEl / el we should use elseEl / ifEl
+    if (nextEl?.hasAttribute(":else")) {
+      nextEl.removeAttribute(":else");
+      // if nextEl is :else :if - leave it for its own :if handler
+      if (!nextEl.hasAttribute(":if")) nextEl.remove(), elseEl = nextEl.content ? frag(nextEl) : nextEl, elseEl[_state] = null
+    }
+    else nextEl = null
+
+    return (value, newEl = el[_prevIf] ? null : value ? ifEl : elseEl) => {
+      if (nextEl) nextEl[_prevIf] = el[_prevIf] || newEl == ifEl
+      if (curEl != newEl) {
+        // disable effects on child elements when element is not matched
+        if (curEl) curEl.remove(), curEl[_off]?.()
+        if (curEl = newEl) {
+          holder.before(curEl.content || curEl)
+          // remove state stub to sprae as new
+          curEl[_state] === null ? (delete curEl[_state], sprae(curEl, state))
+            // enable effects if branch is matched
+            : curEl[_on]()
+        }
+      }
+    };
+  },
+
+  // :value - 2 way binding like x-model
+  value: (el, state, expr) => {
+    // bind back to value, but some values can be not bindable, eg. `:value="7"`
+    try {
+      const set = setter(expr)
+      const handleChange = el.type === 'checkbox' ? () => set(state, el.checked) :
+        el.type === 'select-multiple' ? () => set(state, [...el.selectedOptions].map(o => o.value)) :
+          () => set(state, el.selectedIndex < 0 ? null : el.value)
+
+      el.oninput = el.onchange = handleChange; // hope user doesn't redefine these manually via `.oninput = somethingElse` - it saves 5 loc vs addEventListener
+
+      if (el.type?.startsWith('select')) {
+        // select element also must observe any added/removed options or changed values (outside of sprae)
+        new MutationObserver(handleChange).observe(el, { childList: true, subtree: true, attributes: true });
+
+        // select options must be initialized before calling an update
+        sprae(el, state)
+      }
+
+      // initial state value
+      parse(expr, 'value')(state) ?? handleChange()
+    } catch { }
+
+    return (el.type === "text" || el.type === "") ?
+      (value) => el.setAttribute("value", (el.value = value == null ? "" : value)) :
+      (el.tagName === "TEXTAREA" || el.type === "text" || el.type === "") ?
+        (value, from, to) => (
+          // we retain selection in input
+          (from = el.selectionStart),
+          (to = el.selectionEnd),
+          el.setAttribute("value", (el.value = value == null ? "" : value)),
+          from && el.setSelectionRange(from, to)
+        ) :
+        (el.type === "checkbox") ?
+          (value) => (el.checked = value, attr(el, "checked", value)) :
+          (el.type === "select-one") ?
+            (value) => {
+              for (let o of el.options)
+                o.value == value ? o.setAttribute("selected", '') : o.removeAttribute("selected");
+              el.value = value;
+            } :
+            (el.type === 'select-multiple') ? (value) => {
+              for (let o of el.options) o.removeAttribute('selected')
+              for (let v of value) el.querySelector(`[value="${v}"]`).setAttribute('selected', '')
+            } :
+              (value) => (el.value = value);
+  },
+
+  // :each="v,k in src"
+  each: (tpl, state, expr) => {
+    // FIXME: we can add fake-keys for plain arrays
+    // NOTE: it's cheaper to parse again, rather than introduce workarounds: effect is anyways subscribed to full expression
+    // FIXME: oversubscription in eg. <x :scope="k=1"><y :each="v,k in list"></y></x> - whenever outer k changes list updates
+    parse(expr.split(/\bin\b/)[1], 'each')
+
+    let [itemVar, idxVar = "$"] = expr.split(/\bin\b/)[0].trim().replace(/\(|\)/g, '').split(/\s*,\s*/);
+
+    // we need :if to be able to replace holder instead of tpl for :if :each case
+    let holder = document.createTextNode("");
+
+    // we re-create items any time new items are produced
+    let cur, keys, items, prevl = 0
+
+    let update = () => {
+      let i = 0, newItems = items, newl = newItems.length
+
+      // plain array update, not store (signal with array) - updates full list
+      if (cur && !cur[_change]) {
+        for (let s of cur[_signals] || []) s[Symbol.dispose]()
+        cur = null, prevl = 0
+      }
+
+      // delete
+      if (newl < prevl) cur.length = newl
+
+      // update, append, init
+      else {
+        // init
+        if (!cur) cur = newItems
+        // update
+        else while (i < prevl) cur[i] = newItems[i++]
+
+        // append
+        for (; i < newl; i++) {
+          cur[i] = newItems[i]
+
+          let idx = i,
+            // FIXME: inherited state is cheaper in terms of memory and faster in terms of performance
+            // compared to cloning all parent signals and creating a proxy
+            // FIXME: besides try to avoid _signals access: we can optimize store then not checking for _signals key
+            // scope = store({
+            //   [itemVar]: cur[_signals]?.[idx] || cur[idx],
+            //   // [idxVar]: keys ? keys[idx] : idx
+            // }, state)
+            subscope = Object.create(state, {
+              [itemVar]: { get: () => cur[idx] },
+              [idxVar]: { value: keys ? keys[idx] : idx }
+            })
+
+          let el = tpl.content ? frag(tpl) : tpl.cloneNode(true);
+
+          holder.before(el.content || el);
+          sprae(el, subscope);
+
+          // signal/holder disposal removes element
+          ((cur[_signals] ||= [])[i] ||= {})[Symbol.dispose] = () => {
+            el[Symbol.dispose]?.(), el.remove()
+          };
+        }
+      }
+
+      prevl = newl
+    }
+
+    tpl.replaceWith(holder);
+    tpl[_state] = null // mark as fake-spraed, to preserve :-attribs for template
+
+    return value => {
+      // obtain new items
+      keys = null
+
+      if (typeof value === "number") items = Array.from({ length: value }, (_, i) => i + 1)
+      else if (value?.constructor === Object) keys = Object.keys(value), items = Object.values(value)
+      else items = value || []
+
+      // whenever list changes, we rebind internal change effect
+      let planned = 0
+      return effect(() => {
+        // subscribe to items change (.length) - we do it every time (not just in update) since preact unsubscribes unused signals
+        items[_change]?.value
+
+        // make first render immediately, debounce subsequent renders
+        if (!planned++) update(), queueMicrotask(() => (planned > 1 && update(), planned = 0));
+      })
+    }
+  },
+}
+
+// standard modifiers
+sprae.mod = {
+  // FIXME: add -s, -m, -l classes with values
+  debounce: (fn, wait = 108, _t) => e => (clearTimeout(_t), _t = setTimeout(() => (fn(e)), wait)),
+  once: (fn, _done) => Object.assign((e) => !_done && (_done = 1, fn(e)), {once: true}),
+
+  throttle: (fn, limit = 108, _pause, _planned, _t, _block) => (
+    _block = (e) => (
+      _pause = 1,
+      _t = setTimeout(() => (
+        _pause = 0,
+        // if event happened during blocked time, it schedules call by the end
+        _planned && (_planned = 0, _block(e), fn(e))
+      ), limit)
+    ),
+    e => _pause ? _planned = 1 : (_block(e), fn(e))
+  ),
+
+  // make batched
+  tick: (fn, _planned) => (e) => !_planned && (_planned=1, queueMicrotask(() => (fn(e), _planned=0))),
+
+  // FIXME
+  interval: (ctx, interval = 1080, _id, _cancel) => (a) => (_id = setInterval(() => _cancel = fn(a), interval), () => (clearInterval(_id), call(_cancel))),
+  raf: (ctx, _cancel, _id, _tick) => (_tick = a => (_cancel = fn(a), _id = requestAnimationFrame(_tick)), a => (_tick(a), () => (cancelAnimationFrame(_id), call(_cancel)))),
+  idle: (ctx, _id, _cancel) => (a) => (_id = requestIdleCallback(() => _cancel = fn(a), interval), () => (cancelIdleCallback(_id), call(_cancel))),
+
+  emit: (fn) => (e) => e ? fn(e) : (fn.target.dispatchEvent(e = new CustomEvent(fn.type, { bubbles: true, cancelable: true })), !e.defaultPrevented && fn()),
+  // FIXME:
+  // async: (fn) => (fn.async = true, fn),
+
+  // event modifiers
+  // actions
+  prevent: (fn) => (e) => (e?.preventDefault(), fn(e)),
+  stop: (fn) => (e) => (e?.stopPropagation(), fn(e)),
+  immediate: (fn) => (e) => (e?.stopImmediatePropagation(), fn(e)),
+
+  // options
+  passive: fn => (fn.passive = true, fn),
+  capture: fn => (fn.capture = true, fn),
+
+  // target
+  window: fn => (fn.target = window, fn),
+  document: fn => (fn.target = document, fn),
+  parent: fn => (fn.target = fn.target.parentNode, fn),
+
+  // test
+  self: (fn) => (e) => (e.target === fn.target && fn(e)),
+  // FIXME
+  outside: (fn) => (e, _target) => (
+    _target = fn.target,
+    !_target.contains(e.target) && e.target.isConnected && (_target.offsetWidth || _target.offsetHeight)
+  ),
+
+  // FIXME:
+  //screen: fn => ()
+};
+
+// key testers
+const keys = {
+  ctrl: e => e.ctrlKey || e.key === "Control" || e.key === "Ctrl",
+  shift: e => e.shiftKey || e.key === "Shift",
+  alt: e => e.altKey || e.key === "Alt",
+  meta: e => e.metaKey || e.key === "Meta" || e.key === "Command",
+  arrow: e => e.key.startsWith("Arrow"),
+  enter: e => e.key === "Enter",
+  esc: e => e.key.startsWith("Esc"),
+  tab: e => e.key === "Tab",
+  space: e => e.key === " " || e.key === "Space" || e.key === " ",
+  delete: e => e.key === "Delete" || e.key === "Backspace",
+  digit: e => /^\d$/.test(e.key),
+  letter: e => /^\p{L}$/gu.test(e.key),
+  char: e => /^\S$/.test(e.key),
+};
+
+// augment modifiers with key testers
+for (let k in keys) sprae.mod[k] = (fn, ...params) => (e) => keys[k](e) && params.every(k => keys[k]?.(e) ?? e.key === k) && fn(e)
+
+// create expression setter, reflecting value back to state
+const setter = (expr, _set = parse(`${expr}=__`)) => (state, value) => {
+  // save value to stash
+  state.__ = value, _set(state)
+}
+
+// instantiated <template> fragment holder, like persisting fragment but with minimal API surface
+const frag = (tpl) => {
+  if (!tpl.nodeType) return tpl // existing tpl
+
+  let content = tpl.content.cloneNode(true), // document fragment holder of content
+    attributes = [...tpl.attributes],
+    ref = document.createTextNode(''),
+    // ensure at least one node
+    childNodes = (content.append(ref), [...content.childNodes])
+
+  return {
+    // get parentNode() { return childNodes[0].parentNode },
+    childNodes,
+    content,
+    remove: () => content.append(...childNodes),
+    replaceWith(el) {
+      if (el === ref) return
+      ref.before(el)
+      content.append(...childNodes)
+    },
+    attributes,
+    removeAttribute(name) { attributes.splice(attributes.findIndex(a => a.name === name), 1) },
+    // setAttributeNode() { }
+  }
+}
+
+// if value is function - return result of its call
+const call = (v, arg) => typeof v === 'function' ? v(arg) : v
+
+// camel to kebab
+const dashcase = (str) => str.replace(/[A-Z\u00C0-\u00D6\u00D8-\u00DE]/g, (match, i) => (i ? '-' : '') + match.toLowerCase());
+
+// set attr
+const attr = (el, name, v) => (v == null || v === false) ? el.removeAttribute(name) : el.setAttribute(name, v === true ? "" : v);
+
+// convert any-arg to className string
+const clsx = (c, _out = []) => !c ? '' : typeof c === 'string' ? c : (
+  Array.isArray(c) ? c.map(clsx) :
+    Object.entries(c).reduce((s, [k, v]) => !v ? s : [...s, k], [])
+).join(' ')

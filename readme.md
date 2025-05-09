@@ -1,10 +1,10 @@
 # ∴ spræ [![tests](https://github.com/dy/sprae/actions/workflows/node.js.yml/badge.svg)](https://github.com/dy/sprae/actions/workflows/node.js.yml) [![npm bundle size](https://img.shields.io/bundlephobia/minzip/sprae)](https://bundlephobia.com/package/sprae) [![npm](https://img.shields.io/npm/v/sprae?color=orange)](https://www.npmjs.com/package/sprae)
 
-> DOM tree microhydration
+> light reactive hydration for DOM tree
 
-_Sprae_ is open & minimalistic progressive enhancement framework with _preact-signals_ reactivity.<br/>
-Perfect for small websites, static pages, prototypes, lightweight UI or nextjs / SSR (see [JSX](#jsx)).<br/>
-A light and fast alternative to _alpine_, _petite-vue_, _lucia_ etc (see [why](#justification)).
+_Sprae_ is open & minimalistic progressive enhancement framework using _preact-signals_ reactivity.<br/>
+Perfect for small websites, static pages, prototypes, or SSR.<br/>
+A light and fast alternative to _alpine_ or _petite-vue_.
 
 ## Usage
 
@@ -14,43 +14,154 @@ A light and fast alternative to _alpine_, _petite-vue_, _lucia_ etc (see [why](#
 </div>
 
 <script type="module">
-  import sprae from './sprae.js' // https://unpkg.com/sprae/dist/sprae.min.js
+  import sprae from './sprae.js'
 
   // init
-  const container = document.querySelector('#container');
-  const state = sprae(container, { user: { name: 'friend' } })
+  const state = sprae(
+    document.getElementById('container'),
+    { user: { name: 'Friend' } }
+  )
 
   // update
-  state.user.name = 'love'
+  state.user.name = 'Love'
 </script>
 ```
 
-Sprae evaluates `:`-directives and evaporates them, returning reactive state for updates.
-
-### UMD
-
-`sprae.umd` enables sprae via CDN, CJS, AMD etc.
-
-```html
-<script src="https://unpkg.com/sprae/dist/sprae.umd"></script>
-<script>
-  window.sprae; // global standalone
-</script>
-```
+Sprae evaluates `:`-directives, removes them, and returns a reactive state for updates.
 
 ### Autoinit
 
-`sprae.auto` autoinits sprae on document body.
+Sprae can be used as CDN script:
 
 ```html
-<!-- Optional attr `prefix` (by default ':'). -->
-<script src="https://unpkg.com/sprae/dist/sprae.auto" prefix="js-"></script>
+<h1 :scope="{message:'Hello World!'}" :text="message"></h1>
+<script src="https://cdn.jsdelivr.net/npm/sprae@12.x.x"></script>
 ```
+
+### Flavors
+
+* [sprae.js](dist/sprae.js) – standard ESM.
+* [sprae.umd.js](dist/sprae.umd.js) – CJS / UMD / standalone with autoinit.
+* [sprae.micro.js](dist/sprae.micro.js) – <2.5kb [micro version](#micro).
+* [sprae.secure.js](dist/sprae.secure.js) - CSP-enabled version with [secure eval](#evaluator).
+<!-- * sprae.async.js - sprae with async events -->
+<!-- * sprae.alpine.js - alpine sprae, drop-in alpinejs replacement -->
+<!-- * sprae.vue.js - vue sprae, drop-in petite-vue replacement -->
+<!-- * sprae.preact.js - sprae with preact-signals -->
 
 
 ## Directives
 
-#### `:if="condition"`, `:else`
+#### `:text`
+
+Set element text content.
+
+```html
+Welcome, <span :text="user.name">Guest</span>.
+
+<!-- fragment -->
+Welcome, <template :text="user.name"><template>.
+
+<!-- function -->
+<span :text="val => val + text"></span>
+```
+
+#### `:class`
+
+Set class.
+
+```html
+<div :class="foo"></div>
+
+<!-- appends to static class -->
+<div class="bar" :class="baz"></div>
+
+<!-- array/object, a-la clsx -->
+<div :class="['foo', bar && 'bar', { baz }]"></div>
+
+<!-- function -->
+<div :class="str => [str, 'active']"></div>
+```
+
+#### `:style`
+
+Set styles.
+
+```html
+<span :style="'display: inline-block'"></span>
+
+<!-- extends static style -->
+<div style="foo: bar" :style="'bar-baz: qux'">
+
+<!-- object -->
+<div :style="{barBaz: 'qux'}"></div>
+
+<!-- CSS variable -->
+<div :style="{'--bar': baz}"></div>
+
+<!-- function -->
+<div :style="s => ({'--bar': baz})"></div>
+```
+
+#### `:value`
+
+Bind input, textarea or select value.
+
+```html
+<input :value="value" />
+<textarea :value="value" />
+
+<!-- handles option & selected attr -->
+<select :value="selected">
+  <option :each="i in 5" :value="i" :text="i"></option>
+</select>
+
+<!-- checked attr -->
+<input type="checkbox" :value="item.done" />
+
+<!-- function with modifier -->
+<input :value.defer-300="value => value + str" />
+```
+
+#### `:<attr>`, `:`
+
+Set any attribute.
+
+```html
+<label :for="name" :text="name" />
+
+<!-- multiple -->
+<input :id:name="name" />
+
+<!-- function -->
+<div :hidden="hidden => !hidden"></div>
+
+<!-- spread -->
+<input :="{ id: name, name, type: 'text', value, ...props  }" />
+```
+
+#### `:on<event>`
+
+Attach event listener.
+
+```html
+<!-- inline -->
+<button :onclick="count++">Up</button>
+
+<!-- function -->
+<input type="checkbox" :onchange="event => isChecked = event.target.value">
+
+<!-- multiple -->
+<input :value="text" :oninput:onchange="event => text = event.target.value">
+
+<!-- sequence -->
+<button :onfocus..onblur="event => (handleFocus(), event => handleBlur())">
+
+<!-- modifiers -->
+<button :onclick.throttle-500="handle()">Not too often</button>
+```
+
+#### `:if`, `:else`
 
 Control flow of elements.
 
@@ -61,9 +172,12 @@ Control flow of elements.
 
 <!-- fragment -->
 <template :if="foo">foo <span>bar</span> baz</template>
+
+<!-- function -->
+<span :if="active => test()"></span>
 ```
 
-#### `:each="item, index? in items"`
+#### `:each`
 
 Multiply element.
 
@@ -71,9 +185,10 @@ Multiply element.
 <ul><li :each="item in items" :text="item" /></ul>
 
 <!-- cases -->
-<li :each="item, idx in array" />
-<li :each="value, key in object" />
-<li :each="count, idx in number" />
+<li :each="item, idx? in array" />
+<li :each="value, key? in object" />
+<li :each="count, idx? in number" />
+<li :each="item, idx? in function" />
 
 <!-- fragment -->
 <template :each="item in items">
@@ -82,159 +197,61 @@ Multiply element.
 </template>
 ```
 
-#### `:text="value"`
+#### `:scope`
 
-Set text content of an element.
-
-```html
-Welcome, <span :text="user.name">Guest</span>.
-
-<!-- fragment -->
-Welcome, <template :text="user.name"><template>.
-```
-
-#### `:class="value"`
-
-Set class value.
+Define scope for a subtree.
 
 ```html
-<div :class="foo"></div>
-
-<!-- appends to static class -->
-<div class="bar" :class="baz"></div>
-
-<!-- array/object, a-la clsx -->
-<div :class="['foo', bar && 'bar', { baz }]"></div>
-```
-
-#### `:style="value"`
-
-Set style value.
-
-```html
-<span style="'display: inline-block'"></span>
-
-<!-- extends static style -->
-<div style="foo: bar" :style="'bar-baz: qux'">
-
-<!-- object -->
-<div :style="{barBaz: 'qux'}"></div>
-
-<!-- set CSS variable -->
-<div :style="{'--bar-baz': qux}"></div>
-```
-
-#### `:value="value"`
-
-Set value to/from an input, textarea or select (like alpinejs `x-model`).
-
-```html
-<input :value="value" />
-<textarea :value="value" />
-
-<!-- selects right option & handles selected attr -->
-<select :value="selected">
-  <option :each="i in 5" :value="i" :text="i"></option>
-</select>
-
-<!-- handles checked attr -->
-<input type="checkbox" :value="item.done" />
-```
-
-#### `:<prop>="value"`, `:="values"`
-
-Set any attribute(s).
-
-```html
-<label :for="name" :text="name" />
-
-<!-- multiple attributes -->
-<input :id:name="name" />
-
-<!-- spread attributes -->
-<input :="{ id: name, name, type: 'text', value }" />
-```
-
-#### `:with="values"`
-
-Define values for a subtree.
-
-```html
-<x :with="{ foo: 'bar' }">
-  <y :with="{ baz: 'qux' }" :text="foo + baz"></y>
+<x :scope="{foo: 'foo'}">
+  <y :scope="{bar: 'bar'}" :text="foo + bar"></y>
 </x>
+
+<!-- blank scope -->
+<x :scope :ref="id"></x>
+
+<!-- variables -->
+<x :scope="x=1, y=2" :text="x+y"></x>
 ```
 
-#### `:fx="code"`
+#### `:fx`
 
 Run effect, not changing any attribute.
 
 ```html
 <div :fx="a.value ? foo() : bar()" />
 
-<!-- cleanup function -->
-<div :fx="id = setInterval(tick, 1000), () => clearInterval(id)" />
+<!-- cleanup -->
+<div :fx="() => (id = setInterval(tick, 1000), () => clearInterval(id))" />
 ```
 
-#### `:ref="name"`, `:ref="el => (...)"`
+#### `:ref`
 
 Expose element in state with `name` or get reference to element.
 
 ```html
 <div :ref="card" :fx="handle(card)"></div>
 
-<!-- local reference -->
-<li :each="item in items" :ref="li">
-  <input :onfocus..onblur="e => (li.classList.add('editing'), e => li.classList.remove('editing'))"/>
-</li>
-
-<!-- set innerHTML -->
+<!-- reference -->
 <div :ref="el => el.innerHTML = '...'"></div>
+
+<!-- local reference -->
+<li :each="item in items" :scope :ref="li">
+  <input :onfocus="e => li.classList.add('editing')"/>
+</li>
 
 <!-- mount / unmount -->
 <textarea :ref="el => (/* onmount */, () => (/* onunmount */))" :if="show"></textarea>
 ```
 
-#### `:on<event>="handler"`, `:on<in>..on<out>="handler"`
 
-Attach event(s) listener with optional modifiers.
-
-```html
-<input type="checkbox" :onchange="e => isChecked = e.target.value">
-
-<!-- multiple events -->
-<input :value="text" :oninput:onchange="e => text = e.target.value">
-
-<!-- sequence of events -->
-<button :onfocus..onblur="e => (handleFocus(), e => handleBlur())">
-
-<!-- modifiers -->
-<button :onclick.throttle-500="handler">Not too often</button>
-```
-
-##### Modifiers:
-
-* `.once`, `.passive`, `.capture` – listener [options](https://developer.mozilla.org/en-US/docs/Web/API/EventTarget/addEventListener#options).
-* `.prevent`, `.stop` (`.immediate`) – prevent default or stop (immediate) propagation.
-* `.window`, `.document`, `.parent`, `.outside`, `.self` – specify event target.
-* `.throttle-<ms>`, `.debounce-<ms>` – defer function call with one of the methods.
-* `.<key>` – filtered by [`event.key`](https://developer.mozilla.org/en-US/docs/Web/API/UI_Events/Keyboard_event_key_values):
-  * `.ctrl`, `.shift`, `.alt`, `.meta`, `.enter`, `.esc`, `.tab`, `.space` – direct key
-  * `.delete` – delete or backspace
-  * `.arrow` – up, right, down or left arrow
-  * `.digit` – 0-9
-  * `.letter` – A-Z, a-z or any [unicode letter](https://unicode.org/reports/tr18/#General_Category_Property)
-  * `.char` – any non-space character
-  * `.ctrl-<key>, .alt-<key>, .meta-<key>, .shift-<key>` – key combinations, eg. `.ctrl-alt-delete` or `.meta-x`.
-* `.*` – any other modifier has no effect, but allows binding multiple handlers to same event (like jQuery event classes).
-
+<!--
 #### `:data="values"`
 
 Set `data-*` attributes. CamelCase is converted to dash-case.
 
 ```html
 <input :data="{foo: 1, barBaz: true}" />
-<!-- <input data-foo="1" data-bar-baz /> -->
+<!-- <input data-foo="1" data-bar-baz />
 ```
 
 #### `:aria="values"`
@@ -251,8 +268,8 @@ Set `aria-*` attributes. Boolean values are stringified.
 }" />
 <!--
 <input role="combobox" aria-controls="joketypes" aria-autocomplete="list" aria-expanded="false" aria-active-option="item1" aria-activedescendant>
--->
 ```
+-->
 
 <!--
 #### `:onvisible..oninvisible="e => e => {}"`
@@ -275,9 +292,79 @@ Trigger when element is connected / disconnected from DOM.
 ```
 -->
 
-## Signals
+## Modifiers
 
-Sprae uses _preact-flavored signals_ for reactivity and can take _signal_ values as inputs.<br/>
+* `.debounce-<ms?>` – defer for `ms` (default 108).
+* `.throttle-<ms?>` – limit to once every `ms` (default 108).
+* `.once` – run only once.
+* `.tick` – defer to next microtask, useful for batching.
+* `.interval-<ms?>` – run every `ms` (default 108).
+* `.raf` – run `requestAnimationFrame` loop (~60fps).
+* `.idle` – run when system is idle.
+* `.async` – await callback results.
+* `.emit` – emit event for each update, preventDefault to skip.
+* `.window`, `.document`, `.parent`, `.outside`, `.self` – event target.
+* `.passive`, `.capture`, `.once` – event listener [options](https://developer.mozilla.org/en-US/docs/Web/API/EventTarget/addEventListener#options).
+* `.prevent`, `.stop` (`.immediate`) – event prevent default or stop (immediate) propagation.
+* `.<key>` – filter event by [`event.key`](https://developer.mozilla.org/en-US/docs/Web/API/UI_Events/Keyboard_event_key_values):
+  * `.ctrl`, `.shift`, `.alt`, `.meta`, `.enter`, `.esc`, `.tab`, `.space` – direct key
+  * `.delete` – delete or backspace
+  * `.arrow` – up, right, down or left arrow
+  * `.digit` – 0-9
+  * `.letter` – A-Z, a-z or any [unicode letter](https://unicode.org/reports/tr18/#General_Category_Property)
+  * `.char` – any non-space character
+  * `.ctrl-<key>, .alt-<key>, .meta-<key>, .shift-<key>` – key combinations, eg. `.ctrl-alt-delete` or `.meta-x`.
+* `.*` – any other modifier has no effect, but allows binding multiple handlers.
+
+
+## Reactivity
+
+Sprae uses _signals_ store for reactivity with sandboxing.
+
+```js
+import sprae from 'sprae'
+import store from 'sprae/store'
+import { signal } from 'sprae/signal'
+
+const name = signal('foo')
+
+const state = store(
+  {
+    count: 0,
+
+    inc(){ state.count++ },
+
+    // signal
+    name,
+
+    // computed
+    get twice(){ return this.count * 2 },
+
+    // untracked
+    _i: 0,
+  },
+
+  // globals
+  { Math }
+)
+
+sprae(element, state)
+
+// update
+state.inc()
+state.count++
+
+// signal update
+name.value = 'bar'
+
+// no update
+state._i++
+
+// sandbox
+state.Math       // globalThis.Math
+state.navigator  // undefined
+```
+
 Signals can be switched to an alternative preact/compatible implementation:
 
 ```js
@@ -286,35 +373,29 @@ import { signal, computed, effect, batch, untracked } from 'sprae/signal';
 import * as signals from '@preact/signals-core';
 
 // switch sprae signals to @preact/signals-core
-sprae.use(signals);
-
-// use signal as state value
-const name = signal('Kitty')
-sprae(el, { name });
-
-// update state
-name.value = 'Dolly';
+Object.assign(sprae, signals);
 ```
 
 Provider | Size | Feature
 :---|:---|:---
 [`ulive`](https://ghub.io/ulive) | 350b | Minimal implementation, basic performance, good for small states.
-[`@webreflection/signal`](https://ghub.io/@webreflection/signal) | 531b | Class-based, better performance, good for small-medium states.
-[`usignal`](https://ghub.io/usignal) | 850b | Class-based with optimizations, good for medium states.
+[`signal`](https://ghub.io/@webreflection/signal) | 633b | Class-based, better performance, good for small-medium states.
+[`usignal`](https://ghub.io/usignal) | 955b | Class-based with optimizations and optional async effects.
 [`@preact/signals-core`](https://ghub.io/@preact/signals-core) | 1.47kb | Best performance, good for any states, industry standard.
 [`signal-polyfill`](https://ghub.io/signal-polyfill) | 2.5kb | Proposal signals. Use via [adapter](https://gist.github.com/dy/bbac687464ccf5322ab0e2fd0680dc4d).
+[`alien-signals`](https://github.com/WebReflection/alien-signals) | 2.67kb | Preact-flavored [alien signals](https://github.com/stackblitz/alien-signals).
 
 
 ## Evaluator
 
-Expressions use _new Function_ as default evaluator, which is fast & compact way, but violates "unsafe-eval" CSP.
-To make eval stricter & safer, as well as sandbox expressions, an alternative evaluator can be used, eg. _justin_:
+Expressions use _new Function_ as default evaluator, which is fast & compact, but violates "unsafe-eval" CSP.
+To make eval stricter & safer, an alternative evaluator can be used, eg. _justin_:
 
 ```js
 import sprae from 'sprae'
 import justin from 'subscript/justin'
 
-sprae.use({compile: justin}) // set up justin as default compiler
+sprae.compile = justin; // set up justin as default compiler
 ```
 
 [_Justin_](https://github.com/dy/subscript#justin) is minimal JS subset that avoids "unsafe-eval" CSP and provides sandboxing.
@@ -335,36 +416,53 @@ sprae.use({compile: justin}) // set up justin as default compiler
 
 ## Custom Build
 
-_Sprae_ can be tailored to project needs via `sprae/core`:
+Sprae can be tailored to project needs / size:
 
 ```js
 // sprae.custom.js
-import sprae, { dir, parse } from 'sprae/core'
+import sprae, {directive} from 'sprae/core'
 import * as signals from '@preact/signals'
-import compile from 'subscript'
+import subscript from 'subscript'
 
-// standard directives
-import 'sprae/directive/default.js'
-import 'sprae/directive/if.js'
-import 'sprae/directive/text.js'
+// standard directives from sprae/directive
+import _attr from 'sprae/directive/attr.js'
+import _if from 'sprae/directive/if.js'
+import _text from 'sprae/directive/text.js'
+
+// register directives
+directive['if'] = _if
+directive['text'] = _text
+directive['*'] = _attr
 
 // custom directive :id="expression"
-dir('id', (el, state, expr) => {
+directive['id'] = (el, state, expr) => {
   // ...init
-  return value => el.id = value // update
-})
+  return newValue => {
+    // ...update
+    let nextValue = el.id = newValue
+    return nextValue
+  }
+}
 
-sprae.use({
-  // configure signals
-  ...signals,
+// configure signals
+sprae.use(signals)
 
-  // configure compiler
-  compile,
+// configure compiler
+sprae.compile = subscript
 
-  // custom prefix, default is `:`
-  prefix: 'js-'
-})
+// custom prefix, default is `:`
+sprae.prefix = 'js-'
 ```
+
+## Micro
+
+Micro sprae version is 2.5kb bundle with essentials:
+
+* no multieffects `:a:b`
+* no modifiers `:a.x.y`
+* no sequences `:ona..onb`
+* no `:each`, `:if`, `:value`
+* async effects by default
 
 ## JSX
 
@@ -401,33 +499,30 @@ export default function Layout({ children }) {
 
 * To prevent [FOUC](https://en.wikipedia.org/wiki/Flash_of_unstyled_content) add `<style>[\:each],[\:if],[\:else] {visibility: hidden}</style>`.
 * Attributes order matters, eg. `<li :each="el in els" :text="el.name"></li>` is not the same as `<li :text="el.name" :each="el in els"></li>`.
-* Invalid self-closing tags like `<a :text="item" />` will cause error. Valid self-closing tags are: `li`, `p`, `dt`, `dd`, `option`, `tr`, `td`, `th`, `input`, `img`, `br`.
-* Properties prefixed with `_` are untracked: `let state = sprae(el, {_x:2}); state._x++; // no effect`.
+* Invalid self-closing tags like `<a :text="item" />` cause error. Valid self-closing tags are: `li`, `p`, `dt`, `dd`, `option`, `tr`, `td`, `th`, `input`, `img`, `br`.
 * To destroy state and detach sprae handlers, call `element[Symbol.dispose]()`.
-* State getters/setters work as computed effects, eg. `sprae(el, { x:1, get x2(){ return this.x * 2} })`.
-* `this` is not used, to get current element use `:ref`.
-* `event` is not used, `:on*` attributes expect a function with event argument `:onevt="event => handle()"`, see [#46](https://github.com/dy/sprae/issues/46).
+* `this` is not used, to get element reference use `:ref`.
 * `key` is not used, `:each` uses direct list mapping instead of DOM diffing.
-* `await` is not supported in attributes, it’s a strong indicator you need to put these methods into state.
 * `:ref` comes after `:if` for mount/unmount events `<div :if="cond" :ref="(init(), ()=>dispose())"></div>`.
+<!-- * `inert` attribute can disable autoinit `<script src='./sprae.js' inert/>`. -->
+
 
 ## Justification
 
-Modern frontend stack is obese and unhealthy, like non-organic processed food. There are healthy alternatives, but:
+Modern frontend stack is non-organic & processed. There are healthy alternatives, but:
 
 * [Template-parts](https://github.com/dy/template-parts) is stuck with native HTML quirks ([parsing table](https://github.com/github/template-parts/issues/24), [SVG attributes](https://github.com/github/template-parts/issues/25), [liquid syntax](https://shopify.github.io/liquid/tags/template/#raw) conflict etc).
 * [Alpine](https://github.com/alpinejs/alpine) / [petite-vue](https://github.com/vuejs/petite-vue) / [lucia](https://github.com/aidenybai/lucia) escape native HTML quirks, but have excessive API (`:`, `x-`, `{}`, `@`, `$`), tend to [self-encapsulate](https://github.com/alpinejs/alpine/discussions/3223) and not care about size/performance.
 
 _Sprae_ holds open & minimalistic philosophy:
 
-* Minimal syntax `:`.
+* Minimal syntax space.
 * _Signals_ for reactivity.
 * Pluggable directives, configurable internals.
 * Small, safe & performant.
 * Bits of organic sugar.
 * Aims at making developers happy 🫰
 
-> Perfection is not when there is nothing to add, but when there is nothing to take away.
 
 <!--
 |                       | [AlpineJS](https://github.com/alpinejs/alpine)          | [Petite-Vue](https://github.com/vuejs/petite-vue)        | Sprae            |
@@ -445,6 +540,9 @@ _Sprae_ holds open & minimalistic philosophy:
 | _Fragments_ | Yes | No | Yes |
 | _Plugins_ | Yes | No | Yes |
 | _Modifiers_ | Yes | No | Yes |
+
+_Nested directives_ Yes
+_Inline directives_ Yes
 -->
 
 <!--
@@ -497,6 +595,7 @@ npm run results
 * [Petite-vue](https://github.com/vuejs/petite-vue)
 * [nuejs](https://github.com/nuejs/nuejs)
 * [hmpl](https://github.com/hmpl-language/hmpl)
+* [unpoly](https://unpoly.com/up.link)
  -->
 
 
