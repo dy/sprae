@@ -30,8 +30,7 @@ export const _signals = Symbol('signals'),
     // proxy conducts prop access to signals
     let state = new Proxy(Object.assign(signals, { [_change]: signal(len), [_signals]: signals }), {
       get: (_, k) => k in signals ? signals[k]?.valueOf?.() : parent[k],
-      set: (_, k, v, _s) => (k in signals ? (k[0] === '_' ? signals[k] = v : set(signals, k, v)) :
-        (create(signals, k, v), signals[_change].value = ++len), 1), // bump length for new signal
+      set: (_, k, v, _s) => (k in signals ? set(signals, k, v) : (create(signals, k, v), signals[_change].value = ++len), 1), // bump length for new signal
       deleteProperty: (_, k) => (k in signals && (signals[k][Symbol.dispose]?.(), delete signals[k], signals[_change].value = --len), 1),
       // subscribe to length when object is spread
       ownKeys: () => (signals[_change].value, Reflect.ownKeys(signals)),
@@ -104,25 +103,26 @@ export const _signals = Symbol('signals'),
   },
 
   // create signal value
-  create = (signals, k, v) => signals[k] = v?.peek ? v : signal(store(v)),
+  create = (signals, k, v) => signals[k] = k[0] == '_' || v?.peek ? v : signal(store(v)),
 
   // set/update signal value
-  set = (signals, k, v, _s = signals[k], _v = _s.peek()) => {
+  set = (signals, k, v, _s, _v) => {
     // skip unchanged (although can be handled by last condition - we skip a few checks this way)
-    return (v !== _v) && (
-      // stashed _set for value with getter/setter
-      _s[_set] ? _s[_set](v) :
-        // patch array
-        Array.isArray(v) && Array.isArray(_v) ?
-          // if we update plain array (stored in signal) - take over value instead
-          // since input value can be store, we have to make sure we don't subscribe to its length or values
-          _v[_change] ? untracked(() => batch(() => {
-            for (let i = 0; i < v.length; i++) _v[i] = v[i]
-            _v.length = v.length // forces deleting tail signals
-          })) : _s.value = v :
-          // .x = y
-          _s.value = store(v)
-    )
+    return k[0] === '_' ? signals[k] = v :
+      (v !== (_v = (_s = signals[k]).peek())) && (
+        // stashed _set for value with getter/setter
+        _s[_set] ? _s[_set](v) :
+          // patch array
+          Array.isArray(v) && Array.isArray(_v) ?
+            // if we update plain array (stored in signal) - take over value instead
+            // since input value can be store, we have to make sure we don't subscribe to its length or values
+            _v[_change] ? untracked(() => batch(() => {
+              for (let i = 0; i < v.length; i++) _v[i] = v[i]
+              _v.length = v.length // forces deleting tail signals
+            })) : _s.value = v :
+            // .x = y
+            _s.value = store(v)
+      )
   }
 
 

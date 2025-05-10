@@ -442,3 +442,15 @@ t('store: untracked values', async () => {
   is(log, [1, 0, 2, 0])
   s._y = 0
 })
+
+t('store: untracked substates', async () => {
+  let s = store({ x: 1, _y: [0] }), log = []
+  effect(() => log.push(s.x, s._y[0]))
+  is(log, [1, 0])
+  s.x++
+  is(log, [1, 0, 2, 0])
+  s._y[0]++
+  is(log, [1, 0, 2, 0])
+  s._y[0] = 0
+  is(log, [1, 0, 2, 0])
+})
