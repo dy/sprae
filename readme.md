@@ -218,7 +218,11 @@ Define scope for a subtree.
 Run effect, not changing any attribute.
 
 ```html
+<!-- inline -->
 <div :fx="a.value ? foo() : bar()" />
+
+<!-- function -->
+<div :fx="() => {...}" />
 
 <!-- cleanup -->
 <div :fx="() => (id = setInterval(tick, 1000), () => clearInterval(id))" />

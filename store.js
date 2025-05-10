@@ -31,7 +31,7 @@ export const _signals = Symbol('signals'),
     let state = new Proxy(Object.assign(signals, { [_change]: signal(len), [_signals]: signals }), {
       get: (_, k) => k in signals ? signals[k]?.valueOf?.() : parent[k],
       set: (_, k, v, _s) => (k in signals ? set(signals, k, v) : (create(signals, k, v), signals[_change].value = ++len), 1), // bump length for new signal
-      deleteProperty: (_, k) => (k in signals && (signals[k][Symbol.dispose]?.(), delete signals[k], signals[_change].value = --len), 1),
+      deleteProperty: (_, k) => (k in signals && (signals[k]?.[Symbol.dispose]?.(), delete signals[k], signals[_change].value = --len), 1),
       // subscribe to length when object is spread
       ownKeys: () => (signals[_change].value, Reflect.ownKeys(signals)),
       has: _ => 1 // sandbox prevents writing to global

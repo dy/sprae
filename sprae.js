@@ -1,8 +1,8 @@
 // standard sprae entry
 
-import sprae, { _state, parse, _on, _off } from "../core.js";
-import store, { _change, _signals } from "../store.js";
-import { effect } from '../signal.js';
+import sprae, { _state, _on, _off } from "./core.js";
+import store, { _change, _signals } from "./store.js";
+import { effect } from './signal.js';
 import { signal, untracked } from "./signal.js";
 
 export default sprae
@@ -22,7 +22,7 @@ sprae.init = (el, attrName, expr, state) => {
       let [name, ...mods] = str.split('.'),
         // event is either :click or :onclick, since on* events never intersect with * attribs
         isEvent = (name.startsWith('on') && (name = name.slice(2), true)) || el['on' + name],
-        evaluate = parse(expr, name)
+        evaluate = compile(name, expr, sprae.dir[name]?.clean)
 
       // events have no effects and can be sequenced
       if (isEvent) {
@@ -40,16 +40,21 @@ sprae.init = (el, attrName, expr, state) => {
       }
 
       // props have no sequences and can be sync
-      let update = sprae.dir[name]?.(el, state, expr) ?? (v => attr(el, name, call(v, el.getAttribute(name)))),
-          dispose
+      let update = sprae.dir[name]?.(el, state, expr) ?? (v => attr(el, name, call(v, el.getAttribute(name))))
 
-      // sync shortcut
-      // if (!prev && !isEvent && !mods.length) return () => effect(() => (update(evaluate(state), arg)))
+      // shortcut
+      if (!mods.length && !prev) return () => effect(() => (update(evaluate(state))))
 
-      // signal authorized to trigger effect: 0 = init; >0 = trigger
-      let change = signal(-1), count,
+      let dispose,
+
+        // signal authorized to trigger effect: 0 = init; >0 = trigger
+        change = signal(-1), count,
+
         // effect applier - first time it applies the effect, next times effect is triggered by change signal
-        fn = applyMods(() => { if (!++change.value) dispose = effect(() => {change.value != count ? (count = change.value, update(evaluate(state))) : fn() }) }, mods)
+        // FIXME: init via dispose, don't reset count
+        fn = applyMods(() => {
+          if (!++change.value) dispose = effect(() => (change.value != count ? (count = change.value, update(evaluate(state))) : fn()))
+        }, mods)
 
       return (_poff) => (_poff = prev?.(), fn(), () => (_poff?.(), dispose(), change.value = -1, count = null))
     }, null)
@@ -58,6 +63,34 @@ sprae.init = (el, attrName, expr, state) => {
   // off can be changed on the go
   return () => (off = steps[0]())
 }
+
+/**
+ * Compiles an expression into an evaluator function.
+ * (indirect new Function to avoid detector)
+ * @type {(expr: string) => Function}
+ */
+sprae.compile = expr => sprae.constructor(`with (arguments[0]) { return ${expr} };`)
+
+
+/**
+ * Parses an expression into an evaluator function, caching the result for reuse.
+ *
+ * @param {string} expr The expression to parse and compile into a function.
+ * @returns {Function} The compiled evaluator function for the expression.
+ */
+const compile = (dir, expr, clean = trim, _fn) => {
+  // expr.split(/\bin\b/)[1]
+  if (_fn = cache[expr = clean(expr)]) return _fn
+
+  // static time errors
+  try { _fn = sprae.compile(expr) } catch (e) { console.error(`∴ ${e}\n\n${sprae.prefix + dir}="${expr}"`) }
+
+  // run time errors
+  return cache[expr] = (s) => { try { return _fn(s) } catch (e) { console.error(`∴ ${e}\n\n${sprae.prefix + dir}="${expr}"`) } }
+}
+const cache = {};
+const trim = e => e.trim()
+
 
 // apply modifiers to context (from the end due to nature of wrapping ctx.call)
 const applyMods = (fn, mods) => {
@@ -68,11 +101,9 @@ const applyMods = (fn, mods) => {
   return fn
 }
 
-// soft extend missing props
+// soft-extend missing props
 const sx = (a, b) => { if (a != b) for (let k in b) a[k] ??= b[k]; return a }
 
-// simple eval (indirect new Function to avoid detector)
-sprae.compile = expr => sprae.constructor(`with (arguments[0]) { return ${expr} };`)
 
 // :if is interchangeable with :each depending on order, :if :each or :each :if have different meanings
 // as for :if :scope - :if must init first, since it is lazy, to avoid initializing component ahead of time by :scope
@@ -119,14 +150,15 @@ sprae.dir = {
   ),
 
   // :fx="..."
-  fx: (_,state) => _ => _,
+  fx: (_out) => call,
 
   // :ref="..."
   ref: (el, state, expr, _prev) => (
-    typeof parse(expr, 'ref')(state) == 'function' ?
+    // FIXME: handle via dynamic
+    typeof compile('ref', expr)(state) == 'function' ?
       v => v(el) :
       // v => (call(_prev), _prev = v(el), console.log(_prev)) :
-      setter(expr)(state, el)
+      setter('ref',expr)(state, el)
   ),
 
   // :scope creates variables scope for a subtree
@@ -137,7 +169,7 @@ sprae.dir = {
     // 0 run pre-creates state to provide scope for the first effect - it can write vars in it, so we should already have it
     _scope = store({}, rootState),
     // 1 run spraes subtree with values from scope - it can be postponed by modifiers (we isolate reads from parent effect)
-    values => (Object.assign(_scope, values), el[_state] ?? (delete el[_state], untracked(() => sprae(el, _scope)) ))
+    values => (Object.assign(_scope, values), el[_state] ?? (delete el[_state], untracked(() => sprae(el, _scope))))
   ),
 
   // :if="a" :else
@@ -180,7 +212,7 @@ sprae.dir = {
   value: (el, state, expr) => {
     // bind back to value, but some values can be not bindable, eg. `:value="7"`
     try {
-      const set = setter(expr)
+      const set = setter('value',expr)
       const handleChange = el.type === 'checkbox' ? () => set(state, el.checked) :
         el.type === 'select-multiple' ? () => set(state, [...el.selectedOptions].map(o => o.value)) :
           () => set(state, el.selectedIndex < 0 ? null : el.value)
@@ -196,7 +228,7 @@ sprae.dir = {
       }
 
       // initial state value
-      parse(expr, 'value')(state) ?? handleChange()
+      compile('value', expr)(state) ?? handleChange()
     } catch { }
 
     return (el.type === "text" || el.type === "") ?
@@ -226,11 +258,6 @@ sprae.dir = {
 
   // :each="v,k in src"
   each: (tpl, state, expr) => {
-    // FIXME: we can add fake-keys for plain arrays
-    // NOTE: it's cheaper to parse again, rather than introduce workarounds: effect is anyways subscribed to full expression
-    // FIXME: oversubscription in eg. <x :scope="k=1"><y :each="v,k in list"></y></x> - whenever outer k changes list updates
-    parse(expr.split(/\bin\b/)[1], 'each')
-
     let [itemVar, idxVar = "$"] = expr.split(/\bin\b/)[0].trim().replace(/\(|\)/g, '').split(/\s*,\s*/);
 
     // we need :if to be able to replace holder instead of tpl for :if :each case
@@ -294,9 +321,8 @@ sprae.dir = {
     tpl[_state] = null // mark as fake-spraed, to preserve :-attribs for template
 
     return value => {
-      // obtain new items
+      // resolve new items
       keys = null
-
       if (typeof value === "number") items = Array.from({ length: value }, (_, i) => i + 1)
       else if (value?.constructor === Object) keys = Object.keys(value), items = Object.values(value)
       else items = value || []
@@ -314,11 +340,14 @@ sprae.dir = {
   },
 }
 
+// :each directive skips v, k
+sprae.dir.each.clean = (str) => str.split(/\bin\b/)[1].trim()
+
 // standard modifiers
 sprae.mod = {
   // FIXME: add -s, -m, -l classes with values
   debounce: (fn, wait = 108, _t) => e => (clearTimeout(_t), _t = setTimeout(() => (fn(e)), wait)),
-  once: (fn, _done) => Object.assign((e) => !_done && (_done = 1, fn(e)), {once: true}),
+  once: (fn, _done) => Object.assign((e) => !_done && (_done = 1, fn(e)), { once: true }),
 
   throttle: (fn, limit = 108, _pause, _planned, _t, _block) => (
     _block = (e) => (
@@ -333,7 +362,7 @@ sprae.mod = {
   ),
 
   // make batched
-  tick: (fn, _planned) => (e) => !_planned && (_planned=1, queueMicrotask(() => (fn(e), _planned=0))),
+  tick: (fn, _planned) => (e) => !_planned && (_planned = 1, queueMicrotask(() => (fn(e), _planned = 0))),
 
   // FIXME
   interval: (ctx, interval = 1080, _id, _cancel) => (a) => (_id = setInterval(() => _cancel = fn(a), interval), () => (clearInterval(_id), call(_cancel))),
@@ -392,9 +421,9 @@ const keys = {
 for (let k in keys) sprae.mod[k] = (fn, ...params) => (e) => keys[k](e) && params.every(k => keys[k]?.(e) ?? e.key === k) && fn(e)
 
 // create expression setter, reflecting value back to state
-const setter = (expr, _set = parse(`${expr}=__`)) => (state, value) => {
+const setter = (dir, expr, _set = compile(dir, `${expr}=__`)) => (state, value) => {
   // save value to stash
-  state.__ = value, _set(state)
+  state.__ = value, _set(state), delete state.__
 }
 
 // instantiated <template> fragment holder, like persisting fragment but with minimal API surface

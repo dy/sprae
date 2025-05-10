@@ -6,8 +6,6 @@ export const _dispose = (Symbol.dispose ||= Symbol("dispose"));
 
 export const _state = Symbol("state"), _on = Symbol('on'), _off = Symbol('off')
 
-// compiled cache
-const cache = {};
 
 /**
  * Applies directives to an HTML element and manages its reactive state.
@@ -66,6 +64,13 @@ export const sprae = (el = document.body, values) => {
   return state;
 }
 
+/**
+ * Initializes directive (defined by sprae build), returns "on" function that enables it
+ *
+ * @type {(el: HTMLElement, name:string, value:string, state:Object) => Function}
+ * */
+sprae.init = null
+
 /** Registered directives */
 sprae.dir = {}
 
@@ -75,7 +80,7 @@ sprae.mod = {}
 /**
  * Compiles an expression into an evaluator function.
  *
- * @type {(expr: string) => Function}
+ * @type {(dir:string, expr: string, clean?: string => string) => Function}
  */
 sprae.compile = null
 
@@ -88,27 +93,5 @@ sprae.prefix = ':'
  * Configure signals
  */
 sprae.use = use
-
-/**
- * Parses an expression into an evaluator function, caching the result for reuse.
- *
- * @param {string} expr The expression to parse and compile into a function.
- * @returns {Function} The compiled evaluator function for the expression.
- */
-export const parse = (expr, dir, _fn) => {
-  if (_fn = cache[expr = expr.trim()]) return _fn
-
-  // static time errors
-  _fn = safe(() => sprae.compile(expr), expr, dir)()
-
-  // run time errors
-  return cache[expr] = safe(_fn, expr, dir)
-}
-
-// create wrapped function call
-const safe = (fn, expr, dir) => state => {
-  try { return fn?.(state) }
-  catch (e) { console.error(`∴ ${e}\n\n${sprae.prefix + dir}="${expr}"`) }
-}
 
 export default sprae

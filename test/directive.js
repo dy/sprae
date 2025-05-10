@@ -1,10 +1,11 @@
-import { _dispose } from "../core.js";
+import { _dispose, _off, _state } from "../core.js";
 import { tick, time } from "wait-please";
 import sprae from '../sprae.js'
 import h from "hyperf";
-import { _off, _state } from "../core.js";
-import test, { any, is } from "tst";
+import test, { any, is, ok } from "tst";
 import { signal, batch, untracked } from '../signal.js'
+import { store } from '../store.js'
+
 
 
 test("any: basic", async () => {
@@ -42,20 +43,23 @@ test("any: null result does nothing", async () => {
 });
 
 
+
 test("fx: effects", async () => {
-  let el = h`<x :fx="(log.push(x), () => (log.push('out')))"></x>`;
+  let el = h`<x :fx="() => (_log.push(x), () => (console.trace(123, _log),_log.push('out')))"></x>`;
   let x = signal(1)
-  let state = sprae(el, { log: [], x, console });
+  let state = sprae(el, { _log: [], x, console });
   is(el.outerHTML, `<x></x>`);
-  is(state.log, [1])
-  console.log('upd value')
+  is(state._log, [1])
+  console.log('----- x=2')
   x.value = 2
   await tick()
   is(el.outerHTML, `<x></x>`);
-  is(state.log, [1, 'out', 2])
+  is(state._log, [1, 'out', 2])
+  console.log('----- dispose')
   el[Symbol.dispose]()
-  is(state.log, [1, 'out', 2, 'out'])
+  is(state._log, [1, 'out', 2, 'out'])
 });
+
 
 
 test('class: basic', async () => {
@@ -114,6 +118,7 @@ test('class: function', async () => {
   is(el.innerHTML, `<div class="foo a b"></div>`);
   is(s.log, ['foo', 'foo a'])
 });
+
 
 
 test.skip("class: interpolation", async () => {
@@ -789,7 +794,7 @@ test('value: select options change #52', async () => {
   })
 
   is(el.value, '')
-  is(state.selected, null)
+  is(state.selected, undefined)
 
   console.log('-------add option 1')
   state.options.push({ value: 1, label: 'a' })
@@ -1440,8 +1445,8 @@ test('each: batched .length updates', async () => {
   any(c, [2, 3])
 })
 
-// NOTE: item is readonly
 test.skip('each: rewrite item', async () => {
+  // NOTE: item is readonly
   let el = h`<a><x :each="i in items" :text="i" :onx="e=>i++"/></a>`
   sprae(el, { items: [1, 2, 3] })
   is(el.innerHTML, `<x>1</x><x>2</x><x>3</x>`)

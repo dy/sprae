@@ -1089,10 +1089,15 @@
 ## [x] Should we create per-object signal, instead of per-property? -> No
   - it gives less granular updates: full array gets diffed, all nodes get refreshed
 
-## [x] ~~Should we replace `:each="item in items"` to `:each.item="items"`?~~ -> fixed via custom .parse
+## [x] Should we replace `:each="item in items"` to `:each.item="items"`? -> no, we stick to parse redefine
 
   - non-conventional
-  + `:each` is the only exception now that needs custom expr parsing
+  + `:each` is the only exception that needs custom expr parsing
+
+### [x] Should we oversubscribe/overparse instead of custom parsing (double-parse)? -> no, we stick to parse redefine
+
+  + we already use sub-effect, so we can parse again and subeffect again
+  - returned function is handled asynchronously
 
 ### [x] When signal with array is used as store value {rows:signal([1,2,3])} - what's expected update? -> let's make it full reinit array, since it's most direct
 
@@ -1355,11 +1360,6 @@
   + if you want separate scope - just create via `:with.item="items[i]"`
     ? can we make `:let="item=items[i]"` instead of `:with`?
 
-## [ ] Conditional queries: md:onclick, lg:onclick etc?
-
-  + tailwind-like
-  + can be handy I suppose
-
 ## [x] Should we make all directives accept function? `:x="()=>{}"` -> yes, makes sense for tapping prev value, like :ref
 
   + #60 and others, sort-of natural expectation
@@ -1514,6 +1514,11 @@
   - tick is not necessary
   - makes updates slightly heavier
   - .emit manually can be default prevented to skip update, so no use
+
+### [x] Conditional queries: md:onclick, lg:onclick etc? -> yes, screen-<size> plugin
+
+  + tailwind-like
+  + can be handy I suppose
 
 ## [ ] Prop modifiers -> yes,
 
