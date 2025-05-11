@@ -523,11 +523,12 @@ test("ref: signal", async () => {
 });
 
 test("ref: with :each", async () => {
-  let a = h`<y><x :each="item in items" :ref="x" :text="log.push(x), item"/></y>`;
-  let state = sprae(a, { log: [], items: [1, 2, 3] });
+  // NOTE: if you have inf recursion here, look carefully: ref is expected to write to item own scope, but it might write to the root scope
+  let a = h`<y><x :each="item in (items)" :ref="x" :text="log.push(x), item"/></y>`;
+  let state = sprae(a, { log: [], items: [1, 2, 3, 4, 5, 6, 7] });
   await tick();
   is(state.log, [...a.children]);
-  is(a.innerHTML, `<x>1</x><x>2</x><x>3</x>`);
+  is(a.innerHTML, `<x>1</x><x>2</x><x>3</x><x>4</x><x>5</x><x>6</x><x>7</x>`);
 });
 
 test("ref: t̵h̵i̵s̵ ̵r̵e̵f̵e̵r̵s̵ ̵t̵o̵ defines current element", async () => {
@@ -746,7 +747,7 @@ test("value: textarea", async () => {
   is(el.selectionEnd, 4);
 });
 
-test('value: select one', async () => {
+test("value: select one", async () => {
   let el = h`
   <select :name="field.name" :value="object[field.name]">
       <option :each="option in field.options" :value="option.value"
@@ -763,7 +764,7 @@ test('value: select one', async () => {
   is(state.object.x, 2)
 })
 
-test('value: select multiple', async () => {
+test("value: select multiple", async () => {
   let el = h`
   <select :id:name="field.name" :value="object[field.name]" multiple>
     <option :each="option in field.options" :value="option.value"
@@ -780,7 +781,7 @@ test('value: select multiple', async () => {
   is([...el.selectedOptions], [el.children[1], el.children[2]])
 })
 
-test('value: select options change #52', async () => {
+test("value: select options change #52", async () => {
   let el = h`
   <select :value="selected">
     <option :each="option in options" :value="option.value"
@@ -823,7 +824,7 @@ test('value: select options change #52', async () => {
   // is([...el.selectedOptions], [el.children[1], el.children[2]])
 })
 
-test('value: keep initial selected element #53', t => {
+test("value: keep initial selected element #53", t => {
   let el = h`<div id="container">
       <select class="form-control" :value="obj">
           <option value="1">Test 1</option>
@@ -847,7 +848,11 @@ test("value: reflect #57", async () => {
 });
 
 test("value: reflect ensure value", async () => {
+  // NOTE: this causes breakage of the second run
+  sprae(h`<a :ref="a"></a>`,{})
+
   let el = h`<input :value="a" />`;
+  console.log('-------- second init')
   let state = sprae(el, {});
   is(state.a, '');
   is(el.outerHTML, `<input value="">`);
@@ -1375,13 +1380,16 @@ test("each: subscribe to modifying list", async () => {
   const state = sprae(el, {
     rows: [1],
     remove() {
-      this.rows = [];
+      console.log('remove', this.rows)
+      // this.rows = []
+      this.rows.length = 0
     },
   });
   is(el.outerHTML, `<ul><li>1</li></ul>`);
+
   // state.remove()
+  console.log("---dispatch remove", state.rows);
   el.querySelector("li").dispatchEvent(new window.Event("remove"));
-  console.log("---removed", state.rows);
 
   await tick();
   is(el.outerHTML, `<ul></ul>`);

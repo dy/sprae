@@ -327,7 +327,7 @@ t('computed: chain', () => {
 
 
 // batch
-t.skip('batch: reversed change', () => {
+t('batch: reversed change', () => {
   let s = signal(0), c = 0
   effect(() => (s.value,c++))
 

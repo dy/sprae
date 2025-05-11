@@ -1,5 +1,5 @@
 // preact-signals minimal implementation
-let current, depth = 0;
+let current, depth = 0, batched;
 
 export let signal = (v, _s, _obs = new Set, _v = () => _s.value) => (
   _s = {
@@ -10,7 +10,7 @@ export let signal = (v, _s, _obs = new Set, _v = () => _s.value) => (
     set value(val) {
       if (val === v) return
       v = val;
-      for (let sub of _obs) sub(); // notify effects
+      for (let sub of _obs)  batched ? batched.add(sub) : sub(); // notify effects
     },
     peek() { return v },
     toJSON: _v, then: _v, toString: _v, valueOf: _v
@@ -38,8 +38,11 @@ export let signal = (v, _s, _obs = new Set, _v = () => _s.value) => (
       toJSON: _v, then: _v, toString: _v, valueOf: _v
     }
   ),
-  batch = fn => fn(),
-  // untracked = batch,
+  batch = (fn, _first=!batched) => {
+    batched ??= new Set;
+    try { fn(); }
+    finally { if (_first) { for (const fx of batched) fx(); batched = null } }
+  },
   untracked = (fn, _prev, _v) => (_prev = current, current = null, _v = fn(), current = _prev, _v),
 
   // signals adapter - allows switching signals implementation and not depend on core

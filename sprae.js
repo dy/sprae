@@ -2,7 +2,7 @@
 
 import sprae, { _state, _on, _off } from "./core.js";
 import store, { _change, _signals } from "./store.js";
-import { effect } from './signal.js';
+import { batch, effect } from './signal.js';
 import { signal, untracked } from "./signal.js";
 
 export default sprae
@@ -40,10 +40,10 @@ sprae.init = (el, attrName, expr, state) => {
       }
 
       // props have no sequences and can be sync
-      let update = sprae.dir[name]?.(el, state, expr) ?? (v => attr(el, name, call(v, el.getAttribute(name))))
+      let update = (sprae.dir[name] || sprae.dir['*'])(el, state, expr, name)
 
       // shortcut
-      if (!mods.length && !prev) return () => effect(() => (update(evaluate(state))))
+      if (!mods.length && !prev) return () => effect(() => (update?.(evaluate(state))))
 
       let dispose,
 
@@ -108,10 +108,13 @@ const sx = (a, b) => { if (a != b) for (let k in b) a[k] ??= b[k]; return a }
 // :if is interchangeable with :each depending on order, :if :each or :each :if have different meanings
 // as for :if :scope - :if must init first, since it is lazy, to avoid initializing component ahead of time by :scope
 // we consider :scope={x} :if={x} case insignificant
-const _prevIf = Symbol("if");
+const _if = Symbol("if");
 
 // standard directives
 sprae.dir = {
+  // :x="x"
+  '*': (el, st, ex, name) => v => attr(el, name, call(v, el.getAttribute(name))),
+
   // :="{a,b,c}"
   '': (target) => value => { for (let key in value) attr(target, dashcase(key), value[key]) },
 
@@ -150,15 +153,14 @@ sprae.dir = {
   ),
 
   // :fx="..."
-  fx: (_out) => call,
+  fx: () => call,
 
   // :ref="..."
-  ref: (el, state, expr, _prev) => (
-    // FIXME: handle via dynamic
-    typeof compile('ref', expr)(state) == 'function' ?
+  ref: (el, state, expr, name, _prev, _set) => (
+    typeof compile(name, expr)(state) == 'function' ?
       v => v(el) :
-      // v => (call(_prev), _prev = v(el), console.log(_prev)) :
-      setter('ref',expr)(state, el)
+      // NOTE: we have to set element statically (outside of effect) to avoid parasitic sub - multiple els with same :ref can cause recursion (eg. :each :ref="x")
+      setter(name, expr)(state, el)
   ),
 
   // :scope creates variables scope for a subtree
@@ -192,8 +194,8 @@ sprae.dir = {
     }
     else nextEl = null
 
-    return (value, newEl = el[_prevIf] ? null : value ? ifEl : elseEl) => {
-      if (nextEl) nextEl[_prevIf] = el[_prevIf] || newEl == ifEl
+    return (value, newEl = el[_if] ? null : value ? ifEl : elseEl) => {
+      if (nextEl) nextEl[_if] = el[_if] || newEl == ifEl
       if (curEl != newEl) {
         // disable effects on child elements when element is not matched
         if (curEl) curEl.remove(), curEl[_off]?.()
@@ -209,10 +211,10 @@ sprae.dir = {
   },
 
   // :value - 2 way binding like x-model
-  value: (el, state, expr) => {
+  value: (el, state, expr, name) => {
     // bind back to value, but some values can be not bindable, eg. `:value="7"`
     try {
-      const set = setter('value',expr)
+      const set = setter(name, expr)
       const handleChange = el.type === 'checkbox' ? () => set(state, el.checked) :
         el.type === 'select-multiple' ? () => set(state, [...el.selectedOptions].map(o => o.value)) :
           () => set(state, el.selectedIndex < 0 ? null : el.value)
@@ -228,7 +230,7 @@ sprae.dir = {
       }
 
       // initial state value
-      compile('value', expr)(state) ?? handleChange()
+      compile(name, expr)(state) ?? handleChange()
     } catch { }
 
     return (el.type === "text" || el.type === "") ?
@@ -290,21 +292,20 @@ sprae.dir = {
           cur[i] = newItems[i]
 
           let idx = i,
-            // FIXME: inherited state is cheaper in terms of memory and faster in terms of performance
-            // compared to cloning all parent signals and creating a proxy
-            // FIXME: besides try to avoid _signals access: we can optimize store then not checking for _signals key
-            // scope = store({
-            //   [itemVar]: cur[_signals]?.[idx] || cur[idx],
-            //   // [idxVar]: keys ? keys[idx] : idx
-            // }, state)
-            subscope = Object.create(state, {
-              [itemVar]: { get: () => cur[idx] },
-              [idxVar]: { value: keys ? keys[idx] : idx }
-            })
+            // FIXME: inherited state is cheaper in terms of memory and faster in terms of performance, compared to creating a proxy
+            subscope = store({
+              [itemVar]: cur[_signals]?.[idx] || cur[idx],
+              [idxVar]: keys ? keys[idx] : idx
+            }, state)
+            // subscope = Object.create(state, {
+            //   [itemVar]: { get: () => cur[idx] },
+            //   [idxVar]: { value: keys ? keys[idx] : idx }
+            // })
 
           let el = tpl.content ? frag(tpl) : tpl.cloneNode(true);
 
           holder.before(el.content || el);
+
           sprae(el, subscope);
 
           // signal/holder disposal removes element
@@ -421,9 +422,9 @@ const keys = {
 for (let k in keys) sprae.mod[k] = (fn, ...params) => (e) => keys[k](e) && params.every(k => keys[k]?.(e) ?? e.key === k) && fn(e)
 
 // create expression setter, reflecting value back to state
-const setter = (dir, expr, _set = compile(dir, `${expr}=__`)) => (state, value) => {
+const setter = (dir, expr, _set = compile(dir, `${expr}=__`)) => (target, value) => {
   // save value to stash
-  state.__ = value, _set(state), delete state.__
+  target.__ = value; _set(target), delete target.__
 }
 
 // instantiated <template> fragment holder, like persisting fragment but with minimal API surface

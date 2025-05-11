@@ -1133,6 +1133,17 @@
   + It would allow us to get rid of `parent` in `store`, which is less static + dynamic trouble
   + `:scope` defines only particular local variables, but generally access to root scope is preserved
 
+## [ ] Should :each create own scope (or keep parent scope)?
+
+  + allows `:ref`
+    ~ can be done as `:scope :ref='x'`
+  - performance hit
+  ~ we don't really need it as much, do we?
+
+### [ ] Should :ref create own scope instead?
+
+  - doesn't expose item to the parent state
+
 ### [x] store: should we prohibit creation of new props? -> no
 
   + Structs make objects nice: small, fast, obvious
@@ -1142,45 +1153,6 @@
     + and that naturally prevents leaking variables
   ? Do we need extending root scope? Like writing some new props to it?
   + `with` doesn't allow writing new props anyways
-
-## [ ] Componentization: what can be done? -> likely no for now. When html-include is there we can talk
-
-  1. define-element
-
-    - templating uses django syntax - leads to verbatim conflict
-      ~ we're not necessarily going to use django
-    - `<template>` within `<template>` is not nice, for the case of :each etc
-      ~ foreach works as `<template directive="foraeach" expression="...">xxx</template>`, so it shouldn't be a problem
-    - no obvious way to import elements
-      - requires some bundling, likely for HTML
-    - non-standard
-
-  2. JS custom elements
-
-    + allows esm bundling of templates
-    + allows evaluatig sprae manually
-    + fine-grain control of attributes
-    - requires innerHTML
-    - direct competition with JSX, which is weird
-    ~ we can make spraex extension for JSX to allow :on attributes
-
-  3. No componentization
-
-    + discipline of tiny single-purpose apps
-    + factors componentization out to other libs
-    - makes sprae less useful as dependency
-
-  4. include / html / render
-
-    + gives intermediate solution
-    + classic
-    - no components
-    - a bit implicit
-
-  5. htmx-like requests
-
-  6. https://github.com/jhuddle/ponys
-    + takes the toll of including, enabling, defining components in minimal way
 
 ## [x] Pause/resume components (detached :if should not trigger internal fx) -> complete disposal cycle
 
@@ -1519,6 +1491,45 @@
 
   + tailwind-like
   + can be handy I suppose
+
+## [ ] Componentization: what can be done? -> likely no for now. When html-include is there we can talk
+
+  1. define-element
+
+    - templating uses django syntax - leads to verbatim conflict
+      ~ we're not necessarily going to use django
+    - `<template>` within `<template>` is not nice, for the case of :each etc
+      ~ foreach works as `<template directive="foraeach" expression="...">xxx</template>`, so it shouldn't be a problem
+    - no obvious way to import elements
+      - requires some bundling, likely for HTML
+    - non-standard
+
+  2. JS custom elements
+
+    + allows esm bundling of templates
+    + allows evaluatig sprae manually
+    + fine-grain control of attributes
+    - requires innerHTML
+    - direct competition with JSX, which is weird
+    ~ we can make spraex extension for JSX to allow :on attributes
+
+  3. No componentization
+
+    + discipline of tiny single-purpose apps
+    + factors componentization out to other libs
+    - makes sprae less useful as dependency
+
+  4. include / html / render
+
+    + gives intermediate solution
+    + classic
+    - no components
+    - a bit implicit
+
+  5. htmx-like requests
+
+  6. https://github.com/jhuddle/ponys
+    + takes the toll of including, enabling, defining components in minimal way
 
 ## [ ] Prop modifiers -> yes,
 
