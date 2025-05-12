@@ -1143,6 +1143,7 @@
 ### [ ] Should :ref create own scope instead?
 
   - doesn't expose item to the parent state
+    ~ :each with scopes doesn't expose either
 
 ### [x] store: should we prohibit creation of new props? -> no
 

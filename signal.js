@@ -1,7 +1,9 @@
 // preact-signals minimal implementation
 let current, depth = 0, batched;
 
-export let signal = (v, _s, _obs = new Set, _v = () => _s.value) => (
+// default signals impl
+export default {
+  signal: (v, _s, _obs = new Set, _v = () => _s.value) => (
   _s = {
     get value() {
       current?.deps.push(_obs.add(current));
@@ -16,7 +18,7 @@ export let signal = (v, _s, _obs = new Set, _v = () => _s.value) => (
     toJSON: _v, then: _v, toString: _v, valueOf: _v
   }
 ),
-  effect = (fn, _teardown, _fx, _deps) => (
+  effect: (fn, _teardown, _fx, _deps) => (
     _fx = (prev) => {
       _teardown?.call?.();
       prev = current, current = _fx
@@ -28,7 +30,7 @@ export let signal = (v, _s, _obs = new Set, _v = () => _s.value) => (
     _fx(),
     (dep) => { _teardown?.call?.(); while (dep = _deps.pop()) dep.delete(_fx); }
   ),
-  computed = (fn, _s = signal(), _c, _e, _v = () => _c.value) => (
+  computed: (fn, _s = signal(), _c, _e, _v = () => _c.value) => (
     _c = {
       get value() {
         _e ||= effect(() => _s.value = fn());
@@ -38,18 +40,21 @@ export let signal = (v, _s, _obs = new Set, _v = () => _s.value) => (
       toJSON: _v, then: _v, toString: _v, valueOf: _v
     }
   ),
-  batch = (fn, _first=!batched) => {
+  batch: (fn, _first=!batched) => {
     batched ??= new Set;
     try { fn(); }
     finally { if (_first) { for (const fx of batched) fx(); batched = null } }
   },
-  untracked = (fn, _prev, _v) => (_prev = current, current = null, _v = fn(), current = _prev, _v),
+  untracked: (fn, _prev, _v) => (_prev = current, current = null, _v = fn(), current = _prev, _v)
+}
 
-  // signals adapter - allows switching signals implementation and not depend on core
-  use = (s) => (
-    signal = s.signal,
-    effect = s.effect,
-    computed = s.computed,
-    batch = s.batch || batch,
-    untracked = s.untracked || batch
-  )
+export let signal, effect, untracked, computed, batch
+
+// signals adapter - allows switching signals implementation and not depend on core
+export const use = (s) => (
+  signal = s.signal,
+  effect = s.effect,
+  computed = s.computed,
+  batch = s.batch || batch,
+  untracked = s.untracked || batch
+)

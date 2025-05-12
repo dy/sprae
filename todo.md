@@ -173,13 +173,19 @@
 * [x] generalize prop modifiers
 * [x] make dirs accept functions
 * [x] separate events from props
-* [ ] event all modifiers tests
-* [ ] prop modifiers tests
-* [ ] fix :each :scope tests
-* [ ] async callbacks
-* [ ] emit modifier tests
-* [ ] event modifiers for props
+* [x] enable async effect and run all basic tests
+* [ ] All TODO/FIXME
+* [ ] try alternative way to update plain lists in :each rather than simulating signals
+* [ ] finish all prop modifiers with tests
+* [ ] add event extra modifiers tests
+* [ ] add async callbacks tests
+* [ ] microjs bundle
+* [ ] flavors: alpine, vue, micro, secure
+* [ ] switch signals to preact and test everything
 * [ ] website
+  * [ ] 7 GUIs example
+  * [ ] collection of examples
+* [ ] finish ajamila poll with v12
 * [x] flat directives
 * [x] get rid of :data, :aria
 * [x] run effects after collecting them
@@ -188,12 +194,6 @@
 * [x] pass globals to store
 * [x] expose sprae.compile, .prefix, .dir
 * [x] make :each use inheritance instead of Proxy
-* [ ] microjs tests
-* [ ] flavors: alpine, vue, micro, secure
-* [ ] all tests, with enabled preact/signals
-* [ ] make sure umd min bundle works
-* [ ] test usignal/async effects
-* [ ] finish ajamila poll with v12
 
 ## [ ] Optimizations (https://krausest.github.io/js-framework-benchmark/current.html)
 

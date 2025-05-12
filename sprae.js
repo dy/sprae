@@ -2,10 +2,13 @@
 
 import sprae, { _state, _on, _off } from "./core.js";
 import store, { _change, _signals } from "./store.js";
-import { batch, effect } from './signal.js';
+import signals, { batch, effect } from './signal.js';
 import { signal, untracked } from "./signal.js";
 
 export default sprae
+
+// use default signals
+sprae.use(signals)
 
 // multiprop sequences initializer, eg. :a:b..c:d
 // micro version has single-prop direct initializer, way simpler
@@ -43,7 +46,7 @@ sprae.init = (el, attrName, expr, state) => {
       let update = (sprae.dir[name] || sprae.dir['*'])(el, state, expr, name)
 
       // shortcut
-      if (!mods.length && !prev) return () => effect(() => (update?.(evaluate(state))))
+      if (!mods.length && !prev) return () => update && effect(() => update(evaluate(state)))
 
       let dispose,
 
@@ -51,12 +54,13 @@ sprae.init = (el, attrName, expr, state) => {
         change = signal(-1), count,
 
         // effect applier - first time it applies the effect, next times effect is triggered by change signal
+        // we call fn next tick to avoid wrong teardown callback - anyways modifiers
         // FIXME: init via dispose, don't reset count
         fn = applyMods(() => {
-          if (!++change.value) dispose = effect(() => (change.value != count ? (count = change.value, update(evaluate(state))) : fn()))
+          if (!++change.value) dispose = effect(() => update && (change.value != count ? (count = change.value, update(evaluate(state))) : (queueMicrotask(fn))))
         }, mods)
 
-      return (_poff) => (_poff = prev?.(), fn(), () => (_poff?.(), dispose(), change.value = -1, count = null))
+      return (_poff) => (_poff = prev?.(), fn(), () => (_poff?.(), dispose(), change.value = -1, count = dispose = null))
     }, null)
   ));
 
@@ -86,7 +90,7 @@ const compile = (dir, expr, clean = trim, _fn) => {
   try { _fn = sprae.compile(expr) } catch (e) { console.error(`∴ ${e}\n\n${sprae.prefix + dir}="${expr}"`) }
 
   // run time errors
-  return cache[expr] = (s) => { try { return _fn(s) } catch (e) { console.error(`∴ ${e}\n\n${sprae.prefix + dir}="${expr}"`) } }
+  return cache[expr] = (s) => { try { return _fn?.(s) } catch (e) { console.error(`∴ ${e}\n\n${sprae.prefix + dir}="${expr}"`) } }
 }
 const cache = {};
 const trim = e => e.trim()
@@ -145,9 +149,8 @@ sprae.dir = {
       if (typeof v === "string") attr(el, "style", _static + '; ' + v);
       else {
         if (_static) attr(el, "style", _static);
-        // NOTE: we skip names not starting with a letter - eg. el.style stores properties as { 0: --x }
+        // NOTE: we skip names not starting with a letter - eg. el.style stores properties as { 0: --x } or JSDOM has _pfx
         for (let k in v) k[0] == '-' ? el.style.setProperty(k, v[k]) : k[0] > 'A' && (el.style[k] = v[k])
-
       }
     }
   ),
@@ -268,6 +271,7 @@ sprae.dir = {
     // we re-create items any time new items are produced
     let cur, keys, items, prevl = 0
 
+    // FIXME: pass items to update instead of global
     let update = () => {
       let i = 0, newItems = items, newl = newItems.length
 
@@ -294,7 +298,9 @@ sprae.dir = {
           let idx = i,
             // FIXME: inherited state is cheaper in terms of memory and faster in terms of performance, compared to creating a proxy
             subscope = store({
-              [itemVar]: cur[_signals]?.[idx] || cur[idx],
+              // NOTE: since we simulate signal, we have to make sure it's actual signal, not fake one
+              // FIXME: try to avoid this, we also have issue with wrongly calling dispose in store on delete
+              [itemVar]: cur[_signals]?.[idx]?.peek ? cur[_signals]?.[idx] : cur[idx],
               [idxVar]: keys ? keys[idx] : idx
             }, state)
             // subscope = Object.create(state, {

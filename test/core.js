@@ -15,6 +15,7 @@ test('core: pre-created store', async () => {
   sprae(el, state)
   is(el.outerHTML, `<x>1</x>`)
   state.x=2
+  await tick()
   is(el.outerHTML, `<x>2</x>`)
 })
 
@@ -198,7 +199,11 @@ test("core: switch signals", async () => {
   let state = sprae(el, { x: preact.signal(1) })
   is(el.innerHTML, '1')
   state.x = 2
+  await tick()
   is(el.innerHTML, '2')
+
+  const signals = await import('../signal.js')
+  sprae.use(signals.default)
 })
 
 test("core: Math / other globals available in template", async () => {

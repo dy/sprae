@@ -377,7 +377,7 @@ import { signal, computed, effect, batch, untracked } from 'sprae/signal';
 import * as signals from '@preact/signals-core';
 
 // switch sprae signals to @preact/signals-core
-Object.assign(sprae, signals);
+sprae.use(signals);
 ```
 
 Provider | Size | Feature
@@ -424,7 +424,7 @@ Sprae can be tailored to project needs / size:
 
 ```js
 // sprae.custom.js
-import sprae, {directive} from 'sprae/core'
+import sprae from 'sprae/core'
 import * as signals from '@preact/signals'
 import subscript from 'subscript'
 
@@ -434,12 +434,12 @@ import _if from 'sprae/directive/if.js'
 import _text from 'sprae/directive/text.js'
 
 // register directives
-directive['if'] = _if
-directive['text'] = _text
-directive['*'] = _attr
+sprae.dir['if'] = _if
+sprae.dir['text'] = _text
+sprae.dir['*'] = _attr
 
 // custom directive :id="expression"
-directive['id'] = (el, state, expr) => {
+sprae.dir['id'] = (el, state, expr) => {
   // ...init
   return newValue => {
     // ...update

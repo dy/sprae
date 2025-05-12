@@ -45,7 +45,7 @@ test("any: null result does nothing", async () => {
 
 
 test("fx: effects", async () => {
-  let el = h`<x :fx="() => (_log.push(x), () => (console.trace(123, _log),_log.push('out')))"></x>`;
+  let el = h`<x :fx="() => (_log.push(x), () => (console.log('out',_log),_log.push('out')))"></x>`;
   let x = signal(1)
   let state = sprae(el, { _log: [], x, console });
   is(el.outerHTML, `<x></x>`);
@@ -71,6 +71,7 @@ test('class: basic', async () => {
   await tick();
   is(el.outerHTML, `<x class="base x"></x><y class="y z"></y><z class="c"></z>`);
   c.value = 'w'
+  await tick()
   is(el.outerHTML, `<x class="base x"></x><y class="y w"></y><z class="c"></z>`);
 });
 
@@ -168,6 +169,7 @@ test("style: camel kebab", async () => {
   is(el.outerHTML, `<x style="background-color: red;"></x>`);
 
   params.style.backgroundColor = 'green'
+  await tick()
   is(el.outerHTML, `<x style="background-color: green;"></x>`);
 });
 
@@ -180,17 +182,17 @@ test("style: #33", async () => {
 test("style: function", async () => {
   // NOTE: ...s is intentional mistake here
   let el = h`<x :style="s => (log.push(s),{...s, '--i':i})"></x>`;
-  let s = sprae(el, { log:[], i:0 });
+  let s = sprae(el, { log:[], i:1 });
   is(s.log, [el.style])
-  is(el.outerHTML, `<x style="--i: 0;"></x>`);
-  is(el.style.getPropertyValue("--i"), "0");
+  is(el.outerHTML, `<x style="--i: 1;"></x>`);
+  is(el.style.getPropertyValue("--i"), "1");
 
   console.log('----- s.i++')
   s.i++
   await tick();
   is(s.log, [el.style, el.style])
-  is(el.outerHTML, `<x style="--i: 1;"></x>`);
-  is(el.style.getPropertyValue("--i"), "1");
+  is(el.outerHTML, `<x style="--i: 2;"></x>`);
+  is(el.style.getPropertyValue("--i"), "2");
 
   s.i = null
   await tick();
@@ -218,6 +220,7 @@ test("text: function", async () => {
   await tick();
   is(el.outerHTML, `<div>ab</div>`);
   params.s = 'c';
+  await tick()
   is(el.outerHTML, `<div>abc</div>`);
 });
 
@@ -415,10 +418,13 @@ test("if: + :scope doesnt prevent secondary effects from happening", async () =>
 });
 
 test("if: + :scope back-forth on/off", async () => {
-  let el = h`<div><x :if="x" :scope="{x}" :text="console.log('--text'),x" :onx="()=>(x+=x)"></x><y :else :scope="console.log('--scope2'),{t:'y'}" :text="console.log('--text'),t" :onx="()=>(console.log('--onx',t),t+=t)"></y></div>`;
+  let el = h`<div><x :if="x" :scope="{x}" :text="console.log(':text1'),x" :onx="()=>(x+=x)"></x><y :else :scope="console.log(':scope2'),{t:'y'}" :text="console.log(':text2'),t" :onx="()=>(console.log(':onx'),t+=t)"></y></div>`;
   let state = sprae(el, { x: "" });
   is(el.innerHTML, `<y>y</y>`);
+
+  console.log("----dispatch x");
   el.firstChild.dispatchEvent(new window.CustomEvent('x'))
+  await tick()
   is(el.innerHTML, `<y>yy</y>`);
 
   console.log("----x='x'");
@@ -427,12 +433,15 @@ test("if: + :scope back-forth on/off", async () => {
   is(el.innerHTML, `<x>x</x>`);
   console.log('----dispatch child x')
   el.firstChild.dispatchEvent(new window.CustomEvent('x'))
+  await tick()
   is(el.innerHTML, `<x>xx</x>`);
   console.log('----x=""')
   state.x = ''
+  await tick()
   is(el.innerHTML, `<y>yy</y>`);
-  console.log('----dispatch child x', el.firstChild)
+  console.log('----dispatch child x')
   el.firstChild.dispatchEvent(new window.CustomEvent('x'))
+  await tick()
   is(el.innerHTML, `<y>yyyy</y>`);
 
   el[_dispose]()
@@ -447,21 +456,25 @@ test("if: :scope + :if after attributes", async () => {
 
   console.log('------- s.cur = 2')
   s.cur = 2
+  await tick()
   is(el.innerHTML, `<y>2</y>`)
 })
 
 test("if: set/unset value", async () => {
-  let el = h`<x><y :if="x" :text="x.x"></y></x>`
+  let el = h`<x><y :if="x" :text="x?.x"></y></x>`
   let state = sprae(el, { x: null })
   is(el.innerHTML, '')
   state.x = { x: 1 }
+  await tick()
   is(el.innerHTML, '<y>1</y>')
   console.log('------state.x = null')
   // NOTE: @preact/signals unsubscribes x.x
   state.x = null
+  await tick()
   is(el.innerHTML, '')
   console.log('------state.x = {x:2}')
   state.x = { x: 2 }
+  await tick()
   is(el.innerHTML, '<y>2</y>')
 })
 
@@ -470,19 +483,27 @@ test("if: set/unset 2", async () => {
   let state = sprae(el, { x: 1, a: 'a', b: 'b', c: 'c' })
   is(el.innerHTML, '<x><t>a</t></x>', 'x==1')
   state.x = null
+  await tick()
   is(el.innerHTML, `<z>c</z>`, 'x==null')
   state.x = 1
+  await tick()
   is(el.innerHTML, '<x><t>a</t></x>', 'x==1')
   state.a = 'aa'
+  await tick()
   is(el.innerHTML, '<x><t>aa</t></x>', 'x==1')
   state.x = 2
+  await tick()
   is(el.innerHTML, '<y><t>b</t></y>', 'x==2')
   state.b = 'bb'
+  await tick()
   is(el.innerHTML, '<y><t>bb</t></y>', 'x==2')
   state.a = 'aaa'
+  await tick()
   state.x = 1
+  await tick()
   is(el.innerHTML, '<x><t>aaa</t></x>', 'x==1')
   state.x = 3
+  await tick()
   is(el.innerHTML, '<z>c</z>', 'x==9')
 })
 
@@ -698,6 +719,7 @@ test('scope: parasitic updates', async () => {
   let s = sprae(a, { y: 'y' })
   is(a.innerHTML, `<y>xy</y>`)
   s.y = 'yy'
+  await tick()
   is(a.innerHTML, `<y>xyy</y>`)
 })
 
@@ -939,7 +961,7 @@ test('each: array internal signal reassign', async () => {
   console.log('---b[0].value = 1')
   params.b[0].value = 1;
   await tick()
-  is(el.innerHTML, "<span>1</span>", 'b[0] = 1');
+  is(el.innerHTML, "<span>1</span>", 'html');
 
   console.log('---b=[signal(2)]')
   // params.b.value[0] = signal(2);
@@ -1132,8 +1154,10 @@ test("each: fragments direct", async () => {
 
   console.log("b.value=[]");
   b.value = [];
+  await tick()
   is(el.innerHTML, "");
   params.b = null;
+  await tick()
   is(el.innerHTML, "");
 });
 
@@ -1236,7 +1260,7 @@ test("each: condition within loop", async () => {
 
 test('each: items refer to current el', async () => {
   // NOTE: the problem here is that the next items can subscribe to `el` defined in root state (if each hasn't created scope), that will cause unnecessary :x effect
-  let el = h`<div><x :each="x in 3" :data-x="x" :scope="{el:null}" :ref="e=>(el=e)" :x="console.log(el),log.push(x, el.dataset.x)"></x></div>`;
+  let el = h`<div><x :each="x in 3" :data-x="x" :scope="{el:null}" :ref="e=>(el=e)" :x="log.push(x, el.dataset.x)"></x></div>`;
   let log = signal([]);
   let state = sprae(el, { log, untracked });
   is([...state.log], [1, "1", 2, "2", 3, "3"]);
@@ -1380,7 +1404,7 @@ test("each: subscribe to modifying list", async () => {
   const state = sprae(el, {
     rows: [1],
     remove() {
-      console.log('remove', this.rows)
+      console.log('remove')
       // this.rows = []
       this.rows.length = 0
     },
@@ -1388,7 +1412,7 @@ test("each: subscribe to modifying list", async () => {
   is(el.outerHTML, `<ul><li>1</li></ul>`);
 
   // state.remove()
-  console.log("---dispatch remove", state.rows);
+  console.log("---dispatch remove");
   el.querySelector("li").dispatchEvent(new window.Event("remove"));
 
   await tick();
@@ -1396,22 +1420,24 @@ test("each: subscribe to modifying list", async () => {
 });
 
 test('each: unwanted extra subscription', async () => {
-  let el = h`<div><x :each="item,i in (console.log('upd',_count),_count++, rows)"><a :text="item.label"></a></x></div>`
+  let el = h`<div><x :each="item,i in (_count++, rows)"><a :text="item.label"></a></x></div>`
 
   const rows = signal(null)
-  const state = sprae(el, { rows, _count: 0, console })
+  const state = sprae(el, { rows, _count: 0 })
 
-  console.log('------rows.value = [{id:0},{id:1}]')
   await tick()
   is(state._count, 1)
 
   let a = { label: signal(0) }, b = { label: signal(0) }
+  console.log('--------rows.value = [a, b]')
   rows.value = [a, b]
   await tick()
   is(state._count, 2)
+  is(el.innerHTML, `<x><a>0</a></x><x><a>0</a></x>`)
 
   console.log('--------rows.value[1].label.value += 2')
   b.label.value += 2
+  await tick()
   is(state._count, 2)
   is(el.innerHTML, `<x><a>0</a></x><x><a>2</a></x>`)
 

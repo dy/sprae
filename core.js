@@ -1,4 +1,4 @@
-import { use, effect } from "./signal.js";
+import { use } from "./signal.js";
 import { store } from './store.js';
 
 // polyfill
