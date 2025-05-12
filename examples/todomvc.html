@@ -18,7 +18,7 @@
     <section class="todoapp">
       <header class="header">
         <h1>todos</h1>
-        <input :with="{input:null}" :ref="el => input=el" class="new-todo"
+        <input :scope="{input:null}" :ref="el => input=el" class="new-todo"
                placeholder="What needs to be done?" autofocus :onkeypress.enter="e => {
                 save(todos = [...todos, { text: input.value, done: false}]);
                 input.value = ''
@@ -50,7 +50,7 @@
       </section>
       <footer class="footer">
         <span class="todo-count"
-              :with="{count: todos.filter(item => !item.done).length}">
+              :scope="{count: todos.filter(item => !item.done).length}">
           <strong :text="count">#</strong> <span
                 :text="plur('item', count)">items</span> left
         </span>

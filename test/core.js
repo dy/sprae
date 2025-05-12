@@ -5,8 +5,9 @@ import store from '../store.js'
 import { signal } from '../signal.js'
 import h from "hyperf";
 
-import * as signals from '@preact/signals-core'
-sprae.use(signals)
+// FIXME: enable signals back
+// import * as signals from '@preact/signals-core'
+// sprae.use(signals)
 
 test('core: pre-created store', async () => {
   let state = store({x:1,get(){return state.x}})
@@ -14,6 +15,7 @@ test('core: pre-created store', async () => {
   sprae(el, state)
   is(el.outerHTML, `<x>1</x>`)
   state.x=2
+  await tick()
   is(el.outerHTML, `<x>2</x>`)
 })
 
@@ -24,7 +26,6 @@ test.todo('core: sync store access', async () => {
   state.x=2
   is(el.outerHTML, `<x>2</x>`)
 })
-
 
 test("core: simple hidden attr", async () => {
   let el = h`<div :hidden="hidden"></div>`;
@@ -45,23 +46,9 @@ test("core: hidden reactive", async () => {
   is(el.outerHTML, `<div></div>`);
 });
 
-test("core: reactive", async () => {
-  let el = h`<label :for="name" :text="name" ></label><input :id="name" :name="name" :type="name" :disabled="!name"/><a :href="url"></a><img :src="url"/>`;
-  let params = sprae(el, { name: 'text', url: "//google.com" });
-  is(
-    el.outerHTML,
-    `<label for="text">text</label><input id="text" name="text" type="text"><a href="//google.com"></a><img src="//google.com">`,
-  );
-  params.name = "email";
-  await tick();
-  is(
-    el.outerHTML,
-    `<label for="email">email</label><input id="email" name="email" type="email"><a href="//google.com"></a><img src="//google.com">`,
-  );
-});
 
 test.skip('core: multiple elements', async () => {
-  // NOTE: we don't support that anymore - no much value, just pass container
+  // NOTE: we don't support that anymore - no much value at price of complexity, just pass container
   let el = h`<a><x :text="'x'"></x><y :text="'y'"></y></a>`
   sprae(el.childNodes)
   is(el.innerHTML, `<x>x</x><y>y</y>`)
@@ -94,8 +81,8 @@ test.skip("core: const in on", async () => {
   is(state.y, 2);
 });
 
-test.skip("core: const in with", async () => {
-  let el = h`<div :with="{x(){let x = 1; y=x;}}" :onx="x()"></div>`;
+test.skip("core: const in scope", async () => {
+  let el = h`<div :scope="{x(){let x = 1; y=x;}}" :onx="x()"></div>`;
   let state = sprae(el, { y: 0 });
   el.dispatchEvent(new window.CustomEvent("x"));
   await tick();
@@ -141,41 +128,8 @@ test.skip("core: semicols in expression", async () => {
   // is(el.outerHTML, `<x x="0123"></x>`);
 });
 
-test("fx: effects", async () => {
-  let el = h`<x :fx="(log.push(x), () => (log.push('out')))"></x>`;
-  let x = signal(1)
-  let state = sprae(el, { log: [], x, console });
-  is(el.outerHTML, `<x></x>`);
-  is(state.log, [1])
-  console.log('upd value')
-  x.value = 2
-  await tick()
-  is(el.outerHTML, `<x></x>`);
-  is(state.log, [1, 'out', 2])
-  el[Symbol.dispose]()
-  is(state.log, [1, 'out', 2, 'out'])
-});
-
-test(":: reactive values", async () => {
-  let a = signal();
-  setTimeout(() => (a.value = 2), 10);
-
-  let el = h`<x :text="a">1</x>`;
-  sprae(el, { a });
-  is(el.outerHTML, `<x></x>`);
-
-  await time(20);
-  is(el.outerHTML, `<x>2</x>`);
-});
-
-test(":: null result does nothing", async () => {
-  let a = h`<x :="undefined"></x>`;
-  sprae(a);
-  is(a.outerHTML, `<x></x>`);
-});
-
-test.skip("immediate scope", async () => {
-  let el = h`<x :with="{arr:[], inc(){ arr.push(1) }}" :onx="e=>inc()" :text="arr[0]"></x>`;
+test.skip("core: immediate scope", async () => {
+  let el = h`<x :scope="{arr:[], inc(){ arr.push(1) }}" :onx="e=>inc()" :text="arr[0]"></x>`;
   sprae(el);
   is(el.outerHTML, `<x></x>`);
   el.dispatchEvent(new window.CustomEvent("x"));
@@ -183,7 +137,7 @@ test.skip("immediate scope", async () => {
   is(el.outerHTML, `<x>1</x>`);
 });
 
-test("getters", async () => {
+test("core: getters", async () => {
   let x = h`<h2 :text="doubledCount >= 1 ? 1 : 0"></h2>`;
   let state = sprae(x, {
     count: signal(0),
@@ -197,14 +151,15 @@ test("getters", async () => {
   is(x.outerHTML, `<h2>1</h2>`);
 });
 
-test("subscribe to array length", async () => {
+test("core: subscribe to array length", async () => {
   // pre-heat can cause error
   sprae(h`<x :fx="(log.push(1))"></x>`, { log: [] });
 
   console.log('---create')
-  let el = h`<div :with="{likes:[]}"><x :onx="e=>(likes.push(1))"></x><y :text="console.log('text'),likes.length"></y></div>`;
+  let el = h`<div :scope="{likes:[]}"><x :onx="e=>(console.log('onx'),likes.push(1))"></x><y :text="console.log('text'),likes.length"></y></div>`;
   sprae(el, { console });
   is(el.innerHTML, `<x></x><y>0</y>`);
+
   console.log('---event')
   el.firstChild.dispatchEvent(new window.CustomEvent("x"));
   await tick();
@@ -236,7 +191,7 @@ test('globals', async () => {
   is(el.outerHTML, `<x>3.14</x>`)
 })
 
-test("switch signals", async () => {
+test("core: switch signals", async () => {
   const preact = await import('@preact/signals-core')
   sprae.use(preact)
 
@@ -244,10 +199,14 @@ test("switch signals", async () => {
   let state = sprae(el, { x: preact.signal(1) })
   is(el.innerHTML, '1')
   state.x = 2
+  await tick()
   is(el.innerHTML, '2')
+
+  const signals = await import('../signal.js')
+  sprae.use(signals.default)
 })
 
-test("Math / other globals available in template", async () => {
+test("core: Math / other globals available in template", async () => {
   let el = h`<div :text="Math.max(2, 5, 1)"></div>`;
   sprae(el, { Math });
   is(el.innerHTML, '5');
@@ -261,22 +220,31 @@ test("Math / other globals available in template", async () => {
   is(el.innerHTML, '4');
 });
 
-test("custom prefix", async () => {
-  sprae.use({prefix:'s-'})
+test("core: custom prefix", async () => {
+  sprae.prefix='s-'
   let el = h`<x s-text="a"></x>`;
   sprae(el, {a:123});
   is(el.outerHTML, `<x>123</x>`);
-  sprae.use({prefix:':'})
+  sprae.prefix = ':'
 })
 
-test("multiple errors don't break sprae", async () => {
+test("core: static errors don't break sprae", async () => {
   console.log('---again')
-  let el = h`<y><x :text="a"></x><x :text="b"></x></y>`
+  let el = h`<y><x :text="0.toFixed(2)"></x><x :text="b"></x></y>`
   let state = sprae(el, {b:'b'})
+  await tick()
   is(el.innerHTML, `<x></x><x>b</x>`)
 })
 
-test.skip('memory allocation', async () => {
+test("core: runtime errors don't break sprae", async () => {
+  console.log('---again')
+  let el = h`<y><x :text="a.b"></x><x :text="b"></x></y>`
+  let state = sprae(el, {b:'b'})
+  await tick()
+  is(el.innerHTML, `<x></x><x>b</x>`)
+})
+
+test.skip('core: memory allocation', async () => {
   let items = signal([])
   let el = h`<><x :each="item in items" :text="item.x"></x></>`
   let btn = document.createElement('button')

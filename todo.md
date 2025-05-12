@@ -159,14 +159,41 @@
 * [x] js-framework-bench push + example
 * [ ] add test for jsperf adding multiple elements - make sure it's O(n), not n**2
   * [ ] maybe just add jsperf bench as tests
-* [ ] immediate scope
+* [x] ~~immediate scope~~ -> :scope
 * [x] ref doesnt add to with -> it forces null init
 * [x] test: create store separately case
-  * [ ] make async effects init?
 * [x] test: new prop/signal added to root store: substore doesn't have it
 * [x] test: one effect error (like wrong syntax) should not break all subsequent effects
 * [x] test: two refs with same name, like `list`.
 * [x] sandbox property for store
+
+## [ ] v12
+
+* [x] Don't do unnecessary customization like on*, *. Just do minimal workable bundle.
+* [x] generalize prop modifiers
+* [x] make dirs accept functions
+* [x] separate events from props
+* [x] enable async effect and run all basic tests
+* [ ] All TODO/FIXME
+* [ ] try alternative way to update plain lists in :each rather than simulating signals
+* [ ] finish all prop modifiers with tests
+* [ ] add event extra modifiers tests
+* [ ] add async callbacks tests
+* [ ] microjs bundle
+* [ ] flavors: alpine, vue, micro, secure
+* [ ] switch signals to preact and test everything
+* [ ] website
+  * [ ] 7 GUIs example
+  * [ ] collection of examples
+* [ ] finish ajamila poll with v12
+* [x] flat directives
+* [x] get rid of :data, :aria
+* [x] run effects after collecting them
+* [x] :scope instead of :with
+* [x] simplify nested store: just object inheritance
+* [x] pass globals to store
+* [x] expose sprae.compile, .prefix, .dir
+* [x] make :each use inheritance instead of Proxy
 
 ## [ ] Optimizations (https://krausest.github.io/js-framework-benchmark/current.html)
 
@@ -174,19 +201,6 @@
 * [~] Create many rows IS SLOW
 * [ ] Try reducing memory use
 
-## [ ] Website
-
-* [ ] Intro: core philosophy, features, quick meaningful example, "Get started"
-* [ ] Why?: comparison, benefits (no build step, light, fast, SEO-friendly, no SSR needed), use-cases, testimonials, cases
-* [ ] Docs: installing, core concepts, directives, recipes (forms, routing, animations), best practices (tips for perf, debugging, maintaining)
-* [ ] Examples: todo, counter, dynamic form
-* [ ] Showcase gallery?
-* [ ] Playground: share/download
-* [ ] Community: github, blog, tutorials, announcements
-* [ ] FAQ: What's PE? How sprae compares to <framework>? Can I use with other FW? Is it suitable for large scale?
-* [ ] Friends: related libs
-* [ ] Trust: contact, contributors, sponsor
-* [ ] JS-framework-benchmark ref
 
 ## Backlog
 

@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sprae - Lightweight DOM Microhydration</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    body {
+      font-family: 'Inter', -apple-system, sans-serif;
+      line-height: 1.6;
+      color: #2d3748;
+      background: linear-gradient(to bottom, #f7fafc, #edf2f7);
+      padding: 2rem;
+    }
+    .container {
+      max-width: 800px;
+      margin: 0 auto;
+    }
+    header {
+      text-align: center;
+      margin-bottom: 3rem;
+    }
+    h1 {
+      font-size: 2.5rem;
+      color: #1a202c;
+    }
+    h2 {
+      font-size: 1.5rem;
+      margin-bottom: 1rem;
+      color: #4a5568;
+    }
+    p {
+      font-size: 1rem;
+      margin-bottom: 1rem;
+    }
+    .btn {
+      display: inline-block;
+      padding: 0.5rem 1rem;
+      background: #3182ce;
+      color: white;
+      text-decoration: none;
+      border-radius: 4px;
+      transition: background 0.2s;
+    }
+    .btn:hover {
+      background: #2b6cb0;
+    }
+    .section {
+      margin-bottom: 2rem;
+    }
+    pre {
+      background: #1a202c;
+      color: #e2e8f0;
+      padding: 1rem;
+      border-radius: 4px;
+      font-size: 0.9rem;
+      overflow-x: auto;
+    }
+    .demo {
+      border: 1px solid #e2e8f0;
+      padding: 1rem;
+      border-radius: 4px;
+      background: white;
+      margin-bottom: 1rem;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      background: white;
+      border-radius: 4px;
+      overflow: hidden;
+    }
+    th, td {
+      padding: 0.75rem;
+      text-align: left;
+      border-bottom: 1px solid #e2e8f0;
+    }
+    th {
+      background: #edf2f7;
+      color: #4a5568;
+    }
+    footer {
+      text-align: center;
+      margin-top: 3rem;
+      font-size: 0.9rem;
+      color: #718096;
+    }
+    a {
+      color: #3182ce;
+      text-decoration: none;
+    }
+    a:hover {
+      text-decoration: underline;
+    }
+    @media (max-width: 600px) {
+      body {
+        padding: 1rem;
+      }
+      h1 {
+        font-size: 1.8rem;
+      }
+      h2 {
+        font-size: 1.2rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container" id="app">
+    <!-- Header / Value Proposition -->
+    <header>
+      <h1>Sprae</h1>
+      <p>Lightweight DOM Microhydration for Modern Web</p>
+      <p :text="`Enhance static HTML with minimal, reactive logic—only ${state.size}kb!`"></p>
+    </header>
+
+    <!-- Code Example / Live Demo -->
+    <section class="section">
+      <h2>Try It Out</h2>
+      <div class="demo">
+        <p>Hello, <span :text="state.name"></span>!</p>
+        <input :value="state.name" :oninput="e => state.name = e.target.value" placeholder="Enter your name">
+        <p :if="state.name">You typed: <strong :text="state.name"></strong></p>
+      </div>
+      <pre><code>
+&lt;div id="app"&gt;
+  &lt;p&gt;Hello, &lt;span :text="name"&gt;&lt;/span&gt;!&lt;/p&gt;
+  &lt;input :value="name" :oninput="e => name = e.target.value"&gt;
+  &lt;p :if="name"&gt;You typed: &lt;strong :text="name"&gt;&lt;/strong&gt;&lt;/p&gt;
+&lt;/div&gt;
+&lt;script type="module"&gt;
+  import sprae from 'sprae';
+  sprae(document.getElementById('app'), { name: 'World' });
+&lt;/script&gt;
+      </code></pre>
+    </section>
+
+    <!-- Comparison Table -->
+    <section class="section">
+      <h2>Why Sprae?</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>Feature</th>
+            <th>Sprae</th>
+            <th>Alpine.js</th>
+            <th>Petite Vue</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr :each="feature in state.features">
+            <td :text="feature.name"></td>
+            <td :text="feature.sprae"></td>
+            <td :text="feature.alpine"></td>
+            <td :text="feature.vue"></td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+
+    <!-- Documentation Teaser -->
+    <section class="section">
+      <h2>Get Started</h2>
+      <p>Sprae makes reactive UIs simple. Add it via CDN or npm and enhance your HTML in minutes.</p>
+      <pre><code>
+&lt;script type="module"&gt;
+  import sprae from 'https://unpkg.com/sprae';
+  sprae(document.body, { message: 'Hello, Sprae!' });
+&lt;/script&gt;
+      </code></pre>
+      <p><a href="https://github.com/dy/sprae#docs" class="btn">Read Docs</a></p>
+    </section>
+
+    <!-- Performance Metrics -->
+    <section class="section">
+      <h2>Built for Speed</h2>
+      <p :text="`Sprae’s core is just ${state.size}kb, with faster evaluation than jsep or expression-eval.`"></p>
+      <p>Perfect for static sites, prototypes, or anywhere performance matters.</p>
+    </section>
+
+    <!-- Use Cases -->
+    <section class="section">
+      <h2>Use Cases</h2>
+      <ul>
+        <li :each="useCase in state.useCases" :text="useCase"></li>
+      </ul>
+    </section>
+
+    <!-- Call to Action -->
+    <section class="section">
+      <p style="text-align: center;">
+        <a href="https://unpkg.com/sprae" class="btn">Try Now</a>
+        <a href="https://www.npmjs.com/package/sprae" class="btn" style="margin-left: 1rem;">Install</a>
+      </p>
+    </section>
+
+    <!-- Footer -->
+    <footer>
+      <p>
+        Built with ❤️ by <a href="https://github.com/dy">dy</a> |
+        <a href="https://github.com/dy/sprae">GitHub</a> |
+        <a href="https://github.com/dy/sprae/issues">Feedback</a>
+      </p>
+    </footer>
+  </div>
+
+  <script type="module">
+    import sprae from 'https://unpkg.com/sprae?module';
+    sprae(document.getElementById('app'), {
+      size: '3.5',
+      name: 'World',
+      features: [
+        { name: 'Size', sprae: '3.5kb', alpine: '15kb', vue: '10kb' },
+        { name: 'Reactivity', sprae: 'Signals', alpine: 'Custom', vue: 'Vue-like' },
+        { name: 'Progressive', sprae: 'Yes', alpine: 'Partial', vue: 'Yes' }
+      ],
+      useCases: [
+        'Static websites with dynamic elements',
+        'Lightweight prototypes and MVPs',
+        'Performance-critical UI components'
+      ]
+    });
+  </script>
+</body>
+</html>
