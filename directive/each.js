@@ -49,8 +49,9 @@ dir('each', (tpl, state, expr) => {
           sprae(el, scope);
 
           // signal/holder disposal removes element
-          ((cur[_signals] ||= [])[i] ||= {})[Symbol.dispose] = () => {
-            el[Symbol.dispose]?.(), el.remove()
+          let _prev = ((cur[_signals] ||= [])[i] ||= {})[Symbol.dispose]
+          cur[_signals][i][Symbol.dispose] = () => {
+            _prev?.(), el[Symbol.dispose]?.(), el.remove()
           };
         }
       }

@@ -615,3 +615,15 @@ test('each: init within template', async () => {
   document.body.appendChild(el)
   console.log(el.innerHTML)
 })
+
+test('each: duplicate list #63', async () => {
+  let el = h`<div><x :each="i in items" :text="i"></x><y :each="i in items" :text="i"></y></div>`
+  let state = sprae(el, { items: [1, 2] })
+  is(el.innerHTML, `<x>1</x><x>2</x><y>1</y><y>2</y>`)
+  state.items.splice(0, 1)
+  await tick()
+  is(el.innerHTML, `<x>2</x><y>2</y>`)
+  state.items = [3, 4]
+  await tick()
+  is(el.innerHTML, `<x>3</x><x>4</x><y>3</y><y>4</y>`)
+})
