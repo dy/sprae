@@ -413,10 +413,10 @@ export default function Layout({ children }) {
 
 ## Justification
 
-Modern frontend stack is obese and unhealthy, like non-organic processed food. There are healthy alternatives, but:
+Modern frontend stack is complex and obese, like overprocessed non-organic food. There are healthy alternatives:
 
-* [Template-parts](https://github.com/dy/template-parts) is stuck with native HTML quirks ([parsing table](https://github.com/github/template-parts/issues/24), [SVG attributes](https://github.com/github/template-parts/issues/25), [liquid syntax](https://shopify.github.io/liquid/tags/template/#raw) conflict etc).
-* [Alpine](https://github.com/alpinejs/alpine) / [petite-vue](https://github.com/vuejs/petite-vue) / [lucia](https://github.com/aidenybai/lucia) escape native HTML quirks, but have excessive API (`:`, `x-`, `{}`, `@`, `$`), tend to [self-encapsulate](https://github.com/alpinejs/alpine/discussions/3223) and not care about size/performance.
+* [Template-parts](https://github.com/dy/template-parts) is native, but stuck with HTML quirks ([parsing table](https://github.com/github/template-parts/issues/24), [SVG attributes](https://github.com/github/template-parts/issues/25), [liquid syntax](https://shopify.github.io/liquid/tags/template/#raw) conflict etc).
+* [Alpine](https://github.com/alpinejs/alpine) / [petite-vue](https://github.com/vuejs/petite-vue) / [lucia](https://github.com/aidenybai/lucia) are useful for SSR, but excessive (`:`, `x-`, `{}`, `@`, `$`), [encapsulated](https://github.com/alpinejs/alpine/discussions/3223) and not care about size/performance as much.
 
 _Sprae_ holds open & minimalistic philosophy:
 
@@ -427,7 +427,7 @@ _Sprae_ holds open & minimalistic philosophy:
 * Bits of organic sugar.
 * Aims at making developers happy 🫰
 
-> Perfection is not when there is nothing to add, but when there is nothing to take away.
+<!-- > Perfection is not when there is nothing to add, but when there is nothing to take away. -->
 
 <!--
 |                       | [AlpineJS](https://github.com/alpinejs/alpine)          | [Petite-Vue](https://github.com/vuejs/petite-vue)        | Sprae            |
