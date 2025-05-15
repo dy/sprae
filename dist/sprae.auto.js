@@ -297,8 +297,9 @@ var init_each = __esm({
               }, state), el = tpl.content ? frag(tpl) : tpl.cloneNode(true);
               holder.before(el.content || el);
               core_default(el, scope);
-              ((_b = cur[_a = _signals] || (cur[_a] = []))[i] || (_b[i] = {}))[Symbol.dispose] = () => {
-                el[Symbol.dispose]?.(), el.remove();
+              let _prev = ((_b = cur[_a = _signals] || (cur[_a] = []))[i] || (_b[i] = {}))[Symbol.dispose];
+              cur[_signals][i][Symbol.dispose] = () => {
+                _prev?.(), el[Symbol.dispose]?.(), el.remove();
               };
             }
           }
