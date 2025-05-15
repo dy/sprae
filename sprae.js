@@ -315,8 +315,9 @@ sprae.dir = {
           sprae(el, subscope);
 
           // signal/holder disposal removes element
-          ((cur[_signals] ||= [])[i] ||= {})[Symbol.dispose] = () => {
-            el[Symbol.dispose]?.(), el.remove()
+          let _prev = ((cur[_signals] ||= [])[i] ||= {})[Symbol.dispose]
+          cur[_signals][i][Symbol.dispose] = () => {
+            _prev?.(),el[Symbol.dispose]?.(), el.remove()
           };
         }
       }
