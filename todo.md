@@ -174,6 +174,8 @@
 * [x] make dirs accept functions
 * [x] separate events from props
 * [x] enable async effect and run all basic tests
+* [ ] :if preact issue: it has screwed up order of effect callbacks & :else should be able to have mods
+* [ ] v11 nested each bug (github)
 * [ ] All TODO/FIXME
 * [ ] try alternative way to update plain lists in :each rather than simulating signals
 * [ ] finish all prop modifiers with tests

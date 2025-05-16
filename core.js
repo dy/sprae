@@ -58,7 +58,7 @@ export const sprae = (el = document.body, values) => {
   init(el);
 
   // if element was spraed by inline :with/:if/:each/etc instruction (meaning it has state placeholder) - skip, otherwise save _state
-  // FIXME: can check for null instead
+  // FIXME: can check for null instead?
   if (!(_state in el)) el[_state] = state
 
   return state;

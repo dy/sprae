@@ -2,13 +2,14 @@
 
 import sprae, { _state, _on, _off } from "./core.js";
 import store, { _change, _signals } from "./store.js";
-import signals, { batch, effect } from './signal.js';
+import signals, { batch, computed, effect } from './signal.js';
 import { signal, untracked } from "./signal.js";
 
 export default sprae
 
 // use default signals
 sprae.use(signals)
+
 
 // multiprop sequences initializer, eg. :a:b..c:d
 // micro version has single-prop direct initializer, way simpler
@@ -46,7 +47,7 @@ sprae.init = (el, attrName, expr, state) => {
       let update = (sprae.dir[name] || sprae.dir['*'])(el, state, expr, name)
 
       // shortcut
-      if (!mods.length && !prev) return () => update && effect(() => update(evaluate(state)))
+      // if (!mods.length && !prev) return () => update && effect(() => update(evaluate(state)))
 
       let dispose,
 
@@ -82,9 +83,9 @@ sprae.compile = expr => sprae.constructor(`with (arguments[0]) { return ${expr} 
  * @param {string} expr The expression to parse and compile into a function.
  * @returns {Function} The compiled evaluator function for the expression.
  */
-const compile = (dir, expr, clean = trim, _fn) => {
+const compile = (dir, expr, _clean = trim, _fn) => {
   // expr.split(/\bin\b/)[1]
-  if (_fn = cache[expr = clean(expr)]) return _fn
+  if (_fn = cache[expr = _clean(expr)]) return _fn
 
   // static time errors
   try { _fn = sprae.compile(expr) } catch (e) { console.error(`∴ ${e}\n\n${sprae.prefix + dir}="${expr}"`) }
@@ -112,7 +113,7 @@ const sx = (a, b) => { if (a != b) for (let k in b) a[k] ??= b[k]; return a }
 // :if is interchangeable with :each depending on order, :if :each or :each :if have different meanings
 // as for :if :scope - :if must init first, since it is lazy, to avoid initializing component ahead of time by :scope
 // we consider :scope={x} :if={x} case insignificant
-const _if = Symbol("if");
+const _if = Symbol("if"), _else = Symbol("else"), _prev = Symbol("pref");
 
 // standard directives
 sprae.dir = {
@@ -158,9 +159,57 @@ sprae.dir = {
   // :fx="..."
   fx: () => call,
 
+  // :value - 2 way binding like x-model
+  value: (el, state, expr, name) => {
+    // bind back to value, but some values can be not bindable, eg. `:value="7"`
+    try {
+      const set = setter(name, expr)
+      const handleChange = el.type === 'checkbox' ? () => set(state, el.checked) :
+        el.type === 'select-multiple' ? () => set(state, [...el.selectedOptions].map(o => o.value)) :
+          () => set(state, el.selectedIndex < 0 ? null : el.value)
+
+      el.oninput = el.onchange = handleChange; // hope user doesn't redefine these manually via `.oninput = somethingElse` - it saves 5 loc vs addEventListener
+
+      if (el.type?.startsWith('select')) {
+        // select element also must observe any added/removed options or changed values (outside of sprae)
+        new MutationObserver(handleChange).observe(el, { childList: true, subtree: true, attributes: true });
+
+        // select options must be initialized before calling an update
+        sprae(el, state)
+      }
+
+      // initial state value
+      cache[trim(expr)](state) ?? handleChange()
+    } catch { }
+
+    return (el.type === "text" || el.type === "") ?
+      (value) => el.setAttribute("value", (el.value = value == null ? "" : value)) :
+      (el.tagName === "TEXTAREA" || el.type === "text" || el.type === "") ?
+        (value, from, to) => (
+          // we retain selection in input
+          (from = el.selectionStart),
+          (to = el.selectionEnd),
+          el.setAttribute("value", (el.value = value == null ? "" : value)),
+          from && el.setSelectionRange(from, to)
+        ) :
+        (el.type === "checkbox") ?
+          (value) => (el.checked = value, attr(el, "checked", value)) :
+          (el.type === "select-one") ?
+            (value) => {
+              for (let o of el.options)
+                o.value == value ? o.setAttribute("selected", '') : o.removeAttribute("selected");
+              el.value = value;
+            } :
+            (el.type === 'select-multiple') ? (value) => {
+              for (let o of el.options) o.removeAttribute('selected')
+              for (let v of value) el.querySelector(`[value="${v}"]`).setAttribute('selected', '')
+            } :
+              (value) => (el.value = value);
+  },
+
   // :ref="..."
   ref: (el, state, expr, name, _prev, _set) => (
-    typeof compile(name, expr)(state) == 'function' ?
+    typeof cache[trim(expr)](state) == 'function' ?
       v => v(el) :
       // NOTE: we have to set element statically (outside of effect) to avoid parasitic sub - multiple els with same :ref can cause recursion (eg. :each :ref="x")
       setter(name, expr)(state, el)
@@ -190,10 +239,10 @@ sprae.dir = {
     ifEl[_state] = null // mark el as fake-spraed to hold-on init, since we sprae rest when branch matches
 
     // FIXME: instead of nextEl / el we should use elseEl / ifEl
-    if (nextEl?.hasAttribute(":else")) {
-      nextEl.removeAttribute(":else");
+    if (nextEl?.hasAttribute(sprae.prefix + "else")) {
+      nextEl.removeAttribute(sprae.prefix + "else");
       // if nextEl is :else :if - leave it for its own :if handler
-      if (!nextEl.hasAttribute(":if")) nextEl.remove(), elseEl = nextEl.content ? frag(nextEl) : nextEl, elseEl[_state] = null
+      if (!nextEl.hasAttribute(sprae.prefix + "if")) nextEl.remove(), elseEl = nextEl.content ? frag(nextEl) : nextEl, elseEl[_state] = null
     }
     else nextEl = null
 
@@ -213,53 +262,38 @@ sprae.dir = {
     };
   },
 
-  // :value - 2 way binding like x-model
-  value: (el, state, expr, name) => {
-    // bind back to value, but some values can be not bindable, eg. `:value="7"`
-    try {
-      const set = setter(name, expr)
-      const handleChange = el.type === 'checkbox' ? () => set(state, el.checked) :
-        el.type === 'select-multiple' ? () => set(state, [...el.selectedOptions].map(o => o.value)) :
-          () => set(state, el.selectedIndex < 0 ? null : el.value)
+  /*
+  // :else? :if="a"
+  // separate directives are more efficient than batch or couple propagation
+  if: (el, state, _holder, _el) => (
+    el[_else] ??= signal(1), // :if -> :else :if
+    el[_if] = signal(1),
+    (el.nextElementSibling||{})[_prev] = el, // pass itself to :else
 
-      el.oninput = el.onchange = handleChange; // hope user doesn't redefine these manually via `.oninput = somethingElse` - it saves 5 loc vs addEventListener
+    el.replaceWith(_holder = document.createTextNode('')),
+    el[_state] = null, // mark el as fake-spraed to delay init, since we sprae rest when branch matches
+    _el = el.content ? frag(el) : el,
 
-      if (el.type?.startsWith('select')) {
-        // select element also must observe any added/removed options or changed values (outside of sprae)
-        new MutationObserver(handleChange).observe(el, { childList: true, subtree: true, attributes: true });
+    value => el[_if].value = el[_else].value && value ? (
+      console.log('if on', el.tagName),
+        _holder.before(_el.content || _el),
+        el[_state] === null ? (delete el[_state], sprae(el, state)) : el[_on](),
+        1
+      ) : (
+      console.log('if off', el.tagName),
+        el.remove(), el[_off]?.(), 0
+      )
 
-        // select options must be initialized before calling an update
-        sprae(el, state)
-      }
+  ),
 
-      // initial state value
-      compile(name, expr)(state) ?? handleChange()
-    } catch { }
-
-    return (el.type === "text" || el.type === "") ?
-      (value) => el.setAttribute("value", (el.value = value == null ? "" : value)) :
-      (el.tagName === "TEXTAREA" || el.type === "text" || el.type === "") ?
-        (value, from, to) => (
-          // we retain selection in input
-          (from = el.selectionStart),
-          (to = el.selectionEnd),
-          el.setAttribute("value", (el.value = value == null ? "" : value)),
-          from && el.setSelectionRange(from, to)
-        ) :
-        (el.type === "checkbox") ?
-          (value) => (el.checked = value, attr(el, "checked", value)) :
-          (el.type === "select-one") ?
-            (value) => {
-              for (let o of el.options)
-                o.value == value ? o.setAttribute("selected", '') : o.removeAttribute("selected");
-              el.value = value;
-            } :
-            (el.type === 'select-multiple') ? (value) => {
-              for (let o of el.options) o.removeAttribute('selected')
-              for (let v of value) el.querySelector(`[value="${v}"]`).setAttribute('selected', '')
-            } :
-              (value) => (el.value = value);
-  },
+  else: (el, state, expr, _update) => el[_prev] && (
+    el[_else] = computed(() => !el[_prev][_if].value),
+    console.log('else', el.tagName, el[_prev][_if].value),
+    // :else -> :else :if
+    _update = sprae.dir.if(el, state),
+    () => (console.group('else'), _update(true), console.groupEnd())
+  ),
+  */
 
   // :each="v,k in src"
   each: (tpl, state, expr) => {
@@ -303,10 +337,10 @@ sprae.dir = {
               [itemVar]: cur[_signals]?.[idx]?.peek ? cur[_signals]?.[idx] : cur[idx],
               [idxVar]: keys ? keys[idx] : idx
             }, state)
-            // subscope = Object.create(state, {
-            //   [itemVar]: { get: () => cur[idx] },
-            //   [idxVar]: { value: keys ? keys[idx] : idx }
-            // })
+          // subscope = Object.create(state, {
+          //   [itemVar]: { get: () => cur[idx] },
+          //   [idxVar]: { value: keys ? keys[idx] : idx }
+          // })
 
           let el = tpl.content ? frag(tpl) : tpl.cloneNode(true);
 
@@ -317,7 +351,7 @@ sprae.dir = {
           // signal/holder disposal removes element
           let _prev = ((cur[_signals] ||= [])[i] ||= {})[Symbol.dispose]
           cur[_signals][i][Symbol.dispose] = () => {
-            _prev?.(),el[Symbol.dispose]?.(), el.remove()
+            _prev?.(), el[Symbol.dispose]?.(), el.remove()
           };
         }
       }

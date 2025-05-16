@@ -1145,7 +1145,17 @@
   - doesn't expose item to the parent state
     ~ :each with scopes doesn't expose either
 
-### [x] store: should we prohibit creation of new props? -> no
+
+## [ ] Should we pre-parse directives?
+
+  + :a:b -> :a :b decoupling
+    + shorter init code
+    - breaks chains :a:b..:c:d
+  + enables forwarding, eg. :else -> :else :if=1
+    ~ entails modifiers handling, which makes them unified
+    - sole purpose
+
+## [x] store: should we prohibit creation of new props? -> no
 
   + Structs make objects nice: small, fast, obvious
   - Difficulty for arrays: we cannot really avoid creating new props there

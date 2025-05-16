@@ -5,9 +5,9 @@ import store from '../store.js'
 import { signal } from '../signal.js'
 import h from "hyperf";
 
-// FIXME: enable signals back
-// import * as signals from '@preact/signals-core'
-// sprae.use(signals)
+// import signals from '../signal.js'
+import * as signals from '@preact/signals-core'
+sprae.use(signals)
 
 test('core: pre-created store', async () => {
   let state = store({x:1,get(){return state.x}})
@@ -202,8 +202,7 @@ test("core: switch signals", async () => {
   await tick()
   is(el.innerHTML, '2')
 
-  const signals = await import('../signal.js')
-  sprae.use(signals.default)
+  sprae.use(signals)
 })
 
 test("core: Math / other globals available in template", async () => {

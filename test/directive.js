@@ -6,6 +6,8 @@ import test, { any, is, ok } from "tst";
 import { signal, batch, untracked } from '../signal.js'
 import { store } from '../store.js'
 
+// import * as signals from '@preact/signals-core'
+// sprae.use(signals)
 
 
 test("any: basic", async () => {
@@ -279,7 +281,7 @@ test("if: base", async () => {
   const params = sprae(el, { a: 1 });
 
   is(el.innerHTML, "<if>a</if>");
-  console.log('a.value = 2')
+  console.log('----a.value = 2')
   params.a = 2;
   await tick();
   is(el.innerHTML, "<elif>b</elif>");
@@ -491,6 +493,7 @@ test("if: set/unset 2", async () => {
   state.a = 'aa'
   await tick()
   is(el.innerHTML, '<x><t>aa</t></x>', 'x==1')
+  console.log('------state.x = 2')
   state.x = 2
   await tick()
   is(el.innerHTML, '<y><t>b</t></y>', 'x==2')
