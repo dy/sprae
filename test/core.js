@@ -6,8 +6,8 @@ import { signal } from '../signal.js'
 import h from "hyperf";
 
 // import signals from '../signal.js'
-import * as signals from '@preact/signals-core'
-sprae.use(signals)
+// import * as signals from '@preact/signals-core'
+// sprae.use(signals)
 
 test('core: pre-created store', async () => {
   let state = store({x:1,get(){return state.x}})
