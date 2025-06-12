@@ -229,6 +229,12 @@
     ~ it should be separate tokens, like :else [do rest]
   - it can confuse `:if :else` for `:else :if` which is wrong
 
+## [ ] :else-if token?
+
+  + `:else.debounce-100 :if.debounce-200` is two separate commands, first adds token, second removes later
+  * therefore if we reach `:else` that had no `:if` counterpart, likely that `:if` is prevented by inline `:else`, so we have to wait for it
+  + `:else-if` can be more efficient: it would not initialize fully `:else` with children before going to `:if`. Essentially that would allow lazy init.
+
 ## [x] Keep className marker of directive or not? -> no
 
   -> No: first, there's :class directive changing the class itself;
@@ -1145,7 +1151,6 @@
   - doesn't expose item to the parent state
     ~ :each with scopes doesn't expose either
 
-
 ## [ ] Should we pre-parse directives?
 
   + :a:b -> :a :b decoupling
@@ -1154,6 +1159,11 @@
   + enables forwarding, eg. :else -> :else :if=1
     ~ entails modifiers handling, which makes them unified
     - sole purpose
+
+## [ ] _stop flag instead of _state = null
+
+  + Presence of state doesn't indicate if item should be prevented on init.
+    + Eg. `:else :scope :text :on`
 
 ## [x] store: should we prohibit creation of new props? -> no
 

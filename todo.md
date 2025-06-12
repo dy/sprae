@@ -189,6 +189,7 @@
   * [ ] 7 GUIs example
   * [ ] collection of examples
 * [ ] finish ajamila poll with v12
+* [ ] core test runner: signals variants, normal/micro, sync/async, module/bundle
 * [x] flat directives
 * [x] get rid of :data, :aria
 * [x] run effects after collecting them

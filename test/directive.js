@@ -279,15 +279,18 @@ test("if: base", async () => {
   </p>`;
 
   const params = sprae(el, { a: 1 });
+  // await tick();
 
   is(el.innerHTML, "<if>a</if>");
   console.log('----a.value = 2')
   params.a = 2;
   await tick();
   is(el.innerHTML, "<elif>b</elif>");
+  console.log('----a.value = 3')
   params.a = 3;
   await tick();
   is(el.innerHTML, "<else>c</else>");
+  console.log('----a.value = null')
   params.a = null;
   await tick();
   is(el.innerHTML, "<else>c</else>");
@@ -296,22 +299,23 @@ test("if: base", async () => {
 test("if: overlapping conditions", async () => {
   let el = h`<p>
     <if :if="a<1">a</if>
-    <elif :else :if="a<2">b</elif>
-    <elif :else :if="a<3">c</elif>
+    <elif2 :else :if="a<2">b</elif2>
+    <elif3 :else :if="a<3">c</elif3>
     <else :else >d</else>
   </p>`;
 
   const params = sprae(el, { a: 0 });
+  // await tick();
 
   is(el.innerHTML, "<if>a</if>");
   console.log('---a.value = 1')
   params.a = 1;
   await tick();
-  is(el.innerHTML, "<elif>b</elif>");
+  is(el.innerHTML, "<elif2>b</elif2>");
   console.log('---a.value = 2')
   params.a = 2;
   await tick();
-  is(el.innerHTML, "<elif>c</elif>");
+  is(el.innerHTML, "<elif3>c</elif3>");
   console.log('---a.value = 3')
   params.a = 3;
   await tick();
@@ -324,12 +328,13 @@ test("if: overlapping conditions", async () => {
 
 test("if: template / fragment", async () => {
   let el = h`<p>
-    <template :if="a==1">a<x>1</x></template>
-    <template :else :if="a==2">b<x>2</x></template>
-    <template :else >c<x>3</x></template>
+    <template id="tpl-if" :if="a==1">a<x>1</x></template>
+    <template id="tpl-elif" :else :if="a==2">b<x>2</x></template>
+    <template id="tpl-else" :else >c<x>3</x></template>
   </p>`;
 
   const params = sprae(el, { a: 1 });
+  // await tick();
 
   is(el.innerHTML, "a<x>1</x>");
   console.log('params.a = 2')
@@ -352,6 +357,7 @@ test("if: short with insertions", async () => {
   </p>`;
 
   const params = sprae(el, { a: 1 });
+  // await tick();
 
   is(el.innerHTML, "<span>1:1</span>");
   params.a = 2;
@@ -383,6 +389,7 @@ test("if: reactive values", async () => {
 
   const a = signal(1);
   sprae(el, { a });
+  // await tick();
 
   is(el.innerHTML, "<span>1:1</span>");
   a.value = 2;
@@ -406,12 +413,14 @@ test("if: reactive values", async () => {
 test("if: (#3) subsequent content is not abandoned", async () => {
   let x = h`<x><y :if="!!y"></y><z :text="123"></z></x>`;
   sprae(x, { y: false });
+  // await tick();
   is(x.outerHTML, `<x><z>123</z></x>`);
 });
 
 test("if: + :scope doesnt prevent secondary effects from happening", async () => {
   let el = h`<div><x :if="x" :scope="{}" :text="x"></x></div>`;
   let state = sprae(el, { x: "" });
+  // await tick();
   is(el.innerHTML, ``);
   console.log("state.x=123");
   state.x = "123";
@@ -422,10 +431,12 @@ test("if: + :scope doesnt prevent secondary effects from happening", async () =>
 test("if: + :scope back-forth on/off", async () => {
   let el = h`<div><x :if="x" :scope="{x}" :text="console.log(':text1'),x" :onx="()=>(x+=x)"></x><y :else :scope="console.log(':scope2'),{t:'y'}" :text="console.log(':text2'),t" :onx="()=>(console.log(':onx'),t+=t)"></y></div>`;
   let state = sprae(el, { x: "" });
+  // await tick();
   is(el.innerHTML, `<y>y</y>`);
+  await tick()
 
   console.log("----dispatch x");
-  el.firstChild.dispatchEvent(new window.CustomEvent('x'))
+  el.children[0].dispatchEvent(new window.CustomEvent('x'))
   await tick()
   is(el.innerHTML, `<y>yy</y>`);
 
@@ -433,16 +444,19 @@ test("if: + :scope back-forth on/off", async () => {
   state.x = "x";
   await tick();
   is(el.innerHTML, `<x>x</x>`);
+
   console.log('----dispatch child x')
-  el.firstChild.dispatchEvent(new window.CustomEvent('x'))
+  el.children[0].dispatchEvent(new window.CustomEvent('x'))
   await tick()
   is(el.innerHTML, `<x>xx</x>`);
+
   console.log('----x=""')
   state.x = ''
   await tick()
   is(el.innerHTML, `<y>yy</y>`);
+
   console.log('----dispatch child x')
-  el.firstChild.dispatchEvent(new window.CustomEvent('x'))
+  el.children[0].dispatchEvent(new window.CustomEvent('x'))
   await tick()
   is(el.innerHTML, `<y>yyyy</y>`);
 
@@ -454,6 +468,7 @@ test("if: :scope + :if after attributes", async () => {
   let el = h`<c><x :scope="{x:1}" :if="cur === 1" :text="x"></x><y :scope="{x:2}" :if="cur === 2" :text="x"></y></c>`
 
   let s = sprae(el, { cur: 1 })
+  // await tick();
   is(el.innerHTML, `<x>1</x>`)
 
   console.log('------- s.cur = 2')
@@ -465,6 +480,7 @@ test("if: :scope + :if after attributes", async () => {
 test("if: set/unset value", async () => {
   let el = h`<x><y :if="x" :text="x?.x"></y></x>`
   let state = sprae(el, { x: null })
+  // await tick();
   is(el.innerHTML, '')
   state.x = { x: 1 }
   await tick()
@@ -483,16 +499,24 @@ test("if: set/unset value", async () => {
 test("if: set/unset 2", async () => {
   let el = h`<root><x :if="x==1"><t :text="a"></t></x><y :else :if="x==2"><t :text="b"></t></y><z :else :text="c"></z></root>`
   let state = sprae(el, { x: 1, a: 'a', b: 'b', c: 'c' })
+  // await tick()
   is(el.innerHTML, '<x><t>a</t></x>', 'x==1')
+
+  console.log('----state.x = null')
   state.x = null
   await tick()
   is(el.innerHTML, `<z>c</z>`, 'x==null')
+
+  console.log('----state.x = 1')
   state.x = 1
   await tick()
   is(el.innerHTML, '<x><t>a</t></x>', 'x==1')
+
+  console.log('----state.x = aa')
   state.a = 'aa'
   await tick()
   is(el.innerHTML, '<x><t>aa</t></x>', 'x==1')
+
   console.log('------state.x = 2')
   state.x = 2
   await tick()
@@ -510,13 +534,62 @@ test("if: set/unset 2", async () => {
   is(el.innerHTML, '<z>c</z>', 'x==9')
 })
 
-test("if: #59", () => {
+test("if: cycle case 1", async () => {
+  let el = h`<root><x :if="x==1">a</x><y :else :if="x==2">b</y></root>`
+  let state = sprae(el, { x: 1 })
+  // await tick()
+  is(el.innerHTML, '<x>a</x>', 'x==1')
+
+  console.log('------state.x = 2')
+  state.x = 2
+  await tick()
+  is(el.innerHTML, '<y>b</y>', 'x==2')
+
+  console.log('------state.x = 1')
+  state.x = 1
+  await tick()
+  is(el.innerHTML, '<x>a</x>', 'x==1')
+
+  console.log('------state.x = 3')
+  state.x = 3
+  await tick()
+  is(el.innerHTML, '', 'x==9')
+})
+
+test.only('if: cycle case 2', async () => {
+  let el = h`<root><x :if="x==1">a</x><z :else :text="c"></z></root>`
+  let state = sprae(el, { x: 1, a: 'a', b: 'b', c: 'c' })
+  // await tick()
+  is(el.innerHTML, '<x>a</x>', 'x==1')
+
+  console.log('----state.x = 3')
+  state.x = 3
+  await tick()
+  is(el.innerHTML, `<z>c</z>`, 'x==3')
+
+  // state.x = 4
+  // await tick()
+  // is(el.innerHTML, `<z>c</z>`, 'x==4')
+
+  console.log('----state.x = 1')
+  state.x = 1
+  await tick()
+  is(el.innerHTML, '<x>a</x>', 'x==1')
+
+  console.log('----state.x = 5')
+  state.x = 5
+  await tick()
+  is(el.innerHTML, '<z>c</z>', 'x==5')
+})
+
+test("if: #59", async () => {
   let el = h`<div id="container">
     <div :if="test()">123</div>
     ABC
     <div :if="test()">456</div>
   </div>`
   sprae(el, { test: () => true })
+  // await tick();
   is(el.innerHTML, `<div>123</div>ABC<div>456</div>`)
 })
 

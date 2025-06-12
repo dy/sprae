@@ -2,8 +2,7 @@
 
 import sprae, { _state, _on, _off } from "./core.js";
 import store, { _change, _signals } from "./store.js";
-import signals, { batch, computed, effect } from './signal.js';
-import { signal, untracked } from "./signal.js";
+import signals, { batch, computed, effect, signal, untracked } from './signal.js';
 
 export default sprae
 
@@ -28,6 +27,7 @@ sprae.init = (el, attrName, expr, state) => {
         isEvent = (name.startsWith('on') && (name = name.slice(2), true)) || el['on' + name],
         evaluate = compile(name, expr, sprae.dir[name]?.clean)
 
+
       // events have no effects and can be sequenced
       if (isEvent) {
         let first = e => (call(evaluate(state), e)),
@@ -42,12 +42,13 @@ sprae.init = (el, attrName, expr, state) => {
 
         return (_poff) => (_poff = prev?.(), fn.target.addEventListener(name, fn, fn), () => (_poff?.(), fn.target.removeEventListener(name, fn)))
       }
+      console.log("INIT", el, name)
 
       // props have no sequences and can be sync
       let update = (sprae.dir[name] || sprae.dir['*'])(el, state, expr, name)
 
       // shortcut
-      // if (!mods.length && !prev) return () => update && effect(() => update(evaluate(state)))
+      // if (!mods.length && !prev) return () => update && effect(() => (update(evaluate(state))))
 
       let dispose,
 
@@ -55,13 +56,25 @@ sprae.init = (el, attrName, expr, state) => {
         change = signal(-1), count,
 
         // effect applier - first time it applies the effect, next times effect is triggered by change signal
-        // we call fn next tick to avoid wrong teardown callback - anyways modifiers
+        // we microtask fn to avoid wrong teardown callback
         // FIXME: init via dispose, don't reset count
         fn = applyMods(() => {
-          if (!++change.value) dispose = effect(() => update && (change.value != count ? (count = change.value, update(evaluate(state))) : (queueMicrotask(fn))))
+          console.trace('CALL', el, name, change.peek())
+          if (!++change.value) dispose = effect(() => update &&
+            (
+              change.value != count ?
+                (count = change.value, update(evaluate(state))) :
+                (fn())
+            )
+          )
         }, mods)
 
-      return (_poff) => (_poff = prev?.(), fn(), () => (_poff?.(), dispose(), change.value = -1, count = dispose = null))
+      return (_poff) => (
+        _poff = prev?.(),
+        console.log('ON', name), fn(),
+        () => (
+          console.log('OFF', name), _poff?.(), dispose(), change.value = -1, count = dispose = null
+        ))
     }, null)
   ));
 
@@ -109,11 +122,6 @@ const applyMods = (fn, mods) => {
 // soft-extend missing props
 const sx = (a, b) => { if (a != b) for (let k in b) a[k] ??= b[k]; return a }
 
-
-// :if is interchangeable with :each depending on order, :if :each or :each :if have different meanings
-// as for :if :scope - :if must init first, since it is lazy, to avoid initializing component ahead of time by :scope
-// we consider :scope={x} :if={x} case insignificant
-const _if = Symbol("if"), _else = Symbol("else"), _prev = Symbol("pref");
 
 // standard directives
 sprae.dir = {
@@ -184,7 +192,7 @@ sprae.dir = {
 
     return (el.type === "text" || el.type === "") ?
       (value) => el.setAttribute("value", (el.value = value == null ? "" : value)) :
-      (el.tagName === "TEXTAREA" || el.type === "text" || el.type === "") ?
+      (el.id === "TEXTAREA" || el.type === "text" || el.type === "") ?
         (value, from, to) => (
           // we retain selection in input
           (from = el.selectionStart),
@@ -226,74 +234,101 @@ sprae.dir = {
     values => (Object.assign(_scope, values), el[_state] ?? (delete el[_state], untracked(() => sprae(el, _scope))))
   ),
 
-  // :if="a" :else
-  if: (el, state) => {
-    let holder = document.createTextNode('')
+  // :if="a"
+  if: (el, state, _holder, _el, _prev, _off) => (
 
-    let nextEl = el.nextElementSibling,
-      curEl, ifEl, elseEl;
+    // new element :if
+    !el._holder ?
+      (
+        el.replaceWith(_holder = document.createTextNode('')),
+        _el = el.content ? frag(el) : el,
+        el._holder = _holder,
+        _el[_state] ??= null, // mark el as fake-spraed to delay init, since we sprae rest when branch matches
+        console.log('init if'),
+        _holder._el = el,
+        _holder._match = signal(1), // indicates if current clause or any prev clause matches
+        (_holder.nextElementSibling || {})._prev = _holder, // propagate linked condition
 
-    el.replaceWith(holder)
+        value => (
+          console.group('if', el),
 
-    ifEl = el.content ? frag(el) : el
-    ifEl[_state] = null // mark el as fake-spraed to hold-on init, since we sprae rest when branch matches
+          (_holder._match.value = value) ? (
+            console.log('if yes', _el),
+            _holder.before(_el.content || _el),
+            _el[_state] === null ? (delete _el[_state], sprae(_el, state)) : _el[_on]?.()
+          ) : (
+            console.log('if no', _el),
+            _el.remove(), _el[_off]?.()
+          ),
+          console.groupEnd()
+        )
+      ) :
 
-    // FIXME: instead of nextEl / el we should use elseEl / ifEl
-    if (nextEl?.hasAttribute(sprae.prefix + "else")) {
-      nextEl.removeAttribute(sprae.prefix + "else");
-      // if nextEl is :else :if - leave it for its own :if handler
-      if (!nextEl.hasAttribute(sprae.prefix + "if")) nextEl.remove(), elseEl = nextEl.content ? frag(nextEl) : nextEl, elseEl[_state] = null
-    }
-    else nextEl = null
+      // :else :if
+      (
+        _prev = el._prev,
+        _holder = el._holder,
+        _el = _holder._el,
+        // _holder._match ??= signal(1), // _match is supposed to be created by :else
+        _holder._match._if = true, // take over control of :else :if branch, make :else handler bypass
+        console.log('init elif'),
 
-    return (value, newEl = el[_if] ? null : value ? ifEl : elseEl) => {
-      if (nextEl) nextEl[_if] = el[_if] || newEl == ifEl
-      if (curEl != newEl) {
-        // disable effects on child elements when element is not matched
-        if (curEl) curEl.remove(), curEl[_off]?.()
-        if (curEl = newEl) {
-          holder.before(curEl.content || curEl)
-          // remove state stub to sprae as new
-          curEl[_state] === null ? (delete curEl[_state], sprae(curEl, state))
-            // enable effects if branch is matched
-            : curEl[_on]()
+        // :else may have children to init which is called after :if
+        // or preact can schedule :else after :if, so we ensure order of call by next tick
+        value => {
+          _holder._match.value = value || _prev._match.value;
+
+          console.group('elif')
+
+          !_prev._match.value && value ?
+            // queueMicrotask(() =>
+            (
+              console.log('elif yes', el),
+              _holder.before(_el.content || _el),
+              _el[_on]?.()
+              // )
+            )
+            :
+            // queueMicrotask(() =>
+            (
+              console.log('elif no', el),
+              _el.remove(), _el[_off]?.(_el)
+              // )
+            )
+
+          console.groupEnd()
+
         }
-      }
-    };
-  },
-
-  /*
-  // :else? :if="a"
-  // separate directives are more efficient than batch or couple propagation
-  if: (el, state, _holder, _el) => (
-    el[_else] ??= signal(1), // :if -> :else :if
-    el[_if] = signal(1),
-    (el.nextElementSibling||{})[_prev] = el, // pass itself to :else
-
-    el.replaceWith(_holder = document.createTextNode('')),
-    el[_state] = null, // mark el as fake-spraed to delay init, since we sprae rest when branch matches
-    _el = el.content ? frag(el) : el,
-
-    value => el[_if].value = el[_else].value && value ? (
-      console.log('if on', el.tagName),
-        _holder.before(_el.content || _el),
-        el[_state] === null ? (delete el[_state], sprae(el, state)) : el[_on](),
-        1
-      ) : (
-      console.log('if off', el.tagName),
-        el.remove(), el[_off]?.(), 0
       )
 
   ),
 
-  else: (el, state, expr, _update) => el[_prev] && (
-    el[_else] = computed(() => !el[_prev][_if].value),
-    console.log('else', el.tagName, el[_prev][_if].value),
-    // :else -> :else :if
-    _update = sprae.dir.if(el, state),
-    () => (console.group('else'), _update(true), console.groupEnd())
+  // NOTE: we can reach :else counterpart whereas prev :else :if is on hold
+  else: (el, state, _holder, _el, _if, _prev) => (
+    _prev = el._prev,
+    console.log('init else'),
+    el.replaceWith(_holder = el._holder = document.createTextNode('')),
+    _el = el.content ? frag(el) : el,
+    _el[_state] ??= null, // mark el as fake-spraed to delay init, since we sprae rest when branch matches
+    _holder._el = _el,
+    _holder._match = signal(1), // pre-create _match for :else :if, since the :if can be lazy-paused and :else after it relies on _prev (also it should be `true` to indicate that last :else is not active)
+    (_holder.nextElementSibling || {})._prev = _holder, // propagate linked condition
+
+    () => {
+      if (_holder._match._if) return // bypass :else :if handler
+      console.group('else', el),
+        !_prev?._match.value ? (
+          console.log('else yes'),
+          _holder.before(_el.content || _el),
+          _el[_state] === null ? (delete _el[_state], sprae(_el, state)) : (_el[_on]?.())
+        ) : (
+          console.log('else no'),
+          _el.remove(), _el[_off]?.()
+        ),
+        console.groupEnd()
+    }
   ),
-  */
+
 
   // :each="v,k in src"
   each: (tpl, state, expr) => {
