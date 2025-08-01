@@ -37,13 +37,13 @@ To automatically initialize all directives, use CDN version:
 <h1 :scope="{message:'Hello World!'}" :text="message"></h1>
 <script src="https://cdn.jsdelivr.net/npm/sprae@12.x.x"></script>
 ```
-
+<!--
 ### Flavors
 
 * [sprae.js](dist/sprae.js) – ESM.
 * [sprae.umd.js](dist/sprae.umd.js) – CJS / UMD / standalone with autoinit.
 * [sprae.micro.js](dist/sprae.micro.js) – <2.5kb [micro version](#micro).
-* [sprae.secure.js](dist/sprae.secure.js) - CSP-enabled version with [secure eval](#evaluator).
+-->
 <!-- * sprae.async.js - sprae with async events -->
 <!-- * sprae.alpine.js - alpine sprae, drop-in alpinejs replacement -->
 <!-- * sprae.vue.js - vue sprae, drop-in petite-vue replacement -->
@@ -140,27 +140,6 @@ Set any attribute(s).
 <input :="{ id: name, name, type: 'text', value, ...props  }" />
 ```
 
-#### `:on<event>`, `:<event>`
-
-Attach event listener.
-
-```html
-<!-- inline -->
-<button :click="count++">Up</button>
-
-<!-- function -->
-<input type="checkbox" :change="event => isChecked = event.target.value">
-
-<!-- multiple -->
-<input :value="text" :oninput:onchange="event => text = event.target.value">
-
-<!-- sequence -->
-<button :onfocus..onblur="event => (handleFocus(), event => handleBlur())">
-
-<!-- modifiers -->
-<button :onclick.throttle-500="handle()">Not too often</button>
-```
-
 #### `:if`, `:else`
 
 Control flow of elements.
@@ -247,6 +226,49 @@ Expose element in state with `name` or get reference to element.
 <textarea :ref="el => (/* onmount */, () => (/* onunmount */))" :if="show"></textarea>
 ```
 
+#### `:on<event>`, `:<event>`
+
+Attach event listener.
+
+```html
+<!-- inline -->
+<button :click="count++">Up</button>
+
+<!-- function -->
+<input type="checkbox" :change="event => isChecked = event.target.value">
+
+<!-- multiple -->
+<input :value="text" :oninput:onchange="event => text = event.target.value">
+
+<!-- sequence -->
+<button :onfocus..onblur="event => (handleFocus(), event => handleBlur())">
+
+<!-- modifiers -->
+<button :onclick.throttle-500="handle()">Not too often</button>
+```
+
+##### Modifiers
+
+* `.debounce-<ms?>` – defer callback for `ms` (default is next tick).
+* `.throttle-<ms?>` – limit callback to once every `ms` (default is `100`).
+* `.window`, `.document`, `.parent`, `.outside`, `.self` – event target.
+* `.passive`, `.capture`, `.once` – event listener [options](https://developer.mozilla.org/en-US/docs/Web/API/EventTarget/addEventListener#options).
+* `.prevent`, `.stop` (`.immediate`) – event prevent default or stop (immediate) propagation.
+* `.<key>` – filter event by [`event.key`](https://developer.mozilla.org/en-US/docs/Web/API/UI_Events/Keyboard_event_key_values):
+  * `.ctrl`, `.shift`, `.alt`, `.meta`, `.enter`, `.esc`, `.tab`, `.space` – direct key
+  * `.delete` – delete or backspace
+  * `.arrow` – up, right, down or left arrow
+  * `.digit` – 0-9
+  * `.letter` – A-Z, a-z or any [unicode letter](https://unicode.org/reports/tr18/#General_Category_Property)
+  * `.char` – any non-space character
+  * `.ctrl-<key>, .alt-<key>, .meta-<key>, .shift-<key>` – key combinations, eg. `.ctrl-alt-delete` or `.meta-x`.
+* `.*` – any other modifier has no effect, but allows binding multiple handlers.
+
+<!-- * `.interval-<ms?>` – run every `ms` (default 108).
+* `.raf` – run `requestAnimationFrame` loop (~60fps).
+* `.idle` – run when system is idle.
+* `.async` – await callback results.
+* `.emit` – emit event for each update, preventDefault to skip. -->
 
 <!--
 #### `:data="values"`
@@ -295,32 +317,6 @@ Trigger when element is connected / disconnected from DOM.
 <div :onmount..onunmount="e => (dispose = init(), e => dispose())"/>
 ```
 -->
-
-## Modifiers
-
-Can be applied to any directives.
-
-* `.debounce-<ms?>` – defer callback for `ms` (default 108).
-* `.throttle-<ms?>` – limit callback to once every `ms` (default 108).
-* `.once` – run only once.
-* `.tick` – defer callback to next microtask, useful for batching.
-* `.interval-<ms?>` – run every `ms` (default 108).
-* `.raf` – run `requestAnimationFrame` loop (~60fps).
-* `.idle` – run when system is idle.
-* `.async` – await callback results.
-* `.emit` – emit event for each update, preventDefault to skip.
-* `.window`, `.document`, `.parent`, `.outside`, `.self` – event target.
-* `.passive`, `.capture`, `.once` – event listener [options](https://developer.mozilla.org/en-US/docs/Web/API/EventTarget/addEventListener#options).
-* `.prevent`, `.stop` (`.immediate`) – event prevent default or stop (immediate) propagation.
-* `.<key>` – filter event by [`event.key`](https://developer.mozilla.org/en-US/docs/Web/API/UI_Events/Keyboard_event_key_values):
-  * `.ctrl`, `.shift`, `.alt`, `.meta`, `.enter`, `.esc`, `.tab`, `.space` – direct key
-  * `.delete` – delete or backspace
-  * `.arrow` – up, right, down or left arrow
-  * `.digit` – 0-9
-  * `.letter` – A-Z, a-z or any [unicode letter](https://unicode.org/reports/tr18/#General_Category_Property)
-  * `.char` – any non-space character
-  * `.ctrl-<key>, .alt-<key>, .meta-<key>, .shift-<key>` – key combinations, eg. `.ctrl-alt-delete` or `.meta-x`.
-* `.*` – any other modifier has no effect, but allows binding multiple handlers.
 
 
 ## Reactivity

@@ -175,6 +175,7 @@
 * [x] separate events from props
 * [x] enable async effect and run all basic tests
 * [x] v11 nested each bug (github)
+* [ ] Ungeneralize prop modifiers for events only
 * [ ] :if preact issue: it has screwed up order of effect callbacks & :else should be able to have mods
 * [ ] disable prop modifiers shortcut and test all effects
 * [ ] All TODO/FIXME
@@ -183,7 +184,7 @@
 * [ ] add event extra modifiers tests
 * [ ] add async callbacks tests
 * [ ] microjs bundle
-* [ ] flavors: alpine, vue, micro, secure
+* [x] ~~flavors: alpine, vue, micro, secure~~
 * [ ] switch signals to preact and test everything
 * [ ] website
   * [ ] 7 GUIs example

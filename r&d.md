@@ -1499,7 +1499,7 @@
   4. Attribute controller
     + Can be simplified in microsprae: sync, no modifiers
 
-### [x] Should we apply .tick and .emit automatically?
+### [ ] Should we apply .tick and .emit automatically?
 
   + less API
   + automatic batching
@@ -1508,10 +1508,18 @@
   - makes updates slightly heavier
   - .emit manually can be default prevented to skip update, so no use
 
-### [x] Conditional queries: md:onclick, lg:onclick etc? -> yes, screen-<size> plugin
+### [ ] Conditional queries: md:onclick, lg:onclick etc? -> yes, screen-<size> plugin
 
   + tailwind-like
   + can be handy I suppose
+
+## [ ] Attributes/events mixup. Do we need prop modifiers?
+
+  - Attributes are called when internal prop changes, events are called by external trigger.
+    - There's no indicator of that difference
+  - That affects modifiers: it is also mixed up now - it applies differently to prop or event
+  - Some modifiers can actually be events, like :raf, :idle, :interval, :once === :init
+  ? What is the main case we need modifiers for regular props?
 
 ## [ ] Componentization: what can be done? -> likely no for now. When html-include is there we can talk
 
@@ -1552,7 +1560,7 @@
   6. https://github.com/jhuddle/ponys
     + takes the toll of including, enabling, defining components in minimal way
 
-## [ ] Prop modifiers -> yes,
+## [ ] Prop modifiers -> let's find a single purpose
 
   * Main variants
   * ~~value.bind? value.watch?~~ no sense beyound value/ref
@@ -1560,6 +1568,7 @@
   * ~~prop.boolean, .number, .string, .array, .object~~ defined per-property
   * prop.once
     + actually it's existing event modifier
+    - can be replaced with :init
   * ~~prop.change - run only if value changes~~
     - seems like unnecessary manual optimization that must be done always automatically
     - some values don't change, like class or style
@@ -1568,6 +1577,7 @@
     - let's wait until that's really a problem
   * prop.interval-500
     + `:fx.interval-500="el.scrollLeft += 10"`
+    - can be a directive instead
   * prop.* – multiple values for same prop
   * prop.next="" - run update after other DOM updates happen
     + helps resolving calling a fn with state access
@@ -1575,6 +1585,7 @@
   * ~~x.prop="xyz" - set element property, rather than attribute (following topic)~~ do it via `:ref` or `:fx`
   * x.raf="abc" - run regularly?
     + can be useful for live anim effects
+    - can be a separate directive :raf
   * ~~x.watch-a-b-c - update by change of any of the deps~~
   * :x.any - update by _any_ state change
   * :x.persist="v"
@@ -1585,7 +1596,8 @@
 
   ~ so props have to do with describing how effect is triggered.
   + It seems event modifiers can be applied to any props: interval, debounce,
-  + it allows factoring them our
+  + it allows factoring them out
+  - it brings us to a tough spot where we deal with asynchronous conditional, which is hard and fragile to tackle.
 
 ## [ ] Directives
 
@@ -1597,6 +1609,12 @@
   * s-include / s-html?
   * s-teleport
   * s-modelable
+  * s-init
+    + instead of :fx.once
+  * s-raf
+    + instead of :fx.raf
+  * s-interval
+    + instead of :fx.interval
   * ~~s-show?~~ use hidden attribute
 
 ## [ ] Plugins
@@ -1625,6 +1643,9 @@
   - ~~no `this` keyword makes it a bit cumbersome~~
   -~ separate syntax space even with `:` prefix - conflicts
   - perf-wise vanilla is faster
+  - initial loading delay.
+
+## [ ] Autoinit via mutation observer?
 
 ## [ ] Integrations
 
