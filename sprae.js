@@ -27,7 +27,6 @@ sprae.init = (el, attrName, expr, state) => {
         isEvent = (name.startsWith('on') && (name = name.slice(2), true)) || el['on' + name],
         evaluate = compile(name, expr, sprae.dir[name]?.clean)
 
-
       // events have no effects and can be sequenced
       if (isEvent) {
         let first = e => (call(evaluate(state), e)),

@@ -2,9 +2,9 @@
 
 > light reactive hydration for DOM tree
 
-_Sprae_ is open & minimalistic progressive enhancement framework using _preact-signals_ reactivity.<br/>
-Perfect for small websites, static pages, prototypes, or SSR.<br/>
-A light and fast alternative to _alpine_ or _petite-vue_.
+_Sprae_ is open & minimalistic progressive enhancement framework.<br/>
+Good for small websites, static pages, prototypes, or SSR.<br/>
+Based on _preact-signals_, a light and fast alternative to _alpine_ or _petite-vue_.
 
 ## Usage
 
@@ -31,7 +31,7 @@ Sprae evaluates `:`-directives, removes them, and returns a reactive state for u
 
 ### Autoinit
 
-Sprae can be used as CDN script:
+To automatically initialize all directives, use CDN version:
 
 ```html
 <h1 :scope="{message:'Hello World!'}" :text="message"></h1>
@@ -40,7 +40,7 @@ Sprae can be used as CDN script:
 
 ### Flavors
 
-* [sprae.js](dist/sprae.js) – standard ESM.
+* [sprae.js](dist/sprae.js) – ESM.
 * [sprae.umd.js](dist/sprae.umd.js) – CJS / UMD / standalone with autoinit.
 * [sprae.micro.js](dist/sprae.micro.js) – <2.5kb [micro version](#micro).
 * [sprae.secure.js](dist/sprae.secure.js) - CSP-enabled version with [secure eval](#evaluator).
@@ -119,13 +119,13 @@ Bind input, textarea or select value.
 <!-- checked attr -->
 <input type="checkbox" :value="item.done" />
 
-<!-- function with modifier -->
-<input :value.defer-300="value => value + str" />
+<!-- function -->
+<input :value="value => value + str" />
 ```
 
 #### `:<attr>`, `:`
 
-Set any attribute.
+Set any attribute(s).
 
 ```html
 <label :for="name" :text="name" />
@@ -140,16 +140,16 @@ Set any attribute.
 <input :="{ id: name, name, type: 'text', value, ...props  }" />
 ```
 
-#### `:on<event>`
+#### `:on<event>`, `:<event>`
 
 Attach event listener.
 
 ```html
 <!-- inline -->
-<button :onclick="count++">Up</button>
+<button :click="count++">Up</button>
 
 <!-- function -->
-<input type="checkbox" :onchange="event => isChecked = event.target.value">
+<input type="checkbox" :change="event => isChecked = event.target.value">
 
 <!-- multiple -->
 <input :value="text" :oninput:onchange="event => text = event.target.value">
@@ -298,10 +298,12 @@ Trigger when element is connected / disconnected from DOM.
 
 ## Modifiers
 
-* `.debounce-<ms?>` – defer for `ms` (default 108).
-* `.throttle-<ms?>` – limit to once every `ms` (default 108).
+Can be applied to any directives.
+
+* `.debounce-<ms?>` – defer callback for `ms` (default 108).
+* `.throttle-<ms?>` – limit callback to once every `ms` (default 108).
 * `.once` – run only once.
-* `.tick` – defer to next microtask, useful for batching.
+* `.tick` – defer callback to next microtask, useful for batching.
 * `.interval-<ms?>` – run every `ms` (default 108).
 * `.raf` – run `requestAnimationFrame` loop (~60fps).
 * `.idle` – run when system is idle.
@@ -323,7 +325,7 @@ Trigger when element is connected / disconnected from DOM.
 
 ## Reactivity
 
-Sprae uses _signals_ store for reactivity with sandboxing.
+Sprae uses _preact-flavored signals_ store for reactivity.
 
 ```js
 import sprae from 'sprae'
@@ -334,8 +336,10 @@ const name = signal('foo')
 
 const state = store(
   {
+    // prop
     count: 0,
 
+    // method
     inc(){ state.count++ },
 
     // signal
