@@ -19,6 +19,10 @@ dir('value', (el, state, expr) => {
         ) :
         (el.type === "checkbox") ?
           (value) => (el.checked = value, attr(el, "checked", value)) :
+          el.type === 'radio' ? (value) => (
+            el.value === value && ((el.checked = value), attr(el, 'checked', value)),
+            el.checked && (el.value = value)
+          ) :
           (el.type === "select-one") ?
             (value) => {
               for (let o of el.options)

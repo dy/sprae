@@ -34,6 +34,48 @@ test("value: checkbox", async () => {
   is(state.a, true)
 });
 
+
+test("value: radio group", async () => {
+  // Test radio button group behavior
+  let container = h`<div>
+    <input type="radio" name="group" value="a" :value="selected" />
+    <input type="radio" name="group" value="b" :value="selected" />
+    <input type="radio" name="group" value="c" :value="selected" />
+  </div>`;
+
+  let radio1 = container.children[0];
+  let radio2 = container.children[1];
+  let radio3 = container.children[2];
+
+  let state = sprae(container, { selected: "b" });
+
+  // Only the matching radio should be checked
+  is(radio1.checked, false);
+  is(radio2.checked, true);
+  is(radio3.checked, false);
+
+  // Change state to different option
+  state.selected = "c";
+  await tick();
+
+  is(radio1.checked, false);
+  is(radio2.checked, false);
+  is(radio3.checked, true);
+
+  // Test user selecting different radio
+  radio1.checked = true;
+  radio1.dispatchEvent(new window.Event('change'));
+  is(state.selected, "a");
+
+  // Verify only one radio is checked after user interaction
+  await tick();
+  is(radio1.checked, true);
+  is(radio2.checked, false);
+  is(radio3.checked, false);
+});
+
+
+
 test("value: textarea", async () => {
   let el = h`<textarea :value="a"></textarea>`;
   let state = sprae(el, { a: "abcdefgh" });
