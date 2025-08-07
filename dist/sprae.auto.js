@@ -558,7 +558,7 @@ var init_value = __esm({
       const update = el.type === "text" || el.type === "" ? (value) => el.setAttribute("value", el.value = value == null ? "" : value) : el.tagName === "TEXTAREA" || el.type === "text" || el.type === "" ? (value, from, to) => (
         // we retain selection in input
         (from = el.selectionStart, to = el.selectionEnd, el.setAttribute("value", el.value = value == null ? "" : value), from && el.setSelectionRange(from, to))
-      ) : el.type === "checkbox" ? (value) => (el.checked = value, attr(el, "checked", value)) : el.type === "select-one" ? (value) => {
+      ) : el.type === "checkbox" ? (value) => (el.checked = value, attr(el, "checked", value)) : el.type === "radio" ? (value) => el.value === value && (el.checked = value, attr(el, "checked", value)) : el.type === "select-one" ? (value) => {
         for (let o of el.options)
           o.value == value ? o.setAttribute("selected", "") : o.removeAttribute("selected");
         el.value = value;

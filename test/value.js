@@ -35,7 +35,7 @@ test("value: checkbox", async () => {
 });
 
 
-test("value: radio group", async () => {
+test.only("value: radio group", async () => {
   // Test radio button group behavior
   let container = h`<div>
     <input type="radio" name="group" value="a" :value="selected" />
@@ -72,6 +72,10 @@ test("value: radio group", async () => {
   is(radio1.checked, true);
   is(radio2.checked, false);
   is(radio3.checked, false);
+
+  is(radio1.value, "a");
+  is(radio2.value, "b");
+  is(radio3.value, "c");
 });
 
 
