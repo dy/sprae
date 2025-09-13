@@ -2,7 +2,7 @@
 
 > DOM tree microhydration
 
-_Sprae_ is open & minimalistic progressive enhancement framework with _preact-signals_ reactivity.<br/>
+_Sprae_ is open & minimalistic progressive enhancement framework with signals-based reactivity.<br/>
 Useful for SPAs, PWAs, lightweight UI or nextjs / SSR (see [JSX](#jsx)).<br/>
 An alternative to _alpine_, _petite-vue_, _lucia_ etc (see [why](#justification)).
 
