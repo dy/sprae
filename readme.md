@@ -310,7 +310,7 @@ Modifier | Description | Note
 `.window`, `.document`, `.parent`, `.outside`, `.self` | specify event target. | events only
 `.passive`, `.capture`, `.once` | event listener [options](https://developer.mozilla.org/en-US/docs/Web/API/EventTarget/addEventListener#options). | events only
 `.prevent`, `.stop`, `.immediate` | prevent default or stop (immediate) propagation. | events only
-`.<key>` | filter event by [`event.key`](https://developer.mozilla.org/en-US/docs/Web/API/UI_Events/Keyboard_event_key_values): <ul><li>`.ctrl`, `.shift`, `.alt`, `.meta`, `.enter`, `.esc`, `.tab`, `.space` – direct key <li>`.delete` – delete or backspace <li>`.arrow` – up, right, down or left arrow <li>`.digit` – 0-9 <li>`.letter` – A-Z, a-z or any [unicode letter](https://unicode.org/reports/tr18/#General_Category_Property) <li>`.char` – any non-space character</ul> | events only<br>permits key combinations eg. `ctrl-alt-<key>`
+`.<key>`, `.*-<key>` | filter event by [`event.key`](https://developer.mozilla.org/en-US/docs/Web/API/UI_Events/Keyboard_event_key_values) or combination: <ul><li>`.ctrl`, `.shift`, `.alt`, `.meta`, `.enter`, `.esc`, `.tab`, `.space` – direct key <li>`.delete` – delete or backspace <li>`.arrow` – up, right, down or left arrow <li>`.digit` – 0-9 <li>`.letter` – A-Z, a-z or any [unicode letter](https://unicode.org/reports/tr18/#General_Category_Property) <li>`.char` – any non-space character</ul> | events only
 `.persist-<kind?>` | persist value in local or session storage. | props only
 `.*` | any other modifier has no effect, but allows binding multiple handlers. |
 
