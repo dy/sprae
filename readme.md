@@ -297,23 +297,24 @@ Trigger when element is connected / disconnected from DOM.
 
 Can be applied to any directives or events.
 
-Modifier | Description | Description
+Modifier | Description | Note
 ---|---|---
-`.debounce-<ms=100>` | defer callback by `ms`. |
-`.throttle-<ms=100>` | limit callback to once every `ms`. |
+`.debounce-<ms?>` | defer callback by `ms`. | default is 100
+`.throttle-<ms?>` | limit callback to once every `ms`. | default is 100
 `.tick` | defer callback to next microtask. |
 `.once` | call only once. |
-`.interval-<ms=100>` | run callback every `ms`. |
+`.interval-<ms?>` | run callback every `ms`. | default is 100
 `.raf` | run callback in `requestAnimationFrame` loop (~60fps). |
 `.idle` | run callback when system is idle. |
 `.async` | await callback results. |
-`.window`, `.document`, `.parent`, `.outside`, `.self` | specify event target. | only events
-`.passive`, `.capture`, `.once` | event listener [options](https://developer.mozilla.org/en-US/docs/Web/API/EventTarget/addEventListener#options). | only events
-`.prevent`, `.stop` (`.immediate`) | prevent default or stop (immediate) propagation. | only events
-`.<key>` | filter event by [`event.key`](https://developer.mozilla.org/en-US/docs/Web/API/UI_Events/Keyboard_event_key_values): <ul><li>`.ctrl`, `.shift`, `.alt`, `.meta`, `.enter`, `.esc`, `.tab`, `.space` – direct key <li>`.delete` – delete or backspace <li>`.arrow` – up, right, down or left arrow <li>`.digit` – 0-9 <li>`.letter` – A-Z, a-z or any [unicode letter](https://unicode.org/reports/tr18/#General_Category_Property) <li>`.char` – any non-space character <li>`.ctrl-<key>, .alt-<key>, .meta-<key>, .shift-<key>` – key combinations, eg. `.ctrl-alt-delete` or `.meta-x`</ul>
-`.persist-<kind=session>` | persist value in local or session storage. (props only) | only non-events
+`.window`, `.document`, `.parent`, `.outside`, `.self` | specify event target. | events only
+`.passive`, `.capture`, `.once` | event listener [options](https://developer.mozilla.org/en-US/docs/Web/API/EventTarget/addEventListener#options). | events only
+`.prevent`, `.stop`, `.immediate` | prevent default or stop (immediate) propagation. | events only
+`.<key>` | filter event by [`event.key`](https://developer.mozilla.org/en-US/docs/Web/API/UI_Events/Keyboard_event_key_values): <ul><li>`.ctrl`, `.shift`, `.alt`, `.meta`, `.enter`, `.esc`, `.tab`, `.space` – direct key or cobination like `ctrl-alt-<key>` <li>`.delete` – delete or backspace <li>`.arrow` – up, right, down or left arrow <li>`.digit` – 0-9 <li>`.letter` – A-Z, a-z or any [unicode letter](https://unicode.org/reports/tr18/#General_Category_Property) <li>`.char` – any non-space character | events only
+`.persist-<kind?>` | persist value in local or session storage. | props only
 `.*` | any other modifier has no effect, but allows binding multiple handlers. |
 
+### Examples
 
 ```html
 <!-- Debounce keyboard input updates -->
@@ -349,26 +350,16 @@ import { signal } from 'sprae/signal'
 
 const name = signal('foo')
 
-const state = store(
-  {
-    // prop
-    count: 0,
+const state = store({
+  count: 0,                             // prop
+  inc(){ state.count++ },               // method
+  name,                                 // signal
+  get twice(){ return this.count * 2 }, // computed
+  _i: 0,                                // untracked
+},
 
-    // method
-    inc(){ state.count++ },
-
-    // signal
-    name,
-
-    // computed
-    get twice(){ return this.count * 2 },
-
-    // untracked
-    _i: 0,
-  },
-
-  // globals
-  { Math }
+// globals
+{ Math }
 )
 
 sprae(element, state)
@@ -388,15 +379,13 @@ state.Math       // globalThis.Math
 state.navigator  // undefined
 ```
 
-Signals can be switched to an alternative preact/compatible implementation:
+Signals can be switched to an alternative preact-signals compatible implementation:
 
 ```js
 import sprae from 'sprae';
-import { signal, computed, effect, batch, untracked } from 'sprae/signal';
 import * as signals from '@preact/signals-core';
 
-// switch sprae signals to @preact/signals-core
-sprae.use(signals);
+sprae.signals = signals
 ```
 
 Provider | Size | Feature
