@@ -68,7 +68,7 @@ Welcome, <template :text="user.name"><template>.
 
 #### `:class`
 
-Set class.
+Set element className.
 
 ```html
 <div :class="foo"></div>
@@ -85,7 +85,7 @@ Set class.
 
 #### `:style`
 
-Set styles.
+Set element style.
 
 ```html
 <span :style="'display: inline-block'"></span>
@@ -94,13 +94,10 @@ Set styles.
 <div style="foo: bar" :style="'bar-baz: qux'">
 
 <!-- object -->
-<div :style="{barBaz: 'qux'}"></div>
-
-<!-- CSS variable -->
-<div :style="{'--bar': baz}"></div>
+<div :style="{bar: 'baz', '--qux': 'quv'}"></div>
 
 <!-- function -->
-<div :style="s => ({'--bar': baz})"></div>
+<div :style="obj => ({'--bar': baz})"></div>
 ```
 
 #### `:value`
@@ -178,18 +175,18 @@ Multiply element.
 
 #### `:scope`
 
-Define scope for a subtree.
+Define variable scope for a subtree.
 
 ```html
 <x :scope="{foo: 'foo'}">
   <y :scope="{bar: 'bar'}" :text="foo + bar"></y>
 </x>
 
-<!-- blank scope -->
-<x :scope :ref="id"></x>
-
 <!-- variables -->
 <x :scope="x=1, y=2" :text="x+y"></x>
+
+<!-- blank scope -->
+<x :scope :ref="id"></x>
 ```
 
 #### `:fx`
@@ -209,7 +206,7 @@ Run effect, not changing any attribute.
 
 #### `:ref`
 
-Expose element in state with `name` or get reference to element.
+Expose an element in scope with `name` or get reference to the element.
 
 ```html
 <div :ref="card" :fx="handle(card)"></div>
@@ -226,19 +223,19 @@ Expose element in state with `name` or get reference to element.
 <textarea :ref="el => (/* onmount */, () => (/* onunmount */))" :if="show"></textarea>
 ```
 
-#### `:on<event>`, `:<event>`
+#### `:on<event>`
 
 Attach event listener.
 
 ```html
 <!-- inline -->
-<button :click="count++">Up</button>
+<button :onclick="count++">Up</button>
 
 <!-- function -->
-<input type="checkbox" :change="event => isChecked = event.target.value">
+<input type="checkbox" :onchange="event => isChecked = event.target.value">
 
 <!-- multiple -->
-<input :value="text" :oninput:onchange="event => text = event.target.value">
+<input :onvalue="text" :oninput:onchange="event => text = event.target.value">
 
 <!-- sequence -->
 <button :onfocus..onblur="event => (handleFocus(), event => handleBlur())">
@@ -246,29 +243,6 @@ Attach event listener.
 <!-- modifiers -->
 <button :onclick.throttle-500="handle()">Not too often</button>
 ```
-
-##### Modifiers
-
-* `.debounce-<ms?>` – defer callback for `ms` (default is next tick).
-* `.throttle-<ms?>` – limit callback to once every `ms` (default is `100`).
-* `.window`, `.document`, `.parent`, `.outside`, `.self` – event target.
-* `.passive`, `.capture`, `.once` – event listener [options](https://developer.mozilla.org/en-US/docs/Web/API/EventTarget/addEventListener#options).
-* `.prevent`, `.stop` (`.immediate`) – event prevent default or stop (immediate) propagation.
-* `.<key>` – filter event by [`event.key`](https://developer.mozilla.org/en-US/docs/Web/API/UI_Events/Keyboard_event_key_values):
-  * `.ctrl`, `.shift`, `.alt`, `.meta`, `.enter`, `.esc`, `.tab`, `.space` – direct key
-  * `.delete` – delete or backspace
-  * `.arrow` – up, right, down or left arrow
-  * `.digit` – 0-9
-  * `.letter` – A-Z, a-z or any [unicode letter](https://unicode.org/reports/tr18/#General_Category_Property)
-  * `.char` – any non-space character
-  * `.ctrl-<key>, .alt-<key>, .meta-<key>, .shift-<key>` – key combinations, eg. `.ctrl-alt-delete` or `.meta-x`.
-* `.*` – any other modifier has no effect, but allows binding multiple handlers.
-
-<!-- * `.interval-<ms?>` – run every `ms` (default 108).
-* `.raf` – run `requestAnimationFrame` loop (~60fps).
-* `.idle` – run when system is idle.
-* `.async` – await callback results.
-* `.emit` – emit event for each update, preventDefault to skip. -->
 
 <!--
 #### `:data="values"`
@@ -318,6 +292,51 @@ Trigger when element is connected / disconnected from DOM.
 ```
 -->
 
+
+## Modifiers
+
+Can be applied to any directives or events.
+
+Modifier | Description | Description
+---|---|---
+`.debounce-<ms=100>` | defer callback by `ms`. |
+`.throttle-<ms=100>` | limit callback to once every `ms`. |
+`.tick` | defer callback to next microtask. |
+`.once` | call only once. |
+`.interval-<ms=100>` | run callback every `ms`. |
+`.raf` | run callback in `requestAnimationFrame` loop (~60fps). |
+`.idle` | run callback when system is idle. |
+`.async` | await callback results. |
+`.window`, `.document`, `.parent`, `.outside`, `.self` | specify event target. | only events
+`.passive`, `.capture`, `.once` | event listener [options](https://developer.mozilla.org/en-US/docs/Web/API/EventTarget/addEventListener#options). | only events
+`.prevent`, `.stop` (`.immediate`) | prevent default or stop (immediate) propagation. | only events
+`.<key>` | filter event by [`event.key`](https://developer.mozilla.org/en-US/docs/Web/API/UI_Events/Keyboard_event_key_values): <ul><li>`.ctrl`, `.shift`, `.alt`, `.meta`, `.enter`, `.esc`, `.tab`, `.space` – direct key <li>`.delete` – delete or backspace <li>`.arrow` – up, right, down or left arrow <li>`.digit` – 0-9 <li>`.letter` – A-Z, a-z or any [unicode letter](https://unicode.org/reports/tr18/#General_Category_Property) <li>`.char` – any non-space character <li>`.ctrl-<key>, .alt-<key>, .meta-<key>, .shift-<key>` – key combinations, eg. `.ctrl-alt-delete` or `.meta-x`</ul>
+`.persist-<kind=session>` | persist value in local or session storage. (props only) | only non-events
+`.*` | any other modifier has no effect, but allows binding multiple handlers. |
+
+
+```html
+<!-- Debounce keyboard input updates -->
+<input :oninput.debounce-200="e => update(e)" />
+
+<!-- Track mouse y coord -->
+<div :onmousemove.document="event => y=event.clientY">
+
+<!-- Persist value in session storage -->
+<textarea :value.persist="text" />
+
+<!-- Throttle calculations -->
+<span id="count" :text.throttle-100="text.length" />
+
+<!-- Map JS props into CSS -->
+<div :style.raf="{'--y':y}">
+
+<!-- Simple counter -->
+<span :text.interval-1000="count++">
+
+<!-- Run on init -->
+<div :fx.once="console.log('sprae init')">
+```
 
 ## Reactivity
 
@@ -453,9 +472,6 @@ sprae.use(signals)
 
 // configure compiler
 sprae.compile = subscript
-
-// custom prefix, default is `:`
-sprae.prefix = 'js-'
 ```
 
 ## Micro
@@ -470,17 +486,17 @@ Micro sprae version is 2.5kb bundle with essentials:
 
 ## JSX
 
-Sprae works with JSX via custom prefix.
+Sprae works with JSX via custom prefix (eg. `data-sprae-`).
 
-Case: Next.js server components can't do dynamic UI – active nav, tabs, sliders etc. Converting to client components breaks data fetching and adds overhead. Sprae can offload UI logic to keep server components intact.
+Case: server components can't do dynamic UI – active nav, tabs, sliders etc. Converting to client components breaks data fetching and adds overhead. Sprae can offload UI logic to keep server components intact.
 
 ```jsx
 // app/page.jsx - server component
 export default function Page() {
   return <>
     <nav id="nav">
-      <a href="/" js-class="location.pathname === '/' && 'active'">Home</a>
-      <a href="/about" js-class="location.pathname === '/about' && 'active'">About</a>
+      <a href="/" data-sprae-class="location.pathname === '/' && 'active'">Home</a>
+      <a href="/about" data-sprae-class="location.pathname === '/about' && 'active'">About</a>
     </nav>
     ...
   </>
@@ -494,7 +510,7 @@ import Script from 'next/script'
 export default function Layout({ children }) {
   return <>
     {children}
-    <Script src="https://unpkg.com/sprae" prefix="js-" />
+    <Script src="https://unpkg.com/sprae" prefix="data-sprae-" />
   </>
 }
 ```
@@ -513,7 +529,7 @@ export default function Layout({ children }) {
 
 ## Justification
 
-Modern frontend stack is non-organic & processed. There are healthy alternatives, but:
+Modern frontend stack is not healthy, like processed food. There are some alternatives, like:
 
 * [Template-parts](https://github.com/dy/template-parts) is stuck with native HTML quirks ([parsing table](https://github.com/github/template-parts/issues/24), [SVG attributes](https://github.com/github/template-parts/issues/25), [liquid syntax](https://shopify.github.io/liquid/tags/template/#raw) conflict etc).
 * [Alpine](https://github.com/alpinejs/alpine) / [petite-vue](https://github.com/vuejs/petite-vue) / [lucia](https://github.com/aidenybai/lucia) escape native HTML quirks, but have excessive API (`:`, `x-`, `{}`, `@`, `$`), tend to [self-encapsulate](https://github.com/alpinejs/alpine/discussions/3223) and not care about size/performance.
