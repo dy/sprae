@@ -1,4 +1,3 @@
-import { _dispose, _off, _state } from "../core.js";
 import { tick, time } from "wait-please";
 import sprae from '../sprae.js'
 import h from "hyperf";
@@ -8,6 +7,10 @@ import { store } from '../store.js'
 
 // import * as signals from '@preact/signals-core'
 // sprae.use(signals)
+//
+
+const _dispose = Symbol.dispose;
+
 
 
 test("any: basic", async () => {
@@ -683,18 +686,18 @@ test('ref: create in state as untracked', async () => {
   let div = h`<div :scope="{_x:null,log(){console.log(_x)}}" :onx="log"><x :ref="_x" :text="_x?.tagName"></x></div>`;
   let state = sprae(div)
 
-  is(div[_state]._x, div.firstChild)
+  is(state._x, div.firstChild)
   div.dispatchEvent(new window.CustomEvent("x"));
-  is(div[_state]._x, div.firstChild)
+  is(state._x, div.firstChild)
 })
 
 test('ref: create in state as direct', async () => {
   let div = h`<div :scope="{x:null,log(){console.log(x)}}" :onx="log"><x :ref="x" :text="x?.tagName"></x></div>`;
   let state = sprae(div)
-  is(div[_state].x, div.firstChild)
+  is(state.x, div.firstChild)
   // reading :ref=x normally (one level) would not subscribe root, but nested one may subscribe parent :scope
   div.dispatchEvent(new window.CustomEvent("x"));
-  is(div[_state].x, div.firstChild)
+  is(state.x, div.firstChild)
 })
 
 test('ref: duplicates', async () => {
@@ -956,7 +959,44 @@ test("value: reflect ensure value", async () => {
   is(el.outerHTML, `<input value="">`);
 });
 
+test("value: radio group", async () => {
+  // Test radio button group behavior
+  let container = h`<div>
+    <input type="radio" name="group" value="a" :value="selected" />
+    <input type="radio" name="group" value="b" :value="selected" />
+    <input type="radio" name="group" value="c" :value="selected" />
+  </div>`;
 
+  let radio1 = container.children[0];
+  let radio2 = container.children[1];
+  let radio3 = container.children[2];
+
+  let state = sprae(container, { selected: "b" });
+
+  // Only the matching radio should be checked
+  is(radio1.checked, false);
+  is(radio2.checked, true);
+  is(radio3.checked, false);
+
+  // Change state to different option
+  state.selected = "c";
+  await tick();
+
+  is(radio1.checked, false);
+  is(radio2.checked, false);
+  is(radio3.checked, true);
+
+  // Test user selecting different radio
+  radio1.checked = true;
+  radio1.dispatchEvent(new window.Event('change'));
+  is(state.selected, "a");
+
+  // Verify only one radio is checked after user interaction
+  await tick();
+  is(radio1.checked, true);
+  is(radio2.checked, false);
+  is(radio3.checked, false);
+});
 
 
 test.skip('each: top-level list', async () => {

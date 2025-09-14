@@ -295,48 +295,130 @@ Trigger when element is connected / disconnected from DOM.
 
 ## Modifiers
 
-Can be applied to any directives or events.
+#### `.debounce-<ms?>`
 
-Modifier | Description | Note
----|---|---
-`.debounce-<ms?>` | defer callback by `ms`. | default=100
-`.throttle-<ms?>` | limit callback to once every `ms`. | default=100
-`.tick` | defer callback to next microtask. |
-`.once` | call only once. |
-`.interval-<ms?>` | run callback every `ms`. | default=100
-`.raf` | run callback in `requestAnimationFrame` loop (~60fps). |
-`.idle` | run callback when system is idle. |
-`.async` | await callback results. |
-`.window`, `.document`, `.parent`, `.outside`, `.self` | specify event target. | events only
-`.passive`, `.capture`, `.once` | event listener [options](https://developer.mozilla.org/en-US/docs/Web/API/EventTarget/addEventListener#options). | events only
-`.prevent`, `.stop`, `.immediate` | prevent default or stop (immediate) propagation. | events only
-`.<key>`, `.*-<key>` | filter event by [`event.key`](https://developer.mozilla.org/en-US/docs/Web/API/UI_Events/Keyboard_event_key_values) or combination: <ul><li>`.ctrl`, `.shift`, `.alt`, `.meta`, `.enter`, `.esc`, `.tab`, `.space` – direct key <li>`.delete` – delete or backspace <li>`.arrow` – up, right, down or left arrow <li>`.digit` – 0-9 <li>`.letter` – A-Z, a-z or any [unicode letter](https://unicode.org/reports/tr18/#General_Category_Property) <li>`.char` – any non-space character</ul> | events only
-`.persist-<kind?>` | persist value in local or session storage. | props only
-`.*` | any other modifier has no effect, but allows binding multiple handlers. |
-
-### Examples
+Defer callback by `ms`, by default 100.
 
 ```html
-<!-- Debounce keyboard input updates -->
+<!-- debounce keyboard input updates -->
 <input :oninput.debounce-200="e => update(e)" />
+```
 
-<!-- Track mouse y coord -->
+#### `.throttle-<ms?>`
+
+Limit callback to once every `ms`, by default 100.
+
+```html
+<!-- throttle calculations -->
+<span id="count" :text.throttle-100="text.length" />
+```
+
+#### `.tick`
+
+Defer callback to next microtask.
+
+```html
+<button :onclick.tick="focusInput()">Save</button>
+```
+
+#### `.once`
+
+Call only once.
+
+```html
+<!-- run on init -->
+<div :fx.once="console.log('sprae init')">
+```
+
+#### `.interval-<ms?>`
+
+Run callback every `ms`. default=100
+
+```html
+<!-- simple counter -->
+<span :text.interval-1000="count++">
+```
+
+#### `.raf`
+
+Run callback in `requestAnimationFrame` loop (~60fps).
+
+```html
+<!-- map JS props into CSS -->
+<div :style.raf="{'--scroll-y': window.scrollY}">
+```
+
+#### `.idle`
+
+Run callback when system is idle.
+
+```html
+<!-- batch logging -->
+<div :fx.idle="trackView()"></div>
+```
+
+#### `.async`
+
+Await callback results.
+
+```html
+<button :onclick.async="data = await fetch('/api/user').then(r => r.json())">Load User</button>
+<span :text="data?.name">User</span>
+```
+
+#### `.window`, `.document`, `.parent`, `.outside`, `.self`
+
+Specify event target. Events only.
+
+```html
+<!-- track mouse y coord -->
 <div :onmousemove.document="event => y=event.clientY">
 
-<!-- Persist value in session storage -->
+<div :onclick.outside="closeMenu()" :class="{ open: isOpen }">Dropdown</div>
+```
+
+#### `.passive`, `.capture`, `.once`
+
+Event listener [options](https://developer.mozilla.org/en-US/docs/Web/API/EventTarget/addEventListener#options). events only
+
+#### `.prevent`, `.stop`, `.immediate`
+
+Prevent default or stop (immediate) propagation. events only
+
+#### `.<key>`, `.*-<key>`
+
+Filter event by [`event.key`](https://developer.mozilla.org/en-US/docs/Web/API/UI_Events/Keyboard_event_key_values) or combination:
+
+* `.ctrl`, `.shift`, `.alt`, `.meta`, `.enter`, `.esc`, `.tab`, `.space` – direct key
+* `.delete` – delete or backspace
+* `.arrow` – up, right, down or left arrow
+* `.digit` – 0-9
+* `.letter` – A-Z, a-z or any [unicode letter](https://unicode.org/reports/tr18/#General_Category_Property)
+* `.char` – any non-space character
+
+```html
+<input :onkeydown.ctrl-enter="saveDraft()" placeholder="Ctrl+Enter to save">
+```
+
+#### `.persist-<kind?>`
+
+Persist value in local or session storage. props only
+
+```html
 <textarea :value.persist="text" />
 
-<!-- Throttle calculations -->
-<span id="count" :text.throttle-100="text.length" />
+<select :onchange="event => theme = event.target.value" :value.persist="theme">
+  <option value="light">Light</option>
+  <option value="dark">Dark</option>
+</select>
+```
 
-<!-- Map JS props into CSS -->
-<div :style.raf="{'--y':y}">
+#### `.*`
 
-<!-- Simple counter -->
-<span :text.interval-1000="count++">
+Any other modifier has no effect, but allows binding multiple handlers.
 
-<!-- Run on init -->
-<div :fx.once="console.log('sprae init')">
+```html
+
 ```
 
 ## Reactivity
@@ -344,11 +426,7 @@ Modifier | Description | Note
 Sprae uses _preact-flavored signals_ store for reactivity.
 
 ```js
-import sprae from 'sprae'
-import store from 'sprae/store'
-import { signal } from 'sprae/signal'
-
-const name = signal('foo')
+import sprae, { signal, store } from 'sprae'
 
 const state = store({
   count: 0,                             // prop
@@ -357,26 +435,17 @@ const state = store({
   get twice(){ return this.count * 2 }, // computed
   _i: 0,                                // untracked
 },
-
-// globals
-{ Math }
+{ Math }                    // globals
 )
 
 sprae(element, state)
 
-// update
-state.inc()
-state.count++
+state.inc(), state.count++  // update
+name.value = 'bar'          // signal update
+state._i++                  // no update
 
-// signal update
-name.value = 'bar'
-
-// no update
-state._i++
-
-// sandbox
-state.Math       // globalThis.Math
-state.navigator  // undefined
+state.Math                  // == globalThis.Math
+state.navigator             // == undefined
 ```
 
 Signals can be switched to an alternative preact-signals compatible implementation:
@@ -385,7 +454,7 @@ Signals can be switched to an alternative preact-signals compatible implementati
 import sprae from 'sprae';
 import * as signals from '@preact/signals-core';
 
-sprae.signals = signals
+sprae.use(signals)
 ```
 
 Provider | Size | Feature
@@ -405,13 +474,14 @@ To make eval stricter & safer, an alternative evaluator can be used, eg. _justin
 
 ```js
 import sprae from 'sprae'
-import justin from 'subscript/justin'
+import compile from 'subscript/justin'
 
-sprae.compile = justin; // set up justin as default compiler
+sprae.use({ compile }); // set up justin as default compiler
 ```
 
 [_Justin_](https://github.com/dy/subscript#justin) is minimal JS subset that avoids "unsafe-eval" CSP and provides sandboxing.
 
+<!--
 ###### Operators:
 
 `++ -- ! - + * / % ** && || ??`<br/>
@@ -424,8 +494,9 @@ sprae.compile = justin; // set up justin as default compiler
 `[] {} "" ''`<br/>
 `1 2.34 -5e6 0x7a`<br/>
 `true false null undefined NaN`
+-->
 
-
+<!--
 ## Custom Build
 
 Sprae can be tailored to project needs / size:
@@ -433,7 +504,7 @@ Sprae can be tailored to project needs / size:
 ```js
 // sprae.custom.js
 import sprae from 'sprae/core'
-import * as signals from '@preact/signals'
+import * as preactSignals from '@preact/signals'
 import subscript from 'subscript'
 
 // standard directives from sprae/directive
@@ -442,12 +513,12 @@ import _if from 'sprae/directive/if.js'
 import _text from 'sprae/directive/text.js'
 
 // register directives
-sprae.dir['if'] = _if
-sprae.dir['text'] = _text
-sprae.dir['*'] = _attr
+sprae.dir.if = _if
+sprae.dir.text = _text
+sprae.dir.default = _attr
 
 // custom directive :id="expression"
-sprae.dir['id'] = (el, state, expr) => {
+sprae.dir.id = (el, state, expr) => {
   // ...init
   return newValue => {
     // ...update
@@ -456,13 +527,15 @@ sprae.dir['id'] = (el, state, expr) => {
   }
 }
 
-// configure signals
-sprae.use(signals)
+// use preact signals
+sprae.signals = preactSignals
 
-// configure compiler
+// use alternative compiler
 sprae.compile = subscript
 ```
+-->
 
+<!--
 ## Micro
 
 Micro sprae version is 2.5kb bundle with essentials:
@@ -471,7 +544,7 @@ Micro sprae version is 2.5kb bundle with essentials:
 * no modifiers `:a.x.y`
 * no sequences `:ona..onb`
 * no `:each`, `:if`, `:value`
-* async effects by default
+* async effects by default -->
 
 ## JSX
 
@@ -518,7 +591,7 @@ export default function Layout({ children }) {
 
 ## Justification
 
-Modern frontend stack is not healthy, like processed food. There are some alternatives, like:
+Modern frontend stack is unhealthy, like non-organic processed food. There are some alternatives, like:
 
 * [Template-parts](https://github.com/dy/template-parts) is stuck with native HTML quirks ([parsing table](https://github.com/github/template-parts/issues/24), [SVG attributes](https://github.com/github/template-parts/issues/25), [liquid syntax](https://shopify.github.io/liquid/tags/template/#raw) conflict etc).
 * [Alpine](https://github.com/alpinejs/alpine) / [petite-vue](https://github.com/vuejs/petite-vue) / [lucia](https://github.com/aidenybai/lucia) escape native HTML quirks, but have excessive API (`:`, `x-`, `{}`, `@`, `$`), tend to [self-encapsulate](https://github.com/alpinejs/alpine/discussions/3223) and not care about size/performance.

@@ -1,31 +1,102 @@
-// standard sprae entry
-
-import sprae, { _state, _on, _off } from "./core.js";
 import store, { _change, _signals } from "./store.js";
-import signals, { batch, computed, effect, signal, untracked } from './signal.js';
+import { batch, computed, effect, signal, untracked, use } from './signal.js';
 
-export default sprae
+// polyfill
+const _dispose = (Symbol.dispose ||= Symbol("dispose"));
 
-// use default signals
-sprae.use(signals)
+const _state = Symbol("state"), _on = Symbol('on'), _off = Symbol('off')
 
+let prefix = ':'
 
-// multiprop sequences initializer, eg. :a:b..c:d
-// micro version has single-prop direct initializer, way simpler
-sprae.init = (el, attrName, expr, state) => {
+/**
+ * Applies directives to an HTML element and manages its reactive state.
+ *
+ * @param {Element} [el=document.body] - The target HTML element to apply directives to.
+ * @param {Object} [values] - Initial values to populate the element's reactive state.
+ * @returns {Object} The reactive state object associated with the element.
+ */
+const sprae = (el = document.body, values) => {
+  // repeated call can be caused by eg. :each with new objects with old keys
+  if (el[_state]) return Object.assign(el[_state], values)
+
+  console.group('sprae')
+
+  // take over existing state instead of creating a clone
+  let state = store(values || {}),
+    fx = [], offs = [], fn,
+    _offd = false,
+    // FIXME: on generally needs to account for events, although we call it only in :if
+    on = () => (!offs && (offs = fx.map(fn => fn()))),
+    off = () => (offs?.map(off => off()), offs = null)
+    // prevOn = el[_on], prevOff = el[_off]
+
+  // on/off all effects
+  // FIXME: we're supposed to call prevOn/prevOff, but I can't find a test case. Some combination of :if/:scope/:each/:ref
+  el[_on] = on// () => (prevOn?.(), on())
+  el[_off] = off// () => (prevOn?.(), on())
+  // FIXME: why it doesn't work?
+  // :else :if case. :else may have children to init which is called after :if, so we plan offing instead of immediate
+  // el[_off] = () => (!_offd && queueMicrotask(() => (off(), _offd = false)), _offd=true)
+
+  // destroy
+  el[_dispose] ||= () => (el[_off](), el[_off] = el[_on] = el[_dispose] = el[_state] = null)
+
+  let initElement = (el, attrs = el.attributes) => {
+    // we iterate live collection (subsprae can init args)
+    if (attrs) for (let i = 0; i < attrs.length;) {
+      let { name, value } = attrs[i]
+
+      // we suppose
+      if (name.startsWith(prefix)) {
+        el.removeAttribute(name)
+
+        // directive initializer can be redefined
+        console.log('init attr',name)
+        fx.push(fn = initDirective(el, name, value, state)), offs.push(fn())
+
+        // stop after subsprae like :each, :if, :scope etc.
+        if (_state in el) return
+      } else i++
+    }
+
+    // :if and :each replace element with text node, which tweaks .children length, but .childNodes length persists
+    // console.group('init', el, el.childNodes)
+    // for (let i = 0, child; i < (console.log(el.childNodes.length, i),el.childNodes.length); i++) child =  el.childNodes[i], console.log('run', i, child.outerHTML), child.nodeType == 1 && init(child)
+    // FIXME: don't do spread here
+    for (let child of [...el.childNodes]) child.nodeType == 1 && initElement(child)
+      // console.groupEnd()
+  };
+
+  initElement(el);
+
+  // if element was spraed by inline :with/:if/:each/etc instruction (meaning it has state placeholder) - skip, otherwise save _state
+  // FIXME: can check for null instead?
+  if (!(_state in el)) el[_state] = state
+
+  console.groupEnd()
+
+  return state;
+}
+
+/**
+ * Initializes directive (defined by sprae build), returns "on" function that enables it
+ * Multiprop sequences initializer, eg. :a:b..c:d
+ * @type {(el: HTMLElement, name:string, value:string, state:Object) => Function}
+ * */
+const initDirective = (el, attrName, expr, state) => {
   let cur, // current step callback
     off // current step disposal
 
   // FIXME: events don't need effects.
   // FIXME: separate cases: async, event, sequence, single attr
 
-  let steps = attrName.slice(sprae.prefix.length).split('..').map((step, i, { length }) => (
+  let steps = attrName.slice(prefix.length).split('..').map((step, i, { length }) => (
     // multiple attributes like :id:for=""
     step.split(':').reduce((prev, str) => {
       let [name, ...mods] = str.split('.'),
         // event is either :click or :onclick, since on* events never intersect with * attribs
         isEvent = (name.startsWith('on') && (name = name.slice(2), true)) || el['on' + name],
-        evaluate = compile(name, expr, sprae.dir[name]?.clean)
+        evaluate = parse(name, expr, dir[name]?.clean)
 
       // events have no effects and can be sequenced
       if (isEvent) {
@@ -44,7 +115,7 @@ sprae.init = (el, attrName, expr, state) => {
       console.log("INIT", el, name)
 
       // props have no sequences and can be sync
-      let update = (sprae.dir[name] || sprae.dir['*'])(el, state, expr, name)
+      let update = (dir[name] || dir['*'])(el, state, expr, name)
 
       // shortcut
       // if (!mods.length && !prev) return () => update && effect(() => (update(evaluate(state))))
@@ -84,9 +155,9 @@ sprae.init = (el, attrName, expr, state) => {
 /**
  * Compiles an expression into an evaluator function.
  * (indirect new Function to avoid detector)
- * @type {(expr: string) => Function}
+ * @type {(dir:string, expr: string, clean?: string => string) => Function}
  */
-sprae.compile = expr => sprae.constructor(`with (arguments[0]) { return ${expr} };`)
+let compile = expr => sprae.constructor(`with (arguments[0]) { return ${expr} };`)
 
 
 /**
@@ -95,15 +166,15 @@ sprae.compile = expr => sprae.constructor(`with (arguments[0]) { return ${expr} 
  * @param {string} expr The expression to parse and compile into a function.
  * @returns {Function} The compiled evaluator function for the expression.
  */
-const compile = (dir, expr, _clean = trim, _fn) => {
+const parse = (dir, expr, _clean = trim, _fn) => {
   // expr.split(/\bin\b/)[1]
   if (_fn = cache[expr = _clean(expr)]) return _fn
 
   // static time errors
-  try { _fn = sprae.compile(expr) } catch (e) { console.error(`∴ ${e}\n\n${sprae.prefix + dir}="${expr}"`) }
+  try { _fn = compile(expr) } catch (e) { console.error(`∴ ${e}\n\n${prefix + dir}="${expr}"`) }
 
   // run time errors
-  return cache[expr] = (s) => { try { return _fn?.(s) } catch (e) { console.error(`∴ ${e}\n\n${sprae.prefix + dir}="${expr}"`) } }
+  return cache[expr] = (s) => { try { return _fn?.(s) } catch (e) { console.error(`∴ ${e}\n\n${prefix + dir}="${expr}"`) } }
 }
 const cache = {};
 const trim = e => e.trim()
@@ -113,7 +184,7 @@ const trim = e => e.trim()
 const applyMods = (fn, mods) => {
   while (mods.length) {
     let [name, ...params] = mods.pop().split('-')
-    fn = sx(sprae.mod[name]?.(fn, ...params) ?? fn, fn)
+    fn = sx(mod[name]?.(fn, ...params) ?? fn, fn)
   }
   return fn
 }
@@ -123,7 +194,7 @@ const sx = (a, b) => { if (a != b) for (let k in b) a[k] ??= b[k]; return a }
 
 
 // standard directives
-sprae.dir = {
+const dir = {
   // :x="x"
   '*': (el, st, ex, name) => v => attr(el, name, call(v, el.getAttribute(name))),
 
@@ -417,10 +488,10 @@ sprae.dir = {
 }
 
 // :each directive skips v, k
-sprae.dir.each.clean = (str) => str.split(/\bin\b/)[1].trim()
+dir.each.clean = (str) => str.split(/\bin\b/)[1].trim()
 
 // standard modifiers
-sprae.mod = {
+const mod = {
   // FIXME: add -s, -m, -l classes with values
   debounce: (fn, wait = 108, _t) => e => (clearTimeout(_t), _t = setTimeout(() => (fn(e)), wait)),
   once: (fn, _done) => Object.assign((e) => !_done && (_done = 1, fn(e)), { once: true }),
@@ -494,10 +565,10 @@ const keys = {
 };
 
 // augment modifiers with key testers
-for (let k in keys) sprae.mod[k] = (fn, ...params) => (e) => keys[k](e) && params.every(k => keys[k]?.(e) ?? e.key === k) && fn(e)
+for (let k in keys) mod[k] = (fn, ...params) => (e) => keys[k](e) && params.every(k => keys[k]?.(e) ?? e.key === k) && fn(e)
 
 // create expression setter, reflecting value back to state
-const setter = (dir, expr, _set = compile(dir, `${expr}=__`)) => (target, value) => {
+const setter = (dir, expr, _set = parse(dir, `${expr}=__`)) => (target, value) => {
   // save value to stash
   target.__ = value; _set(target), delete target.__
 }
@@ -542,3 +613,18 @@ const clsx = (c, _out = []) => !c ? '' : typeof c === 'string' ? c : (
   Array.isArray(c) ? c.map(clsx) :
     Object.entries(c).reduce((s, [k, v]) => !v ? s : [...s, k], [])
 ).join(' ')
+
+
+
+/**
+ * Configure sprae
+ */
+sprae.use = (s) => (
+  s.compile && (compile = s.compile),
+  s.prefix && (prefix = s.prefix),
+  use(s)
+)
+
+
+export default sprae
+export { sprae, store, signal, effect, computed, batch, untracked }

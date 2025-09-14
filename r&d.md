@@ -542,7 +542,7 @@
   + we might not need swapdom, since nodes manage themselves
   * note the untracked function
 
-## [x] :onclick="direct code" ? -> no: immediately invoked.
+## [x] :onclick="direct code" ? -> ~~no: immediately invoked~~ can do, if a function then it is invoked.
 
   + compatible with direct `onclick=...`
   + no need for arrow/regular functions syntax in templates
@@ -833,18 +833,6 @@
   + less API
   + anyways updating every prop reflects DOM update immediately, there doesn't seem to be a big win
   + multiple props can be combined into computed signal or called manually via batch
-
-## [x] 9.0
-
-  * [x] subscript-based parsing
-    + see subscript-based store: mainly CSP & no-store eval
-  * [x] rename :with to :scope
-  * ~~Get rid of `:on` events - attributes are no-fn expressions~~ -> ok to keep arrow functions
-  * [x] Get rid of sprae.auto
-  * [x] No-batch: updating signals updates target nadis
-  * [x] No store, directly signals
-  * [x] Plugins
-  * [x]x ~~Rewrite with `nadi`: sprae becomes just a form of hypd + nadi, one of nadis essentially~~ -> nadi is extension, not base
 
 ### [x] What should we do with `this` in case of subscript? -> we get rid of that and use `:ref`
   * It doesn't ship keywords by default
@@ -1452,7 +1440,8 @@
   + natural way to postpone init of a subtree, eg. waiting for API response
   + standard way to provide `el[_state] = null`
 
-## [x] Does it make sense to have :ona..onb for any attrs, as :foo..bar? What would be the cases? -> yes, but technicality. let's try
+## [x] Does it make sense to have chain :ona..onb for any attrs, as :foo..bar? What would be the cases? -> no, can't see a single use case
+
   - bloats up core a bit
     + shorter code in total
   - looks useless, no clear idea what for
@@ -1513,13 +1502,20 @@
   + tailwind-like
   + can be handy I suppose
 
-## [ ] Attributes/events mixup. Do we need prop modifiers?
+## [x] Attributes/events mixup. Do we need prop modifiers? -> no
 
   - Attributes are called when internal prop changes, events are called by external trigger.
     - There's no indicator of that difference
   - That affects modifiers: it is also mixed up now - it applies differently to prop or event
   - Some modifiers can actually be events, like :raf, :idle, :interval, :once === :init
   ? What is the main case we need modifiers for regular props?
+
+### [x] Do we need direct events like :click without :on prefix? -> keep only :on
+
+  + Shorter
+  + Technically no intersection for default events
+  - custom events can interfere with props
+  - some props might have same name as standard event
 
 ## [ ] Componentization: what can be done? -> likely no for now. When html-include is there we can talk
 
@@ -1560,7 +1556,7 @@
   6. https://github.com/jhuddle/ponys
     + takes the toll of including, enabling, defining components in minimal way
 
-## [ ] Prop modifiers -> let's find a single purpose
+## [ ] Prop modifiers -> makes sense for :text.once, :text.interval-<n>, :value.tick, :value.throttle-100, :value.persist, :style.raf,
 
   * Main variants
   * ~~value.bind? value.watch?~~ no sense beyound value/ref
@@ -1569,17 +1565,22 @@
   * prop.once
     + actually it's existing event modifier
     - can be replaced with :init
+      + can be more useful than :init since can specify the directive
+      + :oninit is custom event, not fit into sprae semantic space
   * ~~prop.change - run only if value changes~~
     - seems like unnecessary manual optimization that must be done always automatically
     - some values don't change, like class or style
     ? are there cases where force-update is necessary?
   * prop.throttle-xxx, prop.debounce-xxx
     - let's wait until that's really a problem
+    + can be useful for :value='' to prevent frequent updates
   * prop.interval-500
     + `:fx.interval-500="el.scrollLeft += 10"`
-    - can be a directive instead
+    - can be a custom event instead
+      + value param for event name is not natural
+    - not natural for props to be triggered this way
   * prop.* – multiple values for same prop
-  * prop.next="" - run update after other DOM updates happen
+  * prop.tick="" - run update after other DOM updates happen
     + helps resolving calling a fn with state access
   * ~~prop.fx="" - run effect without changing property~~ fx is there
   * ~~x.prop="xyz" - set element property, rather than attribute (following topic)~~ do it via `:ref` or `:fx`
@@ -1597,7 +1598,7 @@
   ~ so props have to do with describing how effect is triggered.
   + It seems event modifiers can be applied to any props: interval, debounce,
   + it allows factoring them out
-  - it brings us to a tough spot where we deal with asynchronous conditional, which is hard and fragile to tackle.
+  - it brings us to a tough spot where we deal with asynchronous conditional, which is hard and fragile.
 
 ## [ ] Directives
 
@@ -1605,17 +1606,21 @@
     * wait until needed
     + provided by lucia l-mask, alpine a-cloak, vue v-cloak
 
-  * s-ignore? Excludes element from spraeing
+  * s-ignore? Excludes element from spraing
   * s-include / s-html?
   * s-teleport
   * s-modelable
   * s-init
-    + instead of :fx.once
+    + instead of :fx.once. An event - oninit
   * s-raf
-    + instead of :fx.raf
+    + instead of :fx.raf. An event - onraf
   * s-interval
-    + instead of :fx.interval
+    + instead of :fx.interval. An event - oninterval
   * ~~s-show?~~ use hidden attribute
+
+## [ ] Autoinit via mutation observer?
+  + runs until document is loaded
+  + immediately inits all new nodes, opposed to displaying half-baked content
 
 ## [ ] Plugins
 
@@ -1644,8 +1649,6 @@
   -~ separate syntax space even with `:` prefix - conflicts
   - perf-wise vanilla is faster
   - initial loading delay.
-
-## [ ] Autoinit via mutation observer?
 
 ## [ ] Integrations
 

@@ -1,10 +1,9 @@
-import { _dispose } from "../core.js";
 import { tick, time } from "wait-please";
 import sprae from '../sprae.js'
 import h from "hyperf";
-import { _off, _state } from "../core.js";
 import test, { any, is } from "tst";
 
+const _dispose = Symbol.dispose;
 
 test.skip("on: async", async () => {
   let el = h`<div :onx="e => {await v = 1; log.push(v);}"></div>`;
