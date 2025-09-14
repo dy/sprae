@@ -321,6 +321,15 @@ Defer callback to next microtask.
 <button :onclick.tick="focusInput()">Save</button>
 ```
 
+#### `.raf`
+
+Throttle calls to `requestAnimationFrame` loop.
+
+```html
+<!-- lock to 60fps -->
+<div :onscroll.raf="progress = (scrollTop / scrollHeight) * 100" :style="{ '--progress': progress + '%' }"/>
+```
+
 #### `.once`
 
 Call only once.
@@ -328,24 +337,6 @@ Call only once.
 ```html
 <!-- run on init -->
 <div :fx.once="console.log('sprae init')">
-```
-
-#### `.interval-<ms?>`
-
-Run callback every `ms`. default=100
-
-```html
-<!-- simple counter -->
-<span :text.interval-1000="count++">
-```
-
-#### `.raf`
-
-Run callback in `requestAnimationFrame` loop (~60fps).
-
-```html
-<!-- map JS props into CSS -->
-<div :style.raf="{'--scroll-y': window.scrollY}">
 ```
 
 #### `.idle`
@@ -371,9 +362,6 @@ Await callback results.
 Specify event target. Events only.
 
 ```html
-<!-- track mouse y coord -->
-<div :onmousemove.document="event => y=event.clientY">
-
 <div :onclick.outside="closeMenu()" :class="{ open: isOpen }">Dropdown</div>
 ```
 
@@ -381,9 +369,17 @@ Specify event target. Events only.
 
 Event listener [options](https://developer.mozilla.org/en-US/docs/Web/API/EventTarget/addEventListener#options). events only
 
+```html
+<div :onscroll.passive="e => pos = e.scrollTop">Scroll me</div>
+```
+
 #### `.prevent`, `.stop`, `.immediate`
 
 Prevent default or stop (immediate) propagation. events only
+
+```html
+<a :onclick.prevent="navigate('/page')" href="/default">Go</a>
+```
 
 #### `.<key>`, `.*-<key>`
 
@@ -418,7 +414,7 @@ Persist value in local or session storage. props only
 Any other modifier has no effect, but allows binding multiple handlers.
 
 ```html
-
+<span :fx.once="console.log('init')" :fx="console.log('normal')">
 ```
 
 ## Reactivity

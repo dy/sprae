@@ -1574,11 +1574,12 @@
   * prop.throttle-xxx, prop.debounce-xxx
     - let's wait until that's really a problem
     + can be useful for :value='' to prevent frequent updates
-  * prop.interval-500
+  * ~~prop.interval-500~~
     + `:fx.interval-500="el.scrollLeft += 10"`
     - can be a custom event instead
       + value param for event name is not natural
     - not natural for props to be triggered this way
+    - can be done as `:fx.once="setInterval(()=>...,1000)"`
   * prop.* – multiple values for same prop
   * prop.tick="" - run update after other DOM updates happen
     + helps resolving calling a fn with state access
