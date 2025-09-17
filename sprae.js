@@ -92,7 +92,7 @@ const initDirective = (el, attrName, expr, state) => {
 
   let steps = attrName.slice(prefix.length).split('..').map((step, i, { length }) => (
     // multiple attributes like :id:for=""
-    step.split(':').reduce((prev, str) => {
+    step.split(prefix).reduce((prev, str) => {
       let [name, ...mods] = str.split('.'),
         // event is either :click or :onclick, since on* events never intersect with * attribs
         isEvent = (name.startsWith('on') && (name = name.slice(2), true)) || el['on' + name],
@@ -126,10 +126,9 @@ const initDirective = (el, attrName, expr, state) => {
         change = signal(-1), count,
 
         // effect applier - first time it applies the effect, next times effect is triggered by change signal
-        // we microtask fn to avoid wrong teardown callback
         // FIXME: init via dispose, don't reset count
         fn = applyMods(() => {
-          console.trace('CALL', el, name, change.peek())
+          // console.log('CALL', el, name, change.peek())
           if (!++change.value) dispose = effect(() => update &&
             (
               change.value != count ?
@@ -339,12 +338,12 @@ const dir = {
         _prev = el._prev,
         _holder = el._holder,
         _el = _holder._el,
-        // _holder._match ??= signal(1), // _match is supposed to be created by :else
+      //   // _holder._match ??= signal(1), // _match is supposed to be created by :else
         _holder._match._if = true, // take over control of :else :if branch, make :else handler bypass
         console.log('init elif'),
 
-        // :else may have children to init which is called after :if
-        // or preact can schedule :else after :if, so we ensure order of call by next tick
+      //   // :else may have children to init which is called after :if
+      //   // or preact can schedule :else after :if, so we ensure order of call by next tick
         value => {
           _holder._match.value = value || _prev._match.value;
 
@@ -370,7 +369,6 @@ const dir = {
 
         }
       )
-
   ),
 
   // NOTE: we can reach :else counterpart whereas prev :else :if is on hold
@@ -387,15 +385,15 @@ const dir = {
     () => {
       if (_holder._match._if) return // bypass :else :if handler
       console.group('else', el),
-        !_prev?._match.value ? (
-          console.log('else yes'),
-          _holder.before(_el.content || _el),
-          _el[_state] === null ? (delete _el[_state], sprae(_el, state)) : (_el[_on]?.())
-        ) : (
-          console.log('else no'),
-          _el.remove(), _el[_off]?.()
-        ),
-        console.groupEnd()
+      !_prev?._match.value ? (
+        console.log('else yes'),
+        _holder.before(_el.content || _el),
+        _el[_state] === null ? (delete _el[_state], sprae(_el, state)) : (_el[_on]?.())
+      ) : (
+        console.log('else no'),
+        _el.remove(), _el[_off]?.()
+      ),
+      console.groupEnd()
     }
   ),
 

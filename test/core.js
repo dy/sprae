@@ -221,7 +221,7 @@ test("core: Math / other globals available in template", async () => {
 });
 
 test("core: custom prefix", async () => {
-  sprae.prefix='s-'
+  sprae.use({ prefix: 's-' })
   let el = h`<x s-text="a"></x>`;
   sprae(el, {a:123});
   is(el.outerHTML, `<x>123</x>`);

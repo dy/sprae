@@ -665,16 +665,6 @@ npm run results
 
 <!-- ## See also -->
 
-<!--
-## Alternatives
-
-* [Alpine](https://github.com/alpinejs/alpine)
-* ~~[Lucia](https://github.com/aidenybai/lucia)~~ deprecated
-* [Petite-vue](https://github.com/vuejs/petite-vue)
-* [nuejs](https://github.com/nuejs/nuejs)
-* [hmpl](https://github.com/hmpl-language/hmpl)
-* [unpoly](https://unpoly.com/up.link)
- -->
 
 
 ## Examples
@@ -690,6 +680,16 @@ npm run results
 ## See Also
 
 * [nadi](https://github.com/dy/nadi) - 101 signals. -->
+
+## Competitors
+
+* [Alpine](https://github.com/alpinejs/alpine)
+* [Lucia](https://github.com/aidenybai/lucia)
+* [Petite-vue](https://github.com/vuejs/petite-vue)
+* [nuejs](https://github.com/nuejs/nuejs)
+* [hmpl](https://github.com/hmpl-language/hmpl)
+* [unpoly](https://unpoly.com/up.link)
+* [dagger](https://github.com/dagger8224/dagger.js)
 
 
 <p align="center"><a href="https://github.com/krsnzd/license/">🕉</a></p>

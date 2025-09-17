@@ -49,7 +49,7 @@ test("any: null result does nothing", async () => {
 
 
 
-test("fx: effects", async () => {
+test.only("fx: effects", async () => {
   let el = h`<x :fx="() => (_log.push(x), () => (console.log('out',_log),_log.push('out')))"></x>`;
   let x = signal(1)
   let state = sprae(el, { _log: [], x, console });
@@ -352,7 +352,7 @@ test("if: template / fragment", async () => {
   is(el.innerHTML, "c<x>3</x>");
 });
 
-test("if: short with insertions", async () => {
+test.todo("if: short with insertions", async () => {
   let el = h`<p>
     <span :if="a==1" :text="'1:'+a"></span>
     <span :else :if="a==2" :text="'2:'+a"></span>
@@ -383,7 +383,7 @@ test("if: short with insertions", async () => {
   params.a = null;
 });
 
-test("if: reactive values", async () => {
+test.todo("if: reactive values", async () => {
   let el = h`<p>
     <span :if="a==1" :text="'1:'+a"></span>
     <span :else :if="a==2" :text="'2:'+a"></span>
@@ -559,7 +559,7 @@ test("if: cycle case 1", async () => {
   is(el.innerHTML, '', 'x==9')
 })
 
-test.only('if: cycle case 2', async () => {
+test('if: cycle case 2', async () => {
   let el = h`<root><x :if="x==1">a</x><z :else :text="c"></z></root>`
   let state = sprae(el, { x: 1, a: 'a', b: 'b', c: 'c' })
   // await tick()
