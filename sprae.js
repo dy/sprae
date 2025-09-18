@@ -128,14 +128,15 @@ const initDirective = (el, attrName, expr, state) => {
         // effect applier - first time it applies the effect, next times effect is triggered by change signal
         // FIXME: init via dispose, don't reset count
         fn = applyMods(() => {
-          // console.log('CALL', el, name, change.peek())
-          if (!++change.value) dispose = effect(() => update &&
+          // console.group('CALL', el, name, change.peek(), count)
+          if (!++change.value) (dispose = effect(() => update &&
             (
               change.value != count ?
-                (count = change.value, update(evaluate(state))) :
-                (fn())
+                (count = change.value, update(evaluate(state))) : // real eval call
+                (queueMicrotask(fn)) // plans eval call - separate tick makes sure planner effect is finished before real eval call
             )
-          )
+          ));
+          // console.groupEnd()
         }, mods)
 
       return (_poff) => (

@@ -19,9 +19,11 @@ export let signal = (v, _s, _obs = new Set, _v = () => _s.value) => (
   }
 )
 
-export let effect = (fn, _teardown, _fx, _deps) => (
+export let effect = (fn, _teardown, _fx, _deps, __tmp) => (
   _fx = (prev) => {
-    _teardown?.call?.();
+    __tmp = _teardown;
+    _teardown = null; // we null _teardown to avoid repeated call in case of recursive update
+    __tmp?.call?.();
     prev = current, current = _fx
     if (depth++ > 10) throw 'Cycle detected';
     try { _teardown = fn(); } finally { current = prev; depth-- }

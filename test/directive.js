@@ -54,6 +54,7 @@ test.only("fx: effects", async () => {
   let x = signal(1)
   let state = sprae(el, { _log: [], x, console });
   is(el.outerHTML, `<x></x>`);
+  await tick()
   is(state._log, [1])
   console.log('----- x=2')
   x.value = 2
@@ -62,6 +63,7 @@ test.only("fx: effects", async () => {
   is(state._log, [1, 'out', 2])
   console.log('----- dispose')
   el[Symbol.dispose]()
+  await tick()
   is(state._log, [1, 'out', 2, 'out'])
 });
 
