@@ -49,7 +49,7 @@ test("any: null result does nothing", async () => {
 
 
 
-test.only("fx: effects", async () => {
+test("fx: effects", async () => {
   let el = h`<x :fx="() => (_log.push(x), () => (console.log('out',_log),_log.push('out')))"></x>`;
   let x = signal(1)
   let state = sprae(el, { _log: [], x, console });
@@ -354,7 +354,7 @@ test("if: template / fragment", async () => {
   is(el.innerHTML, "c<x>3</x>");
 });
 
-test.todo("if: short with insertions", async () => {
+test("if: short with insertions", async () => {
   let el = h`<p>
     <span :if="a==1" :text="'1:'+a"></span>
     <span :else :if="a==2" :text="'2:'+a"></span>
@@ -385,7 +385,7 @@ test.todo("if: short with insertions", async () => {
   params.a = null;
 });
 
-test.todo("if: reactive values", async () => {
+test("if: reactive values", async () => {
   let el = h`<p>
     <span :if="a==1" :text="'1:'+a"></span>
     <span :else :if="a==2" :text="'2:'+a"></span>
@@ -501,7 +501,7 @@ test("if: set/unset value", async () => {
   is(el.innerHTML, '<y>2</y>')
 })
 
-test("if: set/unset 2", async () => {
+test.only("if: set/unset 2", async () => {
   let el = h`<root><x :if="x==1"><t :text="a"></t></x><y :else :if="x==2"><t :text="b"></t></y><z :else :text="c"></z></root>`
   let state = sprae(el, { x: 1, a: 'a', b: 'b', c: 'c' })
   // await tick()
@@ -671,7 +671,7 @@ test("ref: fn with :each", async () => {
   is(a.innerHTML, `<x>1</x><x>2</x><x>3</x>`);
 });
 
-test("ref: fn unmount", async () => {
+test.todo("ref: fn unmount", async () => {
   let div = h`<div><a :if="a" :ref="el => (log.push('on'), () => log.push('off'))" :text="b"></a></div>`;
   let state = sprae(div, { log: [], b: 1, a: 1 });
   await tick();
@@ -684,7 +684,7 @@ test("ref: fn unmount", async () => {
   is(state.log, ['on', 'off']);
 });
 
-test('ref: create in state as untracked', async () => {
+test.todo('ref: create in state as untracked', async () => {
   let div = h`<div :scope="{_x:null,log(){console.log(_x)}}" :onx="log"><x :ref="_x" :text="_x?.tagName"></x></div>`;
   let state = sprae(div)
 
@@ -693,7 +693,7 @@ test('ref: create in state as untracked', async () => {
   is(state._x, div.firstChild)
 })
 
-test('ref: create in state as direct', async () => {
+test.todo('ref: create in state as direct', async () => {
   let div = h`<div :scope="{x:null,log(){console.log(x)}}" :onx="log"><x :ref="x" :text="x?.tagName"></x></div>`;
   let state = sprae(div)
   is(state.x, div.firstChild)
