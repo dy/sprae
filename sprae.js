@@ -24,11 +24,10 @@ const sprae = (el = document.body, values) => {
   // take over existing state instead of creating a clone
   let state = store(values || {}),
     fx = [], offs = [], fn,
-    _offd = false,
     // FIXME: on generally needs to account for events, although we call it only in :if
     on = () => (!offs && (offs = fx.map(fn => fn()))),
     off = () => (offs?.map(off => off()), offs = null)
-    // prevOn = el[_on], prevOff = el[_off]
+  // prevOn = el[_on], prevOff = el[_off]
 
   // on/off all effects
   // FIXME: we're supposed to call prevOn/prevOff, but I can't find a test case. Some combination of :if/:scope/:each/:ref
@@ -51,7 +50,7 @@ const sprae = (el = document.body, values) => {
         el.removeAttribute(name)
 
         // directive initializer can be redefined
-        console.log('init attr',name)
+        console.log('init attr', name)
         fx.push(fn = initDirective(el, name, value, state)), offs.push(fn())
 
         // stop after subsprae like :each, :if, :scope etc.
@@ -64,7 +63,7 @@ const sprae = (el = document.body, values) => {
     // for (let i = 0, child; i < (console.log(el.childNodes.length, i),el.childNodes.length); i++) child =  el.childNodes[i], console.log('run', i, child.outerHTML), child.nodeType == 1 && init(child)
     // FIXME: don't do spread here
     for (let child of [...el.childNodes]) child.nodeType == 1 && initElement(child)
-      // console.groupEnd()
+    // console.groupEnd()
   };
 
   initElement(el);
@@ -112,7 +111,6 @@ const initDirective = (el, attrName, expr, state) => {
 
         return (_poff) => (_poff = prev?.(), fn.target.addEventListener(name, fn, fn), () => (_poff?.(), fn.target.removeEventListener(name, fn)))
       }
-      console.log("INIT", el, name)
 
       // props have no sequences and can be sync
       let update = (dir[name] || dir['*'])(el, state, expr, name)
@@ -121,27 +119,25 @@ const initDirective = (el, attrName, expr, state) => {
       // if (!mods.length && !prev) return () => update && effect(() => (update(evaluate(state))))
 
       let dispose,
-
-        // signal authorized to trigger effect: 0 = init; >0 = trigger
-        change = signal(-1), count,
+        change = signal(-1),// signal authorized to trigger effect: 0 = init; >0 = trigger
+        count = -1, // called effect count
 
         // effect applier - first time it applies the effect, next times effect is triggered by change signal
         // FIXME: init via dispose, don't reset count
         fn = applyMods(() => {
-          // console.group('CALL', el, name, change.peek(), count)
-          if (!++change.value) (dispose = effect(() => update &&
-            (
-              change.value != count ?
-                (count = change.value, update(evaluate(state))) : // real eval call
-                (queueMicrotask(fn)) // plans eval call - separate tick makes sure planner effect is finished before real eval call
-            )
+          if (++change.value) return // all calls except for the first one are handled by effect
+
+          dispose = effect(() => update && (
+            // FIXME: possibly we can batch here
+            change.value == count ? queueMicrotask(fn) : // plans eval call - separate tick makes sure planner effect is finished before real eval call
+            (count = change.value, update(evaluate(state))) // if changed more than effect called - call it
           ));
-          // console.groupEnd()
         }, mods)
 
       return (_poff) => (
         _poff = prev?.(),
-        console.log('ON', name), fn(),
+        console.log('ON', name),
+        fn(),
         () => (
           console.log('OFF', name), _poff?.(), dispose(), change.value = -1, count = dispose = null
         ))
@@ -235,7 +231,7 @@ const dir = {
   ),
 
   // :fx="..."
-  fx: () => call,
+  fx: () => v => (call(v)),
 
   // :value - 2 way binding like x-model
   value: (el, state, expr, name) => {
@@ -339,12 +335,12 @@ const dir = {
         _prev = el._prev,
         _holder = el._holder,
         _el = _holder._el,
-      //   // _holder._match ??= signal(1), // _match is supposed to be created by :else
+        //   // _holder._match ??= signal(1), // _match is supposed to be created by :else
         _holder._match._if = true, // take over control of :else :if branch, make :else handler bypass
         console.log('init elif'),
 
-      //   // :else may have children to init which is called after :if
-      //   // or preact can schedule :else after :if, so we ensure order of call by next tick
+        //   // :else may have children to init which is called after :if
+        //   // or preact can schedule :else after :if, so we ensure order of call by next tick
         value => {
           _holder._match.value = value || _prev._match.value;
 
@@ -386,15 +382,15 @@ const dir = {
     () => {
       if (_holder._match._if) return // bypass :else :if handler
       console.group('else', el),
-      !_prev?._match.value ? (
-        console.log('else yes'),
-        _holder.before(_el.content || _el),
-        _el[_state] === null ? (delete _el[_state], sprae(_el, state)) : (_el[_on]?.())
-      ) : (
-        console.log('else no'),
-        _el.remove(), _el[_off]?.()
-      ),
-      console.groupEnd()
+        !_prev?._match.value ? (
+          console.log('else yes'),
+          _holder.before(_el.content || _el),
+          _el[_state] === null ? (delete _el[_state], sprae(_el, state)) : (_el[_on]?.())
+        ) : (
+          console.log('else no'),
+          _el.remove(), _el[_off]?.()
+        ),
+        console.groupEnd()
     }
   ),
 

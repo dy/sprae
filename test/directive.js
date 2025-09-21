@@ -501,7 +501,7 @@ test("if: set/unset value", async () => {
   is(el.innerHTML, '<y>2</y>')
 })
 
-test.only("if: set/unset 2", async () => {
+test("if: set/unset 2", async () => {
   let el = h`<root><x :if="x==1"><t :text="a"></t></x><y :else :if="x==2"><t :text="b"></t></y><z :else :text="c"></z></root>`
   let state = sprae(el, { x: 1, a: 'a', b: 'b', c: 'c' })
   // await tick()
@@ -509,7 +509,8 @@ test.only("if: set/unset 2", async () => {
 
   console.log('----state.x = null')
   state.x = null
-  await tick()
+  await tick(2) // FIXME: 2 ticks - why? chain of delays?
+  console.log(123123, el.innerHTML)
   is(el.innerHTML, `<z>c</z>`, 'x==null')
 
   console.log('----state.x = 1')
@@ -671,7 +672,7 @@ test("ref: fn with :each", async () => {
   is(a.innerHTML, `<x>1</x><x>2</x><x>3</x>`);
 });
 
-test.todo("ref: fn unmount", async () => {
+test.only("ref: fn unmount", async () => {
   let div = h`<div><a :if="a" :ref="el => (log.push('on'), () => log.push('off'))" :text="b"></a></div>`;
   let state = sprae(div, { log: [], b: 1, a: 1 });
   await tick();
