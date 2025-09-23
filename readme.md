@@ -709,15 +709,9 @@ npm run results
 
 * [nadi](https://github.com/dy/nadi) - 101 signals. -->
 
-## Similar
+## Refs
 
-* [Alpine](https://github.com/alpinejs/alpine)
-* [Lucia](https://github.com/aidenybai/lucia)
-* [Petite-vue](https://github.com/vuejs/petite-vue)
-* [nuejs](https://github.com/nuejs/nuejs)
-* [hmpl](https://github.com/hmpl-language/hmpl)
-* [unpoly](https://unpoly.com/up.link)
-* [dagger](https://github.com/dagger8224/dagger.js)
+[Alpine](https://github.com/alpinejs/alpine), [Lucia](https://github.com/aidenybai/lucia), [Petite-vue](https://github.com/vuejs/petite-vue), [nuejs](https://github.com/nuejs/nuejs), [hmpl](https://github.com/hmpl-language/hmpl), [unpoly](https://unpoly.com/up.link), [dagger](https://github.com/dagger8224/dagger.js)
 
 
 <p align="center"><a href="https://github.com/krsnzd/license/">🕉</a></p>
