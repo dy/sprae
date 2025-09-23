@@ -295,60 +295,79 @@ Trigger when element is connected / disconnected from DOM.
 
 ## Modifiers
 
-#### `.debounce-<ms?>`
+#### `.debounce-<ms?>` <kbd>events</kbd>, <kbd>props</kbd>
 
 Defer callback by `ms`, by default 100.
 
 ```html
-<!-- debounce keyboard input updates -->
+<!-- debounce list updates -->
+<li :each.debounce-200="item in list" :text="item"></li>
+
+<!-- debounce keyboard input -->
 <input :oninput.debounce-200="e => update(e)" />
 ```
 
-#### `.throttle-<ms?>`
+#### `.tick` <kbd>events</kbd>, <kbd>props</kbd>
+
+Defer callback to the next microtask.
+
+```html
+<!-- set class in the next tick -->
+<div :class.tick="active && 'active'">...</div>
+
+<!-- defer focus for event -->
+<button :onclick.tick="focusInput()">Save</button>
+```
+
+#### `.throttle-<ms?>` <kbd>events</kbd>, <kbd>props</kbd>
 
 Limit callback to once every `ms`, by default 100.
 
 ```html
 <!-- throttle calculations -->
-<span id="count" :text.throttle-100="text.length" />
+<div id="count" :text.throttle-100="text.length">...</div>
+
+<!-- throttle resize updates -->
+<div :onresize.window.throttle-100="updateSize()">...</div>
 ```
 
-#### `.tick`
-
-Defer callback to next microtask.
-
-```html
-<button :onclick.tick="focusInput()">Save</button>
-```
-
-#### `.raf`
+#### `.raf` <kbd>events</kbd>, <kbd>props</kbd>
 
 Throttle calls to `requestAnimationFrame` loop.
 
 ```html
 <!-- lock to 60fps -->
 <div :onscroll.raf="progress = (scrollTop / scrollHeight) * 100" :style="{ '--progress': progress + '%' }"/>
+
+<!-- lock css variable updates to 60fps -->
+<div :style.raf="{'--progress': progress}">...</div>
 ```
 
-#### `.once`
+#### `.once` <kbd>events</kbd>, <kbd>props</kbd>
 
 Call only once.
 
 ```html
-<!-- run on init -->
+<!-- run once when sprae inits element -->
 <div :fx.once="console.log('sprae init')">
+
+<!-- run event callback only once -->
+<button :onclick.once="init()">Start</button>
 ```
 
-#### `.idle`
+#### `.idle` <kbd>events</kbd>, <kbd>props</kbd>
 
 Run callback when system is idle.
 
 ```html
+<!-- defer filtering to next idle callback -->
+<button :onclick.idle="filter()">Filter</button>
+
 <!-- batch logging -->
-<div :fx.idle="trackView()"></div>
+<div :fx.idle="track(queue)"></div>
 ```
 
-#### `.async`
+#### `.async` <kbd>events</kbd>, <kbd>props</kbd>
 
 Await callback results.
 
@@ -357,31 +376,39 @@ Await callback results.
 <span :text="data?.name">User</span>
 ```
 
-#### `.window`, `.document`, `.parent`, `.outside`, `.self`
+#### `.window`, `.document`, `.parent`, `.outside`, `.self` <kbd>events</kbd>
 
-Specify event target. Events only.
+Specify event target.
 
 ```html
+<!-- close dropdown when click outside -->
 <div :onclick.outside="closeMenu()" :class="{ open: isOpen }">Dropdown</div>
+
+<!-- interframe communication -->
+<div :onmessage.window="e => e.data.type === 'success' && complete()">...</div>
 ```
 
-#### `.passive`, `.capture`, `.once`
+#### `.passive`, `.capture` <kbd>events</kbd>
 
-Event listener [options](https://developer.mozilla.org/en-US/docs/Web/API/EventTarget/addEventListener#options). events only
+Event listener [options](https://developer.mozilla.org/en-US/docs/Web/API/EventTarget/addEventListener#options).
 
 ```html
 <div :onscroll.passive="e => pos = e.scrollTop">Scroll me</div>
 ```
 
-#### `.prevent`, `.stop`, `.immediate`
+#### `.prevent`, `.stop`, `.immediate` <kbd>events</kbd>
 
-Prevent default or stop (immediate) propagation. events only
+Prevent default or stop (immediate) propagation.
 
 ```html
+<!-- prevent default -->
 <a :onclick.prevent="navigate('/page')" href="/default">Go</a>
+
+<!-- stop immediate propagation -->
+<button :onclick.stop.immediate="handleButton()">Click</button>
 ```
 
-#### `.<key>`, `.*-<key>`
+#### `.<key>`, `.*-<key>` <kbd>events</kbd>
 
 Filter event by [`event.key`](https://developer.mozilla.org/en-US/docs/Web/API/UI_Events/Keyboard_event_key_values) or combination:
 
@@ -396,9 +423,9 @@ Filter event by [`event.key`](https://developer.mozilla.org/en-US/docs/Web/API/U
 <input :onkeydown.ctrl-enter="saveDraft()" placeholder="Ctrl+Enter to save">
 ```
 
-#### `.persist-<kind?>`
+#### `.persist-<kind?>` <kbd>props</kbd>
 
-Persist value in local or session storage. props only
+Persist value in local or session storage.
 
 ```html
 <textarea :value.persist="text" />
@@ -409,7 +436,7 @@ Persist value in local or session storage. props only
 </select>
 ```
 
-#### `.*`
+#### `.*` <kbd>events</kbd>, <kbd>props</kbd>
 
 Any other modifier has no effect, but allows binding multiple handlers.
 
@@ -417,12 +444,15 @@ Any other modifier has no effect, but allows binding multiple handlers.
 <span :fx.once="console.log('init')" :fx="console.log('normal')">
 ```
 
+
 ## Reactivity
 
 Sprae uses _preact-flavored signals_ store for reactivity.
 
 ```js
 import sprae, { signal, store } from 'sprae'
+
+const name = signal('foo');
 
 const state = store({
   count: 0,                             // prop
@@ -495,7 +525,7 @@ sprae.use({ compile }); // set up justin as default compiler
 <!--
 ## Custom Build
 
-Sprae can be tailored to project needs / size:
+Sprae can be tweaked to project needs / size:
 
 ```js
 // sprae.custom.js
@@ -531,6 +561,7 @@ sprae.compile = subscript
 ```
 -->
 
+
 <!--
 ## Micro
 
@@ -546,7 +577,8 @@ Micro sprae version is 2.5kb bundle with essentials:
 
 Sprae works with JSX via custom prefix (eg. `data-sprae-`).
 
-Case: server components can't do dynamic UI – active nav, tabs, sliders etc. Converting to client components breaks data fetching and adds overhead. Sprae can offload UI logic to keep server components intact.
+Case: server components can't do dynamic UI – active nav, tabs, sliders etc. Converting to client components breaks data fetching and adds overhead.
+Sprae can offload UI logic to keep server components intact.
 
 ```jsx
 // app/page.jsx - server component
@@ -579,10 +611,9 @@ export default function Layout({ children }) {
 * Attributes order matters, eg. `<li :each="el in els" :text="el.name"></li>` is not the same as `<li :text="el.name" :each="el in els"></li>`.
 * Invalid self-closing tags like `<a :text="item" />` cause error. Valid self-closing tags are: `li`, `p`, `dt`, `dd`, `option`, `tr`, `td`, `th`, `input`, `img`, `br`.
 * To destroy state and detach sprae handlers, call `element[Symbol.dispose]()`.
-* `this` is not used, to get element reference use `:ref`.
+* `this` is not used, to get element reference use `:ref="element => {...}"`.
 * `key` is not used, `:each` uses direct list mapping instead of DOM diffing.
-* `:ref` comes after `:if` for mount/unmount events `<div :if="cond" :ref="(init(), ()=>dispose())"></div>`.
-<!-- * `inert` attribute can disable autoinit `<script src='./sprae.js' inert/>`. -->
+* for mount/unmount events use `<div :if="cond" :ref="(init(), () => destroy())"></div>`.
 
 
 ## Justification
@@ -663,9 +694,6 @@ npm run results
 </details>
 -->
 
-<!-- ## See also -->
-
-
 
 ## Examples
 
@@ -681,7 +709,7 @@ npm run results
 
 * [nadi](https://github.com/dy/nadi) - 101 signals. -->
 
-## Competitors
+## Similar
 
 * [Alpine](https://github.com/alpinejs/alpine)
 * [Lucia](https://github.com/aidenybai/lucia)
