@@ -8,6 +8,20 @@ Based on _preact-signals_, a light and fast alternative to _alpine_ or _petite-v
 
 ## Usage
 
+
+```html
+<h1 :scope="{ message: 'Hello World!' }" :text="message"></h1>
+
+<script src="https://cdn.jsdelivr.net/npm/sprae@12.x.x"></script>
+```
+
+Sprae automatically evaluates `:`-directives and removes them, creating a reactive state for updates.
+
+
+### Manual init
+
+To manually initialize state, use ESM version:
+
 ```html
 <div id="container" :if="user">
   Hello <span :text="user.name">there</span>.
@@ -22,21 +36,12 @@ Based on _preact-signals_, a light and fast alternative to _alpine_ or _petite-v
     { user: { name: 'Friend' } }
   )
 
-  // update
+  // update state
   state.user.name = 'Love'
 </script>
 ```
 
-Sprae evaluates `:`-directives, removes them, and returns a reactive state for updates.
 
-### Autoinit
-
-To automatically initialize all directives, use CDN version:
-
-```html
-<h1 :scope="{message:'Hello World!'}" :text="message"></h1>
-<script src="https://cdn.jsdelivr.net/npm/sprae@12.x.x"></script>
-```
 <!--
 ### Flavors
 
