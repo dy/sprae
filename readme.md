@@ -10,9 +10,12 @@ Based on _preact-signals_, a light and fast alternative to _alpine_ or _petite-v
 
 
 ```html
-<h1 :scope="{ message: 'Hello World!' }" :text="message"></h1>
+<div :scope="{ count: 0 }">
+  <p :text="`Clicked ${count} times`"></p>
+  <button :onclick="count++">Click me</button>
+</div>
 
-<script src="https://cdn.jsdelivr.net/npm/sprae@12.x.x"></script>
+<script src="https://cdn.jsdelivr.net/npm/sprae@12.x.x" defer></script>
 ```
 
 Sprae automatically evaluates `:`-directives and removes them, creating a reactive state for updates.
@@ -20,11 +23,12 @@ Sprae automatically evaluates `:`-directives and removes them, creating a reacti
 
 ### Manual init
 
-To manually initialize state, use ESM version:
+For explicit state control, use ESM module:
 
 ```html
-<div id="container" :if="user">
-  Hello <span :text="user.name">there</span>.
+<div id="app" :if="user">
+  <p>Welcome, <span :text="user.name">Guest</span>!</p>
+  <button :onclick="makeFriends()">Let's be friends</button>
 </div>
 
 <script type="module">
@@ -32,12 +36,15 @@ To manually initialize state, use ESM version:
 
   // init
   const state = sprae(
-    document.getElementById('container'),
-    { user: { name: 'Friend' } }
+    document.getElementById('app'),
+    {
+      user: { name: 'Guest' },
+      makeFriends() {
+        // updates state
+        state.user.name = 'Friend'
+      }
+    }
   )
-
-  // update state
-  state.user.name = 'Love'
 </script>
 ```
 
