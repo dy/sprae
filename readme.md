@@ -20,10 +20,8 @@ Based on _preact-signals_, a light and fast alternative to _alpine_ or _petite-v
 
 Sprae automatically evaluates `:`-directives and removes them, creating a reactive state for updates.
 
-<details>
-<summary>
+
 ### Manual init
-</summary>
 
 For explicit state control, use ESM module:
 
@@ -46,7 +44,7 @@ For explicit state control, use ESM module:
   )
 </script>
 ```
-</details>
+
 
 <!--
 ### Flavors
