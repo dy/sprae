@@ -12,18 +12,19 @@ let prefix = ':'
  * Applies directives to an HTML element and manages its reactive state.
  *
  * @param {Element} [el=document.body] - The target HTML element to apply directives to.
- * @param {Object} [values] - Initial values to populate the element's reactive state.
+ * @param {Object} [state] - Initial state values to populate the element's reactive state.
  * @returns {Object} The reactive state object associated with the element.
  */
-const sprae = (el = document.body, values) => {
+const sprae = (el = document.body, state) => {
   // repeated call can be caused by eg. :each with new objects with old keys
-  if (el[_state]) return Object.assign(el[_state], values)
+  if (el[_state]) return Object.assign(el[_state], state)
 
   console.group('sprae')
 
   // take over existing state instead of creating a clone
-  let state = store(values || {}),
-    fx = [], offs = [], fn,
+  state = store(state || {})
+
+  let fx = [], offs = [], fn,
     // FIXME: on generally needs to account for events, although we call it only in :if
     on = () => (!offs && (offs = fx.map(fn => fn()))),
     off = () => (offs?.map(off => off()), offs = null)
@@ -33,9 +34,6 @@ const sprae = (el = document.body, values) => {
   // FIXME: we're supposed to call prevOn/prevOff, but I can't find a test case. Some combination of :if/:scope/:each/:ref
   el[_on] = on// () => (prevOn?.(), on())
   el[_off] = off// () => (prevOn?.(), on())
-  // FIXME: why it doesn't work?
-  // :else :if case. :else may have children to init which is called after :if, so we plan offing instead of immediate
-  // el[_off] = () => (!_offd && queueMicrotask(() => (off(), _offd = false)), _offd=true)
 
   // destroy
   el[_dispose] ||= () => (el[_off](), el[_off] = el[_on] = el[_dispose] = el[_state] = null)
@@ -185,8 +183,8 @@ const applyMods = (fn, mods) => {
   return fn
 }
 
-// soft-extend missing props
-const sx = (a, b) => { if (a != b) for (let k in b) a[k] ??= b[k]; return a }
+// soft-extend missing props and ignoring signals
+const sx = (a, b) => { if (a != b) for (let k in b) typeof k === 'symbol' || (a[k] ??= b[k]); return a }
 
 
 // standard directives
@@ -284,9 +282,9 @@ const dir = {
   // :ref="..."
   ref: (el, state, expr, name, _prev, _set) => (
     typeof cache[trim(expr)](state) == 'function' ?
-      v => v(el) :
+      v => (v(el)) :
       // NOTE: we have to set element statically (outside of effect) to avoid parasitic sub - multiple els with same :ref can cause recursion (eg. :each :ref="x")
-      setter(name, expr)(state, el)
+      (setter(name, expr)(state, el),console.log(1234,name,expr,state, state[expr]))
   ),
 
   // :scope creates variables scope for a subtree
@@ -296,12 +294,12 @@ const dir = {
     el[_state] = null,
     // 0 run pre-creates state to provide scope for the first effect - it can write vars in it, so we should already have it
     _scope = store({}, rootState),
-    // 1 run spraes subtree with values from scope - it can be postponed by modifiers (we isolate reads from parent effect)
-    values => (Object.assign(_scope, values), el[_state] ?? (delete el[_state], untracked(() => sprae(el, _scope))))
+    // 1st run spraes subtree with values from scope - it can be postponed by modifiers (we isolate reads from parent effect)
+    values => (sx(_scope, call(values, _scope)), el[_state] ?? (delete el[_state], untracked(() => sprae(el, _scope))))
   ),
 
   // :if="a"
-  if: (el, state, _holder, _el, _prev, _off) => (
+  if: (el, state, _holder, _el, _prev) => (
 
     // new element :if
     !el._holder ?

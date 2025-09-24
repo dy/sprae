@@ -28,8 +28,8 @@ export const _signals = Symbol('signals'),
     let len = Object.keys(values).length, signals = {}
 
     // proxy conducts prop access to signals
-    let state = new Proxy(Object.assign(signals, { [_change]: signal(len), [_signals]: signals }), {
-      get: (_, k) => k in signals ? signals[k]?.valueOf?.() : parent[k],
+    let state = new Proxy(meta(signals, len), {
+      get: (_, k) => (k in signals ? (signals[k]?.valueOf?.() ?? signals[k]) : parent[k]),
       set: (_, k, v, _s) => (k in signals ? set(signals, k, v) : (create(signals, k, v), signals[_change].value = ++len), 1), // bump length for new signal
       // FIXME: try to avild calling Symbol.dispose here
       deleteProperty: (_, k) => (k in signals && (k[0] != '_' && signals[k]?.[Symbol.dispose]?.(), delete signals[k], signals[_change].value = --len), 1),
@@ -65,7 +65,7 @@ export const _signals = Symbol('signals'),
 
       // proxy conducts prop access to signals
       state = new Proxy(
-        Object.assign(signals, { [_change]: signal(signals.length), [_signals]: signals }),
+        meta(signals, signals.length),
         {
           get(_, k) {
             // if .length is read within mutators - peek signal to avoid recursive subscription
@@ -103,13 +103,13 @@ export const _signals = Symbol('signals'),
     return state
   },
 
-  // create signal value
-  create = (signals, k, v) => signals[k] = k[0] == '_' || v?.peek ? v : signal(store(v)),
+  // create signal value, skip untracked
+  create = (signals, k, v) => (signals[k] = k[0] == '_' || v?.peek ? v : signal(store(v))),
 
   // set/update signal value
   set = (signals, k, v, _s, _v) => {
     // skip unchanged (although can be handled by last condition - we skip a few checks this way)
-    return k[0] === '_' ? signals[k] = v :
+    return k[0] === '_' ? (signals[k] = v) :
       (v !== (_v = (_s = signals[k]).peek())) && (
         // stashed _set for value with getter/setter
         _s[_set] ? _s[_set](v) :
@@ -117,14 +117,25 @@ export const _signals = Symbol('signals'),
           Array.isArray(v) && Array.isArray(_v) ?
             // if we update plain array (stored in signal) - take over value instead
             // since input value can be store, we have to make sure we don't subscribe to its length or values
-            _v[_change] ? untracked(() => batch(() => {
+            // FIXME: generalize to objects
+            _change in _v[_change] ? untracked(() => batch(() => {
               for (let i = 0; i < v.length; i++) _v[i] = v[i]
               _v.length = v.length // forces deleting tail signals
             })) : _s.value = v :
             // .x = y
-            _s.value = store(v)
+            (_s.value = store(v))
       )
-  }
+  },
+
+  // create state meta props
+  meta = (signals, len) => (
+    Object.assign(signals, { [_change]: signal(len), [_signals]: signals })
+    // Object.defineProperties(signals, {
+    //   [_change]: { value: signal(len), enumerable: false },
+    //   [_signals]: { value: signals, enumerable: false }
+    // }),
+    // signals
+  )
 
 
 // make sure state contains first element of path, eg. `a` from `a.b[c]`

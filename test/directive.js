@@ -672,7 +672,7 @@ test("ref: fn with :each", async () => {
   is(a.innerHTML, `<x>1</x><x>2</x><x>3</x>`);
 });
 
-test.only("ref: fn unmount", async () => {
+test("ref: fn unmount", async () => {
   let div = h`<div><a :if="a" :ref="el => (log.push('on'), () => log.push('off'))" :text="b"></a></div>`;
   let state = sprae(div, { log: [], b: 1, a: 1 });
   await tick();
@@ -680,27 +680,32 @@ test.only("ref: fn unmount", async () => {
   is(div.innerHTML, `<a>1</a>`);
   console.log('----state.a=0')
   state.a = 0
-  await tick();
+  await tick(2);
   is(div.innerHTML, ``);
   is(state.log, ['on', 'off']);
 });
 
-test.todo('ref: create in state as untracked', async () => {
-  let div = h`<div :scope="{_x:null,log(){console.log(_x)}}" :onx="log"><x :ref="_x" :text="_x?.tagName"></x></div>`;
-  let state = sprae(div)
+test('ref: create in state as untracked', async () => {
+  let div = h`<div :scope="scope => (local = scope, {_x:null,log(){console.log(_x)}})" :onx="log"><x :ref="_x" :text="_x?.tagName"></x></div>`;
+  let state = sprae(div, {local: null})
+  await tick(2)
 
-  is(state._x, div.firstChild)
+  is(state.local._x, div.firstChild)
+
   div.dispatchEvent(new window.CustomEvent("x"));
-  is(state._x, div.firstChild)
+  await tick(2)
+
+  is(state.local._x, div.firstChild)
 })
 
-test.todo('ref: create in state as direct', async () => {
-  let div = h`<div :scope="{x:null,log(){console.log(x)}}" :onx="log"><x :ref="x" :text="x?.tagName"></x></div>`;
-  let state = sprae(div)
-  is(state.x, div.firstChild)
+test('ref: create in state as direct', async () => {
+  let div = h`<div :scope="scope => (local=scope, {x:null,log(){console.log(x)}})" :onx="log"><x :ref="x" :text="x?.tagName"></x></div>`;
+  let state = sprae(div, {local:{}})
+  is(state.local.x, div.firstChild)
   // reading :ref=x normally (one level) would not subscribe root, but nested one may subscribe parent :scope
   div.dispatchEvent(new window.CustomEvent("x"));
-  is(state.x, div.firstChild)
+  await tick();
+  is(state.local.x, div.firstChild)
 })
 
 test('ref: duplicates', async () => {
@@ -730,7 +735,7 @@ test("scope: inline assign reactive", async () => {
   is(el.innerHTML, `<y>barquux</y>`);
 });
 
-test("scope: assign data", async () => {
+test.only("scope: assign data", async () => {
   let el = h`<x :scope="{foo:x.foo}"><y :text="foo"></y></x>`;
   let state = sprae(el, { console, x: { foo: "bar" } });
   is(el.innerHTML, `<y>bar</y>`);
@@ -740,7 +745,7 @@ test("scope: assign data", async () => {
   is(el.innerHTML, `<y>baz</y>`);
 });
 
-test("scope: assign transparency", async () => {
+test.only("scope: assign transparency", async () => {
   let el = h`<x :scope="{foo:'foo'}"><y :scope="{bar:b.bar}" :text="foo+bar"></y></x>`;
   let params = sprae(el, { b: { bar: "bar" } });
   is(el.innerHTML, `<y>foobar</y>`);
@@ -749,7 +754,7 @@ test("scope: assign transparency", async () => {
   is(el.innerHTML, `<y>foobaz</y>`);
 });
 
-test("scope: reactive transparency", async () => {
+test.only("scope: reactive transparency", async () => {
   let el = h`<x :scope="{foo:1}"><y :scope="{bar:b.c.bar}" :text="foo+bar"></y></x>`;
   const bar = signal("2");
   sprae(el, { b: { c: { bar } } });
@@ -761,7 +766,7 @@ test("scope: reactive transparency", async () => {
   is(el.innerHTML, `<y>13</y>`);
 });
 
-test("scope: writes to state", async () => {
+test.only("scope: writes to state", async () => {
   let a = h`<x :scope="{a:1}"><y :onx="e=>(a+=1)" :text="a"></y></x>`;
   sprae(a, { console, signal });
   is(a.innerHTML, `<y>1</y>`);
@@ -773,7 +778,7 @@ test("scope: writes to state", async () => {
   is(a.innerHTML, `<y>3</y>`);
 });
 
-test("scope: one of children (internal number of iterations, cant see the result here)", async () => {
+test.only("scope: one of children (internal number of iterations, cant see the result here)", async () => {
   let a = h`<div><x :text="x"></x><x :scope="{x:2}" :text="x"></x><x :text="y">3</x></div>`;
   sprae(a, { x: 1, y: 3 });
   is(a.innerHTML, `<x>1</x><x>2</x><x>3</x>`);

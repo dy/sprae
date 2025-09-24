@@ -187,6 +187,9 @@ Define variable scope for a subtree.
 
 <!-- blank scope -->
 <x :scope :ref="id"></x>
+
+<!-- access to local scope instance -->
+<x :scope="scope => (scope.x = 'foo', scope)" :text="x"></x>
 ```
 
 #### `:fx`
@@ -295,7 +298,7 @@ Trigger when element is connected / disconnected from DOM.
 
 ## Modifiers
 
-#### `.debounce-<ms?>`  <kbd>events</kbd> <kbd>props</kbd>
+#### `.debounce-<ms?>`
 
 Defer callback by `ms`, by default 100.
 
@@ -307,7 +310,7 @@ Defer callback by `ms`, by default 100.
 <input :oninput.debounce-200="e => update(e)" />
 ```
 
-#### `.tick`  <kbd>events</kbd> <kbd>props</kbd>
+#### `.tick`
 
 Defer callback to the next microtask.
 
@@ -319,7 +322,7 @@ Defer callback to the next microtask.
 <button :onclick.tick="focusInput()">Save</button>
 ```
 
-#### `.throttle-<ms?>`  <kbd>events</kbd> <kbd>props</kbd>
+#### `.throttle-<ms?>`
 
 Limit callback to once every `ms`, by default 100.
 
@@ -331,7 +334,7 @@ Limit callback to once every `ms`, by default 100.
 <div :onresize.window.throttle-100="updateSize()">...</div>
 ```
 
-#### `.raf`  <kbd>events</kbd> <kbd>props</kbd>
+#### `.raf`
 
 Throttle calls to `requestAnimationFrame` loop.
 
@@ -343,7 +346,7 @@ Throttle calls to `requestAnimationFrame` loop.
 <div :style.raf="{'--progress': progress}">...</div>
 ```
 
-#### `.once`  <kbd>events</kbd> <kbd>props</kbd>
+#### `.once`
 
 Call only once.
 
@@ -355,7 +358,7 @@ Call only once.
 <button :onclick.once="init()">Start</button>
 ```
 
-#### `.idle`  <kbd>events</kbd> <kbd>props</kbd>
+#### `.idle`
 
 Run callback when system is idle.
 
@@ -367,7 +370,7 @@ Run callback when system is idle.
 <div :fx.idle="track(queue)"></div>
 ```
 
-#### `.async`  <kbd>events</kbd> <kbd>props</kbd>
+#### `.async`
 
 Await callback results.
 
@@ -423,6 +426,7 @@ Filter event by [`event.key`](https://developer.mozilla.org/en-US/docs/Web/API/U
 <input :onkeydown.ctrl-enter="saveDraft()" placeholder="Ctrl+Enter to save">
 ```
 
+<!--
 #### `.persist-<kind?>`  <kbd>props</kbd>
 
 Persist value in local or session storage.
@@ -435,8 +439,9 @@ Persist value in local or session storage.
   <option value="dark">Dark</option>
 </select>
 ```
+-->
 
-#### `.*`  <kbd>events</kbd> <kbd>props</kbd>
+#### `.*`
 
 Any other modifier has no effect, but allows binding multiple handlers.
 

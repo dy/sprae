@@ -1585,13 +1585,14 @@
     + helps resolving calling a fn with state access
   * ~~prop.fx="" - run effect without changing property~~ fx is there
   * ~~x.prop="xyz" - set element property, rather than attribute (following topic)~~ do it via `:ref` or `:fx`
-  * x.raf="abc" - run regularly?
+  * x.raf="abc" - ~~run regularly?~~ throttle updates
     + can be useful for live anim effects
-    - can be a separate directive :raf
   * ~~x.watch-a-b-c - update by change of any of the deps~~
   * :x.any - update by _any_ state change
   * :x.persist="v"
     - solvable via nadis - persisted signal
+    - doesn't match with all directives, mainly only :value
+      ? a special directive, like `:presisted-value`?
   * :x.lazy?
   * :x.memo?
   * :x.trim?
@@ -1606,6 +1607,7 @@
   * s-cloak? Hides contents until sprae finishes loading
     * wait until needed
     + provided by lucia l-mask, alpine a-cloak, vue v-cloak
+    ~ can be handled automatically?
 
   * s-ignore? Excludes element from spraing
   * s-include / s-html?

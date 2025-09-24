@@ -182,6 +182,7 @@
 * [ ] finish all prop modifiers with tests
 * [ ] add event extra modifiers tests
 * [ ] add async callbacks tests
+* [ ] modularize
 * [ ] microjs bundle
 * [x] ~~flavors: alpine, vue, micro, secure~~
 * [ ] switch signals to preact and test everything
