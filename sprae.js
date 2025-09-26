@@ -184,7 +184,7 @@ const applyMods = (fn, mods) => {
 }
 
 // soft-extend missing props and ignoring signals
-const sx = (a, b) => { if (a != b) for (let k in b) typeof k === 'symbol' || (a[k] ??= b[k]); return a }
+const sx = (a, b) => { if (a != b) for (let k in b) (a[k] ??= b[k]); return a }
 
 
 // standard directives
@@ -295,7 +295,8 @@ const dir = {
     // 0 run pre-creates state to provide scope for the first effect - it can write vars in it, so we should already have it
     _scope = store({}, rootState),
     // 1st run spraes subtree with values from scope - it can be postponed by modifiers (we isolate reads from parent effect)
-    values => (sx(_scope, call(values, _scope)), el[_state] ?? (delete el[_state], untracked(() => sprae(el, _scope))))
+    // 2nd+ runs update _scope
+    values => (Object.assign(_scope, call(values, _scope)), el[_state] ?? (delete el[_state], untracked(() => sprae(el, _scope)))  )
   ),
 
   // :if="a"
@@ -380,15 +381,15 @@ const dir = {
     () => {
       if (_holder._match._if) return // bypass :else :if handler
       console.group('else', el),
-        !_prev?._match.value ? (
-          console.log('else yes'),
-          _holder.before(_el.content || _el),
-          _el[_state] === null ? (delete _el[_state], sprae(_el, state)) : (_el[_on]?.())
-        ) : (
-          console.log('else no'),
-          _el.remove(), _el[_off]?.()
-        ),
-        console.groupEnd()
+      !_prev?._match.value ? (
+        console.log('else yes'),
+        _holder.before(_el.content || _el),
+        _el[_state] === null ? (delete _el[_state], sprae(_el, state)) : (_el[_on]?.())
+      ) : (
+        console.log('else no'),
+        _el.remove(), _el[_off]?.()
+      ),
+      console.groupEnd()
     }
   ),
 

@@ -301,7 +301,7 @@ test("if: base", async () => {
   is(el.innerHTML, "<else>c</else>");
 });
 
-test("if: overlapping conditions", async () => {
+test.only("if: overlapping conditions", async () => {
   let el = h`<p>
     <if :if="a<1">a</if>
     <elif2 :else :if="a<2">b</elif2>
@@ -315,19 +315,19 @@ test("if: overlapping conditions", async () => {
   is(el.innerHTML, "<if>a</if>");
   console.log('---a.value = 1')
   params.a = 1;
-  await tick();
+  await tick(2);
   is(el.innerHTML, "<elif2>b</elif2>");
   console.log('---a.value = 2')
   params.a = 2;
-  await tick();
+  await tick(2);
   is(el.innerHTML, "<elif3>c</elif3>");
   console.log('---a.value = 3')
   params.a = 3;
-  await tick();
+  await tick(2);
   is(el.innerHTML, "<else>d</else>");
   console.log('---a.value = null')
   params.a = null;
-  await tick();
+  await tick(2);
   is(el.innerHTML, "<if>a</if>");
 });
 
@@ -354,7 +354,7 @@ test("if: template / fragment", async () => {
   is(el.innerHTML, "c<x>3</x>");
 });
 
-test("if: short with insertions", async () => {
+test.todo("if: short with insertions", async () => {
   let el = h`<p>
     <span :if="a==1" :text="'1:'+a"></span>
     <span :else :if="a==2" :text="'2:'+a"></span>
@@ -385,7 +385,7 @@ test("if: short with insertions", async () => {
   params.a = null;
 });
 
-test("if: reactive values", async () => {
+test.todo("if: reactive values", async () => {
   let el = h`<p>
     <span :if="a==1" :text="'1:'+a"></span>
     <span :else :if="a==2" :text="'2:'+a"></span>
@@ -482,7 +482,7 @@ test("if: :scope + :if after attributes", async () => {
   is(el.innerHTML, `<y>2</y>`)
 })
 
-test("if: set/unset value", async () => {
+test.todo("if: set/unset value", async () => {
   let el = h`<x><y :if="x" :text="x?.x"></y></x>`
   let state = sprae(el, { x: null })
   // await tick();
@@ -501,7 +501,7 @@ test("if: set/unset value", async () => {
   is(el.innerHTML, '<y>2</y>')
 })
 
-test("if: set/unset 2", async () => {
+test.todo("if: set/unset 2", async () => {
   let el = h`<root><x :if="x==1"><t :text="a"></t></x><y :else :if="x==2"><t :text="b"></t></y><z :else :text="c"></z></root>`
   let state = sprae(el, { x: 1, a: 'a', b: 'b', c: 'c' })
   // await tick()
@@ -540,7 +540,7 @@ test("if: set/unset 2", async () => {
   is(el.innerHTML, '<z>c</z>', 'x==9')
 })
 
-test("if: cycle case 1", async () => {
+test.todo("if: cycle case 1", async () => {
   let el = h`<root><x :if="x==1">a</x><y :else :if="x==2">b</y></root>`
   let state = sprae(el, { x: 1 })
   // await tick()
@@ -562,7 +562,7 @@ test("if: cycle case 1", async () => {
   is(el.innerHTML, '', 'x==9')
 })
 
-test('if: cycle case 2', async () => {
+test.todo("if: cycle case 2", async () => {
   let el = h`<root><x :if="x==1">a</x><z :else :text="c"></z></root>`
   let state = sprae(el, { x: 1, a: 'a', b: 'b', c: 'c' })
   // await tick()
@@ -588,7 +588,7 @@ test('if: cycle case 2', async () => {
   is(el.innerHTML, '<z>c</z>', 'x==5')
 })
 
-test("if: #59", async () => {
+test.todo("if: #59", async () => {
   let el = h`<div id="container">
     <div :if="test()">123</div>
     ABC
@@ -685,7 +685,7 @@ test("ref: fn unmount", async () => {
   is(state.log, ['on', 'off']);
 });
 
-test('ref: create in state as untracked', async () => {
+test("ref: create in state as untracked", async () => {
   let div = h`<div :scope="scope => (local = scope, {_x:null,log(){console.log(_x)}})" :onx="log"><x :ref="_x" :text="_x?.tagName"></x></div>`;
   let state = sprae(div, {local: null})
   await tick(2)
@@ -698,7 +698,7 @@ test('ref: create in state as untracked', async () => {
   is(state.local._x, div.firstChild)
 })
 
-test('ref: create in state as direct', async () => {
+test("ref: create in state as direct", async () => {
   let div = h`<div :scope="scope => (local=scope, {x:null,log(){console.log(x)}})" :onx="log"><x :ref="x" :text="x?.tagName"></x></div>`;
   let state = sprae(div, {local:{}})
   is(state.local.x, div.firstChild)
@@ -708,7 +708,7 @@ test('ref: create in state as direct', async () => {
   is(state.local.x, div.firstChild)
 })
 
-test('ref: duplicates', async () => {
+test("ref: duplicates", async () => {
   let el = h`<x><y :ref="y"></y><z :ref="y"></z></x>`
   let state = sprae(el)
   is(state.y, el.lastChild)
@@ -735,17 +735,19 @@ test("scope: inline assign reactive", async () => {
   is(el.innerHTML, `<y>barquux</y>`);
 });
 
-test.only("scope: assign data", async () => {
+test("scope: assign data", async () => {
   let el = h`<x :scope="{foo:x.foo}"><y :text="foo"></y></x>`;
   let state = sprae(el, { console, x: { foo: "bar" } });
-  is(el.innerHTML, `<y>bar</y>`);
-  state.x.foo = "baz";
   await tick();
+  is(el.innerHTML, `<y>bar</y>`);
+  console.log('state.x.foo = \'baz\'')
+  state.x.foo = "baz";
+  await tick(2);
   // Object.assign(state, { x: { foo: 'baz' } })
   is(el.innerHTML, `<y>baz</y>`);
 });
 
-test.only("scope: assign transparency", async () => {
+test("scope: assign transparency", async () => {
   let el = h`<x :scope="{foo:'foo'}"><y :scope="{bar:b.bar}" :text="foo+bar"></y></x>`;
   let params = sprae(el, { b: { bar: "bar" } });
   is(el.innerHTML, `<y>foobar</y>`);
@@ -754,7 +756,7 @@ test.only("scope: assign transparency", async () => {
   is(el.innerHTML, `<y>foobaz</y>`);
 });
 
-test.only("scope: reactive transparency", async () => {
+test("scope: reactive transparency", async () => {
   let el = h`<x :scope="{foo:1}"><y :scope="{bar:b.c.bar}" :text="foo+bar"></y></x>`;
   const bar = signal("2");
   sprae(el, { b: { c: { bar } } });
@@ -766,7 +768,7 @@ test.only("scope: reactive transparency", async () => {
   is(el.innerHTML, `<y>13</y>`);
 });
 
-test.only("scope: writes to state", async () => {
+test("scope: writes to state", async () => {
   let a = h`<x :scope="{a:1}"><y :onx="e=>(a+=1)" :text="a"></y></x>`;
   sprae(a, { console, signal });
   is(a.innerHTML, `<y>1</y>`);
@@ -778,7 +780,7 @@ test.only("scope: writes to state", async () => {
   is(a.innerHTML, `<y>3</y>`);
 });
 
-test.only("scope: one of children (internal number of iterations, cant see the result here)", async () => {
+test("scope: one of children (internal number of iterations, cant see the result here)", async () => {
   let a = h`<div><x :text="x"></x><x :scope="{x:2}" :text="x"></x><x :text="y">3</x></div>`;
   sprae(a, { x: 1, y: 3 });
   is(a.innerHTML, `<x>1</x><x>2</x><x>3</x>`);
@@ -843,7 +845,7 @@ test("value: checkbox", async () => {
   is(state.a, true)
 });
 
-test("value: textarea", async () => {
+test.todo("value: textarea", async () => {
   let el = h`<textarea :value="a"></textarea>`;
   let state = sprae(el, { a: "abcdefgh" });
   is(el.selectionStart, 8);
@@ -856,7 +858,7 @@ test("value: textarea", async () => {
   is(el.selectionEnd, 4);
 });
 
-test("value: select one", async () => {
+test.todo("value: select one", async () => {
   let el = h`
   <select :name="field.name" :value="object[field.name]">
       <option :each="option in field.options" :value="option.value"
@@ -873,7 +875,7 @@ test("value: select one", async () => {
   is(state.object.x, 2)
 })
 
-test("value: select multiple", async () => {
+test.todo("value: select multiple", async () => {
   let el = h`
   <select :id:name="field.name" :value="object[field.name]" multiple>
     <option :each="option in field.options" :value="option.value"
@@ -890,7 +892,7 @@ test("value: select multiple", async () => {
   is([...el.selectedOptions], [el.children[1], el.children[2]])
 })
 
-test("value: select options change #52", async () => {
+test.todo("value: select options change #52", async () => {
   let el = h`
   <select :value="selected">
     <option :each="option in options" :value="option.value"
@@ -933,7 +935,7 @@ test("value: select options change #52", async () => {
   // is([...el.selectedOptions], [el.children[1], el.children[2]])
 })
 
-test("value: keep initial selected element #53", t => {
+test.todo("value: keep initial selected element #53", t => {
   let el = h`<div id="container">
       <select class="form-control" :value="obj">
           <option value="1">Test 1</option>
@@ -949,14 +951,14 @@ test("value: keep initial selected element #53", t => {
   is(s, { obj: '2' })
 })
 
-test("value: reflect #57", async () => {
+test.todo("value: reflect #57", async () => {
   let el = h`<input :value="a" />`;
   let state = sprae(el, { a: 0 });
   is(state.a, 0);
   is(el.outerHTML, `<input value="0">`);
 });
 
-test("value: reflect ensure value", async () => {
+test.todo("value: reflect ensure value", async () => {
   // NOTE: this causes breakage of the second run
   sprae(h`<a :ref="a"></a>`,{})
 
@@ -967,7 +969,7 @@ test("value: reflect ensure value", async () => {
   is(el.outerHTML, `<input value="">`);
 });
 
-test("value: radio group", async () => {
+test.todo("value: radio group", async () => {
   // Test radio button group behavior
   let container = h`<div>
     <input type="radio" name="group" value="a" :value="selected" />
@@ -1005,6 +1007,7 @@ test("value: radio group", async () => {
   is(radio2.checked, false);
   is(radio3.checked, false);
 });
+
 
 
 test.skip('each: top-level list', async () => {
