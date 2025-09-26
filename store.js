@@ -118,7 +118,7 @@ export const _signals = Symbol('signals'),
             // if we update plain array (stored in signal) - take over value instead
             // since input value can be store, we have to make sure we don't subscribe to its length or values
             // FIXME: generalize to objects
-            _change in _v[_change] ? untracked(() => batch(() => {
+            _change in _v ? untracked(() => batch(() => {
               for (let i = 0; i < v.length; i++) _v[i] = v[i]
               _v.length = v.length // forces deleting tail signals
             })) : _s.value = v :

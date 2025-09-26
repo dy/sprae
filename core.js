@@ -32,7 +32,8 @@ const sprae = (el = document.body, state) => {
   // let prevOn = el[_on], prevOff = el[_off]
 
   // on/off all effects
-  // FIXME: we're supposed to call prevOn/prevOff, but I can't find a test case. Some combination of :if/:scope/:each/:ref
+  // FIXME: we're possibly supposed to call prevOn/prevOff
+  // imagine <x :onx="..." :if="..."/> - when :if is false, it disables itself but ignores :onx
   el[_on] = on // () => (prevOn?.(), on())
   el[_off] = off // () => (prevOff?.(), off())
 

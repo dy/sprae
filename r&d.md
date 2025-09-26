@@ -1517,7 +1517,7 @@
   - custom events can interfere with props
   - some props might have same name as standard event
 
-## [ ] :else :if hurdle.
+## [ ] :else :if doesn't completely off itself when not matched
   * `:else :if` lazy-inits `:if` by `:else` on the component itself, adding own destructor to the own list of offs.
     - by that when the `:if` condition not matches it destroys itself, causing losing signal propagation chain.
   * how to avoid that?

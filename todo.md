@@ -175,10 +175,9 @@
 * [x] separate events from props
 * [x] enable async effect and run all basic tests
 * [x] v11 nested each bug (github)
-* [ ] :else :if offing
+* [x] :else :if offing -> keep this side-effect of not turning off :else-ifs for now
   * [x] ? why doesn't :if turn off itself when _off is called? -> because :if destructor (off) is added to the root element, and :if itself has own _offs_
     * The issue here is when we init `:else :if`, it happens on the same component, therefore `:if` is added to existing _offs_, not the root one.
-  * [ ] ? why :elif effect is called twice?
 * [ ] :if preact issue: it has screwed up order of effect callbacks & :else should be able to have mods
 * [ ] disable prop modifiers shortcut and test all effects
 * [ ] All TODO/FIXME

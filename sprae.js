@@ -1,6 +1,6 @@
 import store, { _change, _signals } from "./store.js";
 import { batch, computed, effect, signal, untracked } from './signal.js';
-import sprae, { use, dir, mod, _off, _state, _on, _dispose, call } from './core.js';
+import sprae, { use, dir, mod, _off, _state, _on, _dispose, call, attr } from './core.js';
 import _if from "./directive/if.js";
 import _else from "./directive/else.js";
 
