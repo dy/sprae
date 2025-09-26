@@ -1,7 +1,7 @@
 // test signals only (not sprae)
 
 import t, { is } from 'tst'
-import { signal, computed, effect, use, batch } from '../signal.js'
+import { signal, computed, effect, batch } from '../sprae.js'
 import { tick } from 'wait-please'
 
 // import * as signals from '@preact/signals-core'

@@ -1,7 +1,7 @@
 // test store only (not sprae)
 
 import store, { _change, _signals } from '../store.js'
-import { effect, batch, use, signal } from '../signal.js'
+import { effect, batch, signal } from '../core.js'
 import t, { is, ok } from 'tst'
 import { tick } from 'wait-please'
 // import * as signals from 'ulive'

@@ -606,6 +606,36 @@ test("if: #59", async () => {
   is(el.innerHTML, `<div>123</div>ABC<div>456</div>`)
 })
 
+test.only("if: events when not matched", async () => {
+  let el = h`<root><x :if="x==1" :onx="log.push('onx')">a</x><y :else :if="x==2" :ony="log.push('ony')">b</y></root>`
+  let [xel, yel] = el.children
+  let state = sprae(el, { x: 1, log: [] })
+  // await tick()
+  xel.dispatchEvent(new window.CustomEvent('x'))
+  yel.dispatchEvent(new window.CustomEvent('y'))
+  is(state.log, ['onx'], 'event')
+
+  console.log('------state.x = 2')
+  state.x = 2
+  await tick()
+  xel.dispatchEvent(new window.CustomEvent('x'))
+  yel.dispatchEvent(new window.CustomEvent('y'))
+  is(state.log, ['onx','ony'], 'event')
+
+  console.log('------state.x = 1')
+  state.x = 1
+  await tick()
+  xel.dispatchEvent(new window.CustomEvent('x'))
+  yel.dispatchEvent(new window.CustomEvent('y'))
+  is(state.log, ['onx','ony','onx'], 'event')
+
+  console.log('------state.x = 2')
+  state.x = 2
+  await tick()
+  xel.dispatchEvent(new window.CustomEvent('x'))
+  yel.dispatchEvent(new window.CustomEvent('y'))
+  is(state.log, ['onx','ony','onx','ony'], 'event')
+})
 
 
 test("ref: base", async () => {
@@ -1017,7 +1047,7 @@ test.todo("value: radio group", async () => {
 
 
 
-test.skip('each: top-level list', async () => {
+test('each: top-level list', async () => {
   let el = h`<x :each="item in items" :text="item.x"/>`
   sprae(el, { items: [{ x: 1 }] })
   is(el.outerHTML, `<x>1</x>`)

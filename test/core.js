@@ -5,7 +5,7 @@ import store from '../store.js'
 import { signal } from '../signal.js'
 import h from "hyperf";
 
-import signals from '../signal.js'
+import * as signals from '../signal.js'
 
 // import * as signals from '@preact/signals-core'
 // sprae.use(signals)
