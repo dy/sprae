@@ -32,8 +32,8 @@ const sprae = (el = document.body, state) => {
 
   // on/off all effects
   // FIXME: we're supposed to call prevOn/prevOff, but I can't find a test case. Some combination of :if/:scope/:each/:ref
-  el[_on] = on// () => (prevOn?.(), on())
-  el[_off] = off// () => (prevOn?.(), on())
+  el[_on] = on // () => (prevOn?.(), on())
+  el[_off] = off // () => (prevOff?.(), off())
 
   // destroy
   el[_dispose] ||= () => (el[_off](), el[_off] = el[_on] = el[_dispose] = el[_state] = null)
@@ -137,7 +137,7 @@ const initDirective = (el, attrName, expr, state) => {
         console.log('ON', name),
         fn(),
         () => (
-          console.log('OFF', name), _poff?.(), dispose(), change.value = -1, count = dispose = null
+          console.log('OFF', name, el), _poff?.(), dispose(), change.value = -1, count = dispose = null
         ))
     }, null)
   ));
@@ -334,31 +334,28 @@ const dir = {
         _prev = el._prev,
         _holder = el._holder,
         _el = _holder._el,
-        //   // _holder._match ??= signal(1), // _match is supposed to be created by :else
+        // _holder._match ??= signal(1), // _match is supposed to be created by :else
         _holder._match._if = true, // take over control of :else :if branch, make :else handler bypass
         console.log('init elif'),
 
-        //   // :else may have children to init which is called after :if
-        //   // or preact can schedule :else after :if, so we ensure order of call by next tick
+        // :else may have children to init which is called after :if
+        // or preact can schedule :else after :if, so we ensure order of call by next tick
         value => {
           _holder._match.value = value || _prev._match.value;
 
           console.group('elif')
 
           !_prev._match.value && value ?
-            // queueMicrotask(() =>
             (
               console.log('elif yes', el),
               _holder.before(_el.content || _el),
               _el[_on]?.()
-              // )
             )
             :
-            // queueMicrotask(() =>
             (
               console.log('elif no', el),
-              _el.remove(), _el[_off]?.(_el)
-              // )
+              // FIXME: if we turn off intermediate :else :if conditions, we lose propagation chain
+              _el.remove()//, _el[_off]?.()
             )
 
           console.groupEnd()

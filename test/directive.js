@@ -301,7 +301,7 @@ test("if: base", async () => {
   is(el.innerHTML, "<else>c</else>");
 });
 
-test.only("if: overlapping conditions", async () => {
+test("if: overlapping conditions", async () => {
   let el = h`<p>
     <if :if="a<1">a</if>
     <elif2 :else :if="a<2">b</elif2>
@@ -321,10 +321,17 @@ test.only("if: overlapping conditions", async () => {
   params.a = 2;
   await tick(2);
   is(el.innerHTML, "<elif3>c</elif3>");
+
   console.log('---a.value = 3')
   params.a = 3;
   await tick(2);
   is(el.innerHTML, "<else>d</else>");
+
+  console.log('---a.value = 2')
+  params.a = 2;
+  await tick(2);
+  is(el.innerHTML, "<elif3>c</elif3>");
+
   console.log('---a.value = null')
   params.a = null;
   await tick(2);
@@ -354,7 +361,7 @@ test("if: template / fragment", async () => {
   is(el.innerHTML, "c<x>3</x>");
 });
 
-test.todo("if: short with insertions", async () => {
+test("if: short with insertions", async () => {
   let el = h`<p>
     <span :if="a==1" :text="'1:'+a"></span>
     <span :else :if="a==2" :text="'2:'+a"></span>
@@ -385,7 +392,7 @@ test.todo("if: short with insertions", async () => {
   params.a = null;
 });
 
-test.todo("if: reactive values", async () => {
+test("if: reactive values", async () => {
   let el = h`<p>
     <span :if="a==1" :text="'1:'+a"></span>
     <span :else :if="a==2" :text="'2:'+a"></span>
@@ -482,10 +489,10 @@ test("if: :scope + :if after attributes", async () => {
   is(el.innerHTML, `<y>2</y>`)
 })
 
-test.todo("if: set/unset value", async () => {
+test("if: set/unset value", async () => {
   let el = h`<x><y :if="x" :text="x?.x"></y></x>`
   let state = sprae(el, { x: null })
-  // await tick();
+  await tick(2);
   is(el.innerHTML, '')
   state.x = { x: 1 }
   await tick()
@@ -501,7 +508,7 @@ test.todo("if: set/unset value", async () => {
   is(el.innerHTML, '<y>2</y>')
 })
 
-test.todo("if: set/unset 2", async () => {
+test("if: set/unset 2", async () => {
   let el = h`<root><x :if="x==1"><t :text="a"></t></x><y :else :if="x==2"><t :text="b"></t></y><z :else :text="c"></z></root>`
   let state = sprae(el, { x: 1, a: 'a', b: 'b', c: 'c' })
   // await tick()
@@ -540,7 +547,7 @@ test.todo("if: set/unset 2", async () => {
   is(el.innerHTML, '<z>c</z>', 'x==9')
 })
 
-test.todo("if: cycle case 1", async () => {
+test("if: cycle case 1", async () => {
   let el = h`<root><x :if="x==1">a</x><y :else :if="x==2">b</y></root>`
   let state = sprae(el, { x: 1 })
   // await tick()
@@ -562,7 +569,7 @@ test.todo("if: cycle case 1", async () => {
   is(el.innerHTML, '', 'x==9')
 })
 
-test.todo("if: cycle case 2", async () => {
+test("if: cycle case 2", async () => {
   let el = h`<root><x :if="x==1">a</x><z :else :text="c"></z></root>`
   let state = sprae(el, { x: 1, a: 'a', b: 'b', c: 'c' })
   // await tick()
@@ -588,7 +595,7 @@ test.todo("if: cycle case 2", async () => {
   is(el.innerHTML, '<z>c</z>', 'x==5')
 })
 
-test.todo("if: #59", async () => {
+test("if: #59", async () => {
   let el = h`<div id="container">
     <div :if="test()">123</div>
     ABC
