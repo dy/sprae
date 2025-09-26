@@ -1,6 +1,6 @@
 import store, { _change, _signals } from "./store.js";
 import { batch, computed, effect, signal, untracked } from './signal.js';
-import sprae, { dir, mod, _off, _state, _on, _dispose } from './core.js';
+import sprae, { use, dir, mod, _off, _state, _on, _dispose, call } from './core.js';
 import _if from "./directive/if.js";
 import _else from "./directive/else.js";
 
@@ -211,8 +211,7 @@ Object.assign(dir, {
 dir.each.clean = (str) => str.split(/\bin\b/)[1].trim()
 
 // configure defaults
-sprae.use({
-  prefix: ':',
+use({
   // indirect new Function to avoid detector
   compile: expr => sprae.constructor(`with (arguments[0]) { return ${expr} };`),
   signal, effect, computed, batch, untracked

@@ -1517,6 +1517,29 @@
   - custom events can interfere with props
   - some props might have same name as standard event
 
+## [ ] :else :if hurdle.
+  * `:else :if` lazy-inits `:if` by `:else` on the component itself, adding own destructor to the own list of offs.
+    - by that when the `:if` condition not matches it destroys itself, causing losing signal propagation chain.
+  * how to avoid that?
+  1. Move `:else :if` logic into `:else`?
+    - nope, it doesn't help much - `:else` still lazy-spraes on element itself, since `:if` is still present after `:else`
+  2. Initialize `:else :if` in a single run at once.
+    - but `:if` may have own mods making it async
+    - also it might be `:else:if=""`, which is handled by initDirective
+  3. Can we find `:if` somehow during `:else` and init via `initDirective` (whatever it's called)?
+    + It would create only single `off` for `:else :if` element
+    ? how to find it, since it might have modifiers?
+  * We need only one destructor in `:else :if` element _or_ both destructor belonging to the root _or_ exclude own destructor from turning off
+  * We may think `:else` should handle `:else :if`
+    * But then `:if` from `:else :if` should somehow update _match state to propagate change, which subjects it being offable
+  4. Can we for lazy-init pass parent where to add destructors?
+    - We still need to be able to turn off all other events etc on the element
+  5. Can we try to make fake-else, so that it is ok to be _off'd?
+    + The update function returned by else is anyways called only by `_prev?._match.value`
+    * We come to dilemma: should `:else` stop and lazify further init by condition, or it should let subsequent `:if` to initialize to decide
+      * If we stop, then we cannot init `:if`
+      * If we continue, then we initialize only-`:else` even when condition is not matched
+
 ## [ ] Componentization: what can be done? -> likely no for now. When html-include is there we can talk
 
   1. define-element

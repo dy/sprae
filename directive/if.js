@@ -1,4 +1,4 @@
-import sprae, { signal, _on, _off, _state } from '../core.js';
+import sprae, { signal, _on, _off, _state, frag } from '../core.js';
 
 // :if="a"
 export default (el, state, _holder, _el, _prev) => (
@@ -20,6 +20,7 @@ export default (el, state, _holder, _el, _prev) => (
         (_holder._match.value = value) ? (
           console.log('if yes', _el),
           _holder.before(_el.content || _el),
+          // there's no :else after :if, so lazy-sprae here doesn't risk adding own destructor to own list of destructors
           _el[_state] === null ? (delete _el[_state], sprae(_el, state)) : _el[_on]?.()
         ) : (
           console.log('if no', _el),
@@ -30,6 +31,7 @@ export default (el, state, _holder, _el, _prev) => (
     ) :
 
     // :else :if
+    // if there's _holder it means element was initialized by _else before
     (
       _prev = el._prev,
       _holder = el._holder,
@@ -38,13 +40,15 @@ export default (el, state, _holder, _el, _prev) => (
       _holder._match._if = true, // take over control of :else :if branch, make :else handler bypass
       console.log('init elif'),
 
+
       // :else may have children to init which is called after :if
       // or preact can schedule :else after :if, so we ensure order of call by next tick
       value => {
+        console.group('if->else')
         _holder._match.value = value || _prev._match.value;
+        console.groupEnd()
 
         console.group('elif')
-        console.trace()
 
         !_prev._match.value && value ?
           (
@@ -55,12 +59,11 @@ export default (el, state, _holder, _el, _prev) => (
           :
           (
             console.log('elif no', el),
-            // FIXME: if we turn off intermediate :else :if conditions, we lose propagation chain
+            // FIXME: if we turn off intermediate :else :if conditions, we lose propagation chain.
+            // NOTE: it disables everything else except for :if
             _el.remove()//, _el[_off]?.()
           )
-
         console.groupEnd()
-
       }
     )
 )

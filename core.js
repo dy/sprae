@@ -20,7 +20,7 @@ const sprae = (el = document.body, state) => {
   // repeated call can be caused by eg. :each with new objects with old keys
   if (el[_state]) return Object.assign(el[_state], state)
 
-  console.group('sprae')
+  console.group('sprae', el)
 
   // take over existing state instead of creating a clone
   state = store(state || {})
@@ -28,8 +28,8 @@ const sprae = (el = document.body, state) => {
   let fx = [], offs = [], fn,
     // FIXME: on generally needs to account for events, although we call it only in :if
     on = () => (!offs && (offs = fx.map(fn => fn()))),
-    off = () => (offs?.map(off => off()), offs = null)
-  // prevOn = el[_on], prevOff = el[_off]
+    off = () => ( offs?.map(off => off()), offs = null)
+  // let prevOn = el[_on], prevOff = el[_off]
 
   // on/off all effects
   // FIXME: we're supposed to call prevOn/prevOff, but I can't find a test case. Some combination of :if/:scope/:each/:ref
@@ -39,7 +39,7 @@ const sprae = (el = document.body, state) => {
   // destroy
   el[_dispose] ||= () => (el[_off](), el[_off] = el[_on] = el[_dispose] = el[_state] = null)
 
-  let initElement = (el, attrs = el.attributes) => {
+  const initElement = (el, attrs = el.attributes) => {
     // we iterate live collection (subsprae can init args)
     if (attrs) for (let i = 0; i < attrs.length;) {
       let { name, value } = attrs[i]
@@ -72,6 +72,7 @@ const sprae = (el = document.body, state) => {
   // FIXME: can check for null instead?
   if (!(_state in el)) el[_state] = state
 
+  console.log('inited', el)
   console.groupEnd()
 
   return state;
@@ -81,7 +82,7 @@ const sprae = (el = document.body, state) => {
 /**
  * Configure sprae
  */
-sprae.use = (s) => (
+export const use = (s) => (
   s.compile && (compile = s.compile),
   s.prefix && (prefix = s.prefix),
   s.signal && (signal = s.signal),
@@ -152,9 +153,11 @@ const initDirective = (el, attrName, expr, state) => {
         _poff = prev?.(),
         console.log('ON', name),
         fn(),
-        () => (
+        ({
+          [name]: () => (
           console.log('OFF', name, el), _poff?.(), dispose(), change.value = -1, count = dispose = null
-        ))
+          )})[name]
+        )
     }, null)
   ));
 
@@ -279,13 +282,13 @@ const keys = {
 for (let k in keys) mod[k] = (fn, ...params) => (e) => keys[k](e) && params.every(k => keys[k]?.(e) ?? e.key === k) && fn(e)
 
 // create expression setter, reflecting value back to state
-const setter = (dir, expr, _set = parse(dir, `${expr}=__`)) => (target, value) => {
+export const setter = (dir, expr, _set = parse(dir, `${expr}=__`)) => (target, value) => {
   // save value to stash
   target.__ = value; _set(target), delete target.__
 }
 
 // instantiated <template> fragment holder, like persisting fragment but with minimal API surface
-const frag = (tpl) => {
+export const frag = (tpl) => {
   if (!tpl.nodeType) return tpl // existing tpl
 
   let content = tpl.content.cloneNode(true), // document fragment holder of content
@@ -311,16 +314,16 @@ const frag = (tpl) => {
 }
 
 // if value is function - return result of its call
-const call = (v, arg) => typeof v === 'function' ? v(arg) : v
+export const call = (v, arg) => typeof v === 'function' ? v(arg) : v
 
 // camel to kebab
-const dashcase = (str) => str.replace(/[A-Z\u00C0-\u00D6\u00D8-\u00DE]/g, (match, i) => (i ? '-' : '') + match.toLowerCase());
+export const dashcase = (str) => str.replace(/[A-Z\u00C0-\u00D6\u00D8-\u00DE]/g, (match, i) => (i ? '-' : '') + match.toLowerCase());
 
 // set attr
-const attr = (el, name, v) => (v == null || v === false) ? el.removeAttribute(name) : el.setAttribute(name, v === true ? "" : v);
+export const attr = (el, name, v) => (v == null || v === false) ? el.removeAttribute(name) : el.setAttribute(name, v === true ? "" : v);
 
 // convert any-arg to className string
-const clsx = (c, _out = []) => !c ? '' : typeof c === 'string' ? c : (
+export const clsx = (c, _out = []) => !c ? '' : typeof c === 'string' ? c : (
   Array.isArray(c) ? c.map(clsx) :
     Object.entries(c).reduce((s, [k, v]) => !v ? s : [...s, k], [])
 ).join(' ')

@@ -1,4 +1,4 @@
-import sprae, { signal, _on, _off, _state } from '../core.js';
+import sprae, { signal, _on, _off, _state, frag } from '../core.js';
 
 
 // NOTE: we can reach :else counterpart whereas prev :else :if is on hold
