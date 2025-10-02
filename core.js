@@ -81,19 +81,6 @@ const sprae = (el = document.body, state) => {
 
 
 /**
- * Configure sprae
- */
-export const use = (s) => (
-  s.compile && (compile = s.compile),
-  s.prefix && (prefix = s.prefix),
-  s.signal && (signal = s.signal),
-  s.effect && (effect = s.effect),
-  s.computed && (computed = s.computed),
-  s.batch && (batch = s.batch),
-  s.untracked && (untracked = s.untracked)
-)
-
-/**
  * Initializes directive (defined by sprae build), returns "on" function that enables it
  * Multiprop sequences initializer, eg. :a:b..c:d
  * @type {(el: HTMLElement, name:string, value:string, state:Object) => Function}
@@ -135,7 +122,7 @@ const initDirective = (el, attrName, expr, state) => {
       // if (!mods.length && !prev) return () => update && effect(() => (update(evaluate(state))))
 
       let dispose,
-        change = signal(-1),// signal authorized to trigger effect: 0 = init; >0 = trigger
+        change = signal(-1), // signal authorized to trigger effect: 0 = init; >0 = trigger
         count = -1, // called effect count
 
         // effect applier - first time it applies the effect, next times effect is triggered by change signal
@@ -166,6 +153,21 @@ const initDirective = (el, attrName, expr, state) => {
   return () => (off = steps[0]())
 }
 
+
+/**
+ * Configure sprae
+ */
+export const use = (s) => (
+  s.compile && (compile = s.compile),
+  s.prefix && (prefix = s.prefix),
+  s.signal && (signal = s.signal),
+  s.effect && (effect = s.effect),
+  s.computed && (computed = s.computed),
+  s.batch && (batch = s.batch),
+  s.untracked && (untracked = s.untracked)
+)
+
+
 /**
  * Compiles an expression into an evaluator function.
  * @type {(dir:string, expr: string, clean?: string => string) => Function}
@@ -188,8 +190,8 @@ const parse = (dir, expr, _clean = trim, _fn) => {
   // run time errors
   return cache[expr] = (s) => { try { return _fn?.(s) } catch (e) { console.error(`∴ ${e}\n\n${prefix + dir}="${expr}"`) } }
 }
-const cache = {};
-const trim = e => e.trim()
+export const cache = {};
+export const trim = e => e.trim()
 
 export const dir = {}
 
@@ -329,5 +331,12 @@ export const clsx = (c, _out = []) => !c ? '' : typeof c === 'string' ? c : (
     Object.entries(c).reduce((s, [k, v]) => !v ? s : [...s, k], [])
 ).join(' ')
 
+// throttle function to once per tick
+export const oncePerTick = (fn, _planned=0) => () => {
+  if (!_planned++) {
+    fn()
+    queueMicrotask(() => (_planned > 1 && fn(), _planned = 0));
+  }
+}
 
 export default sprae
