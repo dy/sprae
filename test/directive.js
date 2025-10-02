@@ -275,7 +275,7 @@ test("text: doesnt get side-triggered", async () => {
 
 
 
-test.only("if: base", async () => {
+test("if: base", async () => {
   let el = h`<p>
     <if :if="a==1">a</if>
     <elif :else :if="a==2">b</elif>
@@ -303,7 +303,7 @@ test.only("if: base", async () => {
   is(el.innerHTML, "<else>c</else>");
 });
 
-test.only("if: overlapping conditions", async () => {
+test("if: overlapping conditions", async () => {
   let el = h`<p>
     <if :if="a<1">a</if>
     <elif2 :else :if="a<2">b</elif2>
@@ -340,7 +340,7 @@ test.only("if: overlapping conditions", async () => {
   is(el.innerHTML, "<if>a</if>");
 });
 
-test.only("if: template / fragment", async () => {
+test("if: template / fragment", async () => {
   let el = h`<p>
     <template id="tpl-if" :if="a==1">a<x>1</x></template>
     <template id="tpl-elif" :else :if="a==2">b<x>2</x></template>
@@ -368,7 +368,7 @@ test.only("if: template / fragment", async () => {
   is(el.innerHTML, "c<x>3</x>");
 });
 
-test.only("if: short with insertions", async () => {
+test("if: short with insertions", async () => {
   let el = h`<p>
     <span :if="a==1" :text="'1:'+a"></span>
     <span :else :if="a==2" :text="'2:'+a"></span>
@@ -408,7 +408,7 @@ test.only("if: short with insertions", async () => {
   params.a = null;
 });
 
-test.only("if: reactive values", async () => {
+test("if: reactive values", async () => {
   let el = h`<p>
     <span :if="a==1" :text="'1:'+a"></span>
     <span :else :if="a==2" :text="'2:'+a"></span>
@@ -438,14 +438,14 @@ test.only("if: reactive values", async () => {
   is(el.innerHTML, "<span>4</span>");
 });
 
-test.only("if: (#3) subsequent content is not abandoned", async () => {
+test("if: (#3) subsequent content is not abandoned", async () => {
   let x = h`<x><y :if="!!y"></y><z :text="123"></z></x>`;
   sprae(x, { y: false });
   // await tick();
   is(x.outerHTML, `<x><z>123</z></x>`);
 });
 
-test.only("if: + :scope doesnt prevent secondary effects from happening", async () => {
+test("if: + :scope doesnt prevent secondary effects from happening", async () => {
   let el = h`<div><x :if="x" :scope="{}" :text="x"></x></div>`;
   let state = sprae(el, { x: "" });
   // await tick();
@@ -456,7 +456,7 @@ test.only("if: + :scope doesnt prevent secondary effects from happening", async 
   is(el.innerHTML, `<x>123</x>`);
 });
 
-test.only("if: + :scope back-forth on/off", async () => {
+test("if: + :scope back-forth on/off", async () => {
   let el = h`<div>
     <x :if="x" :scope="{x}" :text="console.log(':text1'),x" :onx="()=>(x+=x)"></x>
     <y :else :scope="console.log(':scope2'),{t:'y'}" :text="console.log(':text2'),t" :onx="()=>(console.log(':onx'),t+=t)"></y>
@@ -496,7 +496,7 @@ test.only("if: + :scope back-forth on/off", async () => {
   is(el.innerHTML, `<y>yyyy</y>`);
 });
 
-test.only("if: :scope + :if after attributes", async () => {
+test("if: :scope + :if after attributes", async () => {
   let el = h`<c>
     <x :scope="{x:1}" :if="cur === 1" :text="x"></x>
     <y :scope="{x:2}" :if="cur === 2" :text="x"></y>
@@ -512,7 +512,7 @@ test.only("if: :scope + :if after attributes", async () => {
   is(el.innerHTML, `<y>2</y>`)
 })
 
-test.only("if: set/unset value", async () => {
+test("if: set/unset value", async () => {
   let el = h`<x><y :if="x" :text="x?.x"></y></x>`
   let state = sprae(el, { x: null })
   await tick(2);
@@ -531,7 +531,7 @@ test.only("if: set/unset value", async () => {
   is(el.innerHTML, '<y>2</y>')
 })
 
-test.only("if: set/unset 2", async () => {
+test("if: set/unset 2", async () => {
   let el = h`<root><x :if="x==1"><t :text="a"></t></x><y :else :if="x==2"><t :text="b"></t></y><z :else :text="c"></z></root>`
   let state = sprae(el, { x: 1, a: 'a', b: 'b', c: 'c' })
   // await tick()
@@ -574,7 +574,7 @@ test.only("if: set/unset 2", async () => {
   is(el.innerHTML, '<z>c</z>', 'x==9')
 })
 
-test.only("if: cycle case 1", async () => {
+test("if: cycle case 1", async () => {
   let el = h`<root><x :if="x==1">a</x><y :else :if="x==2">b</y></root>`
   let state = sprae(el, { x: 1 })
   // await tick()
@@ -596,7 +596,7 @@ test.only("if: cycle case 1", async () => {
   is(el.innerHTML, '', 'x==9')
 })
 
-test.only("if: cycle case 2", async () => {
+test("if: cycle case 2", async () => {
   let el = h`<root><x :if="x==1">a</x><z :else :text="c"></z></root>`
   let state = sprae(el, { x: 1, a: 'a', b: 'b', c: 'c' })
   // await tick()
@@ -622,7 +622,7 @@ test.only("if: cycle case 2", async () => {
   is(el.innerHTML, '<z>c</z>', 'x==5')
 })
 
-test.only("if: #59", async () => {
+test("if: #59", async () => {
   let el = h`<div id="container">
     <div :if="test()">123</div>
     ABC
@@ -633,7 +633,7 @@ test.only("if: #59", async () => {
   is(el.innerHTML, `<div>123</div>ABC<div>456</div>`)
 })
 
-test.only("if: init on itself", async () => {
+test("if: init on itself", async () => {
   let el = h`<root><x :if="x==1" :onx="log.push('onx')" :foo="">a</x></root>`
   let xel = el.firstChild
   let state = sprae(xel, { x: 1, log: [] })
@@ -657,7 +657,7 @@ test.only("if: init on itself", async () => {
   is(state.log, ['onx', 'onx'], 'event')
 })
 
-test.only("if: events when not matched", async () => {
+test.todo("if: events when not matched", async () => {
   let el = h`<root>
     <x :if="x==1" :onx="log.push('onx')">a</x>
     <y :else :if="x==2" :ony="log.push('ony')">b</y>

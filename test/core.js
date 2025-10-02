@@ -2,13 +2,13 @@ import test, { is } from "tst";
 import { tick, time } from "wait-please";
 import sprae from '../sprae.js'
 import store from '../store.js'
-import { signal } from '../signal.js'
+import { signal, use } from '../core.js'
 import h from "hyperf";
 
 import * as signals from '../signal.js'
 
 // import * as signals from '@preact/signals-core'
-// sprae.use(signals)
+// use(signals)
 
 test('core: pre-created store', async () => {
   let state = store({x:1,get(){return state.x}})
@@ -194,7 +194,7 @@ test('globals', async () => {
 
 test("core: switch signals", async () => {
   const preact = await import('@preact/signals-core')
-  sprae.use(preact)
+  use(preact)
 
   let el = h`<div :text="x"/>`
   let state = sprae(el, { x: preact.signal(1) })
@@ -203,7 +203,7 @@ test("core: switch signals", async () => {
   await tick()
   is(el.innerHTML, '2')
 
-  sprae.use(signals)
+  use(signals)
 })
 
 test("core: Math / other globals available in template", async () => {
@@ -221,11 +221,11 @@ test("core: Math / other globals available in template", async () => {
 });
 
 test("core: custom prefix", async () => {
-  sprae.use({ prefix: 's-' })
+  use({ prefix: 's-' })
   let el = h`<x s-text="a"></x>`;
   sprae(el, {a:123});
   is(el.outerHTML, `<x>123</x>`);
-  sprae.prefix = ':'
+  use({prefix:':'})
 })
 
 test("core: static errors don't break sprae", async () => {
