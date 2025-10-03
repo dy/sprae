@@ -8,6 +8,7 @@ export const _dispose = (Symbol.dispose ||= Symbol("dispose")),
 
 export let prefix = ':', signal, effect, computed, batch = (fn) => fn(), untracked = batch;
 
+let dir = {}
 
 /**
  * Applies directives to an HTML element and manages its reactive state.
@@ -158,6 +159,8 @@ const initDirective = (el, attrName, expr, state) => {
  * Configure sprae
  */
 export const use = (s) => (
+  s.dir && (dir = s.dir),
+  s.mod && (mod = s.mod),
   s.compile && (compile = s.compile),
   s.prefix && (prefix = s.prefix),
   s.signal && (signal = s.signal),
@@ -194,7 +197,6 @@ const parse = (dir, expr, _clean = trim, _fn) => {
 export const cache = {};
 export const trim = e => e.trim()
 
-export const dir = {}
 
 // apply modifiers to context (from the end due to nature of wrapping ctx.call)
 const applyMods = (fn, mods) => {

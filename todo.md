@@ -202,6 +202,7 @@
   * [ ] collection of examples
 * [ ] finish ajamila poll with v12
 * [ ] core test runner: signals variants, normal/micro, sync/async, module/bundle
+* [ ] Better autoinit: mutation observer until page loads?
 
 ## [ ] Optimizations (https://krausest.github.io/js-framework-benchmark/current.html)
 
