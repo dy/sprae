@@ -204,6 +204,17 @@
 * [ ] core test runner: signals variants, normal/micro, sync/async, module/bundle
 * [ ] Better autoinit: mutation observer until page loads?
 
+## [ ] Plugins
+
+* [ ] .persists
+* [ ] .screen-md
+* [ ] :onvisible
+* [ ] :aria
+* [ ] :item
+* [ ] :data
+* [ ] :intersect
+* [ ] :scroll.view.x="progress => "
+
 ## [ ] Website
   * [ ] 7 GUIs example
   * [ ] collection of examples

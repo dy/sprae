@@ -1498,7 +1498,7 @@
   - makes updates slightly heavier
   - .emit manually can be default prevented to skip update, so no use
 
-### [ ] Conditional queries: md:onclick, lg:onclick etc? -> yes, screen-<size> plugin
+### [x] Conditional queries: md:onclick, lg:onclick etc? -> .screen-<size> plugin
 
   + tailwind-like
   + can be handy I suppose
@@ -1541,46 +1541,7 @@
       * If we stop, then we cannot init `:if`
       * If we continue, then we initialize only-`:else` even when condition is not matched
 
-## [ ] Componentization: what can be done? -> likely no for now. When html-include is there we can talk
-
-  1. define-element
-
-    - templating uses django syntax - leads to verbatim conflict
-      ~ we're not necessarily going to use django
-    - `<template>` within `<template>` is not nice, for the case of :each etc
-      ~ foreach works as `<template directive="foraeach" expression="...">xxx</template>`, so it shouldn't be a problem
-    - no obvious way to import elements
-      - requires some bundling, likely for HTML
-    - non-standard
-
-  2. JS custom elements
-
-    + allows esm bundling of templates
-    + allows evaluatig sprae manually
-    + fine-grain control of attributes
-    - requires innerHTML
-    - direct competition with JSX, which is weird
-    ~ we can make spraex extension for JSX to allow :on attributes
-
-  3. No componentization
-
-    + discipline of tiny single-purpose apps
-    + factors componentization out to other libs
-    - makes sprae less useful as dependency
-
-  4. include / html / render
-
-    + gives intermediate solution
-    + classic
-    - no components
-    - a bit implicit
-
-  5. htmx-like requests
-
-  6. https://github.com/jhuddle/ponys
-    + takes the toll of including, enabling, defining components in minimal way
-
-## [ ] Prop modifiers -> makes sense for :text.once, :text.interval-<n>, :value.tick, :value.throttle-100, :value.persist, :style.raf,
+## [x] Prop modifiers -> makes sense for :text.once, :text.interval-<n>, :value.tick, :value.throttle-100, :value.persist, :style.raf,
 
   * Main variants
   * ~~value.bind? value.watch?~~ no sense beyound value/ref
@@ -1620,11 +1581,56 @@
   * :x.lazy?
   * :x.memo?
   * :x.trim?
+  * :x.screen-md=""
 
   ~ so props have to do with describing how effect is triggered.
   + It seems event modifiers can be applied to any props: interval, debounce,
   + it allows factoring them out
   - it brings us to a tough spot where we deal with asynchronous conditional, which is hard and fragile.
+
+## [ ] Autoinit via mutation observer?
+
+  + runs until document is loaded
+  + immediately inits all new nodes, opposed to displaying half-baked content
+
+## [ ] Componentization: what can be done? -> likely no for now. When html-include is there we can talk
+
+  1. define-element
+
+    - templating uses django syntax - leads to verbatim conflict
+      ~ we're not necessarily going to use django
+    - `<template>` within `<template>` is not nice, for the case of :each etc
+      ~ foreach works as `<template directive="foraeach" expression="...">xxx</template>`, so it shouldn't be a problem
+    - no obvious way to import elements
+      - requires some bundling, likely for HTML
+    - non-standard
+
+  2. JS custom elements
+
+    + allows esm bundling of templates
+    + allows evaluatig sprae manually
+    + fine-grain control of attributes
+    - requires innerHTML
+    - direct competition with JSX, which is weird
+    ~ we can make spraex extension for JSX to allow :on attributes
+
+  3. No componentization
+
+    + discipline of tiny single-purpose apps
+    + factors componentization out to other libs
+    - makes sprae less useful as dependency
+
+  4. include / html / render
+
+    + gives intermediate solution
+    + classic
+    - no components
+    - a bit implicit
+
+  5. htmx-like requests
+
+  6. https://github.com/jhuddle/ponys
+    + takes the toll of including, enabling, defining components in minimal way
 
 ## [ ] Directives
 
@@ -1645,10 +1651,6 @@
     + instead of :fx.interval. An event - oninterval
   * ~~s-show?~~ use hidden attribute
 
-## [ ] Autoinit via mutation observer?
-  + runs until document is loaded
-  + immediately inits all new nodes, opposed to displaying half-baked content
-
 ## [ ] Plugins
 
   * @sprae/data, /item, /aria
@@ -1666,7 +1668,7 @@
     + pluggable modifier
   * @sprae/scroll - `:scroll.view.x="progress => "`
   * @sprae/animate -
-  * @sprae/mount -
+  * ~~@sprae/mount -~~
   * media - .screen-md
 
 ## [ ] Reasons against sprae
@@ -1676,6 +1678,7 @@
   -~ separate syntax space even with `:` prefix - conflicts
   - perf-wise vanilla is faster
   - initial loading delay.
+  - chatgpt is super easy to ask to generate basic code
 
 ## [ ] Integrations
 
