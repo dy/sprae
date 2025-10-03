@@ -179,21 +179,10 @@
   * [x] ? why doesn't :if turn off itself when _off is called? -> because :if destructor (off) is added to the root element, and :if itself has own _offs_
     * The issue here is when we init `:else :if`, it happens on the same component, therefore `:if` is added to existing _offs_, not the root one.
 * [x] :if preact issue: it has screwed up order of effect callbacks & :else should be able to have mods
-* [ ] disable prop modifiers shortcut and test all effects
-* [ ] All TODO/FIXME
-* [ ] try alternative way to update plain lists in :each rather than simulating signals
-* [ ] finish all prop modifiers with tests
-* [ ] add event extra modifiers tests
-* [ ] add async callbacks tests
-* [ ] modularize
-* [ ] microjs bundle
+* [x] disable prop modifiers shortcut and test all effects
+* [x] modularize
 * [x] ~~flavors: alpine, vue, micro, secure~~
-* [ ] switch signals to preact and test everything
-* [ ] website
-  * [ ] 7 GUIs example
-  * [ ] collection of examples
-* [ ] finish ajamila poll with v12
-* [ ] core test runner: signals variants, normal/micro, sync/async, module/bundle
+* [x] switch signals to preact and test everything
 * [x] flat directives
 * [x] get rid of :data, :aria
 * [x] run effects after collecting them
@@ -202,6 +191,17 @@
 * [x] pass globals to store
 * [x] expose sprae.compile, .prefix, .dir
 * [x] make :each use inheritance instead of Proxy
+* [ ] All TODO/FIXME
+* [ ] try alternative way to update plain lists in :each rather than simulating signals
+* [ ] finish all prop modifiers with tests
+* [ ] add event extra modifiers tests
+* [ ] add async callbacks tests
+* [ ] microjs bundle
+* [ ] website
+  * [ ] 7 GUIs example
+  * [ ] collection of examples
+* [ ] finish ajamila poll with v12
+* [ ] core test runner: signals variants, normal/micro, sync/async, module/bundle
 
 ## [ ] Optimizations (https://krausest.github.io/js-framework-benchmark/current.html)
 

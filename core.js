@@ -61,7 +61,7 @@ const sprae = (el = document.body, state) => {
     }
 
     // :if and :each replace element with text node, which tweaks .children length, but .childNodes length persists
-    // for (let i = 0, child; i < (console.log(el.childNodes.length, i),el.childNodes.length); i++) child =  el.childNodes[i], console.log('run', i, child.outerHTML), child.nodeType == 1 && init(child)
+    // for (let i = 0, child; i < (el.childNodes.length); i++) child =  el.childNodes[i], child.nodeType == 1 && init(child)
     // FIXME: don't do spread here
     for (let child of [...el.childNodes]) child.nodeType == 1 && initElement(child)
   };
@@ -116,8 +116,8 @@ const initDirective = (el, attrName, expr, state) => {
       // props have no sequences and can be sync
       let update = (dir[name] || dir['*'])(el, state, expr, name)
 
-      // shortcut
-      // if (!mods.length && !prev) return () => update && effect(() => (update(evaluate(state))))
+      // no-modifiers shortcut
+      if (!mods.length && !prev) return () => update && effect(() => (update(evaluate(state))))
 
       let dispose,
         change = signal(-1), // signal authorized to trigger effect: 0 = init; >0 = trigger
