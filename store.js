@@ -29,7 +29,7 @@ export const _signals = Symbol('signals'),
 
     // proxy conducts prop access to signals
     let state = new Proxy(meta(signals, len), {
-      get: (_, k) => (k in signals ? signals[k]?.valueOf?.() : parent[k]),
+      get: (_, k) => (k in signals ? (signals[k] ? signals[k].valueOf() : signals[k]) : parent[k]),
       set: (_, k, v, _s) => (k in signals ? set(signals, k, v) : (create(signals, k, v), signals[_change].value = ++len), 1), // bump length for new signal
       // FIXME: try to avild calling Symbol.dispose here
       deleteProperty: (_, k) => (k in signals && (k[0] != '_' && signals[k]?.[Symbol.dispose]?.(), delete signals[k], signals[_change].value = --len), 1),
