@@ -319,10 +319,16 @@ test("if: overlapping conditions", async () => {
   params.a = 1;
   await tick(2);
   is(el.innerHTML, "<elif2>b</elif2>");
+
   console.log('---a.value = 2')
   params.a = 2;
   await tick(2);
   is(el.innerHTML, "<elif3>c</elif3>");
+
+  console.log('---a.value = 1')
+  params.a = 1;
+  await tick(2);
+  is(el.innerHTML, "<elif2>b</elif2>");
 
   console.log('---a.value = 3')
   params.a = 3;
@@ -657,7 +663,7 @@ test("if: init on itself", async () => {
   is(state.log, ['onx', 'onx'], 'event')
 })
 
-test.todo("if: events when not matched", async () => {
+test("if: events when not matched", async () => {
   let el = h`<root>
     <x :if="x==1" :onx="log.push('onx')">a</x>
     <y :else :if="x==2" :ony="log.push('ony')">b</y>
@@ -777,10 +783,12 @@ test("ref: fn with :each", async () => {
 
 test("ref: fn unmount", async () => {
   let div = h`<div><a :if="a" :ref="el => (log.push('on'), () => log.push('off'))" :text="b"></a></div>`;
+
   let state = sprae(div, { log: [], b: 1, a: 1 });
   await tick();
   is(state.log, ['on']);
   is(div.innerHTML, `<a>1</a>`);
+
   console.log('----state.a=0')
   state.a = 0
   await tick(2);

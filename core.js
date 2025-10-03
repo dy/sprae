@@ -20,7 +20,7 @@ const sprae = (el = document.body, state) => {
   // repeated call can be caused by eg. :each with new objects with old keys
   if (el[_state]) return Object.assign(el[_state], state)
 
-  console.group('sprae', el)
+  console.group('sprae', el.outerHTML, el[_off]?.list)
 
   // take over existing state instead of creating a clone
   state = store(state || {})
@@ -28,14 +28,15 @@ const sprae = (el = document.body, state) => {
   let fx = [], offs = [], fn,
     // FIXME: on generally needs to account for events, although we call it only in :if
     on = () => (!offs && (offs = fx.map(fn => fn()))),
-    off = () => ( offs?.map(off => off()), offs = null)
-  // let prevOn = el[_on], prevOff = el[_off]
+    off = () => (offs?.map(off => off()), offs = null)
+  let prevOn = el[_on], prevOff = el[_off]
 
   // on/off all effects
   // FIXME: we're possibly supposed to call prevOn/prevOff
   // imagine <x :onx="..." :if="..."/> - when :if is false, it disables itself but ignores :onx
   el[_on] = on // () => (prevOn?.(), on())
   el[_off] = off // () => (prevOff?.(), off())
+  off.list = offs
 
   // destroy
   el[_dispose] ||= () => (el[_off](), el[_off] = el[_on] = el[_dispose] = el[_state] = null)
@@ -55,16 +56,14 @@ const sprae = (el = document.body, state) => {
         offs.push(fn())
 
         // stop after subsprae like :each, :if, :scope etc.
-        if (_state in el) return
+        if (_state in el) return console.log('BAIL OUT')
       } else i++
     }
 
     // :if and :each replace element with text node, which tweaks .children length, but .childNodes length persists
-    // console.group('init', el, el.childNodes)
     // for (let i = 0, child; i < (console.log(el.childNodes.length, i),el.childNodes.length); i++) child =  el.childNodes[i], console.log('run', i, child.outerHTML), child.nodeType == 1 && init(child)
     // FIXME: don't do spread here
     for (let child of [...el.childNodes]) child.nodeType == 1 && initElement(child)
-    // console.groupEnd()
   };
 
   initElement(el);
@@ -73,7 +72,6 @@ const sprae = (el = document.body, state) => {
   // FIXME: can check for null instead?
   if (!(_state in el)) el[_state] = state
 
-  console.log('inited', el)
   console.groupEnd()
 
   return state;
@@ -133,7 +131,7 @@ const initDirective = (el, attrName, expr, state) => {
           dispose = effect(() => update && (
             // FIXME: possibly we can batch here
             change.value == count ? queueMicrotask(fn) : // plans eval call - separate tick makes sure planner effect is finished before real eval call
-            (count = change.value, update(evaluate(state))) // if changed more than effect called - call it
+              (count = change.value, update(evaluate(state))) // if changed more than effect called - call it
           ));
         }, mods)
 
@@ -143,9 +141,11 @@ const initDirective = (el, attrName, expr, state) => {
         fn(),
         ({
           [name]: () => (
-          console.log('OFF', name, el), _poff?.(), dispose(), change.value = -1, count = dispose = null
-          )})[name]
-        )
+            console.log('OFF', name, el),
+            _poff?.(), dispose(), change.value = -1, count = dispose = null
+          )
+        })[name]
+      )
     }, null)
   ));
 
@@ -190,6 +190,7 @@ const parse = (dir, expr, _clean = trim, _fn) => {
   // run time errors
   return cache[expr] = (s) => { try { return _fn?.(s) } catch (e) { console.error(`∴ ${e}\n\n${prefix + dir}="${expr}"`) } }
 }
+
 export const cache = {};
 export const trim = e => e.trim()
 

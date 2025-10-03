@@ -2,8 +2,8 @@ import store, { _change, _signals } from "./store.js";
 import { batch, computed, effect, signal, untracked } from './signal.js';
 import sprae, { use, dir, _off, _state, _on, _dispose, call, attr, dashcase } from './core.js';
 
-import _if from "./directive/if2.js";
-import _else from "./directive/else2.js";
+import _if from "./directive/if.js";
+import _else from "./directive/else.js";
 import _text from "./directive/text.js";
 import _class from "./directive/class.js";
 import _style from "./directive/style.js";

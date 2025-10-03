@@ -1,58 +1,48 @@
-// "standalone" if directive
-import sprae, { signal, _on, _off, _state, frag } from '../core.js';
+// "centralized" version of :if
+import sprae, { oncePerTick, _on, _off, _state, frag } from '../core.js';
 
 // :if="a"
-export default (el, state, _holder, _el, _prev) => (
+export default (el, state, _holder, _el, _match) => {
   // new element :if
-  !el._holder ?
-    (
-      el.replaceWith(_holder = document.createTextNode('')),
-      _el = el.content ? frag(el) : el,
-      el._holder = _holder,
-      _el[_state] ??= null, // mark el as fake-spraed to delay init, since we sprae rest when branch matches
-      _holder._el = el,
-      _holder._match = signal(1), // indicates if current clause or any prev clause matches
-      (_holder.nextElementSibling || {})._prev = _holder, // propagate linked condition
+  console.log(':if init', el)
+  if (!el._holder) {
+    // mark el as fake-spraed to delay init, since we sprae rest when branch matches, both :if and :else :if
+    el[_state] ??= null
 
-      value => (
-        (_holder._match.value = value) ? (
+    _el = el.content ? frag(el) : el
 
-          _holder.before(_el.content || _el),
+    el.replaceWith(_holder = document.createTextNode(''))
+    _el._holder = _holder._holder = _holder
+
+
+    _holder._clauses = [_el._clause = [_el, false]]
+
+    _holder.update = oncePerTick(() => {
+      let match = _holder._clauses.find(([, s]) => s)
+      console.group(':if update clauses', ..._holder._clauses)
+
+      if (match != _match) {
+        console.log(':if match', match)
+        _match?.[0].remove()
+        // FIXME: we don't turn off
+        _match?.[0][_off]?.()
+        if (_match = match) {
+          _holder.before(_match[0].content || _match[0])
           // there's no :else after :if, so lazy-sprae here doesn't risk adding own destructor to own list of destructors
-          _el[_state] === null ? (delete _el[_state], sprae(_el, state)) : _el[_on]?.()
-        ) : (
-
-          _el.remove(), _el[_off]?.()
-        )
-      )
-    ) :
-
-    // :else :if
-    // if there's _holder it means element was initialized by _else before
-    (
-      _prev = el._prev,
-      _holder = el._holder,
-      _el = _holder._el,
-      // _holder._match ??= signal(1), // _match is supposed to be created by :else
-      _holder._match._if = true, // take over control of :else :if branch, make :else handler bypass
-
-
-      // :else may have children to init which is called after :if
-      // or preact can schedule :else after :if, so we ensure order of call by next tick
-      value => {
-        _holder._match.value = value || _prev._match.value;
-
-        !_prev._match.value && value ?
-          (
-            _holder.before(_el.content || _el),
-            _el[_on]?.()
-          )
-          :
-          (
-            // FIXME: if we turn off intermediate :else :if conditions, we lose propagation chain.
-            // NOTE: it disables everything else except for :if
-            _el.remove()//, _el[_off]?.()
-          )
+          !_match[0][_state] ? (delete _match[0][_state], sprae(_match[0], state)) : _match[0][_on]?.()
+        }
       }
-    )
-)
+      console.groupEnd()
+    })
+  }
+  // :else :if needs to be spraed all over to have clean list of offable effects
+  else sprae(_el = el, state)
+
+  // :else may have children to init which is called after :if
+  // or preact can schedule :else after :if, so we ensure order of call by next tick
+  return value => {
+    console.log(':if update', _el, value)
+    _el._clause[1] = value
+    _el._holder.update()
+  }
+}
