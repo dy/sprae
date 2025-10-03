@@ -57,7 +57,7 @@ test("value: textarea", async () => {
   is(el.selectionEnd, 4);
 });
 
-test.todo("value: select one", async () => {
+test("value: select one", async () => {
   let el = h`
   <select :name="field.name" :value="object[field.name]">
       <option :each="option in field.options" :value="option.value"
@@ -69,12 +69,14 @@ test.todo("value: select one", async () => {
     object: { x: 2 }
   })
 
+  await tick()
+
   is(el.outerHTML, `<select name="x"><option value="1">a</option><option value="2" selected="">b</option></select>`)
   is(el.value, '2')
-  is(state.object.x, 2)
+  is(state.object.x, '2')
 })
 
-test.todo("value: select multiple", async () => {
+test("value: select multiple", async () => {
   let el = h`
   <select :id:name="field.name" :value="object[field.name]" multiple>
     <option :each="option in field.options" :value="option.value"
@@ -91,7 +93,7 @@ test.todo("value: select multiple", async () => {
   is([...el.selectedOptions], [el.children[1], el.children[2]])
 })
 
-test.todo("value: select options change #52", async () => {
+test("value: select options change #52", async () => {
   let el = h`
   <select :value="selected">
     <option :each="option in options" :value="option.value"
@@ -105,7 +107,7 @@ test.todo("value: select options change #52", async () => {
   })
 
   is(el.value, '')
-  is(state.selected, undefined)
+  is(state.selected, null)
 
   console.log('-------add option 1')
   state.options.push({ value: 1, label: 'a' })
@@ -134,7 +136,7 @@ test.todo("value: select options change #52", async () => {
   // is([...el.selectedOptions], [el.children[1], el.children[2]])
 })
 
-test.todo("value: keep initial selected element #53", t => {
+test("value: keep initial selected element #53", t => {
   let el = h`<div id="container">
       <select class="form-control" :value="obj">
           <option value="1">Test 1</option>
@@ -150,25 +152,26 @@ test.todo("value: keep initial selected element #53", t => {
   is(s, { obj: '2' })
 })
 
-test.todo("value: reflect #57", async () => {
+test("value: reflect #57", async () => {
   let el = h`<input :value="a" />`;
   let state = sprae(el, { a: 0 });
   is(state.a, 0);
   is(el.outerHTML, `<input value="0">`);
 });
 
-test.todo("value: reflect ensure value", async () => {
+test("value: reflect ensure value", async () => {
   // NOTE: this causes breakage of the second run
   sprae(h`<a :ref="a"></a>`,{})
 
   let el = h`<input :value="a" />`;
   console.log('-------- second init')
   let state = sprae(el, {});
+  await tick();
   is(state.a, '');
   is(el.outerHTML, `<input value="">`);
 });
 
-test.todo("value: radio group", async () => {
+test("value: radio group", async () => {
   // Test radio button group behavior
   let container = h`<div>
     <input type="radio" name="group" value="a" :value="selected" />

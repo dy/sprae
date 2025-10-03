@@ -1,4 +1,4 @@
-import { setter, attr } from "../core.js";
+import sprae,{ setter, attr, cache, trim, _state } from "../core.js";
 
 export default (el, state, expr, name) => {
   // bind back to value, but some values can be not bindable, eg. `:value="7"`
@@ -18,7 +18,7 @@ export default (el, state, expr, name) => {
       sprae(el, state)
     }
 
-    // initial state value
+    // initial state value - setter has already cached it, no need to parse again
     cache[trim(expr)](state) ?? handleChange()
   } catch { }
 
@@ -34,15 +34,18 @@ export default (el, state, expr, name) => {
       ) :
       (el.type === "checkbox") ?
         (value) => (el.checked = value, attr(el, "checked", value)) :
-        (el.type === "select-one") ?
-          (value) => {
-            for (let o of el.options)
-              o.value == value ? o.setAttribute("selected", '') : o.removeAttribute("selected");
-            el.value = value;
-          } :
-          (el.type === 'select-multiple') ? (value) => {
-            for (let o of el.options) o.removeAttribute('selected')
-            for (let v of value) el.querySelector(`[value="${v}"]`).setAttribute('selected', '')
-          } :
-            (value) => (el.value = value);
+        (el.type === 'radio') ? (value) => (
+          el.value === value && ((el.checked = value), attr(el, 'checked', value))
+        ) :
+          (el.type === "select-one") ?
+            (value) => {
+              for (let o of el.options)
+                o.value == value ? o.setAttribute("selected", '') : o.removeAttribute("selected");
+              el.value = value;
+            } :
+            (el.type === 'select-multiple') ? (value) => {
+              for (let o of el.options) o.removeAttribute('selected')
+              for (let v of value) el.querySelector(`[value="${v}"]`).setAttribute('selected', '')
+            } :
+              (value) => (el.value = value);
 }

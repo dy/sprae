@@ -191,8 +191,8 @@
 * [x] pass globals to store
 * [x] expose sprae.compile, .prefix, .dir
 * [x] make :each use inheritance instead of Proxy
+* [x] `:value` tests
 
-* [ ] `:value` tests
 * [ ] move modifiers to sprae.js
 * [ ] event extra modifiers tests
 * [ ] prop modifiers tests
