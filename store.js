@@ -1,5 +1,5 @@
 // signals-based proxy
-import { signal, computed, batch, untracked } from './signal.js'
+import { signal, computed, batch, untracked } from './core.js'
 
 const mut = ['push', 'pop', 'shift', 'unshift', 'splice']
 

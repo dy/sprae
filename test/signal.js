@@ -1,4 +1,4 @@
-// test signals only (not sprae)
+// test signals (not sprae)
 
 import t, { is } from 'tst'
 import { signal, computed, effect, batch, use } from '../core.js'

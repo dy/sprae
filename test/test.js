@@ -4,7 +4,16 @@ import './core.js'
 import './directive.js'
 import './event.js'
 
+// switch signals to custom implementation
+import { use } from '../core.js'
+// import * as signals from 'ulive'
+// import * as signals from 'usignal'
+import * as signals from '@preact/signals-core'
+// import * as signals from '@preact/signals'
+// import * as signals from '@webreflection/signal'
+use(signals)
 
+// patch outerHTML to document fragments
 Object.defineProperty(DocumentFragment.prototype, "outerHTML", {
   get() {
     let s = "";

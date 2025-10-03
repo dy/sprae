@@ -5,8 +5,6 @@ import store from '../store.js'
 import { signal, use } from '../core.js'
 import h from "hyperf";
 
-import * as signals from '../signal.js'
-
 // import * as signals from '@preact/signals-core'
 // use(signals)
 
@@ -192,7 +190,7 @@ test('globals', async () => {
   is(el.outerHTML, `<x>3.14</x>`)
 })
 
-test("core: switch signals", async () => {
+test.skip("core: switch signals", async () => {
   const preact = await import('@preact/signals-core')
   use(preact)
 
