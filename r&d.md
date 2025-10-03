@@ -1488,11 +1488,12 @@
   4. Attribute controller
     + Can be simplified in microsprae: sync, no modifiers
 
-### [ ] Should we apply .tick and .emit automatically?
+### [x] Should we apply .tick ~~and .emit~~ automatically? -> unavoidable to prevent cycle
 
   + less API
   + automatic batching
   + events out of box, used for effects
+  + unavoidable to prevent loop
   - tick is not necessary
   - makes updates slightly heavier
   - .emit manually can be default prevented to skip update, so no use
@@ -1517,7 +1518,7 @@
   - custom events can interfere with props
   - some props might have same name as standard event
 
-## [ ] :else :if doesn't completely off itself when not matched
+## [x] :else :if doesn't completely off itself when not matched -> done as centralized handler
   * `:else :if` lazy-inits `:if` by `:else` on the component itself, adding own destructor to the own list of offs.
     - by that when the `:if` condition not matches it destroys itself, causing losing signal propagation chain.
   * how to avoid that?

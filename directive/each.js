@@ -11,7 +11,6 @@ const each = (tpl, state, expr) => {
 
   // FIXME: pass items to update instead of global
   let update = oncePerTick(() => {
-    console.group(':each update', { cur, keys, items, prevl })
     let i = 0, newItems = items, newl = newItems.length
 
     // plain array update, not store (signal with array) - updates full list
@@ -62,8 +61,6 @@ const each = (tpl, state, expr) => {
     }
 
     prevl = newl
-
-    console.groupEnd()
   })
 
   tpl.replaceWith(holder);

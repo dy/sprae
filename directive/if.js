@@ -4,7 +4,7 @@ import sprae, { oncePerTick, _on, _off, _state, frag } from '../core.js';
 // :if="a"
 export default (el, state, _holder, _el, _match) => {
   // new element :if
-  console.log(':if init', el)
+  // console.log(':if init', el)
   if (!el._holder) {
     // mark el as fake-spraed to delay init, since we sprae rest when branch matches, both :if and :else :if
     el[_state] ??= null
@@ -19,10 +19,10 @@ export default (el, state, _holder, _el, _match) => {
 
     _holder.update = oncePerTick(() => {
       let match = _holder._clauses.find(([, s]) => s)
-      console.group(':if update clauses', ..._holder._clauses)
+      // console.group(':if update clauses', ..._holder._clauses)
 
       if (match != _match) {
-        console.log(':if match', match)
+        // console.log(':if match', match)
         _match?.[0].remove()
         // FIXME: we don't turn off
         _match?.[0][_off]?.()
@@ -32,7 +32,7 @@ export default (el, state, _holder, _el, _match) => {
           !_match[0][_state] ? (delete _match[0][_state], sprae(_match[0], state)) : _match[0][_on]?.()
         }
       }
-      console.groupEnd()
+      // console.groupEnd()
     })
   }
   // :else :if needs to be spraed all over to have clean list of offable effects
@@ -41,7 +41,7 @@ export default (el, state, _holder, _el, _match) => {
   // :else may have children to init which is called after :if
   // or preact can schedule :else after :if, so we ensure order of call by next tick
   return value => {
-    console.log(':if update', _el, value)
+    // console.log(':if update', _el, value)
     _el._clause[1] = value
     _el._holder.update()
   }

@@ -21,7 +21,7 @@ const sprae = (el = document.body, state) => {
   // repeated call can be caused by eg. :each with new objects with old keys
   if (el[_state]) return Object.assign(el[_state], state)
 
-  console.group('sprae', el.outerHTML, el[_off]?.list)
+  // console.group('sprae', el.outerHTML)
 
   // take over existing state instead of creating a clone
   state = store(state || {})
@@ -30,14 +30,12 @@ const sprae = (el = document.body, state) => {
     // FIXME: on generally needs to account for events, although we call it only in :if
     on = () => (!offs && (offs = fx.map(fn => fn()))),
     off = () => (offs?.map(off => off()), offs = null)
-  let prevOn = el[_on], prevOff = el[_off]
 
   // on/off all effects
-  // FIXME: we're possibly supposed to call prevOn/prevOff
+  // we don't call prevOn as convention: everything defined before :else :if won't be disabled by :if
   // imagine <x :onx="..." :if="..."/> - when :if is false, it disables itself but ignores :onx
-  el[_on] = on // () => (prevOn?.(), on())
-  el[_off] = off // () => (prevOff?.(), off())
-  off.list = offs
+  el[_on] = on
+  el[_off] = off
 
   // destroy
   el[_dispose] ||= () => (el[_off](), el[_off] = el[_on] = el[_dispose] = el[_state] = null)
@@ -52,17 +50,16 @@ const sprae = (el = document.body, state) => {
         el.removeAttribute(name)
 
         // directive initializer can be redefined
-        console.log('init attr', name)
         fx.push(fn = initDirective(el, name, value, state))
         offs.push(fn())
 
         // stop after subsprae like :each, :if, :scope etc.
-        if (_state in el) return console.log('BAIL OUT')
+        if (_state in el) return
       } else i++
     }
 
     // :if and :each replace element with text node, which tweaks .children length, but .childNodes length persists
-    // for (let i = 0, child; i < (el.childNodes.length); i++) child =  el.childNodes[i], child.nodeType == 1 && init(child)
+    // for (let i = 0, child; i < (el.childNodes.length); i++) child =  el.childNodes[i], child.nodeType == 1 && initElement(child)
     // FIXME: don't do spread here
     for (let child of [...el.childNodes]) child.nodeType == 1 && initElement(child)
   };
@@ -73,7 +70,7 @@ const sprae = (el = document.body, state) => {
   // FIXME: can check for null instead?
   if (!(_state in el)) el[_state] = state
 
-  console.groupEnd()
+  // console.groupEnd()
 
   return state;
 }
@@ -126,23 +123,21 @@ const initDirective = (el, attrName, expr, state) => {
 
         // effect applier - first time it applies the effect, next times effect is triggered by change signal
         // FIXME: init via dispose, don't reset count
-        fn = applyMods(() => {
+        fn = oncePerTick(applyMods(() => {
           if (++change.value) return // all calls except for the first one are handled by effect
-
           dispose = effect(() => update && (
-            // FIXME: possibly we can batch here
-            change.value == count ? queueMicrotask(fn) : // plans eval call - separate tick makes sure planner effect is finished before real eval call
+            change.value == count ? fn() : // separate tick (via oncePerTick) makes sure planner effect is finished before real eval call
               (count = change.value, update(evaluate(state))) // if changed more than effect called - call it
           ));
-        }, mods)
+        }, mods))
 
       return (_poff) => (
         _poff = prev?.(),
-        console.log('ON', name),
+        // console.log('ON', name),
         fn(),
         ({
           [name]: () => (
-            console.log('OFF', name, el),
+            // console.log('OFF', name, el),
             _poff?.(), dispose(), change.value = -1, count = dispose = null
           )
         })[name]

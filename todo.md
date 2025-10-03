@@ -192,18 +192,21 @@
 * [x] expose sprae.compile, .prefix, .dir
 * [x] make :each use inheritance instead of Proxy
 
-* [ ] All TODO/FIXME
-* [ ] try alternative way to update plain lists in :each rather than simulating signals
-* [ ] finish all prop modifiers with tests
-* [ ] add event extra modifiers tests
-* [ ] add async callbacks tests
+* [ ] `:value` tests
+* [ ] move modifiers to sprae.js
+* [ ] event extra modifiers tests
+* [ ] prop modifiers tests
+* [ ] async callbacks tests
+* [ ] All TODO/FIXME address
+* [ ] find alternative way to update plain lists in :each rather than simulating signals (adds memory overhead)
 * [ ] microjs bundle
-* [ ] website
-  * [ ] 7 GUIs example
-  * [ ] collection of examples
 * [ ] finish ajamila poll with v12
 * [ ] core test runner: signals variants, normal/micro, sync/async, module/bundle
 * [ ] Better autoinit: mutation observer until page loads?
+
+## [ ] Website
+  * [ ] 7 GUIs example
+  * [ ] collection of examples
 
 ## [ ] Optimizations (https://krausest.github.io/js-framework-benchmark/current.html)
 
