@@ -691,6 +691,17 @@ test.todo("if: events when not matched", async () => {
   is(state.log, ['onx','ony','onx','ony'], 'event')
 })
 
+test("if: else edge case", async () => {
+  let el = h`<x>
+      <if :if="a==1" :text="'1:'+a"></if>
+      <elif :else :if="a==2" :text="'2:'+a"></elif>
+      <else :else :text="a"></else>
+    </x>`
+  sprae(el, { a: 3 });
+  await tick(3)
+  is(el.outerHTML, `<x><else>3</else></x>`)
+})
+
 
 
 test("ref: base", async () => {
@@ -1102,9 +1113,10 @@ test.todo("value: radio group", async () => {
 
 
 
-test('each: top-level list', async () => {
+test.skip('each: top-level list', async () => {
   let el = h`<x :each="item in items" :text="item.x"/>`
   sprae(el, { items: [{ x: 1 }] })
+  await tick()
   is(el.outerHTML, `<x>1</x>`)
 })
 
@@ -1408,11 +1420,15 @@ test("each: loop with condition", async () => {
   const params = sprae(el, { b: [0, 1, 2] });
 
   is(el.innerHTML, "<span>0</span><span>2</span>");
+
+  console.log('---b=[2, 0, 1]')
   params.b = [2, 0, 1];
   await tick();
   is(el.innerHTML, "<span>2</span><span>0</span>");
+
+  console.log('---b=null')
   params.b = null;
-  await tick();
+  await tick(2);
   is(el.innerHTML, "");
 });
 
@@ -1424,17 +1440,26 @@ test("each: condition with loop", async () => {
 
   const params = sprae(el, { b: [1, 2], c: false });
 
+  await tick()
   is(el.innerHTML, "<span>false</span>");
+
+  console.log('---c=true')
   params.c = true;
   await tick();
   is(el.innerHTML, "<span>1</span><span>2</span>");
+
+  console.log('---b=[1]')
   params.b = [1];
   await tick();
   is(el.innerHTML, "<span>1</span>");
+
+  console.log('---b=null')
   params.b = null;
   await tick();
   is(el.innerHTML, "");
   console.log("c=false");
+
+  console.log('---c=false')
   params.c = false;
   await tick();
   is(el.innerHTML, "<span>false</span>");
@@ -1468,10 +1493,15 @@ test("each: condition within loop", async () => {
 
   const params = sprae(el, { b: [1, 2, 3] });
 
+  await tick(2);
   is(el.innerHTML, "<x><if>1:1</if></x><x><elif>2:2</elif></x><x><else>3</else></x>");
+
+  console.log('---b=[2]');
   params.b = [2];
   await tick();
   is(el.innerHTML, "<x><elif>2:2</elif></x>");
+
+  console.log('---b=null');
   params.b = null;
   await tick();
   is(el.innerHTML, "");

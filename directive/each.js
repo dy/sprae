@@ -1,4 +1,4 @@
-import sprae, { store, _state, effect, _change, _signals, frag } from "../core.js";
+import sprae, { store, _state, effect, _change, _signals, frag, oncePerTick } from "../core.js";
 
 const each = (tpl, state, expr) => {
   let [itemVar, idxVar = "$"] = expr.split(/\bin\b/)[0].trim().replace(/\(|\)/g, '').split(/\s*,\s*/);
@@ -10,7 +10,8 @@ const each = (tpl, state, expr) => {
   let cur, keys, items, prevl = 0
 
   // FIXME: pass items to update instead of global
-  let update = () => {
+  let update = oncePerTick(() => {
+    console.group(':each update', { cur, keys, items, prevl })
     let i = 0, newItems = items, newl = newItems.length
 
     // plain array update, not store (signal with array) - updates full list
@@ -61,7 +62,9 @@ const each = (tpl, state, expr) => {
     }
 
     prevl = newl
-  }
+
+    console.groupEnd()
+  })
 
   tpl.replaceWith(holder);
   tpl[_state] = null // mark as fake-spraed, to preserve :-attribs for template
@@ -74,13 +77,12 @@ const each = (tpl, state, expr) => {
     else items = value || []
 
     // whenever list changes, we rebind internal change effect
-    let planned = 0
     return effect(() => {
       // subscribe to items change (.length) - we do it every time (not just in update) since preact unsubscribes unused signals
       items[_change]?.value
 
       // make first render immediately, debounce subsequent renders
-      if (!planned++) update(), queueMicrotask(() => (planned > 1 && update(), planned = 0));
+      update()
     })
   }
 }

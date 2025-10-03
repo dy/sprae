@@ -332,11 +332,15 @@ export const clsx = (c, _out = []) => !c ? '' : typeof c === 'string' ? c : (
 ).join(' ')
 
 // throttle function to once per tick
-export const oncePerTick = (fn, _planned=0) => () => {
-  if (!_planned++) {
-    fn()
-    queueMicrotask(() => (_planned > 1 && fn(), _planned = 0));
+export const oncePerTick = (fn, _planned = 0) => {
+  const tickCall = () => {
+    if (!_planned++) fn(), queueMicrotask((_dirty = _planned > 1) => (
+      _planned = 0, _dirty && tickCall()
+    ));
   }
+  return tickCall;
 }
+
+export * from './store.js';
 
 export default sprae
