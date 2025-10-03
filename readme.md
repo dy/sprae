@@ -1,8 +1,8 @@
 # ∴ spræ [![tests](https://github.com/dy/sprae/actions/workflows/node.js.yml/badge.svg)](https://github.com/dy/sprae/actions/workflows/node.js.yml) [![npm bundle size](https://img.shields.io/bundlephobia/minzip/sprae)](https://bundlephobia.com/package/sprae) [![npm](https://img.shields.io/npm/v/sprae?color=orange)](https://www.npmjs.com/package/sprae)
 
-> light reactive hydration for DOM tree
+> Light hydration for DOM tree
 
-_Sprae_ is open & minimalistic progressive enhancement framework.<br/>
+_Sprae_ is open & minimalistic reactive progressive enhancement framework.<br/>
 Good for small websites, static pages, prototypes, or SSR.<br/>
 Based on _preact-signals_, a light and fast alternative to _alpine_ or _petite-vue_.
 
@@ -20,8 +20,8 @@ Based on _preact-signals_, a light and fast alternative to _alpine_ or _petite-v
 
 Sprae automatically evaluates `:`-directives and removes them, creating a reactive state for updates.
 
-
-### Manual init
+<details>
+  <summary><strong><big>Manual init</big></strong></summary>
 
 For explicit state control, use ESM module:
 
@@ -44,6 +44,8 @@ For explicit state control, use ESM module:
   )
 </script>
 ```
+
+</details>
 
 
 <!--
@@ -307,7 +309,7 @@ Trigger when element is connected / disconnected from DOM.
 
 ## Modifiers
 
-#### `.debounce-<ms?>`
+#### `.debounce-<ms>?`
 
 Defer callback by `ms`, by default 100.
 
@@ -331,7 +333,7 @@ Defer callback to the next microtask.
 <button :onclick.tick="focusInput()">Save</button>
 ```
 
-#### `.throttle-<ms?>`
+#### `.throttle-<ms>?`
 
 Limit callback to once every `ms`, by default 100.
 
@@ -388,7 +390,7 @@ Await callback results.
 <span :text="data?.name">User</span>
 ```
 
-#### `.window`, `.document`, `.parent`, `.outside`, `.self`  <kbd>events</kbd>
+#### `.window`, `.document`, `.parent`, `.outside`, `.self`  <kbd>events only</kbd>
 
 Specify event target.
 
@@ -400,7 +402,7 @@ Specify event target.
 <div :onmessage.window="e => e.data.type === 'success' && complete()">...</div>
 ```
 
-#### `.passive`, `.capture`  <kbd>events</kbd>
+#### `.passive`, `.capture`  <kbd>events only</kbd>
 
 Event listener [options](https://developer.mozilla.org/en-US/docs/Web/API/EventTarget/addEventListener#options).
 
@@ -408,7 +410,7 @@ Event listener [options](https://developer.mozilla.org/en-US/docs/Web/API/EventT
 <div :onscroll.passive="e => pos = e.scrollTop">Scroll me</div>
 ```
 
-#### `.prevent`, `.stop`, `.immediate`  <kbd>events</kbd>
+#### `.prevent`, `.stop`, `.immediate`  <kbd>events only</kbd>
 
 Prevent default or stop (immediate) propagation.
 
@@ -420,7 +422,7 @@ Prevent default or stop (immediate) propagation.
 <button :onclick.stop.immediate="handleButton()">Click</button>
 ```
 
-#### `.<key>`, `.*-<key>`  <kbd>events</kbd>
+#### `.<key>-<key>*`  <kbd>events only</kbd>
 
 Filter event by [`event.key`](https://developer.mozilla.org/en-US/docs/Web/API/UI_Events/Keyboard_event_key_values) or combination:
 
@@ -450,7 +452,7 @@ Persist value in local or session storage.
 ```
 -->
 
-#### `.*`
+#### `.<any>`
 
 Any other modifier has no effect, but allows binding multiple handlers.
 
@@ -536,14 +538,14 @@ sprae.use({ compile }); // set up justin as default compiler
 `true false null undefined NaN`
 -->
 
-<!--
-## Custom Build
 
-Sprae can be tweaked to project needs / size:
+## Customization
+
+Sprae build be tweaked to project needs / size:
 
 ```js
 // sprae.custom.js
-import sprae from 'sprae/core'
+import sprae, { dir, use } from 'sprae/core'
 import * as preactSignals from '@preact/signals'
 import subscript from 'subscript'
 
@@ -552,28 +554,41 @@ import _attr from 'sprae/directive/attr.js'
 import _if from 'sprae/directive/if.js'
 import _text from 'sprae/directive/text.js'
 
-// register directives
-sprae.dir.if = _if
-sprae.dir.text = _text
-sprae.dir.default = _attr
+use({
+  // define directives
+  dir: {
+    // standard directives
+    if: _if,
+    text: _text,
+    default: _attr,
 
-// custom directive :id="expression"
-sprae.dir.id = (el, state, expr) => {
-  // ...init
-  return newValue => {
-    // ...update
-    let nextValue = el.id = newValue
-    return nextValue
-  }
-}
+    // custom directive :id="expression"
+    id = (el, state, expr) => {
+      // ...init
+      return newValue => {
+        // ...update
+        let nextValue = el.id = newValue
+        return nextValue
+      }
+    }
+  },
 
-// use preact signals
-sprae.signals = preactSignals
+  // use preact signals
+  ...preactSignals,
 
-// use alternative compiler
-sprae.compile = subscript
+  // use alternative compiler
+  compile: subscript
+})
 ```
--->
+
+Then in your project use
+
+```js
+import sprae from 'sprae.custom.js'
+
+let state = sprae(el, init);
+```
+
 
 
 <!--
