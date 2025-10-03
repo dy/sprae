@@ -24,7 +24,7 @@ export default (el, state, expr, name) => {
 
   return (el.type === "text" || el.type === "") ?
     (value) => el.setAttribute("value", (el.value = value == null ? "" : value)) :
-    (el.id === "TEXTAREA" || el.type === "text" || el.type === "") ?
+    (el.tagName === "TEXTAREA" || el.type === "text" || el.type === "") ?
       (value, from, to) => (
         // we retain selection in input
         (from = el.selectionStart),

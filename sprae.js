@@ -12,7 +12,7 @@ import _value from "./directive/value.js";
 import _ref from "./directive/ref.js";
 import _scope from "./directive/scope.js";
 import _each from "./directive/each.js";
-import _any from "./directive/any.js";
+import _default from "./directive/default.js";
 import _spread from "./directive/spread.js";
 
 
@@ -21,7 +21,7 @@ use({
   // standard directives
   dir: {
     // :x="x"
-    '*': _any,
+    '*': _default,
 
     // :="{a,b,c}"
     '': _spread,
