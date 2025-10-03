@@ -647,16 +647,17 @@ export default function Layout({ children }) {
 
 ## Justification
 
-Modern frontend stack is unhealthy, like non-organic processed food. There are some alternatives, like:
+Modern frontend stack is unhealthy, like non-organic processed food. There are healthy alternatives, like:
 
 * [Template-parts](https://github.com/dy/template-parts) is stuck with native HTML quirks ([parsing table](https://github.com/github/template-parts/issues/24), [SVG attributes](https://github.com/github/template-parts/issues/25), [liquid syntax](https://shopify.github.io/liquid/tags/template/#raw) conflict etc).
 * [Alpine](https://github.com/alpinejs/alpine) / [petite-vue](https://github.com/vuejs/petite-vue) / [lucia](https://github.com/aidenybai/lucia) escape native HTML quirks, but have excessive API (`:`, `x-`, `{}`, `@`, `$`), tend to [self-encapsulate](https://github.com/alpinejs/alpine/discussions/3223) and not care about size/performance.
 
-_Sprae_ holds open & minimalistic philosophy:
+_Sprae_ holds open, safe & minimalistic philosophy:
 
-* Minimal syntax space.
-* _Signals_ for reactivity.
-* Pluggable directives, configurable internals.
+* Minimal syntax footprint.
+* Non-invasive, preserves valid HTML.
+* Preact/signals for reactivity.
+* Pluggable, configurable.
 * Small, safe & performant.
 * Bits of organic sugar.
 * Aims at making developers happy 🫰

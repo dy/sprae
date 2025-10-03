@@ -191,6 +191,7 @@
 * [x] pass globals to store
 * [x] expose sprae.compile, .prefix, .dir
 * [x] make :each use inheritance instead of Proxy
+
 * [ ] All TODO/FIXME
 * [ ] try alternative way to update plain lists in :each rather than simulating signals
 * [ ] finish all prop modifiers with tests
