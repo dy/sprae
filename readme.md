@@ -470,14 +470,17 @@ import sprae, { signal, store } from 'sprae'
 
 const name = signal('foo');
 
-const state = store({
-  count: 0,                             // prop
-  inc(){ state.count++ },               // method
-  name,                                 // signal
-  get twice(){ return this.count * 2 }, // computed
-  _i: 0,                                // untracked
-},
-{ Math }                    // globals
+const state = store(
+  {
+    count: 0,                             // prop
+    inc(){ state.count++ },               // method
+    name,                                 // signal
+    get twice(){ return this.count * 2 }, // computed
+    _i: 0,                                // untracked
+  },
+
+  // globals
+  { Math }
 )
 
 sprae(element, state)
@@ -554,9 +557,10 @@ import _attr from 'sprae/directive/attr.js'
 import _if from 'sprae/directive/if.js'
 import _text from 'sprae/directive/text.js'
 
+import _window from 'sprae/modifier/window.js
+
 use({
-  // define directives
-  dir: {
+  directive: {
     // standard directives
     if: _if,
     text: _text,
@@ -573,22 +577,19 @@ use({
     }
   },
 
+  modifier: {
+    window: _window
+  },
+
   // use preact signals
   ...preactSignals,
 
   // use alternative compiler
   compile: subscript
 })
+
+export default sprae;
 ```
-
-Then in your project use
-
-```js
-import sprae from 'sprae.custom.js'
-
-let state = sprae(el, init);
-```
-
 
 
 <!--
@@ -602,7 +603,7 @@ Micro sprae version is 2.5kb bundle with essentials:
 * no `:each`, `:if`, `:value`
 * async effects by default -->
 
-## JSX
+## JSX / React / Next
 
 Sprae works with JSX via custom prefix (eg. `data-sprae-`).
 

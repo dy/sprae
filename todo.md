@@ -192,8 +192,8 @@
 * [x] expose sprae.compile, .prefix, .dir
 * [x] make :each use inheritance instead of Proxy
 * [x] `:value` tests
+* [x] move modifiers to sprae.js
 
-* [ ] move modifiers to sprae.js
 * [ ] event extra modifiers tests
 * [ ] prop modifiers tests
 * [ ] async callbacks tests

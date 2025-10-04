@@ -1746,16 +1746,17 @@
 
 ## [ ] Website
 
-* refs: https://poolside.ai/, https://alpinejs.dev/
-* [ ] Intro: core philosophy, features, quick meaningful example, "Get started"
-* [ ] Why?: comparison, benefits (no build step, light, fast, SEO-friendly, no SSR needed), use-cases, testimonials, cases
-* [ ] Docs: installing, core concepts, directives, recipes (forms, routing, animations), best practices (tips for perf, debugging, maintaining)
-* [ ] Examples: todo, counter, dynamic form. Very common els
-* [ ] Showcase gallery?
-* [ ] Playground: share/download
-* [ ] Community: github, blog, tutorials, announcements
-* [ ] FAQ: What's PE? How sprae compares to <framework>? Can I use with other FW? Is it suitable for large scale?
-* [ ] Friends: related libs
-* [ ] Trust: contact, contributors, sponsor; built with: links
-* [ ] JS-framework-benchmark ref
-* [ ] Transition guide from alpine/petit
+  * refs: https://poolside.ai/, https://alpinejs.dev/
+  * [ ] Intro: core philosophy, features, quick meaningful example, "Get started"
+  * [ ] Why?: comparison, benefits (no build step, light, fast, SEO-friendly, no SSR needed), use-cases, testimonials, cases
+  * [ ] Docs: installing, core concepts, directives, recipes (forms, routing, animations), best practices (tips for perf, debugging, maintaining)
+  * [ ] Examples: todo, counter, dynamic form. Very common els
+  * [ ] Showcase gallery?
+  * [ ] Playground: share/download
+  * [ ] Community: github, blog, tutorials, announcements
+  * [ ] FAQ: What's PE? How sprae compares to <framework>? Can I use with other FW? Is it suitable for large scale?
+  * [ ] Friends: related libs
+  * [ ] Trust: contact, contributors, sponsor; built with: links
+  * [ ] JS-framework-benchmark ref
+  * [ ] Transition guide from alpine/petit
+  * [ ] Sponsor development (of components)
