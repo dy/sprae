@@ -4,7 +4,7 @@
 
 _Sprae_ is open & minimalistic reactive progressive enhancement framework.<br/>
 Good for small websites, static pages, prototypes, or SSR.<br/>
-Based on _preact-signals_, a light and fast alternative to _alpine_ or _petite-vue_.
+Based on _signals_, a light and fast alternative to _alpine_ or _petite-vue_.
 
 ## Usage
 
@@ -431,7 +431,7 @@ Any other modifier has no effect, but allows binding multiple handlers.
 
 ## Store
 
-Sprae uses _preact-signals_ store for reactivity.
+Sprae uses signals store for reactivity.
 
 ```js
 import sprae, { store, signal, effect, computed } from 'sprae'
