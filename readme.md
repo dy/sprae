@@ -593,7 +593,8 @@ export default function Layout({ children }) {
 * `this` is not used, to get element reference use `:ref="element => {...}"`.
 * `key` is not used, `:each` uses direct list mapping instead of DOM diffing.
 * for mount/unmount events use `<div :if="cond" :ref="(init(), () => destroy())"></div>`.
-
+* semicolons don't work in expressions the way you'd expect, use comma instead `<div :text="prepare(), text"></div>`
+<!-- asyncs -->
 
 ## Justification
 
