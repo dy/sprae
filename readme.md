@@ -211,10 +211,7 @@ Run effect, not changing any attribute.
 <!-- inline -->
 <div :fx="a.value ? foo() : bar()" />
 
-<!-- function -->
-<div :fx="() => {...}" />
-
-<!-- cleanup -->
+<!-- function / cleanup -->
 <div :fx="() => (id = setInterval(tick, 1000), () => clearInterval(id))" />
 ```
 
@@ -309,52 +306,38 @@ Trigger when element is connected / disconnected from DOM.
 
 ## Modifiers
 
-#### `.debounce-<ms>?`
 
-Defer callback by `ms`, by default 100.
+#### `.debounce-<#|tick|raf|idle>?`
+
+Defer callback by a number of ms, next tick, animation frame or until system idle. By default 250ms.
 
 ```html
-<!-- debounce list updates -->
-<li :each.debounce-200="item in list" :text="item"></li>
-
-<!-- debounce keyboard input -->
+<!-- debounce keyboard input event by 200ms -->
 <input :oninput.debounce-200="e => update(e)" />
-```
 
-#### `.tick`
-
-Defer callback to the next microtask.
-
-```html
 <!-- set class in the next tick -->
-<div :class.tick="active && 'active'">...</div>
+<div :class.debounce-tick="{ active }">...</div>
 
-<!-- defer focus for event -->
-<button :onclick.tick="focusInput()">Save</button>
+<!-- debounce resize to the next animation frame -->
+<div :onresize.window.debounce-raf="updateSize()">...</div>
+
+<!-- batch logging -->
+<div :fx.debounce-idle="sendAnalytics(batch)"></div>
 ```
 
-#### `.throttle-<ms>?`
+#### `.throttle-<#|tick|raf>?`
 
-Limit callback to once every `ms`, by default 100.
-
-```html
-<!-- throttle calculations -->
-<div id="count" :text.throttle-100="text.length">...</div>
-
-<!-- throttle resize updates -->
-<div :onresize.window.throttle-100="updateSize()">...</div>
-```
-
-#### `.raf`
-
-Throttle calls to `requestAnimationFrame` loop.
+Limit callback to interval in ms, tick or animation framerate. By default 250ms.
 
 ```html
-<!-- lock to 60fps -->
-<div :onscroll.raf="progress = (scrollTop / scrollHeight) * 100" :style="{ '--progress': progress + '%' }"/>
+<!-- throttle text update -->
+<div :text.throttle="text.length"></div>
 
-<!-- lock css variable updates to 60fps -->
-<div :style.raf="{'--progress': progress}">...</div>
+<!-- lock style update to animation framerate -->
+<div :onscroll.throttle-raf="progress = (scrollTop / scrollHeight) * 100"/>
+
+<!-- ensure separate scope/stacktrace for events -->
+<div :onmessage.window.throttle-tick="event => log(event)">...</div>
 ```
 
 #### `.once`
@@ -362,23 +345,11 @@ Throttle calls to `requestAnimationFrame` loop.
 Call only once.
 
 ```html
-<!-- run once when sprae inits element -->
-<div :fx.once="console.log('sprae init')">
-
 <!-- run event callback only once -->
-<button :onclick.once="init()">Start</button>
-```
+<button :onclick.once="loadMoreData()">Start</button>
 
-#### `.idle`
-
-Run callback when system is idle.
-
-```html
-<!-- defer filtering to next idle callback -->
-<button :onclick.idle="filter()">Filter</button>
-
-<!-- batch logging -->
-<div :fx.idle="track(queue)"></div>
+<!-- run once on sprae init -->
+<div :fx.once="console.log('sprae init')">
 ```
 
 #### `.async`
@@ -386,8 +357,7 @@ Run callback when system is idle.
 Await callback results.
 
 ```html
-<button :onclick.async="data = await fetch('/api/user').then(r => r.json())">Load User</button>
-<span :text="data?.name">User</span>
+<button :onclick.async="await validate(); await submit(); showSuccess()">Process</button>
 ```
 
 #### `.window`, `.document`, `.parent`, `.outside`, `.self`  <kbd>events only</kbd>
@@ -408,9 +378,11 @@ Event listener [options](https://developer.mozilla.org/en-US/docs/Web/API/EventT
 
 ```html
 <div :onscroll.passive="e => pos = e.scrollTop">Scroll me</div>
+
+<body :ontouchstart.capture="logTouch(e)"></body>
 ```
 
-#### `.prevent`, `.stop`, `.immediate`  <kbd>events only</kbd>
+#### `.prevent`, `.stop`, `.stop-immediate`  <kbd>events only</kbd>
 
 Prevent default or stop (immediate) propagation.
 
@@ -419,10 +391,10 @@ Prevent default or stop (immediate) propagation.
 <a :onclick.prevent="navigate('/page')" href="/default">Go</a>
 
 <!-- stop immediate propagation -->
-<button :onclick.stop.immediate="handleButton()">Click</button>
+<button :onclick.stop-immediate="criticalHandle()">Click</button>
 ```
 
-#### `.<key>-<key>*`  <kbd>events only</kbd>
+#### `.<key>-<*>` <kbd>events only</kbd>
 
 Filter event by [`event.key`](https://developer.mozilla.org/en-US/docs/Web/API/UI_Events/Keyboard_event_key_values) or combination:
 
@@ -434,7 +406,11 @@ Filter event by [`event.key`](https://developer.mozilla.org/en-US/docs/Web/API/U
 * `.char` – any non-space character
 
 ```html
-<input :onkeydown.ctrl-enter="saveDraft()" placeholder="Ctrl+Enter to save">
+<!-- any arrow event -->
+<div :onkeydown.arrow="event => navigate(event.key)"></div>
+
+<!-- key combination -->
+<input :onkeydown.prevent.ctrl-c="copy(clean(value))">
 ```
 
 <!--
@@ -457,11 +433,11 @@ Persist value in local or session storage.
 Any other modifier has no effect, but allows binding multiple handlers.
 
 ```html
-<span :fx.once="console.log('init')" :fx="console.log('normal')">
+<span :fx.once="init(x)" :fx.update="() => (update(), () => destroy())">
 ```
 
 
-## Reactivity
+## Store
 
 Sprae uses _preact-flavored signals_ store for reactivity.
 
@@ -493,66 +469,17 @@ state.Math                  // == globalThis.Math
 state.navigator             // == undefined
 ```
 
-Signals can be switched to an alternative preact-signals compatible implementation:
-
-```js
-import sprae from 'sprae';
-import * as signals from '@preact/signals-core';
-
-sprae.use(signals)
-```
-
-Provider | Size | Feature
-:---|:---|:---
-[`ulive`](https://ghub.io/ulive) | 350b | Minimal implementation, basic performance, good for small states.
-[`signal`](https://ghub.io/@webreflection/signal) | 633b | Class-based, better performance, good for small-medium states.
-[`usignal`](https://ghub.io/usignal) | 955b | Class-based with optimizations and optional async effects.
-[`@preact/signals-core`](https://ghub.io/@preact/signals-core) | 1.47kb | Best performance, good for any states, industry standard.
-[`signal-polyfill`](https://ghub.io/signal-polyfill) | 2.5kb | Proposal signals. Use via [adapter](https://gist.github.com/dy/bbac687464ccf5322ab0e2fd0680dc4d).
-[`alien-signals`](https://github.com/WebReflection/alien-signals) | 2.67kb | Preact-flavored [alien signals](https://github.com/stackblitz/alien-signals).
-
-
-## Evaluator
-
-Expressions use _new Function_ as default evaluator, which is fast & compact, but violates "unsafe-eval" CSP.
-To make eval stricter & safer, an alternative evaluator can be used, eg. _justin_:
-
-```js
-import sprae from 'sprae'
-import compile from 'subscript/justin'
-
-sprae.use({ compile }); // set up justin as default compiler
-```
-
-[_Justin_](https://github.com/dy/subscript#justin) is minimal JS subset that avoids "unsafe-eval" CSP and provides sandboxing.
-
-<!--
-###### Operators:
-
-`++ -- ! - + * / % ** && || ??`<br/>
-`= < <= > >= == != === !==`<br/>
-`<< >> >>> & ^ | ~ ?: . ?. [] ()=>{} in`<br/>
-`= += -= *= /= %= **= &&= ||= ??= ... ,`
-
-###### Primitives:
-
-`[] {} "" ''`<br/>
-`1 2.34 -5e6 0x7a`<br/>
-`true false null undefined NaN`
--->
-
 
 ## Customization
 
-Sprae build be tweaked to project needs / size:
+Sprae build can be tweaked to project needs / size:
 
 ```js
 // sprae.custom.js
 import sprae, { dir, use } from 'sprae/core'
 import * as preactSignals from '@preact/signals'
-import subscript from 'subscript'
+import justin from 'subscript/justin'
 
-// standard directives from sprae/directive
 import _attr from 'sprae/directive/attr.js'
 import _if from 'sprae/directive/if.js'
 import _text from 'sprae/directive/text.js'
@@ -560,8 +487,14 @@ import _text from 'sprae/directive/text.js'
 import _window from 'sprae/modifier/window.js
 
 use({
-  directive: {
-    // standard directives
+  // use preact signals
+  ...preactSignals,
+
+  // use safer compiler
+  compile: justin,
+
+  // directives
+  dir: {
     if: _if,
     text: _text,
     default: _attr,
@@ -577,19 +510,41 @@ use({
     }
   },
 
-  modifier: {
+  // modifiers
+  mod: {
     window: _window
-  },
-
-  // use preact signals
-  ...preactSignals,
-
-  // use alternative compiler
-  compile: subscript
+  }
 })
 
 export default sprae;
 ```
+
+### Signals
+
+Minimal default [signals](/signal.js) can be replaced with any preact-signals compatible alternative:
+
+Provider | Size | Feature
+:---|:---|:---
+[`ulive`](https://ghub.io/ulive) | 350b | Minimal implementation, basic performance, good for small states.
+[`signal`](https://ghub.io/@webreflection/signal) | 633b | Class-based, better performance, good for small-medium states.
+[`usignal`](https://ghub.io/usignal) | 955b | Class-based with optimizations and optional async effects.
+[`@preact/signals-core`](https://ghub.io/@preact/signals-core) | 1.47kb | Best performance, good for any states, industry standard.
+[`signal-polyfill`](https://ghub.io/signal-polyfill) | 2.5kb | Proposal signals. Use via [adapter](https://gist.github.com/dy/bbac687464ccf5322ab0e2fd0680dc4d).
+[`alien-signals`](https://github.com/WebReflection/alien-signals) | 2.67kb | Preact-flavored [alien signals](https://github.com/stackblitz/alien-signals).
+
+### Evaluator
+
+Default evaluator is _new Function_ – fast and compact, but violates "unsafe-eval" CSP.
+To make eval stricter & safer, any alternative can be used.
+Eg. [_justin_](https://github.com/dy/subscript#justin), a minimal JS subset:
+
+`++ -- ! - + * / % ** && || ??`<br/>
+`= < <= > >= == != === !==`<br/>
+`<< >> >>> & ^ | ~ ?: . ?. [] ()=>{} in`<br/>
+`= += -= *= /= %= **= &&= ||= ??= ... ,`<br/>
+`[] {} "" ''`<br/>
+`1 2.34 -5e6 0x7a`<br/>
+`true false null undefined NaN`
 
 
 <!--

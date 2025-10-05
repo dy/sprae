@@ -1588,6 +1588,17 @@
   + it allows factoring them out
   - it brings us to a tough spot where we deal with asynchronous conditional, which is hard and fragile.
 
+## [ ] Modifiers: remove dash parameter and use dot notation instead? -> likely no, too cluttery
+
+  + Enables `debounce.tick`, `debounce.frame`, `debounce.100`, `debounde.idle`
+  + Coherent with `.stop.immediate`
+  + Coherent with directive names: dash is used for name, not parameter
+    + We don't use dashes there
+  + Coherent with alpine
+  + Removes variety of modifiers
+  - parsing is complicated - it reverses the order of functions
+  - now it's possible to `.ctrl-a` for example. `.ctrl.a.b` is wrong and ugly.
+
 ## [ ] Autoinit via mutation observer?
 
   + runs until document is loaded
@@ -1631,6 +1642,8 @@
 
   6. https://github.com/jhuddle/ponys
     + takes the toll of including, enabling, defining components in minimal way
+
+  7. Parent -> child defining the behavior, like css or delegate does
 
 ## [ ] Directives
 
