@@ -1588,7 +1588,7 @@
   + it allows factoring them out
   - it brings us to a tough spot where we deal with asynchronous conditional, which is hard and fragile.
 
-## [ ] Modifiers: remove dash parameter and use dot notation instead? -> likely no, too cluttery
+## [x] Modifiers: remove dash parameter and use dot notation instead? -> likely no, too cluttery
 
   + Enables `debounce.tick`, `debounce.frame`, `debounce.100`, `debounde.idle`
   + Coherent with `.stop.immediate`

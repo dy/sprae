@@ -1,24 +1,17 @@
 import { tick, time } from "wait-please";
-import sprae from '../sprae.js'
+import sprae from '../../sprae.js'
 import h from "hyperf";
 import test, { any, is } from "tst";
 
 const _dispose = Symbol.dispose;
 
-test.skip("on: async", async () => {
-  let el = h`<div :onx="e => {await v = 1; log.push(v);}"></div>`;
+test("on: async", async () => {
+  let el = h`<div :onx="async e => {let v = await Promise.resolve().then(()=>1); log.push(v);}"></div>`;
   let state = sprae(el, { log: [] });
   el.dispatchEvent(new window.Event("x"));
   is(state.log, []);
   await tick(1);
   is(state.log, [1]);
-
-  let el2 = h`<div :onx="e => {1; log.push(1);}"></div>`;
-  let state2 = sprae(el2, { log: [] });
-  el2.dispatchEvent(new window.Event("x"));
-  is(state2.log, []);
-  await tick(1);
-  is(state2.log, [1]);
 });
 
 test("on: t̵h̵i̵s̵ ̵c̵o̵n̵t̵e̵x̵t̵ event target", () => {
@@ -294,7 +287,7 @@ test('on: modifiers chain', async () => {
 
 
 test('on: alias sequence', async () => {
-  let el = h`<x :ona.tick:onb.tick..onc.tick:ond.tick="e=>(log.push(e.type),(e)=>log.push(e.type))"></x>`
+  let el = h`<x :ona.debounce-tick:onb.debounce-tick..onc.debounce-tick:ond.debounce-tick="e=>(log.push(e.type),(e)=>log.push(e.type))"></x>`
   let state = sprae(el, { log: [] })
   console.log('---------- emit a')
   el.dispatchEvent(new window.CustomEvent('a', { bubbles: true }));

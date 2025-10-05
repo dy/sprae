@@ -193,10 +193,10 @@
 * [x] make :each use inheritance instead of Proxy
 * [x] `:value` tests
 * [x] move modifiers to sprae.js
+* [x] event extra modifiers tests
+* [x] prop modifiers tests
+* [x] async callbacks tests
 
-* [ ] event extra modifiers tests
-* [ ] prop modifiers tests
-* [ ] async callbacks tests
 * [ ] All TODO/FIXME address
 * [ ] find alternative way to update plain lists in :each rather than simulating signals (adds memory overhead)
 * [ ] microjs bundle

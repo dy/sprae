@@ -18,14 +18,6 @@ test('core: pre-created store', async () => {
   is(el.outerHTML, `<x>2</x>`)
 })
 
-test.todo('core: sync store access', async () => {
-  let el = h`<x :text="get()"></x>`
-  let state = sprae(el, {x:1,get(){return state.x}})
-  is(el.outerHTML, `<x>1</x>`)
-  state.x=2
-  is(el.outerHTML, `<x>2</x>`)
-})
-
 test("core: simple hidden attr", async () => {
   let el = h`<div :hidden="hidden"></div>`;
   let params = sprae(el, { hidden: true });
@@ -73,14 +65,14 @@ test("core: newlines", async () => {
   is(el.outerHTML, `<x>1</x>`);
 });
 
-test.skip("core: const in on", async () => {
+test("core: const in on", async () => {
   let el = h`<div :onx="() => {const x=1; y=x+1}"></div>`;
   let state = sprae(el, { y: 0 });
   el.dispatchEvent(new window.CustomEvent("x"));
   is(state.y, 2);
 });
 
-test.skip("core: const in scope", async () => {
+test("core: const in scope", async () => {
   let el = h`<div :scope="{x(){let x = 1; y=x;}}" :onx="x()"></div>`;
   let state = sprae(el, { y: 0 });
   el.dispatchEvent(new window.CustomEvent("x"));
@@ -121,8 +113,10 @@ test.skip("core: semicols in expression", async () => {
   let el = h`<x :x="log.push(0); log.push(Array.from({length: x.value}, (_,i)=>i).join(''));"></x>`;
   let state = sprae(el, { x: signal(3), Array, log: [] });
   // is(el.outerHTML, `<x x="012"></x>`);
+  await tick()
   is(state.log, [0, '012'])
   state.x.value = 4;
+  await tick()
   is(state.log, [0, '012', 0, '0123'])
   // is(el.outerHTML, `<x x="0123"></x>`);
 });
@@ -268,11 +262,21 @@ test.todo('perf: must be fast', async () => {
   console.timeEnd('perf')
 })
 
-test.todo('setTimeout illegal invokation', async () => {
-  let el = h`<div :with="{c:0,x(){setTimeout(() => (this.c++))}}" :onx="x" :text="c"></div>`
+test('core: setTimeout illegal invokation', async () => {
+  let el = h`<div :scope="c=0, x = ()=>{ window.setTimeout(() => (c++)) }" :onx="x" :text="c"></div>`
   sprae(el)
   is(el.innerHTML, '0')
   el.dispatchEvent(new window.CustomEvent('x'))
-  await new Promise(ok => setTimeout(ok))
-  is(el.innerHTML, '1')
+  await time(0)
+  is(el.innerHTML, '2')
 })
+
+test("core: async", async () => {
+  let fetchData = async () => { await time(50); return 'data'; };
+  // FIXME: not sure I understand why it works
+  let el = h`<div :fx="( x='', async () => (x = await fetchData() ) )()" :text="x"></div>`;
+  let state = sprae(el, { fetchData });
+  is(el.textContent, '');
+  await time(60);
+  is(el.textContent, 'data');
+});

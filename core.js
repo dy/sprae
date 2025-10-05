@@ -85,7 +85,6 @@ const initDirective = (el, attrName, expr, state) => {
   let cur, // current step callback
     off // current step disposal
 
-  // FIXME: events don't need effects.
   // FIXME: separate cases: async, event, sequence, single attr
 
   let steps = attrName.slice(prefix.length).split('..').map((step, i, { length }) => (
@@ -123,10 +122,10 @@ const initDirective = (el, attrName, expr, state) => {
 
         // effect applier - first time it applies the effect, next times effect is triggered by change signal
         // FIXME: init via dispose, don't reset count
-        fn = oncePerTick(applyMods(() => {
+        fn = throttle(applyMods(() => {
           if (++change.value) return // all calls except for the first one are handled by effect
           dispose = effect(() => update && (
-            change.value == count ? fn() : // separate tick (via oncePerTick) makes sure planner effect is finished before real eval call
+            change.value == count ? fn() : // separate tick makes sure planner effect call is finished before real eval call
               (count = change.value, update(evaluate(state))) // if changed more than effect called - call it
           ));
         }, mods))
@@ -252,14 +251,15 @@ export const clsx = (c, _out = []) => !c ? '' : typeof c === 'string' ? c : (
     Object.entries(c).reduce((s, [k, v]) => !v ? s : [...s, k], [])
 ).join(' ')
 
-// throttle function to once per tick
-export const oncePerTick = (fn, _planned = 0) => {
-  const tickCall = () => {
-    if (!_planned++) fn(), queueMicrotask((_dirty = _planned > 1) => (
-      _planned = 0, _dirty && tickCall()
+// throttle function to (once per tick or other custom scheduler)
+export const throttle = (fn, schedule=queueMicrotask) => {
+  let _planned = 0;
+  const throttled = (e) => {
+    if (!_planned++) fn(e), schedule((_dirty = _planned > 1) => (
+      _planned = 0, _dirty && throttled(e)
     ));
   }
-  return tickCall;
+  return throttled;
 }
 
 export * from './store.js';

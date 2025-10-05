@@ -1,6 +1,6 @@
 import store, { _change, _signals } from "./store.js";
 import { batch, computed, effect, signal, untracked } from './signal.js';
-import sprae, { use, _off, _state, _on, _dispose } from './core.js';
+import sprae, { use, _off, _state, _on, _dispose, throttle } from './core.js';
 
 import _if from "./directive/if.js";
 import _else from "./directive/else.js";
@@ -51,35 +51,20 @@ const directive =  {
   each: _each
 }
 
-
 const modifier = {
   // FIXME: add -s, -m, -l classes with values
-  debounce: (fn, wait = 108, _t) => e => (clearTimeout(_t), _t = setTimeout(() => (fn(e)), wait)),
-  once: (fn, _done) => Object.assign((e) => !_done && (_done = 1, fn(e)), { once: true }),
+  debounce: (fn,
+    _how = 250,
+    _schedule = _how === "tick" ? queueMicrotask : _how === "raf" ? requestAnimationFrame : _how === "idle" ? requestIdleCallback : ((fn) => setTimeout(fn, _how)),
+    _count = 0
+  ) =>
+    (e, _planned=++_count) => (_schedule(() => (_planned == _count && fn(e)))),
 
-  throttle: (fn, limit = 108, _pause, _planned, _t, _block) => (
-    _block = (e) => (
-      _pause = 1,
-      _t = setTimeout(() => (
-        _pause = 0,
-        // if event happened during blocked time, it schedules call by the end
-        _planned && (_planned = 0, _block(e), fn(e))
-      ), limit)
-    ),
-    e => _pause ? _planned = 1 : (_block(e), fn(e))
+  throttle: (fn, _how = 250, _schedule = _how === "tick" ? queueMicrotask : _how === "raf" ? requestAnimationFrame : ((fn) => setTimeout(fn, _how))) => (
+    throttle(fn, _schedule)
   ),
 
-  // make batched
-  tick: (fn, _planned) => (e) => !_planned && (_planned = 1, queueMicrotask(() => (fn(e), _planned = 0))),
-
-  // FIXME
-  interval: (ctx, interval = 1080, _id, _cancel) => (a) => (_id = setInterval(() => _cancel = fn(a), interval), () => (clearInterval(_id), call(_cancel))),
-  raf: (ctx, _cancel, _id, _tick) => (_tick = a => (_cancel = fn(a), _id = requestAnimationFrame(_tick)), a => (_tick(a), () => (cancelAnimationFrame(_id), call(_cancel)))),
-  idle: (ctx, _id, _cancel) => (a) => (_id = requestIdleCallback(() => _cancel = fn(a), interval), () => (cancelIdleCallback(_id), call(_cancel))),
-
-  emit: (fn) => (e) => e ? fn(e) : (fn.target.dispatchEvent(e = new CustomEvent(fn.type, { bubbles: true, cancelable: true })), !e.defaultPrevented && fn()),
-  // FIXME:
-  // async: (fn) => (fn.async = true, fn),
+  once: (fn, _done, _fn) => Object.assign((e) => !_done && (_done = 1, fn(e)), { once: true }),
 
   // event modifiers
   // actions

@@ -307,7 +307,7 @@ Trigger when element is connected / disconnected from DOM.
 ## Modifiers
 
 
-#### `.debounce-<#|tick|raf|idle>?`
+#### `.debounce-<ms|tick|raf|idle>?`
 
 Defer callback by a number of ms, next tick, animation frame or until system idle. By default 250ms.
 
@@ -325,13 +325,13 @@ Defer callback by a number of ms, next tick, animation frame or until system idl
 <div :fx.debounce-idle="sendAnalytics(batch)"></div>
 ```
 
-#### `.throttle-<#|tick|raf>?`
+#### `.throttle-<ms|tick|raf>?`
 
 Limit callback to interval in ms, tick or animation framerate. By default 250ms.
 
 ```html
 <!-- throttle text update -->
-<div :text.throttle="text.length"></div>
+<div :text.throttle-100="text.length"></div>
 
 <!-- lock style update to animation framerate -->
 <div :onscroll.throttle-raf="progress = (scrollTop / scrollHeight) * 100"/>
@@ -350,14 +350,6 @@ Call only once.
 
 <!-- run once on sprae init -->
 <div :fx.once="console.log('sprae init')">
-```
-
-#### `.async`
-
-Await callback results.
-
-```html
-<button :onclick.async="await validate(); await submit(); showSuccess()">Process</button>
 ```
 
 #### `.window`, `.document`, `.parent`, `.outside`, `.self`  <kbd>events only</kbd>

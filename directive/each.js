@@ -1,4 +1,4 @@
-import sprae, { store, _state, effect, _change, _signals, frag, oncePerTick } from "../core.js";
+import sprae, { store, _state, effect, _change, _signals, frag, throttle } from "../core.js";
 
 const each = (tpl, state, expr) => {
   let [itemVar, idxVar = "$"] = expr.split(/\bin\b/)[0].trim().replace(/\(|\)/g, '').split(/\s*,\s*/);
@@ -10,7 +10,7 @@ const each = (tpl, state, expr) => {
   let cur, keys, items, prevl = 0
 
   // FIXME: pass items to update instead of global
-  let update = oncePerTick(() => {
+  let update = throttle(() => {
     let i = 0, newItems = items, newl = newItems.length
 
     // plain array update, not store (signal with array) - updates full list

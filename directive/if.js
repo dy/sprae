@@ -1,5 +1,5 @@
 // "centralized" version of :if
-import sprae, { oncePerTick, _on, _off, _state, frag } from '../core.js';
+import sprae, { throttle, _on, _off, _state, frag } from '../core.js';
 
 // :if="a"
 export default (el, state, _holder, _el, _match) => {
@@ -17,7 +17,7 @@ export default (el, state, _holder, _el, _match) => {
 
     _holder._clauses = [_el._clause = [_el, false]]
 
-    _holder.update = oncePerTick(() => {
+    _holder.update = throttle(() => {
       let match = _holder._clauses.find(([, s]) => s)
       // console.group(':if update clauses', ..._holder._clauses)
 

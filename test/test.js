@@ -2,7 +2,7 @@ import './signal.js'
 import './store.js'
 import './core.js'
 import './directive.js'
-import './event.js'
+import './modifier.js'
 
 // switch signals to custom implementation
 import { use } from '../core.js'
