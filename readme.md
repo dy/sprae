@@ -439,26 +439,28 @@ Any other modifier has no effect, but allows binding multiple handlers.
 
 ## Store
 
-Sprae uses _preact-flavored signals_ store for reactivity.
+Sprae uses _preact-signals_ store for reactivity.
 
 ```js
-import sprae, { signal, store } from 'sprae'
+import sprae, { store, signal, effect, computed } from 'sprae'
 
 const name = signal('foo');
+const capname = computed(() => name.value.toUpperCase());
 
 const state = store(
   {
     count: 0,                             // prop
-    inc(){ state.count++ },               // method
-    name,                                 // signal
+    inc(){ this.count++ },                // method
+    name, capname,                        // signal
     get twice(){ return this.count * 2 }, // computed
     _i: 0,                                // untracked
   },
 
-  // globals
+  // globals / sandbox
   { Math }
 )
 
+// init
 sprae(element, state)
 
 state.inc(), state.count++  // update
@@ -521,7 +523,7 @@ export default sprae;
 
 ### Signals
 
-Minimal default [signals](/signal.js) can be replaced with any preact-signals compatible alternative:
+[Default signals](/signal.js) can be replaced with any _preact-signals_ alternative:
 
 Provider | Size | Feature
 :---|:---|:---
@@ -534,7 +536,7 @@ Provider | Size | Feature
 
 ### Evaluator
 
-Default evaluator is _new Function_ – fast and compact, but violates "unsafe-eval" CSP.
+Default _new Function_ evaluator is fast and compact, but violates "unsafe-eval" CSP.<br/>
 To make eval stricter & safer, any alternative can be used.
 Eg. [_justin_](https://github.com/dy/subscript#justin), a minimal JS subset:
 
@@ -603,20 +605,20 @@ export default function Layout({ children }) {
 
 ## Justification
 
-Modern frontend stack is unhealthy, like non-organic processed food. There are healthy alternatives, like:
+Modern frontend stack is unhealthy, like non-organic processed food. There are alternatives, like:
 
 * [Template-parts](https://github.com/dy/template-parts) is stuck with native HTML quirks ([parsing table](https://github.com/github/template-parts/issues/24), [SVG attributes](https://github.com/github/template-parts/issues/25), [liquid syntax](https://shopify.github.io/liquid/tags/template/#raw) conflict etc).
 * [Alpine](https://github.com/alpinejs/alpine) / [petite-vue](https://github.com/vuejs/petite-vue) / [lucia](https://github.com/aidenybai/lucia) escape native HTML quirks, but have excessive API (`:`, `x-`, `{}`, `@`, `$`), tend to [self-encapsulate](https://github.com/alpinejs/alpine/discussions/3223) and not care about size/performance.
 
 _Sprae_ holds open, safe & minimalistic philosophy:
 
-* Minimal syntax footprint.
-* Non-invasive, preserves valid HTML.
-* Preact/signals for reactivity.
+* Minimal syntax.
+* Valid HTML.
+* Signals reactivity.
 * Pluggable, configurable.
-* Small, safe & performant.
-* Bits of organic sugar.
-* Aims at making developers happy 🫰
+* Small, safe & fast.
+* Organic sugar.
+* 🫰 developers
 
 
 <!--
