@@ -1599,10 +1599,32 @@
   - parsing is complicated - it reverses the order of functions
   - now it's possible to `.ctrl-a` for example. `.ctrl.a.b` is wrong and ugly.
 
-## [ ] Autoinit via mutation observer?
+## [x] Autoinit via mutation observer? -> let's try, seems ok
 
   + runs until document is loaded
   + immediately inits all new nodes, opposed to displaying half-baked content
+  + alpine keeps MO for entire document lifecycle
+  * suppose sprae doesn't create elements outside of own scope, so we don't need to observe spraed nodes
+    * it fully controls the subtree in other words
+  * therefore we need to observe the root, since new spraeable nodes can appear anywhere
+  * the question is what's spraing strategy to exclude spraeable els from MO triggering
+
+  1. Sprae top root
+    - one-time long iterating
+    + MO is attached after sprae, which excludes :each and other triggers of MO
+    + easier to turn off/on the whole thing
+    * any new nodes with spraeable attribs means it's outside of current sprae scope, need to be handled with scope of the root (`initElement`)
+  2. Sprae sub roots
+    - collecting subroots cost
+      - not a fact it's faster than one-time iteration
+  3. Sprae elements with spraeable attributes
+
+### [ ] Should we keep directives instead of removing them?
+
+  + allows easier resprae of element
+    + non-invasive
+  + easier DOM debugging
+  + allows disposing on element removal and reinit on adding back
 
 ## [ ] Componentization: what can be done? -> likely no for now. When html-include is there we can talk
 
@@ -1773,3 +1795,7 @@
   * [ ] JS-framework-benchmark ref
   * [ ] Transition guide from alpine/petit
   * [ ] Sponsor development (of components)
+    * [ ] paypal
+    * [ ] stripe
+    * [ ] bitcoin
+    * [ ] gumroad

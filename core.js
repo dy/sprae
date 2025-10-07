@@ -3,7 +3,8 @@ import store, { _change, _signals } from "./store.js";
 export const _dispose = (Symbol.dispose ||= Symbol("dispose")),
   _state = Symbol("state"),
   _on = Symbol('on'),
-  _off = Symbol('off')
+  _off = Symbol('off'),
+  _add = Symbol('add');
 
 
 export let prefix = ':', signal, effect, computed, batch = (fn) => fn(), untracked = batch;
@@ -14,7 +15,7 @@ let directive = {}, modifier = {}
  * Applies directives to an HTML element and manages its reactive state.
  *
  * @param {Element} [el=document.body] - The target HTML element to apply directives to.
- * @param {Object} [state] - Initial state values to populate the element's reactive state.
+ * @param {Object|store} [state] - Initial state values to populate the element's reactive state.
  * @returns {Object} The reactive state object associated with the element.
  */
 const sprae = (el = document.body, state) => {
@@ -33,19 +34,18 @@ const sprae = (el = document.body, state) => {
 
   // on/off all effects
   // we don't call prevOn as convention: everything defined before :else :if won't be disabled by :if
-  // imagine <x :onx="..." :if="..."/> - when :if is false, it disables itself but ignores :onx
+  // imagine <x :onx="..." :if="..."/> - when :if is false, it disables directives after :if (calls _off) but ignores :onx
   el[_on] = on
   el[_off] = off
 
   // destroy
-  el[_dispose] ||= () => (el[_off](), el[_off] = el[_on] = el[_dispose] = el[_state] = null)
+  el[_dispose] ||= () => (el[_off](), el[_off] = el[_on] = el[_dispose] = el[_state] = el[_add] = null)
 
-  const initElement = (el, attrs = el.attributes) => {
+  const add = (el, _attrs = el.attributes) => {
     // we iterate live collection (subsprae can init args)
-    if (attrs) for (let i = 0; i < attrs.length;) {
-      let { name, value } = attrs[i]
+    if (_attrs) for (let i = 0; i < _attrs.length;) {
+      let { name, value } = _attrs[i]
 
-      // we suppose
       if (name.startsWith(prefix)) {
         el.removeAttribute(name)
 
@@ -59,16 +59,17 @@ const sprae = (el = document.body, state) => {
     }
 
     // :if and :each replace element with text node, which tweaks .children length, but .childNodes length persists
-    // for (let i = 0, child; i < (el.childNodes.length); i++) child =  el.childNodes[i], child.nodeType == 1 && initElement(child)
+    // for (let i = 0, child; i < (el.childNodes.length); i++) child =  el.childNodes[i], child.nodeType == 1 && add(child)
     // FIXME: don't do spread here
-    for (let child of [...el.childNodes]) child.nodeType == 1 && initElement(child)
+    for (let child of [...el.childNodes]) child.nodeType == 1 && add(child)
   };
 
-  initElement(el);
+  el[_add] = add;
+
+  add(el);
 
   // if element was spraed by inline :with/:if/:each/etc instruction (meaning it has state placeholder) - skip, otherwise save _state
-  // FIXME: can check for null instead?
-  if (!(_state in el)) el[_state] = state
+  if (el[_state] === undefined) el[_state] = state
 
   // console.groupEnd()
 
@@ -163,6 +164,31 @@ export const use = (s) => (
   s.batch && (batch = s.batch),
   s.untracked && (untracked = s.untracked)
 )
+
+
+/**
+ * Lifecycle hanger: makes DOM slightly slower but spraes automatically
+ */
+export const start = (root = document.body, values) => {
+  const state = store(values);
+  sprae(root, state);
+  const mo = new MutationObserver(mutations => {
+    for (const m of mutations) {
+      for (const el of m.addedNodes) {
+        if (el.nodeType === 1 && el[_state] === undefined) {
+          for (const attr of el.attributes) {
+            if (attr.name.startsWith(prefix)) {
+              root[_add](el); break;
+            }
+          }
+        }
+      }
+      // for (const el of m.removedNodes) el[Symbol.dispose]?.()
+    }
+  });
+  mo.observe(root, { childList: true, subtree: true });
+  return state
+}
 
 
 /**

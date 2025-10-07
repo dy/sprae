@@ -1,6 +1,6 @@
 import test, { is } from "tst";
 import { tick, time } from "wait-please";
-import sprae from '../sprae.js'
+import sprae, { start } from '../sprae.js'
 import store from '../store.js'
 import { signal, use } from '../core.js'
 import h from "hyperf";
@@ -280,3 +280,13 @@ test("core: async", async () => {
   await time(60);
   is(el.textContent, 'data');
 });
+
+test('core: lifecycle', async () => {
+  let container = h`<div id="root" :scope="{pre:'pre',post:'post'}"><x :text="pre"></x></div>`;
+  start(container);
+  is(container.innerHTML, `<x>pre</x>`);
+  let el = h`<y :text="post"></y>`
+  container.appendChild(el);
+  await time(10);
+  is(container.innerHTML, `<x>pre</x><y>post</y>`);
+})

@@ -18,12 +18,12 @@ await esbuild.build({
 await esbuild.build({
   stdin: {
     contents:
-    'var sprae = require("./sprae.js").default;\n' +
-    'sprae.store = require("./store.js").default;\n' +
-    'sprae.use({ prefix: document.currentScript.getAttribute("prefix")||document.currentScript.dataset.spraePrefix||":" });\n' +
-    // FIXME: do MO init
-    'if (!document.currentScript.hasAttribute("inert")) document.readyState === "loading" ? document.addEventListener("DOMContentLoaded", () => sprae()) : sprae();\n' +
-    'module.exports = sprae;',
+// MO immediately applies spraeable elements
+`
+var {default:sprae, use, start} = require("./sprae.js");
+module.exports = sprae;
+use({ prefix: document.currentScript.getAttribute("prefix") || document.currentScript.dataset.spraePrefix || ':' })
+start();`,
     resolveDir: '.'
   },
   outfile: "dist/sprae.umd.js",

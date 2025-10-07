@@ -196,13 +196,16 @@
 * [x] event extra modifiers tests
 * [x] prop modifiers tests
 * [x] async callbacks tests
+* [x] Better autoinit: mutation observer until page loads?
 
+* [ ] async functions... alpine does it well
+  * [ ] take over some tests from alpine
+  * [ ] better allowance in expressions
 * [ ] All TODO/FIXME address
 * [ ] find alternative way to update plain lists in :each rather than simulating signals (adds memory overhead)
 * [ ] microjs bundle
 * [ ] finish ajamila poll with v12
-* [ ] core test runner: signals variants, normal/micro, sync/async, module/bundle
-* [ ] Better autoinit: mutation observer until page loads?
+* [ ] ~~core test runner: signals variants, normal/micro, sync/async, module/bundle~~
 
 ## [ ] Plugins
 

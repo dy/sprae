@@ -9,7 +9,7 @@ Good for small websites, static pages, lightweight UI, prototypes, SPAs, PWAs, o
 
 
 ```html
-<div :scope="{ count: 0 }">
+<div id="counter" :scope="{ count: 0 }">
   <p :text="`Clicked ${count} times`"></p>
   <button :onclick="count++">Click me</button>
 </div>
@@ -19,33 +19,27 @@ Good for small websites, static pages, lightweight UI, prototypes, SPAs, PWAs, o
 
 Sprae automatically evaluates `:`-directives and removes them, creating a reactive state for updates.
 
-<details>
-  <summary><strong><big>Manual init</big></strong></summary>
 
-For explicit state control, use ESM module:
+### Manually
+
+For explicit state and init control, use ESM module:
 
 ```html
-<div id="app" :if="user">
-  <p>Welcome, <span :text="user.name">Guest</span>!</p>
-  <button :onclick="makeFriends()">Let's be friends</button>
+<div id="counter">
+  <p :text="`Clicked ${count} times`"></p>
+  <button :onclick="count++">Click me</button>
 </div>
 
 <script type="module">
   import sprae from './sprae.js'
 
   // init
-  const state = sprae(
-    document.getElementById('app'),
-    {
-      user: { name: 'Guest' },
-      makeFriends: () => state.user.name = 'Friend' // update
-    }
-  )
+  const state = sprae(document.getElementById('counter'), { count: 0 })
+
+  // update
+  state.count++
 </script>
 ```
-
-</details>
-
 
 <!--
 ### Flavors
@@ -451,7 +445,7 @@ const state = store(
   { Math }
 )
 
-// init
+// manual init
 sprae(element, state)
 
 state.inc(), state.count++  // update
@@ -480,6 +474,9 @@ import _text from 'sprae/directive/text.js'
 import _window from 'sprae/modifier/window.js
 
 use({
+  // prefix
+  prefix: 'data-sprae-',
+
   // use preact signals
   ...preactSignals,
 

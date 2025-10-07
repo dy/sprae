@@ -35,8 +35,7 @@
   },
   "scripts": {
     "test": "node -r ./test/register.cjs test/test.js",
-    "build": "node .esbuild.js",
-    "watch": "esbuild --bundle --watch ./sprae.js --outdir=dist --format=esm"
+    "build": "node .esbuild.js"
   },
   "repository": {
     "type": "git",
