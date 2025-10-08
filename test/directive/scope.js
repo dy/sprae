@@ -106,3 +106,19 @@ test('scope: parasitic updates', async () => {
   await tick()
   is(a.innerHTML, `<y>xyy</y>`)
 })
+
+test.only('scope: method context / list length (preact signals issue)', async () => {
+  let a = h`<x :scope="{list:[], add(item){ this.list.push('item') }}" ><y :text="list.length"></y><button :onx="add"></button></x>`
+  let s = sprae(a)
+  is(a.innerHTML, `<y>0</y><button></button>`)
+
+  console.log('---dispatch x')
+  a.querySelector('button').dispatchEvent(new window.Event('x'))
+  await time()
+  is(a.innerHTML, `<y>1</y><button></button>`)
+
+  console.log('---dispatch x')
+  a.querySelector('button').dispatchEvent(new window.Event('x'))
+  await time()
+  is(a.innerHTML, `<y>2</y><button></button>`)
+})

@@ -198,12 +198,14 @@
 * [x] async callbacks tests
 * [x] Better autoinit: mutation observer until page loads?
 
+* [ ] test: finish ajamila poll with v12
+  * [ ] :scope returned object method context must be local, not window, eg :scope="{list:[], next(e){this.list}}"
+* [ ] something is off with updating condition based on list length
 * [ ] async functions... alpine does it well
   * [ ] take over some tests from alpine
   * [ ] better allowance in expressions
 * [ ] if, let, const, semicolon syntax allowance
 * [ ] alpine csp tests syntaxes
-* [ ] finish ajamila poll with v12
 * [ ] All TODO/FIXME address
 * [ ] find alternative way to update plain lists in :each rather than simulating signals (adds memory overhead)
 * [ ] microjs bundle

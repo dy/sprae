@@ -7,5 +7,11 @@ export default (el, rootState, _scope) => (
   _scope = store({}, rootState),
   // 1st run spraes subtree with values from scope - it can be postponed by modifiers (we isolate reads from parent effect)
   // 2nd+ runs update _scope
-  values => (Object.assign(_scope, call(values, _scope)), el[_state] ?? (delete el[_state], untracked(() => sprae(el, _scope))))
+  values => {
+    let ext = call(values, _scope);
+    // we bind to _scope to alleviate friction of using scope method directly
+    for (let k in ext) _scope[k] = typeof ext[k] === 'function' ? ext[k].bind(_scope) : ext[k];
+    // Object.assign(_scope, call(values, _scope))
+    return el[_state] ?? (delete el[_state], untracked(() => sprae(el, _scope)))
+  }
 )
