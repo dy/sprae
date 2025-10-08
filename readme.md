@@ -15,6 +15,9 @@ Good for small websites, static pages, lightweight UI, prototypes, SPAs, PWAs, o
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/sprae@12.x.x" defer></script>
+<script>
+  window.sprae; // global standalone
+</script>
 ```
 
 Sprae automatically evaluates `:`-directives and removes them, creating a reactive state for updates.
@@ -22,7 +25,7 @@ Sprae automatically evaluates `:`-directives and removes them, creating a reacti
 
 ### Manually
 
-For explicit state and init control, use ESM module:
+For explicit init and state control, use ESM module:
 
 ```html
 <div id="counter">
@@ -459,7 +462,7 @@ state.navigator             // == undefined
 
 ## Customization
 
-Sprae build can be tweaked to project needs / size:
+Sprae build can be tweaked for project needs / size:
 
 ```js
 // sprae.custom.js

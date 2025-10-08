@@ -204,8 +204,11 @@
 * [ ] All TODO/FIXME address
 * [ ] find alternative way to update plain lists in :each rather than simulating signals (adds memory overhead)
 * [ ] microjs bundle
-* [ ] finish ajamila poll with v12
-* [ ] ~~core test runner: signals variants, normal/micro, sync/async, module/bundle~~
+* [x] ~~core test runner: signals variants, normal/micro, sync/async, module/bundle~~
+* [ ] Optimizations (https://krausest.github.io/js-framework-benchmark/current.html)
+  * [x] Append rows to large table is THE SLOWEST
+  * [~] Create many rows IS SLOW
+  * [ ] Try reducing memory use
 
 ## [ ] Plugins
 
@@ -218,17 +221,12 @@
 * [ ] :intersect
 * [ ] :scroll.view.x="progress => "
 
+## Integrations
+
+* [ ] finish ajamila poll with v12
+* [ ] jz compiler
+
 ## [ ] Website
+
   * [ ] 7 GUIs example
   * [ ] collection of examples
-
-## [ ] Optimizations (https://krausest.github.io/js-framework-benchmark/current.html)
-
-* [x] Append rows to large table is THE SLOWEST
-* [~] Create many rows IS SLOW
-* [ ] Try reducing memory use
-
-
-## Backlog
-
-* [ ] jz compiler

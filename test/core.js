@@ -121,6 +121,16 @@ test.skip("core: semicols in expression", async () => {
   // is(el.outerHTML, `<x x="0123"></x>`);
 });
 
+test("core: async props", async () => {
+  let fetchData = async () => { await time(50); return 'data'; };
+  // FIXME: not sure I understand why it works
+  let el = h`<div :fx="( x='', async () => (x = await fetchData() ) )()" :text="x"></div>`;
+  let state = sprae(el, { fetchData });
+  is(el.textContent, '');
+  await time(60);
+  is(el.textContent, 'data');
+});
+
 test.skip("core: immediate scope", async () => {
   let el = h`<x :scope="{arr:[], inc(){ arr.push(1) }}" :onx="e=>inc()" :text="arr[0]"></x>`;
   sprae(el);
@@ -270,16 +280,6 @@ test('core: setTimeout illegal invokation', async () => {
   await time(0)
   is(el.innerHTML, '2')
 })
-
-test("core: async", async () => {
-  let fetchData = async () => { await time(50); return 'data'; };
-  // FIXME: not sure I understand why it works
-  let el = h`<div :fx="( x='', async () => (x = await fetchData() ) )()" :text="x"></div>`;
-  let state = sprae(el, { fetchData });
-  is(el.textContent, '');
-  await time(60);
-  is(el.textContent, 'data');
-});
 
 test('core: lifecycle', async () => {
   let container = h`<div id="root" :scope="{pre:'pre',post:'post'}"><x :text="pre"></x></div>`;

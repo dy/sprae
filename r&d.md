@@ -1619,12 +1619,14 @@
       - not a fact it's faster than one-time iteration
   3. Sprae elements with spraeable attributes
 
-### [ ] Should we keep directives instead of removing them?
+### [ ] Should we keep directives attributes instead of removing them?
 
   + allows easier resprae of element
     + non-invasive
   + easier DOM debugging
   + allows disposing on element removal and reinit on adding back
+  - dirtier DOM
+    - not evaporating
 
 ## [ ] Componentization: what can be done? -> likely no for now. When html-include is there we can talk
 
@@ -1688,6 +1690,7 @@
 
 ## [ ] Plugins
 
+  * See https://github.com/alpinejs/alpine/tree/main/packages
   * @sprae/data, /item, /aria
   * @sprae/tw: `<x :tw="mt-1 mx-2"></x>` - separate tailwind utility classes from main ones; allow conditional setters.
   * @sprae/item: `<x :item="{type:a, scope:b}"` – provide microdata
@@ -1699,6 +1702,9 @@
     + pluggable directive
   * @sprae/intersect
     + pluggable directive
+  * @sprae/anchor
+  * @sprae/collapse
+  * @sprae/sort
   * @sprae/persists - mb for signals?
     + pluggable modifier
   * @sprae/scroll - `:scroll.view.x="progress => "`
@@ -1799,3 +1805,12 @@
     * [ ] stripe
     * [ ] bitcoin
     * [ ] gumroad
+
+## [ ] Components / drops
+
+  * [ ] Open UI
+  * [ ] Tailwind components
+  * [ ] Alpine components
+  * [ ] Codrops
+  * [ ] Jhay
+  * [ ] Codepen

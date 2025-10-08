@@ -92,23 +92,22 @@ const initDirective = (el, attrName, expr, state) => {
     // multiple attributes like :id:for=""
     step.split(prefix).reduce((prev, str) => {
       let [name, ...mods] = str.split('.'),
-        // event is either :click or :onclick, since on* events never intersect with * attribs
-        isEvent = (name.startsWith('on') && (name = name.slice(2), true)) || el['on' + name],
         evaluate = parse(name, expr, directive[name]?.clean)
 
       // events have no effects and can be sequenced
-      if (isEvent) {
-        let first = e => (call(evaluate(state), e)),
+      if (name.startsWith('on')) {
+        let type = name.slice(2),
+          first = e => (call(evaluate(state), e)),
           fn = applyMods(
             Object.assign(
               // single event vs chain
               length == 1 ? first :
                 e => (cur = (!i ? first : cur)(e), off(), off = steps[(i + 1) % length]()),
-              { target: el, type: name }
+              { target: el, type }
             ),
             mods);
 
-        return (_poff) => (_poff = prev?.(), fn.target.addEventListener(name, fn, fn), () => (_poff?.(), fn.target.removeEventListener(name, fn)))
+        return (_poff) => (_poff = prev?.(), fn.target.addEventListener(type, fn, fn), () => (_poff?.(), fn.target.removeEventListener(type, fn)))
       }
 
       // props have no sequences and can be sync
@@ -278,7 +277,7 @@ export const clsx = (c, _out = []) => !c ? '' : typeof c === 'string' ? c : (
 ).join(' ')
 
 // throttle function to (once per tick or other custom scheduler)
-export const throttle = (fn, schedule=queueMicrotask) => {
+export const throttle = (fn, schedule = queueMicrotask) => {
   let _planned = 0;
   const throttled = (e) => {
     if (!_planned++) fn(e), schedule((_dirty = _planned > 1) => (
