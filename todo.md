@@ -201,6 +201,9 @@
 * [ ] async functions... alpine does it well
   * [ ] take over some tests from alpine
   * [ ] better allowance in expressions
+* [ ] if, let, const, semicolon syntax allowance
+* [ ] alpine csp tests syntaxes
+* [ ] finish ajamila poll with v12
 * [ ] All TODO/FIXME address
 * [ ] find alternative way to update plain lists in :each rather than simulating signals (adds memory overhead)
 * [ ] microjs bundle
@@ -221,10 +224,6 @@
 * [ ] :intersect
 * [ ] :scroll.view.x="progress => "
 
-## Integrations
-
-* [ ] finish ajamila poll with v12
-* [ ] jz compiler
 
 ## [ ] Website
 

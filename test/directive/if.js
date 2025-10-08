@@ -443,3 +443,27 @@ test("if: else edge case", async () => {
   await tick(3)
   is(el.outerHTML, `<x><else>3</else></x>`)
 })
+
+test("if: big gaps", async () => {
+  // h`` is too good - it auto-trims spaces
+  const html = `<x>
+      <if :if="a==1"></if>
+      <elif :else :if="a==2"></elif>
+      <else :else ></else>
+    </x>`;
+  const tmpl = document.createElement('template');
+  tmpl.innerHTML = html.trim();
+  let el = tmpl.content.firstElementChild;
+  let state = sprae(el, { a: 3 });
+  await tick()
+  is(el.innerHTML.trim(), `<else></else>`)
+  state.a = 1
+  await tick()
+  is(el.innerHTML.trim(), `<if></if>`)
+  state.a = 2
+  await tick()
+  is(el.innerHTML.trim(), `<elif></elif>`)
+  state.a = 3
+  await tick()
+  is(el.innerHTML.trim(), `<else></else>`)
+})
