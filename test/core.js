@@ -5,8 +5,6 @@ import store from '../store.js'
 import { signal, use } from '../core.js'
 import h from "hyperf";
 
-// import * as signals from '@preact/signals-core'
-// use(signals)
 
 test('core: pre-created store', async () => {
   let state = store({x:1,get(){return state.x}})

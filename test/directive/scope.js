@@ -107,7 +107,7 @@ test('scope: parasitic updates', async () => {
   is(a.innerHTML, `<y>xyy</y>`)
 })
 
-test.only('scope: method context / list length (preact signals issue)', async () => {
+test.todo('scope: method context / list length (preact signals issue)', async () => {
   let a = h`<x :scope="{list:[], add(item){ this.list.push('item') }}" ><y :text="list.length"></y><button :onx="add"></button></x>`
   let s = sprae(a)
   is(a.innerHTML, `<y>0</y><button></button>`)
@@ -121,4 +121,38 @@ test.only('scope: method context / list length (preact signals issue)', async ()
   a.querySelector('button').dispatchEvent(new window.Event('x'))
   await time()
   is(a.innerHTML, `<y>2</y><button></button>`)
+})
+
+test.todo('scope: test', async () => {
+  let el = h`
+  <section>
+    <div :if="list.length < 1">0</div>
+    <div :else :if="list.length < 2">1</div>
+    <div :else :if="list.length < 3">2</div>
+  </section>
+  `
+  let state = sprae(el, {
+    list:[],
+    // count:0,
+    next() {
+      // this.count++
+      this.list.push(1)
+    }
+  })
+  is(el.innerHTML, `<div>0</div>`);
+
+  console.log('---next()')
+  state.next()
+  await tick()
+  is(el.innerHTML, `<div>1</div>`);
+
+  console.log('---next()')
+  state.next()
+  await tick(2)
+  is(el.innerHTML, `<div>2</div>`);
+
+  console.log('---next()')
+  state.next()
+  await tick(2)
+  is(el.innerHTML, ``);
 })
