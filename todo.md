@@ -197,22 +197,23 @@
 * [x] prop modifiers tests
 * [x] async callbacks tests
 * [x] Better autoinit: mutation observer until page loads?
-
-* [ ] test: finish ajamila poll with v12
+* [x] test: finish ajamila poll with v12
 * [x] something is off with updating condition based on list length
+
+* [ ] make dir/mod separate objects, outside of use
 * [ ] async functions... alpine does it well
 * [ ] if, let, const, semicolon syntax allowance
-* [ ] make dir/mod separate objects, outside of use
-* [ ] alpine csp tests syntaxes
-* [ ] All TODO/FIXME address
 * [ ] find alternative way to update plain lists in :each rather than simulating signals (adds memory overhead)
   * [ ] remove _signals use, just do _change check
+* [ ] alpine csp tests syntaxes
+* [ ] All TODO/FIXME address
 * [ ] microjs bundle
 * [x] ~~core test runner: signals variants, normal/micro, sync/async, module/bundle~~
-* [ ] Optimizations (https://krausest.github.io/js-framework-benchmark/current.html)
+* [x] Optimizations (https://krausest.github.io/js-framework-benchmark/current.html)
   * [x] Append rows to large table is THE SLOWEST
   * [~] Create many rows IS SLOW
-  * [ ] Try reducing memory use
+* [ ] refactor main demos
+* [ ] Website
 
 ## [ ] Plugins
 
@@ -224,7 +225,6 @@
 * [ ] :data
 * [ ] :intersect
 * [ ] :scroll.view.x="progress => "
-
 
 ## [ ] Website
 

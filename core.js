@@ -9,7 +9,7 @@ export const _dispose = (Symbol.dispose ||= Symbol("dispose")),
 
 export let prefix = ':', signal, effect, computed, batch = (fn) => fn(), untracked = batch;
 
-let directive = {}, modifier = {}
+export let directive = {}, modifier = {}
 
 /**
  * Applies directives to an HTML element and manages its reactive state.
@@ -153,8 +153,6 @@ const initDirective = (el, attrName, expr, state) => {
  * Configure sprae
  */
 export const use = (s) => (
-  s.directive && (directive = s.directive),
-  s.modifier && (modifier = s.modifier),
   s.compile && (compile = s.compile),
   s.prefix && (prefix = s.prefix),
   s.signal && (signal = s.signal),

@@ -3,10 +3,9 @@
 > Light hydration for DOM tree.
 
 _Sprae_ is open & minimalistic progressive enhancement framework with signals reactivity.<br/>
-Good for small websites, static pages, lightweight UI, prototypes, SPAs, PWAs, or [SSR](#jsx--react--next).<br/>
+Good for small websites, static pages, lightweight UI, prototypes, SPAs, PWAs, or [SSR](#jsx).<br/>
 
 ## Usage
-
 
 ```html
 <div id="counter" :scope="{ count: 0 }">
@@ -14,35 +13,10 @@ Good for small websites, static pages, lightweight UI, prototypes, SPAs, PWAs, o
   <button :onclick="count++">Click me</button>
 </div>
 
-<script src="https://cdn.jsdelivr.net/npm/sprae@12.x.x" defer></script>
-<script>
-  window.sprae; // global standalone
-</script>
+<script src="https://cdn.jsdelivr.net/npm/sprae@12.x.x" start></script>
 ```
 
 Sprae automatically evaluates `:`-directives and removes them, creating a reactive state for updates.
-
-
-### Manually
-
-For explicit init and state control, use ESM module:
-
-```html
-<div id="counter">
-  <p :text="`Clicked ${count} times`"></p>
-  <button :onclick="count++">Click me</button>
-</div>
-
-<script type="module">
-  import sprae from './sprae.js'
-
-  // init
-  const state = sprae(document.getElementById('counter'), { count: 0 })
-
-  // update
-  state.count++
-</script>
-```
 
 <!--
 ### Flavors
@@ -425,6 +399,47 @@ Any other modifier has no effect, but allows binding multiple handlers.
 ```
 
 
+## Autoinit
+
+The `start` / `data-sprae-start` attribute automatically starts sprae on document. It can use selector to adjust target container.
+
+```html
+<div id="counter" :scope="{count: 1}">
+  <p :text="`Clicked ${count} times`"></p>
+  <button :onclick="count++">Click me</button>
+</div>
+
+<script src="./sprae.js" start="#counter"></script>
+```
+
+To start manually with optional state, remove `start` attribute:
+
+```html
+<script src="./sprae.js"></script>
+<script>
+  // watch & autoinit els
+  sprae.start(document.body, { count: 1 });
+
+  // OR init individual el
+  const state = sprae(document.getElementById('counter'), { count: 0 })
+</script>
+```
+
+For more granular control use ESM:
+
+```html
+<script type="module">
+  import sprae from './sprae.js'
+
+  // init
+  const state = sprae(document.getElementById('counter'), { count: 0 })
+
+  // update state
+  state.count++
+</script>
+```
+
+
 ## Store
 
 Sprae uses signals store for reactivity.
@@ -460,61 +475,86 @@ state.navigator             // == undefined
 ```
 
 
+## JSX
+
+Sprae works with JSX via custom prefix (eg. `data-sprae-`).
+
+Case: react / nextjs server components can't do dynamic UI – active nav, tabs, sliders etc. Converting to client components breaks data fetching and adds overhead.
+Sprae can offload UI logic to keep server components intact.
+
+```jsx
+// app/page.jsx - server component
+export default function Page() {
+  return <>
+    <nav id="nav">
+      <a href="/" data-sprae-class="location.pathname === '/' && 'active'">Home</a>
+      <a href="/about" data-sprae-class="location.pathname === '/about' && 'active'">About</a>
+    </nav>
+    ...
+  </>
+}
+```
+
+```jsx
+// layout.jsx
+import Script from 'next/script'
+
+export default function Layout({ children }) {
+  return <>
+    {children}
+    <Script src="https://unpkg.com/sprae" data-sprae-prefix="data-sprae-" data-sprae-start />
+  </>
+}
+```
+
+
 ## Customization
 
 Sprae build can be tweaked for project needs / size:
 
 ```js
 // sprae.custom.js
-import sprae, { dir, use } from 'sprae/core'
+import sprae, { directive, use } from 'sprae/core'
 import * as preactSignals from '@preact/signals'
 import justin from 'subscript/justin'
 
-import _attr from 'sprae/directive/attr.js'
+import _default from 'sprae/directive/default.js'
 import _if from 'sprae/directive/if.js'
 import _text from 'sprae/directive/text.js'
 
-import _window from 'sprae/modifier/window.js
-
+// configure
 use({
-  // prefix
   prefix: 'data-sprae-',
 
   // use preact signals
   ...preactSignals,
 
   // use safer compiler
-  compile: justin,
-
-  // directives
-  dir: {
-    if: _if,
-    text: _text,
-    default: _attr,
-
-    // custom directive :id="expression"
-    id = (el, state, expr) => {
-      // ...init
-      return newValue => {
-        // ...update
-        let nextValue = el.id = newValue
-        return nextValue
-      }
-    }
-  },
-
-  // modifiers
-  mod: {
-    window: _window
-  }
+  compile: justin
 })
+
+
+// standard directives
+directive.if = _if;
+directive.text = _text;
+directive.default = _default;
+
+// custom directive :id="expression"
+directive.id = (el, state, expr) => {
+  // ...init
+  return newValue => {
+    // ...update
+    let nextValue = el.id = newValue
+    return nextValue
+  }
+}
 
 export default sprae;
 ```
 
 ### Signals
 
-[Default signals](/signal.js) can be replaced with any _preact-signals_ alternative:
+[Default signals](/signal.js) can be replaced with _preact-signals_ or an alternative:
 
 Provider | Size | Feature
 :---|:---|:---
@@ -525,9 +565,10 @@ Provider | Size | Feature
 [`signal-polyfill`](https://ghub.io/signal-polyfill) | 2.5kb | Proposal signals. Use via [adapter](https://gist.github.com/dy/bbac687464ccf5322ab0e2fd0680dc4d).
 [`alien-signals`](https://github.com/WebReflection/alien-signals) | 2.67kb | Preact-flavored [alien signals](https://github.com/stackblitz/alien-signals).
 
+
 ### Evaluator
 
-Default _new Function_ evaluator is fast and compact, but violates "unsafe-eval" CSP.<br/>
+Default evaluator is fast and compact, but violates "unsafe-eval" CSP.<br/>
 To make eval stricter & safer, any alternative can be used.
 Eg. [_justin_](https://github.com/dy/subscript#justin), a minimal JS subset:
 
@@ -551,38 +592,6 @@ Micro sprae version is 2.5kb bundle with essentials:
 * no `:each`, `:if`, `:value`
 * async effects by default -->
 
-## JSX / React / Next
-
-Sprae works with JSX via custom prefix (eg. `data-sprae-`).
-
-Case: server components can't do dynamic UI – active nav, tabs, sliders etc. Converting to client components breaks data fetching and adds overhead.
-Sprae can offload UI logic to keep server components intact.
-
-```jsx
-// app/page.jsx - server component
-export default function Page() {
-  return <>
-    <nav id="nav">
-      <a href="/" data-sprae-class="location.pathname === '/' && 'active'">Home</a>
-      <a href="/about" data-sprae-class="location.pathname === '/about' && 'active'">About</a>
-    </nav>
-    ...
-  </>
-}
-```
-
-```jsx
-// layout.jsx
-import Script from 'next/script'
-
-export default function Layout({ children }) {
-  return <>
-    {children}
-    <Script src="https://unpkg.com/sprae" prefix="data-sprae-" />
-  </>
-}
-```
-
 ## Hints
 
 * To prevent [FOUC](https://en.wikipedia.org/wiki/Flash_of_unstyled_content) add `<style>[\:each],[\:if],[\:else] {visibility: hidden}</style>`.
@@ -594,6 +603,7 @@ export default function Layout({ children }) {
 * for mount/unmount events use `<div :if="cond" :ref="(init(), () => destroy())"></div>`.
 * semicolons don't work in expressions the way you'd expect, use comma instead `<div :text="prepare(), text"></div>`
 <!-- asyncs -->
+
 
 ## Justification
 

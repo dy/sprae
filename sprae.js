@@ -1,6 +1,6 @@
 import store from "./store.js";
 import { batch, computed, effect, signal, untracked } from './signal.js';
-import sprae, { use, start, throttle, debounce, _add, _off, _state, _on, _dispose } from './core.js';
+import sprae, { use, directive, modifier, start, throttle, debounce, _add, _off, _state, _on, _dispose } from './core.js';
 
 import _if from "./directive/if.js";
 import _else from "./directive/else.js";
@@ -16,7 +16,7 @@ import _default from "./directive/default.js";
 import _spread from "./directive/spread.js";
 
 
-const directive = {
+Object.assign(directive, {
   // :x="x"
   '*': _default,
 
@@ -49,9 +49,9 @@ const directive = {
 
   // :each="v,k in src"
   each: _each
-}
+})
 
-const modifier = {
+Object.assign(modifier, {
   // FIXME: add -s, -m, -l classes with values
   debounce: (fn,
     _how = 250,
@@ -91,7 +91,7 @@ const modifier = {
 
   // FIXME:
   //screen: fn => ()
-}
+})
 
 // key testers
 const keys = {
@@ -115,9 +115,6 @@ for (let k in keys) modifier[k] = (fn, ...params) => (e) => keys[k](e) && params
 
 
 use({
-  directive,
-  modifier,
-
   // indirect new Function to avoid detector
   compile: expr => sprae.constructor(`with (arguments[0]) { return ${expr} };`),
 
@@ -128,9 +125,9 @@ use({
 // expose for runtime config
 sprae.use = use
 sprae.store = store
-sprae.dir = directive
-sprae.mod = modifier
+sprae.directive = directive
+sprae.modifier = modifier
 sprae.start = start
 
 export default sprae
-export { sprae, store, signal, effect, computed, batch, untracked, use, start }
+export { sprae, store, signal, effect, computed, batch, untracked, start, use }

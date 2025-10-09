@@ -19,11 +19,11 @@ await esbuild.build({
   stdin: {
     contents:
 // MO immediately applies spraeable elements
-`
-var {default:sprae, use, start} = require("./sprae.js");
-module.exports = sprae;
-use({ prefix: document.currentScript.getAttribute("prefix") || document.currentScript.dataset.spraePrefix || ':' })
-start();`,
+`var sprae = require("./sprae.js").default; module.exports = sprae;
+var prefix = document.currentScript.getAttribute("prefix") || document.currentScript.dataset.spraePrefix;
+var start = document.currentScript.getAttribute("start") || document.currentScript.dataset.spraeStart;
+if (prefix) sprae.use({ prefix });
+if (start != null) sprae.start(start ? document.querySelector(start) : document.body);`,
     resolveDir: '.'
   },
   outfile: "dist/sprae.umd.js",

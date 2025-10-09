@@ -1256,7 +1256,7 @@
   - that's same as `:with`
   - `init` reads JSON, `:with` reads regular JS objects, they're not same
 
-## [x] Autoinit - how? inert? sprae? init? -> wait until first request to not autoinit -> autoinit UMD by default
+## [x] Autoinit - how? inert? sprae? init? -> wait until first request to not autoinit -> autoinit UMD by default -> `data-sprae-start / start` attribute
 
   * TS doesn't allow arbitrary attributes on `<Script>` tag, but prefix (surprise!) is allowed.
 
@@ -1283,6 +1283,7 @@
 
   5. Autoinit until first request.
     + ESM entry is best alternative for such case
+
 
 ## [x] What's the best place for `untracked` to prevent faux root subscription in :with > :ref? -> best way to init outside of parent effect
 
