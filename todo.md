@@ -199,7 +199,6 @@
 * [x] Better autoinit: mutation observer until page loads?
 
 * [ ] test: finish ajamila poll with v12
-  * [ ] :scope returned object method context must be local, not window, eg :scope="{list:[], next(e){this.list}}"
 * [x] something is off with updating condition based on list length
 * [ ] async functions... alpine does it well
 * [ ] if, let, const, semicolon syntax allowance

@@ -65,8 +65,8 @@ const list = (values, parent = globalThis) => {
     // if .length was accessed from mutator (.push/etc) method
     isMut = false,
 
-    // create mutator which marks isMut during call
-    mutator = fn => function () {isMut = true; console.group('mut', fn.name); let result = fn.apply(this, arguments); console.groupEnd(); isMut = false; return result},
+    // since array mutator methods read .length internally only once, we disable it on the moment of call, allowing rest of operations to be reactive
+    mut = fn => function () {isMut = true; return fn.apply(this, arguments); },
 
     length = signal(values.length),
 
@@ -75,23 +75,21 @@ const list = (values, parent = globalThis) => {
       Object.assign(signals, {
         [_change]: length,
         [_signals]: signals,
-        push: mutator(signals.push),
-        pop: mutator(signals.pop),
-        shift: mutator(signals.shift),
-        unshift: mutator(signals.unshift),
-        splice: mutator(signals.splice),
+        push: mut(signals.push),
+        pop: mut(signals.pop),
+        shift: mut(signals.shift),
+        unshift: mut(signals.unshift),
+        splice: mut(signals.splice),
       }),
       {
         get(_, k) {
           // console.log('GET', k, isMut)
 
           // if .length is read within mutators - peek signal to avoid recursive subscription
-          if (k === 'length') return isMut ? signals.length : length.value;
+          // we need to ignore it only once and keep for the rest of the mutator call
+          if (k === 'length') return isMut ? (isMut = false, signals.length) : length.value;
 
-          // create signal (lazy)
-          // NOTE: if you decide to unlazy values, think about large arrays - init upfront can be costly
-          // return (signals[k] ? (signals[k].valueOf()) : k in signals ? (signals[k] = signal(store(values[k]))).valueOf() : parent[k])
-
+          // non-numeric
           if (typeof k === 'symbol' || isNaN(k)) return signals[k]?.valueOf() ?? parent[k];
 
           // create signal (lazy)

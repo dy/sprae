@@ -288,3 +288,22 @@ test('core: lifecycle', async () => {
   await time(10);
   is(container.innerHTML, `<x>pre</x><y>post</y>`);
 })
+
+test('core: list length unsub (preact signals)', async () => {
+  // list.push disables list.length reading as reactive (cycle prevention)
+  // but then preact signals unsubscribe :text from list.length updates
+  let a = h`<x :scope="{list:[], add(item){ this.list.push('item') }}" ><y :text="list.length"></y><button :onx="add"></button></x>`
+  let s = sprae(a)
+  is(a.innerHTML, `<y>0</y><button></button>`)
+  await time()
+
+  console.log('---dispatch x')
+  a.querySelector('button').dispatchEvent(new window.Event('x'))
+  await time()
+  is(a.innerHTML, `<y>1</y><button></button>`)
+
+  console.log('---dispatch x')
+  a.querySelector('button').dispatchEvent(new window.Event('x'))
+  await time()
+  is(a.innerHTML, `<y>2</y><button></button>`)
+})

@@ -1625,13 +1625,14 @@
     + it seems mutators follow the pattern reading .length and then setting length
     - might be not very reliable
     - `x.push(x.length = x.length + x.length)` - hard to argue when's `.push -> .length` reading vs outside reading
+      - it must be still subscribable by reading `x.length` inside of `push(x.length)` - so we have no choice but set flag on the moment of call
   2. Wrap mutator methods
     + reliable
     - heavier code
     -~ possible conflicts
     - likely slower
 
-## [ ] Isolate effects contexts/scopes
+## [x] Isolate effects contexts/scopes
   * Imagine a situation when `<x :onx="list.push(123)"/><y :text="list.length"/>`
     * whenever we do `onx` it updates list.length in the same tick
     * in other words tight coupling, `list.push` includes update of `y:text`
@@ -1640,6 +1641,7 @@
     + that would allow batching organically.
     + that would solve preact issue
     + we can make sync version for microsprae.
+  * For now just skip only one .length read in mutators
 
 ### [ ] Should we maintain directives attributes on elements instead of removing them?
 
@@ -1649,6 +1651,7 @@
   + allows disposing on element removal and reinit on adding back
   - dirtier DOM
     - not evaporating
+  + that would allow `sprae.stop()` counterpart to `sprae.start()`
 
 ## [ ] Componentization: what can be done? -> likely no for now. When html-include is there we can talk
 
