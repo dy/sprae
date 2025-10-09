@@ -1,6 +1,6 @@
 import store from "./store.js";
 import { batch, computed, effect, signal, untracked } from './signal.js';
-import sprae, { use, start, _off, _state, _on, _dispose, throttle, debounce, _add } from './core.js';
+import sprae, { use, start, throttle, debounce, _add, _off, _state, _on, _dispose } from './core.js';
 
 import _if from "./directive/if.js";
 import _else from "./directive/else.js";
@@ -130,6 +130,7 @@ sprae.use = use
 sprae.store = store
 sprae.dir = directive
 sprae.mod = modifier
+sprae.start = start
 
 export default sprae
 export { sprae, store, signal, effect, computed, batch, untracked, use, start }
