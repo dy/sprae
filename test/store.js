@@ -168,8 +168,7 @@ t.skip('store: store from same instance', () => {
   ok(s1 === s2)
 })
 
-t.skip('store: store from store', () => {
-  // NOTE: we do clone, not returning reference
+t('store: store from store', () => {
   let s = { x: 1 }
   let s1 = store(s)
   let s2 = store(s1)
@@ -210,7 +209,8 @@ t.skip('store: inheritance: updating values in chain', async () => {
   let s2 = store(s1, Object.create({ y: signal(2) }))
   console.log('----', s2.y)
   // console.group('fx')
-  // let xy = 0; effect(() => (console.log(s2.y), xy = s2.x + s2.y));
+  let xy = 0;
+  effect(() => (console.log(s2.y), xy = s2.x + s2.y));
   // console.groupEnd('fx')
   await tick()
   is(xy, 3)
@@ -228,7 +228,7 @@ t.skip('store: inheritance: updating values in chain', async () => {
   // is(parent.y, 3)
 })
 
-t.skip('store: inheritance: lazy init', async () => {
+t('store: inheritance: lazy init', async () => {
   let s = store({ x: { foo: 'bar' } })
   console.log('------create s1')
   const x = s.x;
@@ -308,19 +308,37 @@ t.skip('store: arrays retain reference', () => {
   is(list, [1, 4, 3])
 })
 
-t('store: direct list', async () => {
+t('store: splice case 1', async () => {
   // works with arrays as well
   let list = store([1, 2])
-  let sum; effect(() => sum = list.reduce((sum, item) => item + sum, 0))
+  let sum;
+  effect(() => (console.group('effect', list),sum = list.reduce((sum, item) => item + sum, 0),console.groupEnd()));
   is(sum, 3)
+  console.log('---list[0] = 2')
   list[0] = 2
   is(list[0], 2)
   await tick()
   is(sum, 4)
-  console.log('splice')
+  console.log('---splice(0,2,3,3)')
+  list.splice(0, 2, 3, 3, 0)
+  await tick()
+  is(sum, 6)
+})
+
+t('store: splice case 2', async () => {
+  // works with arrays as well
+  let list = store([1, 2])
+  let sum;
+  effect(() => (console.group('effect', list),sum = list.reduce((sum, item) => item + sum, 0),console.groupEnd()));
+  is(sum, 3)
+  console.log('---list[0] = 2')
+  list[0] = 2
+  is(list[0], 2)
+  await tick()
+  is(sum, 4)
+  console.log('---splice(0,2,3,3)')
   list.splice(0, 2, 3, 3)
   await tick()
-  console.log(list)
   is(sum, 6)
 })
 
@@ -340,6 +358,24 @@ t('store: array length', async () => {
   is(log, [1, 2])
 })
 
+t('store: array mutators keep subscribable length', async () => {
+  let a = store([]), log = []
+
+  console.log('---push 1')
+  a.push(1)
+  is(a.length, 1)
+  is(a[_change], 1)
+
+  console.log('---effect')
+  // must return subscribable length
+  effect(() => console.log('effect!')||log.push(a.length))
+  is(log, [1])
+
+  console.log('---push 2')
+  a.push(2)
+  is(log, [1, 2])
+})
+
 t.skip('store: changing length changes disposed items', async () => {
   // NOTE: we don't explicitly handle it here, since we force :each to read .length of the list, so it rerenders any time length changes.
   let a = store([1, 2, 3]), log = []
@@ -351,7 +387,7 @@ t.skip('store: changing length changes disposed items', async () => {
 })
 
 t('store: from array store', async () => {
-  let a = store([1])
+  let a = store([])
   effect(() => a.push(a.push(1)))
 })
 
@@ -365,7 +401,7 @@ t('store: detect circular?', async () => {
   is(a.length, 1)
 })
 
-t.skip('store: batch', async () => {
+t('store: batch', async () => {
   let s = store({ x: 1, y: 2 })
   let log = []; effect(() => log.push(s.x + s.y))
   is(log, [3])
@@ -395,11 +431,11 @@ t('store: adding new props to object triggers effect', () => {
 })
 
 t.skip('store: length is not triggered extra times', async () => {
-  // NOTE: we can handle it via each, even batch
+  // NOTE: we can handle it via each, even batch (not critical)
   let s = store([1, 2])
   let log = []
   effect(() => (console.log('len fx', s.length), log.push(s.length)))
-  console.log('push')
+  console.log('---push')
   s.push(3, 4)
   await tick()
   is(log, [2, 4])

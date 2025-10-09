@@ -1619,7 +1619,29 @@
       - not a fact it's faster than one-time iteration
   3. Sprae elements with spraeable attributes
 
-### [ ] Should we keep directives attributes instead of removing them?
+## [x] Observing .length strategy -> override mutator methods, there's no other reliable way
+
+  1. Detect mutator method, count .length access
+    + it seems mutators follow the pattern reading .length and then setting length
+    - might be not very reliable
+    - `x.push(x.length = x.length + x.length)` - hard to argue when's `.push -> .length` reading vs outside reading
+  2. Wrap mutator methods
+    + reliable
+    - heavier code
+    -~ possible conflicts
+    - likely slower
+
+## [ ] Isolate effects contexts/scopes
+  * Imagine a situation when `<x :onx="list.push(123)"/><y :text="list.length"/>`
+    * whenever we do `onx` it updates list.length in the same tick
+    * in other words tight coupling, `list.push` includes update of `y:text`
+  * We would want for these contexts to be independent. How?
+  * It should init synchronously, but updaing effects via debounce.
+    + that would allow batching organically.
+    + that would solve preact issue
+    + we can make sync version for microsprae.
+
+### [ ] Should we maintain directives attributes on elements instead of removing them?
 
   + allows easier resprae of element
     + non-invasive

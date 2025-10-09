@@ -1,6 +1,6 @@
-import store, { _change, _signals } from "./store.js";
+import store from "./store.js";
 import { batch, computed, effect, signal, untracked } from './signal.js';
-import sprae, { use, start, _off, _state, _on, _dispose, throttle, _add } from './core.js';
+import sprae, { use, start, _off, _state, _on, _dispose, throttle, debounce, _add } from './core.js';
 
 import _if from "./directive/if.js";
 import _else from "./directive/else.js";
@@ -16,7 +16,7 @@ import _default from "./directive/default.js";
 import _spread from "./directive/spread.js";
 
 
-const directive =  {
+const directive = {
   // :x="x"
   '*': _default,
 
@@ -58,7 +58,7 @@ const modifier = {
     _schedule = _how === "tick" ? queueMicrotask : _how === "raf" ? requestAnimationFrame : _how === "idle" ? requestIdleCallback : ((fn) => setTimeout(fn, _how)),
     _count = 0
   ) =>
-    (e, _planned=++_count) => (_schedule(() => (_planned == _count && fn(e)))),
+    debounce(fn, _schedule),
 
   throttle: (fn, _how = 250, _schedule = _how === "tick" ? queueMicrotask : _how === "raf" ? requestAnimationFrame : ((fn) => setTimeout(fn, _how))) => (
     throttle(fn, _schedule)
@@ -124,6 +124,12 @@ use({
   // signals
   signal, effect, computed, batch, untracked
 })
+
+// expose for runtime config
+sprae.use = use
+sprae.store = store
+sprae.dir = directive
+sprae.mod = modifier
 
 export default sprae
 export { sprae, store, signal, effect, computed, batch, untracked, use, start }

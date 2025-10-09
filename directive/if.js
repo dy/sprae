@@ -24,7 +24,6 @@ export default (el, state, _holder, _el, _match) => {
       if (match != _match) {
         // console.log(':if match', match)
         _match?.[0].remove()
-        // FIXME: we don't turn off
         _match?.[0][_off]?.()
         if (_match = match) {
           _holder.before(_match[0].content || _match[0])

@@ -4,6 +4,7 @@ import { _on, _off, _state, frag } from '../core.js';
 // NOTE: we can reach :else counterpart whereas prev :else :if is on hold
 export default (el, state, _el, _, _prev=el) => {
 
+  // console.log(':else init', el)
   _el = el.content ? frag(el) : el
 
   // find holder
@@ -15,6 +16,7 @@ export default (el, state, _el, _, _prev=el) => {
   _el._holder._clauses.push(_el._clause = [_el, true])
 
   return() => {
+    // console.log(':else update', _el)
     _el._holder.update()
   }
 }

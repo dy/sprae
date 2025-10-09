@@ -467,3 +467,35 @@ test("if: big gaps", async () => {
   await tick()
   is(el.innerHTML.trim(), `<else></else>`)
 })
+
+test('if: multiple truthy conditions', async () => {
+  let el = h`
+  <section>
+    <div :if="list.length < 1">0</div>
+    <div :else :if="list.length < 2">1</div>
+    <div :else :if="list.length < 3">2</div>
+  </section>
+  `
+  let state = sprae(el, {
+    list: [],
+    next() {
+      this.list.push(1)
+    }
+  })
+  is(el.innerHTML, `<div>0</div>`);
+
+  console.log('---next()')
+  state.next()
+  await tick()
+  is(el.innerHTML, `<div>1</div>`);
+
+  console.log('---next()')
+  state.next()
+  await tick(2)
+  is(el.innerHTML, `<div>2</div>`);
+
+  console.log('---next()')
+  state.next()
+  await tick(2)
+  is(el.innerHTML, ``);
+})

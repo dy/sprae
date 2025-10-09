@@ -114,7 +114,7 @@ const initDirective = (el, attrName, expr, state) => {
       let update = (directive[name] || directive['*'])(el, state, expr, name)
 
       // no-modifiers shortcut
-      if (!mods.length && !prev) return () => update && effect(() => (update(evaluate(state))))
+      // if (!mods.length && !prev) return () => update && effect(() => (update(evaluate(state))))
 
       let dispose,
         change = signal(-1), // signal authorized to trigger effect: 0 = init; >0 = trigger
@@ -286,6 +286,8 @@ export const throttle = (fn, schedule = queueMicrotask) => {
   }
   return throttled;
 }
+
+export const debounce = (fn, schedule = queueMicrotask, _count = 0) => (arg, _planned=++_count) => schedule(() => (_planned == _count && fn(arg)))
 
 export * from './store.js';
 

@@ -200,14 +200,14 @@
 
 * [ ] test: finish ajamila poll with v12
   * [ ] :scope returned object method context must be local, not window, eg :scope="{list:[], next(e){this.list}}"
-* [ ] something is off with updating condition based on list length
+* [x] something is off with updating condition based on list length
 * [ ] async functions... alpine does it well
-  * [ ] take over some tests from alpine
-  * [ ] better allowance in expressions
 * [ ] if, let, const, semicolon syntax allowance
+* [ ] make dir/mod separate objects, outside of use
 * [ ] alpine csp tests syntaxes
 * [ ] All TODO/FIXME address
 * [ ] find alternative way to update plain lists in :each rather than simulating signals (adds memory overhead)
+  * [ ] remove _signals use, just do _change check
 * [ ] microjs bundle
 * [x] ~~core test runner: signals variants, normal/micro, sync/async, module/bundle~~
 * [ ] Optimizations (https://krausest.github.io/js-framework-benchmark/current.html)
