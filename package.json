@@ -4,7 +4,9 @@
   "version": "11.6.0",
   "main": "./sprae.js",
   "module": "./sprae.js",
-  "unpkg": "dist/sprae.auto.min.js",
+  "umd:main": "dist/sprae.umd.js",
+  "unpkg": "dist/sprae.auto.js",
+  "types": "dist/sprae.d.ts",
   "type": "module",
   "files": [
     "core.js",
@@ -15,23 +17,25 @@
     "dist"
   ],
   "devDependencies": {
-    "@preact/signals": "^1.3.0",
+    "@preact/signals": "^2.0.4",
+    "@preact/signals-core": "^1.8.0",
     "@webreflection/signal": "^2.1.2",
     "es-module-shims": "^1.10.0",
     "esbuild": "^0.23.0",
     "esbuild-plugin-umd-wrapper": "^2.0.3",
     "hyperf": "^1.7.0",
-    "jsdom": "^24.1.0",
+    "jsdom": "^27.0.0",
+    "requestidlecallback": "^0.3.0",
     "signal-polyfill": "^0.1.1",
     "subscript": "^9.1.0",
     "tst": "^7.2.0",
+    "ulive": "^1.0.7",
     "usignal": "^0.9.0",
     "wait-please": "^3.1.0"
   },
   "scripts": {
     "test": "node -r ./test/register.cjs test/test.js",
-    "build": "node .esbuild.js",
-    "watch": "esbuild --bundle --watch ./sprae.js --outdir=dist --format=esm"
+    "build": "node .esbuild.js"
   },
   "repository": {
     "type": "git",
@@ -39,18 +43,16 @@
   },
   "keywords": [
     "hydration",
-    "preact-signals",
-    "signals",
-    "observable",
-    "reactive",
-    "petite-vue",
-    "template-parts",
-    "templize",
-    "alpinejs",
-    "directives",
-    "templating",
     "progressive",
-    "progressive enhancement"
+    "progressive enhancement",
+    "signals",
+    "directives",
+    "preact-signals",
+    "reactive",
+    "template-parts",
+    "petit-vue",
+    "alpinejs",
+    "templating"
   ],
   "author": "Dmitry Iv <df.creative@gmail.com>",
   "license": "MIT",

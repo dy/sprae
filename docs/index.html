@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sprae</title>
+<style>
+  html, body {
+    margin: 0;
+    padding: 0;
+    height: 100%;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Inter, sans-serif;
+    background-color: #f9fafb;
+    color: #111;
+  }
+  body {
+    position: relative;
+  }
+  body::before {
+    content: '';
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    pointer-events: none;
+    background: radial-gradient(circle at var(--x, 50%) var(--y, 50%), rgba(0, 119, 255, 0.15), transparent 60%);
+    transition: background-position 0.05s;
+  }
+  header {
+    padding: 2rem;
+    text-align: center;
+    font-size: 2.5rem;
+    font-weight: 700;
+  }
+  main {
+    max-width: 800px;
+    margin: auto;
+    padding: 1rem 2rem 4rem;
+    line-height: 1.6;
+    font-size: 1.1rem;
+  }
+  a { color: #0066cc; text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  section { margin-top: 2rem; }
+  pre {
+    background: #f0f4f8;
+    padding: 1rem;
+    border-radius: 0.5rem;
+    overflow-x: auto;
+  }
+  ul { list-style: none; padding: 0; }
+  ul li::before { content: "✔"; color: #0077ff; margin-right: 0.5rem; }
+  table { width: 100%; border-collapse: collapse; margin-top: 1rem; }
+  table, th, td { border: 1px solid #ddd; }
+  th, td { padding: 0.5rem; text-align: left; }
+  th { background: #f5f5f5; }
+</style>
+</head>
+<body>
+  <header>Sprae Framework</header>
+  <main>
+    <section>
+      <h2>Intro</h2>
+      <p>Sprae is a minimal reactive framework for modern web apps. Inspired by Alpine.js, it delivers declarative power in ~2KB, no build step required.</p>
+    </section>
+
+    <section>
+      <h2>Example</h2>
+<pre><code>&lt;script src="https://unpkg.com/sprae"&gt;&lt;/script&gt;
+&lt;div :init="count=0"&gt;
+  &lt;button @click="count++"&gt;+&lt;/button&gt;
+  &lt;button @click="count--"&gt;-&lt;/button&gt;
+  Count: &lt;span :text="count"&gt;&lt;/span&gt;
+&lt;/div&gt;</code></pre>
+    </section>
+
+    <section>
+      <h2>Principles</h2>
+      <ul>
+        <li>Minimal API, tiny footprint</li>
+        <li>Progressive enhancement by default</li>
+        <li>Direct HTML binding — no compilation</li>
+      </ul>
+    </section>
+
+    <section>
+      <h2>Reference</h2>
+      <p><strong>Directives:</strong> <code>:init</code>, <code>:text</code>, <code>@event</code>, <code>:class</code>, <code>:style</code>, <code>:html</code>, <code>:if</code>, <code>:for</code></p>
+    </section>
+
+    <section>
+      <h2>Examples</h2>
+      <ul>
+        <li><code>:if</code> — toggle element visibility</li>
+        <li><code>:for</code> — list rendering</li>
+        <li><code>:class</code> — conditional classes</li>
+        <li><code>:style</code> — dynamic inline styles</li>
+        <li><code>:html</code> — render raw HTML</li>
+      </ul>
+    </section>
+
+    <section>
+      <h2>FAQ</h2>
+      <p><strong>Why another framework?</strong> For when you need small, declarative reactivity without a complex build system.</p>
+      <p><strong>Why Sprae?</strong> Smaller than Alpine, simpler than Vue, pure HTML binding.</p>
+      <p><strong>Why not Alpine.js, Petite-Vue, Lucia?</strong> Sprae is lighter, with zero extras.</p>
+      <p><strong>Why not vanilla JS?</strong> Avoids repetitive boilerplate for reactive UIs.</p>
+      <p><strong>Who cares about progressive enhancement?</strong> Anyone valuing speed and resilience.</p>
+      <p><strong>Does it scale?</strong> Yes, within its scope for UI state.</p>
+      <p><strong>Is it just a toy?</strong> No — production ready for small/medium apps.</p>
+      <p><strong>Complex state?</strong> Possible with modular architecture.</p>
+      <p><strong>No build outdated?</strong> No, it’s ideal for many projects.</p>
+      <p><strong>new Function unsafe?</strong> Safe with trusted templates.</p>
+      <p><strong>Next/React?</strong> Works, but not the primary target.</p>
+      <p><strong>Components?</strong> HTML is your component model.</p>
+    </section>
+
+    <section>
+      <h2>Comparison</h2>
+      <table>
+        <tr><th>Framework</th><th>Size</th><th>Build Step</th><th>Philosophy</th></tr>
+        <tr><td>Sprae</td><td>~2KB</td><td>No</td><td>Minimal, declarative, reactive</td></tr>
+        <tr><td>Alpine.js</td><td>~10KB</td><td>No</td><td>Rich features, declarative</td></tr>
+        <tr><td>Petite-Vue</td><td>~6KB</td><td>No</td><td>Subset of Vue features</td></tr>
+        <tr><td>Lucia</td><td>~3KB</td><td>No</td><td>Small reactive core</td></tr>
+      </table>
+    </section>
+
+    <section>
+      <h2>Get Started</h2>
+      <p><a href="https://github.com/dy/sprae" target="_blank">View on GitHub →</a></p>
+    </section>
+  </main>
+<script>
+  document.addEventListener('mousemove', e => {
+    document.body.style.setProperty('--x', `${e.clientX}px`);
+    document.body.style.setProperty('--y', `${e.clientY}px`);
+  });
+</script>
+</body>
+</html>

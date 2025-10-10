@@ -1,53 +1,54 @@
-// ulive copy, stable minimal implementation
-let current;
+// preact-signals minimal implementation
+let current, depth = 0, batched;
 
-export let signal = (v, s, obs = new Set) => (
-  s = {
+// default signals impl
+
+export const signal = (v, _s, _obs = new Set, _v = () => _s.value) => (
+  _s = {
     get value() {
-      current?.deps.push(obs.add(current));
+      current?.deps.push(_obs.add(current));
       return v
     },
     set value(val) {
       if (val === v) return
       v = val;
-      for (let sub of obs) sub(); // notify effects
+      for (let sub of _obs) batched ? batched.add(sub) : sub(); // notify effects
     },
     peek() { return v },
+    toJSON: _v, then: _v, toString: _v, valueOf: _v
+  }
+)
+
+export const effect = (fn, _teardown, _fx, _deps, __tmp) => (
+  _fx = (prev) => {
+    __tmp = _teardown;
+    _teardown = null; // we null _teardown to avoid repeated call in case of recursive update
+    __tmp?.call?.();
+    prev = current, current = _fx
+    if (depth++ > 10) throw 'Cycle detected';
+    try { _teardown = fn(); } finally { current = prev; depth-- }
   },
-  s.toJSON = s.then = s.toString = s.valueOf = () => s.value,
-  s
-),
-  effect = (fn, teardown, fx, deps) => (
-    fx = (prev) => {
-      teardown?.call?.();
-      prev = current, current = fx;
-      try { teardown = fn(); } finally { current = prev; }
-    },
-    deps = fx.deps = [],
+  _deps = _fx.deps = [],
 
-    fx(),
-    (dep) => { teardown?.call?.(); while (dep = deps.pop()) dep.delete(fx); }
-  ),
-  computed = (fn, s = signal(), c, e) => (
-    c = {
-      get value() {
-        e ||= effect(() => s.value = fn());
-        return s.value
-      },
-      peek: s.peek
-    },
-    c.toJSON = c.then = c.toString = c.valueOf = () => c.value,
-    c
-  ),
-  batch = fn => fn(),
-  untracked = batch,
-  // untracked = (fn, prev, v) => (prev = current, current = null, v = fn(), current = prev, v),
+  _fx(),
+  (dep) => { _teardown?.call?.(); while (dep = _deps.pop()) dep.delete(_fx); }
+)
 
-  // signals adapter - allows switching signals implementation and not depend on core
-  use = (s) => (
-    signal = s.signal,
-    effect = s.effect,
-    computed = s.computed,
-    batch = s.batch || batch,
-    untracked = s.untracked || untracked
-  )
+export const computed = (fn, _s = signal(), _c, _e, _v = () => _c.value) => (
+  _c = {
+    get value() {
+      _e ||= effect(() => _s.value = fn());
+      return _s.value
+    },
+    peek: _s.peek,
+    toJSON: _v, then: _v, toString: _v, valueOf: _v
+  }
+)
+
+export const batch = (fn, _first = !batched) => {
+  batched ??= new Set;
+  try { fn(); }
+  finally { if (_first) { for (const fx of batched) fx(); batched = null } }
+}
+
+export const untracked = (fn, _prev, _v) => (_prev = current, current = null, _v = fn(), current = _prev, _v)

@@ -1,138 +1,247 @@
-import { use, effect, untracked } from "./signal.js";
-import { store } from './store.js';
+import store, { _change, _signals } from "./store.js";
 
-// polyfill
-export const _dispose = (Symbol.dispose ||= Symbol("dispose"));
+export const _dispose = (Symbol.dispose ||= Symbol("dispose")),
+  _state = Symbol("state"),
+  _on = Symbol('on'),
+  _off = Symbol('off'),
+  _add = Symbol('add');
 
-export const _state = Symbol("state"), _on = Symbol('on'), _off = Symbol('off')
 
-// registered directives
-export const directive = {}
+export let prefix = ':', signal, effect, computed, batch = (fn) => fn(), untracked = batch;
 
-/**
- * Register a directive with a parsed expression and evaluator.
- * @param {string} name - The name of the directive.
- * @param {(el: Element, state: Object, expr: string, name: string) => (value: any) => void} create - A function to create the directive.
- * @param {(expr: string) => (state: Object) => any} [p=parse] - Create evaluator from expression string.
- */
-export const dir = (name, create, p = parse) => directive[name] = (el, expr, state, name, update, evaluate) => (
-  update = create(el, state, expr, name),
-  evaluate = p(expr, ':'+name),
-  () => update(evaluate(state))
-)
+export let directive = {}, modifier = {}
+
+let currentDir = null;
 
 /**
  * Applies directives to an HTML element and manages its reactive state.
  *
  * @param {Element} [el=document.body] - The target HTML element to apply directives to.
- * @param {Object} [values] - Initial values to populate the element's reactive state.
+ * @param {Object|store} [state] - Initial state values to populate the element's reactive state.
  * @returns {Object} The reactive state object associated with the element.
  */
-export const sprae = (el=document.body, values) => {
+const sprae = (el = document.body, state) => {
   // repeated call can be caused by eg. :each with new objects with old keys
-  if (el[_state]) return Object.assign(el[_state], values)
+  if (el[_state]) return Object.assign(el[_state], state)
+
+  // console.group('sprae', el.outerHTML)
 
   // take over existing state instead of creating a clone
-  let state = store(values || {}), offs = [], fx = []
+  state = store(state || {})
 
-  let init = (el, attrs = el.attributes) => {
-      // we iterate live collection (subsprae can init args)
-      if (attrs) for (let i = 0; i < attrs.length;) {
-        let { name, value } = attrs[i], update, dir
+  let fx = [], offs = [], fn,
+    on = () => (!offs && (offs = fx.map(fn => fn()))),
+    off = () => (offs?.map(off => off()), offs = null)
 
-        // if we have parts meaning there's attr needs to be spraed
-        if (name.startsWith(prefix)) {
-          el.removeAttribute(name);
+  // on/off all effects
+  // we don't call prevOn as convention: everything defined before :else :if won't be disabled by :if
+  // imagine <x :onx="..." :if="..."/> - when :if is false, it disables directives after :if (calls _off) but ignores :onx
+  el[_on] = on
+  el[_off] = off
 
-          // multiple attributes like :id:for=""
-          for (dir of name.slice(prefix.length).split(':')) {
-            update = (directive[dir] || directive.default)(el, value, state, dir)
+  // destroy
+  el[_dispose] ||= () => (el[_off](), el[_off] = el[_on] = el[_dispose] = el[_state] = el[_add] = null)
 
-            // save & start effect
-            fx.push(update)
-            // FIXME: since effect can have async start, we can just use el[_on]
-            offs.push(effect(update))
+  const add = (el, _attrs = el.attributes) => {
+    // we iterate live collection (subsprae can init args)
+    if (_attrs) for (let i = 0; i < _attrs.length;) {
+      let { name, value } = _attrs[i]
 
-            // stop after :each, :if, :with etc.
-            if (el[_state] === null) return
-          }
-        } else i++
-      }
+      if (name.startsWith(prefix)) {
+        el.removeAttribute(name)
 
-      // :if and :each replace element with text node, which tweaks .children length, but .childNodes length persists
-      for (let child of el.childNodes) child.nodeType == 1 && init(child)
-    };
+        // directive initializer can be redefined
+        fx.push(fn = initDirective(el, name, value, state))
+        offs.push(fn())
 
-  init(el);
+        // stop after subsprae like :each, :if, :scope etc.
+        if (_state in el) return
+      } else i++
+    }
 
-  // if element was spraed by inline :with instruction (meaning it has extended state) - skip, otherwise save _state
-  if (!(_state in el)) {
-    el[_state] = state
+    // :if and :each replace element with text node, which tweaks .children length, but .childNodes length persists
+    // for (let i = 0, child; i < (el.childNodes.length); i++) child =  el.childNodes[i], child.nodeType == 1 && add(child)
+    for (let child of [...el.childNodes]) child.nodeType == 1 && add(child)
+  };
 
-    // on/off all effects
-    el[_off] = () => (offs.map(off => off()), offs = [])
-    el[_on] = () => offs = fx.map(f => effect(f))
+  el[_add] = add;
 
-    // destroy
-    el[_dispose] = () => (el[_off](), el[_off] = el[_on] = el[_dispose] = el[_state] = null)
-  }
+  add(el);
+
+  // if element was spraed by inline :with/:if/:each/etc instruction (meaning it has state placeholder) - skip, otherwise save _state
+  if (el[_state] === undefined) el[_state] = state
+
+  // console.groupEnd()
 
   return state;
 }
 
-// configure signals/compile
-// it's more compact than using sprae.signal = signal etc.
-sprae.use = s => (
-  s.signal && use(s),
+
+/**
+ * Initializes directive (defined by sprae build), returns "on" function that enables it
+ * Multiprop sequences initializer, eg. :a:b..c:d
+ * @type {(el: HTMLElement, name:string, value:string, state:Object) => Function}
+ * */
+const initDirective = (el, attrName, expr, state) => {
+  let cur, // current step callback
+    off // current step disposal
+
+  let steps = attrName.slice(prefix.length).split('..').map((step, i, { length }) => (
+    // multiple attributes like :id:for=""
+    step.split(prefix).reduce((prev, str) => {
+      let [name, ...mods] = str.split('.');
+      let evaluate = parse(expr, directive[currentDir = name]?.parse)
+
+      // events have no effects and can be sequenced
+      if (name.startsWith('on')) {
+        let type = name.slice(2),
+          first = e => (call(evaluate(state), e)),
+          fn = applyMods(
+            Object.assign(
+              // single event vs chain
+              length == 1 ? first :
+                e => (cur = (!i ? first : cur)(e), off(), off = steps[(i + 1) % length]()),
+              { target: el, type }
+            ),
+            mods);
+
+        return (_poff) => (_poff = prev?.(), fn.target.addEventListener(type, fn, fn), () => (_poff?.(), fn.target.removeEventListener(type, fn)))
+      }
+
+      // props have no sequences and can be sync
+      let update = (directive[name] || directive['*'])(el, state, expr, name)
+
+      // no-modifiers shortcut
+      if (!mods.length && !prev) return () => update && effect(() => evaluate(state, update))
+
+      let dispose,
+        change = signal(-1), // signal authorized to trigger effect: 0 = init; >0 = trigger
+        count = -1, // called effect count
+
+        // effect applier - first time it applies the effect, next times effect is triggered by change signal
+        fn = throttle(applyMods(() => {
+          if (++change.value) return // all calls except for the first one are handled by effect
+          dispose = effect(() => update && (
+            change.value == count ? fn() : // separate tick makes sure planner effect call is finished before real eval call
+              (count = change.value, evaluate(state, update)) // if changed more than effect called - call it
+          ));
+        }, mods))
+
+      return (_poff) => (
+        _poff = prev?.(),
+        // console.log('ON', name),
+        fn(),
+        ({
+          [name]: () => (
+            // console.log('OFF', name, el),
+            _poff?.(), dispose(), change.value = -1, count = dispose = null
+          )
+        })[name]
+      )
+    }, null)
+  ));
+
+  // off can be changed on the go
+  return () => (off = steps[0]())
+}
+
+
+/**
+ * Configure sprae
+ */
+export const use = (s) => (
   s.compile && (compile = s.compile),
-  s.prefix && (prefix = s.prefix)
+  s.prefix && (prefix = s.prefix),
+  s.signal && (signal = s.signal),
+  s.effect && (effect = s.effect),
+  s.computed && (computed = s.computed),
+  s.batch && (batch = s.batch),
+  s.untracked && (untracked = s.untracked)
 )
 
-/**
- * Parses an expression into an evaluator function, caching the result for reuse.
- *
- * @param {string} expr - The expression to parse and compile into a function.
- * @param {string} dir - The directive associated with the expression (used for error reporting).
- * @returns {Function} The compiled evaluator function for the expression.
- */
-export const parse = (expr, dir, fn) => {
-  if (fn = memo[expr = expr.trim()]) return fn
-
-  // static time errors
-  try { fn = compile(expr) }
-  catch (e) { err(e, dir, expr) }
-
-  // run time errors
-  return memo[expr] = s => {
-    try { return fn(s) }
-    catch(e) { err(e, dir, expr) }
-  }
-}
-const memo = {};
 
 /**
- * Branded sprae error with context about the directive and expression
- *
- * @param {Error} e - The original error object to enhance.
- * @param {string} dir - The directive where the error occurred.
- * @param {string} [expr=''] - The expression associated with the error, if any.
- * @throws {Error} The enhanced error object with a formatted message.
+ * Lifecycle hanger: makes DOM slightly slower but spraes automatically
  */
-export const err = (e, dir = '', expr = '') => {
-  throw Object.assign(e, { message: `∴ ${e.message}\n\n${dir}${expr ? `="${expr}"\n\n` : ""}`, expr })
+export const start = (root = document.body, values) => {
+  const state = store(values);
+  sprae(root, state);
+  const mo = new MutationObserver(mutations => {
+    for (const m of mutations) {
+      for (const el of m.addedNodes) {
+        if (el.nodeType === 1 && el[_state] === undefined) {
+          for (const attr of el.attributes) {
+            if (attr.name.startsWith(prefix)) {
+              root[_add](el); break;
+            }
+          }
+        }
+      }
+      // for (const el of m.removedNodes) el[Symbol.dispose]?.()
+    }
+  });
+  mo.observe(root, { childList: true, subtree: true });
+  return state
 }
+
 
 /**
  * Compiles an expression into an evaluator function.
- *
- * @type {(expr: string) => Function}
+ * @type {(dir:string, expr: string, clean?: string => string) => Function}
  */
 export let compile
 
 /**
- * Attributes prefix, by default ':'
+ * Parses an expression into an evaluator function, caching the result for reuse.
+ *
+ * @param {string} expr The expression to parse and compile into a function.
+ * @returns {Function} The compiled evaluator function for the expression.
  */
-export let prefix = ':'
+export const parse = (expr, prepare, _fn) => {
+  if (_fn = parse.cache[expr]) return _fn
+
+  let _expr = expr.trim() || 'undefined'
+  if (prepare) _expr = prepare(_expr)
+
+  // if, const, let - no return
+  if (/^(if|let|const)\b/.test(_expr) || /;/.test(_expr)) ;
+  else _expr = `return ${_expr}`
+
+  // async expression
+  if (/\bawait\s/.test(_expr)) _expr = `return (async()=>{ ${_expr} })()`
+
+  // static time errors
+  try {
+    _fn = compile(_expr)
+    Object.defineProperty(_fn, "name", {value: `∴ ${expr}`})
+  } catch (e) { console.error(`∴ ${e}\n\n${prefix + currentDir}="${expr}"`) }
+
+  // run time errors
+  return parse.cache[expr] = (state, cb, _out) => {
+    try {
+      let result = _fn?.(state)
+      // if cb is given - call it with result and return function that returns last cb result - needed for effect cleanup
+      if (cb) return result?.then ? result.then(v => _out = cb(v)) : _out = cb(result), () => call(_out)
+      else return result
+    } catch (e) {
+      console.error(`∴ ${e}\n\n${prefix + currentDir}="${expr}"`)
+    }
+  }
+}
+parse.cache = {};
+
+
+// apply modifiers to context (from the end due to nature of wrapping ctx.call)
+const applyMods = (fn, mods) => {
+  while (mods.length) {
+    let [name, ...params] = mods.pop().split('-')
+    fn = sx(modifier[name]?.(fn, ...params) ?? fn, fn)
+  }
+  return fn
+}
+
+// soft-extend missing props and ignoring signals
+const sx = (a, b) => { if (a != b) for (let k in b) (a[k] ??= b[k]); return a }
 
 // instantiated <template> fragment holder, like persisting fragment but with minimal API surface
 export const frag = (tpl) => {
@@ -159,5 +268,35 @@ export const frag = (tpl) => {
     // setAttributeNode() { }
   }
 }
+
+// if value is function - return result of its call
+export const call = (v, arg) => typeof v === 'function' ? v(arg) : v
+
+// camel to kebab
+export const dashcase = (str) => str.replace(/[A-Z\u00C0-\u00D6\u00D8-\u00DE]/g, (match, i) => (i ? '-' : '') + match.toLowerCase());
+
+// set attr
+export const attr = (el, name, v) => (v == null || v === false) ? el.removeAttribute(name) : el.setAttribute(name, v === true ? "" : v);
+
+// convert any-arg to className string
+export const clsx = (c, _out = []) => !c ? '' : typeof c === 'string' ? c : (
+  Array.isArray(c) ? c.map(clsx) :
+    Object.entries(c).reduce((s, [k, v]) => !v ? s : [...s, k], [])
+).join(' ')
+
+// throttle function to (once per tick or other custom scheduler)
+export const throttle = (fn, schedule = queueMicrotask) => {
+  let _planned = 0;
+  const throttled = (e) => {
+    if (!_planned++) fn(e), schedule((_dirty = _planned > 1) => (
+      _planned = 0, _dirty && throttled(e)
+    ));
+  }
+  return throttled;
+}
+
+export const debounce = (fn, schedule = queueMicrotask, _count = 0) => (arg, _planned=++_count) => schedule(() => (_planned == _count && fn(arg)))
+
+export * from './store.js';
 
 export default sprae

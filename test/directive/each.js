@@ -1,14 +1,15 @@
-import test, { any, is } from "tst";
-import { tick } from "wait-please";
-import sprae from '../sprae.js'
-import { signal, batch, untracked } from '../signal.js'
-import store from '../store.js'
+import { tick, time } from "wait-please";
+import sprae from '../../sprae.js'
 import h from "hyperf";
+import test, { any, is, ok } from "tst";
+import { store } from '../../store.js'
+import { use, signal, batch, untracked } from '../../core.js'
 
 
 test.skip('each: top-level list', async () => {
   let el = h`<x :each="item in items" :text="item.x"/>`
   sprae(el, { items: [{ x: 1 }] })
+  await tick()
   is(el.outerHTML, `<x>1</x>`)
 })
 
@@ -84,7 +85,7 @@ test('each: array internal signal reassign', async () => {
   console.log('---b[0].value = 1')
   params.b[0].value = 1;
   await tick()
-  is(el.innerHTML, "<span>1</span>", 'b[0] = 1');
+  is(el.innerHTML, "<span>1</span>", 'html');
 
   console.log('---b=[signal(2)]')
   // params.b.value[0] = signal(2);
@@ -277,8 +278,10 @@ test("each: fragments direct", async () => {
 
   console.log("b.value=[]");
   b.value = [];
+  await tick()
   is(el.innerHTML, "");
   params.b = null;
+  await tick()
   is(el.innerHTML, "");
 });
 
@@ -310,11 +313,15 @@ test("each: loop with condition", async () => {
   const params = sprae(el, { b: [0, 1, 2] });
 
   is(el.innerHTML, "<span>0</span><span>2</span>");
+
+  console.log('---b=[2, 0, 1]')
   params.b = [2, 0, 1];
   await tick();
   is(el.innerHTML, "<span>2</span><span>0</span>");
+
+  console.log('---b=null')
   params.b = null;
-  await tick();
+  await tick(2);
   is(el.innerHTML, "");
 });
 
@@ -326,17 +333,26 @@ test("each: condition with loop", async () => {
 
   const params = sprae(el, { b: [1, 2], c: false });
 
+  await tick()
   is(el.innerHTML, "<span>false</span>");
+
+  console.log('---c=true')
   params.c = true;
   await tick();
   is(el.innerHTML, "<span>1</span><span>2</span>");
+
+  console.log('---b=[1]')
   params.b = [1];
   await tick();
   is(el.innerHTML, "<span>1</span>");
+
+  console.log('---b=null')
   params.b = null;
   await tick();
   is(el.innerHTML, "");
   console.log("c=false");
+
+  console.log('---c=false')
   params.c = false;
   await tick();
   is(el.innerHTML, "<span>false</span>");
@@ -370,10 +386,15 @@ test("each: condition within loop", async () => {
 
   const params = sprae(el, { b: [1, 2, 3] });
 
+  await tick(2);
   is(el.innerHTML, "<x><if>1:1</if></x><x><elif>2:2</elif></x><x><else>3</else></x>");
+
+  console.log('---b=[2]');
   params.b = [2];
   await tick();
   is(el.innerHTML, "<x><elif>2:2</elif></x>");
+
+  console.log('---b=null');
   params.b = null;
   await tick();
   is(el.innerHTML, "");
@@ -381,7 +402,7 @@ test("each: condition within loop", async () => {
 
 test('each: items refer to current el', async () => {
   // NOTE: the problem here is that the next items can subscribe to `el` defined in root state (if each hasn't created scope), that will cause unnecessary :x effect
-  let el = h`<div><x :each="x in 3" :data-x="x" :with="{el:null}" :ref="e=>el=e" :x="log.push(x, el.dataset.x)"></x></div>`;
+  let el = h`<div><x :each="x in 3" :data-x="x" :scope="{el:null}" :ref="e=>(el=e)" :x="log.push(x, el.dataset.x)"></x></div>`;
   let log = signal([]);
   let state = sprae(el, { log, untracked });
   is([...state.log], [1, "1", 2, "2", 3, "3"]);
@@ -511,8 +532,8 @@ test("each: swapping", async () => {
   is(el.outerHTML, `<table><tr>1</tr><tr>4</tr><tr>3</tr><tr>2</tr><tr>5</tr></table>`);
 });
 
-test("each: with :with", () => {
-  let el = h`<ul><li :each="i in 3" :with="{x:i}" :text="x"></li></ul>`;
+test("each: with :scope", () => {
+  let el = h`<ul><li :each="i in 3" :scope="{x:i}" :text="x"></li></ul>`;
   sprae(el);
   is(el.outerHTML, `<ul><li>1</li><li>2</li><li>3</li></ul>`);
 });
@@ -525,35 +546,40 @@ test("each: subscribe to modifying list", async () => {
   const state = sprae(el, {
     rows: [1],
     remove() {
-      this.rows = [];
+      console.log('remove')
+      // this.rows = []
+      this.rows.length = 0
     },
   });
   is(el.outerHTML, `<ul><li>1</li></ul>`);
+
   // state.remove()
+  console.log("---dispatch remove");
   el.querySelector("li").dispatchEvent(new window.Event("remove"));
-  console.log("---removed", state.rows);
 
   await tick();
   is(el.outerHTML, `<ul></ul>`);
 });
 
 test('each: unwanted extra subscription', async () => {
-  let el = h`<div><x :each="item,i in (console.log('upd',_count),_count++, rows)"><a :text="item.label"></a></x></div>`
+  let el = h`<div><x :each="item,i in (_count++, rows)"><a :text="item.label"></a></x></div>`
 
   const rows = signal(null)
-  const state = sprae(el, { rows, _count: 0, console })
+  const state = sprae(el, { rows, _count: 0 })
 
-  console.log('------rows.value = [{id:0},{id:1}]')
   await tick()
   is(state._count, 1)
 
   let a = { label: signal(0) }, b = { label: signal(0) }
+  console.log('--------rows.value = [a, b]')
   rows.value = [a, b]
   await tick()
   is(state._count, 2)
+  is(el.innerHTML, `<x><a>0</a></x><x><a>0</a></x>`)
 
   console.log('--------rows.value[1].label.value += 2')
   b.label.value += 2
+  await tick()
   is(state._count, 2)
   is(el.innerHTML, `<x><a>0</a></x><x><a>2</a></x>`)
 
@@ -592,10 +618,11 @@ test('each: batched .length updates', async () => {
     state.list = list
   })
   await tick()
-  any(c, [2,3])
+  any(c, [2, 3])
 })
 
-test('each: rewrite item', async () => {
+test.skip('each: rewrite item', async () => {
+  // NOTE: item is readonly
   let el = h`<a><x :each="i in items" :text="i" :onx="e=>i++"/></a>`
   sprae(el, { items: [1, 2, 3] })
   is(el.innerHTML, `<x>1</x><x>2</x><x>3</x>`)

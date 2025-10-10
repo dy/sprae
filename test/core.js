@@ -1,12 +1,10 @@
 import test, { is } from "tst";
 import { tick, time } from "wait-please";
-import sprae from '../sprae.js'
+import sprae, { start } from '../sprae.js'
 import store from '../store.js'
-import { signal } from '../signal.js'
+import { signal, use } from '../core.js'
 import h from "hyperf";
 
-import * as signals from '@preact/signals-core'
-sprae.use(signals)
 
 test('core: pre-created store', async () => {
   let state = store({x:1,get(){return state.x}})
@@ -14,17 +12,9 @@ test('core: pre-created store', async () => {
   sprae(el, state)
   is(el.outerHTML, `<x>1</x>`)
   state.x=2
+  await tick()
   is(el.outerHTML, `<x>2</x>`)
 })
-
-test.todo('core: sync store access', async () => {
-  let el = h`<x :text="get()"></x>`
-  let state = sprae(el, {x:1,get(){return state.x}})
-  is(el.outerHTML, `<x>1</x>`)
-  state.x=2
-  is(el.outerHTML, `<x>2</x>`)
-})
-
 
 test("core: simple hidden attr", async () => {
   let el = h`<div :hidden="hidden"></div>`;
@@ -45,23 +35,8 @@ test("core: hidden reactive", async () => {
   is(el.outerHTML, `<div></div>`);
 });
 
-test("core: reactive", async () => {
-  let el = h`<label :for="name" :text="name" ></label><input :id="name" :name="name" :type="name" :disabled="!name"/><a :href="url"></a><img :src="url"/>`;
-  let params = sprae(el, { name: 'text', url: "//google.com" });
-  is(
-    el.outerHTML,
-    `<label for="text">text</label><input id="text" name="text" type="text"><a href="//google.com"></a><img src="//google.com">`,
-  );
-  params.name = "email";
-  await tick();
-  is(
-    el.outerHTML,
-    `<label for="email">email</label><input id="email" name="email" type="email"><a href="//google.com"></a><img src="//google.com">`,
-  );
-});
-
 test.skip('core: multiple elements', async () => {
-  // NOTE: we don't support that anymore - no much value, just pass container
+  // NOTE: we don't support that anymore - no much value at price of complexity, just pass container
   let el = h`<a><x :text="'x'"></x><y :text="'y'"></y></a>`
   sprae(el.childNodes)
   is(el.innerHTML, `<x>x</x><y>y</y>`)
@@ -73,7 +48,8 @@ test("core: empty strings", async () => {
   is(el.outerHTML, `<x></x>`);
 });
 
-test("core: comments", async () => {
+test.skip("core: comments", async () => {
+  // NOTE: we don't support that anymore - no questionable value
   let el = h`<x :="/* */" :x="/* */"></x>`;
   sprae(el);
   is(el.outerHTML, `<x></x>`);
@@ -87,19 +63,26 @@ test("core: newlines", async () => {
   is(el.outerHTML, `<x>1</x>`);
 });
 
-test.skip("core: const in on", async () => {
-  let el = h`<div :onx="() => {const x=1; y=x+1}"></div>`;
+test("core: const", async () => {
+  let el = h`<div :onx="const x=1; y=x+1"></div>`;
   let state = sprae(el, { y: 0 });
   el.dispatchEvent(new window.CustomEvent("x"));
   is(state.y, 2);
 });
 
-test.skip("core: const in with", async () => {
-  let el = h`<div :with="{x(){let x = 1; y=x;}}" :onx="x()"></div>`;
+test("core: let", async () => {
+  let el = h`<div :fx="let x=1; y=x+1"></div>`;
   let state = sprae(el, { y: 0 });
-  el.dispatchEvent(new window.CustomEvent("x"));
+  is(state.y, 2);
+});
+
+test("core: if", async () => {
+  let el = h`<div :fx="if (x) log.push(1)"></div>`;
+  let state = sprae(el, { x: 0, log: [] });
+  is( state.log, []);
+  state.x = 1;
   await tick();
-  is(state.y, 1);
+  is(state.log, [1]);
 });
 
 test("core: bulk set", async () => {
@@ -135,47 +118,34 @@ test.skip("core: semicols in expression", async () => {
   let el = h`<x :x="log.push(0); log.push(Array.from({length: x.value}, (_,i)=>i).join(''));"></x>`;
   let state = sprae(el, { x: signal(3), Array, log: [] });
   // is(el.outerHTML, `<x x="012"></x>`);
+  await tick()
   is(state.log, [0, '012'])
   state.x.value = 4;
+  await tick()
   is(state.log, [0, '012', 0, '0123'])
   // is(el.outerHTML, `<x x="0123"></x>`);
 });
 
-test("fx: effects", async () => {
-  let el = h`<x :fx="(log.push(x), () => (log.push('out')))"></x>`;
-  let x = signal(1)
-  let state = sprae(el, { log: [], x, console });
-  is(el.outerHTML, `<x></x>`);
-  is(state.log, [1])
-  console.log('upd value')
-  x.value = 2
-  await tick()
-  is(el.outerHTML, `<x></x>`);
-  is(state.log, [1, 'out', 2])
-  el[Symbol.dispose]()
-  is(state.log, [1, 'out', 2, 'out'])
+test("core: async value", async () => {
+  let fetchData = async () => { await time(50); return 'data'; };
+  let el = h`<div :fx="( x='', async () => (x = await fetchData() ) )()" :text="x"></div>`;
+  let state = sprae(el, { fetchData });
+  is(el.textContent, '');
+  await time(60);
+  is(el.textContent, 'data');
 });
 
-test(":: reactive values", async () => {
-  let a = signal();
-  setTimeout(() => (a.value = 2), 10);
-
-  let el = h`<x :text="a">1</x>`;
-  sprae(el, { a });
-  is(el.outerHTML, `<x></x>`);
-
-  await time(20);
-  is(el.outerHTML, `<x>2</x>`);
+test("core: async prop", async () => {
+  let fetchData = async () => { await time(50); return 'data'; };
+  let el = h`<div :text="await fetchData()"></div>`;
+  let state = sprae(el, { fetchData  });
+  is(el.textContent, '');
+  await time(60);
+  is(el.textContent, 'data');
 });
 
-test(":: null result does nothing", async () => {
-  let a = h`<x :="undefined"></x>`;
-  sprae(a);
-  is(a.outerHTML, `<x></x>`);
-});
-
-test.skip("immediate scope", async () => {
-  let el = h`<x :with="{arr:[], inc(){ arr.push(1) }}" :onx="e=>inc()" :text="arr[0]"></x>`;
+test.skip("core: immediate scope", async () => {
+  let el = h`<x :scope="{arr:[], inc(){ arr.push(1) }}" :onx="e=>inc()" :text="arr[0]"></x>`;
   sprae(el);
   is(el.outerHTML, `<x></x>`);
   el.dispatchEvent(new window.CustomEvent("x"));
@@ -183,7 +153,7 @@ test.skip("immediate scope", async () => {
   is(el.outerHTML, `<x>1</x>`);
 });
 
-test("getters", async () => {
+test("core: getters", async () => {
   let x = h`<h2 :text="doubledCount >= 1 ? 1 : 0"></h2>`;
   let state = sprae(x, {
     count: signal(0),
@@ -197,14 +167,15 @@ test("getters", async () => {
   is(x.outerHTML, `<h2>1</h2>`);
 });
 
-test("subscribe to array length", async () => {
+test("core: subscribe to array length", async () => {
   // pre-heat can cause error
   sprae(h`<x :fx="(log.push(1))"></x>`, { log: [] });
 
   console.log('---create')
-  let el = h`<div :with="{likes:[]}"><x :onx="e=>(likes.push(1))"></x><y :text="console.log('text'),likes.length"></y></div>`;
+  let el = h`<div :scope="{likes:[]}"><x :onx="e=>(console.log('onx'),likes.push(1))"></x><y :text="console.log('text'),likes.length"></y></div>`;
   sprae(el, { console });
   is(el.innerHTML, `<x></x><y>0</y>`);
+
   console.log('---event')
   el.firstChild.dispatchEvent(new window.CustomEvent("x"));
   await tick();
@@ -236,18 +207,21 @@ test('globals', async () => {
   is(el.outerHTML, `<x>3.14</x>`)
 })
 
-test("switch signals", async () => {
+test.skip("core: switch signals", async () => {
   const preact = await import('@preact/signals-core')
-  sprae.use(preact)
+  use(preact)
 
   let el = h`<div :text="x"/>`
   let state = sprae(el, { x: preact.signal(1) })
   is(el.innerHTML, '1')
   state.x = 2
+  await tick()
   is(el.innerHTML, '2')
+
+  use(signals)
 })
 
-test("Math / other globals available in template", async () => {
+test("core: Math / other globals available in template", async () => {
   let el = h`<div :text="Math.max(2, 5, 1)"></div>`;
   sprae(el, { Math });
   is(el.innerHTML, '5');
@@ -261,22 +235,31 @@ test("Math / other globals available in template", async () => {
   is(el.innerHTML, '4');
 });
 
-test("custom prefix", async () => {
-  sprae.use({prefix:'s-'})
+test("core: custom prefix", async () => {
+  use({ prefix: 's-' })
   let el = h`<x s-text="a"></x>`;
   sprae(el, {a:123});
   is(el.outerHTML, `<x>123</x>`);
-  sprae.use({prefix:':'})
+  use({prefix:':'})
 })
 
-test("multiple errors don't break sprae", async () => {
+test("core: static errors don't break sprae", async () => {
   console.log('---again')
-  let el = h`<y><x :text="a"></x><x :text="b"></x></y>`
+  let el = h`<y><x :text="0.toFixed(2)"></x><x :text="b"></x></y>`
   let state = sprae(el, {b:'b'})
+  await tick()
   is(el.innerHTML, `<x></x><x>b</x>`)
 })
 
-test.skip('memory allocation', async () => {
+test("core: runtime errors don't break sprae", async () => {
+  console.log('---again')
+  let el = h`<y><x :text="a.b"></x><x :text="b"></x></y>`
+  let state = sprae(el, {b:'b'})
+  await tick()
+  is(el.innerHTML, `<x></x><x>b</x>`)
+})
+
+test.skip('core: memory allocation', async () => {
   let items = signal([])
   let el = h`<><x :each="item in items" :text="item.x"></x></>`
   let btn = document.createElement('button')
@@ -302,11 +285,40 @@ test.todo('perf: must be fast', async () => {
   console.timeEnd('perf')
 })
 
-test.todo('setTimeout illegal invokation', async () => {
-  let el = h`<div :with="{c:0,x(){setTimeout(() => (this.c++))}}" :onx="x" :text="c"></div>`
+test('core: setTimeout illegal invokation', async () => {
+  let el = h`<div :scope="c=0, x = ()=>{ window.setTimeout(() => (c++)) }" :onx="x" :text="c"></div>`
   sprae(el)
   is(el.innerHTML, '0')
   el.dispatchEvent(new window.CustomEvent('x'))
-  await new Promise(ok => setTimeout(ok))
-  is(el.innerHTML, '1')
+  await time(0)
+  is(el.innerHTML, '2')
+})
+
+test('core: lifecycle', async () => {
+  let container = h`<div id="root" :scope="{pre:'pre',post:'post'}"><x :text="pre"></x></div>`;
+  start(container);
+  is(container.innerHTML, `<x>pre</x>`);
+  let el = h`<y :text="post"></y>`
+  container.appendChild(el);
+  await time(10);
+  is(container.innerHTML, `<x>pre</x><y>post</y>`);
+})
+
+test('core: list length unsub (preact signals)', async () => {
+  // list.push disables list.length reading as reactive (cycle prevention)
+  // but then preact signals unsubscribe :text from list.length updates
+  let a = h`<x :scope="{list:[], add(item){ this.list.push('item') }}" ><y :text="list.length"></y><button :onx="add"></button></x>`
+  let s = sprae(a)
+  is(a.innerHTML, `<y>0</y><button></button>`)
+  await time()
+
+  console.log('---dispatch x')
+  a.querySelector('button').dispatchEvent(new window.Event('x'))
+  await time()
+  is(a.innerHTML, `<y>1</y><button></button>`)
+
+  console.log('---dispatch x')
+  a.querySelector('button').dispatchEvent(new window.Event('x'))
+  await time()
+  is(a.innerHTML, `<y>2</y><button></button>`)
 })

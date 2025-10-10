@@ -1,0 +1,11 @@
+import './directive/class.js';
+import './directive/default.js';
+import './directive/each.js';
+import './directive/fx.js';
+import './directive/if.js';
+import './directive/ref.js';
+import './directive/scope.js';
+import './directive/style.js';
+import './directive/text.js';
+import './directive/value.js';
+import './directive/on.js';

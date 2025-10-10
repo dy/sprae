@@ -1,39 +1,13 @@
-import sprae, { parse } from "../core.js";
-import { dir } from "../core.js";
-import { untracked } from "../signal.js";
-import { setter } from "../store.js";
-import { attr } from './default.js';
+import sprae, { attr, parse, _state } from "../core.js";
 
 
-dir('value', (el, state, expr) => {
-  const update =
-    (el.type === "text" || el.type === "") ?
-      (value) => el.setAttribute("value", (el.value = value == null ? "" : value)) :
-      (el.tagName === "TEXTAREA" || el.type === "text" || el.type === "") ?
-        (value, from, to) => (
-          // we retain selection in input
-          (from = el.selectionStart),
-          (to = el.selectionEnd),
-          el.setAttribute("value", (el.value = value == null ? "" : value)),
-          from && el.setSelectionRange(from, to)
-        ) :
-        (el.type === "checkbox") ?
-          (value) => (el.checked = value, attr(el, "checked", value)) :
-          el.type === 'radio' ? (value) => (
-            el.value === value && ((el.checked = value), attr(el, 'checked', value))
-          ) :
-          (el.type === "select-one") ?
-            (value) => {
-              for (let o of el.options)
-                o.value == value ? o.setAttribute("selected", '') : o.removeAttribute("selected");
-              el.value = value;
-            } :
-            (el.type === 'select-multiple') ? (value) => {
-              for (let o of el.options) o.removeAttribute('selected')
-              for (let v of value) el.querySelector(`[value="${v}"]`).setAttribute('selected', '')
-            } :
-              (value) => (el.value = value);
+// create expression setter, reflecting value back to state
+export const setter = (expr, _set = parse(`${expr}=__`)) => (target, value) => {
+  // save value to stash
+  target.__ = value; _set(target), delete target.__
+}
 
+export default (el, state, expr, name) => {
   // bind back to value, but some values can be not bindable, eg. `:value="7"`
   try {
     const set = setter(expr)
@@ -51,9 +25,34 @@ dir('value', (el, state, expr) => {
       sprae(el, state)
     }
 
-    // initial state value
+    // initial state value - setter has already cached it, no need to parse again
     parse(expr)(state) ?? handleChange()
-  } catch {}
+  } catch { }
 
-  return update
-})
+  return (el.type === "text" || el.type === "") ?
+    (value) => el.setAttribute("value", (el.value = value == null ? "" : value)) :
+    (el.tagName === "TEXTAREA" || el.type === "text" || el.type === "") ?
+      (value, from, to) => (
+        // we retain selection in input
+        (from = el.selectionStart),
+        (to = el.selectionEnd),
+        el.setAttribute("value", (el.value = value == null ? "" : value)),
+        from && el.setSelectionRange(from, to)
+      ) :
+      (el.type === "checkbox") ?
+        (value) => (el.checked = value, attr(el, "checked", value)) :
+        (el.type === 'radio') ? (value) => (
+          el.value === value && ((el.checked = value), attr(el, 'checked', value))
+        ) :
+          (el.type === "select-one") ?
+            (value) => {
+              for (let o of el.options)
+                o.value == value ? o.setAttribute("selected", '') : o.removeAttribute("selected");
+              el.value = value;
+            } :
+            (el.type === 'select-multiple') ? (value) => {
+              for (let o of el.options) o.removeAttribute('selected')
+              for (let v of value) el.querySelector(`[value="${v}"]`).setAttribute('selected', '')
+            } :
+              (value) => (el.value = value);
+}

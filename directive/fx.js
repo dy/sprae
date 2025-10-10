@@ -1,3 +1,3 @@
-import { dir } from "../core.js";
+import { call } from "../core.js"
 
-dir('fx', _ => _ => _)
+export default () => v => (call(v))

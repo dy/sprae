@@ -70,46 +70,47 @@
 
 + `:=obj` reminds pascal assignment operator, which is cool
 + `:={a:1,b:2}` is natural convention from vue/alpine as - all props in object are assigned as `:{attr}`
-- We can use `:="{data}"` fro sprae autoinit, since scope has confusing name: `:scope={}`, `:sprae={}`, `:with={}`
+- We can use `:="{data}"` from sprae autoinit, since scope has confusing name: `:scope={}`, `:sprae={}`, `:with={}`
 -> let's use :prop= for now, since `:={}` can have multiple interpretations
+-
 
-## [x] What's a use-case for `:={props}` - do we need it? -> likely yes
+## [x] What's a use-case for `:={props}` - do we need it? -> yes - setting reserved props or spread
 
-* {...props} is useful in react components to pass down all unmentioned or unknown props to children
-  - but sprae is not about componentization
-~+ some function returning spraed element `return sprae(el, props)` (external integration)
-  - there props are not necessarily unlimited, is it ok to hard-define them?
-~+ some web-component passing all attributes to children
-  - web-components have hard-defined attributes
-~+ say we render an `<input id="xyz" :="props"/>` - different type of input may have different set of props, would be insane to define all possible conditions in each prop
-~+ passing props for various conditions, without if-else statements
-
+  * {...props} is useful in react components to pass down all unmentioned or unknown props to children
+    - but sprae is not about componentization
+  ~+ some function returning spraed element `return sprae(el, props)` (external integration)
+    - there props are not necessarily unlimited, is it ok to hard-define them?
+  ~+ some web-component passing all attributes to children
+    - web-components have hard-defined attributes
+  ~+ say we render an `<input id="xyz" :="props"/>` - different type of input may have different set of props, would be insane to define all possible conditions in each prop
+  ~+ passing props for various conditions, without if-else statements
+  + allows setting same name as directive attrs like `:={each:1,if:2,ref=3,fx=4,text=5,scope=6}`
 
 ## [x] Scopes mechanism: prototype inheritance chain vs multiple `with` wrappers -> init subtrees, no need for explicit mechanism
 
-- prototype inheritance chain causes deps update difficulties
-- prototype chain is messy-ish
-- prototype chain is a bit more difficult to provide multiple parent scopes
-- prototype state object is inheritance mess - can be super-hard to analyze
-~ `with(a) with(b) with(c)` is the same as `with(a)` with prototype inheritance in terms of access.
-- `with` chain allows runtime update of scopes, eg. child scope was updated to something new.
-  - `prototype` chain is fixed from the time of init.
-- `prototype` chain hails to unidentified root scope and inherits from that. Maybe we should clarify scopes inhertiance and first implement reactive store (see next item).
+  - prototype inheritance chain causes deps update difficulties
+  - prototype chain is messy-ish
+  - prototype chain is a bit more difficult to provide multiple parent scopes
+  - prototype state object is inheritance mess - can be super-hard to analyze
+  ~ `with(a) with(b) with(c)` is the same as `with(a)` with prototype inheritance in terms of access.
+  - `with` chain allows runtime update of scopes, eg. child scope was updated to something new.
+    - `prototype` chain is fixed from the time of init.
+  - `prototype` chain hails to unidentified root scope and inherits from that. Maybe we should clarify scopes inhertiance and first implement reactive store (see next item).
 
-? what if we avoid scope inheritance mechanism (what's the real use for it?) and instead just make reactive store object, so that :with directive subscribes to any input props, but "shadows" subtree?
-  ? are there uses for inheritance
+  ? what if we avoid scope inheritance mechanism (what's the real use for it?) and instead just make reactive store object, so that :with directive subscribes to any input props, but "shadows" subtree?
+    ? are there uses for inheritance
 
-? Do we need scopes at all? Only for the purpose of autoinit?
-- it seems scopes can introduce more confusion and mess in templates: indicating full paths is more beneficial
-  + unless we introduce proper ":with="item.x as x""
-+ prototype chain is a single object:
-  + meaning updators receive one actual-for-element scope instance
-  + that makes external API easier
-  + that allows handling store via single reactive object
+  ? Do we need scopes at all? Only for the purpose of autoinit?
+  - it seems scopes can introduce more confusion and mess in templates: indicating full paths is more beneficial
+    + unless we introduce proper ":with="item.x as x""
+  + prototype chain is a single object:
+    + meaning updators receive one actual-for-element scope instance
+    + that makes external API easier
+    + that allows handling store via single reactive object
 
 -> possibly we have to just subscribe via mechanism of signals-like deps, and :with just initializes subtree with extended object
 
-## [x] :with? -> ~~let's use `:with="{x:1,y:2,z:3}"` for now~~ ~~:with is poor shim for componentization; ~~ -> :scope/:with is needed for local evals, to prevent leaking values, also we need it for :each anyways
+## [x] :with? -> ~~let's use `:with="{x:1,y:2,z:3}"` for now~~ ~~:with is poor shim for componentization; ~~ -> :scope/:with is needed for local evals, to prevent leaking values
 
   1. Get rid of :with
     + with is bad JS practice/association
@@ -136,9 +137,7 @@
     - `:with` is main way to provide `auto` entry
       ~ we can sacrifice `auto`
     + can be replaced with `:='x=123'`
-  1.1 Slim `:with="{a,b,c}"` - just initializes vars
-    - Doesn't give easy init syntax
-    + Convevtional and not hard to implement
+    - `:with` creates unnecessary updates, like one property updates whole object, and is often an overkill for memory.
   2. Use `:let="x, y=2"`?
     + Doesn't pollute scope but instead cleanly declares local variables
     + Indicates only local initializer, not subscription
@@ -147,52 +146,100 @@
     ? call it `:define="x, y, z"`?
       -> it seems `:with="x=1, y=2"` works well. `:let` has dissonance with js'y let.
     ? how to extend state
-  3. `:with.x="1", :with.y="2"`
-    + easier to parse, since init code can be _messy_
-    - against paradigm
+    + It already just works via `:fx="x=1, y=2"` since we do sandboxing...
+
+### [x] `:scope="a=1,b=2"` instead of with="{...}"? -> yes, but better do both
+
+  + shorter syntax
+  + on par with django, liquid
+  ~ avoids js with association
+  + enables per-variable effects
+  + it's more natural for immediate scope to have access to vars `:fx="x=1,y=2,get=()=>x++"`
+    * rather than creating a layer of storage
+  - unclear/complicated parsing
+  ? or `:define="a=1, b=2"`, `:let="a=1"`
+  - can simply be done via `:fx="a=1, b=2"`
+
+### [x] What's the best name for :scope/:with/:data? -> :scope, but :with is different directive.
+
+  1. :with
+    - bad remembrance of JS with
+      +~ not necessarily the case
+    - `:with="{x:1,y:2,get(){x+y}}"` has problem of immediate scope access, we need define variables instead
+    - `:with` looks weird although it's supposed to make sense
+  2. :scope
+    + the most direct name for "block scope"
+    + `js-scope` makes sense
+    + can be used without data, just to indicate a separate scope
+    + on par with petit-vue
+    + allows autoinit only :scope parts
+    - scope attribute is used for th
+      ~ rare, but can be set via `:={scope:'xyz'}`
+    - :scope/@scope is used in CSS
+  3. :=
+    - cannot be used on its own
+  4. :local=""
+  5. :ctx=""
+  6. `:scope` and `:with` are different directives. First creates a block scope, second extends state with an object.
+
+### [x] Should we extend `:with-<x>`, `:class-<x>`, `:style-<x>`, `:data-<x>`? -> no: duplication, syntax mismatch
+
+  - just aliases for objects
+  - unnecessarily complicates API
+  - `:with-<x>` exposes variable name into attribute space, which is bad
+  - `:data-<x>` is literally covered by default attribute handler
+  - `:style---bar` is hard to parse and hard to read
+  - all we need to solve is - make with not update whole thing
+  ~ but what's the other way? we have to split per-variable effects...
 
 ## [x] Should we inherit values from `init` in `sprae(el, init)`, instead of creating a snapshot of reactive values in `init`? -> nah, nice idea but too little use. Better create signals struct.
 
-+ it allows passing any arbitrary scope to initialize from.
-- it can make hard finding reactive sources...
-+ it is sort-of neat pattern: object parent updates its particular state: it can also have observable method making object a store
--> can be delegated to a separate functionality - init just gets converted to reactive store
-+ it sort-of makes `init` directly a scope (a parent of scope), which is more natural-ish rather than 2 independent entities
-+ can pass both observables and direct state anywhere, eg. init child components from it
--> worthy of a separate library, signal-struct?
+  + it allows passing any arbitrary scope to initialize from.
+  - it can make hard finding reactive sources...
+  + it is sort-of neat pattern: object parent updates its particular state: it can also have observable method making object a store
+  -> can be delegated to a separate functionality - init just gets converted to reactive store
+  + it sort-of makes `init` directly a scope (a parent of scope), which is more natural-ish rather than 2 independent entities
+  + can pass both observables and direct state anywhere, eg. init child components from it
+  -> worthy of a separate library, signal-struct?
 
 ## [x] Per-directive initialize vs per-element initialize -> directives can immediately initialize rest on elements
 
-+ Per-directive is very simple and trivial approach
-- Per-directive doesn't read attributes order and init directives independently
-  ~ Practically linear in-order init doesn't make much service either here
-- Per-directive is a bit hard to deal with scopes
--> gotta benchmark, vs just walker.
--> seems unavoidable to combine :if within :each, since :each should remove elements and init on find only
+  + Per-directive is very simple and trivial approach
+  - Per-directive doesn't read attributes order and init directives independently
+    ~ Practically linear in-order init doesn't make much service either here
+  - Per-directive is a bit hard to deal with scopes
+  -> gotta benchmark, vs just walker.
+  -> seems unavoidable to combine :if within :each, since :each should remove elements and init on find only
 
 ## [x] avoid updating unchanged directives if values don't affect them -> signal struct
 
-? what if we use preact/signals to subscribe only to required props?
--> parseExpr is going to need to be handled by core.js (not directives), and detect & subscribe to dependencies itself
--> so that directive updator gets invoked only when any of expr dependencies change
--> gotta solve via signal-struct
+  ? what if we use preact/signals to subscribe only to required props?
+  -> parseExpr is going to need to be handled by core.js (not directives), and detect & subscribe to dependencies itself
+  -> so that directive updator gets invoked only when any of expr dependencies change
+  -> gotta solve via signal-struct
 
 ## [x] Replace :else-if with :else :if -> yes
 
-+ `:else :if=""` is meaningful expansion of both directives
-+ `:else :if` is coming from JS
-+ `:else :if` doesn't throw error in JSDOM tests
-- less resemblance with vue
-  ~ we don't care as_much, alpine doesn't even have that
-- loses indicator that it's single token, it's still parsed in-relation
-  ~ it should be separate tokens, like :else [do rest]
-- it can confuse `:if :else` for `:else :if` which is wrong
+  + `:else :if=""` is meaningful expansion of both directives
+  + `:else :if` is coming from JS
+  + `:else :if` doesn't throw error in JSDOM tests
+  - less resemblance with vue
+    ~ we don't care as_much, alpine doesn't even have that
+  - loses indicator that it's single token, it's still parsed in-relation
+    ~ it should be separate tokens, like :else [do rest]
+  - it can confuse `:if :else` for `:else :if` which is wrong
+
+## [ ] :else-if token?
+
+  + `:else.debounce-100 :if.debounce-200` is two separate commands, first adds token, second removes later
+  * therefore if we reach `:else` that had no `:if` counterpart, likely that `:if` is prevented by inline `:else`, so we have to wait for it
+  + `:else-if` can be more efficient: it would not initialize fully `:else` with children before going to `:if`. Essentially that would allow lazy init.
 
 ## [x] Keep className marker of directive or not? -> no
 
--> No: first, there's :class directive changing the class itself;
--> Second, there's easier way to just "evaporate" directive = not initialize twice;
--> Third, there's too much pollution with class markers
+  -> No: first, there's :class directive changing the class itself;
+  -> Second, there's easier way to just "evaporate" directive = not initialize twice;
+  -> Third, there's too much pollution with class markers
 
 ## [x] :html? ->  ~~Nope: can be implemented via any prop~~ remove it
 
@@ -202,7 +249,7 @@
   ? how do we instantiate template
     * `:ref => el => el.replaceChildren(sprae(tpl))`
 
-## [x] :fx - to be or not to be? -> nah, already works. Just return `null` in any attr, that's it.
+## [x] :fx - to be or not to be? -> yes, useful
 
   * let's wait for use-case
   + allows avoiding `void` in justin
@@ -314,24 +361,24 @@
 
 ## [x] Write any-attributes via `:<prop>? -> yep`
 
-+ Since we support attr walking, maybe instead of :on and :prop just allow any attributes?
-  + that would allow event and attr modifiers...
-  + that would allow somewhat alpine/vue-compatible code
-+ makes sense for `:="{}"` spread
-+ makes place for other specific directives `:init=""` etc
+  + Since we support attr walking, maybe instead of :on and :prop just allow any attributes?
+    + that would allow event and attr modifiers...
+    + that would allow somewhat alpine/vue-compatible code
+  + makes sense for `:="{}"` spread
+  + makes place for other specific directives `:init=""` etc
 
 ## [x] :value is confusing: <option> also uses that. -> let's skip for now: onchange is not a big deal
 
-? :model="value"
-  + v-model, x-model
-  - confusing
-? :in="text"
-? :input="text"
-? :bind="value"
-  + more accurate logically
-  - conflicts with existing naming (bind is used for attrs)
-  - conflict if used along with `:value="x" :bind="y"`
--> :value="value" :onchange="e=>value=e.target.value"
+  ? :model="value"
+    + v-model, x-model
+    - confusing
+  ? :in="text"
+  ? :input="text"
+  ? :bind="value"
+    + more accurate logically
+    - conflicts with existing naming (bind is used for attrs)
+    - conflict if used along with `:value="x" :bind="y"`
+  -> :value="value" :onchange="e=>value=e.target.value"
   + more apparent and explicit
   + less mental load, "model" is too heavy term
   + overhead is minimal
@@ -495,7 +542,7 @@
   + we might not need swapdom, since nodes manage themselves
   * note the untracked function
 
-## [x] :onclick="direct code" ? -> no: immediately invoked.
+## [x] :onclick="direct code" ? -> ~~no: immediately invoked~~ can do, if a function then it is invoked.
 
   + compatible with direct `onclick=...`
   + no need for arrow/regular functions syntax in templates
@@ -539,13 +586,15 @@
           ? what about temporaries like `@a..@b="id=setTimeout(),()=>clearTimeout(id)"` or `@a.toggle="stop=play(),stop"`
             . use `:with={id:null} @a="id=setTimeout()" @b="clearTimeout(id)"`
   - imposes illicit `event` variable ~ although compatible with standard, still obscure
+    ~+ not always needed
   - `@` prefix is unchangeable ~ can be removed, not set, but still on the verge.
+    ~+ can be customized
   - `@click.toggle="code"` has same problem as `@a..@b` - how can we make code separation in attribute?
     + remove toggle
   + overall less code
     - unless user prefers `:onclick="e=>()"`
   - just a synonym to `:onclick="e=>()"` which doesn't bring own value
-  - `:onclick=e=()` is self-obvious (more obvious)
+  - `:onclick=e=>()` is self-obvious (more obvious)
   - `@click="something, e => somethingOut"` is weird code and makes implicit event explicit
 
 ## [x] Multiple chain events resolution -> redirect to main event for now
@@ -676,36 +725,7 @@
       * onkey.after, onkey.microtask, onkey.defer, onkey.immediate
       * onkey.tick-1?
 
-## [ ] Prop modifiers
-
-  - overall seems code complication without much benefit
-  * ~~value.bind? value.watch?~~ no sense beyound value/ref
-    - let's wait for use-case: value can be too big to set it every time
-  * ~~prop.reflect, prop.observe~~ signals are autoobserved
-    - let's wait for use-case
-  * ~~prop.boolean, .number, .string, .array, .object~~ defined per-property
-    - let's wait for use-case
-  * prop.once, prop.init
-  * ~~prop.fx ?~~ fx is there
-    - doesn't seem required, let's wait for use case
-  * prop.change - run only if value changes
-    - seems like unnecessary manual optimization that must be done always automatically
-    ? are there cases where force-update is necessary?
-  * prop.throttle-xxx, prop.debounce-xxx
-    - let's wait until that's really a problem
-  * prop.class
-    ? what's the use-case
-  * prop.next="" - run update after other DOM updates happen
-  * prop.fx="" - run effect without changing property
-  * x.prop="xyz" - set element property, rather than attribute (following topic)
-  * x.raf="abc" - run regularly?
-  * x.watch-a-b-c - update by change of any of the deps
-  * :x.always - update by _any_ dep change
-  * :class.active="active"
-  * :x.persist="v"
-    - solvable via nadis
-
-## [x] Writing props on elements (like ones in :each) -> nah, just use `:x="this.x=abc"`
+## [x] Writing props on elements (like ones in :each) -> nah, ~~just use `:x="this.x=abc"`~~ use ref
 
   1. `:x="abc"` creates property + attribute
     - can be excessive pollution
@@ -731,7 +751,7 @@
   5. `:x="this.x=value"`
     + yepyepyep
 
-## [x] Insert content by reusing the node/template -> use ~~`:render="ref" :with="data"`~~ `:html="ref" :scope="{}"`
+## [x] Insert content by reusing the node/template -> use ~~`:render="ref" :with="data"`~~ ~~`:html="ref" :scope="{}"`~~ :ref="item=>item.innerHTML=..."
 
   * Makes easy use of repeatable fragments, instead of web-components
   + sort-of "detached" for-each
@@ -813,18 +833,6 @@
   + less API
   + anyways updating every prop reflects DOM update immediately, there doesn't seem to be a big win
   + multiple props can be combined into computed signal or called manually via batch
-
-## [x] 9.0
-
-  * [x] subscript-based parsing
-    + see subscript-based store: mainly CSP & no-store eval
-  * [x] rename :with to :scope
-  * ~~Get rid of `:on` events - attributes are no-fn expressions~~ -> ok to keep arrow functions
-  * [x] Get rid of sprae.auto
-  * [x] No-batch: updating signals updates target nadis
-  * [x] No store, directly signals
-  * [x] Plugins
-  * [x]x ~~Rewrite with `nadi`: sprae becomes just a form of hypd + nadi, one of nadis essentially~~ -> nadi is extension, not base
 
 ### [x] What should we do with `this` in case of subscript? -> we get rid of that and use `:ref`
   * It doesn't ship keywords by default
@@ -1075,10 +1083,15 @@
 ## [x] Should we create per-object signal, instead of per-property? -> No
   - it gives less granular updates: full array gets diffed, all nodes get refreshed
 
-## [x] ~~Should we replace `:each="item in items"` to `:each.item="items"`?~~ -> fixed via custom .parse
+## [x] Should we replace `:each="item in items"` to `:each.item="items"`? -> no, we stick to parse redefine
 
   - non-conventional
-  + `:each` is the only exception now that needs custom expr parsing
+  + `:each` is the only exception that needs custom expr parsing
+
+### [x] Should we oversubscribe/overparse instead of custom parsing (double-parse)? -> no, we stick to parse redefine
+
+  + we already use sub-effect, so we can parse again and subeffect again
+  - returned function is handled asynchronously
 
 ### [x] When signal with array is used as store value {rows:signal([1,2,3])} - what's expected update? -> let's make it full reinit array, since it's most direct
 
@@ -1102,7 +1115,7 @@
   + arrays don't need setters/getters
   + arrays don't usually have parent scopes
 
-## [x] Can we use Object.create for :each scope? -> no, let's make it flat
+## [x] Can we use Object.create for :each scope? -> ~~no, let's make it flat~~ - yes, it's more performant
 
   - We need `:ref="el"` to inject element instance per-item
     + We don't really need to create a separate scope for that, we can just preset ref only for subscope
@@ -1114,17 +1127,33 @@
   + It would allow us to get rid of `parent` in `store`, which is less static + dynamic trouble
   + `:scope` defines only particular local variables, but generally access to root scope is preserved
 
-### [x] should we rename `:scope` to `:with` then, to avoid confusion? -> Yes, :with is flat, it's better. Also it doesn't conflict with attributes
+## [ ] Should :each create own scope (or keep parent scope)?
 
-  + less confusion - doesn't create actual scope
-  - bad remembrance of JS with
-    +~ not necessarily the case
-  - `js:scope` makes more sense
-  - on par with petite-vue
-  + scope attribute is used for th
-  + also :scope/@scope is used in CSS - too much for the concept
+  + allows `:ref`
+    ~ can be done as `:scope :ref='x'`
+  - performance hit
+  ~ we don't really need it as much, do we?
 
-### [x] store: should we prohibit creation of new props? -> no
+### [ ] Should :ref create own scope instead?
+
+  - doesn't expose item to the parent state
+    ~ :each with scopes doesn't expose either
+
+## [ ] Should we pre-parse directives?
+
+  + :a:b -> :a :b decoupling
+    + shorter init code
+    - breaks chains :a:b..:c:d
+  + enables forwarding, eg. :else -> :else :if=1
+    ~ entails modifiers handling, which makes them unified
+    - sole purpose
+
+## [ ] _stop flag instead of _state = null
+
+  + Presence of state doesn't indicate if item should be prevented on init.
+    + Eg. `:else :scope :text :on`
+
+## [x] store: should we prohibit creation of new props? -> no
 
   + Structs make objects nice: small, fast, obvious
   - Difficulty for arrays: we cannot really avoid creating new props there
@@ -1134,52 +1163,16 @@
   ? Do we need extending root scope? Like writing some new props to it?
   + `with` doesn't allow writing new props anyways
 
-## [ ] Componentization: what can be done? -> likely no for now. When html-include is there we can talk
-
-  1. define-element
-
-    - templating uses django syntax - leads to verbatim conflict
-      ~ we're not necessarily going to use django
-    - `<template>` within `<template>` is not nice, for the case of :each etc
-      ~ foreach works as `<template directive="foraeach" expression="...">xxx</template>`, so it shouldn't be a problem
-    - no obvious way to import elements
-      - requires some bundling, likely for HTML
-    - non-standard
-
-  2. JS custom elements
-
-    + allows esm bundling of templates
-    + allows evaluatig sprae manually
-    + fine-grain control of attributes
-    - requires innerHTML
-    - direct competition with JSX, which is weird
-    ~ we can make spraex extension for JSX to allow :on attributes
-
-  3. No componentization
-
-    + discipline of tiny single-purpose apps
-    + factors componentization out to other libs
-    - makes sprae less useful as dependency
-
-  4. include / html / render
-
-    + gives intermediate solution
-    + classic
-    - no components
-    - a bit implicit
-
-  5. htmx-like requests
-
 ## [x] Pause/resume components (detached :if should not trigger internal fx) -> complete disposal cycle
 
-1. `paused` flag per-effect
-  - @preact/signals unsubscribes from previously subscribed props
-  - requires every single effect to handle `paused` flag
+  1. `paused` flag per-effect
+    - @preact/signals unsubscribes from previously subscribed props
+    - requires every single effect to handle `paused` flag
 
-2. keep track of effects, detach/reattach
-  - separate mechanism over _dispose - requires flags etc
+  2. keep track of effects, detach/reattach
+    - separate mechanism over _dispose - requires flags etc
 
-3. dispose / resprae via setAttributeNode
+  3. dispose / resprae via setAttributeNode
   + completes disposal method
   - requires storing initial `:` attributes
   + `:each` already does that way: just stores initial element as template, untouched
@@ -1250,7 +1243,7 @@
     ~+ `s-id:name` is available
   + it's low hanging fruit
 
-## [x] :init? For autoinit elements -> no, use `init` but keep data from `:with`
+## [x] :init? For autoinit elements -> no, use autoinit but keep data from `:scope`
 
   + makes init property on par with other sprae properties
   + can init multiple entry points in document
@@ -1263,11 +1256,36 @@
   - that's same as `:with`
   - `init` reads JSON, `:with` reads regular JS objects, they're not same
 
-### [x] TS doesn't allow arbitrary attributes on `<Script>` tag, but prefix (surprise!) is allowed. -> sprae.auto.js
-  * Do we ever need UMD without autosprae?
-  * let's add auto entry.
+## [x] Autoinit - how? inert? sprae? init? -> wait until first request to not autoinit -> autoinit UMD by default -> `data-sprae-start / start` attribute
 
-## [ ] What's the best place for `untracked` to prevent faux root subscription in :with > :ref?
+  * TS doesn't allow arbitrary attributes on `<Script>` tag, but prefix (surprise!) is allowed.
+
+  0. Do we ever need UMD without autosprae?
+    + alpine autoinits, it doesn't wait
+
+  1. sprae.auto.js
+    - redundancy of entry - essentially just UMD with auto flag
+
+  2. `<script init>`
+    + petit-vue way
+    - TS errors on that attribute
+
+  3. `<script inert>`
+    + resolves nextjs issue
+    + we are unlikely to use that anyways
+    - grok advices against it
+
+  4. `<script data-sprae-init data-sprae-prefix="js-">`
+    + standard way
+    + allows other props
+    - verbose
+    - doesn't use prefix
+
+  5. Autoinit until first request.
+    + ESM entry is best alternative for such case
+
+
+## [x] What's the best place for `untracked` to prevent faux root subscription in :with > :ref? -> best way to init outside of parent effect
 
   1. Whole sprae
     - overkill-ish
@@ -1276,45 +1294,551 @@
   3. Each pre-eval call, :ref, :value
     - doesn't generally save the issue
 
-## [ ] Async effects init?
+  4. Outside of parent effect:
+    + effect can be async, so it must not cause async init
 
-  + Allows referring to newly created state from inside methods
-  + Errors in effects in first run don't break sprae
+## [x] Immediate state access #58 -> pre-create store
 
-## [ ] s-cloak? Hides contents until sprae finishes loading
+  1. Async effects init
+    + Allows referring to newly created state from inside methods
+    + Errors in effects in first run don't break sprae
+      - we still brand errors
+    + Possible batch update
+    + Possible await in effects
+    - First blank frame
+    - delay in init
+    - all other frameworks are sync
+    - grok conclusion is no https://grok.com/share/bGVnYWN5_8d145672-9faf-4df9-8b5a-9f190ac7e58f
+      - size bloat, not sprae philosophy, existing alternatives
 
-  * wait until needed
-  + provided by lucia l-mask, alpine a-cloak, vue v-cloak
+  2. `x.async` prop modifier
+    - whole syntax conceptual space
+    + we already do `parts`
+    + it's `async func` directly
 
-## [ ] s-ignore? Excludes element from spraeing
+  3. `sprae.async` flag
+    - unmade decision
 
-  * wait until needed
+  4. `async.sprae` flavor
+    - not sufficient for a separate flavor
+    ~+ unless we make batch, async effects
+
+  5. Just export `sprae.store`
+
+## [x] Should we separate `k,v in b` to `k in b`, `v of b` -> no. Use v,k in b, as all other frameworks do
+
+  + likely perf optimizatino
+  + same as in JS
+  + we rarely need both key and value
+  + possibly less issue with store
+  + it's hard to remember if it's k,v or v,k
+  - contrary to all-frameworks convention
+  - js should've had it
+  - it's called `each`, not `for`
+
+### [x] ALT: keep only `k in b` -> no
+
+  + will simplify state management: k doesn't change, unlike item
+  + if you want separate scope - just create via `:with.item="items[i]"`
+    ? can we make `:let="item=items[i]"` instead of `:with`?
+
+## [x] Should we make all directives accept function? `:x="()=>{}"` -> yes, makes sense for tapping prev value, like :ref
+
+  + #60 and others, sort-of natural expectation
+  + solves the issue with flat events: we can write it without event right away, if event is not needed
+    * `:onclick="a+1"`
+  + we already sort-of do that in `:ref` - value writes to state, func taps into element
+  + that would allow access to previous value
+    * `:text="prev => !prev ? start : prev+1"` in counter
+    * `:text.throttle-500="v => v + '-'"` for progress bar
+      ~+ there's no easy way to do that via state but create a scope with manual setInterval
+    + acts as reducer
+  + works well with prop modifiers
+    + that would unify prop modifiers with event modifiers
+  - code redundancy, syntax complexity
+  +~ allows calling methods with different params, like `next="x=>goto(p+1)"`, `prev="p=>goto(p-1)"`
+    ~ not sure if that's good example
+  + react setState allows function
+  + it's more like inserting computed property
+  + easier switch between branches `:style="() => a ? {...a} : {...b}"`
+    - can do the same flat
+  + timer is as easy as `:text.interval-1000="prev => (prev ??= 0, prev + 1)"`
+  + we can for style actually pass el.style object instead, possibly with .computed property
+  - incoherent signature
+    - sometimes it takes prev value and updates with returned value `:text="prev => newValue"`
+    - sometimes it takes native object and updates it, ignoring return `:style="style => style.x = 123"`
+      ~+ we can make arg immutable, `obj` for style, `str` for class.
+    - `:fx="a => b => c"` vs `:fx="..., b => c"`
+    - `:ref="el => (mount, () => unmount)"`
+    - `:ona..onb="..., b => c"`
+
+## [x] How to detect function vs direct code `:x="x=>x"` vs `:x=x`? -> let's just try invoking the result if that's a function
+
+  - generally mixing things up like that is generally a mess (sorry vue, that's f*d up)
+
+  0. If effect returns a function, we call that function (continuation of normal effect flow) that's it.
+    * We can create a subeffect for returned function
+    + that makes events both inline or by-method
+    + that enables other effects to be functions
+    ~- that screws up fx cleanup, since it becomes `:fx="() => () => cleanup()"`
+      - `:fx` doesn't have argument, so we enforce fn without a good reason
+
+  1. Make all directives via events
+    + unified code
+    - `:onx` event vs `:x` property becomes the same, not different
+      -~ `:click` and `:onclick` are potentially different things
+      +~ but they never intersect in HTML, besides spread is there for that
+    - possibly a bit heavier - triggering events for props
+    + allows subscribing directly to props change, like `onstyle`, `onclass`, `ontext`, `onif`!, `oneach` - useful!
+      + `.emit` modifier for that purpose
+
+  2. `:on`, `@` for events, `:` for else
+    - `:` props has code that detects a function, same as event
+    + `@` allows binding multiple events to props change
+
+  3. detect statically
+    - doesn't detect property from state `:x="xEffectFn"`
+    + allows unified way to pre-parse expr, as `:each` does
+
+## [x] Should directives return `dispose` (instead of forcing effect `update` loop)? -> no, we need to on/off effects, so we need update fn
+  + generally speaking directives don't have to follow single-effect update schema
+    + eg. events don't need to react to every effect change
+    + scope, fx doesn't have a return
+    + directives can be async, interval etc - they generally define behavior
+    - we decide async logic my modifiers, not arbitrarily by effects. Effects are supposed to be direct sync call.
+  - takes more space
+  - we should have control over disabling / re-enabling effects (on/off), so we need update fn as well
+  - we control evaluation via standard mods, so we need update
+
+## [x] Should we have a separate event handler/prefix like `@`, or that's just a kind of directive? -> no, let's keep : and alpine entry separate
+
+  + allows easier alpine, vue entries
+  + allows cleaner `sprae` code
+  - performs extra check per-attribute
+  - way more lengthy to implement and support
+  - indecisiveness
+
+## [x] Should we register full name of directive `:x`? -> no, let's keep things simple
+  - No way to customize prefix
+    - Complicates JSX entry
+  - No much perf profit if not less
+
+## [x] Flat directives.js instead of directives/ -> yes
+
+  + simpler code, less weight
+  + we need to _finish_ project, not continue, so we must not leave "extension" capabilities as much
+  + copy-paste for custom bundle
+  + directives are interconnected
+
+## [x] Should we make :* any attr part of core? -> no, let's add on*, * wildcards instead
+  + allows special arg (name) case not needed for other attribs
+  + allows better separation of events directive (no need for condition)
+  - probibits no-any bundles
+    + vue, alpine ship default-fallback `:*` always anyways
+
+## [x] Should :scope wait for modifier? -> yes: we may need to postpone execution
+  * debounce, throttle, tick, async, raf, idle
+  + natural way to postpone init of a subtree, eg. waiting for API response
+  + standard way to provide `el[_state] = null`
+
+## [x] Does it make sense to have chain :ona..onb for any attrs, as :foo..bar? What would be the cases? -> no, can't see a single use case
+
+  - bloats up core a bit
+    + shorter code in total
+  - looks useless, no clear idea what for
+  + reduces load from events handler
+  + makes generic tool: altering attrs
+  - `:text..text="() => () => 'b'"` - is returned value a text or a function for next effect?
+  + if we convert all effects to events, then we'll have unified handling `:ontext..ontext`
+    + `:click` will be same as `:onclick`
+  ~ We can do `sprae.init` that handles kinds of syntax.
+
+## [x] `:ona:onb..onc:ond` -> `:ona:onb .. :onc:ond`
+  + this allows binding multiple cross-related events
+
+## [x] Should we convert directives like :text to events and subscribe to them? -> no, events have no effects
+  - slower
+  + unified code handling for events / modifiers
+    - not really
+  + no need for `.emit` modifier
+    + which saves args passing to mods as well - its code wouldn't be obvious
+  - events are separate branch, they don't depend on effects
+
+## [x] Delayed effects: how do we subscribe to out-of-context debounced calls? -> we should have _change signal and trigger effect only by it
+
+  * https://grok.com/share/bGVnYWN5_dc406b06-2dca-470a-9931-7dc4ef83b4a6
+  1. Init call is immediate, all subsequent calls are scheduled
+    - scheduled calls still lose the context
+    - it schedules multiple calls for multiple changes, instead it should batch
+  2. Modifiers belong to store: it collects all changes until the next "commit", which triggers all async signals
+    ~ we have to decouple signal writes from secondary effect calls
+    * so it must be self-calling effect, but it must check if it comes from direct prop change it should just schedule itself and recall in proper scheduled way
+  2.1 Trigger effects only coming from events
+    * We can check if first argument in effect is event, then we trigger it, otherwise we dispatch an event (or schedule)
+    + solves the issue above
+    + covers .emit out of the box
+    - by the time of second (deferred) call we have to run effect in the same (initial) context.
+      ~ for that we need to have a special "authorized" signal that will trigger the effect, not regular signals
+      ~ it will be similar to 2. - we'll have "staged" state and "commit" state.
+      ? how do we find out that the effect was triggered by _commit/_change signal?
+  2.2 We run effect only by _change signal.
+    * That signal is set only through scheduler.
+    * Every effect has its own `_change` signal.
+  3. ~~We wrap async call into same effect~~
+    - it doesn't deduplicate, second function is subscribed along with the first one
+  4. Attribute controller
+    + Can be simplified in microsprae: sync, no modifiers
+
+### [x] Should we apply .tick ~~and .emit~~ automatically? -> unavoidable to prevent cycle
+
+  + less API
+  + automatic batching
+  + events out of box, used for effects
+  + unavoidable to prevent loop
+  - tick is not necessary
+  - makes updates slightly heavier
+  - .emit manually can be default prevented to skip update, so no use
+
+### [x] Conditional queries: md:onclick, lg:onclick etc? -> .screen-<size> plugin
+
+  + tailwind-like
+  + can be handy I suppose
+
+## [x] Attributes/events mixup. Do we need prop modifiers? -> no
+
+  - Attributes are called when internal prop changes, events are called by external trigger.
+    - There's no indicator of that difference
+  - That affects modifiers: it is also mixed up now - it applies differently to prop or event
+  - Some modifiers can actually be events, like :raf, :idle, :interval, :once === :init
+  ? What is the main case we need modifiers for regular props?
+
+### [x] Do we need direct events like :click without :on prefix? -> keep only :on
+
+  + Shorter
+  + Technically no intersection for default events
+  - custom events can interfere with props
+  - some props might have same name as standard event
+
+## [x] :else :if doesn't completely off itself when not matched -> done as centralized handler
+  * `:else :if` lazy-inits `:if` by `:else` on the component itself, adding own destructor to the own list of offs.
+    - by that when the `:if` condition not matches it destroys itself, causing losing signal propagation chain.
+  * how to avoid that?
+  1. Move `:else :if` logic into `:else`?
+    - nope, it doesn't help much - `:else` still lazy-spraes on element itself, since `:if` is still present after `:else`
+  2. Initialize `:else :if` in a single run at once.
+    - but `:if` may have own mods making it async
+    - also it might be `:else:if=""`, which is handled by initDirective
+  3. Can we find `:if` somehow during `:else` and init via `initDirective` (whatever it's called)?
+    + It would create only single `off` for `:else :if` element
+    ? how to find it, since it might have modifiers?
+  * We need only one destructor in `:else :if` element _or_ both destructor belonging to the root _or_ exclude own destructor from turning off
+  * We may think `:else` should handle `:else :if`
+    * But then `:if` from `:else :if` should somehow update _match state to propagate change, which subjects it being offable
+  4. Can we for lazy-init pass parent where to add destructors?
+    - We still need to be able to turn off all other events etc on the element
+  5. Can we try to make fake-else, so that it is ok to be _off'd?
+    + The update function returned by else is anyways called only by `_prev?._match.value`
+    * We come to dilemma: should `:else` stop and lazify further init by condition, or it should let subsequent `:if` to initialize to decide
+      * If we stop, then we cannot init `:if`
+      * If we continue, then we initialize only-`:else` even when condition is not matched
+
+## [x] Prop modifiers -> makes sense for :text.once, :text.interval-<n>, :value.tick, :value.throttle-100, :value.persist, :style.raf,
+
+  * Main variants
+  * ~~value.bind? value.watch?~~ no sense beyound value/ref
+  * ~~prop.reflect, prop.observe~~ signals are autoobserved
+  * ~~prop.boolean, .number, .string, .array, .object~~ defined per-property
+  * prop.once
+    + actually it's existing event modifier
+    - can be replaced with :init
+      + can be more useful than :init since can specify the directive
+      + :oninit is custom event, not fit into sprae semantic space
+  * ~~prop.change - run only if value changes~~
+    - seems like unnecessary manual optimization that must be done always automatically
+    - some values don't change, like class or style
+    ? are there cases where force-update is necessary?
+  * prop.throttle-xxx, prop.debounce-xxx
+    - let's wait until that's really a problem
+    + can be useful for :value='' to prevent frequent updates
+  * ~~prop.interval-500~~
+    + `:fx.interval-500="el.scrollLeft += 10"`
+    - can be a custom event instead
+      + value param for event name is not natural
+    - not natural for props to be triggered this way
+    - can be done as `:fx.once="setInterval(()=>...,1000)"`
+  * prop.* – multiple values for same prop
+  * prop.tick="" - run update after other DOM updates happen
+    + helps resolving calling a fn with state access
+  * ~~prop.fx="" - run effect without changing property~~ fx is there
+  * ~~x.prop="xyz" - set element property, rather than attribute (following topic)~~ do it via `:ref` or `:fx`
+  * x.raf="abc" - ~~run regularly?~~ throttle updates
+    + can be useful for live anim effects
+  * ~~x.watch-a-b-c - update by change of any of the deps~~
+  * :x.any - update by _any_ state change
+  * :x.persist="v"
+    - solvable via nadis - persisted signal
+    - doesn't match with all directives, mainly only :value
+      ? a special directive, like `:presisted-value`?
+  * :x.lazy?
+  * :x.memo?
+  * :x.trim?
+  * :x.screen-md=""
+
+  ~ so props have to do with describing how effect is triggered.
+  + It seems event modifiers can be applied to any props: interval, debounce,
+  + it allows factoring them out
+  - it brings us to a tough spot where we deal with asynchronous conditional, which is hard and fragile.
+
+## [x] Modifiers: remove dash parameter and use dot notation instead? -> likely no, too cluttery
+
+  + Enables `debounce.tick`, `debounce.frame`, `debounce.100`, `debounde.idle`
+  + Coherent with `.stop.immediate`
+  + Coherent with directive names: dash is used for name, not parameter
+    + We don't use dashes there
+  + Coherent with alpine
+  + Removes variety of modifiers
+  - parsing is complicated - it reverses the order of functions
+  - now it's possible to `.ctrl-a` for example. `.ctrl.a.b` is wrong and ugly.
+
+## [x] Autoinit via mutation observer? -> let's try, seems ok
+
+  + runs until document is loaded
+  + immediately inits all new nodes, opposed to displaying half-baked content
+  + alpine keeps MO for entire document lifecycle
+  * suppose sprae doesn't create elements outside of own scope, so we don't need to observe spraed nodes
+    * it fully controls the subtree in other words
+  * therefore we need to observe the root, since new spraeable nodes can appear anywhere
+  * the question is what's spraing strategy to exclude spraeable els from MO triggering
+
+  1. Sprae top root
+    - one-time long iterating
+    + MO is attached after sprae, which excludes :each and other triggers of MO
+    + easier to turn off/on the whole thing
+    * any new nodes with spraeable attribs means it's outside of current sprae scope, need to be handled with scope of the root (`initElement`)
+  2. Sprae sub roots
+    - collecting subroots cost
+      - not a fact it's faster than one-time iteration
+  3. Sprae elements with spraeable attributes
+
+## [x] Observing .length strategy -> override mutator methods, there's no other reliable way
+
+  1. Detect mutator method, count .length access
+    + it seems mutators follow the pattern reading .length and then setting length
+    - might be not very reliable
+    - `x.push(x.length = x.length + x.length)` - hard to argue when's `.push -> .length` reading vs outside reading
+      - it must be still subscribable by reading `x.length` inside of `push(x.length)` - so we have no choice but set flag on the moment of call
+  2. Wrap mutator methods
+    + reliable
+    - heavier code
+    -~ possible conflicts
+    - likely slower
+
+## [x] Isolate effects contexts/scopes
+  * Imagine a situation when `<x :onx="list.push(123)"/><y :text="list.length"/>`
+    * whenever we do `onx` it updates list.length in the same tick
+    * in other words tight coupling, `list.push` includes update of `y:text`
+  * We would want for these contexts to be independent. How?
+  * It should init synchronously, but updaing effects via debounce.
+    + that would allow batching organically.
+    + that would solve preact issue
+    + we can make sync version for microsprae.
+  * For now just skip only one .length read in mutators
+
+### [ ] Should we maintain directives attributes on elements instead of removing them?
+
+  + allows easier resprae of element
+    + non-invasive
+  + easier DOM debugging
+  + allows disposing on element removal and reinit on adding back
+  - dirtier DOM
+    - not evaporating
+  + that would allow `sprae.stop()` counterpart to `sprae.start()`
+  + alpine flavor would need it
+
+## [ ] Componentization: what can be done? -> likely no for now. When html-include is there we can talk
+
+  1. define-element
+
+    - templating uses django syntax - leads to verbatim conflict
+      ~ we're not necessarily going to use django
+    - `<template>` within `<template>` is not nice, for the case of :each etc
+      ~ foreach works as `<template directive="foraeach" expression="...">xxx</template>`, so it shouldn't be a problem
+    - no obvious way to import elements
+      - requires some bundling, likely for HTML
+    - non-standard
+
+  2. JS custom elements
+
+    + allows esm bundling of templates
+    + allows evaluatig sprae manually
+    + fine-grain control of attributes
+    - requires innerHTML
+    - direct competition with JSX, which is weird
+    ~ we can make spraex extension for JSX to allow :on attributes
+
+  3. No componentization
+
+    + discipline of tiny single-purpose apps
+    + factors componentization out to other libs
+    - makes sprae less useful as dependency
+
+  4. include / html / render
+
+    + gives intermediate solution
+    + classic
+    - no components
+    - a bit implicit
+
+  5. htmx-like requests
+
+  6. https://github.com/jhuddle/ponys
+    + takes the toll of including, enabling, defining components in minimal way
+
+  7. Parent -> child defining the behavior, like css or delegate does
+
+## [ ] Directives
+
+  * s-cloak? Hides contents until sprae finishes loading
+    * wait until needed
+    + provided by lucia l-mask, alpine a-cloak, vue v-cloak
+    ~ can be handled automatically?
+
+  * s-ignore? Excludes element from spraing
+  * s-include / s-html?
+  * s-teleport
+  * s-modelable
+  * s-init
+    + instead of :fx.once. An event - oninit
+  * s-raf
+    + instead of :fx.raf. An event - onraf
+  * s-interval
+    + instead of :fx.interval. An event - oninterval
+  * ~~s-show?~~ use hidden attribute
 
 ## [ ] Plugins
 
-  * @sprae/tailwins: `<x :tw="mt-1 mx-2"></x>` - separate tailwind utility classes from main ones; allow conditional setters.
+  * See https://github.com/alpinejs/alpine/tree/main/packages
+  * @sprae/data, /item, /aria
+  * @sprae/tw: `<x :tw="mt-1 mx-2"></x>` - separate tailwind utility classes from main ones; allow conditional setters.
   * @sprae/item: `<x :item="{type:a, scope:b}"` – provide microdata
     - can be solved naturally, unless there's special meaning
   * @sprae/hcodes: `<x :hcode=""` – provide microformats
   * @sprae/visible?
     - can be solved externally
+    * cannot be a modifier: it's onvisible/oninvisible events
+    + pluggable directive
   * @sprae/intersect
+    + pluggable directive
+  * @sprae/anchor
+  * @sprae/collapse
+  * @sprae/sort
   * @sprae/persists - mb for signals?
-  * @sprae/input - for input values
+    + pluggable modifier
   * @sprae/scroll - `:scroll.view.x="progress => "`
   * @sprae/animate -
-  * @sprae/
+  * ~~@sprae/mount -~~
+  * media - .screen-md
+  * .interval-<tick|raf|number> - modifier for timers
 
 ## [ ] Reasons against sprae
 
   - requires loading script anyways - not native event callbacks
   - ~~no `this` keyword makes it a bit cumbersome~~
   -~ separate syntax space even with `:` prefix - conflicts
-  - perf-wise vanilla is still faster
+  - perf-wise vanilla is faster
+  - initial loading delay.
+  - chatgpt is super easy to ask to generate basic code
 
 ## [ ] Integrations
 
   * Any personal SPA
   * Wavearea
   * Sprae website
-  *
+
+## [ ] Example ideas
+
+  * Hello world
+  * Day/night switch
+  ```html
+    <script src="https://cdn.jsdelivr.net/npm/sprae@12.x.x" start></script>
+
+    <div :scope="{ isDark: false }">
+      <button :onclick="isDark = !isDark">
+        <span :text="isDark ? '🌙' : '☀️'"></span>
+      </button>
+      <div :class="isDark ? 'dark' : 'light'">Welcome to Spræ!</div>
+    </div>
+
+    <style>
+      .light { background: #fff; color: #000; }
+      .dark { background: #333; color: #fff; }
+    </style>
+  ```
+  * Namaste / Hello World
+  * Japa counter
+  * Animated scroll
+  * Random palette for theme
+  * Slider
+  * Todo list
+  ```html
+    <div :state="{ value: '', todo: [] }">
+      <input :value="value" />
+      <button :onclick="todo.push(value)">Create</button>
+      <ul :each="task in todo">
+        <li :text="this.task">My Example Task</li>
+      </ul>
+    </div>
+  ```
+  * Status indicator on/off
+  * Breathe in / out
+  * Rotation animation
+  * Progress animation
+  * Marquee
+  * Waveform indicator
+  * Details like in alpine
+  * Tabs (+ filters switch like in tw example)
+  * Click to copy
+  * Tooltip
+  * Scroll animation
+  * Motion adjustment
+  * Autotype
+  * Any plugins from jquery hoard et
+  * 7GUIs https://eugenkiss.github.io/7guis/
+  * forms
+  * routing
+  * animations
+
+## [ ] FAQ
+
+  * https://grok.com/share/bGVnYWN5_4fb0e9f5-af5f-44b2-97f6-6327b7b540d1
+  ! compare implementation of all frameworks
+
+## [ ] Website
+
+  * refs: https://poolside.ai/, https://alpinejs.dev/
+  * [ ] Intro: core philosophy, features, quick meaningful example, "Get started"
+  * [ ] Why?: comparison, benefits (no build step, light, fast, SEO-friendly, no SSR needed), use-cases, testimonials, cases
+  * [ ] Docs: installing, core concepts, directives, recipes (forms, routing, animations), best practices (tips for perf, debugging, maintaining)
+  * [ ] Examples: todo, counter, dynamic form. Very common els
+  * [ ] Showcase gallery?
+  * [ ] Playground: share/download
+  * [ ] Community: github, blog, tutorials, announcements
+  * [ ] FAQ: What's PE? How sprae compares to <framework>? Can I use with other FW? Is it suitable for large scale?
+  * [ ] Friends: related libs
+  * [ ] Trust: contact, contributors, sponsor; built with: links
+  * [ ] JS-framework-benchmark ref
+  * [ ] Transition guide from alpine/petit
+  * [ ] Sponsor development (of components)
+    * [ ] paypal
+    * [ ] stripe
+    * [ ] bitcoin
+    * [ ] gumroad
+
+## [ ] Components / drops
+
+  * [ ] Open UI
+  * [ ] Tailwind components
+  * [ ] Alpine components
+  * [ ] Codrops
+  * [ ] Jhay
+  * [ ] Codepen

@@ -1,19 +1,19 @@
 import './signal.js'
 import './store.js'
-
-import './other.js'
-import './class.js'
-import './each.js'
-import './if.js'
-import './ref.js'
-import './style.js'
-import './text.js'
-import './value.js'
-import './with.js'
-import './events.js'
 import './core.js'
+import './directive.js'
+import './modifier.js'
 
+// switch signals to custom implementation
+import { use } from '../core.js'
+// import * as signals from 'ulive'
+// import * as signals from 'usignal'
+import * as signals from '@preact/signals-core'
+// import * as signals from '@preact/signals'
+// import * as signals from '@webreflection/signal'
+use(signals)
 
+// patch outerHTML to document fragments
 Object.defineProperty(DocumentFragment.prototype, "outerHTML", {
   get() {
     let s = "";

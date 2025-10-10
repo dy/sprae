@@ -159,35 +159,74 @@
 * [x] js-framework-bench push + example
 * [ ] add test for jsperf adding multiple elements - make sure it's O(n), not n**2
   * [ ] maybe just add jsperf bench as tests
-* [ ] immediate scope
+* [x] ~~immediate scope~~ -> :scope
 * [x] ref doesnt add to with -> it forces null init
 * [x] test: create store separately case
-  * [ ] make async effects init?
 * [x] test: new prop/signal added to root store: substore doesn't have it
 * [x] test: one effect error (like wrong syntax) should not break all subsequent effects
 * [x] test: two refs with same name, like `list`.
 * [x] sandbox property for store
 
-## [ ] Optimizations (https://krausest.github.io/js-framework-benchmark/current.html)
+## [ ] v12
 
-* [x] Append rows to large table is THE SLOWEST
-* [~] Create many rows IS SLOW
-* [ ] Try reducing memory use
+* [x] Don't do unnecessary customization like on*, *. Just do minimal workable bundle.
+* [x] generalize prop modifiers
+* [x] make dirs accept functions
+* [x] separate events from props
+* [x] enable async effect and run all basic tests
+* [x] v11 nested each bug (github)
+* [x] :else :if offing -> keep this side-effect of not turning off :else-ifs for now
+  * [x] ? why doesn't :if turn off itself when _off is called? -> because :if destructor (off) is added to the root element, and :if itself has own _offs_
+    * The issue here is when we init `:else :if`, it happens on the same component, therefore `:if` is added to existing _offs_, not the root one.
+* [x] :if preact issue: it has screwed up order of effect callbacks & :else should be able to have mods
+* [x] disable prop modifiers shortcut and test all effects
+* [x] modularize
+* [x] ~~flavors: alpine, vue, micro, secure~~
+* [x] switch signals to preact and test everything
+* [x] flat directives
+* [x] get rid of :data, :aria
+* [x] run effects after collecting them
+* [x] :scope instead of :with
+* [x] simplify nested store: just object inheritance
+* [x] pass globals to store
+* [x] expose sprae.compile, .prefix, .dir
+* [x] make :each use inheritance instead of Proxy
+* [x] `:value` tests
+* [x] move modifiers to sprae.js
+* [x] event extra modifiers tests
+* [x] prop modifiers tests
+* [x] async callbacks tests
+* [x] Better autoinit: mutation observer until page loads?
+* [x] test: finish ajamila poll with v12
+* [x] something is off with updating condition based on list length
+* [x] make dir/mod separate objects, outside of use
+* [x] async functions... alpine does it well
+* [x] if, let, const, semicolon syntax allowance
+
+* [ ] find alternative way to update plain lists in :each rather than simulating signals (adds memory overhead)
+  * [ ] remove _signals use, just do _change check
+* [ ] microjs bundle
+* [ ] All TODO/FIXME address
+* [ ] Website
+* [ ] refactor main demos
+* [x] ~~core test runner: signals variants, normal/micro, sync/async, module/bundle~~
+* [x] Optimizations (https://krausest.github.io/js-framework-benchmark/current.html)
+  * [x] Append rows to large table is THE SLOWEST
+  * [~] Create many rows IS SLOW
+* [ ] alpine csp tests syntaxes
+
+## [ ] Plugins
+
+* [ ] .persists
+* [ ] .screen-md
+* [ ] :onvisible
+* [ ] :aria
+* [ ] :item
+* [ ] :data
+* [ ] :intersect
+* [ ] :scroll.view.x="progress => "
 
 ## [ ] Website
 
-* [ ] Intro: core philosophy, features, quick meaningful example, "Get started"
-* [ ] Why?: comparison, benefits (no build step, light, fast, SEO-friendly, no SSR needed), use-cases, testimonials, cases
-* [ ] Docs: installing, core concepts, directives, recipes (forms, routing, animations), best practices (tips for perf, debugging, maintaining)
-* [ ] Examples: todo, counter, dynamic form
-* [ ] Showcase gallery?
-* [ ] Playground: share/download
-* [ ] Community: github, blog, tutorials, announcements
-* [ ] FAQ: What's PE? How sprae compares to <framework>? Can I use with other FW? Is it suitable for large scale?
-* [ ] Friends: related libs
-* [ ] Trust: contact, contributors, sponsor
-* [ ] JS-framework-benchmark ref
-
-## Backlog
-
-* [ ] jz compiler
+  * [ ] 7 GUIs example
+  * [ ] collection of examples

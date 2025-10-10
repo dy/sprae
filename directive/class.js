@@ -1,15 +1,11 @@
-import { dir } from "../core.js";
+import { clsx, call } from "../core.js";
 
-dir('class', (el, cur) => (
-  cur = new Set,
-  v => {
-    let clsx = new Set;
-    if (v) {
-      if (typeof v === "string") v.split(' ').map(cls => clsx.add(cls));
-      else if (Array.isArray(v)) v.map(v => v && clsx.add(v));
-      else Object.entries(v).map(([k, v]) => v && clsx.add(k));
-    }
-    for (let cls of cur) if (clsx.has(cls)) clsx.delete(cls); else el.classList.remove(cls);
-    for (let cls of cur = clsx) el.classList.add(cls)
-  })
+export default (el, _cur, _new) => (
+  _cur = new Set,
+  (v) => {
+    _new = new Set
+    if (v) clsx(call(v, el.className)).split(' ').map(c => c && _new.add(c))
+    for (let c of _cur) if (_new.has(c)) _new.delete(c); else el.classList.remove(c);
+    for (let c of _cur = _new) el.classList.add(c)
+  }
 )

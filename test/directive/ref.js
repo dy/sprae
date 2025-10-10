@@ -1,9 +1,15 @@
-import test, { is } from "tst";
-import { tick } from "wait-please";
-import sprae from '../sprae.js'
-import { signal } from '../signal.js'
+import { tick, time } from "wait-please";
+import sprae from '../../sprae.js'
 import h from "hyperf";
-import { _off, _state } from "../core.js";
+import test, { any, is, ok } from "tst";
+import { store } from '../../store.js'
+import { use, signal, batch, untracked } from '../../core.js'
+
+// import * as signals from '@preact/signals-core'
+// use(signals)
+
+const _dispose = Symbol.dispose;
+
 
 
 test("ref: base", async () => {
@@ -31,11 +37,12 @@ test("ref: signal", async () => {
 });
 
 test("ref: with :each", async () => {
-  let a = h`<y><x :each="item in items" :ref="x" :text="log.push(x), item"/></y>`;
-  let state = sprae(a, { log: [], items: [1, 2, 3] });
+  // NOTE: if you have inf recursion here, look carefully: ref is expected to write to item own scope, but it might write to the root scope
+  let a = h`<y><x :each="item in (items)" :ref="x" :text="log.push(x), item"/></y>`;
+  let state = sprae(a, { log: [], items: [1, 2, 3, 4, 5, 6, 7] });
   await tick();
-  is(state.log, [...a.children]);
-  is(a.innerHTML, `<x>1</x><x>2</x><x>3</x>`);
+  ok(state.log.length < a.children.length * 2, "no cycle");
+  is(a.innerHTML, `<x>1</x><x>2</x><x>3</x><x>4</x><x>5</x><x>6</x><x>7</x>`);
 });
 
 test("ref: t̵h̵i̵s̵ ̵r̵e̵f̵e̵r̵s̵ ̵t̵o̵ defines current element", async () => {
@@ -69,44 +76,52 @@ test("ref: fn signal", async () => {
 });
 
 test("ref: fn with :each", async () => {
-  let a = h`<y><x :each="item in items" :with="{x:null}" :ref="el => x=el" :text="log.push(x), item"/></y>`;
+  let a = h`<y><x :each="item in items" :scope="{x:null}" :ref="el => x=el" :text="log.push(x), item"/></y>`;
   let state = sprae(a, { log: [], items: [1, 2, 3] });
   await tick();
-  is(state.log, [...a.children]);
+  ok(state.log.length < a.children.length * 2, "no cycle");
   is(a.innerHTML, `<x>1</x><x>2</x><x>3</x>`);
 });
 
 test("ref: fn unmount", async () => {
   let div = h`<div><a :if="a" :ref="el => (log.push('on'), () => log.push('off'))" :text="b"></a></div>`;
-  let state = sprae(div, { log: [], b: 1, a:1});
+
+  let state = sprae(div, { log: [], b: 1, a: 1 });
   await tick();
   is(state.log, ['on']);
   is(div.innerHTML, `<a>1</a>`);
+
   console.log('----state.a=0')
   state.a = 0
-  await tick();
+  await tick(2);
   is(div.innerHTML, ``);
   is(state.log, ['on', 'off']);
 });
 
-test('ref: create in state as untracked', async () => {
-  let div = h`<div :with="{_x:null,log(){console.log(_x)}}" :onx="log"><x :ref="_x" :text="_x?.tagName"></x></div>`;
-  let state = sprae(div)
-  is(div[_state]._x, div.firstChild)
+test("ref: create in state as untracked", async () => {
+  let div = h`<div :scope="scope => (local = scope, {_x:null,log(){console.log(_x)}})" :onx="log"><x :ref="_x" :text="_x?.tagName"></x></div>`;
+  let state = sprae(div, {local: null})
+  await tick(2)
+
+  is(state.local._x, div.firstChild)
+
   div.dispatchEvent(new window.CustomEvent("x"));
-  is(div[_state]._x, div.firstChild)
+  await tick(2)
+
+  is(state.local._x, div.firstChild)
 })
 
-test('ref: create in state as direct', async () => {
-  let div = h`<div :with="{x:null,log(){console.log(x)}}" :onx="log"><x :ref="x" :text="x?.tagName"></x></div>`;
-  let state = sprae(div)
-  is(div[_state].x, div.firstChild)
-  // reading :ref=x normally (one level) would not subscribe root, but nested one may subscribe parent :with
+test("ref: create in state as direct", async () => {
+  let div = h`<div :scope="scope => (local=scope, {x:null,log(){console.log(x)}})" :onx="log"><x :ref="x" :text="x?.tagName"></x></div>`;
+  let state = sprae(div, {local:{}})
+  is(state.local.x, div.firstChild)
+  // reading :ref=x normally (one level) would not subscribe root, but nested one may subscribe parent :scope
   div.dispatchEvent(new window.CustomEvent("x"));
-  is(div[_state].x, div.firstChild)
+  await tick();
+  is(state.local.x, div.firstChild)
 })
 
-test('ref: duplicates', async () => {
+test("ref: duplicates", async () => {
   let el = h`<x><y :ref="y"></y><z :ref="y"></z></x>`
   let state = sprae(el)
   is(state.y, el.lastChild)

@@ -1,12 +1,14 @@
-import { dir } from "../core.js";
+import { call, attr } from "../core.js";
 
-dir('style', (el, initStyle) => (
-  initStyle = el.getAttribute("style"),
+export default (el, _static) => (
+  _static = el.getAttribute("style"),
   v => {
-    if (typeof v === "string") el.setAttribute("style", initStyle + (initStyle.endsWith(';') ? '' : '; ') + v);
+    v = call(v, el.style)
+    if (typeof v === "string") attr(el, "style", _static + '; ' + v);
     else {
-      if (initStyle) el.setAttribute("style", initStyle);
-      for (let k in v) k[0] == '-' ? (el.style.setProperty(k, v[k])) : el.style[k] = v[k]
+      if (_static) attr(el, "style", _static);
+      // NOTE: we skip names not starting with a letter - eg. el.style stores properties as { 0: --x } or JSDOM has _pfx
+      for (let k in v) k[0] == '-' ? el.style.setProperty(k, v[k]) : k[0] > 'A' && (el.style[k] = v[k])
     }
-  })
+  }
 )
