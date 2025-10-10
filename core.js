@@ -11,6 +11,8 @@ export let prefix = ':', signal, effect, computed, batch = (fn) => fn(), untrack
 
 export let directive = {}, modifier = {}
 
+let currentDir = null;
+
 /**
  * Applies directives to an HTML element and manages its reactive state.
  *
@@ -91,8 +93,8 @@ const initDirective = (el, attrName, expr, state) => {
   let steps = attrName.slice(prefix.length).split('..').map((step, i, { length }) => (
     // multiple attributes like :id:for=""
     step.split(prefix).reduce((prev, str) => {
-      let [name, ...mods] = str.split('.'),
-        evaluate = parse(name, expr, directive[name]?.clean)
+      let [name, ...mods] = str.split('.');
+      let evaluate = parse(expr, directive[currentDir = name]?.parse)
 
       // events have no effects and can be sequenced
       if (name.startsWith('on')) {
@@ -114,7 +116,7 @@ const initDirective = (el, attrName, expr, state) => {
       let update = (directive[name] || directive['*'])(el, state, expr, name)
 
       // no-modifiers shortcut
-      if (!mods.length && !prev) return () => update && effect(() => (update(evaluate(state))))
+      if (!mods.length && !prev) return () => update && effect(() => evaluate(state, update))
 
       let dispose,
         change = signal(-1), // signal authorized to trigger effect: 0 = init; >0 = trigger
@@ -126,7 +128,7 @@ const initDirective = (el, attrName, expr, state) => {
           if (++change.value) return // all calls except for the first one are handled by effect
           dispose = effect(() => update && (
             change.value == count ? fn() : // separate tick makes sure planner effect call is finished before real eval call
-              (count = change.value, update(evaluate(state))) // if changed more than effect called - call it
+              (count = change.value, evaluate(state, update)) // if changed more than effect called - call it
           ));
         }, mods))
 
@@ -200,19 +202,38 @@ export let compile
  * @param {string} expr The expression to parse and compile into a function.
  * @returns {Function} The compiled evaluator function for the expression.
  */
-const parse = (dir, expr, _clean = trim, _fn) => {
-  // expr.split(/\bin\b/)[1]
-  if (_fn = cache[expr = _clean(expr)]) return _fn
+export const parse = (expr, prepare, _fn) => {
+  if (_fn = parse.cache[expr]) return _fn
+
+  let _expr = expr.trim() || 'undefined'
+  if (prepare) _expr = prepare(_expr)
+
+  // if, const, let - no return
+  if (/^(if|let|const)\b/.test(_expr) || /;/.test(_expr)) ;
+  else _expr = `return ${_expr}`
+
+  // async expression
+  if (/\bawait\s/.test(_expr)) _expr = `return (async()=>{ ${_expr} })()`
 
   // static time errors
-  try { _fn = compile(expr) } catch (e) { console.error(`∴ ${e}\n\n${prefix + dir}="${expr}"`) }
+  try {
+    _fn = compile(_expr)
+    Object.defineProperty(_fn, "name", {value: `∴ ${expr}`})
+  } catch (e) { console.error(`∴ ${e}\n\n${prefix + currentDir}="${expr}"`) }
 
   // run time errors
-  return cache[expr] = (s) => { try { return _fn?.(s) } catch (e) { console.error(`∴ ${e}\n\n${prefix + dir}="${expr}"`) } }
+  return parse.cache[expr] = (state, cb, _out) => {
+    try {
+      let result = _fn?.(state)
+      // if cb is given - call it with result and return function that returns last cb result - needed for effect cleanup
+      if (cb) return result?.then ? result.then(v => _out = cb(v)) : _out = cb(result), () => call(_out)
+      else return result
+    } catch (e) {
+      console.error(`∴ ${e}\n\n${prefix + currentDir}="${expr}"`)
+    }
+  }
 }
-
-export const cache = {};
-export const trim = e => e.trim()
+parse.cache = {};
 
 
 // apply modifiers to context (from the end due to nature of wrapping ctx.call)
@@ -228,7 +249,7 @@ const applyMods = (fn, mods) => {
 const sx = (a, b) => { if (a != b) for (let k in b) (a[k] ??= b[k]); return a }
 
 // create expression setter, reflecting value back to state
-export const setter = (dir, expr, _set = parse(dir, `${expr}=__`)) => (target, value) => {
+export const setter = (expr, _set = parse(`${expr}=__`)) => (target, value) => {
   // save value to stash
   target.__ = value; _set(target), delete target.__
 }

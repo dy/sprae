@@ -35,7 +35,6 @@ test("core: hidden reactive", async () => {
   is(el.outerHTML, `<div></div>`);
 });
 
-
 test.skip('core: multiple elements', async () => {
   // NOTE: we don't support that anymore - no much value at price of complexity, just pass container
   let el = h`<a><x :text="'x'"></x><y :text="'y'"></y></a>`
@@ -49,7 +48,8 @@ test("core: empty strings", async () => {
   is(el.outerHTML, `<x></x>`);
 });
 
-test("core: comments", async () => {
+test.skip("core: comments", async () => {
+  // NOTE: we don't support that anymore - no questionable value
   let el = h`<x :="/* */" :x="/* */"></x>`;
   sprae(el);
   is(el.outerHTML, `<x></x>`);
@@ -63,19 +63,26 @@ test("core: newlines", async () => {
   is(el.outerHTML, `<x>1</x>`);
 });
 
-test("core: const in on", async () => {
-  let el = h`<div :onx="() => {const x=1; y=x+1}"></div>`;
+test("core: const", async () => {
+  let el = h`<div :onx="const x=1; y=x+1"></div>`;
   let state = sprae(el, { y: 0 });
   el.dispatchEvent(new window.CustomEvent("x"));
   is(state.y, 2);
 });
 
-test("core: const in scope", async () => {
-  let el = h`<div :scope="{x(){let x = 1; y=x;}}" :onx="x()"></div>`;
+test("core: let", async () => {
+  let el = h`<div :fx="let x=1; y=x+1"></div>`;
   let state = sprae(el, { y: 0 });
-  el.dispatchEvent(new window.CustomEvent("x"));
+  is(state.y, 2);
+});
+
+test("core: if", async () => {
+  let el = h`<div :fx="if (x) log.push(1)"></div>`;
+  let state = sprae(el, { x: 0, log: [] });
+  is( state.log, []);
+  state.x = 1;
   await tick();
-  is(state.y, 1);
+  is(state.log, [1]);
 });
 
 test("core: bulk set", async () => {
@@ -119,11 +126,21 @@ test.skip("core: semicols in expression", async () => {
   // is(el.outerHTML, `<x x="0123"></x>`);
 });
 
-test("core: async props", async () => {
+test("core: async value", async () => {
   let fetchData = async () => { await time(50); return 'data'; };
   // FIXME: not sure I understand why it works
   let el = h`<div :fx="( x='', async () => (x = await fetchData() ) )()" :text="x"></div>`;
   let state = sprae(el, { fetchData });
+  is(el.textContent, '');
+  await time(60);
+  is(el.textContent, 'data');
+});
+
+test("core: async prop", async () => {
+  let fetchData = async () => { await time(50); return 'data'; };
+  // FIXME: not sure I understand why it works
+  let el = h`<div :text="await fetchData()"></div>`;
+  let state = sprae(el, { fetchData  });
   is(el.textContent, '');
   await time(60);
   is(el.textContent, 'data');

@@ -85,6 +85,6 @@ const each = (tpl, state, expr) => {
 }
 
 // :each directive skips v, k
-each.clean = (str) => str.split(/\bin\b/)[1].trim()
+each.parse = (str) => str.split(/\bin\b/)[1].trim()
 
 export default each

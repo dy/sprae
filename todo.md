@@ -199,10 +199,10 @@
 * [x] Better autoinit: mutation observer until page loads?
 * [x] test: finish ajamila poll with v12
 * [x] something is off with updating condition based on list length
+* [x] make dir/mod separate objects, outside of use
+* [x] async functions... alpine does it well
+* [x] if, let, const, semicolon syntax allowance
 
-* [ ] make dir/mod separate objects, outside of use
-* [ ] async functions... alpine does it well
-* [ ] if, let, const, semicolon syntax allowance
 * [ ] find alternative way to update plain lists in :each rather than simulating signals (adds memory overhead)
   * [ ] remove _signals use, just do _change check
 * [ ] alpine csp tests syntaxes

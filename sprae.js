@@ -113,10 +113,10 @@ const keys = {
 // augment modifiers with key testers
 for (let k in keys) modifier[k] = (fn, ...params) => (e) => keys[k](e) && params.every(k => keys[k]?.(e) ?? e.key === k) && fn(e)
 
-
 use({
-  // indirect new Function to avoid detector
-  compile: expr => sprae.constructor(`with (arguments[0]) { return ${expr} };`),
+  compile: expr => {
+    return sprae.constructor(`with (arguments[0]) { ${expr} }`)
+  },
 
   // signals
   signal, effect, computed, batch, untracked

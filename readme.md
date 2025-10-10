@@ -600,9 +600,9 @@ Micro sprae version is 2.5kb bundle with essentials:
 * To destroy state and detach sprae handlers, call `element[Symbol.dispose]()`.
 * `this` is not used, to get element reference use `:ref="element => {...}"`.
 * `key` is not used, `:each` uses direct list mapping instead of DOM diffing.
+* expressions support await `<div :text="await load()"></div>`
 * for mount/unmount events use `<div :if="cond" :ref="(init(), () => destroy())"></div>`.
-* semicolons don't work in expressions the way you'd expect, use comma instead `<div :text="prepare(), text"></div>`
-<!-- asyncs -->
+* semicolons return undefined, to return result use comma `<div :text="prepare(), text"></div>`
 
 
 ## Justification
