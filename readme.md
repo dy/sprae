@@ -15,7 +15,7 @@ Simple progressive enhancement for DOM or JSX.<br/>
 <script src="https://cdn.jsdelivr.net/npm/sprae@12.x.x" start></script>
 ```
 
-Sprae evaluates `:`-directives enabling reactivity.
+Sprae enables reactivity via `:`-directives.
 
 <!--
 ## Concepts
