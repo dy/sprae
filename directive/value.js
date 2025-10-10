@@ -19,7 +19,7 @@ export default (el, state, expr, name) => {
     }
 
     // initial state value - setter has already cached it, no need to parse again
-    cache[trim(expr)](state) ?? handleChange()
+    parse(expr)(state) ?? handleChange()
   } catch { }
 
   return (el.type === "text" || el.type === "") ?
