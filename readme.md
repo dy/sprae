@@ -1,9 +1,6 @@
 # ∴ spræ [![tests](https://github.com/dy/sprae/actions/workflows/node.js.yml/badge.svg)](https://github.com/dy/sprae/actions/workflows/node.js.yml) [![npm bundle size](https://img.shields.io/bundlephobia/minzip/sprae)](https://bundlephobia.com/package/sprae) [![npm](https://img.shields.io/npm/v/sprae?color=orange)](https://www.npmjs.com/package/sprae)
 
-> Light hydration for DOM tree.
-
-_Sprae_ is open & minimalistic progressive enhancement framework with signals reactivity.<br/>
-Good for static pages, SPAs, PWAs, small websites, lightweight UI, prototypes, or [SSR](#jsx).<br/>
+Simple progressive enhancement for DOM or JSX.<br/>
 
 ## Usage
 
@@ -602,19 +599,21 @@ Micro sprae version is 2.5kb bundle with essentials:
 
 ## Justification
 
-Modern frontend stack is unhealthy, like non-organic processed food. There are healthier alternatives, like:
+Modern frontend stack is unhealthy—like processed, non-organic food. Most frameworks impose proprietary conventions, pulling into js land, replacing declarative HTML and CSS with complex component systems, build pipelines, and virtual DOM layers. Tooling is mandatory even for simple pages, locking projects into heavy dependencies and brittle ecosystems. As a result, web pages are not functional without JS or tooling, which violates progressive enhancement.
 
-* [Template-parts](https://github.com/dy/template-parts) is stuck with native HTML quirks ([parsing table](https://github.com/github/template-parts/issues/24), [SVG attributes](https://github.com/github/template-parts/issues/25), [liquid syntax](https://shopify.github.io/liquid/tags/template/#raw) conflict etc).
-* [Alpine](https://github.com/alpinejs/alpine), [petite-vue](https://github.com/vuejs/petite-vue), [lucia](https://github.com/aidenybai/lucia) etc escape native HTML quirks, but have excessive API, tend to [self-encapsulate](https://github.com/alpinejs/alpine/discussions/3223) and not care about size/performance.
+There is native [template-parts proposal](https://github.com/github/template-parts), enabling declarative composition in HTML, but it is stuck with HTML quirks [1](https://github.com/github/template-parts/issues/24), [2](https://github.com/github/template-parts/issues/25), [3](https://shopify.github.io/liquid/tags/template/#raw), although there is hope with declarative custom elements.
 
-_Sprae_ holds open, safe & minimalistic philosophy:
+[Alpine](https://github.com/alpinejs/alpine) and [petite-vue](https://github.com/vuejs/petite-vue) offer progressive enhancement, but introduce non-valid HTML syntax and too excessive API. Their reactivity is coupled with internals, leading to [self-encapsulation](https://github.com/alpinejs/alpine/discussions/3223) that limits extensibility and transparency. They also pay little attention to size / performance.
+
+_Sprae_ holds open, safe, minimalistic philosophy:
 
 * Minimal syntax.
-* Valid HTML.
-* Signals reactivity.
+* Non-invasive.
 * Pluggable, configurable.
+* Signals reactivity.
 * Small, safe & fast.
-* Organic sugar.
+* Build-free.
+* Ecosystem-agnostic.
 * 🫰 developers
 
 
