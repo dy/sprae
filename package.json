@@ -5,7 +5,7 @@
   "main": "./sprae.js",
   "module": "./sprae.js",
   "umd:main": "dist/sprae.umd.js",
-  "unpkg": "dist/sprae.auto.js",
+  "unpkg": "dist/sprae.umd.js",
   "types": "dist/sprae.d.ts",
   "type": "module",
   "files": [
@@ -13,6 +13,7 @@
     "sprae.js",
     "store.js",
     "signal.js",
+    "micro.js",
     "directive",
     "dist"
   ],

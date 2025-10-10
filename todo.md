@@ -202,13 +202,16 @@
 * [x] make dir/mod separate objects, outside of use
 * [x] async functions... alpine does it well
 * [x] if, let, const, semicolon syntax allowance
+* [x] All TODO/FIXME address
+
+* [ ] Draft release
+* [ ] Website
+* [ ] microjs bundle
+* [ ] refactor main demos
+* [ ] jsperf benchmark
 
 * [ ] find alternative way to update plain lists in :each rather than simulating signals (adds memory overhead)
   * [ ] remove _signals use, just do _change check
-* [ ] microjs bundle
-* [ ] All TODO/FIXME address
-* [ ] Website
-* [ ] refactor main demos
 * [x] ~~core test runner: signals variants, normal/micro, sync/async, module/bundle~~
 * [x] Optimizations (https://krausest.github.io/js-framework-benchmark/current.html)
   * [x] Append rows to large table is THE SLOWEST
