@@ -15,7 +15,7 @@ Simple progressive enhancement for DOM or JSX.<br/>
 <script src="https://cdn.jsdelivr.net/npm/sprae@12.x.x" start></script>
 ```
 
-Sprae evaluates `:`-directives that enables reactivity.
+Sprae evaluates `:`-directives enabling reactivity.
 
 <!--
 ## Concepts
@@ -500,7 +500,7 @@ a minimal JS subset:
 -->
 
 
-## Start
+## Autoinit
 
 The `start` or `data-sprae-start` attribute automatically starts sprae on document. It can use a selector to adjust target container.
 
@@ -645,21 +645,19 @@ Micro sprae version is 2.5kb bundle with essentials:
 
 ## Justification
 
-Modern frontend stack is unhealthy—like processed, non-organic food. Most frameworks impose proprietary conventions, pulling into js land, replacing declarative HTML and CSS with complex component systems, build pipelines, and virtual DOM layers. Tooling is mandatory even for simple pages, locking projects into heavy dependencies and brittle ecosystems. As a result, web pages are not functional without JS or tooling, which violates progressive enhancement.
+Modern frontend is unhealthy—like processed, non-organic food. Frameworks force you into JS-land: build pipelines for "Hello World", proprietary conventions, virtual DOM overhead, brittle tooling. Pages are not functional without JS. Progressive enhancement is anachronism. Build tools should be optional, not mandatory. Frameworks should enhance HTML, not replace it.
 
-There is native [template-parts proposal](https://github.com/github/template-parts), enabling declarative composition in HTML, but it is stuck with HTML quirks [1](https://github.com/github/template-parts/issues/24), [2](https://github.com/github/template-parts/issues/25), [3](https://shopify.github.io/liquid/tags/template/#raw), although there is hope with declarative custom elements.
+Native [template-parts](https://github.com/github/template-parts) and [DCE](https://github.com/WICG/webcomponents/blob/gh-pages/proposals/Declarative-Custom-Elements-Strawman.md) give hope, but quite distant and stuck with HTML quirks [1](https://github.com/github/template-parts/issues/24), [2](https://github.com/github/template-parts/issues/25), [3](https://shopify.github.io/liquid/tags/template/#raw).
 
-[Alpine](https://github.com/alpinejs/alpine) and [petite-vue](https://github.com/vuejs/petite-vue) offer progressive enhancement, but introduce non-valid HTML syntax and too excessive API. Their reactivity is coupled with internals, leading to [self-encapsulation](https://github.com/alpinejs/alpine/discussions/3223) that limits extensibility and transparency. They also pay little attention to size / performance.
+[Alpine](https://github.com/alpinejs/alpine) and [petite-vue](https://github.com/vuejs/petite-vue) offer progressive enhancement, but introduce invalid syntax `@click`, bloated API, opaque reactivity, [self-encapsulation](https://github.com/alpinejs/alpine/discussions/3223), limited extensibility, size / performance afterthoughts.
 
 _Sprae_ holds open, safe, minimalistic philosophy:
 
-* Minimal syntax.
-* Non-invasive.
-* Pluggable, configurable.
-* Signals reactivity.
+* One `:` prefix. Valid HTML. Zero magic.
+* Signals reactivity. (preact-signals compatible)
+* Plugggable: signals, eval, directives, modifiers.
+* Build-free, ecosystem-agnostic: `<script src>`, JSX, anything.
 * Small, safe & fast.
-* Build-free.
-* Ecosystem-agnostic.
 * 🫰 developers
 
 
