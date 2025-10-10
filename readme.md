@@ -3,7 +3,7 @@
 > Light hydration for DOM tree.
 
 _Sprae_ is open & minimalistic progressive enhancement framework with signals reactivity.<br/>
-Good for small websites, static pages, lightweight UI, prototypes, SPAs, PWAs, or [SSR](#jsx).<br/>
+Good for static pages, SPAs, PWAs, small websites, lightweight UI, prototypes, or [SSR](#jsx).<br/>
 
 ## Usage
 
@@ -49,7 +49,7 @@ Welcome, <template :text="user.name"><template>.
 
 #### `:class`
 
-Set element className.
+Set className.
 
 ```html
 <div :class="foo"></div>
@@ -66,7 +66,7 @@ Set element className.
 
 #### `:style`
 
-Set element style.
+Set style.
 
 ```html
 <span :style="'display: inline-block'"></span>
@@ -175,7 +175,7 @@ Define variable scope for a subtree.
 
 #### `:fx`
 
-Run effect, not changing any attribute.
+Run effect.
 
 ```html
 <!-- inline -->
@@ -187,7 +187,7 @@ Run effect, not changing any attribute.
 
 #### `:ref`
 
-Expose an element in scope with `name` or get reference to the element.
+Expose an element in scope with `name` or get ref to the element.
 
 ```html
 <div :ref="card" :fx="handle(card)"></div>
@@ -288,7 +288,7 @@ Defer callback by a number of ms, next tick, animation frame or until system idl
 <!-- set class in the next tick -->
 <div :class.debounce-tick="{ active }">...</div>
 
-<!-- debounce resize to the next animation frame -->
+<!-- debounce resize to raf -->
 <div :onresize.window.debounce-frame="updateSize()">...</div>
 
 <!-- batch logging -->
@@ -306,7 +306,7 @@ Limit callback rate to interval in ms, tick or animation framerate. By default 2
 <!-- lock style update to raf -->
 <div :onscroll.throttle-frame="progress = (scrollTop / scrollHeight) * 100"/>
 
-<!-- ensure separate scope/stacktrace for events -->
+<!-- ensure separate stack for events -->
 <div :onmessage.window.throttle-tick="event => log(event)">...</div>
 ```
 
@@ -401,7 +401,7 @@ Any other modifier has no effect, but allows binding multiple handlers.
 
 ## Autoinit
 
-The `start` / `data-sprae-start` attribute automatically starts sprae on document. It can use a selector to adjust target container.
+The `start` or `data-sprae-start` attribute automatically starts sprae on document. It can use a selector to adjust target container.
 
 ```html
 <div id="counter" :scope="{count: 1}">
@@ -442,7 +442,7 @@ For more control use ESM:
 
 ## Store
 
-Sprae uses preact-signals store for reactivity.
+Sprae uses signals store for reactivity.
 
 ```js
 import sprae, { store, signal, effect, computed } from 'sprae'
@@ -552,7 +552,7 @@ export default sprae;
 
 ### Signals
 
-[Default signals](/signal.js) can be replaced with _preact-signals_ or an alternative:
+Default signals can be replaced with _preact-signals_ or an alternative:
 
 Provider | Size | Feature
 :---|:---|:---
