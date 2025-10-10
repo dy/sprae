@@ -294,7 +294,7 @@ test('core: setTimeout illegal invokation', async () => {
   is(el.innerHTML, '2')
 })
 
-test('core: lifecycle', async () => {
+test('core: autostart', async () => {
   let container = h`<div id="root" :scope="{pre:'pre',post:'post'}"><x :text="pre"></x></div>`;
   start(container);
   is(container.innerHTML, `<x>pre</x>`);

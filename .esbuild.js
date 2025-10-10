@@ -20,10 +20,10 @@ await esbuild.build({
     contents:
 // MO immediately applies spraeable elements
 `var sprae = require("./sprae.js").default; module.exports = sprae;
-var prefix = document.currentScript.getAttribute("prefix") || document.currentScript.dataset.spraePrefix;
-var start = document.currentScript.getAttribute("start") || document.currentScript.dataset.spraeStart;
+var prefix = document.currentScript.getAttribute("prefix") ?? document.currentScript.dataset.spraePrefix;
+var start = document.currentScript.getAttribute("start") ?? document.currentScript.dataset.spraeStart;
 if (prefix) sprae.use({ prefix });
-if (start != null) sprae.start(start ? document.querySelector(start) : document.body);`,
+if (start != null && start !== 'false') (start && start !== 'true' ? document.querySelectorAll(start) : [document.body]).forEach(el => sprae.start(el))`,
     resolveDir: '.'
   },
   outfile: "dist/sprae.umd.js",

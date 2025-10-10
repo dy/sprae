@@ -204,6 +204,8 @@
 * [x] if, let, const, semicolon syntax allowance
 * [x] All TODO/FIXME address
 
+* [x] Nextjs data-sprae-start defaults to true, which is invalid selector
+  * [x] Likely we may want multiple els to init as well
 * [ ] Draft release
 * [ ] Website
 * [ ] microjs bundle
