@@ -2,7 +2,7 @@
 
 Simple progressive enhancement for DOM or JSX.<br/>
 
-**[Usage](#usage)** · **[Concepts](#core-concepts)** · **[Directives](#directives)** · **[Modifiers](#modifiers)** · **[Store](#store)** · **[Autoinit](#autoinit)** · **[JSX](#jsx)** · **[Customization](#customization)** · **[Micro](#micro)** · **[Hints](#hints)** · **[Examples](#examples)**
+[Usage](#usage) · [Concepts](#core-concepts) · [Directives](#directives) · [Modifiers](#modifiers) · [Store](#store) · [Autoinit](#autoinit) · [JSX](#jsx) · [Customization](#customization) · [Micro](#micro) · [Hints](#hints) · [Examples](#examples)
 
 ## Usage
 
@@ -17,7 +17,7 @@ Simple progressive enhancement for DOM or JSX.<br/>
 
 Sprae evaluates `:`-directives that enables reactivity.
 
-
+<!--
 ## Concepts
 
 **Directives** are `:` prefixed attributes that evaluate JavaScript expressions:
@@ -34,6 +34,7 @@ Sprae evaluates `:`-directives that enables reactivity.
 
 **Modifiers** adjust directive behavior:
 `:oninput.debounce-200` delays handler by 200ms
+-->
 
 <!--
 ### Flavors
@@ -173,17 +174,18 @@ Multiply content.
 
 #### `:scope`
 
-Define variable scope for a subtree.
+Define state container for a subtree.
 
 ```html
+<!-- transparent -->
 <x :scope="{foo: 'foo'}">
   <y :scope="{bar: 'bar'}" :text="foo + bar"></y>
 </x>
 
-<!-- variables -->
+<!-- define variables -->
 <x :scope="x=1, y=2" :text="x+y"></x>
 
-<!-- blank scope -->
+<!-- blank -->
 <x :scope :ref="id"></x>
 
 <!-- access to local scope instance -->
