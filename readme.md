@@ -2,6 +2,8 @@
 
 Simple progressive enhancement for DOM or JSX.<br/>
 
+**[Usage](#usage)** · **[Concepts](#core-concepts)** · **[Directives](#directives)** · **[Modifiers](#modifiers)** · **[Store](#store)** · **[Autoinit](#autoinit)** · **[JSX](#jsx)** · **[Customization](#customization)** · **[Micro](#micro)** · **[Hints](#hints)** · **[Examples](#examples)**
+
 ## Usage
 
 ```html
@@ -13,7 +15,25 @@ Simple progressive enhancement for DOM or JSX.<br/>
 <script src="https://cdn.jsdelivr.net/npm/sprae@12.x.x" start></script>
 ```
 
-Sprae automatically evaluates `:`-directives and removes them, enabling reactive logic.
+Sprae evaluates `:`-directives that enables reactivity.
+
+
+## Concepts
+
+**Directives** are `:` prefixed attributes that evaluate JavaScript expressions:
+`<div :text="message"></div>`
+
+**Reactivity** happens automatically through signals—just mutate values:
+`<button :onclick="count++">` updates `<span :text="count">`
+
+**Scope** creates a state container for a subtree:
+`<div :scope="{ user: 'Alice' }">` makes `user` available to children
+
+**Effects** run side effects:
+`:fx="console.log(count)"` logs when `count` changes
+
+**Modifiers** adjust directive behavior:
+`:oninput.debounce-200` delays handler by 200ms
 
 <!--
 ### Flavors
@@ -167,7 +187,7 @@ Define variable scope for a subtree.
 <x :scope :ref="id"></x>
 
 <!-- access to local scope instance -->
-<x :scope="scope => {scope.x = 'foo'; return scope}" :text="x"></x>
+<x :scope="scope => { scope.x = 'foo'; return scope }" :text="x"></x>
 ```
 
 #### `:fx`
@@ -184,7 +204,7 @@ Run effect.
 
 #### `:ref`
 
-Expose an element in scope with `name` or get ref to the element.
+Expose an element in scope or get ref to the element.
 
 ```html
 <div :ref="card" :fx="handle(card)"></div>
@@ -198,12 +218,12 @@ Expose an element in scope with `name` or get ref to the element.
 </li>
 
 <!-- mount / unmount -->
-<textarea :ref="el => (/* onmount */, () => (/* onunmount */))" :if="show"></textarea>
+<textarea :ref="el => {/* onmount */ return () => {/* onunmount */}}" :if="show"></textarea>
 ```
 
 #### `:on<event>`
 
-Attach event listener.
+Add event listener.
 
 ```html
 <!-- inline -->
@@ -216,7 +236,7 @@ Attach event listener.
 <input :onvalue="text" :oninput:onchange="event => text = event.target.value">
 
 <!-- sequence -->
-<button :onfocus..onblur="event => (handleFocus(), event => handleBlur())">
+<button :onfocus..onblur="evt => { handleFocus(); return evt => handleBlur()}">
 
 <!-- modifiers -->
 <button :onclick.throttle-500="handle()">Not too often</button>
@@ -276,19 +296,19 @@ Trigger when element is connected / disconnected from DOM.
 
 #### `.debounce-<ms|tick|frame|idle>?`
 
-Defer callback by a number of ms, next tick, animation frame or until system idle. By default 250ms.
+Defer callback by ms, next tick/animation frame, or until idle. Defaults to 250ms.
 
 ```html
-<!-- debounce keyboard input event by 200ms -->
-<input :oninput.debounce-200="e => update(e)" />
+<!-- debounce keyboard input by 200ms -->
+<input :oninput.debounce-200="event => update(event)" />
 
 <!-- set class in the next tick -->
 <div :class.debounce-tick="{ active }">...</div>
 
-<!-- debounce resize to raf -->
+<!-- debounce resize to animation framerate -->
 <div :onresize.window.debounce-frame="updateSize()">...</div>
 
-<!-- batch logging -->
+<!-- batch logging when idle -->
 <div :fx.debounce-idle="sendAnalytics(batch)"></div>
 ```
 
@@ -300,7 +320,7 @@ Limit callback rate to interval in ms, tick or animation framerate. By default 2
 <!-- throttle text update -->
 <div :text.throttle-100="text.length"></div>
 
-<!-- lock style update to raf -->
+<!-- lock style update to animation framerate -->
 <div :onscroll.throttle-frame="progress = (scrollTop / scrollHeight) * 100"/>
 
 <!-- ensure separate stack for events -->
@@ -396,6 +416,41 @@ Any other modifier has no effect, but allows binding multiple handlers.
 ```
 
 
+## Store
+
+Sprae uses signals store for reactivity.
+
+```js
+import sprae, { store, signal, effect, computed } from 'sprae'
+
+const name = signal('foo');
+const capname = computed(() => name.value.toUpperCase());
+
+const state = store(
+  {
+    count: 0,                             // prop
+    inc(){ this.count++ },                // method
+    name, capname,                        // signal
+    get twice(){ return this.count * 2 }, // computed
+    _i: 0,                                // untracked
+  },
+
+  // globals / sandbox
+  { Math }
+)
+
+// manual init
+sprae(element, state)
+
+state.inc(), state.count++  // update
+name.value = 'bar'          // signal update
+state._i++                  // no update
+
+state.Math                  // == globalThis.Math
+state.navigator             // == undefined
+```
+
+
 ## Autoinit
 
 The `start` or `data-sprae-start` attribute automatically starts sprae on document. It can use a selector to adjust target container.
@@ -437,41 +492,6 @@ For more control use ESM:
 ```
 
 
-## Store
-
-Sprae uses signals store for reactivity.
-
-```js
-import sprae, { store, signal, effect, computed } from 'sprae'
-
-const name = signal('foo');
-const capname = computed(() => name.value.toUpperCase());
-
-const state = store(
-  {
-    count: 0,                             // prop
-    inc(){ this.count++ },                // method
-    name, capname,                        // signal
-    get twice(){ return this.count * 2 }, // computed
-    _i: 0,                                // untracked
-  },
-
-  // globals / sandbox
-  { Math }
-)
-
-// manual init
-sprae(element, state)
-
-state.inc(), state.count++  // update
-name.value = 'bar'          // signal update
-state._i++                  // no update
-
-state.Math                  // == globalThis.Math
-state.navigator             // == undefined
-```
-
-
 ## JSX
 
 Sprae works with JSX via custom prefix (eg. `data-sprae-`).
@@ -502,32 +522,76 @@ export default function Layout({ children }) {
 }
 ```
 
+## Signals
 
-## Customization
+Default signals can be replaced with _preact-signals_ alternative:
+
+```js
+import sprae from 'sprae';
+import { signal, computed, effect, batch, untracked } from 'sprae/signal';
+import * as signals from '@preact/signals-core';
+
+sprae.use(signals);
+```
+
+Provider | Size | Feature
+:---|:---|:---
+[`ulive`](https://ghub.io/ulive) | 350b | Minimal implementation, basic performance, good for small states.
+[`signal`](https://ghub.io/@webreflection/signal) | 633b | Class-based, better performance, good for small-medium states.
+[`usignal`](https://ghub.io/usignal) | 955b | Class-based with optimizations and optional async effects.
+[`@preact/signals-core`](https://ghub.io/@preact/signals-core) | 1.47kb | Best performance, good for any states, industry standard.
+[`signal-polyfill`](https://ghub.io/signal-polyfill) | 2.5kb | Proposal signals. Use via [adapter](https://gist.github.com/dy/bbac687464ccf5322ab0e2fd0680dc4d).
+[`alien-signals`](https://github.com/WebReflection/alien-signals) | 2.67kb | Preact-flavored [alien signals](https://github.com/stackblitz/alien-signals).
+
+
+## Evaluator
+
+Default evaluator is fast and compact, but violates "unsafe-eval" CSP.<br/>
+To make eval stricter & safer, any alternative can be used, eg. [_justin_](https://github.com/dy/subscript#justin):
+
+```js
+import sprae from 'sprae'
+import justin from 'subscript/justin'
+
+sprae.use({compile: justin})
+```
+
+<!--
+a minimal JS subset:
+
+`++ -- ! - + * / % ** && || ??`<br/>
+`= < <= > >= == != === !==`<br/>
+`<< >> >>> & ^ | ~ ?: . ?. [] ()=>{} in`<br/>
+`= += -= *= /= %= **= &&= ||= ??= ... ,`<br/>
+`[] {} "" ''`<br/>
+`1 2.34 -5e6 0x7a`<br/>
+`true false null undefined NaN`
+-->
+
+## Custom build
 
 Sprae build can be tweaked for project needs / size:
 
 ```js
 // sprae.custom.js
 import sprae, { directive, use } from 'sprae/core'
-import * as preactSignals from '@preact/signals'
-import justin from 'subscript/justin'
+import * as signals from '@preact/signals'
+import compile from 'subscript/justin'
 
 import _default from 'sprae/directive/default.js'
 import _if from 'sprae/directive/if.js'
 import _text from 'sprae/directive/text.js'
 
-// configure
 use({
+  // custom prefix, defaults to ':'
   prefix: 'data-sprae-',
 
   // use preact signals
-  ...preactSignals,
+  ...signals,
 
   // use safer compiler
-  compile: justin
+  compile
 })
-
 
 // standard directives
 directive.if = _if;
@@ -547,35 +611,7 @@ directive.id = (el, state, expr) => {
 export default sprae;
 ```
 
-### Signals
-
-Default signals can be replaced with _preact-signals_ or an alternative:
-
-Provider | Size | Feature
-:---|:---|:---
-[`ulive`](https://ghub.io/ulive) | 350b | Minimal implementation, basic performance, good for small states.
-[`signal`](https://ghub.io/@webreflection/signal) | 633b | Class-based, better performance, good for small-medium states.
-[`usignal`](https://ghub.io/usignal) | 955b | Class-based with optimizations and optional async effects.
-[`@preact/signals-core`](https://ghub.io/@preact/signals-core) | 1.47kb | Best performance, good for any states, industry standard.
-[`signal-polyfill`](https://ghub.io/signal-polyfill) | 2.5kb | Proposal signals. Use via [adapter](https://gist.github.com/dy/bbac687464ccf5322ab0e2fd0680dc4d).
-[`alien-signals`](https://github.com/WebReflection/alien-signals) | 2.67kb | Preact-flavored [alien signals](https://github.com/stackblitz/alien-signals).
-
-
-### Evaluator
-
-Default evaluator is fast and compact, but violates "unsafe-eval" CSP.<br/>
-To make eval stricter & safer, any alternative can be used.
-Eg. [_justin_](https://github.com/dy/subscript#justin), a minimal JS subset:
-
-`++ -- ! - + * / % ** && || ??`<br/>
-`= < <= > >= == != === !==`<br/>
-`<< >> >>> & ^ | ~ ?: . ?. [] ()=>{} in`<br/>
-`= += -= *= /= %= **= &&= ||= ??= ... ,`<br/>
-`[] {} "" ''`<br/>
-`1 2.34 -5e6 0x7a`<br/>
-`true false null undefined NaN`
-
-
+<!--
 ## Micro
 
 Micro sprae version is 2.5kb bundle with essentials:
@@ -584,7 +620,7 @@ Micro sprae version is 2.5kb bundle with essentials:
 * no modifiers `:a.x.y`
 * no sequences `:ona..onb`
 * no `:each`, `:if`, `:value`
-
+-->
 
 ## Hints
 
@@ -596,6 +632,13 @@ Micro sprae version is 2.5kb bundle with essentials:
 * `key` is not used, `:each` uses direct list mapping instead of DOM diffing.
 * Expressions can be async: `<div :text="await load()"></div>`
 
+<!--
+## FAQ
+
+1. Errors handling?
+2. Typescript support?
+3. Performance tips?
+-->
 
 ## Justification
 
