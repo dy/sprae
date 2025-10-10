@@ -409,7 +409,7 @@ The `start` / `data-sprae-start` attribute automatically starts sprae on documen
   <button :onclick="count++">Click me</button>
 </div>
 
-<script src="./sprae.js" start="#counter"></script>
+<script src="./sprae.js" data-sprae-start="#counter"></script>
 ```
 
 To start manually with optional state, remove `start` attribute:

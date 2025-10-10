@@ -1653,6 +1653,7 @@
   - dirtier DOM
     - not evaporating
   + that would allow `sprae.stop()` counterpart to `sprae.start()`
+  + alpine flavor would need it
 
 ## [ ] Componentization: what can be done? -> likely no for now. When html-include is there we can talk
 
@@ -1737,6 +1738,7 @@
   * @sprae/animate -
   * ~~@sprae/mount -~~
   * media - .screen-md
+  * .interval-<tick|raf|number> - modifier for timers
 
 ## [ ] Reasons against sprae
 
@@ -1758,7 +1760,7 @@
   * Hello world
   * Day/night switch
   ```html
-    <script src="https://cdn.jsdelivr.net/npm/sprae@12.x.x"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sprae@12.x.x" start></script>
 
     <div :scope="{ isDark: false }">
       <button :onclick="isDark = !isDark">
