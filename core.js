@@ -248,12 +248,6 @@ const applyMods = (fn, mods) => {
 // soft-extend missing props and ignoring signals
 const sx = (a, b) => { if (a != b) for (let k in b) (a[k] ??= b[k]); return a }
 
-// create expression setter, reflecting value back to state
-export const setter = (expr, _set = parse(`${expr}=__`)) => (target, value) => {
-  // save value to stash
-  target.__ = value; _set(target), delete target.__
-}
-
 // instantiated <template> fragment holder, like persisting fragment but with minimal API surface
 export const frag = (tpl) => {
   if (!tpl.nodeType) return tpl // existing tpl

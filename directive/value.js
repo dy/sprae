@@ -1,4 +1,11 @@
-import sprae, { setter, attr, parse, _state } from "../core.js";
+import sprae, { attr, parse, _state } from "../core.js";
+
+
+// create expression setter, reflecting value back to state
+export const setter = (expr, _set = parse(`${expr}=__`)) => (target, value) => {
+  // save value to stash
+  target.__ = value; _set(target), delete target.__
+}
 
 export default (el, state, expr, name) => {
   // bind back to value, but some values can be not bindable, eg. `:value="7"`

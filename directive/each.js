@@ -1,4 +1,4 @@
-import sprae, { store, _state, effect, _change, _signals, frag, throttle } from "../core.js";
+import sprae, { _state, effect, _change, _signals, frag, throttle } from "../core.js";
 
 const each = (tpl, state, expr) => {
   let [itemVar, idxVar = "$"] = expr.split(/\bin\b/)[0].trim().replace(/\(|\)/g, '').split(/\s*,\s*/);
@@ -35,16 +35,16 @@ const each = (tpl, state, expr) => {
 
         let idx = i,
           // FIXME: inherited state is cheaper in terms of memory and faster in terms of performance, compared to creating a proxy
-          subscope = store({
-            // NOTE: since we simulate signal, we have to make sure it's actual signal, not fake one
-            // FIXME: try to avoid this, we also have issue with wrongly calling dispose in store on delete
-            [itemVar]: cur[_signals]?.[idx]?.peek ? cur[_signals]?.[idx] : cur[idx],
-            [idxVar]: keys ? keys[idx] : idx
-          }, state)
-        // subscope = Object.create(state, {
-        //   [itemVar]: { get: () => cur[idx] },
-        //   [idxVar]: { value: keys ? keys[idx] : idx }
-        // })
+          // subscope = store({
+          //   // NOTE: since we simulate signal, we have to make sure it's actual signal, not fake one
+          //   // FIXME: try to avoid this, we also have issue with wrongly calling dispose in store on delete
+          //   [itemVar]: cur[_signals]?.[idx]?.peek ? cur[_signals]?.[idx] : cur[idx],
+          //   [idxVar]: keys ? keys[idx] : idx
+          // }, state)
+        subscope = Object.create(state, {
+          [itemVar]: { get: () => cur[idx] },
+          [idxVar]: { value: keys ? keys[idx] : idx }
+        })
 
         let el = tpl.content ? frag(tpl) : tpl.cloneNode(true);
 
