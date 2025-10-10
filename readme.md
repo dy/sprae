@@ -2,7 +2,7 @@
 
 Simple progressive enhancement for DOM or JSX.<br/>
 
-[Usage](#usage) · [Concepts](#core-concepts) · [Directives](#directives) · [Modifiers](#modifiers) · [Store](#store) · [Autoinit](#autoinit) · [JSX](#jsx) · [Customization](#customization) · [Micro](#micro) · [Hints](#hints) · [Examples](#examples)
+[Usage](#usage) · [Directives](#directives) · [Modifiers](#modifiers) · [Store](#store) · [Signals](#signals) · [Evaluator](#evaluator) · [Start](#autoinit) · [JSX](#jsx) · [Build](#custom-build) · [Hints](#hints) · [Examples](#examples)
 
 ## Usage
 
@@ -453,7 +453,54 @@ state.navigator             // == undefined
 ```
 
 
-## Autoinit
+## Signals
+
+Default signals can be replaced with _preact-signals_ alternative:
+
+```js
+import sprae from 'sprae';
+import { signal, computed, effect, batch, untracked } from 'sprae/signal';
+import * as signals from '@preact/signals-core';
+
+sprae.use(signals);
+```
+
+Provider | Size | Feature
+:---|:---|:---
+[`ulive`](https://ghub.io/ulive) | 350b | Minimal implementation, basic performance, good for small states.
+[`signal`](https://ghub.io/@webreflection/signal) | 633b | Class-based, better performance, good for small-medium states.
+[`usignal`](https://ghub.io/usignal) | 955b | Class-based with optimizations and optional async effects.
+[`@preact/signals-core`](https://ghub.io/@preact/signals-core) | 1.47kb | Best performance, good for any states, industry standard.
+[`signal-polyfill`](https://ghub.io/signal-polyfill) | 2.5kb | Proposal signals. Use via [adapter](https://gist.github.com/dy/bbac687464ccf5322ab0e2fd0680dc4d).
+[`alien-signals`](https://github.com/WebReflection/alien-signals) | 2.67kb | Preact-flavored [alien signals](https://github.com/stackblitz/alien-signals).
+
+
+## Evaluator
+
+Default evaluator is fast and compact, but violates "unsafe-eval" CSP.<br/>
+To make eval stricter & safer, any alternative can be used, eg. [_justin_](https://github.com/dy/subscript#justin):
+
+```js
+import sprae from 'sprae'
+import justin from 'subscript/justin'
+
+sprae.use({compile: justin})
+```
+
+<!--
+a minimal JS subset:
+
+`++ -- ! - + * / % ** && || ??`<br/>
+`= < <= > >= == != === !==`<br/>
+`<< >> >>> & ^ | ~ ?: . ?. [] ()=>{} in`<br/>
+`= += -= *= /= %= **= &&= ||= ??= ... ,`<br/>
+`[] {} "" ''`<br/>
+`1 2.34 -5e6 0x7a`<br/>
+`true false null undefined NaN`
+-->
+
+
+## Start
 
 The `start` or `data-sprae-start` attribute automatically starts sprae on document. It can use a selector to adjust target container.
 
@@ -523,52 +570,6 @@ export default function Layout({ children }) {
   </>
 }
 ```
-
-## Signals
-
-Default signals can be replaced with _preact-signals_ alternative:
-
-```js
-import sprae from 'sprae';
-import { signal, computed, effect, batch, untracked } from 'sprae/signal';
-import * as signals from '@preact/signals-core';
-
-sprae.use(signals);
-```
-
-Provider | Size | Feature
-:---|:---|:---
-[`ulive`](https://ghub.io/ulive) | 350b | Minimal implementation, basic performance, good for small states.
-[`signal`](https://ghub.io/@webreflection/signal) | 633b | Class-based, better performance, good for small-medium states.
-[`usignal`](https://ghub.io/usignal) | 955b | Class-based with optimizations and optional async effects.
-[`@preact/signals-core`](https://ghub.io/@preact/signals-core) | 1.47kb | Best performance, good for any states, industry standard.
-[`signal-polyfill`](https://ghub.io/signal-polyfill) | 2.5kb | Proposal signals. Use via [adapter](https://gist.github.com/dy/bbac687464ccf5322ab0e2fd0680dc4d).
-[`alien-signals`](https://github.com/WebReflection/alien-signals) | 2.67kb | Preact-flavored [alien signals](https://github.com/stackblitz/alien-signals).
-
-
-## Evaluator
-
-Default evaluator is fast and compact, but violates "unsafe-eval" CSP.<br/>
-To make eval stricter & safer, any alternative can be used, eg. [_justin_](https://github.com/dy/subscript#justin):
-
-```js
-import sprae from 'sprae'
-import justin from 'subscript/justin'
-
-sprae.use({compile: justin})
-```
-
-<!--
-a minimal JS subset:
-
-`++ -- ! - + * / % ** && || ??`<br/>
-`= < <= > >= == != === !==`<br/>
-`<< >> >>> & ^ | ~ ?: . ?. [] ()=>{} in`<br/>
-`= += -= *= /= %= **= &&= ||= ??= ... ,`<br/>
-`[] {} "" ''`<br/>
-`1 2.34 -5e6 0x7a`<br/>
-`true false null undefined NaN`
--->
 
 ## Custom build
 
