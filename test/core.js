@@ -128,7 +128,6 @@ test.skip("core: semicols in expression", async () => {
 
 test("core: async value", async () => {
   let fetchData = async () => { await time(50); return 'data'; };
-  // FIXME: not sure I understand why it works
   let el = h`<div :fx="( x='', async () => (x = await fetchData() ) )()" :text="x"></div>`;
   let state = sprae(el, { fetchData });
   is(el.textContent, '');
@@ -138,7 +137,6 @@ test("core: async value", async () => {
 
 test("core: async prop", async () => {
   let fetchData = async () => { await time(50); return 'data'; };
-  // FIXME: not sure I understand why it works
   let el = h`<div :text="await fetchData()"></div>`;
   let state = sprae(el, { fetchData  });
   is(el.textContent, '');

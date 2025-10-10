@@ -12,8 +12,7 @@ export const _signals = Symbol('signals'),
 export const store = (values, parent = globalThis) => {
   if (!values) return values
 
-  // ignore existing state as argument or globals
-  // FIXME: toStringTag is not needed since we read global as parent (can remove this condition)
+  // ignore globals
   if (values[Symbol.toStringTag]) return values;
 
   // bypass existing store

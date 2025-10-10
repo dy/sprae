@@ -52,7 +52,6 @@ Object.assign(directive, {
 })
 
 Object.assign(modifier, {
-  // FIXME: add -s, -m, -l classes with values
   debounce: (fn,
     _how = 250,
     _schedule = _how === "tick" ? queueMicrotask : _how === "raf" ? requestAnimationFrame : _how === "idle" ? requestIdleCallback : ((fn) => setTimeout(fn, _how)),
@@ -83,14 +82,11 @@ Object.assign(modifier, {
 
   // test
   self: (fn) => (e) => (e.target === fn.target && fn(e)),
-  // FIXME
+
   outside: (fn) => (e, _target) => (
     _target = fn.target,
     !_target.contains(e.target) && e.target.isConnected && (_target.offsetWidth || _target.offsetHeight)
   ),
-
-  // FIXME:
-  //screen: fn => ()
 })
 
 // key testers

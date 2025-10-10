@@ -205,15 +205,15 @@
 
 * [ ] find alternative way to update plain lists in :each rather than simulating signals (adds memory overhead)
   * [ ] remove _signals use, just do _change check
-* [ ] alpine csp tests syntaxes
-* [ ] All TODO/FIXME address
 * [ ] microjs bundle
+* [ ] All TODO/FIXME address
+* [ ] Website
+* [ ] refactor main demos
 * [x] ~~core test runner: signals variants, normal/micro, sync/async, module/bundle~~
 * [x] Optimizations (https://krausest.github.io/js-framework-benchmark/current.html)
   * [x] Append rows to large table is THE SLOWEST
   * [~] Create many rows IS SLOW
-* [ ] refactor main demos
-* [ ] Website
+* [ ] alpine csp tests syntaxes
 
 ## [ ] Plugins
 

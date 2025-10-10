@@ -1,4 +1,4 @@
-import sprae, { _state, effect, _change, _signals, frag, throttle } from "../core.js";
+import sprae, { store, _state, effect, _change, _signals, frag, throttle } from "../core.js";
 
 const each = (tpl, state, expr) => {
   let [itemVar, idxVar = "$"] = expr.split(/\bin\b/)[0].trim().replace(/\(|\)/g, '').split(/\s*,\s*/);
@@ -34,7 +34,7 @@ const each = (tpl, state, expr) => {
         cur[i] = newItems[i]
 
         let idx = i,
-          // FIXME: inherited state is cheaper in terms of memory and faster in terms of performance, compared to creating a proxy
+          // inherited state must be cheaper in terms of memory and faster in terms of performance, compared to creating a proxy store
           // subscope = store({
           //   // NOTE: since we simulate signal, we have to make sure it's actual signal, not fake one
           //   // FIXME: try to avoid this, we also have issue with wrongly calling dispose in store on delete

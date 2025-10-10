@@ -281,7 +281,7 @@ test("if: set/unset 2", async () => {
 
   console.log('----state.x = null')
   state.x = null
-  await tick(2) // FIXME: 2 ticks - why? chain of delays?
+  await tick()
   console.log(123123, el.innerHTML)
   is(el.innerHTML, `<z>c</z>`, 'x==null')
 

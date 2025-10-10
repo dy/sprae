@@ -30,7 +30,6 @@ const sprae = (el = document.body, state) => {
   state = store(state || {})
 
   let fx = [], offs = [], fn,
-    // FIXME: on generally needs to account for events, although we call it only in :if
     on = () => (!offs && (offs = fx.map(fn => fn()))),
     off = () => (offs?.map(off => off()), offs = null)
 
@@ -62,7 +61,6 @@ const sprae = (el = document.body, state) => {
 
     // :if and :each replace element with text node, which tweaks .children length, but .childNodes length persists
     // for (let i = 0, child; i < (el.childNodes.length); i++) child =  el.childNodes[i], child.nodeType == 1 && add(child)
-    // FIXME: don't do spread here
     for (let child of [...el.childNodes]) child.nodeType == 1 && add(child)
   };
 
@@ -87,8 +85,6 @@ const sprae = (el = document.body, state) => {
 const initDirective = (el, attrName, expr, state) => {
   let cur, // current step callback
     off // current step disposal
-
-  // FIXME: separate cases: async, event, sequence, single attr
 
   let steps = attrName.slice(prefix.length).split('..').map((step, i, { length }) => (
     // multiple attributes like :id:for=""
@@ -123,7 +119,6 @@ const initDirective = (el, attrName, expr, state) => {
         count = -1, // called effect count
 
         // effect applier - first time it applies the effect, next times effect is triggered by change signal
-        // FIXME: init via dispose, don't reset count
         fn = throttle(applyMods(() => {
           if (++change.value) return // all calls except for the first one are handled by effect
           dispose = effect(() => update && (
