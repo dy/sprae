@@ -16,7 +16,7 @@ Good for small websites, static pages, lightweight UI, prototypes, SPAs, PWAs, o
 <script src="https://cdn.jsdelivr.net/npm/sprae@12.x.x" start></script>
 ```
 
-Sprae automatically evaluates `:`-directives and removes them, creating a reactive state for updates.
+Sprae automatically evaluates `:`-directives and removes them, enabling reactive logic.
 
 <!--
 ### Flavors
@@ -35,7 +35,7 @@ Sprae automatically evaluates `:`-directives and removes them, creating a reacti
 
 #### `:text`
 
-Set element text content.
+Set text content.
 
 ```html
 Welcome, <span :text="user.name">Guest</span>.
@@ -120,7 +120,7 @@ Set any attribute(s).
 
 #### `:if`, `:else`
 
-Control flow of elements.
+Control flow.
 
 ```html
 <span :if="foo">foo</span>
@@ -136,7 +136,7 @@ Control flow of elements.
 
 #### `:each`
 
-Multiply element.
+Multiply content.
 
 ```html
 <ul><li :each="item in items" :text="item" /></ul>
@@ -170,7 +170,7 @@ Define variable scope for a subtree.
 <x :scope :ref="id"></x>
 
 <!-- access to local scope instance -->
-<x :scope="scope => (scope.x = 'foo', scope)" :text="x"></x>
+<x :scope="scope => {scope.x = 'foo'; return scope}" :text="x"></x>
 ```
 
 #### `:fx`
@@ -277,7 +277,7 @@ Trigger when element is connected / disconnected from DOM.
 ## Modifiers
 
 
-#### `.debounce-<ms|tick|raf|idle>?`
+#### `.debounce-<ms|tick|frame|idle>?`
 
 Defer callback by a number of ms, next tick, animation frame or until system idle. By default 250ms.
 
@@ -289,22 +289,22 @@ Defer callback by a number of ms, next tick, animation frame or until system idl
 <div :class.debounce-tick="{ active }">...</div>
 
 <!-- debounce resize to the next animation frame -->
-<div :onresize.window.debounce-raf="updateSize()">...</div>
+<div :onresize.window.debounce-frame="updateSize()">...</div>
 
 <!-- batch logging -->
 <div :fx.debounce-idle="sendAnalytics(batch)"></div>
 ```
 
-#### `.throttle-<ms|tick|raf>?`
+#### `.throttle-<ms|tick|frame>?`
 
-Limit callback to interval in ms, tick or animation framerate. By default 250ms.
+Limit callback rate to interval in ms, tick or animation framerate. By default 250ms.
 
 ```html
 <!-- throttle text update -->
 <div :text.throttle-100="text.length"></div>
 
-<!-- lock style update to animation framerate -->
-<div :onscroll.throttle-raf="progress = (scrollTop / scrollHeight) * 100"/>
+<!-- lock style update to raf -->
+<div :onscroll.throttle-frame="progress = (scrollTop / scrollHeight) * 100"/>
 
 <!-- ensure separate scope/stacktrace for events -->
 <div :onmessage.window.throttle-tick="event => log(event)">...</div>
@@ -401,7 +401,7 @@ Any other modifier has no effect, but allows binding multiple handlers.
 
 ## Autoinit
 
-The `start` / `data-sprae-start` attribute automatically starts sprae on document. It can use selector to adjust target container.
+The `start` / `data-sprae-start` attribute automatically starts sprae on document. It can use a selector to adjust target container.
 
 ```html
 <div id="counter" :scope="{count: 1}">
@@ -412,7 +412,7 @@ The `start` / `data-sprae-start` attribute automatically starts sprae on documen
 <script src="./sprae.js" data-sprae-start="#counter"></script>
 ```
 
-To start manually with optional state, remove `start` attribute:
+For manual start, remove `start` attribute:
 
 ```html
 <script src="./sprae.js"></script>
@@ -420,12 +420,12 @@ To start manually with optional state, remove `start` attribute:
   // watch & autoinit els
   sprae.start(document.body, { count: 1 });
 
-  // OR init individual el
+  // OR init individual el (no watch)
   const state = sprae(document.getElementById('counter'), { count: 0 })
 </script>
 ```
 
-For more granular control use ESM:
+For more control use ESM:
 
 ```html
 <script type="module">
@@ -442,7 +442,7 @@ For more granular control use ESM:
 
 ## Store
 
-Sprae uses signals store for reactivity.
+Sprae uses preact-signals store for reactivity.
 
 ```js
 import sprae, { store, signal, effect, computed } from 'sprae'
@@ -478,9 +478,7 @@ state.navigator             // == undefined
 ## JSX
 
 Sprae works with JSX via custom prefix (eg. `data-sprae-`).
-
-Case: react / nextjs server components can't do dynamic UI – active nav, tabs, sliders etc. Converting to client components breaks data fetching and adds overhead.
-Sprae can offload UI logic to keep server components intact.
+Useful to offload UI logic from server components in react / nextjs, instead of converting them to client components.
 
 ```jsx
 // app/page.jsx - server component
@@ -581,7 +579,6 @@ Eg. [_justin_](https://github.com/dy/subscript#justin), a minimal JS subset:
 `true false null undefined NaN`
 
 
-<!--
 ## Micro
 
 Micro sprae version is 2.5kb bundle with essentials:
@@ -590,7 +587,7 @@ Micro sprae version is 2.5kb bundle with essentials:
 * no modifiers `:a.x.y`
 * no sequences `:ona..onb`
 * no `:each`, `:if`, `:value`
-* async effects by default -->
+
 
 ## Hints
 
@@ -600,14 +597,12 @@ Micro sprae version is 2.5kb bundle with essentials:
 * To destroy state and detach sprae handlers, call `element[Symbol.dispose]()`.
 * `this` is not used, to get element reference use `:ref="element => {...}"`.
 * `key` is not used, `:each` uses direct list mapping instead of DOM diffing.
-* expressions support await `<div :text="await load()"></div>`
-* for mount/unmount events use `<div :if="cond" :ref="(init(), () => destroy())"></div>`.
-* semicolons return undefined, to return result use comma `<div :text="prepare(), text"></div>`
+* Expressions can be async: `<div :text="await load()"></div>`
 
 
 ## Justification
 
-Modern frontend stack is unhealthy, like non-organic processed food. There are alternatives, like:
+Modern frontend stack is unhealthy, like non-organic processed food. There are healthier alternatives, like:
 
 * [Template-parts](https://github.com/dy/template-parts) is stuck with native HTML quirks ([parsing table](https://github.com/github/template-parts/issues/24), [SVG attributes](https://github.com/github/template-parts/issues/25), [liquid syntax](https://shopify.github.io/liquid/tags/template/#raw) conflict etc).
 * [Alpine](https://github.com/alpinejs/alpine), [petite-vue](https://github.com/vuejs/petite-vue), [lucia](https://github.com/aidenybai/lucia) etc escape native HTML quirks, but have excessive API, tend to [self-encapsulate](https://github.com/alpinejs/alpine/discussions/3223) and not care about size/performance.
@@ -692,7 +687,7 @@ npm run results
 * Wavearea: [demo](https://dy.github.io/wavearea?src=//cdn.freesound.org/previews/586/586281_2332564-lq.mp3), [code](https://github.com/dy/wavearea)
 * Carousel: [demo](https://rwdevelopment.github.io/sprae_js_carousel/), [code](https://github.com/RWDevelopment/sprae_js_carousel)
 * Tabs: [demo](https://rwdevelopment.github.io/sprae_js_tabs/), [code](https://github.com/RWDevelopment/sprae_js_tabs?tab=readme-ov-file)
-* Prostogreen [demo](https://web-being.org/prostogreen/), [code](https://github.com/web-being/prostogreen/)
+<!-- * Prostogreen [demo](https://web-being.org/prostogreen/), [code](https://github.com/web-being/prostogreen/) -->
 
 <!--
 ## See Also
