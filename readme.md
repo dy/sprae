@@ -2,7 +2,7 @@
 
 Simple progressive enhancement for DOM or JSX.<br/>
 
-[Usage](#usage) · [Directives](#directives) · [Modifiers](#modifiers) · [Store](#store) · [Signals](#signals) · [Evaluator](#evaluator) · [Start](#autoinit) · [JSX](#jsx) · [Build](#custom-build) · [Hints](#hints) · [Examples](#examples)
+<!-- [Usage](#usage) · [Directives](#directives) · [Modifiers](#modifiers) · [Store](#store) · [Signals](#signals) · [Evaluator](#evaluator) · [Start](#autoinit) · [JSX](#jsx) · [Build](#custom-build) · [Hints](#hints) · [Examples](#examples) -->
 
 ## Usage
 
