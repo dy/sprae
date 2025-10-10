@@ -441,8 +441,7 @@ const state = store(
   { Math }
 )
 
-// manual init
-sprae(element, state)
+sprae(element, state).      // init
 
 state.inc(), state.count++  // update
 name.value = 'bar'          // signal update
@@ -645,7 +644,11 @@ Micro sprae version is 2.5kb bundle with essentials:
 
 ## Justification
 
-Modern frontend is unhealthy—like processed, non-organic food. Frameworks force you into JS-land: build pipelines for "Hello World", proprietary conventions, virtual DOM overhead, brittle tooling. Pages are not functional without JS. Progressive enhancement is anachronism. Build tools should be optional, not mandatory. Frameworks should enhance HTML, not replace it.
+Modern frontend is unhealthy, like processed non-organic food.
+Frameworks force into JS-land: build pipelines for "Hello World", proprietary conventions, virtual DOM overhead, brittle tooling. 
+Pages are not functional without JS. Progressive enhancement is anachronism.
+
+Build tools should be optional, not mandatory. Frameworks should enhance HTML, not replace it.
 
 Native [template-parts](https://github.com/github/template-parts) and [DCE](https://github.com/WICG/webcomponents/blob/gh-pages/proposals/Declarative-Custom-Elements-Strawman.md) give hope, but quite distant and stuck with HTML quirks [1](https://github.com/github/template-parts/issues/24), [2](https://github.com/github/template-parts/issues/25), [3](https://shopify.github.io/liquid/tags/template/#raw).
 
