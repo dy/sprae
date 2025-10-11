@@ -204,14 +204,15 @@ t('store: inheritance', () => {
 })
 
 t.skip('store: inheritance: updating values in chain', async () => {
+  // NOTE: this is identical behavior to `a={y:1}, b=Object.create(a), b.y++`
+  // it's not very relevant for us since we don't use parent in sense of chain, it's more in sense of sandbox
   let s1 = store({ x: 1 })
   console.log('---- create s2')
   let s2 = store(s1, Object.create({ y: signal(2) }))
-  console.log('----', s2.y)
-  // console.group('fx')
+  console.log('---- s2.y')
+  s2.y
   let xy = 0;
-  effect(() => (console.log(s2.y), xy = s2.x + s2.y));
-  // console.groupEnd('fx')
+  effect(() => (console.group('fx'),console.log(s2.y), xy = s2.x + s2.y, console.groupEnd('fx')));
   await tick()
   is(xy, 3)
   console.log('----x++')
@@ -223,8 +224,6 @@ t.skip('store: inheritance: updating values in chain', async () => {
   s2.y++
   await tick()
   is(xy, 5)
-  // NOTE: this is identical behavior to `a={y:1}, b=Object.create(a), b.y++`
-  // but since we don't use parent anymore - disregard
   // is(parent.y, 3)
 })
 
@@ -489,4 +488,14 @@ t('store: untracked substates', async () => {
   is(log, [1, 0, 2, 0])
   s._y[0] = 0
   is(log, [1, 0, 2, 0])
+})
+
+t.todo('store: parent props are set to the parent', async () => {
+  // FIXME: have to decide if subscopes are write-transparent for parent or just read-transparent
+  let parent = store({ x: 1 }), child = store({y: 2}, parent)
+  is(parent, {x: 1})
+  is(child, {y: 2})
+  child.x = 2
+  is(parent, {x: 2})
+  is(child, {y: 2})
 })

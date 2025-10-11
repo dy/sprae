@@ -24,14 +24,37 @@ export const store = (values, parent = globalThis) => {
   // _change stores total number of keys to track new props
   // NOTE: be careful
   let keyCount = Object.keys(values).length,
-      signals = {  }
+    signals = {}
 
   // proxy conducts prop access to signals
-  let state = new Proxy(Object.assign(signals, {[_change]: signal(keyCount), [_signals]: signals}), {
-    get: (_, k) => (k in signals ? (signals[k] ? signals[k].valueOf() : signals[k]) : parent[k]),
-    set: (_, k, v, _s) => (k in signals ? set(signals, k, v) : (create(signals, k, v), signals[_change].value = ++keyCount), 1), // bump length for new signal
+  let state = new Proxy(Object.assign(signals, { [_change]: signal(keyCount), [_signals]: signals }), {
+    get: (_, k) => {
+      if (k in signals) return (signals[k] ? signals[k].valueOf() : signals[k])
+        // console.log('GET', k, parent)
+      return parent[k]
+    },
+    set: (_, k, v, _s) => {
+      // console.group('SET', k, v, signals)
+      if (k in signals) {
+        set(signals, k, v)
+      }
+      // FIXME: should subscopes have write transparency for parent scope, or be like prototype chain?
+      // else if (k in parent) {
+      //   parent[k] = v
+      // }
+      else {
+        create(signals, k, v)
+        signals[_change].value = ++keyCount
+      }
+      // bump length for new signal
+      return 1
+    },
     // FIXME: try to avild calling Symbol.dispose here
-    deleteProperty: (_, k) => (k in signals && (k[0] != '_' && signals[k]?.[Symbol.dispose]?.(), delete signals[k], signals[_change].value = --keyCount), 1),
+    deleteProperty: (_, k) => {
+      // console.log('DEL', k)
+      k in signals && (k[0] != '_' && signals[k]?.[Symbol.dispose]?.(), delete signals[k], signals[_change].value = --keyCount)
+      return 1
+    },
     // subscribe to length when object is spread
     ownKeys: () => (signals[_change].value, Reflect.ownKeys(signals)),
     has: _ => 1 // sandbox prevents writing to global
@@ -53,8 +76,6 @@ export const store = (values, parent = globalThis) => {
   return state
 }
 
-const mut = ['push', 'pop', 'shift', 'unshift', 'splice']
-
 // array store - signals are lazy since arrays can be very large & expensive
 const list = (values, parent = globalThis) => {
 
@@ -65,15 +86,16 @@ const list = (values, parent = globalThis) => {
     isMut = false,
 
     // since array mutator methods read .length internally only once, we disable it on the moment of call, allowing rest of operations to be reactive
-    mut = fn => function () {isMut = true; return fn.apply(this, arguments); },
+    mut = fn => function () { isMut = true; return fn.apply(this, arguments); },
 
     length = signal(values.length),
 
-    // proxy conducts prop access to signals
+    // proxy passes prop access to signals
     state = new Proxy(
       Object.assign(signals, {
         [_change]: length,
         [_signals]: signals,
+        // patch mutators
         push: mut(signals.push),
         pop: mut(signals.pop),
         shift: mut(signals.shift),
@@ -124,7 +146,7 @@ const list = (values, parent = globalThis) => {
 }
 
 // create signal value, skip untracked
-const create = (signals, k, v) => (signals[k] = k[0] == '_' || v?.peek ? v : signal(store(v)))
+const create = (signals, k, v) => (signals[k] = (k[0] == '_' || v?.peek) ? v : signal(store(v)) )
 
 // set/update signal value
 const set = (signals, k, v, _s, _v) => {
@@ -141,7 +163,7 @@ const set = (signals, k, v, _s, _v) => {
           _change in _v ? untracked(() => batch(() => {
             for (let i = 0; i < v.length; i++) _v[i] = v[i]
             _v.length = v.length // forces deleting tail signals
-          })) : _s.value = v :
+          })) : (_s.value = v) :
           // .x = y
           (_s.value = store(v))
     )

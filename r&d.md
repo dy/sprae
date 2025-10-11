@@ -148,17 +148,18 @@
     ? how to extend state
     + It already just works via `:fx="x=1, y=2"` since we do sandboxing...
 
-### [x] `:scope="a=1,b=2"` instead of with="{...}"? -> yes, but better do both
+### [x] `:scope="a=1,b=2"` inline instead of with="{...}"? -> yes, but better do both
 
   + shorter syntax
   + on par with django, liquid
   ~ avoids js with association
   + enables per-variable effects
   + it's more natural for immediate scope to have access to vars `:fx="x=1,y=2,get=()=>x++"`
-    * rather than creating a layer of storage
-  - unclear/complicated parsing
+    * rather than creating a layer of store
   ? or `:define="a=1, b=2"`, `:let="a=1"`
   - can simply be done via `:fx="a=1, b=2"`
+  - confusion in `:scope="x=1, {y: 2}"` - from code perspective these are two separate scopes, but we also expect effect to run in a new scope to define these variables
+    ~+ it's alright to extend scope with defined object or even fn, but it must be run in a new scope
 
 ### [x] What's the best name for :scope/:with/:data? -> :scope, but :with is different directive.
 

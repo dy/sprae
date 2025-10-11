@@ -15,6 +15,7 @@ test("scope: inline assign", async () => {
   let el = h`<x :scope="foo='bar'"><y :text="console.log('effect text',foo),foo + baz"></y></x>`;
   let state = sprae(el, { baz: signal("qux") });
   is(el.innerHTML, `<y>barqux</y>`);
+  // FIXME is(state, {baz: "qux"}, "does not leak to parent scope");
   state.baz = "quux";
   await tick();
   is(el.innerHTML, `<y>barquux</y>`);
@@ -88,7 +89,7 @@ test("scope: scope directives must come first", async () => {
   is(a.outerHTML, `<x>1</x>`);
 });
 
-test("scope: new prop added to superstore", async () => {
+test("scope: new prop added to parent state", async () => {
   let a = h`<x :scope="{y:0}" :ony="()=>y=1"><a :if="y" :text="x"></a></x>`
   let state = sprae(a, {})
   is(a.innerHTML, ``)
