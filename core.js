@@ -92,7 +92,7 @@ const initDirective = (el, dirName, expr, state) => {
       let evaluate = parse(expr, directive[currentDir = name]?.parse)
 
       // a hack, but events have no signal-effects and can be sequenced
-      // FIXME: still can be a directive with no effect
+      // FIXME: events are molded into core, but should be an optional directive
       if (name.startsWith('on')) {
         let type = name.slice(2),
           fn = applyMods(
@@ -144,7 +144,7 @@ const initDirective = (el, dirName, expr, state) => {
   ));
 
   // off can be changed on the go
-  return () => (off = steps[0]())
+  return () => (off = steps[0]?.())
 }
 
 

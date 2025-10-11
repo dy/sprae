@@ -15,8 +15,5 @@ export default (el, state, _el, _, _prev=el) => {
 
   _el._holder._clauses.push(_el._clause = [_el, true])
 
-  return() => {
-    // console.log(':else update', _el)
-    _el._holder.update()
-  }
+  return _el._holder.update
 }
