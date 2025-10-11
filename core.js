@@ -51,8 +51,7 @@ const sprae = (el = document.body, state) => {
         el.removeAttribute(name)
 
         // directive initializer can be redefined
-        fx.push(fn = initDirective(el, name, value, state))
-        offs.push(fn())
+        if (fn = initDirective(el, name, value, state)) fx.push(fn), offs.push(fn())
 
         // stop after subsprae like :each, :if, :scope etc.
         if (_state in el) return
@@ -82,25 +81,25 @@ const sprae = (el = document.body, state) => {
  * Multiprop sequences initializer, eg. :a:b..c:d
  * @type {(el: HTMLElement, name:string, value:string, state:Object) => Function}
  * */
-const initDirective = (el, attrName, expr, state) => {
+const initDirective = (el, dirName, expr, state) => {
   let cur, // current step callback
     off // current step disposal
 
-  let steps = attrName.slice(prefix.length).split('..').map((step, i, { length }) => (
+  let steps = dirName.slice(prefix.length).split('..').map((step, i, { length }) => (
     // multiple attributes like :id:for=""
     step.split(prefix).reduce((prev, str) => {
       let [name, ...mods] = str.split('.');
       let evaluate = parse(expr, directive[currentDir = name]?.parse)
 
-      // events have no effects and can be sequenced
+      // a hack, but events have no signal-effects and can be sequenced
+      // FIXME: still can be a directive with no effect
       if (name.startsWith('on')) {
         let type = name.slice(2),
-          first = e => (call(evaluate(state), e)),
           fn = applyMods(
             Object.assign(
               // single event vs chain
-              length == 1 ? first :
-                e => (cur = (!i ? first : cur)(e), off(), off = steps[(i + 1) % length]()),
+              length == 1 ?  e => evaluate(state, (fn) => call(fn, e)) :
+                (e => (cur = (!i ?  e => call(evaluate(state), e) : cur)(e), off(), off = steps[(i + 1) % length]())),
               { target: el, type }
             ),
             mods);
@@ -111,8 +110,11 @@ const initDirective = (el, attrName, expr, state) => {
       // props have no sequences and can be sync
       let update = (directive[name] || directive['*'])(el, state, expr, name)
 
+      // some directives are effect-less
+      if (!update) return
+
       // no-modifiers shortcut
-      if (!mods.length && !prev) return () => update && effect(() => evaluate(state, update))
+      if (!mods.length && !prev) return (() => effect(() => evaluate(state, update)))
 
       let dispose,
         change = signal(-1), // signal authorized to trigger effect: 0 = init; >0 = trigger
@@ -204,7 +206,7 @@ export const parse = (expr, prepare, _fn) => {
   if (prepare) _expr = prepare(_expr)
 
   // if, const, let - no return
-  if (/^(if|let|const)\b/.test(_expr) || /;/.test(_expr)) ;
+  if (/^(if|let|const)\b/.test(_expr) || /;(?![^{]*})/.test(_expr)) ;
   else _expr = `return ${_expr}`
 
   // async expression
@@ -220,7 +222,7 @@ export const parse = (expr, prepare, _fn) => {
   return parse.cache[expr] = (state, cb, _out) => {
     try {
       let result = _fn?.(state)
-      // if cb is given - call it with result and return function that returns last cb result - needed for effect cleanup
+      // if cb is given (to handle asyncs) - call it with result and return function that returns last cb result - needed for effect cleanup
       if (cb) return result?.then ? result.then(v => _out = cb(v)) : _out = cb(result), () => call(_out)
       else return result
     } catch (e) {

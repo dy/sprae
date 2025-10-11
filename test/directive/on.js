@@ -276,7 +276,6 @@ test('on: modifiers chain', async () => {
   is(state.log, ['x', 'x'])
 })
 
-
 test('on: alias sequence', async () => {
   let el = h`<x :ona.debounce-tick:onb.debounce-tick..onc.debounce-tick:ond.debounce-tick="e=>(log.push(e.type),(e)=>log.push(e.type))"></x>`
   let state = sprae(el, { log: [] })
@@ -323,6 +322,13 @@ test('on: alias sequence', async () => {
   is(state.log, ['a','d','b','c'])
 })
 
+test("on: function with braces", async () => {
+  let el = h`<div :onx="e => { log.push(1); }"></div>`;
+  let state = sprae(el, { log: [] });
+  el.dispatchEvent(new window.Event("x"));
+  is(state.log, [1]);
+});
+
 test("on: async inline", async () => {
   let el = h`<div :onx="let v = await Promise.resolve().then(()=>(1)); log.push(v);"></div>`;
   let state = sprae(el, { log: [] });
@@ -332,11 +338,11 @@ test("on: async inline", async () => {
   is(state.log, [1]);
 });
 
-test.skip("on: async function", async () => {
+test("on: async function", async () => {
   let el = h`<div :onx="async e => { let v = await Promise.resolve().then(()=>(1)); log.push(v); }"></div>`;
   let state = sprae(el, { log: [] });
   el.dispatchEvent(new window.Event("x"));
   is(state.log, []);
-  await tick(1);
+  await time();
   is(state.log, [1]);
 });

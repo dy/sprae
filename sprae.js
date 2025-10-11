@@ -20,6 +20,9 @@ Object.assign(directive, {
   // :x="x"
   '*': _default,
 
+  // FIXME
+  // 'on*': _on,
+
   // :="{a,b,c}"
   '': _spread,
 
