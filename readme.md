@@ -745,4 +745,4 @@ npm run results
 [alpine](https://github.com/alpinejs/alpine), [lucia](https://github.com/aidenybai/lucia), [petite-vue](https://github.com/vuejs/petite-vue), [nuejs](https://github.com/nuejs/nuejs), [hmpl](https://github.com/hmpl-language/hmpl), [unpoly](https://unpoly.com/up.link), [dagger](https://github.com/dagger8224/dagger.js)
 
 
-<p align="center"><a href="https://github.com/krsnzd/license/">🕉</a></p>
+<p align="center"><a href="https://github.com/krsnzd/license/">ॐ</a></p>
