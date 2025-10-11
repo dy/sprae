@@ -501,7 +501,7 @@ a minimal JS subset:
 
 ## Autoinit
 
-The `start` or `data-sprae-start` attribute automatically starts sprae on document. It can use a selector to adjust target container.
+The `start` / `data-start` attribute automatically starts sprae on document. It can use a selector to adjust target container.
 
 ```html
 <div id="counter" :scope="{count: 1}">
@@ -509,7 +509,7 @@ The `start` or `data-sprae-start` attribute automatically starts sprae on docume
   <button :onclick="count++">Click me</button>
 </div>
 
-<script src="./sprae.js" data-sprae-start="#counter"></script>
+<script src="./sprae.js" data-start="#counter"></script>
 ```
 
 For manual start, remove `start` attribute:
@@ -542,7 +542,7 @@ For more control use ESM:
 
 ## JSX
 
-Sprae works with JSX via custom prefix (eg. `data-sprae-`).
+Sprae works with JSX via custom prefix (eg. `s-`).
 Useful to offload UI logic from server components in react / nextjs, instead of converting them to client components.
 
 ```jsx
@@ -550,8 +550,8 @@ Useful to offload UI logic from server components in react / nextjs, instead of 
 export default function Page() {
   return <>
     <nav id="nav">
-      <a href="/" data-sprae-class="location.pathname === '/' && 'active'">Home</a>
-      <a href="/about" data-sprae-class="location.pathname === '/about' && 'active'">About</a>
+      <a href="/" s-class="location.pathname === '/' && 'active'">Home</a>
+      <a href="/about" s-class="location.pathname === '/about' && 'active'">About</a>
     </nav>
     ...
   </>
@@ -565,7 +565,7 @@ import Script from 'next/script'
 export default function Layout({ children }) {
   return <>
     {children}
-    <Script src="https://unpkg.com/sprae" data-sprae-prefix="data-sprae-" data-sprae-start />
+    <Script src="https://unpkg.com/sprae" data-prefix="s-" data-start />
   </>
 }
 ```
@@ -645,7 +645,7 @@ Micro sprae version is 2.5kb bundle with essentials:
 ## Justification
 
 Modern frontend is unhealthy, like processed non-organic food.
-Frameworks force into JS-land: build pipelines for "Hello World", proprietary conventions, virtual DOM overhead, brittle tooling. 
+Frameworks force into JS-land: build pipelines for "Hello World", proprietary conventions, virtual DOM overhead, brittle tooling.
 Pages are not functional without JS. Progressive enhancement is anachronism.
 
 Build tools should be optional, not mandatory. Frameworks should enhance HTML, not replace it.

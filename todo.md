@@ -203,14 +203,16 @@
 * [x] async functions... alpine does it well
 * [x] if, let, const, semicolon syntax allowance
 * [x] All TODO/FIXME address
-
 * [x] Nextjs data-sprae-start defaults to true, which is invalid selector
   * [x] Likely we may want multiple els to init as well
-* [ ] Draft release
-* [ ] Website
-* [ ] microjs bundle
+
+* [x] data-sprae-prefix="data-sprae-" shoots itself
 * [ ] refactor main demos
+* [ ] microjs bundle
 * [ ] jsperf benchmark
+* [ ] Website
+  * [ ] Connect donation links
+* [ ] Draft release
 
 * [ ] find alternative way to update plain lists in :each rather than simulating signals (adds memory overhead)
   * [ ] remove _signals use, just do _change check
