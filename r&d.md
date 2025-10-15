@@ -1128,19 +1128,19 @@
   + It would allow us to get rid of `parent` in `store`, which is less static + dynamic trouble
   + `:scope` defines only particular local variables, but generally access to root scope is preserved
 
-## [ ] Should :each create own scope (or keep parent scope)?
+## [x] Should :each create own scope (or keep parent scope)? -> Let's try shallow object.create with only two props
 
   + allows `:ref`
     ~ can be done as `:scope :ref='x'`
   - performance hit
   ~ we don't really need it as much, do we?
 
-### [ ] Should :ref create own scope instead?
+### [x] Should :ref create own scope instead? -> Let's try defining property instead
 
   - doesn't expose item to the parent state
     ~ :each with scopes doesn't expose either
 
-## [ ] Should we pre-parse directives?
+## [x] Should we pre-parse directives? -> no, breaks chains
 
   + :a:b -> :a :b decoupling
     + shorter init code
@@ -1149,7 +1149,7 @@
     ~ entails modifiers handling, which makes them unified
     - sole purpose
 
-## [ ] _stop flag instead of _state = null
+## [x] _stop flag instead of _state = null -> let's wait until needed
 
   + Presence of state doesn't indicate if item should be prevented on init.
     + Eg. `:else :scope :text :on`
@@ -1163,6 +1163,21 @@
     + and that naturally prevents leaking variables
   ? Do we need extending root scope? Like writing some new props to it?
   + `with` doesn't allow writing new props anyways
+
+## [x] store: should we have write transparency for parent, ie instead of creating new prop we write to a parent? -> yes, write transparency
+  * `<x :scope="x=1"><y :scope="y=2,x=1"></y></x>`
+  ? Is y going to write x to the `<x>` scope, or create own instance?
+  - Object prototype chain creates new props
+  ~ In js it can be `let x=1; { let y = 2, x = 3;}` but we also can write `x` from nested scopes...
+  - we cannot easily access full prototype chain, only nearby parent
+  + Alpine has write transparency, but it creates new values in the root scope, not local one
+
+  1. Alpine principle: find closest scope where variable is defined.
+    - But then we have to make a special rule for `:scope` directive to _only define_ variables, which is modal creation
+    - Also hoisting to the global scope is not good
+  2. We write to parent if variable is defined there, otherwise we create it locally
+    + Solves `:scope` issue
+    - Since we do sandboxing, we
 
 ## [x] Pause/resume components (detached :if should not trigger internal fx) -> complete disposal cycle
 
@@ -1284,7 +1299,6 @@
 
   5. Autoinit until first request.
     + ESM entry is best alternative for such case
-
 
 ## [x] What's the best place for `untracked` to prevent faux root subscription in :with > :ref? -> best way to init outside of parent effect
 
@@ -1843,3 +1857,27 @@
   * [ ] Codrops
   * [ ] Jhay
   * [ ] Codepen
+
+## [ ] Sprae vs Alpine
+
+* Let's be honest, is ther a big difference with alpine?
+
+Feature | Sprae | Alpine
+---|---|---
+JSX | via `prefix` | via `x-on:abc=""`?
+Sandbox | Yes | No
+Reactivity | Signals | Vue, internal
+Scope transparency | Yes | Yes
+
+Magic | No | Yes
+Open controllable state | Yes | No
+Size | 10kb | 15kb
+Perf | Ok | Slow
+CSP | Yes | Yes
+Async | Yes | Yes
+Const, let | Yes | Yes
+Fragments | Yes | Yes
+
+Ecosystem | No | Yes
+Plugins | 0 | Many
+Components | 0 | Many

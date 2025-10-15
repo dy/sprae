@@ -203,28 +203,51 @@ t('store: inheritance', () => {
   // })
 })
 
-t.skip('store: inheritance: updating values in chain', async () => {
+t('store: inheritance: updating values in chain', async () => {
   // NOTE: this is identical behavior to `a={y:1}, b=Object.create(a), b.y++`
   // it's not very relevant for us since we don't use parent in sense of chain, it's more in sense of sandbox
   let s1 = store({ x: 1 })
   console.log('---- create s2')
-  let s2 = store(s1, Object.create({ y: signal(2) }))
-  console.log('---- s2.y')
-  s2.y
+  let s2 = store({}, s1)
+  console.log('---- s2.y=2')
+  s2.y = 2
   let xy = 0;
-  effect(() => (console.group('fx'),console.log(s2.y), xy = s2.x + s2.y, console.groupEnd('fx')));
+  is(s2.x, 1)
+  is(s2.y, 2)
+  is(s1.y, undefined, 'does not leak to parent')
+  effect(() => (console.group('fx', s2.x, s2.y), xy = s2.x + s2.y, console.groupEnd('fx')));
   await tick()
   is(xy, 3)
   console.log('----x++')
-  s2.x++
   await tick()
-  is(xy, 4)
+  s2.x++
   is(s1.x, 2)
+  is(s2.x, 2)
+  is(s2.y, 2)
+  is(xy, 4)
   console.log('----y++')
   s2.y++
   await tick()
   is(xy, 5)
   // is(parent.y, 3)
+})
+
+t('store: inheritance does not change root (write shadowing)', () => {
+  const root = store({ x: 1, y: 2 })
+  let s = store({ x: 2 }, root)
+
+  console.log('--- shadowing')
+  is(root.x, 1)
+  s.x = 3
+  is(root.x, 1)
+  s.y = 3
+  is(s.y, 3)
+  is(root.y, 3)
+
+  console.log('--- new vars')
+  s.z = 4
+  is(s.z, 4)
+  is(root.z, undefined)
 })
 
 t('store: inheritance: lazy init', async () => {
@@ -258,9 +281,14 @@ t('store: inheritance subscribes to parent getter', async () => {
 })
 
 t('store: sandbox', async () => {
-  // NOTE: handled via custom compiler
   let s = store({ x: 1 })
   is(s.window, window)
+  console.log('--- set s.x = 2')
+  let set = new Function('s', 'with(s) { y=2 }')
+  // s.y = 2
+  set(s)
+  is(window.y, undefined)
+  is(s.y, 2)
 })
 
 t('store: array items', async () => {
@@ -414,12 +442,6 @@ t('store: batch', async () => {
   is(log, [3, 5, 6])
 })
 
-t('store: inheritance does not change root', () => {
-  const root = store({ x: 1, y: 2 })
-  store({ x: 2 }, root[_signals])
-  is(root.x, 1)
-})
-
 t('store: adding new props to object triggers effect', () => {
   const s = store({ x: 1, y: 2 }), log = []
   effect(() => (console.group('fx'), log.push({ ...s }), console.groupEnd()))
@@ -490,7 +512,7 @@ t('store: untracked substates', async () => {
   is(log, [1, 0, 2, 0])
 })
 
-t.todo('store: parent props are set to the parent', async () => {
+t('store: parent props are set to the parent', async () => {
   // FIXME: have to decide if subscopes are write-transparent for parent or just read-transparent
   let parent = store({ x: 1 }), child = store({y: 2}, parent)
   is(parent, {x: 1})

@@ -128,10 +128,11 @@ test.skip("core: semicols in expression", async () => {
 
 test("core: async value", async () => {
   let fetchData = async () => { await time(50); return 'data'; };
-  let el = h`<div :fx="( x='', async () => (x = await fetchData() ) )()" :text="x"></div>`;
+  let el = h`<div :fx="( x='', async () => ( x = await fetchData() ) )()" :text="x"></div>`;
   let state = sprae(el, { fetchData });
   is(el.textContent, '');
   await time(60);
+  is(window.x, undefined);
   is(el.textContent, 'data');
 });
 

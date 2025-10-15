@@ -23,3 +23,5 @@ Object.defineProperty(DocumentFragment.prototype, "outerHTML", {
     return s;
   },
 });
+
+console.tap = (...args) => { console.log(...args); return args[args.length - 1] }

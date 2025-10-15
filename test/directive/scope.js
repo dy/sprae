@@ -36,7 +36,7 @@ test("scope: assign data", async () => {
   let state = sprae(el, { console, x: { foo: "bar" } });
   await tick();
   is(el.innerHTML, `<y>bar</y>`);
-  console.log('state.x.foo = \'baz\'')
+  console.log('---state.x.foo = \'baz\'')
   state.x.foo = "baz";
   await tick(2);
   // Object.assign(state, { x: { foo: 'baz' } })
@@ -77,9 +77,10 @@ test("scope: writes to state", async () => {
 });
 
 test("scope: one of children (internal number of iterations, cant see the result here)", async () => {
-  let a = h`<div><x :text="x"></x><x :scope="{x:2}" :text="x"></x><x :text="y">3</x></div>`;
-  sprae(a, { x: 1, y: 3 });
-  is(a.innerHTML, `<x>1</x><x>2</x><x>3</x>`);
+  let a = h`<div><x :text="x"></x><y :scope="{x:2}" :text="x"></y><z :text="y">3</z></div>`;
+  let state = sprae(a, { x: 1, y: 3 });
+  is(state, {x: 1, y: 3}, "does not leak to parent scope");
+  is(a.innerHTML, `<x>1</x><y>2</y><z>3</z>`);
 });
 
 test("scope: scope directives must come first", async () => {

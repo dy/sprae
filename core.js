@@ -108,13 +108,17 @@ const initDirective = (el, dirName, expr, state) => {
       }
 
       // props have no sequences and can be sync
+      // it's nice to see directive as taking some part of current context and returning new or updated context
       let update = (directive[name] || directive['*'])(el, state, expr, name)
 
       // some directives are effect-less
       if (!update) return
 
+      // take over state if directive created it (mainly :scope)
+      if (el[_state]) state = el[_state]
+
       // no-modifiers shortcut
-      if (!mods.length && !prev) return (() => effect(() => evaluate(state, update)))
+      if (!mods.length && !prev) return ((() => effect(() =>  evaluate(state, update))))
 
       let dispose,
         change = signal(-1), // signal authorized to trigger effect: 0 = init; >0 = trigger
