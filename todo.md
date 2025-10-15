@@ -205,21 +205,21 @@
 * [x] All TODO/FIXME address
 * [x] Nextjs data-sprae-start defaults to true, which is invalid selector
   * [x] Likely we may want multiple els to init as well
-
 * [x] data-sprae-prefix="data-sprae-" shoots itself
-* [ ] refactor main demos
+* [x] refactor main demos
+* [x] Draft release
+
 * [ ] microjs bundle
 * [ ] jsperf benchmark
 * [ ] Website
   * [ ] Connect donation links
-* [ ] Draft release
-
 * [ ] find alternative way to update plain lists in :each rather than simulating signals (adds memory overhead)
   * [ ] remove _signals use, just do _change check
 * [x] ~~core test runner: signals variants, normal/micro, sync/async, module/bundle~~
 * [x] Optimizations (https://krausest.github.io/js-framework-benchmark/current.html)
   * [x] Append rows to large table is THE SLOWEST
   * [~] Create many rows IS SLOW
+* [ ] perf tests
 * [ ] alpine csp tests syntaxes
 
 ## [ ] Plugins

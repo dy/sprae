@@ -68,8 +68,10 @@
   </div>
 
   <script type="module">
-    import sprae from '../sprae.js'
-    // import sprae from 'https://unpkg.com/sprae@10.13.0/dist/sprae.js'
+    // import sprae from '../sprae.js'
+    // import sprae from 'https://unpkg.com/sprae@10.x.x/dist/sprae.js'
+    // import sprae from 'https://unpkg.com/sprae@11.x.x/dist/sprae.js'
+    import sprae from 'https://unpkg.com/sprae@12.x.x/dist/sprae.js'
     // import sprae from '../dist/sprae.js'
 
     const adjectives = ['pretty', 'large', 'big', 'small', 'tall', 'short', 'long', 'handsome', 'plain', 'quaint', 'clean', 'elegant', 'easy', 'angry', 'crazy', 'helpful', 'mushy', 'odd', 'unsightly', 'adorable', 'important', 'inexpensive', 'cheap', 'expensive', 'fancy']
@@ -99,8 +101,10 @@
       selected: null,
 
       remove(item) {
+        console.time('remove', item)
         const index = this.rows.findIndex(x => (x.id == item.id))
         this.rows.splice(index, 1)
+        console.timeEnd('remove')
       },
 
       select(item) {
@@ -115,16 +119,20 @@
       },
 
       add() {
+        console.time('add')
         this.rows.push(...buildData(1000))
         // this.rows = [...this.rows, ...buildData(1000)]
         this.selected = null
+        console.timeEnd('add')
       },
 
       update() {
+        console.time('update')
         for (let i = 0; i < this.rows.length; i += 10) {
           this.rows[i].label += ' !!!'
         }
         this.selected = null
+        console.timeEnd('update')
       },
 
       runLots() {
@@ -135,15 +143,19 @@
       },
 
       clear() {
+        console.time('clear')
         this.rows = []
         this.selected = null
+        console.timeEnd('clear')
       },
 
       swap() {
+        console.time('swap')
         if (this.rows.length > 998) {
           let rows = this.rows;
           [rows[1], rows[998]] = [rows[998], rows[1]]
         }
+        console.timeEnd('swap')
       }
     })
   </script>

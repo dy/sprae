@@ -62,7 +62,7 @@
     <script src="https://unpkg.com/todomvc-common/base.js"></script>
     <script type="importmap"> {
       "imports": {
-        "sprae": "https://cdn.jsdelivr.net/npm/sprae/dist/sprae.min.js",
+        "sprae": "https://unpkg.com/sprae@12.x.x/dist/sprae.js",
         "plur": "https://cdn.skypack.dev/plur",
         "swapdom": "https://cdn.skypack.dev/swapdom",
         "ulive": "https://cdn.skypack.dev/ulive",
@@ -71,8 +71,8 @@
     }
     </script>
     <script type="module">
-      import sprae from '../sprae.js'
-      // import sprae from 'sprae'
+      // import sprae from '../sprae.js'
+      import sprae from 'sprae'
       import plur from 'plur'
 
       let state = sprae(document.body, {
