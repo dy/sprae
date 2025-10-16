@@ -661,6 +661,8 @@ _Sprae_ holds open, safe, minimalistic philosophy:
 * Small, safe & fast.
 * 🫰 developers
 
+It is ideal for small websites, static pages, prototypes, landing pages, lightweight UI, embedded apps, micro-frontends, SPA, PWA, JSX / SSR or anywhere you want reactive UI without framework weight.
+A light and fast alternative to alpine, petite-vue, lucia etc (see why).
 
 <!--
 |                       | [AlpineJS](https://github.com/alpinejs/alpine)          | [Petite-Vue](https://github.com/vuejs/petite-vue)        | Sprae            |
