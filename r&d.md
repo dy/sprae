@@ -1769,6 +1769,7 @@
   * Any personal SPA
   * Wavearea
   * Sprae website
+  * SVG generators
 
 ## [ ] Example ideas
 

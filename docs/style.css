@@ -39,6 +39,9 @@ h1, h2, h3, h4, h5, h6 {
   margin: 0;
   color: var(--blue);
 }
+p {
+  margin: 0;
+}
 
 h1 { font-size: 6rem; letter-spacing: -.025em; line-height: 1; }
 h2 { font-size: 3rem; line-height: 1; }
@@ -61,6 +64,7 @@ pre {
   margin: 0;
   font-size: smaller;
   padding: 3rem;
+  white-space: pre-wrap;
 }
 
 ul {
@@ -95,6 +99,21 @@ th {
   background: #f5f5f5;
 }
 
+dl, dt, dd {
+  margin: 0;
+  padding: 0;
+}
+
+
+.tab {
+  position: relative;
+  padding: 3rem;
+  cursor: pointer;
+}
+.tab.active {
+  background: white;
+  border: 1px solid #ddd;
+}
 
 /* util */
 .hyperlegible {
@@ -109,6 +128,10 @@ th {
 .flex-row {
   display: flex;
   flex-direction: row;
+}
+.flex-col {
+  display: flex;
+  flex-direction: column;
 }
 
 .h-full {

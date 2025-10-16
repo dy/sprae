@@ -14,7 +14,7 @@
 
   <body :scope="x=0, y=0" :onmousemove.document="e => { x = e.clientX; y = e.clientY; }" :style="{'--x': x + 'px', '--y': y + 'px'}">
     <nav class="container grid-6 gap-2">
-      <div  class="col-start-4 flex-row gap-2 hyperlegible bold">
+      <div class="col-start-4 flex-row gap-2 hyperlegible bold">
         <a href="./api.html">docs</a>
         <a href="./examples.html">drops</a>
         <a href="./changelog.html">play</a>
@@ -53,15 +53,296 @@
       <section class="container my-4">
         <h2>Principles</h2>
         <ul>
-          <li>Minimal API, tiny footprint</li>
-          <li>Progressive enhancement by default</li>
-          <li>Direct HTML binding — no compilation</li>
+          <li>Minimal. Uncluttered. Tiny API.</li>
+          <li>Open state. Signals reactivity. Configurable.</li>
+          <li>0 deps. No build step. JSX, CSP support.</li>
         </ul>
       </section>
 
-      <section class="container my-4">
+      <section class="container my-4" :scope="{active:0}">
         <h2>Reference</h2>
-        <p><strong>Directives:</strong> <code>:text</code>, <code>:on</code>, <code>:class</code>, <code>:style</code>, <code>:scope</code>, <code>:if</code>, <code>:each</code></p>
+
+        <nav class="flex-row gap-1 my-3">
+          <h4 :onclick="active=0" class="tab" :class="{active:active==0}">Directives</h4>
+          <h4 :onclick="active=1" class="tab" :class="{active:active==1}">Modifiers</h4>
+        </nav>
+
+        <dl :if="active==0" class="flex-col">
+          <div class="grid-6 gap-2">
+            <div class="col-span-2 pt-2">
+              <dt>
+                <h4>:text</h4>
+              </dt>
+              <dd>
+                <p>Set text content.</p>
+              </dd>
+            </div>
+            <pre class="col-span-4"><code>&lt;span :text="user.name"&gt;Guest&lt;/span&gt;</code></pre>
+          </div>
+
+          <div class="grid-6 gap-2">
+            <div class="col-span-2 pt-2">
+              <dt>
+                <h4>:class</h4>
+              </dt>
+              <dd>
+                <p>Set className.</p>
+              </dd>
+            </div>
+            <pre class="col-span-4"><code>&lt;div :class="['foo', bar && 'bar', { baz }]"&gt;&lt;/div&gt;</code></pre>
+          </div>
+
+          <div class="grid-6 gap-2">
+            <div class="col-span-2 pt-2">
+              <dt>
+                <h4>:style</h4>
+              </dt>
+              <dd>
+                <p>Set style.</p>
+              </dd>
+            </div>
+            <pre class="col-span-4"><code>&lt;div :style="{bar: 'baz', '--qux': 'quv'}"&gt;&lt;/div&gt;</code></pre>
+          </div>
+
+          <div class="grid-6 gap-2">
+            <div class="col-span-2 pt-2">
+              <dt>
+                <h4>:value</h4>
+              </dt>
+              <dd>
+                <p>Bind input, textarea or select value.</p>
+              </dd>
+            </div>
+            <pre class="col-span-4"><code>&lt;input :value="value" /&gt;</code></pre>
+          </div>
+
+          <div class="grid-6 gap-2">
+            <div class="col-span-2 pt-2">
+              <dt>
+                <h4>:&lt;attr&gt;, :</h4>
+              </dt>
+              <dd>
+                <p>Set any attribute(s).</p>
+              </dd>
+            </div>
+            <pre class="col-span-4"><code>&lt;input :="{ id: name, name, type: 'text', value, ...props  }" /&gt;</code></pre>
+          </div>
+
+          <div class="grid-6 gap-2">
+            <div class="col-span-2 pt-2">
+              <dt>
+                <h4>:if, :else</h4>
+              </dt>
+              <dd>
+                <p>Control flow.</p>
+              </dd>
+            </div>
+            <pre class="col-span-4"><code>&lt;span :if="foo"&gt;foo&lt;/span&gt;
+      &lt;span :else :if="bar"&gt;bar&lt;/span&gt;
+      &lt;span :else&gt;baz&lt;/span&gt;</code></pre>
+          </div>
+
+          <div class="grid-6 gap-2">
+            <div class="col-span-2 pt-2">
+              <dt>
+                <h4>:each</h4>
+              </dt>
+              <dd>
+                <p>Multiply content.</p>
+              </dd>
+            </div>
+            <pre class="col-span-4"><code>&lt;ul&gt;&lt;li :each="item in items" :text="item" /&gt;&lt;/ul&gt;</code></pre>
+          </div>
+
+          <div class="grid-6 gap-2">
+            <div class="col-span-2 pt-2">
+              <dt>
+                <h4>:scope</h4>
+              </dt>
+              <dd>
+                <p>Define state container for a subtree.</p>
+              </dd>
+            </div>
+            <pre class="col-span-4"><code>&lt;x :scope="{foo: 'foo'}"&gt;
+        &lt;y :scope="{bar: 'bar'}" :text="foo + bar"&gt;&lt;/y&gt;
+      &lt;/x&gt;</code></pre>
+          </div>
+
+          <div class="grid-6 gap-2">
+            <div class="col-span-2 pt-2">
+              <dt>
+                <h4>:fx</h4>
+              </dt>
+              <dd>
+                <p>Run effect.</p>
+              </dd>
+            </div>
+            <pre class="col-span-4"><code>&lt;div :fx="a.value ? foo() : bar()" /&gt;</code></pre>
+          </div>
+
+          <div class="grid-6 gap-2">
+            <div class="col-span-2 pt-2">
+              <dt>
+                <h4>:ref</h4>
+              </dt>
+              <dd>
+                <p>Expose an element in scope or get ref to the element.</p>
+              </dd>
+            </div>
+            <pre class="col-span-4"><code>&lt;div :ref="card" :fx="handle(card)"&gt;&lt;/div&gt;</code></pre>
+          </div>
+
+          <div class="grid-6 gap-2">
+            <div class="col-span-2 pt-2">
+              <dt>
+                <h4>:on&lt;event&gt;</h4>
+              </dt>
+              <dd>
+                <p>Add event listener.</p>
+              </dd>
+            </div>
+            <pre class="col-span-4"><code>&lt;button :onclick="count++"&gt;Up&lt;/button&gt;</code></pre>
+          </div>
+        </dl>
+
+        <div :if="active==1">
+          <div class="grid-6 gap-2">
+            <div class="col-span-2 pt-2">
+              <dt>
+                <h4>:text</h4>
+              </dt>
+              <dd>
+                <p>Set text content.</p>
+              </dd>
+            </div>
+            <pre class="col-span-4"><code>&lt;span :text="user.name"&gt;Guest&lt;/span&gt;</code></pre>
+          </div>
+
+          <div class="grid-6 gap-2">
+            <div class="col-span-2 pt-2">
+              <dt>
+                <h4>:class</h4>
+              </dt>
+              <dd>
+                <p>Set className.</p>
+              </dd>
+            </div>
+            <pre class="col-span-4"><code>&lt;div :class="['foo', bar && 'bar', { baz }]"&gt;&lt;/div&gt;</code></pre>
+          </div>
+
+          <div class="grid-6 gap-2">
+            <div class="col-span-2 pt-2">
+              <dt>
+                <h4>:style</h4>
+              </dt>
+              <dd>
+                <p>Set style.</p>
+              </dd>
+            </div>
+            <pre class="col-span-4"><code>&lt;div :style="{bar: 'baz', '--qux': 'quv'}"&gt;&lt;/div&gt;</code></pre>
+          </div>
+
+          <div class="grid-6 gap-2">
+            <div class="col-span-2 pt-2">
+              <dt>
+                <h4>:value</h4>
+              </dt>
+              <dd>
+                <p>Bind input, textarea or select value.</p>
+              </dd>
+            </div>
+            <pre class="col-span-4"><code>&lt;input :value="value" /&gt;</code></pre>
+          </div>
+
+          <div class="grid-6 gap-2">
+            <div class="col-span-2 pt-2">
+              <dt>
+                <h4>:&lt;attr&gt;, :</h4>
+              </dt>
+              <dd>
+                <p>Set any attribute(s).</p>
+              </dd>
+            </div>
+            <pre class="col-span-4"><code>&lt;input :="{ id: name, name, type: 'text', value, ...props  }" /&gt;</code></pre>
+          </div>
+
+          <div class="grid-6 gap-2">
+            <div class="col-span-2 pt-2">
+              <dt>
+                <h4>:if, :else</h4>
+              </dt>
+              <dd>
+                <p>Control flow.</p>
+              </dd>
+            </div>
+            <pre class="col-span-4"><code>&lt;span :if="foo"&gt;foo&lt;/span&gt;
+      &lt;span :else :if="bar"&gt;bar&lt;/span&gt;
+      &lt;span :else&gt;baz&lt;/span&gt;</code></pre>
+          </div>
+
+          <div class="grid-6 gap-2">
+            <div class="col-span-2 pt-2">
+              <dt>
+                <h4>:each</h4>
+              </dt>
+              <dd>
+                <p>Multiply content.</p>
+              </dd>
+            </div>
+            <pre class="col-span-4"><code>&lt;ul&gt;&lt;li :each="item in items" :text="item" /&gt;&lt;/ul&gt;</code></pre>
+          </div>
+
+          <div class="grid-6 gap-2">
+            <div class="col-span-2 pt-2">
+              <dt>
+                <h4>:scope</h4>
+              </dt>
+              <dd>
+                <p>Define state container for a subtree.</p>
+              </dd>
+            </div>
+            <pre class="col-span-4"><code>&lt;x :scope="{foo: 'foo'}"&gt;
+        &lt;y :scope="{bar: 'bar'}" :text="foo + bar"&gt;&lt;/y&gt;
+      &lt;/x&gt;</code></pre>
+          </div>
+
+          <div class="grid-6 gap-2">
+            <div class="col-span-2 pt-2">
+              <dt>
+                <h4>:fx</h4>
+              </dt>
+              <dd>
+                <p>Run effect.</p>
+              </dd>
+            </div>
+            <pre class="col-span-4"><code>&lt;div :fx="a.value ? foo() : bar()" /&gt;</code></pre>
+          </div>
+
+          <div class="grid-6 gap-2">
+            <div class="col-span-2 pt-2">
+              <dt>
+                <h4>:ref</h4>
+              </dt>
+              <dd>
+                <p>Expose an element in scope or get ref to the element.</p>
+              </dd>
+            </div>
+            <pre class="col-span-4"><code>&lt;div :ref="card" :fx="handle(card)"&gt;&lt;/div&gt;</code></pre>
+          </div>
+
+          <div class="grid-6 gap-2">
+            <div class="col-span-2 pt-2">
+              <dt>
+                <h4>:on&lt;event&gt;</h4>
+              </dt>
+              <dd>
+                <p>Add event listener.</p>
+              </dd>
+            </div>
+            <pre class="col-span-4"><code>&lt;button :onclick="count++"&gt;Up&lt;/button&gt;</code></pre>
+          </div>
+          </dl>
+        </div>
       </section>
 
       <!-- <section class="my-4">
@@ -76,24 +357,27 @@
       </section> -->
 
       <section class="container my-4">
-        <h2>FAQ</h2>
-        <p><strong>Why another framework?</strong> No need for a permit to reinvent the wheel.</p>
-        <p><strong>Why Sprae?</strong> It hydrates your HTML tree like Alpine dew.</p>
-        <p><strong>Why not Alpine.js, Petite-Vue?</strong> Fewer footprints, lighter gear.</p>
-        <p><strong>Why not vanilla JS?</strong> Because `querySelector` is wrong mantra.</p>
-        <p><strong>Progressive enhancement: who cares?</strong> Anyone on 3G.</p>
-        <p><strong>Does it scale?</strong> As far as your CPU does.</p>
-        <p><strong>Just a toy?</strong> If production counts as a toy.</p>
-        <p><strong>Complex state possible?</strong> If you can handle it, but don't overthink.</p>
-        <p><strong>Signals overhyped?</strong> They are just fancy variables.</p>
-        <p><strong>No build step outdated?</strong> Your 12-min build pipeline is outdated.</p>
-        <p><strong>new Function unsafe?</strong> Only if your HTML comes from strangers.</p>
-        <p><strong>Why not Next/React?</strong> Because not every button needs a megabyte of runtime.</p>
-        <p><strong>Components support?</strong> Already there — called HTML tags.</p>
-        <p><strong>Why not vibecode?</strong> You can vibe-sprae instead. See what we did here?</p>
-        <p><strong>Ecosystem?</strong> Yes. The web, since 91.</p>
-        <p><strong>TypeScript?</strong> Soon™.</p>
-        <p><strong>Backing by a company?</strong> No. Just regular devs. You can join!</p>
+        <h2 class="my-2">FAQ</h2>
+        <p class="my-1"><strong>Why another framework?</strong><br> To make the wheel rounder. A youthful dream.</p>
+        <p class="my-1"><strong>Why Sprae?</strong><br>Because it hydrates your HTML tree.</p>
+        <p class="my-1"><strong>Why not Alpine.js?</strong><br> Less climbing, less gear, less footprints.</p>
+        <p class="my-1"><strong>Why not vanilla JS?</strong><br> Because `querySelector` is wrong mantra.</p>
+        <p class="my-1"><strong>Why not Next/React?</strong><br> Because not every button needs a megabyte of runtime.</p>
+        <p class="my-1"><strong>Who cares about progressive enhancement / graceful degradation?</strong><br> Anyone looking for fast, fail-proof, accessible, SEO-optimized web sites.</p>
+        <p class="my-1"><strong>Is it just a toy?</strong><br> If production counts as a toy.</p>
+        <p class="my-1"><strong>Does it scale to complex state?</strong><br> Yes, if you or your CPU can handle it.</p>
+        <p class="my-1"><strong>Are signals overhyped?</strong><br> Preact-signals are the crown of reactivity, nothing better invented.</p>
+        <p class="my-1"><strong>Is no build step outdated?</strong><br> Your 12-min build pipeline is outdated.</p>
+        <p class="my-1"><strong>Is new Function unsafe?</strong><br> Yes, if your HTML comes from strangers. In such case use CSP.</p>
+        <p class="my-1"><strong>Components support?</strong><br> Already there — called HTML tags.</p>
+        <p class="my-1"><strong>Why not vibecode?</strong><br> Vibe-sprae! What do you think we're doing?</p>
+        <p class="my-1"><strong>Is there ecosystem?</strong><br> Yes. Since 1991.</p>
+        <p class="my-1"><strong>TypeScript support?</strong><br> Soon™.</p>
+        <p class="my-1"><strong>Is it stable?</strong><br> Directives, store, signals, config – yes. Modifiers, extensions – not yet.</p>
+        <p class="my-1"><strong>How old is it?</strong><br> <span :text="new Date().getFullYear() - 2022">enough</span> years old (<a href="https://github.com/dy/sprae/commit/ee7e372fb372bde5bdd7bfd3524cdaa815793663">first commit</a> Nov 7, 2022).</p>
+        <p class="my-1"><strong>Will spræ be maintained long-term? </strong><br> 12 versions, 1.5k commits, 3 years of development and future plans. As you see – no plans</p>
+        <p class="my-1"><strong>What’s future plan?</strong><br> Plugins, components, integration cases, generators.</p>
+        <p class="my-1"><strong>Is it backed by a company?</strong><br> No. Just regular devs. You can join!</p>
       </section>
 
       <section class="container my-4">
