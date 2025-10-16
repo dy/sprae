@@ -644,12 +644,12 @@ Micro sprae version is 2.5kb bundle with essentials:
 
 ## Justification
 
-Modern frontend is like processed non-organic food.
-Frameworks come with bunches of unnecessary features and ecosystem lock-in. Endless tooling, tedious setups and configs, proprietary conventions, artificial abstractions – only to make trivial things work. Progressive enhancement is almost anachronism.
+Modern frontend is like processed food.
+Frameworks come with endless tooling, tedious setups and configs, proprietary conventions, artificial abstractions and ecosystem lock-in. Progressive enhancement / graceful degradation is anachronism.
 
-Native [template-parts](https://github.com/github/template-parts) and [DCE](https://github.com/WICG/webcomponents/blob/gh-pages/proposals/Declarative-Custom-Elements-Strawman.md) are supposed to give hope, but quite distant and stuck with HTML quirks [1](https://github.com/github/template-parts/issues/24), [2](https://github.com/github/template-parts/issues/25), [3](https://shopify.github.io/liquid/tags/template/#raw).
+Native [template-parts](https://github.com/github/template-parts) and [DCE](https://github.com/WICG/webcomponents/blob/gh-pages/proposals/Declarative-Custom-Elements-Strawman.md) give distant hope, stuck with HTML quirks [1](https://github.com/github/template-parts/issues/24), [2](https://github.com/github/template-parts/issues/25), [3](https://shopify.github.io/liquid/tags/template/#raw).
 
-[Alpine](https://github.com/alpinejs/alpine) and [petite-vue](https://github.com/vuejs/petite-vue) offer progressive enhancement, but bring inconsitent syntax, bloated API, opaque reactivity, [self-encapsulation](https://github.com/alpinejs/alpine/discussions/3223), limited extensibility and performance as afterthought.
+[Alpine](https://github.com/alpinejs/alpine) and [petite-vue](https://github.com/vuejs/petite-vue) offer PE / GD, but have excessive API  (x-, @, $, etc.), tend to [self-encapsulate](https://github.com/alpinejs/alpine/discussions/3223), have limited extensibility and disregard performance / size.
 
 _Sprae_ holds open, safe, minimalistic philosophy:
 
