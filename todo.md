@@ -210,6 +210,7 @@
 * [x] Draft release
 * [x] jsperf benchmark
 
+* [ ] typescript
 * [ ] microjs bundle
 * [ ] Website
   * [ ] Connect donation links
