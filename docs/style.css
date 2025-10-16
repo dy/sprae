@@ -1,3 +1,7 @@
+* {
+ 	box-sizing: border-box;
+}
+
 html,
 body {
   margin: 0;
@@ -8,11 +12,12 @@ body {
   display: flex;
   flex-direction: column;
   position: relative;
-  font-size: 20px;
+  font-size: 21px;
   --blue: #2656C6;
   border: 1.5rem solid var(--blue);
   color: #111;
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Inter, sans-serif;
+  /* font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Inter, sans-serif; */
+  font-family: "Atkinson Hyperlegible", sans-serif;
   background-color: #f9fafb;
   padding: 3rem max(3rem, 12vw);
 }
@@ -30,20 +35,16 @@ body::before {
 }
 
 
-h1, h2, h3, h4, h5 {
+h1, h2, h3, h4, h5, h6 {
   margin: 0;
   color: var(--blue);
-  font-family: "Atkinson Hyperlegible", sans-serif;
-  font-weight: 700;
-  font-style: normal;
-  letter-spacing: -.025em;
 }
 
-h1 { font-size: 6rem; }
-h2 { font-size: 3rem; }
+h1 { font-size: 6rem; letter-spacing: -.025em; line-height: 1; }
+h2 { font-size: 3rem; line-height: 1; }
 h3 { font-size: 2rem; }
 h4 { font-size: 1.5rem; }
-h5 { font-size: 1.25rem; }
+h5 { font-size: 1.25rem; font-weight: normal; }
 
 a {
   color: var(--blue);
@@ -114,6 +115,12 @@ th {
   height: 100%;
 }
 
+.container {
+  max-width: 1440px;
+  margin: 0 auto;
+  width: 100%;
+}
+
 .gap-1 { gap: 1rem; }
 .gap-2 { gap: 2rem; }
 .gap-3 { gap: 3rem; }
@@ -123,7 +130,6 @@ th {
 .grid-6 {
   display: grid;
   grid-template-columns: repeat(6, minmax(0, 1fr));
-  gap: 1rem;
   align-items: start;
 }
 
@@ -152,27 +158,58 @@ th {
 }
 
 .py-1 { padding-top: 1rem; padding-bottom: 1rem;}
+.pt-1 { padding-top: 1rem; }
+.pb-1 { padding-bottom: 1rem;}
 .px-1 { padding-left: 1rem; padding-right: 1rem;}
 .p-1 { padding: 1rem; }
 .py-2 { padding-top: 2rem; padding-bottom: 2rem;}
+.pt-2 { padding-top: 2rem; }
+.pb-2 { padding-bottom: 2rem;}
 .px-2 { padding-left: 2rem; padding-right: 2rem;}
 .p-2 { padding: 2rem; }
 .py-3 { padding-top: 3rem; padding-bottom: 3rem;}
+.pt-3 { padding-top: 3rem; }
+.pb-3 { padding-bottom: 3rem;}
 .px-3 { padding-left: 3rem; padding-right: 3rem;}
 .p-3 { padding: 3rem; }
 .py-4 { padding-top: 4rem; padding-bottom: 4rem;}
+.pt-4 { padding-top: 4rem; }
+.pb-4 { padding-bottom: 4rem;}
 .px-4 { padding-left: 4rem; padding-right: 4rem;}
 .p-4 { padding: 4rem; }
 
 .my-1 { margin-top: 1rem; margin-bottom: 1rem;}
+.mt-1 { margin-top: 1rem; }
+.mb-1 { margin-bottom: 1rem;}
 .mx-1 { margin-left: 1rem; margin-right: 1rem;}
 .m-1 { margin: 1rem; }
 .my-2 { margin-top: 2rem; margin-bottom: 2rem;}
+.mt-2 { margin-top: 2rem; }
+.mb-2 { margin-bottom: 2rem;}
 .mx-2 { margin-left: 2rem; margin-right: 2rem;}
 .m-2 { margin: 2rem; }
 .my-3 { margin-top: 3rem; margin-bottom: 3rem;}
+.mt-3 { margin-top: 3rem; }
+.mb-3 { margin-bottom: 3rem;}
 .mx-3 { margin-left: 3rem; margin-right: 3rem;}
 .m-3 { margin: 3rem; }
 .my-4 { margin-top: 4rem; margin-bottom: 4rem;}
+.mt-4 { margin-top: 4rem; }
+.mb-4 { margin-bottom: 4rem;}
 .mx-4 { margin-left: 4rem; margin-right: 4rem;}
-.m-4 { margin: 4rem; }
+.m-5 { margin: 5rem; }
+.my-5 { margin-top: 5rem; margin-bottom: 5rem;}
+.mt-5 { margin-top: 5rem; }
+.mb-5 { margin-bottom: 5rem;}
+.mx-5 { margin-left: 5rem; margin-right: 5rem;}
+.m-6 { margin: 6rem; }
+.my-6 { margin-top: 6rem; margin-bottom: 6rem;}
+.mt-6 { margin-top: 6rem; }
+.mb-6 { margin-bottom: 6rem;}
+.mx-6 { margin-left: 6rem; margin-right: 6rem;}
+.m-8 { margin: 8rem; }
+.my-8 { margin-top: 8rem; margin-bottom: 8rem;}
+.mt-8 { margin-top: 8rem; }
+.mb-8 { margin-bottom: 8rem;}
+.mx-8 { margin-left: 8rem; margin-right: 8rem;}
+.m-8 { margin: 8rem; }

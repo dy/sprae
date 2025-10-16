@@ -13,7 +13,7 @@
   </head>
 
   <body :scope="x=0, y=0" :onmousemove.document="e => { x = e.clientX; y = e.clientY; }" :style="{'--x': x + 'px', '--y': y + 'px'}">
-    <nav class="grid-6">
+    <nav class="container grid-6 gap-2">
       <div  class="col-start-4 flex-row gap-2 hyperlegible bold">
         <a href="./api.html">docs</a>
         <a href="./examples.html">drops</a>
@@ -23,10 +23,10 @@
     </nav>
 
     <header class="my-2">
-      <div class="grid-6">
-        <h1 class="col-span-3 text-right my-2">spræ</h1>
+      <div class="container grid-6 gap-2">
+        <h1 class="col-span-3 text-right my-2 mt-6">spræ</h1>
       </div>
-      <div class="grid-6">
+      <div class="container grid-6 gap-2">
         <div class="col-start-4 col-span-3">
           <h2 class="my-1">
             Hydration for DOM tree
@@ -38,19 +38,19 @@
     </header>
 
     <main>
-      <section class="grid-6 my-4">
+      <section class="container grid-6 my-4">
         <pre class="col-span-3"><code>&lt;script src="https://unpkg.com/sprae"&gt;&lt;/script&gt;
 &lt;div :init="count=0"&gt;
   &lt;button @click="count++"&gt;+&lt;/button&gt;
   &lt;button @click="count--"&gt;-&lt;/button&gt;
   Count: &lt;span :text="count"&gt;&lt;/span&gt;
 &lt;/div&gt;</code></pre>
-        <div class="col-span-3 bg-graph-paper h-full">
+        <div class="col-span-3 p-3 bg-graph-paper h-full">
           asdfads
         </div>
       </section>
 
-      <section class="my-4">
+      <section class="container my-4">
         <h2>Principles</h2>
         <ul>
           <li>Minimal API, tiny footprint</li>
@@ -59,7 +59,7 @@
         </ul>
       </section>
 
-      <section class="my-4">
+      <section class="container my-4">
         <h2>Reference</h2>
         <p><strong>Directives:</strong> <code>:text</code>, <code>:on</code>, <code>:class</code>, <code>:style</code>, <code>:scope</code>, <code>:if</code>, <code>:each</code></p>
       </section>
@@ -75,7 +75,7 @@
         </ul>
       </section> -->
 
-      <section class="my-4">
+      <section class="container my-4">
         <h2>FAQ</h2>
         <p><strong>Why another framework?</strong> No need for a permit to reinvent the wheel.</p>
         <p><strong>Why Sprae?</strong> It hydrates your HTML tree like Alpine dew.</p>
@@ -96,7 +96,7 @@
         <p><strong>Backing by a company?</strong> No. Just regular devs. You can join!</p>
       </section>
 
-      <section class="my-4">
+      <section class="container my-4">
         <h2>Comparison</h2>
         <table>
           <tr>
