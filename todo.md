@@ -208,9 +208,9 @@
 * [x] data-sprae-prefix="data-sprae-" shoots itself
 * [x] refactor main demos
 * [x] Draft release
+* [x] jsperf benchmark
 
 * [ ] microjs bundle
-* [ ] jsperf benchmark
 * [ ] Website
   * [ ] Connect donation links
 * [ ] find alternative way to update plain lists in :each rather than simulating signals (adds memory overhead)
@@ -220,7 +220,7 @@
   * [x] Append rows to large table is THE SLOWEST
   * [~] Create many rows IS SLOW
 * [ ] perf tests
-* [ ] alpine csp tests syntaxes
+* [ ] alpine csp syntax
 
 ## [ ] Plugins
 

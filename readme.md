@@ -644,22 +644,20 @@ Micro sprae version is 2.5kb bundle with essentials:
 
 ## Justification
 
-Modern frontend is unhealthy, like processed non-organic food.
-Frameworks force into JS-land: build pipelines for "Hello World", proprietary conventions, virtual DOM overhead, brittle tooling.
-Pages are not functional without JS. Progressive enhancement is anachronism.
+Modern frontend is like processed non-organic food.
+Frameworks come with bunches of unnecessary features and ecosystem lock-in. Endless tooling, tedious setups and configs, proprietary conventions, artificial abstractions – only to make trivial things work. Progressive enhancement is almost anachronism.
 
-Build tools should be optional, not mandatory. Frameworks should enhance HTML, not replace it.
+Native [template-parts](https://github.com/github/template-parts) and [DCE](https://github.com/WICG/webcomponents/blob/gh-pages/proposals/Declarative-Custom-Elements-Strawman.md) are supposed to give hope, but quite distant and stuck with HTML quirks [1](https://github.com/github/template-parts/issues/24), [2](https://github.com/github/template-parts/issues/25), [3](https://shopify.github.io/liquid/tags/template/#raw).
 
-Native [template-parts](https://github.com/github/template-parts) and [DCE](https://github.com/WICG/webcomponents/blob/gh-pages/proposals/Declarative-Custom-Elements-Strawman.md) give hope, but quite distant and stuck with HTML quirks [1](https://github.com/github/template-parts/issues/24), [2](https://github.com/github/template-parts/issues/25), [3](https://shopify.github.io/liquid/tags/template/#raw).
-
-[Alpine](https://github.com/alpinejs/alpine) and [petite-vue](https://github.com/vuejs/petite-vue) offer progressive enhancement, but introduce invalid syntax `@click`, bloated API, opaque reactivity, [self-encapsulation](https://github.com/alpinejs/alpine/discussions/3223), limited extensibility, size / performance afterthoughts.
+[Alpine](https://github.com/alpinejs/alpine) and [petite-vue](https://github.com/vuejs/petite-vue) offer progressive enhancement, but bring inconsitent syntax, bloated API, opaque reactivity, [self-encapsulation](https://github.com/alpinejs/alpine/discussions/3223), limited extensibility and performance as afterthought.
 
 _Sprae_ holds open, safe, minimalistic philosophy:
 
-* One `:` prefix. Valid HTML. Zero magic.
-* Signals reactivity. (preact-signals compatible)
-* Plugggable: signals, eval, directives, modifiers.
-* Build-free, ecosystem-agnostic: `<script src>`, JSX, anything.
+* One `:` prefix. Zero magic.
+* Valid HTML. Non-obtrusive.
+* Signals for reactivity. (preact-signals compatible)
+* Configurable signals, evaluator, directives, modifiers.
+* Build-free, ecosystem-agnostic.
 * Small, safe & fast.
 * 🫰 developers
 
@@ -722,6 +720,7 @@ npm ci]
 cd ../webdriver-ts
 npm run results
 ```
+See results at localhost:8080/
 </details>
 -->
 
