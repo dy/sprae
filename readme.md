@@ -649,7 +649,7 @@ Frameworks come with endless tooling, tedious setups and configs, proprietary co
 
 Native [template-parts](https://github.com/github/template-parts) and [DCE](https://github.com/WICG/webcomponents/blob/gh-pages/proposals/Declarative-Custom-Elements-Strawman.md) give distant hope, stuck with HTML quirks [1](https://github.com/github/template-parts/issues/24), [2](https://github.com/github/template-parts/issues/25), [3](https://shopify.github.io/liquid/tags/template/#raw).
 
-[Alpine](https://github.com/alpinejs/alpine) and [petite-vue](https://github.com/vuejs/petite-vue) offer PE / GD, but have excessive API  (x-, @, $, etc.), tend to [self-encapsulate](https://github.com/alpinejs/alpine/discussions/3223), have limited extensibility and disregard performance / size.
+[Alpine](https://github.com/alpinejs/alpine) and [petite-vue](https://github.com/vuejs/petite-vue) offer PE / GD, but have API inconsistencies (x-, @, $, etc.), tend to [self-encapsulate](https://github.com/alpinejs/alpine/discussions/3223), have limited extensibility and disregard performance / size. Also they don't have prop midifiers.
 
 _Sprae_ holds open, safe, minimalistic philosophy:
 
