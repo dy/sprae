@@ -12,7 +12,7 @@ Simple progressive enhancement for DOM or JSX.<br/>
   <button :onclick="count++">Click me</button>
 </div>
 
-<script src="https://cdn.jsdelivr.net/npm/sprae@12.x.x" start></script>
+<script src="https://cdn.jsdelivr.net/npm/sprae@12.x.x/dist/sprae.umd.js" start></script>
 ```
 
 Sprae enables reactivity via `:`-directives.

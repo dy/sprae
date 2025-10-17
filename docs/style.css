@@ -8,11 +8,14 @@ body {
   padding: 0;
 }
 
+html {
+  font-size: 21px;
+}
+
 body {
   display: flex;
   flex-direction: column;
   position: relative;
-  font-size: 21px;
   --blue: #2656C6;
   border: 1.5rem solid var(--blue);
   color: #111;
@@ -65,17 +68,11 @@ pre {
   font-size: smaller;
   padding: 3rem;
   white-space: pre-wrap;
+  word-wrap: break-word;
 }
 
-ul {
-  list-style: none;
-  padding: 0;
-}
-
-ul li::before {
-  content: "✔";
-  color: #0077ff;
-  margin-right: 0.5rem;
+[hidden] {
+  display: none !important;
 }
 
 table {
@@ -104,6 +101,9 @@ dl, dt, dd {
   padding: 0;
 }
 
+button {
+  font-size: inherit;
+}
 
 .tab {
   position: relative;
@@ -236,3 +236,14 @@ dl, dt, dd {
 .mb-8 { margin-bottom: 8rem;}
 .mx-8 { margin-left: 8rem; margin-right: 8rem;}
 .m-8 { margin: 8rem; }
+
+@media screen and (max-width: 768px) {
+  html {
+    font-size: 14px;;
+  }
+  pre {
+    padding: 1.5rem;
+  }
+  .max-sm\:block { display: block; }
+  .max-sm\:text-left { text-align: left; }
+}

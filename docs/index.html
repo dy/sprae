@@ -9,24 +9,25 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400;1,700&display=swap" rel="stylesheet">
-    <script src="/dist/sprae.umd.js" defer start></script>
+    <script src="https://cdn.jsdelivr.net/npm/sprae@12.x.x/dist/sprae.umd.js" defer start></script>
   </head>
 
   <body :scope="x=0, y=0" :onmousemove.document="e => { x = e.clientX; y = e.clientY; }" :style="{'--x': x + 'px', '--y': y + 'px'}">
-    <nav class="container grid-6 gap-2">
-      <div class="col-start-4 flex-row gap-2 hyperlegible bold">
+    <nav class="container grid-6 max-sm:block gap-2">
+      <div class="col-start-4 col-span-2 flex-row gap-3 hyperlegible bold">
         <a href="./api.html">docs</a>
         <a href="./examples.html">drops</a>
         <a href="./changelog.html">play</a>
         <a href="./faq.html">faq</a>
+        <a href="https://github.com/dy/sprae">⌥  v<span :text="window.sprae?.version || '12.1.0'"></span></a>
       </div>
     </nav>
 
     <header class="my-2">
-      <div class="container grid-6 gap-2">
-        <h1 class="col-span-3 text-right my-2 mt-6">spræ</h1>
+      <div class="container grid-6 max-sm:block gap-2">
+        <h1 class="col-span-3 text-right max-sm:text-left my-2 mt-6">spræ</h1>
       </div>
-      <div class="container grid-6 gap-2">
+      <div class="container grid-6 max-sm:block gap-2">
         <div class="col-start-4 col-span-3">
           <h2 class="my-1">
             Hydration for DOM tree
@@ -38,15 +39,13 @@
     </header>
 
     <main>
-      <section class="container grid-6 my-4">
-        <pre class="col-span-3"><code>&lt;script src="https://unpkg.com/sprae"&gt;&lt;/script&gt;
-&lt;div :init="count=0"&gt;
-  &lt;button @click="count++"&gt;+&lt;/button&gt;
-  &lt;button @click="count--"&gt;-&lt;/button&gt;
+      <section class="container grid-6 max-sm:block my-4" :scope>
+        <pre class="col-span-3"><code :ref="code">&lt;div :scope="count=0"&gt;
+  &lt;button :onclick="count++"&gt;+&lt;/button&gt;
+  &lt;button :onclick="count--"&gt;–&lt;/button&gt;
   Count: &lt;span :text="count"&gt;&lt;/span&gt;
 &lt;/div&gt;</code></pre>
-        <div class="col-span-3 p-3 bg-graph-paper h-full">
-          asdfads
+        <div class="col-span-3 p-3 bg-graph-paper h-full" :ref="el => el.innerHTML = code.textContent">
         </div>
       </section>
 
@@ -59,7 +58,31 @@
         </ul>
       </section>
 
-      <section class="container my-4" :scope="{active:0}">
+      <section class="container my-4" :scope='{
+        active:0,
+        dirs: [
+          { title: ":text", text: "Set text content.", example: `&lt;span :text="user.name"&gt;Guest&lt;/span&gt;` },
+          { title: ":class", text: "Set className.", example: `&lt;div :class="[&apos;foo&apos;, bar && &apos;bar&apos;, { baz }]"&gt;&lt;/div&gt;` },
+          { title: ":style", text: "Set style.", example: `&lt;div :style="{bar: &apos;baz&apos;, &apos;--qux&apos;: &apos;quv&apos;}"&gt;&lt;/div&gt;` },
+          { title: ":value", text: "Bind input, textarea or select value.", example: `&lt;input :value="value" /&gt;` },
+          { title: ":<attr>, :", text: "Set any attribute(s).", example: `&lt;input :="{ id: name, name, type: &apos;text&apos;, value, ...props }" /&gt;` },
+          { title: ":if, :else", text: "Control flow.", example: `&lt;span :if="foo"&gt;foo&lt;/span&gt; &lt;span :else :if="bar"&gt;bar&lt;/span&gt; &lt;span :else&gt;baz&lt;/span&gt;` },
+          { title: ":each", text: "Multiply content.", example: `&lt;li :each="item, idx? in items" :text="item" /&gt;` },
+          { title: ":scope", text: "Define state container for a subtree.", example: `&lt;x :scope="{foo: &apos;foo&apos;}"&gt;&lt;y :text="foo"&gt;&lt;/y&gt;&lt;/x&gt;` },
+          { title: ":fx", text: "Run effect.", example: `&lt;div :fx="a.value ? foo() : bar()" /&gt;` },
+          { title: ":ref", text: "Expose an element in scope or get ref to the element.", example: `&lt;div :ref="card" :fx="handle(card)"&gt;&lt;/div&gt;` },
+          { title: ":on<event>", text: "Add event listener.", example: `&lt;button :onclick="count++"&gt;Up&lt;/button&gt;` }
+        ],
+        mods: [
+          { title: ".debounce-<ms|tick|frame|idle>?", text: "Defer callback by ms, next tick/animation frame, or until idle. Defaults to 250ms.", example: `&lt;input :oninput.debounce-200="update(event)" /&gt;` },
+          { title: ".throttle-<ms|tick|frame>?", text: "Limit callback rate to interval in ms, tick or animation framerate. By default 250ms.", example: `&lt;div :text.throttle-100="text.length"&gt;&lt;/div&gt;` },
+          { title: ".once", text: "Call only once.", example: `&lt;button :onclick.once="loadMoreData()"&gt;Start&lt;/button&gt;` },
+          { title: ".window, .document, .parent, .outside, .self", text: "Specify event target.", example: `&lt;div :onclick.outside="closeMenu()"&gt;Dropdown&lt;/div&gt;` },
+          { title: ".passive, .capture", text: "Event listener options.", example: `&lt;div :onscroll.passive="pos = e.scrollTop"&gt;&lt;/div&gt;` },
+          { title: ".prevent, .stop, .stop-immediate", text: "Prevent default or stop (immediate) propagation.", example: `&lt;a :onclick.prevent="navigate(&apos;/page&apos;)" href="/default"&gt;Go&lt;/a&gt;` },
+          { title: ".<key>-<*>", text: "Filter event by event.key or combination (.ctrl, .shift, .alt, .enter, .esc, .arrow, .digit, .letter, .char, etc.).", example: `&lt;div :onkeydown.arrow="navigate(event.key)"&gt;&lt;/div&gt;` }
+        ]
+      }'>
         <h2>Reference</h2>
 
         <nav class="flex-row gap-1 my-3">
@@ -68,280 +91,31 @@
         </nav>
 
         <dl :if="active==0" class="flex-col">
-          <div class="grid-6 gap-2">
+          <div class="grid-6 max-sm:block gap-2" :each="dir in dirs">
             <div class="col-span-2 pt-2">
               <dt>
-                <h4>:text</h4>
+                <h4 :text="dir.title">:text</h4>
               </dt>
               <dd>
-                <p>Set text content.</p>
+                <p :text="dir.text">Set text content.</p>
               </dd>
             </div>
-            <pre class="col-span-4"><code>&lt;span :text="user.name"&gt;Guest&lt;/span&gt;</code></pre>
-          </div>
-
-          <div class="grid-6 gap-2">
-            <div class="col-span-2 pt-2">
-              <dt>
-                <h4>:class</h4>
-              </dt>
-              <dd>
-                <p>Set className.</p>
-              </dd>
-            </div>
-            <pre class="col-span-4"><code>&lt;div :class="['foo', bar && 'bar', { baz }]"&gt;&lt;/div&gt;</code></pre>
-          </div>
-
-          <div class="grid-6 gap-2">
-            <div class="col-span-2 pt-2">
-              <dt>
-                <h4>:style</h4>
-              </dt>
-              <dd>
-                <p>Set style.</p>
-              </dd>
-            </div>
-            <pre class="col-span-4"><code>&lt;div :style="{bar: 'baz', '--qux': 'quv'}"&gt;&lt;/div&gt;</code></pre>
-          </div>
-
-          <div class="grid-6 gap-2">
-            <div class="col-span-2 pt-2">
-              <dt>
-                <h4>:value</h4>
-              </dt>
-              <dd>
-                <p>Bind input, textarea or select value.</p>
-              </dd>
-            </div>
-            <pre class="col-span-4"><code>&lt;input :value="value" /&gt;</code></pre>
-          </div>
-
-          <div class="grid-6 gap-2">
-            <div class="col-span-2 pt-2">
-              <dt>
-                <h4>:&lt;attr&gt;, :</h4>
-              </dt>
-              <dd>
-                <p>Set any attribute(s).</p>
-              </dd>
-            </div>
-            <pre class="col-span-4"><code>&lt;input :="{ id: name, name, type: 'text', value, ...props  }" /&gt;</code></pre>
-          </div>
-
-          <div class="grid-6 gap-2">
-            <div class="col-span-2 pt-2">
-              <dt>
-                <h4>:if, :else</h4>
-              </dt>
-              <dd>
-                <p>Control flow.</p>
-              </dd>
-            </div>
-            <pre class="col-span-4"><code>&lt;span :if="foo"&gt;foo&lt;/span&gt;
-      &lt;span :else :if="bar"&gt;bar&lt;/span&gt;
-      &lt;span :else&gt;baz&lt;/span&gt;</code></pre>
-          </div>
-
-          <div class="grid-6 gap-2">
-            <div class="col-span-2 pt-2">
-              <dt>
-                <h4>:each</h4>
-              </dt>
-              <dd>
-                <p>Multiply content.</p>
-              </dd>
-            </div>
-            <pre class="col-span-4"><code>&lt;ul&gt;&lt;li :each="item in items" :text="item" /&gt;&lt;/ul&gt;</code></pre>
-          </div>
-
-          <div class="grid-6 gap-2">
-            <div class="col-span-2 pt-2">
-              <dt>
-                <h4>:scope</h4>
-              </dt>
-              <dd>
-                <p>Define state container for a subtree.</p>
-              </dd>
-            </div>
-            <pre class="col-span-4"><code>&lt;x :scope="{foo: 'foo'}"&gt;
-        &lt;y :scope="{bar: 'bar'}" :text="foo + bar"&gt;&lt;/y&gt;
-      &lt;/x&gt;</code></pre>
-          </div>
-
-          <div class="grid-6 gap-2">
-            <div class="col-span-2 pt-2">
-              <dt>
-                <h4>:fx</h4>
-              </dt>
-              <dd>
-                <p>Run effect.</p>
-              </dd>
-            </div>
-            <pre class="col-span-4"><code>&lt;div :fx="a.value ? foo() : bar()" /&gt;</code></pre>
-          </div>
-
-          <div class="grid-6 gap-2">
-            <div class="col-span-2 pt-2">
-              <dt>
-                <h4>:ref</h4>
-              </dt>
-              <dd>
-                <p>Expose an element in scope or get ref to the element.</p>
-              </dd>
-            </div>
-            <pre class="col-span-4"><code>&lt;div :ref="card" :fx="handle(card)"&gt;&lt;/div&gt;</code></pre>
-          </div>
-
-          <div class="grid-6 gap-2">
-            <div class="col-span-2 pt-2">
-              <dt>
-                <h4>:on&lt;event&gt;</h4>
-              </dt>
-              <dd>
-                <p>Add event listener.</p>
-              </dd>
-            </div>
-            <pre class="col-span-4"><code>&lt;button :onclick="count++"&gt;Up&lt;/button&gt;</code></pre>
+            <pre class="col-span-4"><code :text="dir.example">&lt;span :text="user.name"&gt;Guest&lt;/span&gt;</code></pre>
           </div>
         </dl>
 
         <div :if="active==1">
-          <div class="grid-6 gap-2">
+          <div class="grid-6 max-sm:block gap-2" :each="mod in mods">
             <div class="col-span-2 pt-2">
               <dt>
-                <h4>:text</h4>
+                <h4 :text="mod.title">:text</h4>
               </dt>
               <dd>
-                <p>Set text content.</p>
+                <p :text="mod.text">Set text content.</p>
               </dd>
             </div>
-            <pre class="col-span-4"><code>&lt;span :text="user.name"&gt;Guest&lt;/span&gt;</code></pre>
+            <pre class="col-span-4"><code :text="mod.example">&lt;span :text="user.name"&gt;Guest&lt;/span&gt;</code></pre>
           </div>
-
-          <div class="grid-6 gap-2">
-            <div class="col-span-2 pt-2">
-              <dt>
-                <h4>:class</h4>
-              </dt>
-              <dd>
-                <p>Set className.</p>
-              </dd>
-            </div>
-            <pre class="col-span-4"><code>&lt;div :class="['foo', bar && 'bar', { baz }]"&gt;&lt;/div&gt;</code></pre>
-          </div>
-
-          <div class="grid-6 gap-2">
-            <div class="col-span-2 pt-2">
-              <dt>
-                <h4>:style</h4>
-              </dt>
-              <dd>
-                <p>Set style.</p>
-              </dd>
-            </div>
-            <pre class="col-span-4"><code>&lt;div :style="{bar: 'baz', '--qux': 'quv'}"&gt;&lt;/div&gt;</code></pre>
-          </div>
-
-          <div class="grid-6 gap-2">
-            <div class="col-span-2 pt-2">
-              <dt>
-                <h4>:value</h4>
-              </dt>
-              <dd>
-                <p>Bind input, textarea or select value.</p>
-              </dd>
-            </div>
-            <pre class="col-span-4"><code>&lt;input :value="value" /&gt;</code></pre>
-          </div>
-
-          <div class="grid-6 gap-2">
-            <div class="col-span-2 pt-2">
-              <dt>
-                <h4>:&lt;attr&gt;, :</h4>
-              </dt>
-              <dd>
-                <p>Set any attribute(s).</p>
-              </dd>
-            </div>
-            <pre class="col-span-4"><code>&lt;input :="{ id: name, name, type: 'text', value, ...props  }" /&gt;</code></pre>
-          </div>
-
-          <div class="grid-6 gap-2">
-            <div class="col-span-2 pt-2">
-              <dt>
-                <h4>:if, :else</h4>
-              </dt>
-              <dd>
-                <p>Control flow.</p>
-              </dd>
-            </div>
-            <pre class="col-span-4"><code>&lt;span :if="foo"&gt;foo&lt;/span&gt;
-      &lt;span :else :if="bar"&gt;bar&lt;/span&gt;
-      &lt;span :else&gt;baz&lt;/span&gt;</code></pre>
-          </div>
-
-          <div class="grid-6 gap-2">
-            <div class="col-span-2 pt-2">
-              <dt>
-                <h4>:each</h4>
-              </dt>
-              <dd>
-                <p>Multiply content.</p>
-              </dd>
-            </div>
-            <pre class="col-span-4"><code>&lt;ul&gt;&lt;li :each="item in items" :text="item" /&gt;&lt;/ul&gt;</code></pre>
-          </div>
-
-          <div class="grid-6 gap-2">
-            <div class="col-span-2 pt-2">
-              <dt>
-                <h4>:scope</h4>
-              </dt>
-              <dd>
-                <p>Define state container for a subtree.</p>
-              </dd>
-            </div>
-            <pre class="col-span-4"><code>&lt;x :scope="{foo: 'foo'}"&gt;
-        &lt;y :scope="{bar: 'bar'}" :text="foo + bar"&gt;&lt;/y&gt;
-      &lt;/x&gt;</code></pre>
-          </div>
-
-          <div class="grid-6 gap-2">
-            <div class="col-span-2 pt-2">
-              <dt>
-                <h4>:fx</h4>
-              </dt>
-              <dd>
-                <p>Run effect.</p>
-              </dd>
-            </div>
-            <pre class="col-span-4"><code>&lt;div :fx="a.value ? foo() : bar()" /&gt;</code></pre>
-          </div>
-
-          <div class="grid-6 gap-2">
-            <div class="col-span-2 pt-2">
-              <dt>
-                <h4>:ref</h4>
-              </dt>
-              <dd>
-                <p>Expose an element in scope or get ref to the element.</p>
-              </dd>
-            </div>
-            <pre class="col-span-4"><code>&lt;div :ref="card" :fx="handle(card)"&gt;&lt;/div&gt;</code></pre>
-          </div>
-
-          <div class="grid-6 gap-2">
-            <div class="col-span-2 pt-2">
-              <dt>
-                <h4>:on&lt;event&gt;</h4>
-              </dt>
-              <dd>
-                <p>Add event listener.</p>
-              </dd>
-            </div>
-            <pre class="col-span-4"><code>&lt;button :onclick="count++"&gt;Up&lt;/button&gt;</code></pre>
-          </div>
-          </dl>
         </div>
       </section>
 
@@ -380,7 +154,7 @@
         <p class="my-1"><strong>Is it backed by a company?</strong><br> No. Just regular devs. You can join!</p>
       </section>
 
-      <section class="container my-4">
+      <section class="container my-4" hidden>
         <h2>Comparison</h2>
         <table>
           <tr>
@@ -416,6 +190,9 @@
         </table>
       </section>
     </main>
-  </body>
 
+    <footer>
+      <p align="center"><a href="https://github.com/krsnzd/license/">ॐ</a></p>
+    </footer>
+  </body>
 </html>
