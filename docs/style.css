@@ -133,6 +133,9 @@ button {
   display: flex;
   flex-direction: column;
 }
+.flex-wrap {
+  flex-wrap: wrap;
+}
 
 .h-full {
   height: 100%;
@@ -237,13 +240,33 @@ button {
 .mx-8 { margin-left: 8rem; margin-right: 8rem;}
 .m-8 { margin: 8rem; }
 
+
+.faq-list {
+  columns: 2;
+}
+
+#main-nav{
+
+}
+
 @media screen and (max-width: 768px) {
   html {
-    font-size: 14px;;
+    font-size: 16px;
+  }
+  body {
+    padding: 3rem max(3rem, 6vw);
   }
   pre {
     padding: 1.5rem;
   }
+  .tab {
+    padding: 1.5rem;
+    font-size: 16px;
+  }
+  .max-sm\:flex-col { display: flex; flex-direction: column; }
   .max-sm\:block { display: block; }
   .max-sm\:text-left { text-align: left; }
+  .faq-list {
+    columns: 1;
+  }
 }

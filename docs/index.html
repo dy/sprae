@@ -14,7 +14,7 @@
 
   <body :scope="x=0, y=0" :onmousemove.document="e => { x = e.clientX; y = e.clientY; }" :style="{'--x': x + 'px', '--y': y + 'px'}">
     <nav class="container grid-6 max-sm:block gap-2">
-      <div class="col-start-4 col-span-2 flex-row gap-3 hyperlegible bold">
+      <div class="col-start-4 col-span-2 flex-row gap-2 hyperlegible bold flex-wrap">
         <a href="./api.html">docs</a>
         <a href="./examples.html">drops</a>
         <a href="./changelog.html">play</a>
@@ -94,7 +94,7 @@
           <div class="grid-6 max-sm:block gap-2" :each="dir in dirs">
             <div class="col-span-2 pt-2">
               <dt>
-                <h4 :text="dir.title">:text</h4>
+                <h5 :text="dir.title">:text</h5>
               </dt>
               <dd>
                 <p :text="dir.text">Set text content.</p>
@@ -108,7 +108,7 @@
           <div class="grid-6 max-sm:block gap-2" :each="mod in mods">
             <div class="col-span-2 pt-2">
               <dt>
-                <h4 :text="mod.title">:text</h4>
+                <h5 :text="mod.title">:text</h5>
               </dt>
               <dd>
                 <p :text="mod.text">Set text content.</p>
@@ -130,28 +130,30 @@
         </ul>
       </section> -->
 
-      <section class="container my-4">
+      <section class="container my-4" >
         <h2 class="my-2">FAQ</h2>
-        <p class="my-1"><strong>Why another framework?</strong><br> To make the wheel rounder. A youthful dream.</p>
-        <p class="my-1"><strong>Why Sprae?</strong><br>Because it hydrates your HTML tree.</p>
-        <p class="my-1"><strong>Why not Alpine.js?</strong><br> Less climbing, less gear, less footprints.</p>
-        <p class="my-1"><strong>Why not vanilla JS?</strong><br> Because `querySelector` is wrong mantra.</p>
-        <p class="my-1"><strong>Why not Next/React?</strong><br> Because not every button needs a megabyte of runtime.</p>
-        <p class="my-1"><strong>Who cares about progressive enhancement / graceful degradation?</strong><br> Anyone looking for fast, fail-proof, accessible, SEO-optimized web sites.</p>
-        <p class="my-1"><strong>Is it just a toy?</strong><br> If production counts as a toy.</p>
-        <p class="my-1"><strong>Does it scale to complex state?</strong><br> Yes, if you or your CPU can handle it.</p>
-        <p class="my-1"><strong>Are signals overhyped?</strong><br> Preact-signals are the crown of reactivity, nothing better invented.</p>
-        <p class="my-1"><strong>Is no build step outdated?</strong><br> Your 12-min build pipeline is outdated.</p>
-        <p class="my-1"><strong>Is new Function unsafe?</strong><br> Yes, if your HTML comes from strangers. In such case use CSP.</p>
-        <p class="my-1"><strong>Components support?</strong><br> Already there — called HTML tags.</p>
-        <p class="my-1"><strong>Why not vibecode?</strong><br> Vibe-sprae! What do you think we're doing?</p>
-        <p class="my-1"><strong>Is there ecosystem?</strong><br> Yes. Since 1991.</p>
-        <p class="my-1"><strong>TypeScript support?</strong><br> Soon™.</p>
-        <p class="my-1"><strong>Is it stable?</strong><br> Directives, store, signals, config – yes. Modifiers, extensions – not yet.</p>
-        <p class="my-1"><strong>How old is it?</strong><br> <span :text="new Date().getFullYear() - 2022">enough</span> years old (<a href="https://github.com/dy/sprae/commit/ee7e372fb372bde5bdd7bfd3524cdaa815793663">first commit</a> Nov 7, 2022).</p>
-        <p class="my-1"><strong>Will spræ be maintained long-term? </strong><br> 12 versions, 1.5k commits, 3 years of development and future plans. As you see – no plans</p>
-        <p class="my-1"><strong>What’s future plan?</strong><br> Plugins, components, integration cases, generators.</p>
-        <p class="my-1"><strong>Is it backed by a company?</strong><br> No. Just regular devs. You can join!</p>
+        <div class="faq-list">
+          <p class="my-1"><strong>Why another framework?</strong><br> To make the wheel rounder. A youthful dream.</p>
+          <p class="my-1"><strong>Why Sprae?</strong><br>Because it hydrates your HTML tree.</p>
+          <p class="my-1"><strong>Why not Alpine.js?</strong><br> Less climbing, less gear, less footprints.</p>
+          <p class="my-1"><strong>Why not vanilla JS?</strong><br> Because `querySelector` is wrong mantra.</p>
+          <p class="my-1"><strong>Why not Next/React?</strong><br> Because not every button needs a megabyte of runtime.</p>
+          <p class="my-1"><strong>Who cares about progressive enhancement / graceful degradation?</strong><br> Anyone looking for fast, fail-proof, accessible, SEO-optimized web sites.</p>
+          <p class="my-1"><strong>Is it just a toy?</strong><br> If production counts as a toy.</p>
+          <p class="my-1"><strong>Does it scale to complex state?</strong><br> Yes, if you or your CPU can handle it.</p>
+          <p class="my-1"><strong>Are signals overhyped?</strong><br> Preact-signals are the crown of reactivity, nothing better invented.</p>
+          <p class="my-1"><strong>Is no build step outdated?</strong><br> Your 12-min build pipeline is outdated.</p>
+          <p class="my-1"><strong>Is new Function unsafe?</strong><br> Yes, if your HTML comes from strangers. In such case use CSP.</p>
+          <p class="my-1"><strong>Components support?</strong><br> Already there — called HTML tags.</p>
+          <p class="my-1"><strong>Why not vibecode?</strong><br> Vibe-sprae! What do you think we're doing?</p>
+          <p class="my-1"><strong>Is there ecosystem?</strong><br> Yes. Since 1991.</p>
+          <p class="my-1"><strong>TypeScript support?</strong><br> Soon™.</p>
+          <p class="my-1"><strong>Is it stable?</strong><br> Directives, store, signals, config – yes. Modifiers, extensions – not yet.</p>
+          <p class="my-1"><strong>How old is it?</strong><br> <span :text="new Date().getFullYear() - 2022">enough</span> years old (<a href="https://github.com/dy/sprae/commit/ee7e372fb372bde5bdd7bfd3524cdaa815793663">first commit</a> Nov 7, 2022).</p>
+          <p class="my-1"><strong>Will spræ be maintained long-term? </strong><br> 12 versions, 1.5k commits, 3 years of development and future plans. As you see – no plans</p>
+          <p class="my-1"><strong>What’s future plan?</strong><br> Plugins, components, integration cases, generators.</p>
+          <p class="my-1"><strong>Is it backed by a company?</strong><br> No. Just regular devs. You can join!</p>
+        </div>
       </section>
 
       <section class="container my-4" hidden>

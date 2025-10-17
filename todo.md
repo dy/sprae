@@ -210,18 +210,19 @@
 * [x] Draft release
 * [x] jsperf benchmark
 
+* [ ] make :on a directive, not hardcoded
+* [ ] find alternative way to update plain lists in :each rather than simulating signals (adds memory overhead)
+  * [ ] remove _signals use, just do _change check
 * [ ] typescript
 * [ ] microjs bundle
 * [ ] Website
   * [ ] Connect donation links
-* [ ] find alternative way to update plain lists in :each rather than simulating signals (adds memory overhead)
-  * [ ] remove _signals use, just do _change check
 * [x] ~~core test runner: signals variants, normal/micro, sync/async, module/bundle~~
 * [x] Optimizations (https://krausest.github.io/js-framework-benchmark/current.html)
   * [x] Append rows to large table is THE SLOWEST
   * [~] Create many rows IS SLOW
 * [ ] perf tests
-* [ ] alpine csp syntax
+* [ ] alpine CSP syntax
 
 ## [ ] Plugins
 
