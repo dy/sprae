@@ -1670,7 +1670,7 @@
   + that would allow `sprae.stop()` counterpart to `sprae.start()`
   + alpine flavor would need it
 
-## [ ] Componentization: what can be done? -> likely no for now. When html-include is there we can talk
+## [x] Componentization: what can be done? -> likely no for now. When html-include / DCE is there we can talk
 
   1. define-element
 
@@ -1755,14 +1755,18 @@
   * media - .screen-md
   * .interval-<tick|raf|number> - modifier for timers
 
-## [ ] Reasons against sprae
+## [x] Reasons against sprae ->
 
   - requires loading script anyways - not native event callbacks
+    + 5kb is almost nothing
   - ~~no `this` keyword makes it a bit cumbersome~~
   -~ separate syntax space even with `:` prefix - conflicts
   - perf-wise vanilla is faster
+    + more tedious
+    + technically can be static-bundled
   - initial loading delay.
   - chatgpt is super easy to ask to generate basic code
+    + ask about sprae
 
 ## [ ] Integrations
 
@@ -1824,7 +1828,7 @@
   * routing
   * animations
 
-## [ ] FAQ
+## [x] FAQ
 
   * https://grok.com/share/bGVnYWN5_4fb0e9f5-af5f-44b2-97f6-6327b7b540d1
   ! compare implementation of all frameworks

@@ -209,20 +209,28 @@
 * [x] refactor main demos
 * [x] Draft release
 * [x] jsperf benchmark
+* [x] ~~core test runner: signals variants, normal/micro, sync/async, module/bundle~~
+* [x] Optimizations (https://krausest.github.io/js-framework-benchmark/current.html)
+  * [x] Append rows to large table is THE SLOWEST
+  * [~] Create many rows IS SLOW
 
 * [ ] make :on a directive, not hardcoded
 * [ ] find alternative way to update plain lists in :each rather than simulating signals (adds memory overhead)
   * [ ] remove _signals use, just do _change check
 * [ ] typescript
 * [ ] microjs bundle
-* [ ] Website
-  * [ ] Connect donation links
-* [x] ~~core test runner: signals variants, normal/micro, sync/async, module/bundle~~
-* [x] Optimizations (https://krausest.github.io/js-framework-benchmark/current.html)
-  * [x] Append rows to large table is THE SLOWEST
-  * [~] Create many rows IS SLOW
 * [ ] perf tests
 * [ ] alpine CSP syntax
+
+## [ ] Website
+  * [x] Connect donation links
+  * [ ] Inverse color render
+  * [ ] Syntax highlighter
+  * [ ] Drops
+  * [ ] Icons for principles
+  * [ ] Examples
+    * [ ] 7 GUIs
+    * [ ] Sprae vs alpine
 
 ## [ ] Plugins
 
@@ -234,8 +242,3 @@
 * [ ] :data
 * [ ] :intersect
 * [ ] :scroll.view.x="progress => "
-
-## [ ] Website
-
-  * [ ] 7 GUIs example
-  * [ ] collection of examples
