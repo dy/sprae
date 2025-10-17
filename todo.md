@@ -227,10 +227,13 @@
   * [ ] Inverse color render
   * [ ] Syntax highlighter
   * [ ] Drops
+  * [ ] Better reference examples
   * [ ] Icons for principles
   * [ ] Examples
     * [ ] 7 GUIs
-    * [ ] Sprae vs alpine
+    * [ ] Wavearea
+  * [ ] Used by
+  * [ ] Sprae vs alpine
 
 ## [ ] Plugins
 
