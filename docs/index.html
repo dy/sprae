@@ -5,60 +5,128 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sprae</title>
-    <link rel="stylesheet" href="./style.css" />
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400;1,700&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/sprae@12.x.x/dist/sprae.umd.js" defer start></script>
+    <style>
+      /* reset styles */
+      :root {
+        font-size: 21px;
+        font-family: "Atkinson Hyperlegible", sans-serif;
+      }
+
+      body {
+        background: whitesmoke
+      }
+
+      body::before {
+        content: '';
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        pointer-events: none;
+        background: radial-gradient(circle at var(--x, 50%) var(--y, 50%), rgb(from var(--color-blue-700) r g b / 10%), transparent 60%);
+        transition: background-position 0.05s;
+      }
+
+      body > * {
+        position: relative;
+      }
+
+      a {
+        color: var(--color-blue-700);
+        text-decoration-color: rgb(from currentColor r g b / 20%);
+        text-underline-offset: .2em;
+        text-decoration-line: underline;
+      }
+      a:hover {
+        text-decoration-color: var(--color-blue-700);
+      }
+
+      pre {
+        background: var(--color-blue-700);
+        color: white;
+        font-size: smaller;
+        white-space: pre-wrap;
+        word-wrap: break-word;
+      }
+
+      [hidden] {
+        display: none !important;
+      }
+
+      button {
+        cursor: pointer;
+        background: var(--color-blue-700);
+        color: white;
+        padding: 0.5rem 1rem;
+      }
+
+      .bg-graph-paper {
+        background-image: linear-gradient(to right, #eee 1px, transparent 1px), linear-gradient(to bottom, #eee 1px, transparent 1px);
+        background-size: 1rem 1rem;
+      }
+
+      @media screen and (max-width: 768px) {
+        :root {
+          font-size: 14px;
+        }
+      }
+
+
+    </style>
   </head>
 
-  <body :scope="x=0, y=0" :onmousemove.document="e => { x = e.clientX; y = e.clientY; }" :style="{'--x': x + 'px', '--y': y + 'px'}">
-    <nav class="container grid-6 max-sm:block gap-2">
-      <div class="col-start-4 col-span-2 flex-row gap-2 hyperlegible bold flex-wrap">
+  <body :scope="x=0, y=0" :onmousemove.document="e => { x = e.clientX; y = e.clientY; }" :style="{'--x': x + 'px', '--y': y + 'px'}" class="flex-col border border-20 border-blue-700 bg-stone-50 p-6 md:p-20">
+    <nav class="container md:grid grid-cols-6 gap-8">
+      <div class="col-start-4 col-span-2 flex flex-row gap-4 md:gap-8 bold text-sm md:text-base font-bold">
         <a href="./api.html">docs</a>
         <a href="./examples.html">drops</a>
         <a href="./changelog.html">play</a>
-        <a href="./faq.html">faq</a>
-        <a href="https://github.com/dy/sprae">⌥  v<span :text="window.sprae?.version || '12.1.0'"></span></a>
+        <a href="https://github.com/dy/sprae" class="relative before:content-['⌥  '] before:absolute before:-ml-6 ml-6">v<span :text="window.sprae?.version || '12.1.0'"></span></a>
       </div>
     </nav>
 
-    <header class="my-2">
-      <div class="container grid-6 max-sm:block gap-2">
-        <h1 class="col-span-3 text-right max-sm:text-left my-2 mt-6">spræ</h1>
+    <header class="my-8">
+      <div class="container md:grid grid-cols-6 gap-8">
+        <h1 class="text-6xl md:text-8xl font-bold text-blue-700 col-span-3 md:text-right my-8 mt-12">spræ</h1>
       </div>
-      <div class="container grid-6 max-sm:block gap-2">
-        <div class="col-start-4 col-span-3">
-          <h2 class="my-1">
+      <div class="container md:grid grid-cols-6 gap-8">
+        <div class="col-start-4 col-span-3 text-blue-700">
+          <h2 class="text-2xl md:text-4xl font-bold my-2">
             Hydration for DOM tree
           </h2>
-          <h5 class="my-1">Easy progressive enhancement for HTML / JSX.<br />
+          <h5 class="my-2 leading-snug">Easy progressive enhancement for HTML / JSX.<br />
             Add UI interactions with reactive attributes.</h5>
         </div>
       </div>
     </header>
 
     <main>
-      <section class="container grid-6 max-sm:block my-4" :scope>
-        <pre class="col-span-3"><code :ref="code">&lt;div :scope="count=0"&gt;
+      <section class="container md:grid grid-cols-6 my-16" :scope>
+        <pre class="p-6 md:p-8 col-span-3"><code :ref="code">&lt;div :scope="count=0"&gt;
   &lt;button :onclick="count++"&gt;+&lt;/button&gt;
   &lt;button :onclick="count--"&gt;–&lt;/button&gt;
   Count: &lt;span :text="count"&gt;&lt;/span&gt;
 &lt;/div&gt;</code></pre>
-        <div class="col-span-3 p-3 bg-graph-paper h-full" :ref="el => el.innerHTML = code.textContent">
+        <div class="col-span-3 p-8 bg-graph-paper h-full" :ref="el => el.innerHTML = code.textContent">
         </div>
       </section>
 
-      <section class="container my-4">
-        <h2>Principles</h2>
-        <ul>
+      <section class="container my-20 md:grid grid-cols-6">
+        <h2 class="text-4xl text-blue-700 font-bold col-span-2 col-start-2">Principles</h2>
+        <ul class="col-span-3 text-blue-700 list-inside space-y-2">
           <li>Minimal. Uncluttered. Tiny API.</li>
           <li>Open state. Signals reactivity. Configurable.</li>
           <li>0 deps. No build step. JSX, CSP support.</li>
         </ul>
       </section>
 
-      <section class="container my-4" :scope='{
+      <section class="container my-20" :scope='{
         active:0,
         dirs: [
           { title: ":text", text: "Set text content.", example: `&lt;span :text="user.name"&gt;Guest&lt;/span&gt;` },
@@ -66,9 +134,9 @@
           { title: ":style", text: "Set style.", example: `&lt;div :style="{bar: &apos;baz&apos;, &apos;--qux&apos;: &apos;quv&apos;}"&gt;&lt;/div&gt;` },
           { title: ":value", text: "Bind input, textarea or select value.", example: `&lt;input :value="value" /&gt;` },
           { title: ":<attr>, :", text: "Set any attribute(s).", example: `&lt;input :="{ id: name, name, type: &apos;text&apos;, value, ...props }" /&gt;` },
-          { title: ":if, :else", text: "Control flow.", example: `&lt;span :if="foo"&gt;foo&lt;/span&gt; &lt;span :else :if="bar"&gt;bar&lt;/span&gt; &lt;span :else&gt;baz&lt;/span&gt;` },
+          { title: ":if, :else", text: "Control flow.", example: `&lt;span :if="foo"&gt;foo&lt;/span&gt;\n&lt;span :else :if="bar"&gt;bar&lt;/span&gt;\n&lt;span :else&gt;baz&lt;/span&gt;` },
           { title: ":each", text: "Multiply content.", example: `&lt;li :each="item, idx? in items" :text="item" /&gt;` },
-          { title: ":scope", text: "Define state container for a subtree.", example: `&lt;x :scope="{foo: &apos;foo&apos;}"&gt;&lt;y :text="foo"&gt;&lt;/y&gt;&lt;/x&gt;` },
+          { title: ":scope", text: "Define state container for a subtree.", example: `&lt;x :scope="{foo: &apos;foo&apos;}"&gt;\n\t&lt;y :text="foo"&gt;&lt;/y&gt;\n&lt;/x&gt;` },
           { title: ":fx", text: "Run effect.", example: `&lt;div :fx="a.value ? foo() : bar()" /&gt;` },
           { title: ":ref", text: "Expose an element in scope or get ref to the element.", example: `&lt;div :ref="card" :fx="handle(card)"&gt;&lt;/div&gt;` },
           { title: ":on<event>", text: "Add event listener.", example: `&lt;button :onclick="count++"&gt;Up&lt;/button&gt;` }
@@ -83,43 +151,45 @@
           { title: ".<key>-<*>", text: "Filter event by event.key or combination (.ctrl, .shift, .alt, .enter, .esc, .arrow, .digit, .letter, .char, etc.).", example: `&lt;div :onkeydown.arrow="navigate(event.key)"&gt;&lt;/div&gt;` }
         ]
       }'>
-        <h2>Reference</h2>
+        <header class="md:grid grid-cols-6 gap-8 items-baseline">
+          <h2 class="text-3xl text-blue-700 font-bold col-span-2 mb-2">Reference</h2>
 
-        <nav class="flex-row gap-1 my-3">
-          <h4 :onclick="active=0" class="tab" :class="{active:active==0}">Directives</h4>
-          <h4 :onclick="active=1" class="tab" :class="{active:active==1}">Modifiers</h4>
-        </nav>
+          <nav class="flex flex-row gap-1">
+            <h4 :onclick="active=0" class="relative cursor-pointer md:text-xl text-blue-700 p-4 [&.active]:bg-white" :class="{active:active==0}">Directives</h4>
+            <h4 :onclick="active=1" class="relative cursor-pointer md:text-xl text-blue-700 p-4 [&.active]:bg-white" :class="{active:active==1}">Modifiers</h4>
+          </nav>
+        </header>
 
-        <dl :if="active==0" class="flex-col">
-          <div class="grid-6 max-sm:block gap-2" :each="dir in dirs">
+        <dl :if="active==0" class="flex flex-col">
+          <div class="grid-6 md:grid grid-cols-6 gap-8" :each="item in dirs">
             <div class="col-span-2 pt-2">
               <dt>
-                <h5 :text="dir.title">:text</h5>
+                <h5 class="text-lg text-blue-700" :text="item.title">:text</h5>
               </dt>
               <dd>
-                <p :text="dir.text">Set text content.</p>
+                <p :text="item.text">Set text content.</p>
               </dd>
             </div>
-            <pre class="col-span-4"><code :text="dir.example">&lt;span :text="user.name"&gt;Guest&lt;/span&gt;</code></pre>
+            <pre class="p-4 md:p-6 col-span-4"><code :text="item.example">&lt;span :text="user.name"&gt;Guest&lt;/span&gt;</code></pre>
           </div>
         </dl>
 
         <div :if="active==1">
-          <div class="grid-6 max-sm:block gap-2" :each="mod in mods">
+          <div class="grid-6 md:grid grid-cols-6 gap-8" :each="item in mods">
             <div class="col-span-2 pt-2">
               <dt>
-                <h5 :text="mod.title">:text</h5>
+                <h5 class="text-lg text-blue-700" :text="item.title">:text</h5>
               </dt>
               <dd>
-                <p :text="mod.text">Set text content.</p>
+                <p :text="item.text">Set text content.</p>
               </dd>
             </div>
-            <pre class="col-span-4"><code :text="mod.example">&lt;span :text="user.name"&gt;Guest&lt;/span&gt;</code></pre>
+            <pre class="p-4 md:p-6 col-span-4"><code :text="item.example">&lt;span :text="user.name"&gt;Guest&lt;/span&gt;</code></pre>
           </div>
         </div>
       </section>
 
-      <!-- <section class="my-4">
+      <!-- <section class="my-16">
         <h2>Examples</h2>
         <ul>
           <li><code>:if</code> — toggle element visibility</li>
@@ -130,32 +200,51 @@
         </ul>
       </section> -->
 
-      <section class="container my-4" >
-        <h2 class="my-2">FAQ</h2>
-        <div class="faq-list">
-          <p class="my-1"><strong>Why another framework?</strong><br> To make the wheel rounder 😄.</p>
-          <p class="my-1"><strong>Why sprae?</strong><br> Because it hydrates DOM tree.</p>
-          <p class="my-1"><strong>Why not Alpine.js?</strong><br> Less climbing, less gear, less footprint.</p>
-          <p class="my-1"><strong>Why not vanilla JS?</strong><br> `querySelector` or `createElement` is wrong mantra.</p>
-          <p class="my-1"><strong>Why not Next/React?</strong><br> It's non-organic. But sprae works <a href="https://github.com/dy/sprae?tab=readme-ov-file#jsx"> well with JSX</a>.</p>
-          <p class="my-1"><strong>Who cares for progressive enhancement / graceful degradation?</strong><br> Who builds fast, fail-proof, accessible, SEO-optimized web.</p>
-          <p class="my-1"><strong>Is it just a toy?</strong><br> It's fun and comes with sandbox, but also used in production.</p>
-          <p class="my-1"><strong>Does it scale to complex state?</strong><br> If you can handle it, then sprae can, as far as CPU allows.</p>
-          <p class="my-1"><strong>Are signals overhyped?</strong><br> Signals are canon for reactivity, see <a href="https://github.com/tc39/proposal-signals">signals proposal</a>.</p>
-          <p class="my-1"><strong>Is no build step outdated?</strong><br>  It saves time for you and your build pipeline.  </p>
-          <p class="my-1"><strong>Is new Function unsafe?</strong><br> If your HTML comes from strangers or there's CSP, try <a href="https://github.com/dy/sprae?tab=readme-ov-file#evaluator">safe evaluator</a>.</p>
-          <p class="my-1"><strong>Components support?</strong><br> Proper components await the <a href="https://github.com/WICG/webcomponents/blob/gh-pages/proposals/Declarative-Custom-Elements-Strawman.md">DCE proposal</a>. Meanwhile see tailwind's take on <a href="https://tailwindcss.com/docs/styling-with-utility-classes#managing-duplication">managing duplication</a>.</p>
-          <p class="my-1"><strong>Is there ecosystem?</strong><br> Hopefully soon.</p>
-          <p class="my-1"><strong>TypeScript support?</strong><br> If you need it please <a href="https://github.com/dy/sprae/issues/new">leave a request</a>.</p>
-          <!-- <p class="my-1"><strong>Is it stable?</strong><br> Directives, store, signals, config – yes.</p> -->
-          <p class="my-1"><strong>How old is it?</strong><br> <span :text="new Date().getFullYear() - 2022">enough</span> years old (<a href="https://github.com/dy/sprae/commit/ee7e372fb372bde5bdd7bfd3524cdaa815793663">first commit</a> Nov 7, 2022).</p>
-          <p class="my-1"><strong>Will it be maintained long-term? </strong><br> 12 versions, 1.5k commits, 3 years of development and future plans.</p>
-          <p class="my-1"><strong>What’s future plan?</strong><br> Plugins, components, integration cases, generators.</p>
-          <p class="my-1"><strong>Is it backed by a company?</strong><br> No. Just regular devs. You can <a href="https://github.com/sponsors/dy">support it</a>!</p>
+      <section class="container my-16 md:grid grid-cols-6" >
+        <h2 class="text-3xl text-blue-700 font-bold col-span-2">FAQ</h2>
+        <div class="col-span-4">
+          <h4 class="text-xl text-blue-700 font-bold mt-4">Why another framework?</h4>
+          <p class="my-1"> To make the wheel rounder!</p>
+          <h4 class="text-xl text-blue-700 font-bold mt-4">Why sprae?</h4>
+          <p class="my-1"> Because it hydrates DOM tree and is not invasive.</p>
+          <h4 class="text-xl text-blue-700 font-bold mt-4">Why not Alpine.js?</h4>
+          <p class="my-1"> Less climbing, less gear, less footprint.</p>
+          <h4 class="text-xl text-blue-700 font-bold mt-4">Why not vanilla JS?</h4>
+          <p class="my-1"> `querySelector` or `createElement` is wrong mantra.</p>
+          <h4 class="text-xl text-blue-700 font-bold mt-4">Why not Next/React?</h4>
+          <p class="my-1"> It's non-organic. But sprae works <a href="https://github.com/dy/sprae?tab=readme-ov-file#jsx"> well with JSX</a>.</p>
+          <h4 class="text-xl text-blue-700 font-bold mt-4">Who cares for progressive enhancement / graceful degradation?</h4>
+          <p class="my-1"> Who builds fast, fail-proof, accessible, SEO-optimized web.</p>
+          <h4 class="text-xl text-blue-700 font-bold mt-4">Is it just a toy?</h4>
+          <p class="my-1"> It's fun and comes with sandbox, but also used in production.</p>
+          <h4 class="text-xl text-blue-700 font-bold mt-4">Does it scale to complex state?</h4>
+          <p class="my-1"> If you can handle it, then sprae can, as far as CPU allows.</p>
+          <h4 class="text-xl text-blue-700 font-bold mt-4">Are signals overhyped?</h4>
+          <p class="my-1"> Signals are canon for reactivity, see <a href="https://github.com/tc39/proposal-signals">signals proposal</a>.</p>
+          <h4 class="text-xl text-blue-700 font-bold mt-4">Is no build step outdated?</h4>
+          <p class="my-1">  It saves time for you and your build pipeline.  </p>
+          <h4 class="text-xl text-blue-700 font-bold mt-4">Is new Function unsafe?</h4>
+          <p class="my-1"> If your HTML comes from strangers or there's CSP, try <a href="https://github.com/dy/sprae?tab=readme-ov-file#evaluator">safe evaluator</a>.</p>
+          <h4 class="text-xl text-blue-700 font-bold mt-4">Components support?</h4>
+          <p class="my-1"> Proper components await the <a href="https://github.com/WICG/webcomponents/blob/gh-pages/proposals/Declarative-Custom-Elements-Strawman.md">DCE proposal</a>. Meanwhile see tailwind's take on <a href="https://tailwindcss.com/docs/styling-with-utility-classes#managing-duplication">managing duplication</a>.</p>
+          <h4 class="text-xl text-blue-700 font-bold mt-4">Is there ecosystem?</h4>
+          <p class="my-1"> Hopefully soon.</p>
+          <h4 class="text-xl text-blue-700 font-bold mt-4">TypeScript support?</h4>
+          <p class="my-1"> If you need it please <a href="https://github.com/dy/sprae/issues/new">leave a request</a>.</p>
+          <h4 class="text-xl text-blue-700 font-bold mt-4">Is it stable?</h4>
+          <p class="my-1"> Core is stable since v10.</p>
+          <h4 class="text-xl text-blue-700 font-bold mt-4">How old is it?</h4>
+          <p class="my-1"> <span :text="new Date().getFullYear() - 2022">enough</span> years old (<a href="https://github.com/dy/sprae/commit/ee7e372fb372bde5bdd7bfd3524cdaa815793663">first commit</a> Nov 7, 2022).</p>
+          <h4 class="text-xl text-blue-700 font-bold mt-4">Will it be maintained long-term? </h4>
+          <p class="my-1"> 12 versions, 1.5k commits, 3 years of development and future plans.</p>
+          <h4 class="text-xl text-blue-700 font-bold mt-4">What’s future plan?</h4>
+          <p class="my-1"> Plugins, components, integration cases, generators.</p>
+          <h4 class="text-xl text-blue-700 font-bold mt-4">Is it backed by a company?</h4>
+          <p class="my-1"> No. Just regular devs. You can <a href="https://github.com/sponsors/dy">support it</a>!</p>
         </div>
       </section>
 
-      <section class="container my-4" hidden>
+      <section class="container my-16" hidden>
         <h2>Comparison</h2>
         <table>
           <tr>
@@ -192,7 +281,7 @@
       </section>
     </main>
 
-    <footer>
+    <footer class="">
       <p align="center"><a href="https://github.com/krsnzd/license/">ॐ</a></p>
     </footer>
   </body>
