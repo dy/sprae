@@ -78,7 +78,7 @@
   </head>
 
   <body :scope="x=0, y=0" :onmousemove.document="e => { x = e.clientX; y = e.clientY; }" :style="{'--x': x + 'px', '--y': y + 'px'}" class="flex-col border border-10 md:border-20 border-blue-700 bg-stone-50 p-6 md:p-20">
-    <nav class="container flex md:grid grid-cols-6 gap-8">
+    <nav class="container max-w-6xl mx-auto flex md:grid grid-cols-6 gap-8">
       <div class="col-start-4 col-span-2 flex flex-row gap-4 md:gap-8 bold text-sm md:text-base font-bold max-md:ml-auto">
         <!-- <a href="./api.html">docs</a> -->
         <!-- <a href="./examples.html">drops</a> -->
@@ -88,10 +88,10 @@
     </nav>
 
     <header class="my-8">
-      <div class="container md:grid grid-cols-6 gap-8">
+      <div class="container max-w-6xl mx-auto md:grid grid-cols-6 gap-8">
         <h1 class="text-6xl md:text-8xl font-bold text-blue-700 col-span-3 md:text-right my-8 mt-12">spræ</h1>
       </div>
-      <div class="container md:grid grid-cols-6 gap-8">
+      <div class="container max-w-6xl mx-auto md:grid grid-cols-6 gap-8">
         <div class="col-start-4 col-span-3 text-blue-700">
           <h2 class="text-2xl md:text-4xl font-bold my-2">
             Hydration for DOM tree
@@ -103,7 +103,7 @@
     </header>
 
     <main>
-      <section class="container md:grid grid-cols-6 md:my-20" :scope>
+      <section class="container max-w-6xl mx-auto md:grid grid-cols-6 md:my-20" :scope>
         <pre class="p-6 md:p-8 col-span-3"><code :ref="code">&lt;div :scope="count=0"&gt;
   &lt;button :onclick="count++"&gt;+&lt;/button&gt;
   &lt;button :onclick="count--"&gt;–&lt;/button&gt;
@@ -113,7 +113,7 @@
         </div>
       </section>
 
-      <section class="container my-20 md:grid grid-cols-6">
+      <section class="container max-w-6xl mx-auto my-20 md:grid grid-cols-6">
         <h2 class="text-4xl text-blue-700 font-bold col-span-2 col-start-2 mb-4">Principles</h2>
         <ul class="col-span-3 text-blue-700 list-inside space-y-2">
           <li>Minimal. Uncluttered. Tiny API.</li>
@@ -122,7 +122,7 @@
         </ul>
       </section>
 
-      <section class="container my-20" :scope='{
+      <section class="container max-w-6xl mx-auto my-20" :scope='{
         active:0,
         dirs: [
           { title: ":text", text: "Set text content.", example: `&lt;span :text="user.name"&gt;Guest&lt;/span&gt;` },
@@ -132,7 +132,7 @@
           { title: ":[attr], :", text: "Set any attribute(s).", example: `&lt;input :="{ id: name, name, type: &apos;text&apos;, value, ...props }" /&gt;` },
           { title: ":if, :else", text: "Control flow.", example: `&lt;span :if="foo"&gt;foo&lt;/span&gt;\n&lt;span :else :if="bar"&gt;bar&lt;/span&gt;\n&lt;span :else&gt;baz&lt;/span&gt;` },
           { title: ":each", text: "Multiply content.", example: `&lt;li :each="item, idx? in items" :text="item" /&gt;` },
-          { title: ":scope", text: "Define state container for a subtree.", example: `&lt;x :scope="{foo: &apos;foo&apos;}"&gt;\n\t&lt;y :text="foo"&gt;&lt;/y&gt;\n&lt;/x&gt;` },
+          { title: ":scope", text: "Define state container max-w-6xl mx-auto for a subtree.", example: `&lt;x :scope="{foo: &apos;foo&apos;}"&gt;\n\t&lt;y :text="foo"&gt;&lt;/y&gt;\n&lt;/x&gt;` },
           { title: ":fx", text: "Run effect.", example: `&lt;div :fx="a.value ? foo() : bar()" /&gt;` },
           { title: ":ref", text: "Expose an element in scope or get ref to the element.", example: `&lt;div :ref="card" :fx="handle(card)"&gt;&lt;/div&gt;` },
           { title: ":on<event>", text: "Add event listener.", example: `&lt;button :onclick="count++"&gt;Up&lt;/button&gt;` }
@@ -196,7 +196,7 @@
         </ul>
       </section> -->
 
-      <section class="container my-16 md:grid grid-cols-6" >
+      <section class="container max-w-6xl mx-auto my-16 md:grid grid-cols-6" >
         <h2 class="text-3xl text-blue-700 font-bold col-span-2">FAQ</h2>
         <div class="col-span-4">
           <h4 class="text-xl text-blue-700 font-bold mt-4">Why another framework?</h4>
@@ -240,7 +240,7 @@
         </div>
       </section>
 
-      <section class="container my-16" hidden>
+      <section class="container max-w-6xl mx-auto my-16" hidden>
         <h2>Comparison</h2>
         <table>
           <tr>
