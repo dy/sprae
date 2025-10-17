@@ -225,10 +225,11 @@
 ## [ ] Website
   * [x] Connect donation links
   * [ ] Inverse color render
+  * [ ] Icons for principles
+  * [ ] Subtle animations
   * [ ] Syntax highlighter
   * [ ] Drops
   * [ ] Better reference examples
-  * [ ] Icons for principles
   * [ ] Examples
     * [ ] 7 GUIs
     * [ ] Wavearea

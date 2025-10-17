@@ -112,7 +112,7 @@
         <div class="col-span-3 p-8 bg-graph-paper h-full" :ref="el => el.innerHTML = code.textContent">
         </div>
       </section>
-
+<!--
       <section class="container max-w-6xl mx-auto my-20 md:grid grid-cols-6">
         <h2 class="text-4xl text-blue-700 font-bold col-span-2 col-start-2 mb-4">Principles</h2>
         <ul class="col-span-3 text-blue-700 list-inside space-y-2">
@@ -120,7 +120,7 @@
           <li>Open state. Signals reactivity. Configurable.</li>
           <li>0 deps. No build step. JSX, CSP support.</li>
         </ul>
-      </section>
+      </section> -->
 
       <section class="container max-w-6xl mx-auto my-20" :scope='{
         active:0,
@@ -157,7 +157,7 @@
         </header>
 
         <dl :if="active==0" class="flex flex-col">
-          <div class="grid-6 md:grid grid-cols-6 gap-8" :each="item in dirs">
+          <div class="grid-6 md:grid grid-cols-6 gap-8 hover:bg-white px-6 -mx-6" :each="item in dirs">
             <div class="col-span-2 py-2">
               <dt>
                 <h5 class="text-lg text-blue-700" :text="item.title">:text</h5>
@@ -171,7 +171,7 @@
         </dl>
 
         <div :if="active==1">
-          <div class="grid-6 md:grid grid-cols-6 gap-8" :each="item in mods">
+          <div class="grid-6 md:grid grid-cols-6 gap-8 hover:bg-white px-6 -mx-6" :each="item in mods">
             <div class="col-span-2 py-2">
               <dt>
                 <h5 class="text-lg text-blue-700" :text="item.title">:text</h5>
@@ -212,7 +212,7 @@
           <h4 class="text-xl text-blue-700 font-bold mt-4">Who cares for progressive enhancement / graceful degradation?</h4>
           <p class="my-1"> If you need fast, fail-proof, accessible, SEO-optimized web.</p>
           <h4 class="text-xl text-blue-700 font-bold mt-4">Is it just a toy?</h4>
-          <p class="my-1"> It is used in production, but it's indeed fun and comes with sandbox.</p>
+          <p class="my-1"> It is used in production, but it's indeed fun to play with and comes with sandbox.</p>
           <h4 class="text-xl text-blue-700 font-bold mt-4">Does it scale to complex state?</h4>
           <p class="my-1"> As far as you can handle it and CPU allows. It has good performance.</p>
           <h4 class="text-xl text-blue-700 font-bold mt-4">Are signals overhyped?</h4>
