@@ -55,10 +55,6 @@
         word-wrap: break-word;
       }
 
-      [hidden] {
-        display: none !important;
-      }
-
       button {
         cursor: pointer;
         background: var(--color-blue-700);
@@ -81,12 +77,12 @@
     </style>
   </head>
 
-  <body :scope="x=0, y=0" :onmousemove.document="e => { x = e.clientX; y = e.clientY; }" :style="{'--x': x + 'px', '--y': y + 'px'}" class="flex-col border border-20 border-blue-700 bg-stone-50 p-6 md:p-20">
-    <nav class="container md:grid grid-cols-6 gap-8">
-      <div class="col-start-4 col-span-2 flex flex-row gap-4 md:gap-8 bold text-sm md:text-base font-bold">
-        <a href="./api.html">docs</a>
-        <a href="./examples.html">drops</a>
-        <a href="./changelog.html">play</a>
+  <body :scope="x=0, y=0" :onmousemove.document="e => { x = e.clientX; y = e.clientY; }" :style="{'--x': x + 'px', '--y': y + 'px'}" class="flex-col border border-10 md:border-20 border-blue-700 bg-stone-50 p-6 md:p-20">
+    <nav class="container flex md:grid grid-cols-6 gap-8">
+      <div class="col-start-4 col-span-2 flex flex-row gap-4 md:gap-8 bold text-sm md:text-base font-bold max-md:ml-auto">
+        <!-- <a href="./api.html">docs</a> -->
+        <!-- <a href="./examples.html">drops</a> -->
+        <!-- <a href="./changelog.html">play</a> -->
         <a href="https://github.com/dy/sprae" class="relative before:content-['⌥  '] before:absolute before:-ml-6 ml-6">v<span :text="window.sprae?.version || '12.1.0'"></span></a>
       </div>
     </nav>
@@ -107,7 +103,7 @@
     </header>
 
     <main>
-      <section class="container md:grid grid-cols-6 my-16" :scope>
+      <section class="container md:grid grid-cols-6 md:my-20" :scope>
         <pre class="p-6 md:p-8 col-span-3"><code :ref="code">&lt;div :scope="count=0"&gt;
   &lt;button :onclick="count++"&gt;+&lt;/button&gt;
   &lt;button :onclick="count--"&gt;–&lt;/button&gt;
@@ -118,7 +114,7 @@
       </section>
 
       <section class="container my-20 md:grid grid-cols-6">
-        <h2 class="text-4xl text-blue-700 font-bold col-span-2 col-start-2">Principles</h2>
+        <h2 class="text-4xl text-blue-700 font-bold col-span-2 col-start-2 mb-4">Principles</h2>
         <ul class="col-span-3 text-blue-700 list-inside space-y-2">
           <li>Minimal. Uncluttered. Tiny API.</li>
           <li>Open state. Signals reactivity. Configurable.</li>
@@ -133,7 +129,7 @@
           { title: ":class", text: "Set className.", example: `&lt;div :class="[&apos;foo&apos;, bar && &apos;bar&apos;, { baz }]"&gt;&lt;/div&gt;` },
           { title: ":style", text: "Set style.", example: `&lt;div :style="{bar: &apos;baz&apos;, &apos;--qux&apos;: &apos;quv&apos;}"&gt;&lt;/div&gt;` },
           { title: ":value", text: "Bind input, textarea or select value.", example: `&lt;input :value="value" /&gt;` },
-          { title: ":<attr>, :", text: "Set any attribute(s).", example: `&lt;input :="{ id: name, name, type: &apos;text&apos;, value, ...props }" /&gt;` },
+          { title: ":[attr], :", text: "Set any attribute(s).", example: `&lt;input :="{ id: name, name, type: &apos;text&apos;, value, ...props }" /&gt;` },
           { title: ":if, :else", text: "Control flow.", example: `&lt;span :if="foo"&gt;foo&lt;/span&gt;\n&lt;span :else :if="bar"&gt;bar&lt;/span&gt;\n&lt;span :else&gt;baz&lt;/span&gt;` },
           { title: ":each", text: "Multiply content.", example: `&lt;li :each="item, idx? in items" :text="item" /&gt;` },
           { title: ":scope", text: "Define state container for a subtree.", example: `&lt;x :scope="{foo: &apos;foo&apos;}"&gt;\n\t&lt;y :text="foo"&gt;&lt;/y&gt;\n&lt;/x&gt;` },
@@ -142,27 +138,27 @@
           { title: ":on<event>", text: "Add event listener.", example: `&lt;button :onclick="count++"&gt;Up&lt;/button&gt;` }
         ],
         mods: [
-          { title: ".debounce-<ms|tick|frame|idle>?", text: "Defer callback by ms, next tick/animation frame, or until idle. Defaults to 250ms.", example: `&lt;input :oninput.debounce-200="update(event)" /&gt;` },
-          { title: ".throttle-<ms|tick|frame>?", text: "Limit callback rate to interval in ms, tick or animation framerate. By default 250ms.", example: `&lt;div :text.throttle-100="text.length"&gt;&lt;/div&gt;` },
+          { title: ".debounce-[ms|tick|frame|idle]", text: "Defer callback by ms, next tick/animation frame, or until idle. Defaults to 250ms.", example: `&lt;input :oninput.debounce-200="update(event)" /&gt;` },
+          { title: ".throttle-[ms|tick|frame]", text: "Limit callback rate to interval in ms, tick or animation framerate. By default 250ms.", example: `&lt;div :text.throttle-100="text.length"&gt;&lt;/div&gt;` },
           { title: ".once", text: "Call only once.", example: `&lt;button :onclick.once="loadMoreData()"&gt;Start&lt;/button&gt;` },
           { title: ".window, .document, .parent, .outside, .self", text: "Specify event target.", example: `&lt;div :onclick.outside="closeMenu()"&gt;Dropdown&lt;/div&gt;` },
           { title: ".passive, .capture", text: "Event listener options.", example: `&lt;div :onscroll.passive="pos = e.scrollTop"&gt;&lt;/div&gt;` },
           { title: ".prevent, .stop, .stop-immediate", text: "Prevent default or stop (immediate) propagation.", example: `&lt;a :onclick.prevent="navigate(&apos;/page&apos;)" href="/default"&gt;Go&lt;/a&gt;` },
-          { title: ".<key>-<*>", text: "Filter event by event.key or combination (.ctrl, .shift, .alt, .enter, .esc, .arrow, .digit, .letter, .char, etc.).", example: `&lt;div :onkeydown.arrow="navigate(event.key)"&gt;&lt;/div&gt;` }
+          { title: ".[key]", text: "Filter event by event.key or combination (.ctrl, .shift, .alt, .enter, .esc, .arrow, .digit, .letter, .char, etc.).", example: `&lt;div :onkeydown.arrow="navigate(event.key)"&gt;&lt;/div&gt;` }
         ]
       }'>
         <header class="md:grid grid-cols-6 gap-8 items-baseline">
           <h2 class="text-3xl text-blue-700 font-bold col-span-2 mb-2">Reference</h2>
 
           <nav class="flex flex-row gap-1">
-            <h4 :onclick="active=0" class="relative cursor-pointer md:text-xl text-blue-700 p-4 [&.active]:bg-white" :class="{active:active==0}">Directives</h4>
-            <h4 :onclick="active=1" class="relative cursor-pointer md:text-xl text-blue-700 p-4 [&.active]:bg-white" :class="{active:active==1}">Modifiers</h4>
+            <h4 :onclick="active=0" class="relative cursor-pointer md:text-lg font-bold text-blue-700 py-4 px-6 [&.active]:bg-white" :class="{active:active==0}">Directives</h4>
+            <h4 :onclick="active=1" class="relative cursor-pointer md:text-lg font-bold text-blue-700 py-4 px-6 [&.active]:bg-white" :class="{active:active==1}">Modifiers</h4>
           </nav>
         </header>
 
         <dl :if="active==0" class="flex flex-col">
           <div class="grid-6 md:grid grid-cols-6 gap-8" :each="item in dirs">
-            <div class="col-span-2 pt-2">
+            <div class="col-span-2 py-2">
               <dt>
                 <h5 class="text-lg text-blue-700" :text="item.title">:text</h5>
               </dt>
@@ -176,7 +172,7 @@
 
         <div :if="active==1">
           <div class="grid-6 md:grid grid-cols-6 gap-8" :each="item in mods">
-            <div class="col-span-2 pt-2">
+            <div class="col-span-2 py-2">
               <dt>
                 <h5 class="text-lg text-blue-700" :text="item.title">:text</h5>
               </dt>
@@ -204,7 +200,7 @@
         <h2 class="text-3xl text-blue-700 font-bold col-span-2">FAQ</h2>
         <div class="col-span-4">
           <h4 class="text-xl text-blue-700 font-bold mt-4">Why another framework?</h4>
-          <p class="my-1"> To make the wheel rounder!</p>
+          <p class="my-1"> To make the wheel rounder.</p>
           <h4 class="text-xl text-blue-700 font-bold mt-4">Why sprae?</h4>
           <p class="my-1"> Because it hydrates DOM tree non-invasively.</p>
           <h4 class="text-xl text-blue-700 font-bold mt-4">Why not Alpine.js?</h4>
