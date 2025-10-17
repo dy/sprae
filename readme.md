@@ -647,9 +647,9 @@ Micro sprae version is 2.5kb bundle with essentials:
 Modern frontend is like processed food.
 Frameworks come with endless tooling, tedious setups and configs, proprietary conventions, artificial abstractions and ecosystem lock-in. Progressive enhancement / graceful degradation is anachronism.
 
-Native [template-parts](https://github.com/github/template-parts) and [DCE](https://github.com/WICG/webcomponents/blob/gh-pages/proposals/Declarative-Custom-Elements-Strawman.md) give distant hope, stuck with HTML quirks [1](https://github.com/github/template-parts/issues/24), [2](https://github.com/github/template-parts/issues/25), [3](https://shopify.github.io/liquid/tags/template/#raw).
+Native [template-parts](https://github.com/github/template-parts) and [DCE](https://github.com/WICG/webcomponents/blob/gh-pages/proposals/Declarative-Custom-Elements-Strawman.md) give distant hope, but stuck with HTML quirks [1](https://github.com/github/template-parts/issues/24), [2](https://github.com/github/template-parts/issues/25), [3](https://shopify.github.io/liquid/tags/template/#raw).
 
-[Alpine](https://github.com/alpinejs/alpine) and [petite-vue](https://github.com/vuejs/petite-vue) offer PE / GD, but have API inconsistencies (x-, @, $, etc.), tend to [self-encapsulate](https://github.com/alpinejs/alpine/discussions/3223), have limited extensibility and disregard performance / size. Also they don't have prop midifiers.
+[Alpine](https://github.com/alpinejs/alpine) and [petite-vue](https://github.com/vuejs/petite-vue) offer PE / GD, but have API inconsistencies (x-, @, $, etc.), tend to [self-encapsulate](https://github.com/alpinejs/alpine/discussions/3223), limit extensibility and disregard performance / size.
 
 _Sprae_ holds open, safe, minimalistic philosophy:
 
@@ -661,8 +661,7 @@ _Sprae_ holds open, safe, minimalistic philosophy:
 * Small, safe & fast.
 * 🫰 developers
 
-It is ideal for small websites, static pages, prototypes, landing pages, lightweight UI, embedded apps, micro-frontends, SPA, PWA, JSX / SSR or anywhere you want reactive UI without framework weight.
-A light and fast alternative to alpine, petite-vue, lucia etc (see why).
+Ideal for small websites, static pages, prototypes, landings, SPA, PWA, JSX / SSR, micro-frontends or anywhere where you need lightweight UI.
 
 <!--
 |                       | [AlpineJS](https://github.com/alpinejs/alpine)          | [Petite-Vue](https://github.com/vuejs/petite-vue)        | Sprae            |
