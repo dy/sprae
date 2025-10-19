@@ -224,7 +224,7 @@
 
 ## [ ] Website
   * [x] Connect donation links
-  * [ ] Inverse color render
+  * [x] Inverse color render
   * [ ] Icons for principles
   * [ ] Subtle animations
   * [ ] Syntax highlighter
