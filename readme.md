@@ -1,6 +1,6 @@
 # ∴ spræ [![tests](https://github.com/dy/sprae/actions/workflows/node.js.yml/badge.svg)](https://github.com/dy/sprae/actions/workflows/node.js.yml) [![npm bundle size](https://img.shields.io/bundlephobia/minzip/sprae)](https://bundlephobia.com/package/sprae) [![npm](https://img.shields.io/npm/v/sprae?color=orange)](https://www.npmjs.com/package/sprae)
 
-Simple progressive enhancement for DOM or JSX.<br/>
+<em>S</em>imple <em>pr</em>ogressive <em>æ</em>nhancement for DOM or JSX.<br/>
 
 <!-- [Usage](#usage) · [Directives](#directives) · [Modifiers](#modifiers) · [Store](#store) · [Signals](#signals) · [Evaluator](#evaluator) · [Start](#autoinit) · [JSX](#jsx) · [Build](#custom-build) · [Hints](#hints) · [Examples](#examples) -->
 
