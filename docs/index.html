@@ -34,20 +34,18 @@
       }
 
       a {
-        color: var(--color-orange-400);
-        mix-blend-mode: difference;
+        color: var(--color-sky-700);
         text-decoration-color: rgb(from currentColor r g b / 20%);
         text-underline-offset: .2em;
         text-decoration-line: underline;
       }
       a:hover {
-        text-decoration-color: var(--color-orange-400);
+        text-decoration-color: var(--color-sky-700);
       }
 
       pre {
-        background: var(--color-orange-400);
-        mix-blend-mode: difference;
-        color: black;
+        background: var(--color-sky-700);
+        color: white;
         font-size: smaller;
         white-space: pre-wrap;
         word-wrap: break-word;
@@ -89,14 +87,14 @@
 
     <header class="my-8">
       <div class="container max-w-6xl mx-auto md:grid grid-cols-6 gap-8">
-        <h1 class="text-6xl md:text-8xl font-bold text-orange-400 col-span-3 md:text-right mb-4 mt-12 tracking-tight mix-blend-difference">spræ</h1>
+        <h1 class="text-6xl md:text-8xl font-bold text-sky-700 col-span-3 md:text-right mb-4 mt-12 tracking-tight">∴ spræ</h1>
       </div>
       <div class="container max-w-6xl mx-auto md:grid grid-cols-6 gap-8">
-        <div class="col-start-4 col-span-3 text-orange-400 mix-blend-difference">
+        <div class="col-start-4 col-span-3 text-sky-700">
           <h2 class="text-2xl md:text-4xl font-bold my-2">
             Hydration for DOM tree
           </h2>
-          <h5 class="my-2 leading-snug">Easy progressive enhancement for HTML / JSX.<br />
+          <h5 class="my-2 leading-snug">Simple progressive enhancement for HTML / JSX.<br />
             Add UI interactions with reactive attributes.</h5>
         </div>
       </div>
@@ -104,7 +102,9 @@
 
     <main>
       <section class="container max-w-6xl mx-auto md:grid grid-cols-6 md:my-20" :scope>
-        <pre class="p-6 md:p-8 col-span-3"><code :ref="code">&lt;div :scope="count=0"&gt;
+        <pre class="p-6 md:p-8 col-span-3"><code :ref="code">&lt;script src="//unpkg.com/sprae"&gt;&lt;/script&gt;
+
+&lt;div :scope="count=0"&gt;
   &lt;button :onclick="count++"&gt;+&lt;/button&gt;
   &lt;button :onclick="count--"&gt;–&lt;/button&gt;
   Count: &lt;span :text="count"&gt;&lt;/span&gt;
@@ -125,26 +125,26 @@
       <section class="container max-w-6xl mx-auto my-20" :scope='{
         active:0,
         dirs: [
-          { title: ":text", text: "Set text content.", example: `&lt;span :text="user.name"&gt;Guest&lt;/span&gt;` },
-          { title: ":class", text: "Set className.", example: `&lt;div :class="[&apos;foo&apos;, bar && &apos;bar&apos;, { baz }]"&gt;&lt;/div&gt;` },
-          { title: ":style", text: "Set style.", example: `&lt;div :style="{bar: &apos;baz&apos;, &apos;--qux&apos;: &apos;quv&apos;}"&gt;&lt;/div&gt;` },
+          { title: ":text", text: "Set text content.", example: `© &lt;span :text="new Date().getFullYear()"&gt;&lt;/span&gt;` },
+          { title: ":class", text: "Set className.", example: `&lt;div :class="{ active: isActive }"&gt;...&lt;/div&gt;` },
+          { title: ":style", text: "Set style.", example: `&lt;div :style="{bar: &apos;baz&apos;, &apos;--qux&apos;: &apos;quv&apos;}"&gt;...&lt;/div&gt;` },
           { title: ":value", text: "Bind input, textarea or select value.", example: `&lt;input :value="value" /&gt;` },
-          { title: ":[attr], :", text: "Set any attribute(s).", example: `&lt;input :="{ id: name, name, type: &apos;text&apos;, value, ...props }" /&gt;` },
+          { title: ":[attr], :", text: "Set any attribute(s).", example: `&lt;input :id="name" :="{ ...props }" /&gt;` },
           { title: ":if, :else", text: "Control flow.", example: `&lt;span :if="foo"&gt;foo&lt;/span&gt;\n&lt;span :else :if="bar"&gt;bar&lt;/span&gt;\n&lt;span :else&gt;baz&lt;/span&gt;` },
-          { title: ":each", text: "Multiply content.", example: `&lt;li :each="item, idx? in items" :text="item" /&gt;` },
-          { title: ":scope", text: "Define state container max-w-6xl mx-auto for a subtree.", example: `&lt;x :scope="{foo: &apos;foo&apos;}"&gt;\n\t&lt;y :text="foo"&gt;&lt;/y&gt;\n&lt;/x&gt;` },
+          { title: ":each", text: "Multiply content.", example: `&lt;li :each="item in items" :text="item" /&gt;` },
+          { title: ":scope", text: "Define state container for a subtree.", example: `&lt;x :scope="{foo: &apos;foo&apos;}"&gt;\n\t&lt;y :text="foo"&gt;...&lt;/y&gt;\n&lt;/x&gt;` },
           { title: ":fx", text: "Run effect.", example: `&lt;div :fx="a.value ? foo() : bar()" /&gt;` },
-          { title: ":ref", text: "Expose an element in scope or get ref to the element.", example: `&lt;div :ref="card" :fx="handle(card)"&gt;&lt;/div&gt;` },
+          { title: ":ref", text: "Expose an element in scope or get ref to the element.", example: `&lt;div :ref="card" :fx="handle(card)"&gt;...&lt;/div&gt;` },
           { title: ":on<event>", text: "Add event listener.", example: `&lt;button :onclick="count++"&gt;Up&lt;/button&gt;` }
         ],
         mods: [
           { title: ".debounce-[ms|tick|frame|idle]", text: "Defer callback by ms, next tick/animation frame, or until idle. Defaults to 250ms.", example: `&lt;input :oninput.debounce-200="update(event)" /&gt;` },
-          { title: ".throttle-[ms|tick|frame]", text: "Limit callback rate to interval in ms, tick or animation framerate. By default 250ms.", example: `&lt;div :text.throttle-100="text.length"&gt;&lt;/div&gt;` },
+          { title: ".throttle-[ms|tick|frame]", text: "Limit callback rate to interval in ms, tick or animation framerate. By default 250ms.", example: `&lt;div :text.throttle-100="text.length"&gt;...&lt;/div&gt;` },
           { title: ".once", text: "Call only once.", example: `&lt;button :onclick.once="loadMoreData()"&gt;Start&lt;/button&gt;` },
           { title: ".window, .document, .parent, .outside, .self", text: "Specify event target.", example: `&lt;div :onclick.outside="closeMenu()"&gt;Dropdown&lt;/div&gt;` },
-          { title: ".passive, .capture", text: "Event listener options.", example: `&lt;div :onscroll.passive="pos = e.scrollTop"&gt;&lt;/div&gt;` },
+          { title: ".passive, .capture", text: "Event listener options.", example: `&lt;div :onscroll.passive="pos = e.scrollTop"&gt;...&lt;/div&gt;` },
           { title: ".prevent, .stop, .stop-immediate", text: "Prevent default or stop (immediate) propagation.", example: `&lt;a :onclick.prevent="navigate(&apos;/page&apos;)" href="/default"&gt;Go&lt;/a&gt;` },
-          { title: ".[key]", text: "Filter event by event.key or combination (.ctrl, .shift, .alt, .enter, .esc, .arrow, .digit, .letter, .char, etc.).", example: `&lt;div :onkeydown.arrow="navigate(event.key)"&gt;&lt;/div&gt;` }
+          { title: ".[key]", text: "Filter event by event.key or combination (.ctrl, .shift, .alt, .enter, .esc, .arrow, .digit, .letter, .char, etc.).", example: `&lt;div :onkeydown.arrow="navigate(event.key)"&gt;...&lt;/div&gt;` }
         ]
       }'>
         <header class="md:grid grid-cols-6 gap-8 items-baseline">
@@ -157,7 +157,7 @@
         </header>
 
         <dl :if="active==0" class="flex flex-col">
-          <div class="grid-6 md:grid grid-cols-6 gap-8 hover:bg-white px-6 -mx-6 md:pr-0 md:mr-0" :each="item in dirs">
+          <div class="group grid-6 md:grid grid-cols-6 gap-8 hover:bg-white px-6 -mx-6 md:pr-0 md:mr-0" :each="item in dirs">
             <div class="col-span-2 py-2">
               <dt>
                 <h5 class="text-lg text-sky-700" :text="item.title">:text</h5>
@@ -166,7 +166,7 @@
                 <p :text="item.text">Set text content.</p>
               </dd>
             </div>
-            <pre class="p-4 md:p-6 col-span-4"><code :text="item.example">&lt;span :text="user.name"&gt;Guest&lt;/span&gt;</code></pre>
+            <pre class="p-4 md:p-6 col-span-4 group-hover:bg-sky-600!"><code :text="item.example">&lt;span :text="user.name"&gt;Guest&lt;/span&gt;</code></pre>
           </div>
         </dl>
 
@@ -200,19 +200,19 @@
         <h2 class="text-3xl text-sky-700 font-bold col-span-2">FAQ</h2>
         <div class="col-span-4">
           <h4 class="text-xl text-sky-700 font-bold mt-4">Why another framework?</h4>
-          <p class="my-1"> There's no full aesthetic satisfaction with other solutions. </p>
+          <p class="my-1"> There is no full aesthetic satisfaction with other solutions. </p>
           <h4 class="text-xl text-sky-700 font-bold mt-4">Why sprae?</h4>
-          <p class="my-1"> It hydrates DOM tree non-invasively.</p>
+          <p class="my-1"> SPRAE stands for Simple PRogressive enhancement Æsthetic. Also it hydrates DOM tree non-invasively.</p>
           <h4 class="text-xl text-sky-700 font-bold mt-4">Why not Alpine.js?</h4>
-          <p class="my-1"> Less syntax space, less magic, more control over state and easier to integrate.</p>
+          <p class="my-1"> Less syntax space, less magic, less weight, open state and extensibility.</p>
           <h4 class="text-xl text-sky-700 font-bold mt-4">Why not vanilla JS?</h4>
-          <p class="my-1"> `querySelector` or `createElement` is wrong mantra.</p>
+          <p class="my-1"> `querySelector` is wrong mantra.</p>
           <h4 class="text-xl text-sky-700 font-bold mt-4">Why not Next/React?</h4>
-          <p class="my-1"> Personally it's overcomplicated and non-organic. But sprae works well with <a href="https://github.com/dy/sprae?tab=readme-ov-file#jsx">JSX</a>.</p>
+          <p class="my-1"> <a href="https://www.keithcirkel.co.uk/i-dont-have-time-to-learn-react/">No time</a>. But sprae works well with <a href="https://github.com/dy/sprae?tab=readme-ov-file#jsx">JSX</a>.</p>
           <h4 class="text-xl text-sky-700 font-bold mt-4">Who cares for progressive enhancement / graceful degradation?</h4>
           <p class="my-1"> Who needs fast, fail-proof, accessible, SEO-optimized web.</p>
           <h4 class="text-xl text-sky-700 font-bold mt-4">Is it just a toy?</h4>
-          <p class="my-1"> It is used in production, but it's indeed fun and comes with sandbox.</p>
+          <p class="my-1"> It is used in production, but it's fun and comes with sandbox.</p>
           <h4 class="text-xl text-sky-700 font-bold mt-4">Does it scale to complex state?</h4>
           <p class="my-1"> As far as you can handle it and CPU allows. Sprae has good performance.</p>
           <h4 class="text-xl text-sky-700 font-bold mt-4">Are signals overhyped?</h4>
@@ -220,7 +220,7 @@
           <h4 class="text-xl text-sky-700 font-bold mt-4">Is no build step outdated?</h4>
           <p class="my-1"> Sprae saves the hassle configuring it, but as ESM that can be part of build pipeline as well. </p>
           <h4 class="text-xl text-sky-700 font-bold mt-4">Is new Function unsafe?</h4>
-          <p class="my-1"> If your HTML comes from strangers or there's CSP, there is <a href="https://github.com/dy/sprae?tab=readme-ov-file#evaluator">safe evaluator</a>.</p>
+          <p class="my-1"> If your HTML comes from strangers, there is <a href="https://github.com/dy/sprae?tab=readme-ov-file#evaluator">safe evaluator</a>.</p>
           <h4 class="text-xl text-sky-700 font-bold mt-4">Components support?</h4>
           <p class="my-1"> Awaiting the <a href="https://github.com/WICG/webcomponents/blob/gh-pages/proposals/Declarative-Custom-Elements-Strawman.md">DCE proposal</a>, meanwhile we have to <a href="https://tailwindcss.com/docs/styling-with-utility-classes#managing-duplication">manage duplication</a>.</p>
           <h4 class="text-xl text-sky-700 font-bold mt-4">Is there ecosystem?</h4>
