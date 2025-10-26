@@ -84,3 +84,24 @@ test("modifier: any", async () => {
   await tick(1);
   is(state.log, ['init', 1, 'update', 1, 'update', 2]);
 });
+
+test("modifier: .parent", async () => {
+  let el = h`<div><button :style.parent="{'--x': x}" :onclick="x = 1">Click me</button></div>`;
+  let state = sprae(el, { log: [], x: 0 });
+  is(el.style.getPropertyValue('--x'), '0');
+  el.firstChild.click();
+  await tick(1);
+  is(el.style.getPropertyValue('--x'), '1');
+});
+
+test("modifier: root, body", async () => {
+  let el = h`<div><button :style.root="{'--x': x}" :style.body="{'--x': x}" :onclick="x = 1">Click me</button></div>`;
+  let state = sprae(el, { log: [], x: 0 });
+  let root = document.documentElement, body = document.body;
+  is(root.style.getPropertyValue('--x'), '0');
+  is(body.style.getPropertyValue('--x'), '0');
+  el.firstChild.click();
+  await tick(1);
+  is(root.style.getPropertyValue('--x'), '1');
+  is(body.style.getPropertyValue('--x'), '1');
+});

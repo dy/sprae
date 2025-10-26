@@ -96,20 +96,39 @@ const initDirective = (el, dirName, expr, state) => {
       if (name.startsWith('on')) {
         let type = name.slice(2),
           fn = applyMods(
-            Object.assign(
+            sx(
               // single event vs chain
               length == 1 ?  e => evaluate(state, (fn) => call(fn, e)) :
                 (e => (cur = (!i ?  e => call(evaluate(state), e) : cur)(e), off(), off = steps[(i + 1) % length]())),
-              { target: el, type }
+              { target: el }
             ),
             mods);
 
         return (_poff) => (_poff = prev?.(), fn.target.addEventListener(type, fn, fn), () => (_poff?.(), fn.target.removeEventListener(type, fn)))
       }
 
+      let fn, dispose, change, count;
+
+      if (mods.length) {
+        change = signal(-1), // signal authorized to trigger effect: 0 = init; >0 = trigger
+        count = -1 // called effect count
+
+        // effect applier - first time it applies the effect, next times effect is triggered by change signal
+        fn = applyMods(sx(throttle(() => {
+            if (++change.value) return // all calls except for the first one are handled by effect
+            dispose = effect(() => update && (
+              change.value == count ? fn() : // plan update: separate tick (via throttle) makes sure planner effect call is finished before eval call
+                (count = change.value, evaluate(state, update)) // if changed more than effect called - call it
+            ));
+          }), {target: el}), mods)
+      }
+      else {
+        fn = sx(() => dispose = effect(() =>  evaluate(state, update)), {target: el })
+      }
+
       // props have no sequences and can be sync
       // it's nice to see directive as taking some part of current context and returning new or updated context
-      let update = (directive[name] || directive['*'])(el, state, expr, name)
+      let update = (directive[name] || directive['*'])(fn.target, state, expr, name)
 
       // some directives are effect-less
       if (!update) return
@@ -117,32 +136,14 @@ const initDirective = (el, dirName, expr, state) => {
       // take over state if directive created it (mainly :scope)
       if (el[_state]) state = el[_state]
 
-      // no-modifiers shortcut
-      if (!mods.length && !prev) return ((() => effect(() =>  evaluate(state, update))))
-
-      let dispose,
-        change = signal(-1), // signal authorized to trigger effect: 0 = init; >0 = trigger
-        count = -1, // called effect count
-
-        // effect applier - first time it applies the effect, next times effect is triggered by change signal
-        fn = throttle(applyMods(() => {
-          if (++change.value) return // all calls except for the first one are handled by effect
-          dispose = effect(() => update && (
-            change.value == count ? fn() : // separate tick makes sure planner effect call is finished before real eval call
-              (count = change.value, evaluate(state, update)) // if changed more than effect called - call it
-          ));
-        }, mods))
-
       return (_poff) => (
         _poff = prev?.(),
         // console.log('ON', name),
         fn(),
-        ({
-          [name]: () => (
-            // console.log('OFF', name, el),
-            _poff?.(), dispose(), change.value = -1, count = dispose = null
-          )
-        })[name]
+        () => (
+          // console.log('OFF', name, el),
+          _poff?.(), dispose?.(), change && (change.value = -1, count = dispose = null)
+        )
       )
     }, null)
   ));

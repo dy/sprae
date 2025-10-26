@@ -79,11 +79,13 @@ Object.assign(modifier, {
   capture: fn => (fn.capture = true, fn),
 
   // target
-  window: fn => (fn.target = window, fn),
-  document: fn => (fn.target = document, fn),
+  window: fn => (fn.target = fn.target.ownerDocument.defaultView, fn),
+  document: fn => (fn.target = fn.target.ownerDocument, fn),
+  root: fn => (fn.target = fn.target.ownerDocument.documentElement, fn),
+  body: fn => (fn.target = fn.target.ownerDocument.body, fn),
   parent: fn => (fn.target = fn.target.parentNode, fn),
 
-  // test
+  // testers
   self: (fn) => (e) => (e.target === fn.target && fn(e)),
 
   outside: (fn) => (e, _target) => (

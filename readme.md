@@ -341,9 +341,9 @@ Call only once.
 <div :fx.once="console.log('sprae init')">
 ```
 
-#### `.window`, `.document`, `.parent`, `.outside`, `.self`  <kbd>events only</kbd>
+#### `.window`, `.document`, `.body`, `.root`, `.parent`, `.outside`, `.self`
 
-Specify event target.
+Specify target.
 
 ```html
 <!-- close dropdown when click outside -->
@@ -351,6 +351,9 @@ Specify event target.
 
 <!-- interframe communication -->
 <div :onmessage.window="e => e.data.type === 'success' && complete()">...</div>
+
+<!-- set css variable on document root element (<html>) -->
+<main :style.root="{'--x': x}">...</main>
 ```
 
 #### `.passive`, `.capture`  <kbd>events only</kbd>
@@ -661,7 +664,7 @@ _Sprae_ holds open, safe, minimalistic philosophy:
 * Small, safe & fast.
 * 🫰 developers
 
-Ideal for small websites, static pages, prototypes, landings, SPA, PWA, JSX / SSR, micro-frontends or anywhere where you need lightweight UI.
+Perfect for small websites, static pages, prototypes, landings, SPA, PWA, JSX / SSR, micro-frontends, github pages, or anywhere where you need lightweight UI.
 
 <!--
 |                       | [AlpineJS](https://github.com/alpinejs/alpine)          | [Petite-Vue](https://github.com/vuejs/petite-vue)        | Sprae            |
