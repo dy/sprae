@@ -1,4 +1,5 @@
 import store, { _change, _signals } from "./store.js";
+import pkg from './package.json' with { type: 'json' };
 
 export const _dispose = (Symbol.dispose ||= Symbol("dispose")),
   _state = Symbol("state"),
@@ -75,6 +76,7 @@ const sprae = (el = document.body, state) => {
   return state;
 }
 
+sprae.version = pkg.version;
 
 /**
  * Initializes directive (defined by sprae build), returns "on" function that enables it

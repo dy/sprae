@@ -1,10 +1,13 @@
-import test, { is } from "tst";
+import test, { is, ok } from "tst";
 import { tick, time } from "wait-please";
 import sprae, { start } from '../sprae.js'
 import store from '../store.js'
 import { signal, use } from '../core.js'
 import h from "hyperf";
 
+test('core: version', () => {
+  ok(sprae.version, '12.1.0')
+})
 
 test('core: pre-created store', async () => {
   let state = store({x:1,get(){return state.x}})
