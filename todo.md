@@ -214,6 +214,7 @@
   * [x] Append rows to large table is THE SLOWEST
   * [~] Create many rows IS SLOW
 
+* [ ] mobile click is super sluggish
 * [ ] make :on a directive, not hardcoded
 * [ ] find alternative way to update plain lists in :each rather than simulating signals (adds memory overhead)
   * [ ] remove _signals use, just do _change check
