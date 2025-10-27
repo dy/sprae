@@ -28,7 +28,7 @@ if (start != null && start !== 'false') (start && start !== 'true' ? document.qu
   },
   outfile: "dist/sprae.umd.js",
   bundle: true,
-  minify: false,
+  minify: true,
   target: 'es2020',
   sourcemap: 'external',
   format: "umd",
