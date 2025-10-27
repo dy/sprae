@@ -9,12 +9,16 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400;1,700&display=swap" rel="stylesheet">
-    <script src="//unpkg.com/sprae" defer start></script>
+    <!-- <script src="//unpkg.com/sprae" start></script> -->
+    <script src="/dist/sprae.umd.js" start></script>
     <style>
       /* reset styles */
       :root {
         font-size: 21px;
         font-family: "Atkinson Hyperlegible", sans-serif;
+        --color-blue-700: color-mix(in oklab, color-mix(in oklab, midnightblue 70%, darkslategray) var(--scroll), color-mix(in oklab, mediumblue 70%, darkslategray));
+        --color-blue-600: color-mix(in oklab, color-mix(in oklab, midnightblue 70%, lightslategray) var(--scroll), color-mix(in oklab, mediumblue 70%, lightslategray));
+        --scroll: 0%;
       }
 
       body::before {
@@ -25,26 +29,24 @@
         right: 0;
         bottom: 0;
         pointer-events: none;
-        background: radial-gradient(circle at var(--x, 50%) var(--y, 50%), rgb(from var(--color-sky-700) r g b / 10%), transparent 54%);
+        background: radial-gradient(circle at var(--x, 50%) var(--y, 50%), rgb(from dodgerblue r g b / 54%), transparent 75%);
         transition: background-position 0.05s;
-      }
-
-      body > * {
-        position: relative;
+        z-index: 2;
+        mix-blend-mode: screen;
       }
 
       a {
-        color: var(--color-sky-700);
+        color: var(--color-blue-700);
         text-decoration-color: rgb(from currentColor r g b / 20%);
         text-underline-offset: .2em;
         text-decoration-line: underline;
       }
       a:hover {
-        text-decoration-color: var(--color-sky-700);
+        text-decoration-color: var(--color-blue-700);
       }
 
       pre {
-        background: var(--color-sky-700);
+        background: var(--color-blue-700);
         color: white;
         font-size: smaller;
         white-space: pre-wrap;
@@ -53,7 +55,7 @@
 
       button {
         cursor: pointer;
-        background: var(--color-sky-700);
+        background: var(--color-blue-700);
         color: white;
         padding: 0.5rem 1rem;
         position: relative;
@@ -61,7 +63,7 @@
       }
 
       .bg-graph-paper {
-        background-image: linear-gradient(to right, rgb(from var(--color-sky-700) r g b / 20%) 1px, transparent 1px), linear-gradient(to bottom, rgb(from var(--color-sky-700) r g b / 20%) 1px, transparent 1px);
+        background-image: linear-gradient(to right, rgb(from var(--color-blue-700) r g b / 20%) 1px, transparent 1px), linear-gradient(to bottom, rgb(from var(--color-blue-700) r g b / 20%) 1px, transparent 1px);
         background-size: 1rem 1rem;
       }
 
@@ -75,7 +77,7 @@
     </style>
   </head>
 
-  <body :scope="x=0, y=0" :onmousemove.document="e => { x = e.clientX; y = e.clientY; }" :style="{'--x': x + 'px', '--y': y + 'px'}" class="flex-col border border-10 md:border-20 border-sky-700 bg-neutral-100 p-6 md:p-20">
+  <body :scope="x=0, y=0, scroll=0" :onmousemove.document="e => { x = e.clientX; y = e.clientY; }" :onscroll.window="e => { scroll = (window.scrollY / (document.documentElement.scrollHeight - window.innerHeight)) * 100 }" :style.root="{'--x': x + 'px', '--y': y + 'px', '--scroll': scroll+'%'}" class="flex-col border border-10 md:border-20 border-blue-700 bg-stone-100 p-6 md:p-20">
     <nav class="container max-w-6xl mx-auto flex md:grid grid-cols-6 gap-8">
       <div class="col-start-4 col-span-2 flex flex-row gap-4 md:gap-8 bold text-sm md:text-base font-bold max-md:ml-auto">
         <!-- <a href="./api.html">docs</a> -->
@@ -87,10 +89,10 @@
 
     <header class="my-8">
       <div class="container max-w-6xl mx-auto md:grid grid-cols-6 gap-8">
-        <h1 class="text-6xl md:text-8xl font-bold text-sky-700 col-span-3 md:text-right mb-4 mt-12 tracking-tight">∴ spræ</h1>
+        <h1 class="text-6xl md:text-8xl font-bold text-blue-700 col-span-3 md:text-right mb-4 mt-12 tracking-tight">∴ spræ</h1>
       </div>
       <div class="container max-w-6xl mx-auto md:grid grid-cols-6 gap-8">
-        <div class="col-start-4 col-span-3 text-sky-700">
+        <div class="col-start-4 col-span-3 text-blue-700">
           <h2 class="text-2xl md:text-4xl font-bold my-2">
             Hydration for DOM tree
           </h2>
@@ -114,8 +116,8 @@
       </section>
 <!--
       <section class="container max-w-6xl mx-auto my-20 md:grid grid-cols-6">
-        <h2 class="text-4xl text-sky-700 font-bold col-span-2 col-start-2 mb-4">Principles</h2>
-        <ul class="col-span-3 text-sky-700 list-inside space-y-2">
+        <h2 class="text-4xl text-blue-700 font-bold col-span-2 col-start-2 mb-4">Principles</h2>
+        <ul class="col-span-3 text-blue-700 list-inside space-y-2">
           <li>Minimal. Uncluttered. Tiny API.</li>
           <li>Open state. Signals reactivity. Configurable.</li>
           <li>0 deps. No build step. JSX, CSP support.</li>
@@ -148,11 +150,11 @@
         ]
       }'>
         <header class="md:grid grid-cols-6 gap-8 items-baseline">
-          <h2 class="text-3xl text-sky-700 font-bold col-span-2 mb-2">Reference</h2>
+          <h2 class="text-3xl text-blue-700 font-bold col-span-2 mb-2">Reference</h2>
 
           <nav class="flex flex-row gap-1">
-            <h4 :onclick="active=0" class="relative cursor-pointer md:text-lg font-bold text-sky-700 py-4 px-6 [&.active]:bg-white" :class="{active:active==0}">Directives</h4>
-            <h4 :onclick="active=1" class="relative cursor-pointer md:text-lg font-bold text-sky-700 py-4 px-6 [&.active]:bg-white" :class="{active:active==1}">Modifiers</h4>
+            <h4 :onclick="active=0" class="relative cursor-pointer md:text-lg font-bold text-blue-700 py-4 px-6 [&.active]:bg-white" :class="{active:active==0}">Directives</h4>
+            <h4 :onclick="active=1" class="relative cursor-pointer md:text-lg font-bold text-blue-700 py-4 px-6 [&.active]:bg-white" :class="{active:active==1}">Modifiers</h4>
           </nav>
         </header>
 
@@ -160,13 +162,13 @@
           <div class="group grid-6 md:grid grid-cols-6 gap-8 hover:bg-white px-6 -mx-6 md:pr-0 md:mr-0" :each="item in dirs">
             <div class="col-span-2 py-2">
               <dt>
-                <h5 class="text-lg text-sky-700" :text="item.title">:text</h5>
+                <h5 class="text-lg text-blue-700" :text="item.title">:text</h5>
               </dt>
               <dd>
                 <p :text="item.text">Set text content.</p>
               </dd>
             </div>
-            <pre class="p-4 md:p-6 col-span-4 group-hover:bg-sky-600!"><code :text="item.example">&lt;span :text="user.name"&gt;Guest&lt;/span&gt;</code></pre>
+            <pre class="p-4 md:p-6 col-span-4 group-hover:bg-blue-600!"><code :text="item.example">&lt;span :text="user.name"&gt;Guest&lt;/span&gt;</code></pre>
           </div>
         </dl>
 
@@ -174,7 +176,7 @@
           <div class="grid-6 md:grid grid-cols-6 gap-8 hover:bg-white px-6 -mx-6 md:pr-0 md:mr-0" :each="item in mods">
             <div class="col-span-2 py-2">
               <dt>
-                <h5 class="text-lg text-sky-700" :text="item.title">:text</h5>
+                <h5 class="text-lg text-blue-700" :text="item.title">:text</h5>
               </dt>
               <dd>
                 <p :text="item.text">Set text content.</p>
@@ -197,45 +199,45 @@
       </section> -->
 
       <section class="container max-w-6xl mx-auto my-16 md:grid grid-cols-6 gap-8" >
-        <h2 class="text-3xl text-sky-700 font-bold col-span-2">FAQ</h2>
+        <h2 class="text-3xl text-blue-700 font-bold col-span-2">FAQ</h2>
         <div class="col-span-4">
-          <h4 class="text-xl text-sky-700 font-bold mt-4">Why another framework?</h4>
+          <h4 class="text-xl text-blue-700 font-bold mt-4">Why another framework?</h4>
           <p class="my-1"> There is no full aesthetic satisfaction with other solutions. </p>
-          <h4 class="text-xl text-sky-700 font-bold mt-4">Why sprae?</h4>
+          <h4 class="text-xl text-blue-700 font-bold mt-4">Why sprae?</h4>
           <p class="my-1"> SPRAE stands for Simple PRogressive enhancement Æsthetic. Also it hydrates DOM tree non-invasively.</p>
-          <h4 class="text-xl text-sky-700 font-bold mt-4">Why not Alpine.js?</h4>
+          <h4 class="text-xl text-blue-700 font-bold mt-4">Why not Alpine.js?</h4>
           <p class="my-1"> Less syntax space, less magic, less weight, open state and extensibility.</p>
-          <h4 class="text-xl text-sky-700 font-bold mt-4">Why not vanilla JS?</h4>
+          <h4 class="text-xl text-blue-700 font-bold mt-4">Why not vanilla JS?</h4>
           <p class="my-1"> `querySelector` is wrong mantra.</p>
-          <h4 class="text-xl text-sky-700 font-bold mt-4">Why not Next/React?</h4>
+          <h4 class="text-xl text-blue-700 font-bold mt-4">Why not Next/React?</h4>
           <p class="my-1"> <a href="https://www.keithcirkel.co.uk/i-dont-have-time-to-learn-react/">No time</a>. But sprae works well with <a href="https://github.com/dy/sprae?tab=readme-ov-file#jsx">JSX</a>.</p>
-          <h4 class="text-xl text-sky-700 font-bold mt-4">Who cares for progressive enhancement / graceful degradation?</h4>
+          <h4 class="text-xl text-blue-700 font-bold mt-4">Who cares for progressive enhancement / graceful degradation?</h4>
           <p class="my-1"> Who needs fast, fail-proof, accessible, SEO-optimized web.</p>
-          <h4 class="text-xl text-sky-700 font-bold mt-4">Is it just a toy?</h4>
+          <h4 class="text-xl text-blue-700 font-bold mt-4">Is it just a toy?</h4>
           <p class="my-1"> It is used in production, but it's fun and comes with sandbox.</p>
-          <h4 class="text-xl text-sky-700 font-bold mt-4">Does it scale to complex state?</h4>
+          <h4 class="text-xl text-blue-700 font-bold mt-4">Does it scale to complex state?</h4>
           <p class="my-1"> As far as you can handle it and CPU allows. Sprae has good performance.</p>
-          <h4 class="text-xl text-sky-700 font-bold mt-4">Are signals overhyped?</h4>
+          <h4 class="text-xl text-blue-700 font-bold mt-4">Are signals overhyped?</h4>
           <p class="my-1"> Signals are <a href="https://github.com/tc39/proposal-signals">the standard</a> for reactivity.</p>
-          <h4 class="text-xl text-sky-700 font-bold mt-4">Is no build step outdated?</h4>
+          <h4 class="text-xl text-blue-700 font-bold mt-4">Is no build step outdated?</h4>
           <p class="my-1"> Sprae saves the hassle configuring it, but as ESM that can be part of build pipeline as well. </p>
-          <h4 class="text-xl text-sky-700 font-bold mt-4">Is new Function unsafe?</h4>
+          <h4 class="text-xl text-blue-700 font-bold mt-4">Is new Function unsafe?</h4>
           <p class="my-1"> If your HTML comes from strangers, there is <a href="https://github.com/dy/sprae?tab=readme-ov-file#evaluator">safe evaluator</a>.</p>
-          <h4 class="text-xl text-sky-700 font-bold mt-4">Components support?</h4>
+          <h4 class="text-xl text-blue-700 font-bold mt-4">Components support?</h4>
           <p class="my-1"> Awaiting the <a href="https://github.com/WICG/webcomponents/blob/gh-pages/proposals/Declarative-Custom-Elements-Strawman.md">DCE proposal</a>, meanwhile we have to <a href="https://tailwindcss.com/docs/styling-with-utility-classes#managing-duplication">manage duplication</a>.</p>
-          <h4 class="text-xl text-sky-700 font-bold mt-4">Is there ecosystem?</h4>
+          <h4 class="text-xl text-blue-700 font-bold mt-4">Is there ecosystem?</h4>
           <p class="my-1"> Not yet.</p>
-          <h4 class="text-xl text-sky-700 font-bold mt-4">TypeScript support?</h4>
+          <h4 class="text-xl text-blue-700 font-bold mt-4">TypeScript support?</h4>
           <p class="my-1"> If you need it please <a href="https://github.com/dy/sprae/issues/new">leave a request</a>.</p>
-          <h4 class="text-xl text-sky-700 font-bold mt-4">Is it stable?</h4>
+          <h4 class="text-xl text-blue-700 font-bold mt-4">Is it stable?</h4>
           <p class="my-1"> Core is stable since v10.</p>
-          <h4 class="text-xl text-sky-700 font-bold mt-4">How old is it?</h4>
+          <h4 class="text-xl text-blue-700 font-bold mt-4">How old is it?</h4>
           <p class="my-1"> <span :text="new Date().getFullYear() - 2022">enough</span> years old (<a href="https://github.com/dy/sprae/commit/ee7e372fb372bde5bdd7bfd3524cdaa815793663">first commit</a> Nov 7, 2022).</p>
-          <h4 class="text-xl text-sky-700 font-bold mt-4">Will it be maintained long-term? </h4>
+          <h4 class="text-xl text-blue-700 font-bold mt-4">Will it be maintained long-term? </h4>
           <p class="my-1"> 12 versions, 1.5k+ commits and future plans.</p>
-          <h4 class="text-xl text-sky-700 font-bold mt-4">What’s future plan?</h4>
+          <h4 class="text-xl text-blue-700 font-bold mt-4">What’s future plan?</h4>
           <p class="my-1"> Plugins, components, integration cases, generators.</p>
-          <h4 class="text-xl text-sky-700 font-bold mt-4">Is it backed by a company?</h4>
+          <h4 class="text-xl text-blue-700 font-bold mt-4">Is it backed by a company?</h4>
           <p class="my-1"> No. Just regular devs. You can <a href="https://github.com/sponsors/dy">support it</a>!</p>
         </div>
       </section>

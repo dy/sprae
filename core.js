@@ -25,7 +25,7 @@ const sprae = (el = document.body, state) => {
   // repeated call can be caused by eg. :each with new objects with old keys
   if (el[_state]) return Object.assign(el[_state], state)
 
-  // console.group('sprae', el.outerHTML)
+  // console.group('sprae', el)
 
   // take over existing state instead of creating a clone
   state = store(state || {})
@@ -170,7 +170,7 @@ export const use = (s) => (
 
 
 /**
- * Lifecycle hanger: makes DOM slightly slower but spraes automatically
+ * Lifecycle hanger: spraes automatically any new nodes
  */
 export const start = (root = document.body, values) => {
   const state = store(values);
@@ -178,7 +178,8 @@ export const start = (root = document.body, values) => {
   const mo = new MutationObserver(mutations => {
     for (const m of mutations) {
       for (const el of m.addedNodes) {
-        if (el.nodeType === 1 && el[_state] === undefined) {
+        // el can be spraed or removed by subsprae (like within :each/:if)
+        if (el.nodeType === 1 && el[_state] === undefined && el.isConnected) {
           for (const attr of el.attributes) {
             if (attr.name.startsWith(prefix)) {
               root[_add](el); break;
