@@ -4,8 +4,7 @@ import pkg from './package.json' with { type: 'json' };
 export const _dispose = (Symbol.dispose ||= Symbol("dispose")),
   _state = Symbol("state"),
   _on = Symbol('on'),
-  _off = Symbol('off'),
-  _add = Symbol('add');
+  _off = Symbol('off')
 
 
 export let prefix = ':', signal, effect, computed, batch = (fn) => fn(), untracked = batch;
@@ -19,9 +18,10 @@ let currentDir = null;
  *
  * @param {Element} [el=document.body] - The target HTML element to apply directives to.
  * @param {Object|store} [state] - Initial state values to populate the element's reactive state.
+ * @param {Element} [root] - The root element for shared lifecycle management.
  * @returns {Object} The reactive state object associated with the element.
  */
-const sprae = (el = document.body, state) => {
+const sprae = (el = document.body, state, root) => {
   // repeated call can be caused by eg. :each with new objects with old keys
   if (el[_state]) return Object.assign(el[_state], state)
 
@@ -30,20 +30,20 @@ const sprae = (el = document.body, state) => {
   // take over existing state instead of creating a clone
   state = store(state || {})
 
-  let fx = [], offs = [], fn,
-    on = () => (!offs && (offs = fx.map(fn => fn()))),
-    off = () => (offs?.map(off => off()), offs = null)
+  let fx = [], offs = []
 
   // on/off all effects
   // we don't call prevOn as convention: everything defined before :else :if won't be disabled by :if
   // imagine <x :onx="..." :if="..."/> - when :if is false, it disables directives after :if (calls _off) but ignores :onx
-  el[_on] = on
-  el[_off] = off
+  el[_on] = root ? root[_on] : () => (!offs && (offs = fx.map(fn => fn())))
+  el[_off] = root ? root[_off] : () => (offs?.map(off => off()), offs = null)
 
   // destroy
-  el[_dispose] ||= () => (el[_off](), el[_off] = el[_on] = el[_dispose] = el[_state] = el[_add] = null)
+  el[_dispose] ||= () => (el[_off](), el[_off] = el[_on] = el[_dispose] = el[_state] = null)
 
-  const add = (el, _attrs = el.attributes) => {
+  const add = (el) => {
+    let _attrs = el.attributes, fn;
+
     // we iterate live collection (subsprae can init args)
     if (_attrs) for (let i = 0; i < _attrs.length;) {
       let { name, value } = _attrs[i]
@@ -63,8 +63,6 @@ const sprae = (el = document.body, state) => {
     // for (let i = 0, child; i < (el.childNodes.length); i++) child =  el.childNodes[i], child.nodeType == 1 && add(child)
     for (let child of [...el.childNodes]) child.nodeType == 1 && add(child)
   };
-
-  el[_add] = add;
 
   add(el);
 
@@ -173,16 +171,18 @@ export const use = (s) => (
  * Lifecycle hanger: spraes automatically any new nodes
  */
 export const start = (root = document.body, values) => {
-  const state = store(values);
+  const state = store(values)
   sprae(root, state);
   const mo = new MutationObserver(mutations => {
     for (const m of mutations) {
       for (const el of m.addedNodes) {
+        // console.log('mut added el', el, el[_state])
         // el can be spraed or removed by subsprae (like within :each/:if)
-        if (el.nodeType === 1 && el[_state] === undefined && el.isConnected) {
+        if (el.nodeType === 1 && el[_state] === undefined) {
           for (const attr of el.attributes) {
             if (attr.name.startsWith(prefix)) {
-              root[_add](el); break;
+              sprae(el, root[_state] || state, root);
+              break;
             }
           }
         }

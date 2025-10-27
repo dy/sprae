@@ -1,5 +1,5 @@
 // signals-based proxy
-import { signal, computed, batch, untracked, _add } from './core.js'
+import { signal, computed, batch, untracked } from './core.js'
 
 
 // _signals allows both storing signals and checking instance, which would be difficult with WeakMap
