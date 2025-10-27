@@ -27,7 +27,7 @@ var init_package = __esm({
     package_default = {
       name: "sprae",
       description: "DOM microhydration",
-      version: "12.2.0",
+      version: "12.2.1",
       main: "./sprae.js",
       module: "./sprae.js",
       "umd:main": "dist/sprae.umd.js",
@@ -102,7 +102,7 @@ var init_core = __esm({
     _state = Symbol("state");
     _on = Symbol("on");
     _off = Symbol("off");
-    _add = Symbol("add");
+    _add = Symbol("init");
     prefix = ":";
     batch = (fn) => fn();
     untracked = batch;
@@ -112,11 +112,12 @@ var init_core = __esm({
     sprae = (el = document.body, state) => {
       if (el[_state]) return Object.assign(el[_state], state);
       state = store_default(state || {});
-      let fx = [], offs = [], fn, on = () => !offs && (offs = fx.map((fn2) => fn2())), off = () => (offs?.map((off2) => off2()), offs = null);
-      el[_on] = on;
-      el[_off] = off;
-      el[_dispose] || (el[_dispose] = () => (el[_off](), el[_off] = el[_on] = el[_dispose] = el[_state] = el[_add] = null));
-      const add = (el2, _attrs = el2.attributes) => {
+      let fx = [], offs = [];
+      el[_on] = () => !offs && (offs = fx.map((fn) => fn()));
+      el[_off] = () => (offs?.map((off) => off()), offs = null);
+      el[_dispose] || (el[_dispose] = () => (el[_off](), el[_off] = el[_on] = el[_dispose] = el[_add] = el[_state] = null));
+      const add = el[_add] = (el2) => {
+        let _attrs = el2.attributes, fn;
         if (_attrs) for (let i = 0; i < _attrs.length; ) {
           let { name, value } = _attrs[i];
           if (name.startsWith(prefix)) {
@@ -127,7 +128,6 @@ var init_core = __esm({
         }
         for (let child of [...el2.childNodes]) child.nodeType == 1 && add(child);
       };
-      el[_add] = add;
       add(el);
       if (el[_state] === void 0) el[_state] = state;
       return state;
@@ -184,13 +184,8 @@ var init_core = __esm({
       const mo = new MutationObserver((mutations) => {
         for (const m of mutations) {
           for (const el of m.addedNodes) {
-            if (el.nodeType === 1 && el[_state] === void 0 && el.isConnected) {
-              for (const attr2 of el.attributes) {
-                if (attr2.name.startsWith(prefix)) {
-                  root[_add](el);
-                  break;
-                }
-              }
+            if (el.nodeType === 1 && el[_state] === void 0 && root.contains(el)) {
+              root[_add](el);
             }
           }
         }
