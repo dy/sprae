@@ -49,7 +49,6 @@ const each = (tpl, state, expr) => {
         let el = tpl.content ? frag(tpl) : tpl.cloneNode(true);
 
         holder.before(el.content || el);
-
         sprae(el, subscope);
 
         // signal/holder disposal removes element

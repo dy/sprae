@@ -4,7 +4,8 @@ import pkg from './package.json' with { type: 'json' };
 export const _dispose = (Symbol.dispose ||= Symbol("dispose")),
   _state = Symbol("state"),
   _on = Symbol('on'),
-  _off = Symbol('off')
+  _off = Symbol('off'),
+  _add = Symbol('init');
 
 
 export let prefix = ':', signal, effect, computed, batch = (fn) => fn(), untracked = batch;
@@ -18,10 +19,9 @@ let currentDir = null;
  *
  * @param {Element} [el=document.body] - The target HTML element to apply directives to.
  * @param {Object|store} [state] - Initial state values to populate the element's reactive state.
- * @param {Element} [root] - The root element for shared lifecycle management.
  * @returns {Object} The reactive state object associated with the element.
  */
-const sprae = (el = document.body, state, root) => {
+const sprae = (el = document.body, state) => {
   // repeated call can be caused by eg. :each with new objects with old keys
   if (el[_state]) return Object.assign(el[_state], state)
 
@@ -35,13 +35,13 @@ const sprae = (el = document.body, state, root) => {
   // on/off all effects
   // we don't call prevOn as convention: everything defined before :else :if won't be disabled by :if
   // imagine <x :onx="..." :if="..."/> - when :if is false, it disables directives after :if (calls _off) but ignores :onx
-  el[_on] = root ? root[_on] : () => (!offs && (offs = fx.map(fn => fn())))
-  el[_off] = root ? root[_off] : () => (offs?.map(off => off()), offs = null)
+  el[_on] = () => (!offs && (offs = fx.map(fn => fn())))
+  el[_off] = () => (offs?.map(off => off()), offs = null)
 
   // destroy
-  el[_dispose] ||= () => (el[_off](), el[_off] = el[_on] = el[_dispose] = el[_state] = null)
+  el[_dispose] ||= () => (el[_off](), el[_off] = el[_on] = el[_dispose] = el[_add] = el[_state] = null)
 
-  const add = (el) => {
+  const add = el[_add] = (el) => {
     let _attrs = el.attributes, fn;
 
     // we iterate live collection (subsprae can init args)
@@ -75,6 +75,7 @@ const sprae = (el = document.body, state, root) => {
 }
 
 sprae.version = pkg.version;
+
 
 /**
  * Initializes directive (defined by sprae build), returns "on" function that enables it
@@ -176,15 +177,10 @@ export const start = (root = document.body, values) => {
   const mo = new MutationObserver(mutations => {
     for (const m of mutations) {
       for (const el of m.addedNodes) {
-        // console.log('mut added el', el, el[_state])
         // el can be spraed or removed by subsprae (like within :each/:if)
-        if (el.nodeType === 1 && el[_state] === undefined) {
-          for (const attr of el.attributes) {
-            if (attr.name.startsWith(prefix)) {
-              sprae(el, root[_state] || state, root);
-              break;
-            }
-          }
+        if (el.nodeType === 1 && el[_state] === undefined && root.contains(el)) {
+          // even if element has no spraeable attrs, some of its children can have
+          root[_add](el)
         }
       }
       // for (const el of m.removedNodes) el[Symbol.dispose]?.()

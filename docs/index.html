@@ -19,6 +19,9 @@
         --color-blue-700: color-mix(in oklab, color-mix(in oklab, midnightblue 70%, darkslategray) var(--scroll), color-mix(in oklab, mediumblue 70%, darkslategray));
         --color-blue-600: color-mix(in oklab, color-mix(in oklab, midnightblue 70%, lightslategray) var(--scroll), color-mix(in oklab, mediumblue 70%, lightslategray));
         --scroll: 0%;
+        --x: 0;
+        --y: 0;
+        /* transition: --x 1s ease-out; */
       }
 
       body::before {
@@ -77,7 +80,7 @@
     </style>
   </head>
 
-  <body :scope="x=0, y=0, scroll=0" :onmousemove.document="e => { x = e.clientX; y = e.clientY; }" :onscroll.window="e => { scroll = (window.scrollY / (document.documentElement.scrollHeight - window.innerHeight)) * 100 }" :style.root="{'--x': x + 'px', '--y': y + 'px', '--scroll': scroll+'%'}" class="flex-col border border-10 md:border-20 border-blue-700 bg-stone-100 p-6 md:p-20">
+  <body :scope="x=window.innerWidth/2, y=window.innerHeight/2, scroll=0" :onmousemove.document="e => { x = e.clientX; y = e.clientY; }" :onscroll.window="e => { scroll = Math.min(1, window.scrollY / (document.documentElement.scrollHeight - window.innerHeight)) * 100 }" :style.root="{'--x': x + 'px', '--y': y + 'px', '--scroll': scroll+'%'}" class="flex-col border border-10 md:border-20 border-blue-700 bg-stone-100 p-6 md:p-20">
     <nav class="container max-w-6xl mx-auto flex md:grid grid-cols-6 gap-8">
       <div class="col-start-4 col-span-2 flex flex-row gap-4 md:gap-8 bold text-sm md:text-base font-bold max-md:ml-auto">
         <!-- <a href="./api.html">docs</a> -->
@@ -125,7 +128,7 @@
       </section> -->
 
       <section class="container max-w-6xl mx-auto my-20" :scope='{
-        active:0,
+        active: 0,
         dirs: [
           { title: ":text", text: "Set text content.", example: `© &lt;span :text="new Date().getFullYear()"&gt;&lt;/span&gt;` },
           { title: ":class", text: "Set className.", example: `&lt;div :class="{ active: isActive }"&gt;...&lt;/div&gt;` },
@@ -162,7 +165,7 @@
           <div class="group grid-6 md:grid grid-cols-6 gap-8 hover:bg-white px-6 -mx-6 md:pr-0 md:mr-0" :each="item in dirs">
             <div class="col-span-2 py-2">
               <dt>
-                <h5 class="text-lg text-blue-700" :text="item.title">:text</h5>
+                <h5 class="text-lg text-blue-700" :text="item.title">dir</h5>
               </dt>
               <dd>
                 <p :text="item.text">Set text content.</p>
@@ -176,7 +179,7 @@
           <div class="grid-6 md:grid grid-cols-6 gap-8 hover:bg-white px-6 -mx-6 md:pr-0 md:mr-0" :each="item in mods">
             <div class="col-span-2 py-2">
               <dt>
-                <h5 class="text-lg text-blue-700" :text="item.title">:text</h5>
+                <h5 class="text-lg text-blue-700" :text="item.title">mod</h5>
               </dt>
               <dd>
                 <p :text="item.text">Set text content.</p>

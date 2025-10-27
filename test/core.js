@@ -299,13 +299,37 @@ test('core: setTimeout illegal invokation', async () => {
 })
 
 test('core: autostart', async () => {
-  let container = h`<div id="root" :scope="{pre:'pre',post:'post'}"><x :text="pre"></x></div>`;
+  let container = h`<div id="root" :scope="{pre:'pre', post:'post'}"><x :text="pre"></x></div>`;
   start(container);
   is(container.innerHTML, `<x>pre</x>`);
   let el = h`<y :text="post"></y>`
   container.appendChild(el);
   await time(10);
   is(container.innerHTML, `<x>pre</x><y>post</y>`);
+})
+
+test('core: autostart nested case', async () => {
+  let container = h`<div :scope="{}"></div>`;
+  start(container);
+  await time()
+  let a = h`<div><div :each="item in [{id:1}, {id:2}]"><x :text="item.id"></x></div></div>`
+  container.appendChild(a)
+  await time(10);
+  is(container.innerHTML, `<div><div><x>1</x></div><div><x>2</x></div></div>`);
+})
+
+test('core: autostart nested case 2', async () => {
+  let container = h`<div></div>`;
+  let state = start(container, {log:[]});
+  await time()
+  let a = h`<y :each='item in [{ id: "1" },{ id: "2" }]'></y>`
+  let x = h`<x :text="log.push(item?.id)">dir</x>`
+  container.appendChild(a)
+  // NOTE: mutation observer here creates extra record, which inserts "template" element child, which is supposed to be ignored
+  a.appendChild(x)
+  await time(10);
+  is(container.innerHTML, `<y><x>1</x></y><y><x>2</x></y>`);
+  is(state.log, ['1','2'])
 })
 
 test('core: list length unsub (preact signals)', async () => {
