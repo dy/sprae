@@ -72,7 +72,7 @@
 
       @media screen and (max-width: 768px) {
         :root {
-          font-size: 16px;
+          font-size: 15px;
         }
       }
 
@@ -99,7 +99,7 @@
           <h2 class="text-2xl md:text-4xl font-bold my-2">
             Microhydration for DOM tree
           </h2>
-          <h5 class="my-2 leading-snug">Simple progressive enhancement for HTML / JSX.<br />
+          <h5 class="my-2 leading-snug mb-6">Simple progressive enhancement for HTML / JSX.<br />
             Add UI interactions with reactive attributes.</h5>
         </div>
       </div>
@@ -163,9 +163,9 @@
 
         <dl :if="active==0" class="flex flex-col">
           <div class="group grid-6 md:grid grid-cols-6 gap-8 hover:bg-white px-6 -mx-6 md:pr-0 md:mr-0" :each="item in dirs">
-            <div class="col-span-2 py-2">
+            <div class="col-span-2 py-4">
               <dt>
-                <h5 class="text-lg text-blue-700" :text="item.title">dir</h5>
+                <h5 class="text-lg text-blue-700 leading-snug" :text="item.title">dir</h5>
               </dt>
               <dd>
                 <p :text="item.text">Set text content.</p>
@@ -177,9 +177,9 @@
 
         <div :if="active==1">
           <div class="grid-6 md:grid grid-cols-6 gap-8 hover:bg-white px-6 -mx-6 md:pr-0 md:mr-0" :each="item in mods">
-            <div class="col-span-2 py-2">
+            <div class="col-span-2 py-4">
               <dt>
-                <h5 class="text-lg text-blue-700" :text="item.title">mod</h5>
+                <h5 class="text-lg text-blue-700 leading-snug" :text="item.title">mod</h5>
               </dt>
               <dd>
                 <p :text="item.text">Set text content.</p>
