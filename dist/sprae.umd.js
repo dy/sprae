@@ -1,9 +1,828 @@
 (function (g, f) {if ("object" == typeof exports && "object" == typeof module) {module.exports = f();} else if ("function" == typeof define && define.amd) {define("sprae", [], f);} else if ("object" == typeof exports) {exports["sprae"] = f();} else {g["sprae"] = f();}}(typeof self !== 'undefined' ? self : typeof globalThis !== 'undefined' ? globalThis : this, () => {var exports = {};var module = { exports };
-var oe=Object.defineProperty;var et=Object.getOwnPropertyDescriptor;var tt=Object.getOwnPropertyNames;var rt=Object.prototype.hasOwnProperty;var d=(e,r)=>()=>(e&&(r=e(e=0)),r);var ot=(e,r)=>{for(var t in r)oe(e,t,{get:r[t],enumerable:!0})},st=(e,r,t,s)=>{if(r&&typeof r=="object"||typeof r=="function")for(let o of tt(r))!rt.call(e,o)&&o!==t&&oe(e,o,{get:()=>r[o],enumerable:!(s=et(r,o))||s.enumerable});return e};var it=e=>st(oe({},"__esModule",{value:!0}),e);var be,he=d(()=>{be={name:"sprae",description:"DOM microhydration",version:"12.2.0",main:"./sprae.js",module:"./sprae.js","umd:main":"dist/sprae.umd.js",unpkg:"dist/sprae.umd.js",types:"dist/sprae.d.ts",type:"module",files:["core.js","sprae.js","store.js","signal.js","micro.js","directive","dist"],devDependencies:{"@preact/signals":"^2.0.4","@preact/signals-core":"^1.8.0","@webreflection/signal":"^2.1.2","es-module-shims":"^1.10.0",esbuild:"^0.23.0","esbuild-plugin-umd-wrapper":"^2.0.3",hyperf:"^1.7.0",jsdom:"^27.0.0",requestidlecallback:"^0.3.0","signal-polyfill":"^0.1.1",subscript:"^9.1.0",tst:"^7.2.0",ulive:"^1.0.7",usignal:"^0.9.0","wait-please":"^3.1.0"},scripts:{test:"node -r ./test/register.cjs test/test.js",build:"node .esbuild.js"},repository:{type:"git",url:"git+https://github.com/dy/sprae.git"},keywords:["hydration","progressive","progressive enhancement","signals","directives","preact-signals","reactive","template-parts","petit-vue","alpinejs","templating"],author:"Dmitry Iv <df.creative@gmail.com>",license:"MIT",bugs:{url:"https://github.com/dy/sprae/issues"},homepage:"https://github.com/dy/sprae#readme"}});var Z,l,G,F,se,q,k,J,ne,Q,B,L,H,ie,ae,at,U,ue,Se,O,xe,z,D,y,Ae,A,ce,M,je,f,g=d(()=>{Y();he();Y();Z=Symbol.dispose||(Symbol.dispose=Symbol("dispose")),l=Symbol("state"),G=Symbol("on"),F=Symbol("off"),se=Symbol("add"),q=":",Q=e=>e(),B=Q,L={},H={},ie=null,ae=(e=document.body,r)=>{if(e[l])return Object.assign(e[l],r);r=v(r||{});let t=[],s=[],o,i=()=>!s&&(s=t.map(u=>u())),n=()=>(s?.map(u=>u()),s=null);e[G]=i,e[F]=n,e[Z]||(e[Z]=()=>(e[F](),e[F]=e[G]=e[Z]=e[l]=e[se]=null));let a=(u,p=u.attributes)=>{if(p)for(let m=0;m<p.length;){let{name:c,value:h}=p[m];if(c.startsWith(q)){if(u.removeAttribute(c),(o=at(u,c,h,r))&&(t.push(o),s.push(o())),l in u)return}else m++}for(let m of[...u.childNodes])m.nodeType==1&&a(m)};return e[se]=a,a(e),e[l]===void 0&&(e[l]=r),r};ae.version=be.version;at=(e,r,t,s)=>{let o,i,n=r.slice(q.length).split("..").map((a,u,{length:p})=>a.split(q).reduce((m,c)=>{let[h,...b]=c.split("."),C=O(t,L[ie=h]?.parse);if(h.startsWith("on")){let R=h.slice(2),V=xe(z(p==1?E=>C(s,re=>y(re,E)):E=>(o=(u?o:re=>y(C(s),re))(E),i(),i=n[(u+1)%p]()),{target:e}),b);return E=>(E=m?.(),V.target.addEventListener(R,V,V),()=>(E?.(),V.target.removeEventListener(R,V)))}let N,x,$,S;b.length?($=k(-1),S=-1,N=xe(z(M(()=>{++$.value||(x=J(()=>W&&($.value==S?N():(S=$.value,C(s,W)))))}),{target:e}),b)):N=z(()=>x=J(()=>C(s,W)),{target:e});let W=(L[h]||L["*"])(N.target,s,t,h);if(W)return e[l]&&(s=e[l]),R=>(R=m?.(),N(),()=>(R?.(),x?.(),$&&($.value=-1,S=x=null)))},null));return()=>i=n[0]?.()},U=e=>(e.compile&&(Se=e.compile),e.prefix&&(q=e.prefix),e.signal&&(k=e.signal),e.effect&&(J=e.effect),e.computed&&(ne=e.computed),e.batch&&(Q=e.batch),e.untracked&&(B=e.untracked)),ue=(e=document.body,r)=>{let t=v(r);return ae(e,t),new MutationObserver(o=>{for(let i of o)for(let n of i.addedNodes)if(n.nodeType===1&&n[l]===void 0){for(let a of n.attributes)if(a.name.startsWith(q)){e[se](n);break}}}).observe(e,{childList:!0,subtree:!0}),t},O=(e,r,t)=>{if(t=O.cache[e])return t;let s=e.trim()||"undefined";r&&(s=r(s)),/^(if|let|const)\b/.test(s)||/;(?![^{]*})/.test(s)||(s=`return ${s}`),/\bawait\s/.test(s)&&(s=`return (async()=>{ ${s} })()`);try{t=Se(s),Object.defineProperty(t,"name",{value:`\u2234 ${e}`})}catch(o){console.error(`\u2234 ${o}
+var __defProp = Object.defineProperty;
+var __getOwnPropDesc = Object.getOwnPropertyDescriptor;
+var __getOwnPropNames = Object.getOwnPropertyNames;
+var __hasOwnProp = Object.prototype.hasOwnProperty;
+var __esm = (fn, res) => function __init() {
+  return fn && (res = (0, fn[__getOwnPropNames(fn)[0]])(fn = 0)), res;
+};
+var __export = (target, all) => {
+  for (var name in all)
+    __defProp(target, name, { get: all[name], enumerable: true });
+};
+var __copyProps = (to, from, except, desc) => {
+  if (from && typeof from === "object" || typeof from === "function") {
+    for (let key of __getOwnPropNames(from))
+      if (!__hasOwnProp.call(to, key) && key !== except)
+        __defProp(to, key, { get: () => from[key], enumerable: !(desc = __getOwnPropDesc(from, key)) || desc.enumerable });
+  }
+  return to;
+};
+var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: true }), mod);
 
-${q+ie}="${e}"`)}return O.cache[e]=(o,i,n)=>{try{let a=t?.(o);return i?(a?.then?a.then(u=>n=i(u)):n=i(a),()=>y(n)):a}catch(a){console.error(`\u2234 ${a}
+// package.json
+var package_default;
+var init_package = __esm({
+  "package.json"() {
+    package_default = {
+      name: "sprae",
+      description: "DOM microhydration",
+      version: "12.2.0",
+      main: "./sprae.js",
+      module: "./sprae.js",
+      "umd:main": "dist/sprae.umd.js",
+      unpkg: "dist/sprae.umd.js",
+      types: "dist/sprae.d.ts",
+      type: "module",
+      files: [
+        "core.js",
+        "sprae.js",
+        "store.js",
+        "signal.js",
+        "micro.js",
+        "directive",
+        "dist"
+      ],
+      devDependencies: {
+        "@preact/signals": "^2.0.4",
+        "@preact/signals-core": "^1.8.0",
+        "@webreflection/signal": "^2.1.2",
+        "es-module-shims": "^1.10.0",
+        esbuild: "^0.23.0",
+        "esbuild-plugin-umd-wrapper": "^2.0.3",
+        hyperf: "^1.7.0",
+        jsdom: "^27.0.0",
+        requestidlecallback: "^0.3.0",
+        "signal-polyfill": "^0.1.1",
+        subscript: "^9.1.0",
+        tst: "^7.2.0",
+        ulive: "^1.0.7",
+        usignal: "^0.9.0",
+        "wait-please": "^3.1.0"
+      },
+      scripts: {
+        test: "node -r ./test/register.cjs test/test.js",
+        build: "node .esbuild.js"
+      },
+      repository: {
+        type: "git",
+        url: "git+https://github.com/dy/sprae.git"
+      },
+      keywords: [
+        "hydration",
+        "progressive",
+        "progressive enhancement",
+        "signals",
+        "directives",
+        "preact-signals",
+        "reactive",
+        "template-parts",
+        "petit-vue",
+        "alpinejs",
+        "templating"
+      ],
+      author: "Dmitry Iv <df.creative@gmail.com>",
+      license: "MIT",
+      bugs: {
+        url: "https://github.com/dy/sprae/issues"
+      },
+      homepage: "https://github.com/dy/sprae#readme"
+    };
+  }
+});
 
-${q+ie}="${e}"`)}}};O.cache={};xe=(e,r)=>{for(;r.length;){let[t,...s]=r.pop().split("-");e=z(H[t]?.(e,...s)??e,e)}return e},z=(e,r)=>{if(e!=r)for(let t in r)e[t]??(e[t]=r[t]);return e},D=e=>{if(!e.nodeType)return e;let r=e.content.cloneNode(!0),t=[...e.attributes],s=document.createTextNode(""),o=(r.append(s),[...r.childNodes]);return{childNodes:o,content:r,remove:()=>r.append(...o),replaceWith(i){i!==s&&(s.before(i),r.append(...o))},attributes:t,removeAttribute(i){t.splice(t.findIndex(n=>n.name===i),1)}}},y=(e,r)=>typeof e=="function"?e(r):e,Ae=e=>e.replace(/[A-Z\u00C0-\u00D6\u00D8-\u00DE]/g,(r,t)=>(t?"-":"")+r.toLowerCase()),A=(e,r,t)=>t==null||t===!1?e.removeAttribute(r):e.setAttribute(r,t===!0?"":t),ce=(e,r=[])=>e?typeof e=="string"?e:(Array.isArray(e)?e.map(ce):Object.entries(e).reduce((t,[s,o])=>o?[...t,s]:t,[])).join(" "):"",M=(e,r=queueMicrotask)=>{let t=0,s=o=>{t++||(e(o),r((i=t>1)=>(t=0,i&&s(o))))};return s},je=(e,r=queueMicrotask,t=0)=>(s,o=++t)=>r(()=>o==t&&e(s)),f=ae});var j,w,pe,le,P,ut,_,Oe,v,Y=d(()=>{g();j=Symbol("signals"),w=Symbol("change"),pe=Symbol("set"),le=!0,P=(e,r)=>{if(!e||e[Symbol.toStringTag]||e[j])return e;if(e.constructor!==Object)return Array.isArray(e)?ut(e):e;let t=Object.keys(e).length,s={},o=new Proxy(Object.assign(s,{[w]:k(t),[j]:s}),{get:(n,a)=>a in s?s[a]?s[a].valueOf():s[a]:r?r[a]:globalThis[a],set:(n,a,u,p)=>a in s?(Oe(s,a,u),1):(le=!1,r&&a in r?r[a]=u:(_(s,a,u),s[w].value=++t),le=!0,1),deleteProperty:(n,a)=>(a in s&&(a[0]!="_"&&s[a]?.[Symbol.dispose]?.(),delete s[a],s[w].value=--t),1),ownKeys:()=>(s[w].value,Reflect.ownKeys(s)),has:(n,a)=>a in s?!0:r?a in r:le}),i=Object.getOwnPropertyDescriptors(e);for(let n in e)i[n]?.get?(s[n]=ne(i[n].get.bind(o)))[pe]=i[n].set?.bind(o):_(s,n,e[n]);return o},ut=(e,r=globalThis)=>{let t=Array(e.length).fill(null),s=!1,o=a=>function(){return s=!0,a.apply(this,arguments)},i=k(e.length),n=new Proxy(Object.assign(t,{[w]:i,[j]:t,push:o(t.push),pop:o(t.pop),shift:o(t.shift),unshift:o(t.unshift),splice:o(t.splice)}),{get(a,u){return u==="length"?s?(s=!1,t.length):i.value:typeof u=="symbol"||isNaN(u)?t[u]?.valueOf()??r[u]:(t[u]??(t[u]=k(P(e[u])))).valueOf()},set(a,u,p){if(u==="length"){for(let m=p;m<t.length;m++)delete n[m];i.value=t.length=p}else u>=t.length?(_(t,u,p),n.length=+u+1):t[u]?Oe(t,u,p):_(t,u,p);return 1},deleteProperty:(a,u)=>(t[u]?.[Symbol.dispose]?.(),delete t[u],1)});return n},_=(e,r,t)=>e[r]=r[0]=="_"||t?.peek?t:k(P(t)),Oe=(e,r,t,s,o)=>r[0]==="_"?e[r]=t:t!==(o=(s=e[r]).peek())&&(s[pe]?s[pe](t):Array.isArray(t)&&Array.isArray(o)?w in o?B(()=>Q(()=>{for(let i=0;i<t.length;i++)o[i]=t[i];o.length=t.length})):s.value=t:s.value=P(t)),v=P});var T,ke,I,ee,te,fe,de,me,we=d(()=>{ke=0,ee=(e,r,t=new Set,s=()=>r.value)=>r={get value(){return T?.deps.push(t.add(T)),e},set value(o){if(o!==e){e=o;for(let i of t)I?I.add(i):i()}},peek(){return e},toJSON:s,then:s,toString:s,valueOf:s},te=(e,r,t,s,o)=>(t=i=>{if(o=r,r=null,o?.call?.(),i=T,T=t,ke++>10)throw"Cycle detected";try{r=e()}finally{T=i,ke--}},s=t.deps=[],t(),i=>{for(r?.call?.();i=s.pop();)i.delete(t)}),fe=(e,r=ee(),t,s,o=()=>t.value)=>t={get value(){return s||(s=te(()=>r.value=e())),r.value},peek:r.peek,toJSON:o,then:o,toString:o,valueOf:o},de=(e,r=!I)=>{I??(I=new Set);try{e()}finally{if(r){for(let t of I)t();I=null}}},me=(e,r,t)=>(r=T,T=null,t=e(),T=r,t)});var Ne,$e=d(()=>{g();Ne=(e,r,t,s,o)=>{var i;return e._holder?f(s=e,r):(e[i=l]??(e[i]=null),s=e.content?D(e):e,e.replaceWith(t=document.createTextNode("")),s._holder=t._holder=t,t._clauses=[s._clause=[s,!1]],t.update=M(()=>{let n=t._clauses.find(([,a])=>a);n!=o&&(o?.[0].remove(),o?.[0][F]?.(),(o=n)&&(t.before(o[0].content||o[0]),o[0][l]?o[0][G]?.():(delete o[0][l],f(o[0],r))))})),n=>{s._clause[1]=n,s._holder.update()}}});var De,Te=d(()=>{g();De=(e,r,t,s,o=e)=>{for(t=e.content?D(e):e;o&&!(t._holder=o._holder);)o=o.previousSibling;return e.remove(),e[l]=null,t._holder._clauses.push(t._clause=[t,!0]),t._holder.update}});var Ce,qe=d(()=>{g();Ce=e=>(e.content&&e.replaceWith(e=D(e).childNodes[0]),r=>(r=y(r,e.textContent),e.textContent=r??""))});var Me,Pe=d(()=>{g();Me=(e,r,t)=>(r=new Set,s=>{t=new Set,s&&ce(y(s,e.className)).split(" ").map(o=>o&&t.add(o));for(let o of r)t.has(o)?t.delete(o):e.classList.remove(o);for(let o of r=t)e.classList.add(o)})});var We,Ee=d(()=>{g();We=(e,r)=>(r=e.getAttribute("style"),t=>{if(t=y(t,e.style),typeof t=="string")A(e,"style",r+"; "+t);else{r&&A(e,"style",r);for(let s in t)s[0]=="-"?e.style.setProperty(s,t[s]):s[0]>"A"&&(e.style[s]=t[s])}})});var Le,ve=d(()=>{g();Le=()=>y});var ct,Ie,Ke=d(()=>{g();ct=(e,r=O(`${e}=__`))=>(t,s)=>{t.__=s,r(t),delete t.__},Ie=(e,r,t,s)=>{try{let o=ct(t),i=e.type==="checkbox"?()=>o(r,e.checked):e.type==="select-multiple"?()=>o(r,[...e.selectedOptions].map(n=>n.value)):()=>o(r,e.selectedIndex<0?null:e.value);e.oninput=e.onchange=i,e.type?.startsWith("select")&&(new MutationObserver(i).observe(e,{childList:!0,subtree:!0,attributes:!0}),f(e,r)),O(t)(r)??i()}catch{}return e.type==="text"||e.type===""?o=>e.setAttribute("value",e.value=o??""):e.tagName==="TEXTAREA"||e.type==="text"||e.type===""?(o,i,n)=>(i=e.selectionStart,n=e.selectionEnd,e.setAttribute("value",e.value=o??""),i&&e.setSelectionRange(i,n)):e.type==="checkbox"?o=>(e.checked=o,A(e,"checked",o)):e.type==="radio"?o=>e.value===o&&(e.checked=o,A(e,"checked",o)):e.type==="select-one"?o=>{for(let i of e.options)i.value==o?i.setAttribute("selected",""):i.removeAttribute("selected");e.value=o}:e.type==="select-multiple"?o=>{for(let i of e.options)i.removeAttribute("selected");for(let i of o)e.querySelector(`[value="${i}"]`).setAttribute("selected","")}:o=>e.value=o}});var Re,Ve=d(()=>{g();Re=(e,r,t,s,o,i)=>{if(typeof O(t)(r)=="function")return n=>n(e);Object.defineProperty(r,t,{value:e,configurable:!0})}});var Fe,Je=d(()=>{g();Fe=(e,r)=>{let t=e[l]=P({},r),s=!1;return o=>{if(o=y(o,t),o!==t)for(let i in o){let n=typeof o[i]=="function"?o[i].bind(t):o[i];i in t[j]?t[i]=n:t[j][i]=i[0]=="_"||n?.peek?n:k(P(n))}return!s&&(s=!0,delete e[l],B(()=>f(e,t)))}}});var Be,He,Xe=d(()=>{g();Be=(e,r,t)=>{let[s,o="$"]=t.split(/\bin\b/)[0].trim().replace(/\(|\)/g,"").split(/\s*,\s*/),i=document.createTextNode(""),n,a,u,p=0,m=M(()=>{var C,N;let c=0,h=u,b=h.length;if(n&&!n[w]){for(let x of n[j]||[])x[Symbol.dispose]();n=null,p=0}if(b<p)n.length=b;else{if(!n)n=h;else for(;c<p;)n[c]=h[c++];for(;c<b;c++){n[c]=h[c];let x=c,$=Object.create(r,{[s]:{get:()=>n[x]},[o]:{value:a?a[x]:x}}),S=e.content?D(e):e.cloneNode(!0);i.before(S.content||S),f(S,$);let W=((N=n[C=j]||(n[C]=[]))[c]||(N[c]={}))[Symbol.dispose];n[j][c][Symbol.dispose]=()=>{W?.(),S[Symbol.dispose]?.(),S.remove()}}}p=b});return e.replaceWith(i),e[l]=null,c=>(a=null,typeof c=="number"?u=Array.from({length:c},(h,b)=>b+1):c?.constructor===Object?(a=Object.keys(c),u=Object.values(c)):u=c||[],J(()=>{u[w]?.value,m()}))};Be.parse=e=>e.split(/\bin\b/)[1].trim();He=Be});var Ze,ze=d(()=>{g();Ze=(e,r,t,s)=>o=>A(e,s,y(o,e.getAttribute(s)))});var Ge,Qe=d(()=>{g();Ge=e=>r=>{for(let t in r)A(e,Ae(t),r[t])}});var Ue={};ot(Ue,{batch:()=>de,computed:()=>fe,default:()=>lt,effect:()=>te,signal:()=>ee,sprae:()=>f,start:()=>ue,store:()=>v,untracked:()=>me,use:()=>U});var ye,lt,Ye=d(()=>{Y();we();g();$e();Te();qe();Pe();Ee();ve();Ke();Ve();Je();Xe();ze();Qe();Object.assign(L,{"*":Ze,"":Ge,class:Me,text:Ce,style:We,fx:Le,value:Ie,ref:Re,scope:Fe,if:Ne,else:De,each:He});Object.assign(H,{debounce:(e,r=250,t=r==="tick"?queueMicrotask:r==="raf"?requestAnimationFrame:r==="idle"?requestIdleCallback:o=>setTimeout(o,r),s=0)=>je(e,t),throttle:(e,r=250,t=r==="tick"?queueMicrotask:r==="raf"?requestAnimationFrame:s=>setTimeout(s,r))=>M(e,t),once:(e,r,t)=>Object.assign(s=>!r&&(r=1,e(s)),{once:!0}),prevent:e=>r=>(r?.preventDefault(),e(r)),stop:e=>r=>(r?.stopPropagation(),e(r)),immediate:e=>r=>(r?.stopImmediatePropagation(),e(r)),passive:e=>(e.passive=!0,e),capture:e=>(e.capture=!0,e),window:e=>(e.target=e.target.ownerDocument.defaultView,e),document:e=>(e.target=e.target.ownerDocument,e),root:e=>(e.target=e.target.ownerDocument.documentElement,e),body:e=>(e.target=e.target.ownerDocument.body,e),parent:e=>(e.target=e.target.parentNode,e),self:e=>r=>r.target===e.target&&e(r),outside:e=>(r,t)=>(t=e.target,!t.contains(r.target)&&r.target.isConnected&&(t.offsetWidth||t.offsetHeight))});ye={ctrl:e=>e.ctrlKey||e.key==="Control"||e.key==="Ctrl",shift:e=>e.shiftKey||e.key==="Shift",alt:e=>e.altKey||e.key==="Alt",meta:e=>e.metaKey||e.key==="Meta"||e.key==="Command",arrow:e=>e.key.startsWith("Arrow"),enter:e=>e.key==="Enter",esc:e=>e.key.startsWith("Esc"),tab:e=>e.key==="Tab",space:e=>e.key==="\xA0"||e.key==="Space"||e.key===" ",delete:e=>e.key==="Delete"||e.key==="Backspace",digit:e=>/^\d$/.test(e.key),letter:e=>/^\p{L}$/gu.test(e.key),char:e=>/^\S$/.test(e.key)};for(let e in ye)H[e]=(r,...t)=>s=>ye[e](s)&&t.every(o=>ye[o]?.(s)??s.key===o)&&r(s);U({compile:e=>f.constructor(`with (arguments[0]) { ${e} }`),signal:ee,effect:te,computed:fe,batch:de,untracked:me});f.use=U;f.store=v;f.directive=L;f.modifier=H;f.start=ue;lt=f});var ge=(Ye(),it(Ue)).default;module.exports=ge;var K=document.currentScript,_e=K.getAttribute("prefix")??K.dataset.prefix??K.dataset.spraePrefix,X=K.getAttribute("start")??K.dataset.start??K.dataset.spraeStart;_e&&ge.use({prefix:_e});X!=null&&X!=="false"&&(X&&X!=="true"?document.querySelectorAll(X):[document.body]).forEach(e=>ge.start(e));
+// core.js
+var _dispose, _state, _on, _off, _add, prefix, signal, effect, computed, batch, untracked, directive, modifier, currentDir, sprae, initDirective, use, start, compile, parse, applyMods, sx, frag, call, dashcase, attr, clsx, throttle, debounce, core_default;
+var init_core = __esm({
+  "core.js"() {
+    init_store();
+    init_package();
+    init_store();
+    _dispose = Symbol.dispose || (Symbol.dispose = Symbol("dispose"));
+    _state = Symbol("state");
+    _on = Symbol("on");
+    _off = Symbol("off");
+    _add = Symbol("add");
+    prefix = ":";
+    batch = (fn) => fn();
+    untracked = batch;
+    directive = {};
+    modifier = {};
+    currentDir = null;
+    sprae = (el = document.body, state) => {
+      if (el[_state]) return Object.assign(el[_state], state);
+      state = store_default(state || {});
+      let fx = [], offs = [], fn, on = () => !offs && (offs = fx.map((fn2) => fn2())), off = () => (offs?.map((off2) => off2()), offs = null);
+      el[_on] = on;
+      el[_off] = off;
+      el[_dispose] || (el[_dispose] = () => (el[_off](), el[_off] = el[_on] = el[_dispose] = el[_state] = el[_add] = null));
+      const add = (el2, _attrs = el2.attributes) => {
+        if (_attrs) for (let i = 0; i < _attrs.length; ) {
+          let { name, value } = _attrs[i];
+          if (name.startsWith(prefix)) {
+            el2.removeAttribute(name);
+            if (fn = initDirective(el2, name, value, state)) fx.push(fn), offs.push(fn());
+            if (_state in el2) return;
+          } else i++;
+        }
+        for (let child of [...el2.childNodes]) child.nodeType == 1 && add(child);
+      };
+      el[_add] = add;
+      add(el);
+      if (el[_state] === void 0) el[_state] = state;
+      return state;
+    };
+    sprae.version = package_default.version;
+    initDirective = (el, dirName, expr, state) => {
+      let cur2, off;
+      let steps = dirName.slice(prefix.length).split("..").map((step, i, { length }) => (
+        // multiple attributes like :id:for=""
+        step.split(prefix).reduce((prev, str) => {
+          let [name, ...mods] = str.split(".");
+          let evaluate = parse(expr, directive[currentDir = name]?.parse);
+          if (name.startsWith("on")) {
+            let type = name.slice(2), fn2 = applyMods(
+              sx(
+                // single event vs chain
+                length == 1 ? (e) => evaluate(state, (fn3) => call(fn3, e)) : (e) => (cur2 = (!i ? (e2) => call(evaluate(state), e2) : cur2)(e), off(), off = steps[(i + 1) % length]()),
+                { target: el }
+              ),
+              mods
+            );
+            return (_poff) => (_poff = prev?.(), fn2.target.addEventListener(type, fn2, fn2), () => (_poff?.(), fn2.target.removeEventListener(type, fn2)));
+          }
+          let fn, dispose, change, count;
+          if (mods.length) {
+            change = signal(-1), // signal authorized to trigger effect: 0 = init; >0 = trigger
+            count = -1;
+            fn = applyMods(sx(throttle(() => {
+              if (++change.value) return;
+              dispose = effect(() => update && (change.value == count ? fn() : (
+                // plan update: separate tick (via throttle) makes sure planner effect call is finished before eval call
+                (count = change.value, evaluate(state, update))
+              )));
+            }), { target: el }), mods);
+          } else {
+            fn = sx(() => dispose = effect(() => evaluate(state, update)), { target: el });
+          }
+          let update = (directive[name] || directive["*"])(fn.target, state, expr, name);
+          if (!update) return;
+          if (el[_state]) state = el[_state];
+          return (_poff) => (_poff = prev?.(), // console.log('ON', name),
+          fn(), () => (
+            // console.log('OFF', name, el),
+            (_poff?.(), dispose?.(), change && (change.value = -1, count = dispose = null))
+          ));
+        }, null)
+      ));
+      return () => off = steps[0]?.();
+    };
+    use = (s) => (s.compile && (compile = s.compile), s.prefix && (prefix = s.prefix), s.signal && (signal = s.signal), s.effect && (effect = s.effect), s.computed && (computed = s.computed), s.batch && (batch = s.batch), s.untracked && (untracked = s.untracked));
+    start = (root = document.body, values) => {
+      const state = store_default(values);
+      sprae(root, state);
+      const mo = new MutationObserver((mutations) => {
+        for (const m of mutations) {
+          for (const el of m.addedNodes) {
+            if (el.nodeType === 1 && el[_state] === void 0 && el.isConnected) {
+              for (const attr2 of el.attributes) {
+                if (attr2.name.startsWith(prefix)) {
+                  root[_add](el);
+                  break;
+                }
+              }
+            }
+          }
+        }
+      });
+      mo.observe(root, { childList: true, subtree: true });
+      return state;
+    };
+    parse = (expr, prepare, _fn) => {
+      if (_fn = parse.cache[expr]) return _fn;
+      let _expr = expr.trim() || "undefined";
+      if (prepare) _expr = prepare(_expr);
+      if (/^(if|let|const)\b/.test(_expr) || /;(?![^{]*})/.test(_expr)) ;
+      else _expr = `return ${_expr}`;
+      if (/\bawait\s/.test(_expr)) _expr = `return (async()=>{ ${_expr} })()`;
+      try {
+        _fn = compile(_expr);
+        Object.defineProperty(_fn, "name", { value: `\u2234 ${expr}` });
+      } catch (e) {
+        console.error(`\u2234 ${e}
+
+${prefix + currentDir}="${expr}"`);
+      }
+      return parse.cache[expr] = (state, cb, _out) => {
+        try {
+          let result = _fn?.(state);
+          if (cb) return result?.then ? result.then((v) => _out = cb(v)) : _out = cb(result), () => call(_out);
+          else return result;
+        } catch (e) {
+          console.error(`\u2234 ${e}
+
+${prefix + currentDir}="${expr}"`);
+        }
+      };
+    };
+    parse.cache = {};
+    applyMods = (fn, mods) => {
+      while (mods.length) {
+        let [name, ...params] = mods.pop().split("-");
+        fn = sx(modifier[name]?.(fn, ...params) ?? fn, fn);
+      }
+      return fn;
+    };
+    sx = (a, b) => {
+      if (a != b) for (let k in b) a[k] ?? (a[k] = b[k]);
+      return a;
+    };
+    frag = (tpl) => {
+      if (!tpl.nodeType) return tpl;
+      let content = tpl.content.cloneNode(true), attributes = [...tpl.attributes], ref = document.createTextNode(""), childNodes = (content.append(ref), [...content.childNodes]);
+      return {
+        // get parentNode() { return childNodes[0].parentNode },
+        childNodes,
+        content,
+        remove: () => content.append(...childNodes),
+        replaceWith(el) {
+          if (el === ref) return;
+          ref.before(el);
+          content.append(...childNodes);
+        },
+        attributes,
+        removeAttribute(name) {
+          attributes.splice(attributes.findIndex((a) => a.name === name), 1);
+        }
+        // setAttributeNode() { }
+      };
+    };
+    call = (v, arg) => typeof v === "function" ? v(arg) : v;
+    dashcase = (str) => str.replace(/[A-Z\u00C0-\u00D6\u00D8-\u00DE]/g, (match, i) => (i ? "-" : "") + match.toLowerCase());
+    attr = (el, name, v) => v == null || v === false ? el.removeAttribute(name) : el.setAttribute(name, v === true ? "" : v);
+    clsx = (c, _out = []) => !c ? "" : typeof c === "string" ? c : (Array.isArray(c) ? c.map(clsx) : Object.entries(c).reduce((s, [k, v]) => !v ? s : [...s, k], [])).join(" ");
+    throttle = (fn, schedule = queueMicrotask) => {
+      let _planned = 0;
+      const throttled = (e) => {
+        if (!_planned++) fn(e), schedule((_dirty = _planned > 1) => (_planned = 0, _dirty && throttled(e)));
+      };
+      return throttled;
+    };
+    debounce = (fn, schedule = queueMicrotask, _count = 0) => (arg, _planned = ++_count) => schedule(() => _planned == _count && fn(arg));
+    core_default = sprae;
+  }
+});
+
+// store.js
+var _signals, _change, _set, sandbox, store, list, create, set, store_default;
+var init_store = __esm({
+  "store.js"() {
+    init_core();
+    _signals = Symbol("signals");
+    _change = Symbol("change");
+    _set = Symbol("set");
+    sandbox = true;
+    store = (values, parent) => {
+      if (!values) return values;
+      if (values[Symbol.toStringTag]) return values;
+      if (values[_signals]) return values;
+      if (values.constructor !== Object) return Array.isArray(values) ? list(values) : values;
+      let keyCount = Object.keys(values).length, signals = {};
+      let state = new Proxy(Object.assign(signals, {
+        [_change]: signal(keyCount),
+        [_signals]: signals
+      }), {
+        get: (_, k) => {
+          if (k in signals) return signals[k] ? signals[k].valueOf() : signals[k];
+          return parent ? parent[k] : globalThis[k];
+        },
+        set: (_, k, v, _s) => {
+          if (k in signals) return set(signals, k, v), 1;
+          sandbox = false;
+          if (parent && k in parent) {
+            parent[k] = v;
+          } else {
+            create(signals, k, v);
+            signals[_change].value = ++keyCount;
+          }
+          sandbox = true;
+          return 1;
+        },
+        // FIXME: try to avild calling Symbol.dispose here. Maybe _delete method?
+        deleteProperty: (_, k) => {
+          k in signals && (k[0] != "_" && signals[k]?.[Symbol.dispose]?.(), delete signals[k], signals[_change].value = --keyCount);
+          return 1;
+        },
+        // subscribe to length when spreading
+        ownKeys: () => (signals[_change].value, Reflect.ownKeys(signals)),
+        // sandbox prevents writing to global
+        has: (_, k) => {
+          if (k in signals) return true;
+          if (parent) return k in parent;
+          return sandbox;
+        }
+      });
+      const descs = Object.getOwnPropertyDescriptors(values);
+      for (let k in values) {
+        if (descs[k]?.get)
+          (signals[k] = computed(descs[k].get.bind(state)))[_set] = descs[k].set?.bind(state);
+        else create(signals, k, values[k]);
+      }
+      return state;
+    };
+    list = (values, parent = globalThis) => {
+      let signals = Array(values.length).fill(null), isMut = false, mut = (fn) => function() {
+        isMut = true;
+        return fn.apply(this, arguments);
+      }, length = signal(values.length), state = new Proxy(
+        Object.assign(signals, {
+          [_change]: length,
+          [_signals]: signals,
+          // patch mutators
+          push: mut(signals.push),
+          pop: mut(signals.pop),
+          shift: mut(signals.shift),
+          unshift: mut(signals.unshift),
+          splice: mut(signals.splice)
+        }),
+        {
+          get(_, k) {
+            if (k === "length") return isMut ? (isMut = false, signals.length) : length.value;
+            if (typeof k === "symbol" || isNaN(k)) return signals[k]?.valueOf() ?? parent[k];
+            return (signals[k] ?? (signals[k] = signal(store(values[k])))).valueOf();
+          },
+          set(_, k, v) {
+            if (k === "length") {
+              for (let i = v; i < signals.length; i++) delete state[i];
+              length.value = signals.length = v;
+            } else if (k >= signals.length) create(signals, k, v), state.length = +k + 1;
+            else signals[k] ? set(signals, k, v) : create(signals, k, v);
+            return 1;
+          },
+          // dispose notifies any signal deps, like :each
+          deleteProperty: (_, k) => (signals[k]?.[Symbol.dispose]?.(), delete signals[k], 1)
+        }
+      );
+      return state;
+    };
+    create = (signals, k, v) => signals[k] = k[0] == "_" || v?.peek ? v : signal(store(v));
+    set = (signals, k, v, _s, _v) => {
+      return k[0] === "_" ? signals[k] = v : v !== (_v = (_s = signals[k]).peek()) && // stashed _set for value with getter/setter
+      (_s[_set] ? _s[_set](v) : (
+        // patch array
+        Array.isArray(v) && Array.isArray(_v) ? (
+          // if we update plain array (stored in signal) - take over value instead
+          // since input value can be store, we have to make sure we don't subscribe to its length or values
+          // FIXME: generalize to objects
+          _change in _v ? untracked(() => batch(() => {
+            for (let i = 0; i < v.length; i++) _v[i] = v[i];
+            _v.length = v.length;
+          })) : _s.value = v
+        ) : (
+          // .x = y
+          _s.value = store(v)
+        )
+      ));
+    };
+    store_default = store;
+  }
+});
+
+// signal.js
+var current, depth, batched, signal2, effect2, computed2, batch2, untracked2;
+var init_signal = __esm({
+  "signal.js"() {
+    depth = 0;
+    signal2 = (v, _s, _obs = /* @__PURE__ */ new Set(), _v = () => _s.value) => _s = {
+      get value() {
+        current?.deps.push(_obs.add(current));
+        return v;
+      },
+      set value(val) {
+        if (val === v) return;
+        v = val;
+        for (let sub of _obs) batched ? batched.add(sub) : sub();
+      },
+      peek() {
+        return v;
+      },
+      toJSON: _v,
+      then: _v,
+      toString: _v,
+      valueOf: _v
+    };
+    effect2 = (fn, _teardown, _fx, _deps, __tmp) => (_fx = (prev) => {
+      __tmp = _teardown;
+      _teardown = null;
+      __tmp?.call?.();
+      prev = current, current = _fx;
+      if (depth++ > 10) throw "Cycle detected";
+      try {
+        _teardown = fn();
+      } finally {
+        current = prev;
+        depth--;
+      }
+    }, _deps = _fx.deps = [], _fx(), (dep) => {
+      _teardown?.call?.();
+      while (dep = _deps.pop()) dep.delete(_fx);
+    });
+    computed2 = (fn, _s = signal2(), _c, _e, _v = () => _c.value) => _c = {
+      get value() {
+        _e || (_e = effect2(() => _s.value = fn()));
+        return _s.value;
+      },
+      peek: _s.peek,
+      toJSON: _v,
+      then: _v,
+      toString: _v,
+      valueOf: _v
+    };
+    batch2 = (fn, _first = !batched) => {
+      batched ?? (batched = /* @__PURE__ */ new Set());
+      try {
+        fn();
+      } finally {
+        if (_first) {
+          for (const fx of batched) fx();
+          batched = null;
+        }
+      }
+    };
+    untracked2 = (fn, _prev, _v) => (_prev = current, current = null, _v = fn(), current = _prev, _v);
+  }
+});
+
+// directive/if.js
+var if_default;
+var init_if = __esm({
+  "directive/if.js"() {
+    init_core();
+    if_default = (el, state, _holder, _el, _match) => {
+      var _a;
+      if (!el._holder) {
+        el[_a = _state] ?? (el[_a] = null);
+        _el = el.content ? frag(el) : el;
+        el.replaceWith(_holder = document.createTextNode(""));
+        _el._holder = _holder._holder = _holder;
+        _holder._clauses = [_el._clause = [_el, false]];
+        _holder.update = throttle(() => {
+          let match = _holder._clauses.find(([, s]) => s);
+          if (match != _match) {
+            _match?.[0].remove();
+            _match?.[0][_off]?.();
+            if (_match = match) {
+              _holder.before(_match[0].content || _match[0]);
+              !_match[0][_state] ? (delete _match[0][_state], core_default(_match[0], state)) : _match[0][_on]?.();
+            }
+          }
+        });
+      } else core_default(_el = el, state);
+      return (value) => {
+        _el._clause[1] = value;
+        _el._holder.update();
+      };
+    };
+  }
+});
+
+// directive/else.js
+var else_default;
+var init_else = __esm({
+  "directive/else.js"() {
+    init_core();
+    else_default = (el, state, _el, _, _prev = el) => {
+      _el = el.content ? frag(el) : el;
+      while (_prev && !(_el._holder = _prev._holder)) _prev = _prev.previousSibling;
+      el.remove();
+      el[_state] = null;
+      _el._holder._clauses.push(_el._clause = [_el, true]);
+      return _el._holder.update;
+    };
+  }
+});
+
+// directive/text.js
+var text_default;
+var init_text = __esm({
+  "directive/text.js"() {
+    init_core();
+    text_default = (el) => (
+      // <template :text="a"/> or previously initialized template
+      (el.content && el.replaceWith(el = frag(el).childNodes[0]), (v) => (v = call(v, el.textContent), el.textContent = v == null ? "" : v))
+    );
+  }
+});
+
+// directive/class.js
+var class_default;
+var init_class = __esm({
+  "directive/class.js"() {
+    init_core();
+    class_default = (el, _cur, _new) => (_cur = /* @__PURE__ */ new Set(), (v) => {
+      _new = /* @__PURE__ */ new Set();
+      if (v) clsx(call(v, el.className)).split(" ").map((c) => c && _new.add(c));
+      for (let c of _cur) if (_new.has(c)) _new.delete(c);
+      else el.classList.remove(c);
+      for (let c of _cur = _new) el.classList.add(c);
+    });
+  }
+});
+
+// directive/style.js
+var style_default;
+var init_style = __esm({
+  "directive/style.js"() {
+    init_core();
+    style_default = (el, _static) => (_static = el.getAttribute("style"), (v) => {
+      v = call(v, el.style);
+      if (typeof v === "string") attr(el, "style", _static + "; " + v);
+      else {
+        if (_static) attr(el, "style", _static);
+        for (let k in v) k[0] == "-" ? el.style.setProperty(k, v[k]) : k[0] > "A" && (el.style[k] = v[k]);
+      }
+    });
+  }
+});
+
+// directive/fx.js
+var fx_default;
+var init_fx = __esm({
+  "directive/fx.js"() {
+    init_core();
+    fx_default = () => call;
+  }
+});
+
+// directive/value.js
+var setter, value_default;
+var init_value = __esm({
+  "directive/value.js"() {
+    init_core();
+    setter = (expr, _set2 = parse(`${expr}=__`)) => (target, value) => {
+      target.__ = value;
+      _set2(target), delete target.__;
+    };
+    value_default = (el, state, expr, name) => {
+      try {
+        const set2 = setter(expr);
+        const handleChange = el.type === "checkbox" ? () => set2(state, el.checked) : el.type === "select-multiple" ? () => set2(state, [...el.selectedOptions].map((o) => o.value)) : () => set2(state, el.selectedIndex < 0 ? null : el.value);
+        el.oninput = el.onchange = handleChange;
+        if (el.type?.startsWith("select")) {
+          new MutationObserver(handleChange).observe(el, { childList: true, subtree: true, attributes: true });
+          core_default(el, state);
+        }
+        parse(expr)(state) ?? handleChange();
+      } catch {
+      }
+      return el.type === "text" || el.type === "" ? (value) => el.setAttribute("value", el.value = value == null ? "" : value) : el.tagName === "TEXTAREA" || el.type === "text" || el.type === "" ? (value, from, to) => (
+        // we retain selection in input
+        (from = el.selectionStart, to = el.selectionEnd, el.setAttribute("value", el.value = value == null ? "" : value), from && el.setSelectionRange(from, to))
+      ) : el.type === "checkbox" ? (value) => (el.checked = value, attr(el, "checked", value)) : el.type === "radio" ? (value) => el.value === value && (el.checked = value, attr(el, "checked", value)) : el.type === "select-one" ? (value) => {
+        for (let o of el.options)
+          o.value == value ? o.setAttribute("selected", "") : o.removeAttribute("selected");
+        el.value = value;
+      } : el.type === "select-multiple" ? (value) => {
+        for (let o of el.options) o.removeAttribute("selected");
+        for (let v of value) el.querySelector(`[value="${v}"]`).setAttribute("selected", "");
+      } : (value) => el.value = value;
+    };
+  }
+});
+
+// directive/ref.js
+var ref_default;
+var init_ref = __esm({
+  "directive/ref.js"() {
+    init_core();
+    ref_default = (el, state, expr, name, _prev, _set2) => {
+      if (typeof parse(expr)(state) == "function") return (v) => v(el);
+      Object.defineProperty(state, expr, { value: el, configurable: true });
+    };
+  }
+});
+
+// directive/scope.js
+var scope_default;
+var init_scope = __esm({
+  "directive/scope.js"() {
+    init_core();
+    scope_default = (el, rootState) => {
+      let subscope = el[_state] = store({}, rootState), init = false;
+      return (values) => {
+        values = call(values, subscope);
+        if (values !== subscope) {
+          for (let k in values) {
+            let v = typeof values[k] === "function" ? values[k].bind(subscope) : values[k];
+            if (k in subscope[_signals]) subscope[k] = v;
+            else subscope[_signals][k] = k[0] == "_" || v?.peek ? v : signal(store(v));
+          }
+        }
+        return !init && (init = true, delete el[_state], untracked(() => core_default(el, subscope)));
+      };
+    };
+  }
+});
+
+// directive/each.js
+var each, each_default;
+var init_each = __esm({
+  "directive/each.js"() {
+    init_core();
+    each = (tpl, state, expr) => {
+      let [itemVar, idxVar = "$"] = expr.split(/\bin\b/)[0].trim().replace(/\(|\)/g, "").split(/\s*,\s*/);
+      let holder = document.createTextNode("");
+      let cur2, keys2, items, prevl = 0;
+      let update = throttle(() => {
+        var _a, _b;
+        let i = 0, newItems = items, newl = newItems.length;
+        if (cur2 && !cur2[_change]) {
+          for (let s of cur2[_signals] || []) s[Symbol.dispose]();
+          cur2 = null, prevl = 0;
+        }
+        if (newl < prevl) cur2.length = newl;
+        else {
+          if (!cur2) cur2 = newItems;
+          else while (i < prevl) cur2[i] = newItems[i++];
+          for (; i < newl; i++) {
+            cur2[i] = newItems[i];
+            let idx = i, subscope = Object.create(state, {
+              [itemVar]: { get: () => cur2[idx] },
+              [idxVar]: { value: keys2 ? keys2[idx] : idx }
+            });
+            let el = tpl.content ? frag(tpl) : tpl.cloneNode(true);
+            holder.before(el.content || el);
+            core_default(el, subscope);
+            let _prev = ((_b = cur2[_a = _signals] || (cur2[_a] = []))[i] || (_b[i] = {}))[Symbol.dispose];
+            cur2[_signals][i][Symbol.dispose] = () => {
+              _prev?.(), el[Symbol.dispose]?.(), el.remove();
+            };
+          }
+        }
+        prevl = newl;
+      });
+      tpl.replaceWith(holder);
+      tpl[_state] = null;
+      return (value) => {
+        keys2 = null;
+        if (typeof value === "number") items = Array.from({ length: value }, (_, i) => i + 1);
+        else if (value?.constructor === Object) keys2 = Object.keys(value), items = Object.values(value);
+        else items = value || [];
+        return effect(() => {
+          items[_change]?.value;
+          update();
+        });
+      };
+    };
+    each.parse = (str) => str.split(/\bin\b/)[1].trim();
+    each_default = each;
+  }
+});
+
+// directive/default.js
+var default_default;
+var init_default = __esm({
+  "directive/default.js"() {
+    init_core();
+    default_default = (el, st, ex, name) => (v) => attr(el, name, call(v, el.getAttribute(name)));
+  }
+});
+
+// directive/spread.js
+var spread_default;
+var init_spread = __esm({
+  "directive/spread.js"() {
+    init_core();
+    spread_default = (target) => (value) => {
+      for (let key in value) attr(target, dashcase(key), value[key]);
+    };
+  }
+});
+
+// sprae.js
+var sprae_exports = {};
+__export(sprae_exports, {
+  batch: () => batch2,
+  computed: () => computed2,
+  default: () => sprae_default,
+  effect: () => effect2,
+  signal: () => signal2,
+  sprae: () => core_default,
+  start: () => start,
+  store: () => store_default,
+  untracked: () => untracked2,
+  use: () => use
+});
+var keys, sprae_default;
+var init_sprae = __esm({
+  "sprae.js"() {
+    init_store();
+    init_signal();
+    init_core();
+    init_if();
+    init_else();
+    init_text();
+    init_class();
+    init_style();
+    init_fx();
+    init_value();
+    init_ref();
+    init_scope();
+    init_each();
+    init_default();
+    init_spread();
+    Object.assign(directive, {
+      // :x="x"
+      "*": default_default,
+      // FIXME
+      // 'on*': _on,
+      // :="{a,b,c}"
+      "": spread_default,
+      // :class="[a, b, c]"
+      class: class_default,
+      // :text="..."
+      text: text_default,
+      // :style="..."
+      style: style_default,
+      // :fx="..."
+      fx: fx_default,
+      // :value - 2 way binding like x-model
+      value: value_default,
+      // :ref="..."
+      ref: ref_default,
+      // :scope creates variables scope for a subtree
+      scope: scope_default,
+      if: if_default,
+      else: else_default,
+      // :each="v,k in src"
+      each: each_default
+    });
+    Object.assign(modifier, {
+      debounce: (fn, _how = 250, _schedule = _how === "tick" ? queueMicrotask : _how === "raf" ? requestAnimationFrame : _how === "idle" ? requestIdleCallback : (fn2) => setTimeout(fn2, _how), _count = 0) => debounce(fn, _schedule),
+      throttle: (fn, _how = 250, _schedule = _how === "tick" ? queueMicrotask : _how === "raf" ? requestAnimationFrame : (fn2) => setTimeout(fn2, _how)) => throttle(fn, _schedule),
+      once: (fn, _done, _fn) => Object.assign((e) => !_done && (_done = 1, fn(e)), { once: true }),
+      // event modifiers
+      // actions
+      prevent: (fn) => (e) => (e?.preventDefault(), fn(e)),
+      stop: (fn) => (e) => (e?.stopPropagation(), fn(e)),
+      immediate: (fn) => (e) => (e?.stopImmediatePropagation(), fn(e)),
+      // options
+      passive: (fn) => (fn.passive = true, fn),
+      capture: (fn) => (fn.capture = true, fn),
+      // target
+      window: (fn) => (fn.target = fn.target.ownerDocument.defaultView, fn),
+      document: (fn) => (fn.target = fn.target.ownerDocument, fn),
+      root: (fn) => (fn.target = fn.target.ownerDocument.documentElement, fn),
+      body: (fn) => (fn.target = fn.target.ownerDocument.body, fn),
+      parent: (fn) => (fn.target = fn.target.parentNode, fn),
+      // testers
+      self: (fn) => (e) => e.target === fn.target && fn(e),
+      outside: (fn) => (e, _target) => (_target = fn.target, !_target.contains(e.target) && e.target.isConnected && (_target.offsetWidth || _target.offsetHeight))
+    });
+    keys = {
+      ctrl: (e) => e.ctrlKey || e.key === "Control" || e.key === "Ctrl",
+      shift: (e) => e.shiftKey || e.key === "Shift",
+      alt: (e) => e.altKey || e.key === "Alt",
+      meta: (e) => e.metaKey || e.key === "Meta" || e.key === "Command",
+      arrow: (e) => e.key.startsWith("Arrow"),
+      enter: (e) => e.key === "Enter",
+      esc: (e) => e.key.startsWith("Esc"),
+      tab: (e) => e.key === "Tab",
+      space: (e) => e.key === "\xA0" || e.key === "Space" || e.key === " ",
+      delete: (e) => e.key === "Delete" || e.key === "Backspace",
+      digit: (e) => /^\d$/.test(e.key),
+      letter: (e) => /^\p{L}$/gu.test(e.key),
+      char: (e) => /^\S$/.test(e.key)
+    };
+    for (let k in keys) modifier[k] = (fn, ...params) => (e) => keys[k](e) && params.every((k2) => keys[k2]?.(e) ?? e.key === k2) && fn(e);
+    use({
+      compile: (expr) => {
+        return core_default.constructor(`with (arguments[0]) { ${expr} }`);
+      },
+      // signals
+      signal: signal2,
+      effect: effect2,
+      computed: computed2,
+      batch: batch2,
+      untracked: untracked2
+    });
+    core_default.use = use;
+    core_default.store = store_default;
+    core_default.directive = directive;
+    core_default.modifier = modifier;
+    core_default.start = start;
+    sprae_default = core_default;
+  }
+});
+
+// <stdin>
+var sprae2 = (init_sprae(), __toCommonJS(sprae_exports)).default;
+module.exports = sprae2;
+var cur = document.currentScript;
+var prefix2 = cur.getAttribute("prefix") ?? cur.dataset.prefix ?? cur.dataset.spraePrefix;
+var start2 = cur.getAttribute("start") ?? cur.dataset.start ?? cur.dataset.spraeStart;
+if (prefix2) sprae2.use({ prefix: prefix2 });
+if (start2 != null && start2 !== "false") (start2 && start2 !== "true" ? document.querySelectorAll(start2) : [document.body || document.documentElement]).forEach((el) => sprae2.start(el));
 ;if (typeof module.exports == "object" && typeof exports == "object") {
   var __cp = (to, from, except, desc) => {
     if ((from && typeof from === "object") || typeof from === "function") {
