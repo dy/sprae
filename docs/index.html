@@ -72,7 +72,7 @@
 
       @media screen and (max-width: 768px) {
         :root {
-          font-size: 14px;
+          font-size: 16px;
         }
       }
 
@@ -80,8 +80,8 @@
     </style>
   </head>
 
-  <body :scope="x=window.innerWidth/2, y=window.innerHeight/2, scroll=0" :onmousemove.document="e => { x = e.clientX; y = e.clientY; }" :onscroll.window="e => { scroll = Math.min(1, window.scrollY / (document.documentElement.scrollHeight - window.innerHeight)) * 100 }" :style.root="{'--x': x + 'px', '--y': y + 'px', '--scroll': scroll+'%'}" class="flex-col border border-10 md:border-20 border-blue-700 bg-stone-100 p-6 md:p-20">
-    <nav class="container max-w-6xl mx-auto flex md:grid grid-cols-6 gap-8">
+  <body :scope="x=window.innerWidth/2, y=window.innerHeight/2, scroll=0" :onmousemove.document="e => { x = e.clientX; y = e.clientY; }" :onscroll.window="e => { scroll = Math.max(0,Math.min(1, window.scrollY / (document.documentElement.scrollHeight - window.innerHeight))) * 100 }" :style.root="{'--x': x + 'px', '--y': y + 'px', '--scroll': scroll+'%'}" class="flex-col border border-10 md:border-20 border-blue-700 bg-stone-100 p-6 md:p-20">
+    <nav class="container max-w-6xl mx-auto flex md:grid grid-cols-6 gap-8 max-md:absolute top-8 right-8">
       <div class="col-start-4 col-span-2 flex flex-row gap-4 md:gap-8 bold text-sm md:text-base font-bold max-md:ml-auto">
         <!-- <a href="./api.html">docs</a> -->
         <!-- <a href="./examples.html">drops</a> -->
@@ -90,14 +90,14 @@
       </div>
     </nav>
 
-    <header class="my-8">
+    <header class="md:my-8">
       <div class="container max-w-6xl mx-auto md:grid grid-cols-6 gap-8">
-        <h1 class="text-6xl md:text-8xl font-bold text-blue-700 col-span-3 md:text-right mb-4 mt-12 tracking-tight">∴ spræ</h1>
+        <h1 class="text-6xl md:text-8xl font-bold text-blue-700 col-span-3 md:text-right mb-4 tracking-tight"><span class="max-md:hidden">∴</span> spræ</h1>
       </div>
       <div class="container max-w-6xl mx-auto md:grid grid-cols-6 gap-8">
         <div class="col-start-4 col-span-3 text-blue-700">
           <h2 class="text-2xl md:text-4xl font-bold my-2">
-            Hydration for DOM tree
+            Microhydration for DOM tree
           </h2>
           <h5 class="my-2 leading-snug">Simple progressive enhancement for HTML / JSX.<br />
             Add UI interactions with reactive attributes.</h5>
@@ -134,7 +134,7 @@
           { title: ":class", text: "Set className.", example: `&lt;div :class="{ active: isActive }"&gt;...&lt;/div&gt;` },
           { title: ":style", text: "Set style.", example: `&lt;div :style="{bar: &apos;baz&apos;, &apos;--qux&apos;: &apos;quv&apos;}"&gt;...&lt;/div&gt;` },
           { title: ":value", text: "Bind input, textarea or select value.", example: `&lt;input :value="value" /&gt;` },
-          { title: ":[attr], :", text: "Set any attribute(s).", example: `&lt;input :id="name" :="{ ...props }" /&gt;` },
+          { title: ":<attr>, :", text: "Set any attribute(s).", example: `&lt;input :id="name" :="{ ...props }" /&gt;` },
           { title: ":if, :else", text: "Control flow.", example: `&lt;span :if="foo"&gt;foo&lt;/span&gt;\n&lt;span :else :if="bar"&gt;bar&lt;/span&gt;\n&lt;span :else&gt;baz&lt;/span&gt;` },
           { title: ":each", text: "Multiply content.", example: `&lt;li :each="item in items" :text="item" /&gt;` },
           { title: ":scope", text: "Define state container for a subtree.", example: `&lt;x :scope="{foo: &apos;foo&apos;}"&gt;\n\t&lt;y :text="foo"&gt;...&lt;/y&gt;\n&lt;/x&gt;` },
@@ -143,13 +143,13 @@
           { title: ":on<event>", text: "Add event listener.", example: `&lt;button :onclick="count++"&gt;Up&lt;/button&gt;` }
         ],
         mods: [
-          { title: ".debounce-[ms|tick|frame|idle]", text: "Defer callback by ms, next tick/animation frame, or until idle. Defaults to 250ms.", example: `&lt;input :oninput.debounce-200="update(event)" /&gt;` },
-          { title: ".throttle-[ms|tick|frame]", text: "Limit callback rate to interval in ms, tick or animation framerate. By default 250ms.", example: `&lt;div :text.throttle-100="text.length"&gt;...&lt;/div&gt;` },
+          { title: ".debounce-<tick|frame|idle|n>", text: "Defer callback by ms, next tick/animation frame, or until idle. Defaults to 250ms.", example: `&lt;input :oninput.debounce-200="update(event)" /&gt;` },
+          { title: ".throttle-<tick|frame|n>", text: "Limit callback rate to interval in ms, tick or animation framerate. By default 250ms.", example: `&lt;div :text.throttle-100="text.length"&gt;...&lt;/div&gt;` },
           { title: ".once", text: "Call only once.", example: `&lt;button :onclick.once="loadMoreData()"&gt;Start&lt;/button&gt;` },
           { title: ".window, .document, .root, .body, .parent, .outside, .self", text: "Specify event target.", example: `&lt;div :onclick.outside="closeMenu()"&gt;Dropdown&lt;/div&gt;` },
           { title: ".passive, .capture", text: "Event listener options.", example: `&lt;div :onscroll.passive="pos = e.scrollTop"&gt;...&lt;/div&gt;` },
           { title: ".prevent, .stop, .immediate", text: "Prevent default or stop (immediate) propagation.", example: `&lt;a :onclick.prevent="navigate(&apos;/page&apos;)" href="/default"&gt;Go&lt;/a&gt;` },
-          { title: ".[key]", text: "Filter event by event.key or combination (.ctrl, .shift, .alt, .enter, .esc, .arrow, .digit, .letter, .char, etc.).", example: `&lt;div :onkeydown.arrow="navigate(event.key)"&gt;...&lt;/div&gt;` }
+          { title: ".<key>, .<meta>-<key>", text: "Filter event by event.key or combination (.ctrl, .shift, .alt, .meta, .arrow, .digit, .letter, .char, .enter, .esc, .tab, .delete).", example: `&lt;div :onkeydown.cmd-arrow="navigate(event.key)"&gt;...&lt;/div&gt;` }
         ]
       }'>
         <header class="md:grid grid-cols-6 gap-8 items-baseline">
@@ -207,7 +207,7 @@
           <h4 class="text-xl text-blue-700 font-bold mt-4">Why another framework?</h4>
           <p class="my-1"> There is no full aesthetic satisfaction with other solutions. </p>
           <h4 class="text-xl text-blue-700 font-bold mt-4">Why sprae?</h4>
-          <p class="my-1"> SPRAE stands for Simple PRogressive enhancement Æsthetic. Also it hydrates DOM tree non-invasively.</p>
+          <p class="my-1"> SPRAE stands for Simple PRogressive Ænhancement. Also it hydrates DOM tree non-invasively.</p>
           <h4 class="text-xl text-blue-700 font-bold mt-4">Why not Alpine.js?</h4>
           <p class="my-1"> Less syntax space, less magic, less weight, open state and extensibility.</p>
           <h4 class="text-xl text-blue-700 font-bold mt-4">Why not vanilla JS?</h4>
