@@ -13,7 +13,7 @@ export default (el, state, expr, name) => {
     const set = setter(expr)
     const handleChange = el.type === 'checkbox' ? () => set(state, el.checked) :
       el.type === 'select-multiple' ? () => set(state, [...el.selectedOptions].map(o => o.value)) :
-        () => set(state, el.selectedIndex < 0 ? null : el.value)
+        () => set(state, el.selectedIndex < 0 ? null : isNaN(el.valueAsNumber) ? el.value : el.valueAsNumber);
 
     el.oninput = el.onchange = handleChange; // hope user doesn't redefine these manually via `.oninput = somethingElse` - it saves 5 loc vs addEventListener
 
@@ -25,34 +25,32 @@ export default (el, state, expr, name) => {
       sprae(el, state)
     }
 
-    // initial state value - setter has already cached it, no need to parse again
+    // initial state value - setter has already cached it, so parse is fast
     parse(expr)(state) ?? handleChange()
   } catch { }
 
-  return (el.type === "text" || el.type === "") ?
-    (value) => el.setAttribute("value", (el.value = value == null ? "" : value)) :
-    (el.tagName === "TEXTAREA" || el.type === "text" || el.type === "") ?
-      (value, from, to) => (
-        // we retain selection in input
-        (from = el.selectionStart),
-        (to = el.selectionEnd),
-        el.setAttribute("value", (el.value = value == null ? "" : value)),
-        from && el.setSelectionRange(from, to)
+  return (el.type === "text" || el.type === "" || el.tagName === "TEXTAREA") ?
+    (value, _from, _to) => (
+      // we retain selection in input
+      (_from = el.selectionStart),
+      (_to = el.selectionEnd),
+      el.setAttribute("value", (el.value = value == null ? "" : value)),
+      _from && el.setSelectionRange(_from, _to)
+    ) :
+    (el.type === "checkbox") ?
+      (value) => (el.checked = value, attr(el, "checked", value)) :
+      (el.type === 'radio') ? (value) => (
+        el.value === value && ((el.checked = value), attr(el, 'checked', value))
       ) :
-      (el.type === "checkbox") ?
-        (value) => (el.checked = value, attr(el, "checked", value)) :
-        (el.type === 'radio') ? (value) => (
-          el.value === value && ((el.checked = value), attr(el, 'checked', value))
-        ) :
-          (el.type === "select-one") ?
-            (value) => {
-              for (let o of el.options)
-                o.value == value ? o.setAttribute("selected", '') : o.removeAttribute("selected");
-              el.value = value;
-            } :
-            (el.type === 'select-multiple') ? (value) => {
-              for (let o of el.options) o.removeAttribute('selected')
-              for (let v of value) el.querySelector(`[value="${v}"]`).setAttribute('selected', '')
-            } :
-              (value) => (el.value = value);
+        (el.type === "select-one") ?
+          (value) => {
+            for (let o of el.options)
+              o.value == value ? o.setAttribute("selected", '') : o.removeAttribute("selected");
+            el.value = value;
+          } :
+          (el.type === 'select-multiple') ? (value) => {
+            for (let o of el.options) o.removeAttribute('selected')
+            for (let v of value) el.querySelector(`[value="${v}"]`).setAttribute('selected', '')
+          } :
+            (value) => (el.value = value);
 }

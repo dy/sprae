@@ -255,3 +255,22 @@ test("value: radio group", async () => {
   is(radio2.checked, false);
   is(radio3.checked, false);
 });
+
+test('value: number input', async () => {
+  let el = h`<input type="number" :value="num" />`;
+  let state = sprae(el, { num: 42 });
+
+  is(el.value, '42');
+  is(state.num, 42, 'state type is number');
+
+  // Update state
+  state.num = 100;
+  await tick();
+  is(el.value, '100');
+  is(state.num, 100, 'state type is number after update');
+
+  // Simulate user input
+  el.value = '75';
+  el.dispatchEvent(new window.Event('change'));
+  is(state.num, 75, 'state type is number after user input');
+})
