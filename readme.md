@@ -14,53 +14,6 @@
 Sprae enables reactivity via `:`-directives.
 
 
-## Table of contents
-
-<!-- [Usage](#usage) · [Directives](#directives) · [Modifiers](#modifiers) · [Store](#store) · [Signals](#signals) · [Evaluator](#evaluator) · [Start](#autoinit) · [JSX](#jsx) · [Build](#custom-build) · [Hints](#hints) · [Examples](#examples) -->
-
-- [Start](#start)
-- [Directives](#directives)
-- [Modifiers](#modifiers)
-- [Store](#store)
-- [Signals](#signals)
-- [Evaluator](#evaluator)
-- [JSX](#jsx)
-- [Custom build](#custom-build)
-- [Hints](#hints)
-
-
-## Start
-
-The `start` / `data-start` attribute auto-starts sprae on the page root or on a selector you provide.
-
-Example (auto-init on #counter):
-
-```html
-<div id="counter" :scope="{count: 1}">
-  <p :text="`Clicked ${count} times`"></p>
-  <button :onclick="count++">Click me</button>
-</div>
-
-<script src="./sprae.js" data-start="#counter"></script>
-<script>
-  window.sprae; // available as global standalone
-</script>
-```
-
-Manual ESM init:
-
-```html
-<script type="module">
-  import sprae from './sprae.js'
-
-  // init
-  const state = sprae(document.getElementById('counter'), { count: 0 })
-
-  // update state
-  state.count++
-</script>
-```
-
 <!--
 ### Flavors
 
@@ -321,37 +274,40 @@ Trigger when element is connected / disconnected from DOM.
 ## Modifiers
 
 
-#### `.debounce-<ms|tick|frame|idle>?`
+#### `.debounce-<ms>?`
 
-Defer callback by ms, next tick/animation frame, or until idle. Defaults to 250ms.
+Defer callback by interval in ms. Defaults to 250ms.
 
 ```html
 <!-- debounce keyboard input by 200ms -->
 <input :oninput.debounce-200="event => update(event)" />
-
-<!-- set class in the next tick -->
-<div :class.debounce-tick="{ active }">...</div>
-
-<!-- debounce resize to animation framerate -->
-<div :onresize.window.debounce-frame="updateSize()">...</div>
-
-<!-- batch logging when idle -->
-<div :fx.debounce-idle="sendAnalytics(batch)"></div>
 ```
 
-#### `.throttle-<ms|tick|frame>?`
+#### `.throttle-<ms>?`
 
-Limit callback rate to interval in ms, tick or animation framerate. By default 250ms.
+Limit callback rate to interval in ms. By default 250ms.
 
 ```html
 <!-- throttle text update -->
 <div :text.throttle-100="text.length"></div>
+```
 
-<!-- lock style update to animation framerate -->
-<div :onscroll.throttle-frame="progress = (scrollTop / scrollHeight) * 100"/>
+#### `.tick`
 
-<!-- ensure separate stack for events -->
-<div :onmessage.window.throttle-tick="event => log(event)">...</div>
+Run callback in the next tick.
+
+```html
+<!-- set class in the next tick -->
+<div :class.tick="{ active }">...</div>
+```
+
+#### `.raf`
+
+Throttle callback by animation frames.
+
+```html
+<!-- lock style update to animation frames -->
+<div :onscroll.raf="progress = (scrollTop / scrollHeight) * 100"/>
 ```
 
 #### `.once`
@@ -391,7 +347,7 @@ Event listener [options](https://developer.mozilla.org/en-US/docs/Web/API/EventT
 <body :ontouchstart.capture="logTouch(e)"></body>
 ```
 
-#### `.prevent`, `.stop`, `.stop-immediate`  <kbd>events only</kbd>
+#### `.prevent`, `.stop`, `.immediate`  <kbd>events only</kbd>
 
 Prevent default or stop (immediate) propagation.
 
@@ -400,7 +356,7 @@ Prevent default or stop (immediate) propagation.
 <a :onclick.prevent="navigate('/page')" href="/default">Go</a>
 
 <!-- stop immediate propagation -->
-<button :onclick.stop-immediate="criticalHandle()">Click</button>
+<button :onclick.stop.immediate="criticalHandle()">Click</button>
 ```
 
 #### `.<key>-<*>` <kbd>events only</kbd>
@@ -443,6 +399,39 @@ Any other modifier has no effect, but allows binding multiple handlers.
 
 ```html
 <span :fx.once="init(x)" :fx.update="() => (update(), () => destroy())">
+```
+
+
+## Start
+
+The `start` / `data-start` attribute auto-starts sprae on the page root or on a selector you provide.
+
+Example (auto-init on #counter):
+
+```html
+<div id="counter" :scope="{count: 1}">
+  <p :text="`Clicked ${count} times`"></p>
+  <button :onclick="count++">Click me</button>
+</div>
+
+<script src="./sprae.js" data-start="#counter"></script>
+<script>
+  window.sprae; // available as global standalone
+</script>
+```
+
+Manual ESM init:
+
+```html
+<script type="module">
+  import sprae from './sprae.js'
+
+  // init
+  const state = sprae(document.getElementById('counter'), { count: 0 })
+
+  // update state
+  state.count++
+</script>
 ```
 
 
@@ -617,7 +606,7 @@ Micro sprae version is 2.5kb bundle with essentials:
 * Attributes order matters, eg. `<li :each="el in els" :text="el.name"></li>` is not the same as `<li :text="el.name" :each="el in els"></li>`.
 * Invalid self-closing tags like `<a :text="item" />` cause error. Valid self-closing tags are: `li`, `p`, `dt`, `dd`, `option`, `tr`, `td`, `th`, `input`, `img`, `br`.
 * To destroy state and detach sprae handlers, call `element[Symbol.dispose]()`.
-* `this` is not used, to get element reference use `:ref="element => {...}"`.
+* `this` refers to current element, but it's recommended to use `:ref="element => {...}"`.
 * `key` is not used, `:each` uses direct list mapping instead of DOM diffing.
 * Expressions can be async: `<div :text="await load()"></div>`
 
@@ -633,12 +622,12 @@ Micro sprae version is 2.5kb bundle with essentials:
 ## Justification
 
 Modern frontend is like processed food – heavy, unhealthy and make you bloat.<br/>
-<!--Frameworks come with tooling, setups, configs, conventions, artificial abstractions and ecosystem lock-in.<br/>
-Often they do not care about progressive enhancement or graceful degradation, imposing JS.-->
+Frameworks come with tooling, setups, configs, proprietary conventions, artificial abstractions and ecosystem lock-in.<br/>
+Progressive enhancement became anachronism.
 
 Native [template-parts](https://github.com/github/template-parts) and [DCE](https://github.com/WICG/webcomponents/blob/gh-pages/proposals/Declarative-Custom-Elements-Strawman.md) is healthy alternative, but stuck with HTML quirks [1](https://github.com/github/template-parts/issues/24), [2](https://github.com/github/template-parts/issues/25), [3](https://shopify.github.io/liquid/tags/template/#raw).
 
-[Alpine](https://github.com/alpinejs/alpine) and [petite-vue](https://github.com/vuejs/petite-vue) offer progressive enhancement, but have cluttered syntax (`x-`, `@`, `$`, `{{}}` etc.) and limited integration [1](https://github.com/alpinejs/alpine/discussions/3223).
+[Alpine](https://github.com/alpinejs/alpine) and [petite-vue](https://github.com/vuejs/petite-vue) offer progressive enhancement, but clutter syntax (`x-`, `@`, `$`, `{{}}` etc.) and limit integration [1](https://github.com/alpinejs/alpine/discussions/3223).
 
 _Sprae_ holds open, safe, minimalistic philosophy:
 
