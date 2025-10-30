@@ -4,18 +4,6 @@
 
 [**website**](https://dy.github.io/sprae)  ⋮  [**docs**](https://dy.github.io/sprae/docs)  ⋮  [**examples**](https://dy.github.io/sprae/drops)
 
-<!--
-### Flavors
-
-* [sprae.js](dist/sprae.js) – ESM.
-* [sprae.umd.js](dist/sprae.umd.js) – CJS / UMD / standalone with autoinit.
-* [sprae.micro.js](dist/sprae.micro.js) – <2.5kb [micro version](#micro).
--->
-<!-- * sprae.async.js - sprae with async events -->
-<!-- * sprae.alpine.js - alpine sprae, drop-in alpinejs replacement -->
-<!-- * sprae.vue.js - vue sprae, drop-in petite-vue replacement -->
-<!-- * sprae.preact.js - sprae with preact-signals -->
-
 
 ## Usage
 
@@ -40,7 +28,6 @@ const state = sprae(document.getElementById('counter'), { count: 0 })
 state.count++
 ```
 
-
 ## Directives
 
 [`:text`](docs.md#text), [`:class`](docs.md#class), [`:style`](docs.md#style), [`:value`](docs.md#value), [`:<attr>`](docs.md#attr), [`:if`](docs.md#if)/[`:else`](docs.md#else), [`:each`](docs.md#each), [`:scope`](docs.md#scope), [`:fx`](docs.md#fx), [`:ref`](docs.md#ref), [`:on<event>`](docs.md#onevent)
@@ -60,28 +47,10 @@ Micro sprae version is 2.5kb bundle with essentials:
 * no `:each`, `:if`, `:value`
 -->
 
-<!--
-## FAQ
-
-1. Errors handling?
-2. Typescript support?
-3. Performance tips?
--->
-
 
 ## Why spræ?
 
-<!--
-Modern frontend is like processed food – heavy, unhealthy and make you bloat.<br/>
-Frameworks come with tooling, setups, proprietary conventions, artificial abstractions and ecosystem lock-in.<br/>
-Progressive enhancement became anachronism.
-
-Native [template-parts](https://github.com/github/template-parts) and [DCE](https://github.com/WICG/webcomponents/blob/gh-pages/proposals/Declarative-Custom-Elements-Strawman.md) is healthy alternative, but stuck with HTML quirks [1](https://github.com/github/template-parts/issues/24), [2](https://github.com/github/template-parts/issues/25), [3](https://shopify.github.io/liquid/tags/template/#raw).
-
-[Alpine](https://github.com/alpinejs/alpine) and [petite-vue](https://github.com/vuejs/petite-vue) offer progressive enhancement, but clutter syntax (`x-`, `@`, `$`, `{{}}` etc.) and limit integration [1](https://github.com/alpinejs/alpine/discussions/3223).
--->
-
-Minimalist: single prefix, valid HTML, signals reactivity, open state, build-free. Lightweight UI in prototypes, static sites, micro-frontends, anywhere.
+Minimal: single prefix, valid HTML, signals reactivity, open state, build-free. Lightweight UI in prototypes, static sites, micro-frontends, anywhere.
 
 <!--
 |                       | [AlpineJS](https://github.com/alpinejs/alpine)          | [Petite-Vue](https://github.com/vuejs/petite-vue)        | Sprae            |
@@ -113,11 +82,6 @@ _Inline directives_ Yes
 * Carousel: [demo](https://rwdevelopment.github.io/sprae_js_carousel/), [code](https://github.com/RWDevelopment/sprae_js_carousel)
 * Tabs: [demo](https://rwdevelopment.github.io/sprae_js_tabs/), [code](https://github.com/RWDevelopment/sprae_js_tabs?tab=readme-ov-file)-->
 <!-- * Prostogreen [demo](https://web-being.org/prostogreen/), [code](https://github.com/web-being/prostogreen/) -->
-
-<!--
-## See Also
-
-* [nadi](https://github.com/dy/nadi) - 101 signals. -->
 
 
 Inspired by [alpine](https://github.com/alpinejs/alpine), [petite-vue](https://github.com/vuejs/petite-vue) and others. <!--[lucia](https://github.com/aidenybai/lucia), [nuejs](https://github.com/nuejs/nuejs), [hmpl](https://github.com/hmpl-language/hmpl), [unpoly](https://unpoly.com/up.link), [dagger](https://github.com/dagger8224/dagger.js)-->
