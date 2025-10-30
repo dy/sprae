@@ -9,8 +9,6 @@
 
 `npm install sprae` or `<script src="https://unpkg.com/sprae"></script>`.
 
-**Autoinit**:
-
 ```html
 <div id="counter" :scope="{count: 1}">
   <p :text="`Clicked ${count} times`"></p>
@@ -20,13 +18,6 @@
 <script src="./sprae.js" start="#counter"></script>
 ```
 
-**Manual**:
-
-```js
-import sprae from 'sprae'
-const state = sprae(document.getElementById('counter'), { count: 0 })
-state.count++
-```
 
 ## Directives
 
@@ -52,7 +43,7 @@ Micro sprae version is 2.5kb bundle with essentials:
 
 ## Why spræ?
 
-Minimal: single prefix, valid HTML, signals reactivity, open state, build-free. Lightweight UI in prototypes, static sites, micro-frontends, anywhere.
+Minimal: single prefix, valid HTML, signals reactivity, open state, build-free. Lightweight UI for prototypes, static sites, micro-frontends, web apps etc.
 
 <!--
 |                       | [AlpineJS](https://github.com/alpinejs/alpine)          | [Petite-Vue](https://github.com/vuejs/petite-vue)        | Sprae            |
