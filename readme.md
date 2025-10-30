@@ -1,4 +1,4 @@
-# ∴ spræ [![tests](https://github.com/dy/sprae/actions/workflows/node.js.yml/badge.svg)](https://github.com/dy/sprae/actions/workflows/node.js.yml) [![npm bundle size](https://img.shields.io/bundlephobia/minzip/sprae)](https://bundlephobia.com/package/sprae) [![npm](https://img.shields.io/npm/v/sprae?color=orange)](https://www.npmjs.com/package/sprae)
+# ∴ spræ [![tests](https://github.com/dy/sprae/actions/workflows/node.js.yml/badge.svg)](https://github.com/dy/sprae/actions/workflows/node.js.yml) [![npm bundle size](https://img.shields.io/bundlephobia/minzip/sprae?color=white)](https://bundlephobia.com/package/sprae) [![npm](https://img.shields.io/npm/v/sprae?color=0969da)](https://www.npmjs.com/package/sprae)
 
 <em>S</em>imple <em>pr</em>ogressive <em>æ</em>nhancement for DOM or JSX.<br/>
 
@@ -645,21 +645,24 @@ Micro sprae version is 2.5kb bundle with essentials:
 3. Performance tips?
 -->
 
+
 ## Justification
 
-Modern frontend is like processed food.
-Frameworks come with endless tooling, tedious setups and configs, proprietary conventions, artificial abstractions and ecosystem lock-in. Progressive enhancement / graceful degradation is anachronism.
+Modern frontend is like processed food – heavy, unhealthy and make you bloat.<br/>
+<!--Frameworks come with tooling, setups, configs, conventions, artificial abstractions and ecosystem lock-in.<br/>
+Often they do not care about progressive enhancement or graceful degradation, imposing JS.-->
 
-Native [template-parts](https://github.com/github/template-parts) and [DCE](https://github.com/WICG/webcomponents/blob/gh-pages/proposals/Declarative-Custom-Elements-Strawman.md) give distant hope, but stuck with HTML quirks [1](https://github.com/github/template-parts/issues/24), [2](https://github.com/github/template-parts/issues/25), [3](https://shopify.github.io/liquid/tags/template/#raw).
+Native [template-parts](https://github.com/github/template-parts) and [DCE](https://github.com/WICG/webcomponents/blob/gh-pages/proposals/Declarative-Custom-Elements-Strawman.md) is healthy alternative, but stuck with HTML quirks [1](https://github.com/github/template-parts/issues/24), [2](https://github.com/github/template-parts/issues/25), [3](https://shopify.github.io/liquid/tags/template/#raw).
 
-[Alpine](https://github.com/alpinejs/alpine) and [petite-vue](https://github.com/vuejs/petite-vue) offer PE / GD, but have excessive API (x-, @, $, etc.), tend to [self-encapsulate](https://github.com/alpinejs/alpine/discussions/3223), limit extensibility and disregard performance / size.
+[Alpine](https://github.com/alpinejs/alpine) and [petite-vue](https://github.com/vuejs/petite-vue) offer progressive enhancement, but have cluttered syntax (`x-`, `@`, `$`, `{{}}` etc.) and limited integration [1](https://github.com/alpinejs/alpine/discussions/3223).
 
 _Sprae_ holds open, safe, minimalistic philosophy:
 
-* One `:` prefix. Zero magic.
+* Single prefix. Zero magic. Zero conventions.
 * Valid HTML. Non-obtrusive.
-* Signals for reactivity. (preact-signals compatible)
-* Configurable signals, evaluator, directives, modifiers.
+* Signals for reactivity.
+* Open state, ESM entry.
+* Configurable internals.
 * Build-free, ecosystem-agnostic.
 * Small, safe & fast.
 * 🫰 developers
