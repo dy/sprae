@@ -8,9 +8,9 @@ body {
     position: relative;
 
     /* hide github h1 */
-    /* h1:first-of-type {
+    h1:first-of-type {
       display: none;
-    } */
+    }
 
     h2 {
       position: sticky;
@@ -31,6 +31,7 @@ body {
   }
 }
 </style>
+
 
 [**Start**](#start)  ⋮  [**Directives**](#directives)  ⋮  [**Modifiers**](#modifiers)  ⋮  [**Store**](#store)  ⋮  [**Signals**](#signals)  ⋮  [**Evaluator**](#evaluator)  ⋮  [**JSX**](#jsx)  ⋮  [**Custom build**](#custom-build)  ⋮  [**Hints**](#hints)
 
