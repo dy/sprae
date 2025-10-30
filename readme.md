@@ -622,7 +622,7 @@ Micro sprae version is 2.5kb bundle with essentials:
 ## Justification
 
 Modern frontend is like processed food – heavy, unhealthy and make you bloat.<br/>
-Frameworks come with tooling, setups, configs, proprietary conventions, artificial abstractions and ecosystem lock-in.<br/>
+Frameworks come with tooling, setups, proprietary conventions, artificial abstractions and ecosystem lock-in.<br/>
 Progressive enhancement became anachronism.
 
 Native [template-parts](https://github.com/github/template-parts) and [DCE](https://github.com/WICG/webcomponents/blob/gh-pages/proposals/Declarative-Custom-Elements-Strawman.md) is healthy alternative, but stuck with HTML quirks [1](https://github.com/github/template-parts/issues/24), [2](https://github.com/github/template-parts/issues/25), [3](https://shopify.github.io/liquid/tags/template/#raw).
@@ -704,6 +704,7 @@ See results at localhost:8080/
 </details>
 -->
 
+<!--
 
 ## Examples
 
@@ -711,7 +712,7 @@ See results at localhost:8080/
 * JS Framework Benchmark: [demo](https://dy.github.io/sprae/examples/js-framework-benchmark), [code](https://github.com/dy/sprae/blob/main/examples/js-framework-benchmark.html)
 * Wavearea: [demo](https://dy.github.io/wavearea?src=//cdn.freesound.org/previews/586/586281_2332564-lq.mp3), [code](https://github.com/dy/wavearea)
 * Carousel: [demo](https://rwdevelopment.github.io/sprae_js_carousel/), [code](https://github.com/RWDevelopment/sprae_js_carousel)
-* Tabs: [demo](https://rwdevelopment.github.io/sprae_js_tabs/), [code](https://github.com/RWDevelopment/sprae_js_tabs?tab=readme-ov-file)
+* Tabs: [demo](https://rwdevelopment.github.io/sprae_js_tabs/), [code](https://github.com/RWDevelopment/sprae_js_tabs?tab=readme-ov-file) -->
 <!-- * Prostogreen [demo](https://web-being.org/prostogreen/), [code](https://github.com/web-being/prostogreen/) -->
 
 <!--
