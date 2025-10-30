@@ -2,10 +2,6 @@
 
 <em>S</em>imple <em>pr</em>ogressive <em>æ</em>nhancement for DOM or JSX.<br/>
 
-<!-- [Usage](#usage) · [Directives](#directives) · [Modifiers](#modifiers) · [Store](#store) · [Signals](#signals) · [Evaluator](#evaluator) · [Start](#autoinit) · [JSX](#jsx) · [Build](#custom-build) · [Hints](#hints) · [Examples](#examples) -->
-
-## Usage
-
 ```html
 <div id="counter" :scope="{ count: 0 }">
   <p :text="`Clicked ${count} times`"></p>
@@ -17,24 +13,53 @@
 
 Sprae enables reactivity via `:`-directives.
 
-<!--
-## Concepts
 
-**Directives** are `:` prefixed attributes that evaluate JavaScript expressions:
-`<div :text="message"></div>`
+## Table of contents
 
-**Reactivity** happens automatically through signals—just mutate values:
-`<button :onclick="count++">` updates `<span :text="count">`
+<!-- [Usage](#usage) · [Directives](#directives) · [Modifiers](#modifiers) · [Store](#store) · [Signals](#signals) · [Evaluator](#evaluator) · [Start](#autoinit) · [JSX](#jsx) · [Build](#custom-build) · [Hints](#hints) · [Examples](#examples) -->
 
-**Scope** creates a state container for a subtree:
-`<div :scope="{ user: 'Alice' }">` makes `user` available to children
+- [Start](#start)
+- [Directives](#directives)
+- [Modifiers](#modifiers)
+- [Store](#store)
+- [Signals](#signals)
+- [Evaluator](#evaluator)
+- [JSX](#jsx)
+- [Custom build](#custom-build)
+- [Hints](#hints)
 
-**Effects** run side effects:
-`:fx="console.log(count)"` logs when `count` changes
 
-**Modifiers** adjust directive behavior:
-`:oninput.debounce-200` delays handler by 200ms
--->
+## Start
+
+The `start` / `data-start` attribute auto-starts sprae on the page root or on a selector you provide.
+
+Example (auto-init on #counter):
+
+```html
+<div id="counter" :scope="{count: 1}">
+  <p :text="`Clicked ${count} times`"></p>
+  <button :onclick="count++">Click me</button>
+</div>
+
+<script src="./sprae.js" data-start="#counter"></script>
+<script>
+  window.sprae; // available as global standalone
+</script>
+```
+
+Manual ESM init:
+
+```html
+<script type="module">
+  import sprae from './sprae.js'
+
+  // init
+  const state = sprae(document.getElementById('counter'), { count: 0 })
+
+  // update state
+  state.count++
+</script>
+```
 
 <!--
 ### Flavors
@@ -500,47 +525,6 @@ a minimal JS subset:
 `1 2.34 -5e6 0x7a`<br/>
 `true false null undefined NaN`
 -->
-
-
-## Autoinit
-
-The `start` / `data-start` attribute automatically starts sprae on document. It can use a selector to adjust target container.
-
-```html
-<div id="counter" :scope="{count: 1}">
-  <p :text="`Clicked ${count} times`"></p>
-  <button :onclick="count++">Click me</button>
-</div>
-
-<script src="./sprae.js" data-start="#counter"></script>
-```
-
-For manual start, remove `start` attribute:
-
-```html
-<script src="./sprae.js"></script>
-<script>
-  // watch & autoinit els
-  sprae.start(document.body, { count: 1 });
-
-  // OR init individual el (no watch)
-  const state = sprae(document.getElementById('counter'), { count: 0 })
-</script>
-```
-
-For more control use ESM:
-
-```html
-<script type="module">
-  import sprae from './sprae.js'
-
-  // init
-  const state = sprae(document.getElementById('counter'), { count: 0 })
-
-  // update state
-  state.count++
-</script>
-```
 
 
 ## JSX
