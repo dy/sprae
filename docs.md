@@ -1,6 +1,21 @@
+## Table of contents
+
+- [Start](#start)
+- [Directives](#directives)
+- [Modifiers](#modifiers)
+- [Store](#store)
+- [Signals](#signals)
+- [Evaluator](#evaluator)
+- [JSX](#jsx)
+- [Custom build](#custom-build)
+- [Hints](#hints)
+
+
 ## Start
 
-The `start` / `data-start` attribute automatically starts sprae on root. It can use a selector to adjust target container.
+The `start` / `data-start` attribute auto-starts sprae on the page root or on a selector you provide.
+
+Example (auto-init on #counter):
 
 ```html
 <div id="counter" :scope="{count: 1}">
@@ -10,11 +25,11 @@ The `start` / `data-start` attribute automatically starts sprae on root. It can 
 
 <script src="./sprae.js" data-start="#counter"></script>
 <script>
-  window.sprae; // global standalone
+  window.sprae; // available as global standalone
 </script>
 ```
 
-For manual init use global `sprae` instance or ESM:
+Manual ESM init:
 
 ```html
 <script type="module">
@@ -27,7 +42,6 @@ For manual init use global `sprae` instance or ESM:
   state.count++
 </script>
 ```
-
 
 
 ## Directives

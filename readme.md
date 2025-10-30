@@ -60,8 +60,8 @@ Sprae enables reactivity via `:`-directives.
 
 ## Justification
 
-Modern frontend is like processed food.
-Frameworks come with heavy tooling, laborous setups, configs, proprietary conventions, artificial abstractions and ecosystem lock-in. Progressive enhancement is anachronism.
+Modern frontend is like processed food – heavy, unhealthy and make you feel bloated.
+Frameworks come with heavy tooling, laborous setups, configs, proprietary conventions, artificial abstractions and ecosystem lock-in. Not care about progressive enhancement is anachronism.
 
 Native [template-parts](https://github.com/github/template-parts) and [DCE](https://github.com/WICG/webcomponents/blob/gh-pages/proposals/Declarative-Custom-Elements-Strawman.md) give hope, but stuck with HTML quirks [1](https://github.com/github/template-parts/issues/24), [2](https://github.com/github/template-parts/issues/25), [3](https://shopify.github.io/liquid/tags/template/#raw).
 
