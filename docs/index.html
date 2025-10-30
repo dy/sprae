@@ -11,6 +11,8 @@
     <link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400;1,700&display=swap" rel="stylesheet">
     <script src="//unpkg.com/sprae" start></script>
     <!-- <script src="/dist/sprae.umd.js" start></script> -->
+    <script src="//unpkg.com/microlight" start></script>
+    <!-- <script src="./microlight.js" start></script> -->
     <style>
       * {touch-action: manipulation;}
       /* reset styles */
@@ -55,6 +57,11 @@
         font-size: smaller;
         white-space: pre-wrap;
         word-wrap: break-word;
+        /* microhighlight tweaks */
+        [style*="opacity:.7;"] {
+          color: #9dd4ff;
+          opacity: 1 !important;
+        }
       }
 
       button {
@@ -76,8 +83,6 @@
           font-size: 15px;
         }
       }
-
-
     </style>
   </head>
 
@@ -98,10 +103,10 @@
       <div class="container max-w-6xl mx-auto md:grid grid-cols-6 gap-8">
         <div class="col-start-4 col-span-3 text-blue-700">
           <h2 class="text-2xl md:text-4xl font-bold my-2">
-            Hydration for DOM tree
+            simple progressive ænhancement
           </h2>
           <h5 class="my-2 leading-snug mb-6">
-            Aesthetic progressive enhancement and UI interactions for HTML / JSX with reactive attributes.
+            Add UI interactions for HTML / JSX with reactive attributes.
           </h5>
         </div>
       </div>
@@ -109,7 +114,7 @@
 
     <main>
       <section class="container max-w-6xl mx-auto md:grid grid-cols-6 md:my-20" :scope>
-        <pre class="p-6 md:p-8 col-span-3"><code :ref="code">&lt;script src="//unpkg.com/sprae" start&gt;&lt;/script&gt;
+        <pre class="p-6 md:p-8 col-span-3 microlight"><code :ref="code">&lt;script src="//unpkg.com/sprae" start&gt;&lt;/script&gt;
 
 &lt;div :scope="count=0"&gt;
   &lt;button :onclick="count++"&gt;+&lt;/button&gt;
@@ -173,12 +178,12 @@
                 <p :text="item.text">Set text content.</p>
               </dd>
             </div>
-            <pre class="p-4 md:p-6 col-span-4 group-hover:bg-blue-600!"><code :text="item.example">&lt;span :text="user.name"&gt;Guest&lt;/span&gt;</code></pre>
+            <pre class="p-4 md:p-6 col-span-4 group-hover:bg-blue-600! microlight"><code :text="item.example">&lt;span :text="user.name"&gt;Guest&lt;/span&gt;</code></pre>
           </div>
         </dl>
 
         <div :if="active==1">
-          <div class="grid-6 md:grid grid-cols-6 gap-8 hover:bg-white px-6 -mx-6 md:pr-0 md:mr-0" :each="item in mods">
+          <div class="group grid-6 md:grid grid-cols-6 gap-8 hover:bg-white px-6 -mx-6 md:pr-0 md:mr-0" :each="item in mods">
             <div class="col-span-2 py-4">
               <dt>
                 <h5 class="text-lg text-blue-700 leading-snug" :text="item.title">mod</h5>
@@ -187,7 +192,7 @@
                 <p :text="item.text">Set text content.</p>
               </dd>
             </div>
-            <pre class="p-4 md:p-6 col-span-4"><code :text="item.example">&lt;span :text="user.name"&gt;Guest&lt;/span&gt;</code></pre>
+            <pre class="p-4 md:p-6 col-span-4 group-hover:bg-blue-600! microlight" :fx.debounce-tick="microlight.reset()"><code :text="item.example">&lt;span :text="user.name"&gt;Guest&lt;/span&gt;</code></pre>
           </div>
         </div>
       </section>
@@ -207,15 +212,15 @@
         <h2 class="text-3xl text-blue-700 font-bold col-span-2">FAQ</h2>
         <div class="col-span-4">
           <h4 class="text-xl text-blue-700 font-bold mt-4">Why another framework?</h4>
-          <p class="my-1"> There is no full aesthetic satisfaction with other solutions. </p>
+          <p class="my-1"> There was no satisfaction with other solutions. I needed something simple, open, easy to integrate with ESM. </p>
           <h4 class="text-xl text-blue-700 font-bold mt-4">Why sprae?</h4>
           <p class="my-1"> SPRAE stands for Simple PRogressive Ænhancement. Also it hydrates DOM tree non-invasively.</p>
           <h4 class="text-xl text-blue-700 font-bold mt-4">Why not Alpine.js?</h4>
-          <p class="my-1"> Less syntax space, less magic, less weight, open state and extensibility.</p>
+          <p class="my-1"> Less syntax space, less magic, less weight, extensibility, open state and easier to integrate.</p>
           <h4 class="text-xl text-blue-700 font-bold mt-4">Why not vanilla JS?</h4>
           <p class="my-1"> `querySelector` is wrong mantra.</p>
           <h4 class="text-xl text-blue-700 font-bold mt-4">Why not Next/React?</h4>
-          <p class="my-1"> <a href="https://www.keithcirkel.co.uk/i-dont-have-time-to-learn-react/">No time</a>. But sprae works well with <a href="https://github.com/dy/sprae?tab=readme-ov-file#jsx">JSX</a>.</p>
+          <p class="my-1"> <a href="https://www.keithcirkel.co.uk/i-dont-have-time-to-learn-react/">Opinionated</a>. But sprae works well with <a href="https://github.com/dy/sprae?tab=readme-ov-file#jsx">JSX</a>.</p>
           <h4 class="text-xl text-blue-700 font-bold mt-4">Who cares for progressive enhancement / graceful degradation?</h4>
           <p class="my-1"> Who needs fast, fail-proof, accessible, SEO-optimized web.</p>
           <h4 class="text-xl text-blue-700 font-bold mt-4">Is it just a toy?</h4>
