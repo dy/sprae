@@ -2,7 +2,7 @@
 
 <em>S</em>imple <em>pr</em>ogressive <em>æ</em>nhancement for DOM or JSX with reactive attributes.
 
-[**website**](https://dy.github.io/sprae)  ⋮  [**docs**](https://dy.github.io/sprae/docs)  ⋮  [**examples**](https://dy.github.io/sprae/drops)
+[**website**](https://dy.github.io/sprae), [**docs**](https://dy.github.io/sprae/docs), [**examples**](https://dy.github.io/sprae/drops)
 
 
 ## Usage
@@ -22,8 +22,6 @@
 ## Directives
 
 [`:text`](docs.md#text), [`:class`](docs.md#class), [`:style`](docs.md#style), [`:value`](docs.md#value), [`:<attr>`](docs.md#attr), [`:if`](docs.md#if)/[`:else`](docs.md#else), [`:each`](docs.md#each), [`:scope`](docs.md#scope), [`:fx`](docs.md#fx), [`:ref`](docs.md#ref), [`:on<event>`](docs.md#onevent)
-
-#### Modifiers
 
 _Timing_: [`.debounce`](docs.md#debounce), [`.throttle`](docs.md#throttle), [`.tick`](docs.md#tick), [`.raf`](docs.md#raf), [`.once`](docs.md#once).<br>
 _Target_: [`.window`](docs.md#targets), [`.document`](docs.md#targets), [`.root`](docs.md#targets), [`.body`](docs.md#targets), [`.parent`](docs.md#targets), [`.self`](docs.md#targets), [`.outside`](docs.md#targets).<br>
