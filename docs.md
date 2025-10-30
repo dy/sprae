@@ -1,4 +1,38 @@
-[**Start**](#start) • [**Directives**](#directives) • [**Modifiers**](#modifiers) • [**Store**](#store) • [**Signals**](#signals) • [**Evaluator**](#evaluator) • [**JSX**](#jsx) • [**Custom build**](#custom-build) • [**Hints**](#hints)
+---
+title: "Docs"
+---
+
+<style>
+body {
+  .markdown-body, main {
+    position: relative;
+
+    /* hide github h1 */
+    /* h1:first-of-type {
+      display: none;
+    } */
+
+    h2 {
+      position: sticky;
+      top: 0;
+      background: white;
+    }
+
+    a {
+      text-underline-offset: .2em;
+      &.anchorjs-link {
+        text-decoration: none;
+      }
+    }
+
+    ul {
+      padding-left: 1.5ch;
+    }
+  }
+}
+</style>
+
+[**Start**](#start)  ⋮  [**Directives**](#directives)  ⋮  [**Modifiers**](#modifiers)  ⋮  [**Store**](#store)  ⋮  [**Signals**](#signals)  ⋮  [**Evaluator**](#evaluator)  ⋮  [**JSX**](#jsx)  ⋮  [**Custom build**](#custom-build)  ⋮  [**Hints**](#hints)
 
 
 ## Start
