@@ -214,6 +214,8 @@
   * [x] Append rows to large table is THE SLOWEST
   * [~] Create many rows IS SLOW
 
+* [ ] expose `this` - not a big deal
+* [ ] `.tick` alias, `.raf` alias - debounce + throttle
 * [ ] mobile click is super sluggish
 * [ ] make :on a directive, not hardcoded
 * [ ] find alternative way to update plain lists in :each rather than simulating signals (adds memory overhead)
@@ -223,12 +225,14 @@
 * [ ] perf tests
 * [ ] alpine CSP syntax
 
+
 ## [ ] Website
   * [x] Connect donation links
   * [x] Inverse color render
   * [ ] Icons for principles
-  * [ ] Subtle animations
-  * [ ] Syntax highlighter
+  * [ ] Subtle animations: tabs switch
+  * [x] Syntax highlighter
+    * [ ] Use lighthigh with proper rules
   * [ ] Drops
   * [ ] Better reference examples
   * [ ] Examples
@@ -236,6 +240,8 @@
     * [ ] Wavearea
   * [ ] Used by
   * [ ] Sprae vs alpine
+  * [ ] Better spraying interaction
+  * [ ] Search
 
 ## [ ] Plugins
 

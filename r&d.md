@@ -1854,6 +1854,9 @@
     * [ ] bitcoin
     * [ ] gumroad
 
+## [ ] Sprae static
+  * Compile into static HTML with JS bindings, like svelte...
+
 ## [ ] Components / drops
 
   * [ ] Open UI
@@ -1886,3 +1889,5 @@ Fragments | Yes | Yes
 Ecosystem | No | Yes
 Plugins | 0 | Many
 Components | 0 | Many
+
+ESM integration | Yes | No
