@@ -1,6 +1,10 @@
 ---
 layout: default
 title: Drops
+redirect_from:
+  - /drops.html
+  - /examples.html
+  - /drops
 ---
 
 <ul>

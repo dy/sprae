@@ -89,8 +89,8 @@
   <body class="flex-col border border-10 md:border-20 border-blue-700 bg-stone-100 p-6 md:p-20 max-md:before:hidden" :scope="x=window.innerWidth/2, y=window.innerHeight/2, scroll=0" :onmousemove.document="e => { x = e.clientX; y = e.clientY; }" :onscroll.window="e => { scroll = Math.max(0,Math.min(1, window.scrollY / (document.documentElement.scrollHeight - window.innerHeight))) * 100 }" :style.root="{'--x': x + 'px', '--y': y + 'px', '--scroll': scroll+'%'}">
     <nav class="container max-w-6xl mx-auto flex md:grid grid-cols-6 gap-8 max-md:absolute top-8 right-8">
       <div class="col-start-4 col-span-2 flex flex-row gap-4 md:gap-8 bold text-sm md:text-base font-bold max-md:ml-auto">
-        <!-- <a href="./api.html">docs</a> -->
-        <!-- <a href="./examples.html">drops</a> -->
+        <a href="./docs">docs</a>
+        <a href="./examples">drops</a>
         <!-- <a href="./changelog.html">play</a> -->
         <a href="https://github.com/dy/sprae" class="relative before:content-['⌥  '] before:absolute before:-ml-6 ml-6">v<span :text="window.sprae?.version || '12.1.0'"></span></a>
       </div>
