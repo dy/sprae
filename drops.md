@@ -1,8 +1,4 @@
----
-title: Drops
-redirectFrom:
-  - /examples
----
+<link rel="stylesheet" href="./assets/github-style.css"/>
 
 <ul>
 {% for ex in site.examples %}
