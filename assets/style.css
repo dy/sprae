@@ -9,9 +9,9 @@
 }
 
 @font-face {
-  font-family: 'Atkinson Hyperlegible Mono';
-  src: url('./AtkinsonHyperlegibleMonoVF-Variable.woff2') format('woff2'),
-       url('./AtkinsonHyperlegibleMonoVF-Variable.ttf') format('truetype');
+  font-family: 'Monaspace';
+  src: url('./Monaspace\ Neon\ Var.woff2') format('woff2'),
+       url('./Monaspace\ Neon\ Var.woff') format('woff');
   font-weight: 100 900;
   font-style: normal;
   font-display: swap;
@@ -46,8 +46,7 @@ body {
 }
 
 pre, code {
-  font-family: 'Atkinson Hyperlegible Mono', monospace;
-  letter-spacing: -0.1ex;
+  font-family: 'Monaspace', monospace;
 }
 
 

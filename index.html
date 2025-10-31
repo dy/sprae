@@ -37,7 +37,7 @@
       }
 
       pre {
-        background: var(--color-blue-700);
+        background: var(--color-blue-600);
         color: white;
         white-space: pre-wrap;
         word-wrap: break-word;
@@ -76,14 +76,14 @@
 
     <header class="md:my-8">
       <div class="container max-w-6xl mx-auto md:grid grid-cols-6 gap-16">
-        <h1 class="text-6xl md:text-8xl font-black text-blue-700 col-span-3 md:text-right mb-4 tracking-tight">spræ</h1>
+        <h1 class="text-7xl md:text-8xl font-black text-blue-700 col-span-3 md:text-right mb-4 tracking-tight">spræ</h1>
       </div>
       <div class="container max-w-6xl mx-auto md:grid grid-cols-6 gap-16">
         <div class="col-start-4 col-span-3 text-blue-700">
-          <h2 class="text-2xl md:text-4xl font-bold my-2">
+          <h2 class="text-3xl md:text-4xl font-bold my-2">
             Simple Progressive Ænhancement
           </h2>
-          <h5 class="my-2 text-2xl mb-6">
+          <h5 class="my-2 text-xl md:text-2xl mb-6">
             Add UI interactions for HTML&thinsp;/&thinsp;JSX with reactive attributes.
           </h5>
         </div>
@@ -91,15 +91,15 @@
     </header>
 
     <main>
-      <section class="container max-w-6xl mx-auto md:grid grid-cols-6 md:my-20" :scope>
-        <pre class="p-6 md:p-8 col-span-3 microlight text-sm"><code :ref="code">&lt;script src="//unpkg.com/sprae" start&gt;&lt;/script&gt;
+      <section class="container max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-6 md:my-20" :scope>
+        <pre class="p-6 md:p-8 col-span-3 microlight"><code :ref="code">&lt;script src="//unpkg.com/sprae" start&gt;&lt;/script&gt;
 
 &lt;div :scope="count=0"&gt;
   &lt;button :onclick="count++"&gt;+&lt;/button&gt;
   &lt;button :onclick="count--"&gt;–&lt;/button&gt;
   Count: &lt;span :text="count"&gt;&lt;/span&gt;
 &lt;/div&gt;</code></pre>
-        <div class="col-span-3 p-8 bg-graph-paper h-full" :ref="el => el.innerHTML = code.textContent">
+        <div class="col-span-3 p-8 bg-graph-paper h-full text-lg" :ref="el => el.innerHTML = code.textContent">
         </div>
       </section>
 <!--
@@ -138,17 +138,17 @@
         ]
       }'>
         <header class="md:grid grid-cols-6 gap-8 items-baseline">
-          <h2 class="text-3xl text-blue-700 font-bold col-span-2 mb-2">Reference</h2>
+          <h2 class="text-3xl text-blue-700 col-span-2 mb-2 font-black">Reference</h2>
 
           <nav class="flex flex-row gap-1">
-            <span :onpointerup="active=0" class="relative flex gap-2 cursor-pointer md:text-lg text-blue-700 py-4 px-6 [&.active]:bg-white font-medium" :class="{active:active==0}">Directives <strong :text="dirs.length" class="font-black"></strong></span>
-            <span :onpointerup="active=1" class="relative flex gap-2 cursor-pointer md:text-lg text-blue-700 py-4 px-6 [&.active]:bg-white font-medium" :class="{active:active==1}">Modifiers <strong :text="mods.length" class="font-black"></strong></span>
+            <span :onpointerup="active=0" class="relative flex gap-2 cursor-pointer text-lg text-blue-700 py-4 px-4 [&.active]:bg-white font-medium" :class="{active:active==0}">Directives <strong :text="dirs.length" class="font-black"></strong></span>
+            <span :onpointerup="active=1" class="relative flex gap-2 cursor-pointer text-lg text-blue-700 py-4 px-4 [&.active]:bg-white font-medium" :class="{active:active==1}">Modifiers <strong :text="mods.length" class="font-black"></strong></span>
           </nav>
         </header>
 
         <dl :if="active==0" class="flex flex-col">
           <div class="group grid-6 md:grid grid-cols-6 gap-8 hover:bg-white px-6 -mx-6 md:pr-0 md:mr-0" :each="item in dirs">
-            <div class="col-span-2 py-4">
+            <div class="col-span-2 pt-4 pb-4">
               <dt>
                 <h5 class="text-lg text-blue-700 leading-snug" :text="item.title">dir</h5>
               </dt>
@@ -162,7 +162,7 @@
 
         <div :if="active==1">
           <div class="group grid-6 md:grid grid-cols-6 gap-8 hover:bg-white px-6 -mx-6 md:pr-0 md:mr-0" :each="item in mods">
-            <div class="col-span-2 py-4">
+            <div class="col-span-2 pt-4 pb-4">
               <dt>
                 <h5 class="text-lg text-blue-700 leading-snug" :text="item.title">mod</h5>
               </dt>
@@ -187,7 +187,7 @@
       </section> -->
 
       <section class="container max-w-6xl mx-auto my-16 md:grid grid-cols-6 gap-8" >
-        <h2 class="text-3xl text-blue-700 font-bold col-span-2">FAQ</h2>
+        <h2 class="text-3xl text-blue-700 font-black col-span-2">FAQ</h2>
         <div class="col-span-4">
           <h4 class="text-xl text-blue-700 font-bold mt-4">Why sprae?</h4>
           <p class="my-1"> Minimal DX UI framework with signals reactivity and ESM integration. SPRAE: Simple PRogressive Ænhancement. Hydrates DOM tree non-invasively via :-attributes. Ideal for static sites, micro-frontends, lightweight UIs. </p>
@@ -267,7 +267,7 @@
       </section>
     </main>
 
-    <footer class="">
+    <footer class="font-black">
       <p align="center"><a href="https://github.com/krsnzd/license/">ॐ</a></p>
     </footer>
   </body>
