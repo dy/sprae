@@ -7,15 +7,13 @@
 
 ## Usage
 
-`npm install sprae` or `<script src="https://unpkg.com/sprae"></script>`.
-
 ```html
 <div id="counter" :scope="{count: 1}">
   <p :text="`Clicked ${count} times`"></p>
   <button :onclick="count++">Click me</button>
 </div>
 
-<script src="./sprae.js" start="#counter"></script>
+<script src="https://unpkg.com/sprae" start="#counter"></script>
 ```
 
 
@@ -23,9 +21,9 @@
 
 [`:text`](docs.md#text), [`:class`](docs.md#class), [`:style`](docs.md#style), [`:value`](docs.md#value), [`:<attr>`](docs.md#attr), [`:if`](docs.md#if)/[`:else`](docs.md#else), [`:each`](docs.md#each), [`:scope`](docs.md#scope), [`:fx`](docs.md#fx), [`:ref`](docs.md#ref), [`:on<event>`](docs.md#onevent)
 
-_Timing_: [`.debounce`](docs.md#debounce), [`.throttle`](docs.md#throttle), [`.tick`](docs.md#tick), [`.raf`](docs.md#raf), [`.once`](docs.md#once).<br>
-_Target_: [`.window`](docs.md#targets), [`.document`](docs.md#targets), [`.root`](docs.md#targets), [`.body`](docs.md#targets), [`.parent`](docs.md#targets), [`.self`](docs.md#targets), [`.outside`](docs.md#targets).<br>
-_Events_: [`.passive`](docs.md#events), [`.capture`](docs.md#events), [`.prevent`](docs.md#prevent), [`.stop`](docs.md#stop), [`.immediate`](docs.md#stop), [`.<key>`](docs.md#key-filters).
+[`.debounce`](docs.md#debounce), [`.throttle`](docs.md#throttle), [`.tick`](docs.md#tick), [`.raf`](docs.md#raf), [`.once`](docs.md#once).<br>
+[`.window`](docs.md#targets), [`.document`](docs.md#targets), [`.root`](docs.md#targets), [`.body`](docs.md#targets), [`.parent`](docs.md#targets), [`.self`](docs.md#targets), [`.outside`](docs.md#targets).<br>
+[`.passive`](docs.md#events), [`.capture`](docs.md#events), [`.prevent`](docs.md#prevent), [`.stop`](docs.md#stop), [`.immediate`](docs.md#stop), [`.<key>`](docs.md#key-filters).
 
 <!--
 ## Micro
@@ -41,7 +39,7 @@ Micro sprae version is 2.5kb bundle with essentials:
 
 ## Why spræ?
 
-Minimal: single prefix, valid HTML, signals reactivity, open state, build-free. Lightweight UI for prototypes, static sites, micro-frontends, web apps etc.
+Single prefix, valid HTML, signals reactivity, open state, build-free. Lightweight UI for prototypes, static sites, micro-frontends, web apps etc.
 
 <!--
 |                       | [AlpineJS](https://github.com/alpinejs/alpine)          | [Petite-Vue](https://github.com/vuejs/petite-vue)        | Sprae            |
