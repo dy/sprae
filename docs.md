@@ -1,6 +1,6 @@
 <link rel="stylesheet" href="./assets/github-style.css"/>
 
-#### [start](#start)     [directives](#directives)     [modifiers](#modifiers)     [store](#store)     [signals](#signals)     [evaluator](#evaluator)     [jsx](#jsx)     [custom build](#custom-build)     [hints](#hints)
+#### [Start](#start)     [Directives](#directives)     [Modifiers](#modifiers)     [Store](#store)     [Signals](#signals)     [Evaluator](#evaluator)     [JSX](#jsx)     [Custom build](#custom-build)     [Hints](#hints)
 
 
 ## Start
