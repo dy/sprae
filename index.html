@@ -64,7 +64,7 @@
     </style>
   </head>
 
-  <body class="flex-col p-6 md:p-12 max-md:before:hidden" :scope="x=window.innerWidth/2, y=window.innerHeight/2, scroll=0" :onmousemove.document="e => { x = e.clientX; y = e.clientY; }" :onscroll.window="e => { scroll = Math.max(0,Math.min(1, window.scrollY / (document.documentElement.scrollHeight - window.innerHeight))) * 100 }" :style.root="{'--x': x + 'px', '--y': y + 'px', '--scroll': scroll+'%'}">
+  <body class="flex-col p-6 md:px-12 md:py-20 max-md:before:hidden" :scope="x=window.innerWidth/2, y=window.innerHeight/2, scroll=0" :onmousemove.document="e => { x = e.clientX; y = e.clientY; }" :onscroll.window="e => { scroll = Math.max(0,Math.min(1, window.scrollY / (document.documentElement.scrollHeight - window.innerHeight))) * 100 }" :style.root="{'--x': x + 'px', '--y': y + 'px', '--scroll': scroll+'%'}">
     <nav class="container max-w-6xl mx-auto flex md:grid grid-cols-6 gap-16 top-8 right-8">
       <div class="col-start-4 col-span-2 flex flex-row gap-4 md:gap-8 bold text-lg font-semibold">
         <a href="./docs">docs</a>
@@ -81,10 +81,10 @@
       <div class="container max-w-6xl mx-auto md:grid grid-cols-6 gap-16">
         <div class="col-start-4 col-span-3 text-blue-700">
           <h2 class="text-3xl md:text-4xl font-bold my-2">
-            Simple Progressive Ænhancement
+            <span>s</span>imple <span>pr</span>ogressive <span>æ</span>nhancement
           </h2>
           <h5 class="my-2 text-xl md:text-2xl mb-6">
-            Add UI interactions for HTML&thinsp;/&thinsp;JSX with reactive attributes.
+            UI interactions for HTML&thinsp;/&thinsp;JSX with reactive attributes.
           </h5>
         </div>
       </div>
@@ -138,7 +138,7 @@
         ]
       }'>
         <header class="md:grid grid-cols-6 gap-8 items-baseline">
-          <h2 class="text-3xl text-blue-700 col-span-2 mb-2 font-black md:pl-6">Reference</h2>
+          <h2 class="text-3xl text-blue-700 col-span-2 mb-2 font-bold md:pl-6">Reference</h2>
 
           <nav class="flex flex-row gap-1">
             <span :onpointerup="active=0" class="relative flex gap-2 cursor-pointer text-lg text-blue-700 p-4 md:px-6 [&.active]:bg-white font-medium" :class="{active:active==0}">Directives <strong :text="dirs.length" class="font-black"></strong></span>
@@ -187,7 +187,7 @@
       </section> -->
 
       <section class="container max-w-6xl mx-auto my-16 md:grid grid-cols-6 gap-8" >
-        <h2 class="text-3xl text-blue-700 font-black col-span-2 md:pl-6">FAQ</h2>
+        <h2 class="text-3xl text-blue-700 font-bold col-span-2 md:pl-6">FAQ</h2>
         <div class="col-span-4">
           <h4 class="text-xl text-blue-700 font-bold mt-4">Why sprae?</h4>
           <p class="my-1"> Minimal DX UI framework with signals reactivity and ESM integration. SPRAE: Simple PRogressive Ænhancement. Hydrates DOM tree non-invasively via :-attributes. Ideal for static sites, micro-frontends, lightweight UIs. </p>
