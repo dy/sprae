@@ -240,6 +240,9 @@
     * [ ] Wavearea
   * [ ] Used by
   * [ ] Sprae vs alpine
+  * [ ] Better spraying interaction
+    * [ ] Search
+  * [ ] Bench
 
 ## [ ] Plugins
 

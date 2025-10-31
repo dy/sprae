@@ -1711,6 +1711,9 @@
 
   7. Parent -> child defining the behavior, like css or delegate does
 
+## [ ] Sprae static
+  * Compiles away to plain html
+
 ## [ ] Directives
 
   * s-cloak? Hides contents until sprae finishes loading

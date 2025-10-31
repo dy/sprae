@@ -41,7 +41,8 @@
 body {
   background: var(--color-bg);
   font-family: inherit;
-  border: 1rem solid var(--color-blue-600);
+  border-top: 1rem solid var(--color-blue-600);
+  border-bottom: 1rem solid var(--color-blue-600);
   min-height: 100vh;
 }
 
