@@ -7,18 +7,23 @@
   font-family: "Atkinson Hyperlegible", sans-serif;
   --color-blue-700: color-mix(in oklab, color-mix(in oklab, midnightblue 70%, darkslategray) var(--scroll), color-mix(in oklab, mediumblue 70%, darkslategray));
   --color-blue-600: color-mix(in oklab, color-mix(in oklab, midnightblue 70%, lightslategray) var(--scroll), color-mix(in oklab, mediumblue 70%, lightslategray));
+  --color-bg: color-mix(in oklab, snow 10%, ghostwhite 90%);
   --scroll: 0%;
   --x: 0;
   --y: 0;
   /* transition: --x 1s ease-out; */
-  background: color-mix(in oklab, snow 20%, ghostwhite 80%);
-  border: 1rem solid var(--color-blue-600);
 }
 
 @media screen and (max-width: 768px) {
   :root {
     font-size: 15px;
   }
+}
+
+body {
+  background: var(--color-bg);
+  font-family: inherit;
+  border: 1rem solid var(--color-blue-600);
 }
 
 /* github reset */
@@ -33,7 +38,7 @@
   h2 {
     position: sticky;
     top: 0;
-    background: white;
+    background: var(--color-bg);
   }
 
   a {
