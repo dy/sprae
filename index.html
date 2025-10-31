@@ -163,8 +163,8 @@
           <h2 class="text-3xl text-blue-700 font-bold col-span-2 mb-2">Reference</h2>
 
           <nav class="flex flex-row gap-1">
-            <h4 :onpointerup="active=0" class="relative cursor-pointer md:text-lg font-bold text-blue-700 py-4 px-6 [&.active]:bg-white" :class="{active:active==0}">Directives</h4>
-            <h4 :onpointerup="active=1" class="relative cursor-pointer md:text-lg font-bold text-blue-700 py-4 px-6 [&.active]:bg-white" :class="{active:active==1}">Modifiers</h4>
+            <span :onpointerup="active=0" class="relative flex gap-2 cursor-pointer md:text-lg text-blue-700 py-4 px-6 [&.active]:bg-white" :class="{active:active==0}">Directives <strong :text="dirs.length"></strong></span>
+            <span :onpointerup="active=1" class="relative flex gap-2 cursor-pointer md:text-lg text-blue-700 py-4 px-6 [&.active]:bg-white" :class="{active:active==1}">Modifiers <strong :text="mods.length"></strong></span>
           </nav>
         </header>
 
@@ -212,23 +212,23 @@
         <h2 class="text-3xl text-blue-700 font-bold col-span-2">FAQ</h2>
         <div class="col-span-4">
           <h4 class="text-xl text-blue-700 font-bold mt-4">Why sprae?</h4>
-          <p class="my-1"> SPRAE: Simple PRogressive Ænhancement. It hydrates DOM tree non-invasively like spray. I was seeking for easy progressive enhancement framework with aesthetic DX and easy ESM integration.</p>
+          <p class="my-1"> I was seeking for simple UI framework with minimal DX and ESM integration, and eventually had to develop one. SPRAE: Simple PRogressive Ænhancement. It hydrates DOM tree non-invasively, like spray. </p>
           <h4 class="text-xl text-blue-700 font-bold mt-4">Why not Alpine.js?</h4>
-          <p class="my-1"> Sprae offers cleaner syntax, no magic, lighter weight, open state, integration and extension.</p>
+          <p class="my-1"> Sprae has less syntax, no magic, lighter weight, open state, ESM integration and extensibility.</p>
           <h4 class="text-xl text-blue-700 font-bold mt-4">Why not vanilla JS?</h4>
-          <p class="my-1"> `querySelector` is wrong mantra. Sprae abstracts repetitive DOM ops, freeing focus on logic.</p>
+          <p class="my-1"> Too many repetitive DOM ops – `querySelector` is wrong mantra. Sprae lets you focus on logic in place.</p>
           <h4 class="text-xl text-blue-700 font-bold mt-4">Why not Next/React?</h4>
-          <p class="my-1"> <!--<a href="https://www.keithcirkel.co.uk/i-dont-have-time-to-learn-react/">Not worth it</a>.--> No build complexity or proprietary conventions, but sprae works well with <a href="https://github.com/dy/sprae?tab=readme-ov-file#jsx">JSX</a>.</p>
-          <h4 class="text-xl text-blue-700 font-bold mt-4">Who cares for progressive enhancement / graceful degradation?</h4>
-          <p class="my-1"> Who needs fast, fail-proof, accessible, SEO-optimized web.</p>
+          <p class="my-1"> Some find react <a href="https://www.keithcirkel.co.uk/i-dont-have-time-to-learn-react/">not worth the time</a> – build step, proprietary conventions, heavy deps. But sprae works well with <a href="https://github.com/dy/sprae?tab=readme-ov-file#jsx">JSX</a>.</p>
+          <h4 class="text-xl text-blue-700 font-bold mt-4">Who cares for progressive enhancement?</h4>
+          <p class="my-1"> Who builds fail-proof, accessible, SEO-optimized web.</p>
           <h4 class="text-xl text-blue-700 font-bold mt-4">Is it just a toy?</h4>
           <p class="my-1"> It is used in production, but it's fun and comes with sandbox.</p>
           <h4 class="text-xl text-blue-700 font-bold mt-4">Does it scale to complex state?</h4>
           <p class="my-1"> As far as you can handle it and CPU allows. Sprae has good performance.</p>
           <h4 class="text-xl text-blue-700 font-bold mt-4">Are signals overhyped?</h4>
-          <p class="my-1"> Signals are <a href="https://github.com/tc39/proposal-signals">the standard</a> for reactivity.</p>
-          <h4 class="text-xl text-blue-700 font-bold mt-4">Is no build step outdated?</h4>
-          <p class="my-1"> Sprae saves the hassle configuring it, but as ESM that can be part of build pipeline as well. </p>
+          <p class="my-1"> Signals are <a href="https://github.com/tc39/proposal-signals">the standard</a> for reactivity, and <a href="https://github.com/preactjs/signals">preact-signals</a> provide minimal API wrapper.</p>
+          <!-- <h4 class="text-xl text-blue-700 font-bold mt-4">Is no build step outdated?</h4>
+          <p class="my-1"> Sprae saves the hassle configuring it, but it can be part of build pipeline as well. </p> -->
           <h4 class="text-xl text-blue-700 font-bold mt-4">Is new Function unsafe?</h4>
           <p class="my-1"> If your HTML comes from strangers, there is <a href="https://github.com/dy/sprae?tab=readme-ov-file#evaluator">safe evaluator</a>.</p>
           <h4 class="text-xl text-blue-700 font-bold mt-4">Components support?</h4>
