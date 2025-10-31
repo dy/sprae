@@ -1,11 +1,10 @@
-# ∴ spræ [![tests](https://github.com/dy/sprae/actions/workflows/node.js.yml/badge.svg)](https://github.com/dy/sprae/actions/workflows/node.js.yml) [![npm bundle size](https://img.shields.io/bundlephobia/minzip/sprae?color=white)](https://bundlephobia.com/package/sprae) [![npm](https://img.shields.io/npm/v/sprae?color=0969da)](https://www.npmjs.com/package/sprae)
+# ∴ spræ 
 
 <em>S</em>imple <em>pr</em>ogressive <em>æ</em>nhancement for DOM or JSX with reactive attributes.
 
-[**website**](https://dy.github.io/sprae), [**docs**](https://dy.github.io/sprae/docs), [**examples**](https://dy.github.io/sprae/drops)
+#### [site](https://dy.github.io/sprae)   [docs](https://dy.github.io/sprae/docs)   [drops](https://dy.github.io/sprae/drops) 
 
-
-## Usage
+## usage
 
 ```html
 <div id="counter" :scope="{count: 1}">
@@ -16,14 +15,15 @@
 <script src="https://unpkg.com/sprae" start="#counter"></script>
 ```
 
+Sprae enables reactivity via `:`-directives.
 
-## Directives
+## directives
 
-[`:text`](docs.md#text), [`:class`](docs.md#class), [`:style`](docs.md#style), [`:value`](docs.md#value), [`:<attr>`](docs.md#attr), [`:if`](docs.md#if)/[`:else`](docs.md#else), [`:each`](docs.md#each), [`:scope`](docs.md#scope), [`:fx`](docs.md#fx), [`:ref`](docs.md#ref), [`:on<event>`](docs.md#onevent)
+[`:text`](docs.md#text) [`:class`](docs.md#class) [`:style`](docs.md#style) [`:value`](docs.md#value) [`:<attr>`](docs.md#attr) [`:if`](docs.md#if)[`:else`](docs.md#else) [`:each`](docs.md#each) [`:scope`](docs.md#scope) [`:fx`](docs.md#fx) [`:ref`](docs.md#ref) [`:on<event>`](docs.md#onevent)
 
-[`.debounce`](docs.md#debounce), [`.throttle`](docs.md#throttle), [`.tick`](docs.md#tick), [`.raf`](docs.md#raf), [`.once`](docs.md#once).<br>
-[`.window`](docs.md#targets), [`.document`](docs.md#targets), [`.root`](docs.md#targets), [`.body`](docs.md#targets), [`.parent`](docs.md#targets), [`.self`](docs.md#targets), [`.outside`](docs.md#targets).<br>
-[`.passive`](docs.md#events), [`.capture`](docs.md#events), [`.prevent`](docs.md#prevent), [`.stop`](docs.md#stop), [`.immediate`](docs.md#stop), [`.<key>`](docs.md#key-filters).
+[`.debounce`](docs.md#debounce) [`.throttle`](docs.md#throttle) [`.tick`](docs.md#tick) [`.raf`](docs.md#raf) [`.once`](docs.md#once)<br>
+[`.window`](docs.md#targets) [`.document`](docs.md#targets) [`.root`](docs.md#targets) [`.body`](docs.md#targets) [`.parent`](docs.md#targets) [`.self`](docs.md#targets) [`.outside`](docs.md#targets)<br>
+[`.passive`](docs.md#events) [`.capture`](docs.md#events) [`.prevent`](docs.md#prevent) [`.stop`](docs.md#stop) [`.immediate`](docs.md#stop) [`.<key>`](docs.md#key-filters)
 
 <!--
 ## Micro
@@ -37,9 +37,12 @@ Micro sprae version is 2.5kb bundle with essentials:
 -->
 
 
-## Why spræ?
+## why
 
-Single prefix, valid HTML, signals reactivity, open state, build-free. Lightweight UI for prototypes, static sites, micro-frontends, web apps etc.
+Minimal, aesthetic, non-invasive, signals-based, open, extensible. Good for static sites, micro-frontends, prototypes, any lightweight UI.
+
+Inspired by [alpine](https://github.com/alpinejs/alpine), [petite-vue](https://github.com/vuejs/petite-vue) and others. <!--[lucia](https://github.com/aidenybai/lucia), [nuejs](https://github.com/nuejs/nuejs), [hmpl](https://github.com/hmpl-language/hmpl), [unpoly](https://unpoly.com/up.link), [dagger](https://github.com/dagger8224/dagger.js)-->
+
 
 <!--
 |                       | [AlpineJS](https://github.com/alpinejs/alpine)          | [Petite-Vue](https://github.com/vuejs/petite-vue)        | Sprae            |
@@ -73,7 +76,6 @@ _Inline directives_ Yes
 <!-- * Prostogreen [demo](https://web-being.org/prostogreen/), [code](https://github.com/web-being/prostogreen/) -->
 
 
-Inspired by [alpine](https://github.com/alpinejs/alpine), [petite-vue](https://github.com/vuejs/petite-vue) and others. <!--[lucia](https://github.com/aidenybai/lucia), [nuejs](https://github.com/nuejs/nuejs), [hmpl](https://github.com/hmpl-language/hmpl), [unpoly](https://unpoly.com/up.link), [dagger](https://github.com/dagger8224/dagger.js)-->
+### [![tests](https://github.com/dy/sprae/actions/workflows/node.js.yml/badge.svg)](https://github.com/dy/sprae/actions/workflows/node.js.yml) [![npm bundle size](https://img.shields.io/bundlephobia/minzip/sprae?color=white)](https://bundlephobia.com/package/sprae) [![npm](https://img.shields.io/npm/v/sprae?color=white)](https://www.npmjs.com/package/sprae) [![ॐ](https://img.shields.io/badge/MIT-%E0%A5%90-white)](https://github.com/krishnized/license)
 
 
-<p align="center"><a href="https://github.com/krsnzd/license/">ॐ</a></p>
