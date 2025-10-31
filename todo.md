@@ -226,10 +226,12 @@
 ## [ ] Website
   * [x] Connect donation links
   * [x] Inverse color render
+  * [ ] Docs page UI
+  * [ ] Drops page
   * [ ] Icons for principles
   * [ ] Subtle animations
-  * [ ] Syntax highlighter
-  * [ ] Drops
+  * [x] Syntax highlighter
+    * [ ] Better highlighter
   * [ ] Better reference examples
   * [ ] Examples
     * [ ] 7 GUIs
