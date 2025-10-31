@@ -11,6 +11,8 @@
   --x: 0;
   --y: 0;
   /* transition: --x 1s ease-out; */
+  background: color-mix(in oklab, snow 20%, ghostwhite 80%);
+  border: 1rem solid var(--color-blue-600);
 }
 
 @media screen and (max-width: 768px) {
