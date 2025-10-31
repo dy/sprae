@@ -8,24 +8,13 @@
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400;1,700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:ital,wght@0,400;0,700&display=swap" rel="stylesheet">
     <!-- <script src="//unpkg.com/sprae" start></script> -->
     <script src="./dist/sprae.umd.js" start></script>
     <script src="//unpkg.com/microlight" start></script>
     <!-- <script src="./microlight.js" start></script> -->
+    <link rel="stylesheet" href="./assets/style.css"/>
     <style>
-      * {touch-action: manipulation;}
-      /* reset styles */
-      :root {
-        font-size: 21px;
-        font-family: "Atkinson Hyperlegible", sans-serif;
-        --color-blue-700: color-mix(in oklab, color-mix(in oklab, midnightblue 70%, darkslategray) var(--scroll), color-mix(in oklab, mediumblue 70%, darkslategray));
-        --color-blue-600: color-mix(in oklab, color-mix(in oklab, midnightblue 70%, lightslategray) var(--scroll), color-mix(in oklab, mediumblue 70%, lightslategray));
-        --scroll: 0%;
-        --x: 0;
-        --y: 0;
-        /* transition: --x 1s ease-out; */
-      }
 
       body::before {
         content: '';
@@ -76,12 +65,6 @@
       .bg-graph-paper {
         background-image: linear-gradient(to right, rgb(from var(--color-blue-700) r g b / 20%) 1px, transparent 1px), linear-gradient(to bottom, rgb(from var(--color-blue-700) r g b / 20%) 1px, transparent 1px);
         background-size: 1rem 1rem;
-      }
-
-      @media screen and (max-width: 768px) {
-        :root {
-          font-size: 15px;
-        }
       }
     </style>
   </head>

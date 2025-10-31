@@ -1,4 +1,4 @@
-<link rel="stylesheet" href="./assets/github-style.css"/>
+<link rel="stylesheet" href="./assets/style.css"/>
 
 #### [Start](#start)    [Directives](#directives)    [Modifiers](#modifiers)    [Store](#store)    [Signals](#signals)    [Evaluator](#evaluator)    [JSX](#jsx)    [Custom build](#custom-build)    [Hints](#hints)
 

@@ -1,0 +1,47 @@
+@import url('https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:ital,wght@0,400;0,700&display=swap');
+
+* {touch-action: manipulation;}
+
+:root {
+  font-size: 21px;
+  font-family: "Atkinson Hyperlegible", sans-serif;
+  --color-blue-700: color-mix(in oklab, color-mix(in oklab, midnightblue 70%, darkslategray) var(--scroll), color-mix(in oklab, mediumblue 70%, darkslategray));
+  --color-blue-600: color-mix(in oklab, color-mix(in oklab, midnightblue 70%, lightslategray) var(--scroll), color-mix(in oklab, mediumblue 70%, lightslategray));
+  --scroll: 0%;
+  --x: 0;
+  --y: 0;
+  /* transition: --x 1s ease-out; */
+}
+
+@media screen and (max-width: 768px) {
+  :root {
+    font-size: 15px;
+  }
+}
+
+/* github reset */
+.markdown-body {
+  position: relative;
+
+  /* hide github h1 */
+  h1:first-of-type {
+    display: none;
+  }
+
+  h2 {
+    position: sticky;
+    top: 0;
+    background: white;
+  }
+
+  a {
+    text-underline-offset: .2em;
+    &.anchorjs-link {
+      text-decoration: none;
+    }
+  }
+
+  ul {
+    padding-left: 1.5ch;
+  }
+}

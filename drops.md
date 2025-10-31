@@ -1,4 +1,4 @@
-<link rel="stylesheet" href="./assets/github-style.css"/>
+<link rel="stylesheet" href="./assets/style.css"/>
 
 <ul>
 {% for ex in site.examples %}
