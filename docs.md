@@ -282,7 +282,7 @@ Trigger when element is connected / disconnected from DOM.
 
 ## Modifiers
 
-#### `.debounce-<ms>?`
+#### `.debounce-<ms>`
 
 Defer callback by interval in ms. Defaults to 250ms.
 
@@ -291,7 +291,7 @@ Defer callback by interval in ms. Defaults to 250ms.
 <input :oninput.debounce-200="event => update(event)" />
 ```
 
-#### `.throttle-<ms>?`
+#### `.throttle-<ms>`
 
 Limit callback rate to interval in ms. By default 250ms.
 
@@ -367,7 +367,7 @@ Prevent default or stop (immediate) propagation.
 <button :onclick.stop.immediate="criticalHandle()">Click</button>
 ```
 
-#### `.<key>-<*>` <kbd>events only</kbd>
+#### `.<meta>-<key>` <kbd>events only</kbd>
 
 Filter event by [`event.key`](https://developer.mozilla.org/en-US/docs/Web/API/UI_Events/Keyboard_event_key_values) or combination:
 

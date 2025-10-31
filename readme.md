@@ -1,8 +1,8 @@
-# ∴ spræ 
+# ∴ spræ
 
 <em>S</em>imple <em>pr</em>ogressive <em>æ</em>nhancement for DOM or JSX with reactive attributes.
 
-#### [site](https://dy.github.io/sprae)   [docs](https://dy.github.io/sprae/docs)   [drops](https://dy.github.io/sprae/drops) 
+#### [site](https://dy.github.io/sprae)   [docs](https://dy.github.io/sprae/docs)   [drops](https://dy.github.io/sprae/drops)
 
 ## usage
 
@@ -17,11 +17,11 @@
 
 ## directives
 
-[`:text`](docs.md#text) [`:class`](docs.md#class) [`:style`](docs.md#style) [`:value`](docs.md#value) [`:<attr>`](docs.md#attr) [`:if`](docs.md#if)[`:else`](docs.md#else) [`:each`](docs.md#each) [`:scope`](docs.md#scope) [`:fx`](docs.md#fx) [`:ref`](docs.md#ref) [`:on<event>`](docs.md#onevent)
+[`:text`](docs.md#text) [`:class`](docs.md#class) [`:style`](docs.md#style) [`:value`](docs.md#value) [`:<attr>`](docs.md#attr-) [`:if :else`](docs.md#if-else) [`:each`](docs.md#each) [`:scope`](docs.md#scope) [`:fx`](docs.md#fx) [`:ref`](docs.md#ref) [`:on<event>`](docs.md#onevent)
 
-[`.debounce`](docs.md#debounce) [`.throttle`](docs.md#throttle) [`.tick`](docs.md#tick) [`.raf`](docs.md#raf) [`.once`](docs.md#once)<br>
-[`.window`](docs.md#targets) [`.document`](docs.md#targets) [`.root`](docs.md#targets) [`.body`](docs.md#targets) [`.parent`](docs.md#targets) [`.self`](docs.md#targets) [`.outside`](docs.md#targets)<br>
-[`.passive`](docs.md#events) [`.capture`](docs.md#events) [`.prevent`](docs.md#prevent) [`.stop`](docs.md#stop) [`.immediate`](docs.md#stop) [`.<key>`](docs.md#key-filters)
+[`.debounce`](docs.md#debounce-ms) [`.throttle`](docs.md#throttle-ms) [`.tick`](docs.md#tick) [`.raf`](docs.md#raf) [`.once`](docs.md#once)<br>
+[`.window`](docs.md#window-document-body-root-parent-outside-self) [`.document`](docs.md#window-document-body-root-parent-outside-self) [`.root`](docs.md#window-document-body-root-parent-outside-self) [`.body`](docs.md#window-document-body-root-parent-outside-self) [`.parent`](docs.md#window-document-body-root-parent-outside-self) [`.self`](docs.md#window-document-body-root-parent-outside-self) [`.outside`](docs.md#window-document-body-root-parent-outside-self)<br>
+[`.passive`](docs.md#passive-captureevents-only) [`.capture`](docs.md#passive-captureevents-only) [`.prevent`](docs.md#prevent-stop-immediateevents-only) [`.stop`](docs.md#prevent-stop-immediateevents-only) [`.immediate`](docs.md#prevent-stop-immediateevents-only) [`.<key>`](docs.md#key-filters)
 
 <!--
 ## Micro
@@ -75,5 +75,3 @@ _Inline directives_ Yes
 
 
 ### [![tests](https://github.com/dy/sprae/actions/workflows/node.js.yml/badge.svg)](https://github.com/dy/sprae/actions/workflows/node.js.yml) [![npm bundle size](https://img.shields.io/bundlephobia/minzip/sprae?color=white)](https://bundlephobia.com/package/sprae) [![npm](https://img.shields.io/npm/v/sprae?color=white)](https://www.npmjs.com/package/sprae) [![ॐ](https://img.shields.io/badge/MIT-%E0%A5%90-white)](https://github.com/krishnized/license)
-
-
