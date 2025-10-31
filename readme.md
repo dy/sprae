@@ -37,7 +37,7 @@ Micro sprae version is 2.5kb bundle with essentials:
 
 ## why
 
-Minimal, aesthetic, non-invasive, signals-based, open, extensible.<br>
+Minimal, non-invasive, signals-based, open, extensible.<br>
 Good for static sites, micro-frontends, prototypes, any lightweight UI.<br>
 Inspired by [alpine](https://github.com/alpinejs/alpine), [petite-vue](https://github.com/vuejs/petite-vue) and others. <!--[lucia](https://github.com/aidenybai/lucia), [nuejs](https://github.com/nuejs/nuejs), [hmpl](https://github.com/hmpl-language/hmpl), [unpoly](https://unpoly.com/up.link), [dagger](https://github.com/dagger8224/dagger.js)-->
 
