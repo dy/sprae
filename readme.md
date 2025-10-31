@@ -15,8 +15,6 @@
 <script src="https://unpkg.com/sprae" start="#counter"></script>
 ```
 
-Sprae enables reactivity via `:`-directives.
-
 ## directives
 
 [`:text`](docs.md#text) [`:class`](docs.md#class) [`:style`](docs.md#style) [`:value`](docs.md#value) [`:<attr>`](docs.md#attr) [`:if`](docs.md#if)[`:else`](docs.md#else) [`:each`](docs.md#each) [`:scope`](docs.md#scope) [`:fx`](docs.md#fx) [`:ref`](docs.md#ref) [`:on<event>`](docs.md#onevent)
