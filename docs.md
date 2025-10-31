@@ -1,6 +1,6 @@
 <link rel="stylesheet" href="./assets/github-style.css"/>
 
-#### [Start](#start)     [Directives](#directives)     [Modifiers](#modifiers)     [Store](#store)     [Signals](#signals)     [Evaluator](#evaluator)     [JSX](#jsx)     [Custom build](#custom-build)     [Hints](#hints)
+#### [Start](#start)    [Directives](#directives)    [Modifiers](#modifiers)    [Store](#store)    [Signals](#signals)    [Evaluator](#evaluator)    [JSX](#jsx)    [Custom build](#custom-build)    [Hints](#hints)
 
 
 ## Start
@@ -479,8 +479,7 @@ import justin from 'subscript/justin'
 sprae.use({compile: justin})
 ```
 
-<!--
-a minimal JS subset:
+_Justin_ is a minimal JS subset:
 
 `++ -- ! - + * / % ** && || ??`<br/>
 `= < <= > >= == != === !==`<br/>
@@ -489,7 +488,7 @@ a minimal JS subset:
 `[] {} "" ''`<br/>
 `1 2.34 -5e6 0x7a`<br/>
 `true false null undefined NaN`
--->
+
 
 
 ## JSX
