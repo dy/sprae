@@ -60,13 +60,22 @@
       .bg-graph-paper {
         background-image: linear-gradient(to right, rgb(from var(--color-blue-700) r g b / 20%) 1px, transparent 1px), linear-gradient(to bottom, rgb(from var(--color-blue-700) r g b / 20%) 1px, transparent 1px);
         background-size: 1rem 1rem;
+        background-color: var(--color-bg);
       }
     </style>
   </head>
 
-  <body class="flex-col p-6 md:px-12 md:py-20 max-md:before:hidden" :scope="x=window.innerWidth/2, y=window.innerHeight/2, scroll=0" :onmousemove.document="e => { x = e.clientX; y = e.clientY; }" :onscroll.window="e => { scroll = Math.max(0,Math.min(1, window.scrollY / (document.documentElement.scrollHeight - window.innerHeight))) * 100 }" :style.root="{'--x': x + 'px', '--y': y + 'px', '--scroll': scroll+'%'}">
+  <body class="flex-col p-6 md:px-12 md:py-20 max-md:before:hidden"
+    :scope="x=window.innerWidth/2, y=window.innerHeight/2, scroll=0, getFs=()=>parseFloat(window.getComputedStyle(document.documentElement).fontSize), fs=getFs()"
+    :onmousemove.document="e => { x = e.clientX; y = e.clientY; }"
+    :onscroll.window="e => { scroll = Math.max(0,Math.min(1, window.scrollY / (document.documentElement.scrollHeight - window.innerHeight))) * 100 }"
+    :onresize.window="fs=getFs()"
+    :style.root="{'--x': x + 'px', '--y': y + 'px', '--scroll': scroll+'%'}"
+    :style.body="/*{'background-position': '-0.5rem -0.5rem', 'background-image': (`url(&quot;data:image/svg+xml;utf8,<svg xmlns=\'http://www.w3.org/2000/svg\' width=\'`+fs+`\' height=\'`+fs+`\' viewBox=\'-`+fs/2+` -`+fs/2+` `+fs+` `+fs+`\'><path d=\'M0 -3v6M-3 0h6\' stroke=\'rgba(157, 199, 255, 1)\' stroke-width=\'0.5\'/></svg>&quot;)`)}*/"
+  >
+
     <nav class="container max-w-6xl mx-auto flex md:grid grid-cols-6 gap-16 top-8 right-8">
-      <div class="col-start-4 col-span-2 flex flex-row gap-4 md:gap-8 bold text-lg font-semibold">
+      <div class="col-start-4 col-span-2 flex flex-row gap-4 md:gap-8 bold text-lg font-semibold  md:leading-[1rem]">
         <a href="./docs">docs</a>
         <a href="./drops">drops</a>
         <!-- <a href="./changelog.html">play</a> -->
@@ -76,14 +85,14 @@
 
     <header class="md:my-8">
       <div class="container max-w-6xl mx-auto md:grid grid-cols-6">
-        <h1 class="text-7xl md:text-8xl font-black text-blue-700 col-span-3 md:text-right mb-4 mt-4 tracking-tight">∴&thinsp;spræ</h1>
+        <h1 class="text-7xl md:text-8xl font-black text-blue-700 col-span-3 md:text-right mb-4 mt-4 tracking-tight md:leading-[4rem]"><span class="max-md:hidden">∴</span>&thinsp;spræ</h1>
       </div>
       <div class="container max-w-6xl mx-auto md:grid grid-cols-6 gap-16">
         <div class="col-start-4 col-span-3 text-blue-700">
-          <h2 class="text-3xl md:text-4xl font-bold my-2">
+          <h2 class="text-3xl md:text-4xl font-bold md:leading-[2.5rem]">
             <span>s</span>imple <span>pr</span>ogressive <span>æ</span>nhancement
           </h2>
-          <h5 class="my-2 text-xl md:text-2xl mb-6">
+          <h5 class="my-4 text-xl md:text-2xl mb-4 md:leading-[2rem]">
             UI interactions for HTML&thinsp;/&thinsp;JSX with reactive attributes.
           </h5>
         </div>
