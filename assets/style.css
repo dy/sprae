@@ -1,10 +1,28 @@
-@import url('https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:ital,wght@0,400;0,700&display=swap');
+/* Atkinson Hyperlegible Fonts */
+@font-face {
+  font-family: 'Atkinson Hyperlegible';
+  src: url('./AtkinsonHyperlegibleNextVF-Variable.woff2') format('woff2'),
+       url('./AtkinsonHyperlegibleNextVF-Variable.ttf') format('truetype');
+  font-weight: 100 900;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Atkinson Hyperlegible Mono';
+  src: url('./AtkinsonHyperlegibleMonoVF-Variable.woff2') format('woff2'),
+       url('./AtkinsonHyperlegibleMonoVF-Variable.ttf') format('truetype');
+  font-weight: 100 900;
+  font-style: normal;
+  font-display: swap;
+}
 
 * {touch-action: manipulation;}
 
 :root {
-  font-size: 21px;
+  font-size: max(16px, min(2.2vw, 22px));
   font-family: "Atkinson Hyperlegible", sans-serif;
+  font-weight: 400;
   --color-blue-700: color-mix(in oklab, color-mix(in oklab, midnightblue 70%, darkslategray) var(--scroll), color-mix(in oklab, mediumblue 70%, darkslategray));
   --color-blue-600: color-mix(in oklab, color-mix(in oklab, midnightblue 70%, lightslategray) var(--scroll), color-mix(in oklab, mediumblue 70%, lightslategray));
   --color-bg: color-mix(in oklab, snow 10%, ghostwhite 90%);
@@ -16,7 +34,7 @@
 
 @media screen and (max-width: 768px) {
   :root {
-    font-size: 15px;
+    /* font-size: 15px; */
   }
 }
 
@@ -24,7 +42,14 @@ body {
   background: var(--color-bg);
   font-family: inherit;
   border: 1rem solid var(--color-blue-600);
+  min-height: 100vh;
 }
+
+pre, code {
+  font-family: 'Atkinson Hyperlegible Mono', monospace;
+  letter-spacing: -0.1ex;
+}
+
 
 /* github reset */
 .markdown-body {
