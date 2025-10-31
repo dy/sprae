@@ -117,13 +117,15 @@ test("core: calculation", async () => {
   is(el.outerHTML, `<x x="0123"></x>`);
 });
 
-test.skip("core: semicols in expression", async () => {
-  let el = h`<x :x="log.push(0); log.push(Array.from({length: x.value}, (_,i)=>i).join(''));"></x>`;
+test("core: semicols in expression", async () => {
+  let el = h`<x :x="log.push(0); log.push(Array.from({length: x}, (_,i)=>i).join(''));"></x>`;
   let state = sprae(el, { x: signal(3), Array, log: [] });
-  // is(el.outerHTML, `<x x="012"></x>`);
+  is(el.outerHTML, `<x></x>`);
   await tick()
   is(state.log, [0, '012'])
-  state.x.value = 4;
+
+  console.log('--- change x to 4')
+  state.x = 4;
   await tick()
   is(state.log, [0, '012', 0, '0123'])
   // is(el.outerHTML, `<x x="0123"></x>`);

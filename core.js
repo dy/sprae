@@ -90,7 +90,7 @@ const initDirective = (el, dirName, expr, state) => {
     // multiple attributes like :id:for=""
     step.split(prefix).reduce((prev, str) => {
       let [name, ...mods] = str.split('.');
-      let evaluate = parse(expr, directive[currentDir = name]?.parse)
+      let evaluate = parse(expr, directive[currentDir = name]?.parse).bind(el)
 
       // a hack, but events have no signal-effects and can be sequenced
       // FIXME: events are molded into core, but should be an optional directive
@@ -204,7 +204,7 @@ export let compile
  * @returns {Function} The compiled evaluator function for the expression.
  */
 export const parse = (expr, prepare, _fn) => {
-  if (_fn = parse.cache[expr]) return _fn
+  if (_fn = cache[expr]) return _fn
 
   let _expr = expr.trim() || 'undefined'
   if (prepare) _expr = prepare(_expr)
@@ -223,9 +223,9 @@ export const parse = (expr, prepare, _fn) => {
   } catch (e) { console.error(`∴ ${e}\n\n${prefix + currentDir}="${expr}"`) }
 
   // run time errors
-  return parse.cache[expr] = (state, cb, _out) => {
+  return cache[expr] = function (state, cb, _out) {
     try {
-      let result = _fn?.(state)
+      let result = _fn?.call(this, state)
       // if cb is given (to handle asyncs) - call it with result and return function that returns last cb result - needed for effect cleanup
       if (cb) return result?.then ? result.then(v => _out = cb(v)) : _out = cb(result), () => call(_out)
       else return result
@@ -234,7 +234,7 @@ export const parse = (expr, prepare, _fn) => {
     }
   }
 }
-parse.cache = {};
+const cache = {};
 
 
 // apply modifiers to context (from the end due to nature of wrapping ctx.call)

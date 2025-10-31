@@ -6,9 +6,16 @@ import test, { any, is } from "tst";
 const _dispose = Symbol.dispose;
 
 
-test("on: t̵h̵i̵s̵ ̵c̵o̵n̵t̵e̵x̵t̵ event target", () => {
-  // NOTE: we disregard this context, since we can obtain it from event target
+test("on: event target", () => {
   let el = h`<div :onx="event => log.push(event.target)"></div>`;
+  let state = sprae(el, { log: [] });
+  console.log('----- el.dispatchEvent')
+  el.dispatchEvent(new window.Event("x"));
+  is(state.log, [el]);
+});
+
+test("on: this context", () => {
+  let el = h`<div :onx="log.push(this)"></div>`;
   let state = sprae(el, { log: [] });
   console.log('----- el.dispatchEvent')
   el.dispatchEvent(new window.Event("x"));
