@@ -1,6 +1,6 @@
 # ∴ spræ
 
-<em>S</em>imple <em>pr</em>ogressive <em>æ</em>nhancement for DOM or JSX with reactive attributes.
+Microhydration for HTML with reactive attributes.
 
 #### [site](https://dy.github.io/sprae)   [docs](https://dy.github.io/sprae/docs)   [drops](https://dy.github.io/sprae/drops)
 
