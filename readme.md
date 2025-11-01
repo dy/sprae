@@ -1,6 +1,6 @@
 # ∴ spræ
 
-<em>S</em>imple <em>pr</em>ogressive <em>æ</em>nhancement for DOM with reactive attributes.
+Microhydration for DOM tree with reactive attributes.
 
 #### [site](https://dy.github.io/sprae)   [docs](https://dy.github.io/sprae/docs)   [drops](https://dy.github.io/sprae/drops)
 
@@ -37,8 +37,8 @@ Micro sprae version is 2.5kb bundle with essentials:
 
 ## why
 
-Minimal, non-invasive, signals-based, open, extensible.<br>
-Good for static sites, micro-frontends, prototypes, any lightweight UI.<br>
+Minimal syntax, signals-based, open, extensible, small and fast.<br>
+Perfect for static sites, Github Pages, micro-frontends, prototypes, lightweight UI.<br>
 Inspired by [alpine](https://github.com/alpinejs/alpine), [petite-vue](https://github.com/vuejs/petite-vue) and others. <!--[lucia](https://github.com/aidenybai/lucia), [nuejs](https://github.com/nuejs/nuejs), [hmpl](https://github.com/hmpl-language/hmpl), [unpoly](https://unpoly.com/up.link), [dagger](https://github.com/dagger8224/dagger.js)-->
 
 
