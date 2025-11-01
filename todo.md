@@ -218,8 +218,7 @@
 * [x] ~~mobile click is super sluggish~~ not anymore. Is that tailwind?
 
 * [ ] make :on a directive, not hardcoded
-* [ ] find alternative way to update plain lists in :each rather than simulating signals (adds memory overhead)
-  * [ ] remove _signals use, just do _change check
+* [ ] make :scope init untracked
 * [ ] typescript
 * [ ] microjs bundle
 * [ ] perf tests
@@ -229,6 +228,7 @@
   * [x] Connect donation links
   * [x] Inverse color render
   * [ ] Docs page UI
+  * [ ] Playground
   * [ ] Drops page
     * [ ] UI randomizer
   * [ ] Icons for principles
