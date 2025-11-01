@@ -15,7 +15,7 @@ Microhydration for DOM tree with reactive attributes.
 <script src="https://unpkg.com/sprae" start="#counter"></script>
 ```
 
-## directives
+## docs
 
 [`:text`](docs.md#text) [`:class`](docs.md#class) [`:style`](docs.md#style) [`:value`](docs.md#value) [`:<attr>`](docs.md#attr-) [`:if :else`](docs.md#if-else) [`:each`](docs.md#each) [`:scope`](docs.md#scope) [`:fx`](docs.md#fx) [`:ref`](docs.md#ref) [`:on<event>`](docs.md#onevent)
 
