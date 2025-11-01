@@ -1,6 +1,6 @@
 # ∴ spræ
 
-Microhydration for HTML with reactive attributes.
+Microhydration for DOM tree with reactive attributes.
 
 #### [site](https://dy.github.io/sprae)   [docs](https://dy.github.io/sprae/docs)   [drops](https://dy.github.io/sprae/drops)
 
