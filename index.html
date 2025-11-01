@@ -137,8 +137,10 @@
           { title: ":on<event>", text: "Add event listener.", example: `&lt;button :onclick="count++"&gt;Up&lt;/button&gt;` }
         ],
         mods: [
-          { title: ".debounce-<tick|frame|idle|n>", text: "Defer callback by ms, next tick/animation frame, or until idle. Defaults to 250ms.", example: `&lt;input :oninput.debounce-200="update(event)" /&gt;` },
-          { title: ".throttle-<tick|frame|n>", text: "Limit callback rate to interval in ms, tick or animation framerate. By default 250ms.", example: `&lt;div :text.throttle-100="text.length"&gt;...&lt;/div&gt;` },
+          { title: ".debounce-<ms>", text: "Defer callback by ms. Defaults to 250ms.", example: `&lt;input :oninput.debounce-200="update(event)" /&gt;` },
+          { title: ".throttle-<ms>", text: "Limit callback rate to interval in ms. By default 250ms.", example: `&lt;div :text.throttle-100="text.length"&gt;...&lt;/div&gt;` },
+          { title: ".tick", text: "Defer callback to next microtask.", example: `&lt;div :class.tick="{ active }"&gt;...&lt;/div&gt;` },
+          { title: ".raf", text: "Throttle callback to animation frame.", example: `&lt;div :style.raf="{&apos;--progress&apos;: progress + &apos;%&apos;}"&gt;...&lt;/div&gt;` },
           { title: ".once", text: "Call only once.", example: `&lt;button :onclick.once="loadMoreData()"&gt;Start&lt;/button&gt;` },
           { title: ".window, .document, .root, .body, .parent, .outside, .self", text: "Specify event target.", example: `&lt;div :onclick.outside="closeMenu()"&gt;Dropdown&lt;/div&gt;` },
           { title: ".passive, .capture", text: "Event listener options.", example: `&lt;div :onscroll.passive="pos = e.scrollTop"&gt;...&lt;/div&gt;` },
