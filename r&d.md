@@ -1711,6 +1711,19 @@
 
   7. Parent -> child defining the behavior, like css or delegate does
 
+## [x] Reasons against sprae ->
+
+  - requires loading script anyways - not native event callbacks
+    + 5kb is almost nothing
+  - ~~no `this` keyword makes it a bit cumbersome~~
+  -~ separate syntax space even with `:` prefix - conflicts
+  - perf-wise vanilla is faster
+    + more tedious
+    + technically can be static-bundled
+  - initial loading delay.
+  - chatgpt is super easy to ask to generate basic code
+    + ask about sprae
+
 ## [ ] Sprae static
   * Compiles away to plain html
 
@@ -1732,6 +1745,7 @@
   * s-interval
     + instead of :fx.interval. An event - oninterval
   * ~~s-show?~~ use hidden attribute
+
 
 ## [ ] Plugins
 
@@ -1757,19 +1771,6 @@
   * ~~@sprae/mount -~~
   * media - .screen-md
   * .interval-<tick|raf|number> - modifier for timers
-
-## [x] Reasons against sprae ->
-
-  - requires loading script anyways - not native event callbacks
-    + 5kb is almost nothing
-  - ~~no `this` keyword makes it a bit cumbersome~~
-  -~ separate syntax space even with `:` prefix - conflicts
-  - perf-wise vanilla is faster
-    + more tedious
-    + technically can be static-bundled
-  - initial loading delay.
-  - chatgpt is super easy to ask to generate basic code
-    + ask about sprae
 
 ## [ ] Integrations
 
@@ -1830,6 +1831,10 @@
   * forms
   * routing
   * animations
+
+## [ ] Sketch/example UI randomization
+
+  * Sketches in drops may have "archetypal" uis and l&f can be randomized/reskinned
 
 ## [x] FAQ
 

@@ -9,7 +9,7 @@
 
 The `start` / `data-start` attribute auto-starts sprae on the page root or on a selector you provide.
 
-Example (auto-init on #counter):
+Example (auto-init on `#counter`):
 
 ```html
 <div id="counter" :scope="{count: 1}">

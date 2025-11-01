@@ -213,8 +213,8 @@
 * [x] Optimizations (https://krausest.github.io/js-framework-benchmark/current.html)
   * [x] Append rows to large table is THE SLOWEST
   * [~] Create many rows IS SLOW
+* [x] expose `this` - not a big deal
 
-* [ ] expose `this` - not a big deal
 * [ ] `.tick` alias, `.raf` alias - debounce + throttle
 * [ ] mobile click is super sluggish
 * [ ] make :on a directive, not hardcoded
@@ -230,6 +230,7 @@
   * [x] Inverse color render
   * [ ] Docs page UI
   * [ ] Drops page
+    * [ ] UI randomizer
   * [ ] Icons for principles
   * [ ] Subtle animations
   * [x] Syntax highlighter
@@ -250,7 +251,7 @@
 * [ ] .screen-md
 * [ ] :onvisible
 * [ ] :aria
-* [ ] :item
 * [ ] :data
+* [ ] :item
 * [ ] :intersect
 * [ ] :scroll.view.x="progress => "
