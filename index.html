@@ -10,7 +10,7 @@
     <script src="./dist/sprae.umd.js" start></script>
     <script src="//unpkg.com/microlight" start></script>
     <!-- <script src="./microlight.js" start></script> -->
-    <link rel="stylesheet" href="./assets/style.css"/>
+    <link rel="stylesheet" href="./assets/style.css" />
     <style>
       body::before {
         content: '';
@@ -32,6 +32,7 @@
         text-underline-offset: .2em;
         text-decoration-line: underline;
       }
+
       a:hover {
         text-decoration-color: var(--color-blue-700);
       }
@@ -41,6 +42,7 @@
         color: white;
         white-space: pre-wrap;
         word-wrap: break-word;
+
         /* microhighlight tweaks */
         [style*="opacity:.7;"] {
           color: #9dc7ff;
@@ -65,14 +67,10 @@
     </style>
   </head>
 
-  <body class="flex-col p-6 md:px-12 md:py-20 max-md:before:hidden"
-    :scope="x=window.innerWidth/2, y=window.innerHeight/2, scroll=0, getFs=()=>parseFloat(window.getComputedStyle(document.documentElement).fontSize), fs=getFs()"
-    :onmousemove.document="e => { x = e.clientX; y = e.clientY; }"
-    :onscroll.window="e => { scroll = Math.max(0,Math.min(1, window.scrollY / (document.documentElement.scrollHeight - window.innerHeight))) * 100 }"
-    :onresize.window="fs=getFs()"
+  <body class="flex-col p-6 md:px-12 md:py-20 max-md:before:hidden" :scope="x=window.innerWidth/2, y=window.innerHeight/2, scroll=0, getFs=()=>parseFloat(window.getComputedStyle(document.documentElement).fontSize), fs=getFs()"
+    :onmousemove.document="e => { x = e.clientX; y = e.clientY; }" :onscroll.window="e => { scroll = Math.max(0,Math.min(1, window.scrollY / (document.documentElement.scrollHeight - window.innerHeight))) * 100 }" :onresize.window="fs=getFs()"
     :style.root="{'--x': x + 'px', '--y': y + 'px', '--scroll': scroll+'%'}"
-    :style.body="/*{'background-position': '-0.5rem -0.5rem', 'background-image': (`url(&quot;data:image/svg+xml;utf8,<svg xmlns=\'http://www.w3.org/2000/svg\' width=\'`+fs+`\' height=\'`+fs+`\' viewBox=\'-`+fs/2+` -`+fs/2+` `+fs+` `+fs+`\'><path d=\'M0 -3v6M-3 0h6\' stroke=\'rgba(157, 199, 255, 1)\' stroke-width=\'0.5\'/></svg>&quot;)`)}*/"
-  >
+    :style.body="/*{'background-position': '-0.5rem -0.5rem', 'background-image': (`url(&quot;data:image/svg+xml;utf8,<svg xmlns=\'http://www.w3.org/2000/svg\' width=\'`+fs+`\' height=\'`+fs+`\' viewBox=\'-`+fs/2+` -`+fs/2+` `+fs+` `+fs+`\'><path d=\'M0 -3v6M-3 0h6\' stroke=\'rgba(157, 199, 255, 1)\' stroke-width=\'0.5\'/></svg>&quot;)`)}*/">
 
     <nav class="container max-w-6xl mx-auto flex md:grid grid-cols-6 gap-16 top-8 right-8">
       <div class="col-start-4 col-span-2 flex flex-row gap-4 md:gap-8 bold text-lg font-semibold  md:leading-[1rem]">
@@ -111,7 +109,7 @@
         <div class="col-span-3 p-8 bg-graph-paper h-full text-lg" :ref="el => el.innerHTML = code.textContent">
         </div>
       </section>
-<!--
+      <!--
       <section class="container max-w-6xl mx-auto my-20 md:grid grid-cols-6">
         <h2 class="text-4xl text-blue-700 font-bold col-span-2 col-start-2 mb-4">Principles</h2>
         <ul class="col-span-3 text-blue-700 list-inside space-y-2">
@@ -203,19 +201,28 @@
         </ul>
       </section> -->
 
-      <section class="container max-w-6xl mx-auto my-16 md:grid grid-cols-6 gap-8" >
+      <section class="container max-w-6xl mx-auto my-16 md:grid grid-cols-6 gap-8">
         <h2 class="text-3xl text-blue-700 font-bold col-span-2 md:pl-6 mt-2">FAQ</h2>
         <div class="col-span-4 [&_h4]:text-xl [&_h4]:text-blue-700 [&_h4]:font-bold [&_h4]:mt-4 [&_p]:my-1">
           <h4>Why sprae?</h4>
-          <p><strong>S</strong>imple <strong>pr</strong>ogressive <strong>æ</strong>nhancement, or <strong>s</strong>ignal-<strong>p</strong>owered <strong>r</strong>eactive <strong>a</strong>ttribute <strong>e</strong>xpressions.<br> Philosophy of minimalism: single syntax, non-intrusive for HTML, (preact-)signals based reactivity, build-free, ecosystem-agnostic (CDN, ESM, JSX), extensible, configurable, small, open, safe and fast, 🫰 developers. Perfect for static sites, landings, GitHub Pages, lightweight UIs, etc.</p>
+          <ul>
+            <li><strong>S</strong>emantic <strong>pr</strong>ogressive <strong>æ</strong>nhancement</li>
+            <li><strong>S</strong>ignal-<strong>p</strong>owered <strong>r</strong>eactive <strong>a</strong>ttribute <strong>e</strong>xpressions.</li>
+            <li><strong>S</strong>imple <strong>pr</strong>actical <strong>æ</strong>sthetic.</li>
+          </ul>
+          <p>
+            Minimal syntax, valid HTML, preact-signals based, build-free, ecosystem-agnostic (CDN, ESM, JSX), extensible, configurable, open, safe, fast and practical, made with 🫰. Perfect for static sites, landings, GitHub Pages, lightweight UIs, etc.
+          </p>
           <h4>Why not Alpine.js?</h4>
-          <p>Less syntax, no magic, lighter, faster, signals support, open state, ESM integration, extensibility.</p>
+          <p>Less syntax, no magic, lighter, faster, signals support, open state, ESM, extensibility.</p>
           <h4>Why not Vanilla JS?</h4>
-          <p>Focus on UI logic in-place and avoid repetitive DOM ops. createElement is wrong mantra.  <!--But there is potential of static compilation.--></p>
+          <p>Reactive benefits in context of UI. createElement is wrong mantra. <!--But there is potential of static compilation.--></p>
           <h4>Why not Next/React?</h4>
-          <p>No build, no deps, no external conventions. Some find react <a href="https://www.keithcirkel.co.uk/i-dont-have-time-to-learn-react/">not worth the time</a>. But sprae works well with <a href="https://dy.github.io/sprae/docs#jsx">JSX</a>, which can help preventing unnecessary client components.</p>
+          <p>No build, no deps, no external conventions. Some find react <a href="https://www.keithcirkel.co.uk/i-dont-have-time-to-learn-react/">not worth the time</a>. But sprae works well with <a href="https://dy.github.io/sprae/docs#jsx">JSX</a>,
+            which can help preventing unnecessary client components.</p>
           <h4>Why signals?</h4>
-          <p>Signals is <a href="https://github.com/tc39/proposal-signals">standard</a> primitive for reactivity. <a href="https://github.com/preactjs/signals">Preact-signals</a> provide minimal API surface, and are useful outside of react/preact context.</p>
+          <p>Signals is <a href="https://github.com/tc39/proposal-signals">standard</a> primitive for reactivity. <a href="https://github.com/preactjs/signals">Preact-signals</a> provide minimal API surface, and are useful outside of react/preact context.
+          </p>
           <h4>Who cares for progressive enhancement?</h4>
           <p>Who builds long-lasting, low-maintenance, fail-proof, accessible, portable SEO-optimized web.</p>
           <h4>Is it just a toy?</h4>
@@ -227,7 +234,8 @@
           <h4>Is new Function unsafe?</h4>
           <p>If your HTML comes from strangers or requires CSP, there is <a href="https://dy.github.io/sprae/docs#evaluator">safe evaluator</a>.</p>
           <h4>Components support?</h4>
-          <p>Awaiting the <a href="https://github.com/WICG/webcomponents/blob/gh-pages/proposals/Declarative-Custom-Elements-Strawman.md">DCE proposal</a>, meanwhile we have to <a href="https://tailwindcss.com/docs/styling-with-utility-classes#managing-duplication">manage duplication</a>.</p>
+          <p>Awaiting the <a href="https://github.com/WICG/webcomponents/blob/gh-pages/proposals/Declarative-Custom-Elements-Strawman.md">DCE proposal</a>, meanwhile we have to <a
+              href="https://tailwindcss.com/docs/styling-with-utility-classes#managing-duplication">manage duplication</a>.</p>
           <h4>Is there ecosystem?</h4>
           <p>Not yet.</p>
           <h4>TypeScript support?</h4>
@@ -288,4 +296,5 @@
       <p align="center"><a href="https://github.com/krsnzd/license/">ॐ</a></p>
     </footer>
   </body>
+
 </html>
