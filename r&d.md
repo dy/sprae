@@ -1670,6 +1670,13 @@
   + that would allow `sprae.stop()` counterpart to `sprae.start()`
   + alpine flavor would need it
 
+## [x] .debounce-tick becomes .tick, .debounce-frame becomes .raf
+
+  + `.debounce-tick` is too lengthy and non-intuitive, not cool
+  + can get deprecated with fallback to debounce-0
+  + .tick can be debounced right away, we never need first call and there never can be in-between (no need to cancel)
+  + .raf never needs to be debounced, it is always throttled cept first frame
+
 ## [x] Componentization: what can be done? -> likely no for now. When html-include / DCE is there we can talk
 
   1. define-element

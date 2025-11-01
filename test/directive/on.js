@@ -284,7 +284,7 @@ test('on: modifiers chain', async () => {
 })
 
 test('on: alias sequence', async () => {
-  let el = h`<x :ona.debounce-tick:onb.debounce-tick..onc.debounce-tick:ond.debounce-tick="e=>(log.push(e.type),(e)=>log.push(e.type))"></x>`
+  let el = h`<x :ona.tick:onb.tick..onc.tick:ond.tick="e=>(log.push(e.type),(e)=>log.push(e.type))"></x>`
   let state = sprae(el, { log: [] })
   console.log('---------- emit a')
   el.dispatchEvent(new window.CustomEvent('a', { bubbles: true }));

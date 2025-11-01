@@ -55,28 +55,12 @@ Object.assign(directive, {
 })
 
 Object.assign(modifier, {
-  debounce: (fn,
-    _how = 250,
-    _schedule = _how === "tick" ? queueMicrotask : _how === "raf" ? requestAnimationFrame : _how === "idle" ? requestIdleCallback : ((fn) => setTimeout(fn, _how)),
-    _count = 0
-  ) =>
-    debounce(fn, _schedule),
-
-  throttle: (fn, _how = 250, _schedule = _how === "tick" ? queueMicrotask : _how === "raf" ? requestAnimationFrame : ((fn) => setTimeout(fn, _how))) => (
-    throttle(fn, _schedule)
-  ),
-
+  // timing
+  debounce: (fn, _how = 250) => debounce(fn, (_how ||= 0, (fn) => setTimeout(fn, _how))),
+  throttle: (fn, _how = 250) => throttle(fn, (_how ||= 0, (fn) => setTimeout(fn, _how))),
+  tick: (fn) => (e) => queueMicrotask(() => fn(e)),
+  raf: (fn) => (e) => requestAnimationFrame(() => fn(e)),
   once: (fn, _done, _fn) => Object.assign((e) => !_done && (_done = 1, fn(e)), { once: true }),
-
-  // event modifiers
-  // actions
-  prevent: (fn) => (e) => (e?.preventDefault(), fn(e)),
-  stop: (fn) => (e) => (e?.stopPropagation(), fn(e)),
-  immediate: (fn) => (e) => (e?.stopImmediatePropagation(), fn(e)),
-
-  // options
-  passive: fn => (fn.passive = true, fn),
-  capture: fn => (fn.capture = true, fn),
 
   // target
   window: fn => (fn.target = fn.target.ownerDocument.defaultView, fn),
@@ -84,14 +68,18 @@ Object.assign(modifier, {
   root: fn => (fn.target = fn.target.ownerDocument.documentElement, fn),
   body: fn => (fn.target = fn.target.ownerDocument.body, fn),
   parent: fn => (fn.target = fn.target.parentNode, fn),
-
-  // testers
   self: (fn) => (e) => (e.target === fn.target && fn(e)),
-
   outside: (fn) => (e, _target) => (
     _target = fn.target,
     !_target.contains(e.target) && e.target.isConnected && (_target.offsetWidth || _target.offsetHeight)
   ),
+
+  // events
+  prevent: (fn) => (e) => (e?.preventDefault(), fn(e)),
+  stop: (fn) => (e) => (e?.stopPropagation(), fn(e)),
+  immediate: (fn) => (e) => (e?.stopImmediatePropagation(), fn(e)),
+  passive: fn => (fn.passive = true, fn),
+  capture: fn => (fn.capture = true, fn),
 })
 
 // key testers

@@ -19,7 +19,23 @@ test("modifier: debounce-time", async () => {
 });
 
 test("modifier: debounce-tick", async () => {
+  // NOTE: debounce-tick is deprecated and falls back to debounce-0
   let el = h`<div :class.debounce-tick="active && 'active'" :text="txt"></div>`;
+  let state = sprae(el, { active: false, txt: 'test' });
+  is(el.className, '');
+  state.active = true;
+  is(el.className, '');
+  await time(1);
+  is(el.className, 'active');
+
+  state.active = false;
+  is(el.className, 'active');
+  await time(1);
+  is(el.className, '');
+});
+
+test("modifier: tick", async () => {
+  let el = h`<div :class.tick="active && 'active'" :text="txt"></div>`;
   let state = sprae(el, { active: false, txt: 'test' });
   is(el.className, '');
   state.active = true;
@@ -49,7 +65,7 @@ test("modifier: throttle-time", async () => {
 });
 
 test("modifier: debounce-raf", async () => {
-  let el = h`<div :style.debounce-raf="{'--progress': progress + '%'}"></div>`;
+  let el = h`<div :style.raf="{'--progress': progress + '%'}"></div>`;
   let state = sprae(el, { progress: 0 });
   state.progress = 10;
   state.progress = 20;
