@@ -90,10 +90,10 @@
       <div class="container max-w-6xl mx-auto md:grid grid-cols-6 gap-16">
         <div class="col-start-4 col-span-3 text-blue-700">
           <h2 class="text-3xl md:text-4xl font-bold md:leading-[2.5rem]">
-            <span>s</span>imple <span>pr</span>ogressive <span>æ</span>nhancement
+            Hydration for DOM tree
           </h2>
           <h5 class="my-4 text-xl md:text-2xl mb-4 md:leading-[2rem]">
-            UI interactions for HTML&thinsp;/&thinsp;JSX with reactive attributes.
+            Signals-based reactivity with <code>:</code>-attributes
           </h5>
         </div>
       </div>
@@ -196,46 +196,46 @@
       </section> -->
 
       <section class="container max-w-6xl mx-auto my-16 md:grid grid-cols-6 gap-8" >
-        <h2 class="text-3xl text-blue-700 font-bold col-span-2 md:pl-6">FAQ</h2>
-        <div class="col-span-4">
-          <h4 class="text-xl text-blue-700 font-bold mt-4">Why sprae?</h4>
-          <p class="my-1">I was looking for a simple and aesthetic way to add interactions to HTML without external JavaScript. Something very natural and in-context, like element attributes or CSS classes. At the same time, JS should have access to the state of the UI. It seemed (preact-)signals is a useful and minimal primitive for handling reactivity, and can be used outside of the react/preact context with plain HTML. As a result comes sprae (softly hydrates the DOM tree). It turns out to be great for static sites, GitHub Pages, lightweight UIs, and more.</p>
-          <h4 class="text-xl text-blue-700 font-bold mt-4">Why not Alpine.js?</h4>
-          <p class="my-1"> Sprae has less syntax, no magic, lighter weight, open state, signals support, ESM integration and extensibility.</p>
-          <h4 class="text-xl text-blue-700 font-bold mt-4">Why not vanilla JS?</h4>
-          <p class="my-1"> Too many repetitive DOM ops – `querySelector` is wrong mantra. But there is potential of static compilation.</p>
-          <h4 class="text-xl text-blue-700 font-bold mt-4">Why not Next/React?</h4>
-          <p class="my-1"> Some find react <a href="https://www.keithcirkel.co.uk/i-dont-have-time-to-learn-react/">not worth the time</a> – build step, proprietary conventions, heavy deps. But sprae works well with <a href="https://github.com/dy/sprae?tab=readme-ov-file#jsx">JSX</a>.</p>
-          <h4 class="text-xl text-blue-700 font-bold mt-4">Who cares for progressive enhancement?</h4>
-          <p class="my-1"> Who builds fail-proof, accessible, SEO-optimized web.</p>
-          <h4 class="text-xl text-blue-700 font-bold mt-4">Is it just a toy?</h4>
-          <p class="my-1"> It is used in production, but it's fun and comes with sandbox.</p>
-          <h4 class="text-xl text-blue-700 font-bold mt-4">Does it scale to complex state?</h4>
-          <p class="my-1"> As far as you can handle it and CPU allows. Sprae has good performance.</p>
-          <h4 class="text-xl text-blue-700 font-bold mt-4">Are signals overhyped?</h4>
-          <p class="my-1"> Signals are <a href="https://github.com/tc39/proposal-signals">the standard</a> for reactivity, and <a href="https://github.com/preactjs/signals">preact-signals</a> provide minimal API wrapper.</p>
-          <!-- <h4 class="text-xl text-blue-700 font-bold mt-4">Is no build step outdated?</h4>
-          <p class="my-1"> Sprae saves the hassle configuring it, but it can be part of build pipeline as well. </p> -->
-          <h4 class="text-xl text-blue-700 font-bold mt-4">Is new Function unsafe?</h4>
-          <p class="my-1"> If your HTML comes from strangers, there is <a href="https://github.com/dy/sprae?tab=readme-ov-file#evaluator">safe evaluator</a>.</p>
-          <h4 class="text-xl text-blue-700 font-bold mt-4">Components support?</h4>
-          <p class="my-1"> Awaiting the <a href="https://github.com/WICG/webcomponents/blob/gh-pages/proposals/Declarative-Custom-Elements-Strawman.md">DCE proposal</a>, meanwhile we have to <a href="https://tailwindcss.com/docs/styling-with-utility-classes#managing-duplication">manage duplication</a>.</p>
-          <h4 class="text-xl text-blue-700 font-bold mt-4">Is there ecosystem?</h4>
-          <p class="my-1"> Not yet.</p>
-          <h4 class="text-xl text-blue-700 font-bold mt-4">TypeScript support?</h4>
-          <p class="my-1"> If you need it please <a href="https://github.com/dy/sprae/issues/new">leave a request</a>.</p>
-          <h4 class="text-xl text-blue-700 font-bold mt-4">Browser Compatibility?</h4>
-          <p class="my-1"> Modern browsers (ES6+).</p>
-          <h4 class="text-xl text-blue-700 font-bold mt-4">Is it stable?</h4>
-          <p class="my-1"> Core is stable since v10.</p>
-          <h4 class="text-xl text-blue-700 font-bold mt-4">How old is it?</h4>
-          <p class="my-1"> <span :text="new Date().getFullYear() - 2022">enough</span> years old (<a href="https://github.com/dy/sprae/commit/ee7e372fb372bde5bdd7bfd3524cdaa815793663">first commit</a> Nov 7, 2022).</p>
-          <h4 class="text-xl text-blue-700 font-bold mt-4">Will it be maintained long-term? </h4>
-          <p class="my-1"> 12 versions, 1.5k+ commits and future plans.</p>
-          <h4 class="text-xl text-blue-700 font-bold mt-4">What’s future plan?</h4>
-          <p class="my-1"> Plugins, components, integration cases, generators.</p>
-          <h4 class="text-xl text-blue-700 font-bold mt-4">Is it backed by a company?</h4>
-          <p class="my-1"> No. Just regular devs. You can <a href="https://github.com/sponsors/dy">support it</a>!</p>
+        <h2 class="text-3xl text-blue-700 font-bold col-span-2 md:pl-6 mt-2">FAQ</h2>
+        <div class="col-span-4 [&_h4]:text-xl [&_h4]:text-blue-700 [&_h4]:font-bold [&_h4]:mt-4 [&_p]:my-1">
+          <h4>Why sprae?</h4>
+          <p><strong>S</strong>imple <strong>pr</strong>ogressive <strong>æ</strong>nhancement. Minimal reactivity for HTML with signals. Perfect for static sites, landings, GitHub Pages, lightweight UIs, etc.</p>
+          <h4>Why not Alpine.js?</h4>
+          <p>Less syntax, no magic, lighter, faster, signals support, open state, ESM integration, extensibility.</p>
+          <h4>Why not Vanilla JS?</h4>
+          <p>Focus on UI logic in-place and avoid repetitive DOM ops. createElement is wrong mantra.  <!--But there is potential of static compilation.--></p>
+          <h4>Why not Next/React?</h4>
+          <p>No build, no deps, no external conventions. Some find react <a href="https://www.keithcirkel.co.uk/i-dont-have-time-to-learn-react/">not worth the time</a>. But sprae works well with <a href="https://dy.github.io/sprae/docs#jsx">JSX</a>, which can help preventing unnecessary client components.</p>
+          <h4>Why signals?</h4>
+          <p>Signals is <a href="https://github.com/tc39/proposal-signals">standard</a> primitive for reactivity. <a href="https://github.com/preactjs/signals">Preact-signals</a> provide minimal API surface, and are useful outside of react/preact context.</p>
+          <h4>Who cares for progressive enhancement?</h4>
+          <p>Who needs fail-proof, accessible, SEO-optimized web.</p>
+          <h4>Is it just a toy?</h4>
+          <p>It is used in production, but it's fun to play and comes with state sandbox.</p>
+          <h4>Does it scale to complex state?</h4>
+          <p>As far as you can handle it and CPU allows. Sprae has good performance.</p>
+          <!-- <h4>Is no build step outdated?</h4>
+          <p>Sprae saves the hassle configuring it, but it can be part of build pipeline as well. </p> -->
+          <h4>Is new Function unsafe?</h4>
+          <p>If your HTML comes from strangers or requires CSP, there is <a href="https://dy.github.io/sprae/docs#evaluator">safe evaluator</a>.</p>
+          <h4>Components support?</h4>
+          <p>Awaiting the <a href="https://github.com/WICG/webcomponents/blob/gh-pages/proposals/Declarative-Custom-Elements-Strawman.md">DCE proposal</a>, meanwhile we have to <a href="https://tailwindcss.com/docs/styling-with-utility-classes#managing-duplication">manage duplication</a>.</p>
+          <h4>Is there ecosystem?</h4>
+          <p>Not yet.</p>
+          <h4>TypeScript support?</h4>
+          <p>If you need it please <a href="https://github.com/dy/sprae/issues/new">leave a request</a>.</p>
+          <h4>Browser Compatibility?</h4>
+          <p>Any browser with <a href="https://caniuse.com/proxy">Proxy support</a>.</p>
+          <h4>Is it stable?</h4>
+          <p>Yes, since v10.</p>
+          <h4>How old is it?</h4>
+          <p><span :text="new Date().getFullYear() - 2022">enough</span> years old (<a href="https://github.com/dy/sprae/commit/ee7e372fb372bde5bdd7bfd3524cdaa815793663">first commit</a> Nov 7, 2022).</p>
+          <h4>Will it be maintained long-term? </h4>
+          <p>12 versions, 1.5k+ commits and future plans.</p>
+          <h4>What’s future plan?</h4>
+          <p>Plugins, components, integration cases, generators.</p>
+          <h4>Is it backed by a company?</h4>
+          <p>No. Just regular devs. You can <a href="https://github.com/sponsors/dy">support it</a>!</p>
         </div>
       </section>
 
