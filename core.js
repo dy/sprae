@@ -114,7 +114,7 @@ const initDirective = (el, dirName, expr, state) => {
         // effect applier - first time it applies the effect, next times effect is triggered by change signal
         fn = applyMods(sx(throttle(() => {
             if (++change.value) return // all calls except for the first one are handled by effect
-            dispose = effect(() => update && (
+            dispose = effect(() => (
               change.value == count ? fn() : // plan update: separate tick (via throttle) makes sure planner effect call is finished before eval call
                 (count = change.value, evaluate(state, update)) // if changed more than effect called - call it
             ));
@@ -128,7 +128,7 @@ const initDirective = (el, dirName, expr, state) => {
       // it's nice to see directive as taking some part of current context and returning new or updated context
       let update = (directive[name] || directive['*'])(fn.target, state, expr, name, mods)
 
-      // some directives are effect-less
+      // some directives are effect-less (eg. :ref) and unlikely used in combinations with other directives
       if (!update) return
 
       // take over state if directive created it (mainly :scope)

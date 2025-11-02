@@ -10,5 +10,5 @@ export default (el, state, expr, name, mods) => {
   //           ),
   //           mods);
 
-  return (_poff) => (el.addEventListener(type, fn, fn), () => (_poff?.(), el.removeEventListener(type, fn)))
+  return () => (el.addEventListener(type, fn, fn), () => (el.removeEventListener(type, fn)))
 }
