@@ -90,7 +90,6 @@ const initDirective = (el, dirName, expr, state) => {
       let evaluate = parse(expr, directive[currentDir = name]?.parse).bind(el)
 
       // a hack, but events have no signal-effects and can be sequenced
-      // FIXME: events are molded into core, but should be an optional directive
       if (name.startsWith('on')) {
         let type = name.slice(2),
           fn = applyMods(
@@ -107,6 +106,7 @@ const initDirective = (el, dirName, expr, state) => {
 
       let fn, dispose, change, count;
 
+      // FIXME: unify applyMods for both cases
       if (mods.length) {
         change = signal(-1), // signal authorized to trigger effect: 0 = init; >0 = trigger
         count = -1 // called effect count
@@ -126,7 +126,7 @@ const initDirective = (el, dirName, expr, state) => {
 
       // props have no sequences and can be sync
       // it's nice to see directive as taking some part of current context and returning new or updated context
-      let update = (directive[name] || directive['*'])(fn.target, state, expr, name)
+      let update = (directive[name] || directive['*'])(fn.target, state, expr, name, mods)
 
       // some directives are effect-less
       if (!update) return

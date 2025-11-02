@@ -228,6 +228,7 @@
   * [x] Connect donation links
   * [x] Inverse color render
   * [ ] Docs page UI
+  * [ ] Acronym rotator in header
   * [ ] Playground
   * [ ] Drops page
     * [ ] UI randomizer

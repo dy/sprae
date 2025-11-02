@@ -2,7 +2,8 @@ import { _on, _off, _state, frag } from '../core.js';
 
 
 // NOTE: we can reach :else counterpart whereas prev :else :if is on hold
-export default (el, state, _el, _, _prev=el) => {
+export default (el) => {
+  let _el, _prev = el
 
   // console.log(':else init', el)
   _el = el.content ? frag(el) : el

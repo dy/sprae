@@ -8,4 +8,4 @@ import './directive/scope.js';
 import './directive/style.js';
 import './directive/text.js';
 import './directive/value.js';
-import './directive/on.js';
+import './directive/event.js';

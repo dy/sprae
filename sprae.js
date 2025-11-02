@@ -13,44 +13,22 @@ import _ref from "./directive/ref.js";
 import _scope from "./directive/scope.js";
 import _each from "./directive/each.js";
 import _default from "./directive/default.js";
+import _event from "./directive/event.js";
 import _spread from "./directive/spread.js";
 
 
 Object.assign(directive, {
-  // :x="x"
-  '*': _default,
-
-  // FIXME
-  // 'on*': _on,
-
-  // :="{a,b,c}"
+  '*': (el, state, expr, name) =>  (name.startsWith('on') ? _event : _default)(el, state, expr, name),
   '': _spread,
-
-  // :class="[a, b, c]"
   class: _class,
-
-  // :text="..."
   text: _text,
-
-  // :style="..."
   style: _style,
-
-  // :fx="..."
   fx: _fx,
-
-  // :value - 2 way binding like x-model
   value: _value,
-
-  // :ref="..."
   ref: _ref,
-
-  // :scope creates variables scope for a subtree
   scope: _scope,
-
   if: _if,
   else: _else,
-
-  // :each="v,k in src"
   each: _each
 })
 
@@ -87,7 +65,8 @@ const keys = {
   ctrl: e => e.ctrlKey || e.key === "Control" || e.key === "Ctrl",
   shift: e => e.shiftKey || e.key === "Shift",
   alt: e => e.altKey || e.key === "Alt",
-  meta: e => e.metaKey || e.key === "Meta" || e.key === "Command",
+  meta: e => e.metaKey || e.key === "Meta",
+  cmd: e => e.metaKey || e.key === "Command",
   arrow: e => e.key.startsWith("Arrow"),
   enter: e => e.key === "Enter",
   esc: e => e.key.startsWith("Esc"),
@@ -103,11 +82,7 @@ const keys = {
 for (let k in keys) modifier[k] = (fn, ...params) => (e) => keys[k](e) && params.every(k => keys[k]?.(e) ?? e.key === k) && fn(e)
 
 use({
-  compile: expr => {
-    return sprae.constructor(`with (arguments[0]) { ${expr} }`)
-  },
-
-  // signals
+  compile: expr => sprae.constructor(`with (arguments[0]) { ${expr} }`),
   signal, effect, computed, batch, untracked
 })
 

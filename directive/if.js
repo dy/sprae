@@ -2,7 +2,9 @@
 import sprae, { throttle, _on, _off, _state, frag } from '../core.js';
 
 // :if="a"
-export default (el, state, _holder, _el, _match) => {
+export default (el, state) => {
+  let _holder, _el, _match
+
   // new element :if
   // console.log(':if init', el)
   if (!el._holder) {
