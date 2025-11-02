@@ -276,13 +276,12 @@ test("if: set/unset value", async () => {
 test("if: set/unset 2", async () => {
   let el = h`<root><x :if="x==1"><t :text="a"></t></x><y :else :if="x==2"><t :text="b"></t></y><z :else :text="c"></z></root>`
   let state = sprae(el, { x: 1, a: 'a', b: 'b', c: 'c' })
-  // await tick()
+  await tick()
   is(el.innerHTML, '<x><t>a</t></x>', 'x==1')
 
   console.log('----state.x = null')
   state.x = null
   await tick()
-  console.log(123123, el.innerHTML)
   is(el.innerHTML, `<z>c</z>`, 'x==null')
 
   console.log('----state.x = 1')

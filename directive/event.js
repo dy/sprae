@@ -1,4 +1,4 @@
-export default (el, state, expr, name, mods) => {
+const event = (el, state, expr, name, mods) => {
   let type = name.slice(2);
 
   // let fn = applyMods(
@@ -12,3 +12,8 @@ export default (el, state, expr, name, mods) => {
 
   return () => (el.addEventListener(type, fn, fn), () => (el.removeEventListener(type, fn)))
 }
+
+// prevent evaluation
+event.parse = () => '';
+
+export default event;

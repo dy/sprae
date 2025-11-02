@@ -95,8 +95,8 @@ const initDirective = (el, dirName, expr, state) => {
           fn = applyMods(
             sx(
               // single event vs chain
-              length == 1 ?  e => evaluate(state, (fn) => call(fn, e)) :
-                (e => (cur = (!i ?  e => call(evaluate(state), e) : cur)(e), off(), off = steps[(i + 1) % length]())),
+              length == 1 ? e => evaluate(state, (fn) => call(fn, e)) :
+                (e => (cur = (!i ? e => call(evaluate(state), e) : cur)(e), off(), off = steps[(i + 1) % length]())),
               { target: el }
             ),
             mods);
@@ -109,19 +109,25 @@ const initDirective = (el, dirName, expr, state) => {
       // FIXME: unify applyMods for both cases
       if (mods.length) {
         change = signal(-1), // signal authorized to trigger effect: 0 = init; >0 = trigger
-        count = -1 // called effect count
+          count = -1 // called effect count
 
         // effect applier - first time it applies the effect, next times effect is triggered by change signal
-        fn = applyMods(sx(throttle(() => {
+        fn = applyMods(sx(
+          // NOTE: we needed a tick for separate stack to make sure planner effect call is finished before eval call, but turning it off doesn't break tests anymore
+          // also since events are done via directive now, we need to keep it sync
+          // throttle(
+          () => {
             if (++change.value) return // all calls except for the first one are handled by effect
             dispose = effect(() => (
-              change.value == count ? fn() : // plan update: separate tick (via throttle) makes sure planner effect call is finished before eval call
+              change.value == count ? fn() : // plan update
                 (count = change.value, evaluate(state, update)) // if changed more than effect called - call it
             ));
-          }), {target: el}), mods)
+          },
+          // ),
+          { target: el }), mods)
       }
       else {
-        fn = sx(() => dispose = effect(() =>  evaluate(state, update)), {target: el })
+        fn = sx(() => dispose = effect(() => evaluate(state, update)), { target: el })
       }
 
       // props have no sequences and can be sync
@@ -207,7 +213,7 @@ export const parse = (expr, prepare, _fn) => {
   if (prepare) _expr = prepare(_expr)
 
   // if, const, let - no return
-  if (/^(if|let|const)\b/.test(_expr) || /;(?![^{]*})/.test(_expr)) ;
+  if (/^(if|let|const)\b/.test(_expr) || /;(?![^{]*})/.test(_expr));
   else _expr = `return ${_expr}`
 
   // async expression
@@ -216,7 +222,7 @@ export const parse = (expr, prepare, _fn) => {
   // static time errors
   try {
     _fn = compile(_expr)
-    Object.defineProperty(_fn, "name", {value: `∴ ${expr}`})
+    Object.defineProperty(_fn, "name", { value: `∴ ${expr}` })
   } catch (e) { console.error(`∴ ${e}\n\n${prefix + currentDir}="${expr}"`) }
 
   // run time errors
@@ -298,7 +304,7 @@ export const throttle = (fn, schedule = queueMicrotask) => {
   return throttled;
 }
 
-export const debounce = (fn, schedule = queueMicrotask, _count = 0) => (arg, _planned=++_count) => schedule(() => (_planned == _count && fn(arg)))
+export const debounce = (fn, schedule = queueMicrotask, _count = 0) => (arg, _planned = ++_count) => schedule(() => (_planned == _count && fn(arg)))
 
 export * from './store.js';
 
