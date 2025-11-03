@@ -14,16 +14,13 @@ import _value from "./directive/value.js";
 import _ref from "./directive/ref.js";
 import _scope from "./directive/scope.js";
 import _each from "./directive/each.js";
-import _default from "./directive/default.js";
-import _event from "./directive/event.js";
+import _default from "./directive/_.js";
 import _spread from "./directive/spread.js";
 
 
 Object.assign(directive, {
   // default handler has syntax sugar: aliasing and sequences, eg. :ona:onb..onc:ond
-  _: (el, state, expr, name) =>  {
-    return (name.startsWith('on') ? _event : _default)(el, state, expr, name)
-  },
+  _: _default,
   '': _spread,
   class: _class,
   text: _text,
@@ -104,7 +101,8 @@ const dir = (target, dirName, expr, state) => {
       let [name, ...mods] = str.split('.');
       const evaluate = parse(expr, directive[name]?.parse).bind(target)
 
-      // a hack, but events have no signal-effects and can be sequenced
+      // a hack, but events have no signals and are handled differently
+      // FIXME: if we disjoint modApplier from directiveUpdater, we can avoid this
       if (name.startsWith('on')) {
         let type = name.slice(2),
           fn = applyMods(
@@ -120,8 +118,8 @@ const dir = (target, dirName, expr, state) => {
       }
 
       let dispose,
-        change = signal(-1), // signal authorized to trigger effect: 0 = init; >0 = trigger
-        count = -1, // called effect count
+        change = signal(0), // signal authorized to trigger effect: 0 = init; >0 = trigger
+        count = 0, // called effect count
 
         fn = !mods.length ? () => (dispose = effect(() => evaluate(state, update))) :
           // effect applier - first time it applies the effect, next times effect is triggered by change signal
@@ -130,14 +128,17 @@ const dir = (target, dirName, expr, state) => {
             // also since events are done via directive now, we need to keep it sync
             // throttle(
             () => {
-              if (++change.value) return // all calls except for the first one are handled by effect
+              // bump change count to trigger effect to plan update
+              if (change.value++) return // all calls except for the first one are handled by effect
               dispose = effect(() => (
-                change.value == count ? fn() : // plan update
-                  (count = change.value, evaluate(state, update)) // if changed more than effect called - call it
+                // if planned count is same as actual count - plan new update, else update right away
+                change.value == count ? fn() :
+                  (count = change.value, evaluate(state, update))
               ));
             },
             // ),
-            { target }), mods)
+            { target }
+          ), mods)
 
 
       // props have no sequences and can be sync
@@ -156,7 +157,7 @@ const dir = (target, dirName, expr, state) => {
         fn(),
         () => (
           // console.log('OFF', name, el),
-          _poff?.(), dispose?.(), change && (change.value = -1, count = dispose = null)
+          _poff?.(), dispose?.(), change = dispose = null
         )
       )
     }, null)
