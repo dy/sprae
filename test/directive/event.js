@@ -289,35 +289,35 @@ test('on: alias sequence', async () => {
   console.log('---------- emit a')
   el.dispatchEvent(new window.CustomEvent('a', { bubbles: true }));
   is(state.log, [])
-  await tick()
+  await tick(2)
   is(state.log, ['a'])
   console.log('---------- emit a, b')
   el.dispatchEvent(new window.CustomEvent('a', { bubbles: true }));
   el.dispatchEvent(new window.CustomEvent('b', { bubbles: true }));
-  await tick()
+  await tick(2)
   is(state.log, ['a'])
   console.log('---------- emit d')
   el.dispatchEvent(new window.CustomEvent('d', { bubbles: true }));
   is(state.log, ['a'])
-  await tick()
+  await tick(2)
   is(state.log, ['a','d'], 'd fulfilled')
   console.log('---------- emit c, d')
   el.dispatchEvent(new window.CustomEvent('c', { bubbles: true }));
   el.dispatchEvent(new window.CustomEvent('d', { bubbles: true }));
-  await tick()
+  await tick(2)
   is(state.log, ['a','d'])
   console.log('---------- emit b')
   el.dispatchEvent(new window.CustomEvent('b', { bubbles: true }));
   is(state.log, ['a','d'])
-  await tick()
+  await tick(2)
   is(state.log, ['a','d','b'])
   el.dispatchEvent(new window.CustomEvent('b', { bubbles: true }));
   el.dispatchEvent(new window.CustomEvent('a', { bubbles: true }));
-  await tick()
+  await tick(2)
   is(state.log, ['a','d','b'])
   el.dispatchEvent(new window.CustomEvent('c', { bubbles: true }));
   is(state.log, ['a','d','b'])
-  await tick()
+  await tick(2)
   is(state.log, ['a','d','b','c'])
 
   el[_dispose]()

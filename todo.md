@@ -219,6 +219,7 @@
 
 * [ ] make :on a directive, not hardcoded
 * [ ] make :scope init untracked
+* [ ] global calls like getComputedStyle fail without window.
 * [ ] typescript
 * [ ] microjs bundle
 * [ ] perf tests
@@ -240,6 +241,10 @@
   * [ ] Examples
     * [ ] 7 GUIs
     * [ ] Wavearea
+    * [ ] Maetr
+    * [ ] SVG confetti gen
+    * [ ] SVG chat gen
+    * [ ] SVG counter gen
   * [ ] Used by
   * [ ] Sprae vs alpine
   * [ ] Better spraying interaction

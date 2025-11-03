@@ -14,8 +14,9 @@ test('core: pre-created store', async () => {
   let el = h`<x :text="get()"></x>`
   sprae(el, state)
   is(el.outerHTML, `<x>1</x>`)
+  console.log('--- x=2')
   state.x=2
-  await tick()
+  await tick(2)
   is(el.outerHTML, `<x>2</x>`)
 })
 

@@ -1677,6 +1677,16 @@
   + .tick can be debounced right away, we never need first call and there never can be in-between (no need to cancel)
   + .raf never needs to be debounced, it is always throttled cept first frame
 
+## [ ] Factor out events to directives
+
+  + It should be able to be turned off
+  + There's too much overkill going on for simple prop directives
+  * The nature of events is different, as was discussed before
+    * It applies modifiers not as prop, but as event listener
+  * Note: name aliases / chains are only applicable for `:<attr>` and `:on<event>`, doesn't make sense for other directives
+    * We can try moving `name` attr, mods parsing, sequences parsing, events handling - to some "default" handler
+      + which will free up space for microsprae
+
 ## [x] Componentization: what can be done? -> likely no for now. When html-include / DCE is there we can talk
 
   1. define-element

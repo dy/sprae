@@ -6,7 +6,6 @@ export const _dispose = (Symbol.dispose ||= Symbol("dispose")),
   _off = Symbol('off'),
   _add = Symbol('init');
 
-
 export let prefix = ':', signal, effect, computed, batch = (fn) => fn(), untracked = batch;
 
 export let directive = {}, modifier = {}
@@ -50,8 +49,10 @@ const sprae = (el = document.body, state) => {
       if (name.startsWith(prefix)) {
         el.removeAttribute(name)
 
+        currentDir = name;
+
         // directive initializer can be redefined
-        if (fn = initDirective(el, name, value, state)) fx.push(fn), offs.push(fn())
+        if (fn = dir(el, name, value, state)) fx.push(fn), offs.push(fn())
 
         // stop after subsprae like :each, :if, :scope etc.
         if (_state in el) return
@@ -73,126 +74,8 @@ const sprae = (el = document.body, state) => {
   return state;
 }
 
-
-/**
- * Initializes directive (defined by sprae build), returns "on" function that enables it
- * Multiprop sequences initializer, eg. :a:b..c:d
- * @type {(el: HTMLElement, name:string, value:string, state:Object) => Function}
- * */
-const initDirective = (el, dirName, expr, state) => {
-  let cur, // current step callback
-    off // current step disposal
-
-  let steps = dirName.slice(prefix.length).split('..').map((step, i, { length }) => (
-    // multiple attributes like :id:for=""
-    step.split(prefix).reduce((prev, str) => {
-      let [name, ...mods] = str.split('.');
-      let evaluate = parse(expr, directive[currentDir = name]?.parse).bind(el)
-
-      // a hack, but events have no signal-effects and can be sequenced
-      if (name.startsWith('on')) {
-        let type = name.slice(2),
-          fn = applyMods(
-            sx(
-              // single event vs chain
-              length == 1 ? e => evaluate(state, (fn) => call(fn, e)) :
-                (e => (cur = (!i ? e => call(evaluate(state), e) : cur)(e), off(), off = steps[(i + 1) % length]())),
-              { target: el }
-            ),
-            mods);
-
-        return (_poff) => (_poff = prev?.(), fn.target.addEventListener(type, fn, fn), () => (_poff?.(), fn.target.removeEventListener(type, fn)))
-      }
-
-      let fn, dispose, change, count;
-
-      // FIXME: unify applyMods for both cases
-      if (mods.length) {
-        change = signal(-1), // signal authorized to trigger effect: 0 = init; >0 = trigger
-          count = -1 // called effect count
-
-        // effect applier - first time it applies the effect, next times effect is triggered by change signal
-        fn = applyMods(sx(
-          // NOTE: we needed a tick for separate stack to make sure planner effect call is finished before eval call, but turning it off doesn't break tests anymore
-          // also since events are done via directive now, we need to keep it sync
-          // throttle(
-          () => {
-            if (++change.value) return // all calls except for the first one are handled by effect
-            dispose = effect(() => (
-              change.value == count ? fn() : // plan update
-                (count = change.value, evaluate(state, update)) // if changed more than effect called - call it
-            ));
-          },
-          // ),
-          { target: el }), mods)
-      }
-      else {
-        fn = sx(() => dispose = effect(() => evaluate(state, update)), { target: el })
-      }
-
-      // props have no sequences and can be sync
-      // it's nice to see directive as taking some part of current context and returning new or updated context
-      let update = (directive[name] || directive['*'])(fn.target, state, expr, name, mods)
-
-      // some directives are effect-less (eg. :ref) and unlikely used in combinations with other directives
-      if (!update) return
-
-      // take over state if directive created it (mainly :scope)
-      if (el[_state]) state = el[_state]
-
-      return (_poff) => (
-        _poff = prev?.(),
-        // console.log('ON', name),
-        fn(),
-        () => (
-          // console.log('OFF', name, el),
-          _poff?.(), dispose?.(), change && (change.value = -1, count = dispose = null)
-        )
-      )
-    }, null)
-  ));
-
-  // off can be changed on the go
-  return () => (off = steps[0]?.())
-}
-
-
-/**
- * Configure sprae
- */
-export const use = (s) => (
-  s.compile && (compile = s.compile),
-  s.prefix && (prefix = s.prefix),
-  s.signal && (signal = s.signal),
-  s.effect && (effect = s.effect),
-  s.computed && (computed = s.computed),
-  s.batch && (batch = s.batch),
-  s.untracked && (untracked = s.untracked)
-)
-
-
-/**
- * Lifecycle hanger: spraes automatically any new nodes
- */
-export const start = (root = document.body, values) => {
-  const state = store(values)
-  sprae(root, state);
-  const mo = new MutationObserver(mutations => {
-    for (const m of mutations) {
-      for (const el of m.addedNodes) {
-        // el can be spraed or removed by subsprae (like within :each/:if)
-        if (el.nodeType === 1 && el[_state] === undefined && root.contains(el)) {
-          // even if element has no spraeable attrs, some of its children can have
-          root[_add](el)
-        }
-      }
-      // for (const el of m.removedNodes) el[Symbol.dispose]?.()
-    }
-  });
-  mo.observe(root, { childList: true, subtree: true });
-  return state
-}
-
+// directive initializer
+export let dir
 
 /**
  * Compiles an expression into an evaluator function.
@@ -223,7 +106,7 @@ export const parse = (expr, prepare, _fn) => {
   try {
     _fn = compile(_expr)
     Object.defineProperty(_fn, "name", { value: `∴ ${expr}` })
-  } catch (e) { console.error(`∴ ${e}\n\n${prefix + currentDir}="${expr}"`) }
+  } catch (e) { console.error(`∴ ${e}\n\n${currentDir}="${expr}"`) }
 
   // run time errors
   return cache[expr] = function (state, cb, _out) {
@@ -233,24 +116,29 @@ export const parse = (expr, prepare, _fn) => {
       if (cb) return result?.then ? result.then(v => _out = cb(v)) : _out = cb(result), () => call(_out)
       else return result
     } catch (e) {
-      console.error(`∴ ${e}\n\n${prefix + currentDir}="${expr}"`)
+      console.error(`∴ ${e}\n\n${currentDir}="${expr}"`)
     }
   }
 }
 const cache = {};
 
 
-// apply modifiers to context (from the end due to nature of wrapping ctx.call)
-const applyMods = (fn, mods) => {
-  while (mods.length) {
-    let [name, ...params] = mods.pop().split('-')
-    fn = sx(modifier[name]?.(fn, ...params) ?? fn, fn)
-  }
-  return fn
-}
 
-// soft-extend missing props and ignoring signals
-const sx = (a, b) => { if (a != b) for (let k in b) (a[k] ??= b[k]); return a }
+/**
+ * Configure sprae
+ */
+export const use = (s) => (
+  s.compile && (compile = s.compile),
+  s.prefix && (prefix = s.prefix),
+  s.signal && (signal = s.signal),
+  s.effect && (effect = s.effect),
+  s.computed && (computed = s.computed),
+  s.batch && (batch = s.batch),
+  s.untracked && (untracked = s.untracked),
+  s.dir && (dir = s.dir)
+)
+
+
 
 // instantiated <template> fragment holder, like persisting fragment but with minimal API surface
 export const frag = (tpl) => {
