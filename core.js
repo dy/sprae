@@ -112,8 +112,8 @@ export const parse = (expr, prepare, _fn) => {
   return cache[expr] = function (state, cb, _out) {
     try {
       let result = _fn?.call(this, state)
-      // if cb is given (to handle asyncs) - call it with result and return function that returns last cb result - needed for effect cleanup
-      if (cb) return result?.then ? result.then(v => _out = cb(v)) : _out = cb(result), () => call(_out)
+      // if cb is given (to handle async/await exprs, usually directive update) - call it with result and return a cleanup function
+      if (cb) return result?.then ? (result.then(v => _out = cb(v)), () => call(_out)) : cb(result)
       else return result
     } catch (e) {
       console.error(`∴ ${e}\n\n${currentDir}="${expr}"`)

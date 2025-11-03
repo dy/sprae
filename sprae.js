@@ -42,12 +42,11 @@ Object.assign(directive, {
 })
 
 
-
 /**
  * Multiprop sequences initializer, eg. :a:b..c:d
  * @type {(el: HTMLElement, name:string, value:string, state:Object) => Function}
  * */
-function dir (target, dirName, expr, state) {
+function dir(target, dirName, expr, state) {
   let cur, // current step callback
     off // current step disposal
 
@@ -67,7 +66,7 @@ function dir (target, dirName, expr, state) {
             sx(
               // single event vs chain
               length == 1 ? e => evaluate(state, (fn) => call(fn, e)) :
-                (e => (cur = (!i ? e => call(evaluate(state), e) : cur)(e), off(), off = steps[(i + 1) % length]())),
+                (e => (!i ? evaluate(state, (fn) => cur = call(fn, e)) : cur = cur(e), off(), off = steps[(i + 1) % length]())),
               { target }
             ),
             mods);
