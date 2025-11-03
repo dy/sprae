@@ -1680,7 +1680,8 @@
 ## [ ] Factor out events to directives
 
   + It should be able to be turned off
-  + There's too much overkill going on for simple prop directives
+  + There's too much overkill going on for simple prop directives with that steps state machine
+    + exceptional case (events) defines the whole parsing method
   * The nature of events is different, as was discussed before
     * It applies modifiers not as prop, but as event listener
   * Note: name aliases / chains are only applicable for `:<attr>` and `:on<event>`, doesn't make sense for other directives

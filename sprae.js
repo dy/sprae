@@ -18,6 +18,13 @@ import _default from "./directive/_.js";
 import _spread from "./directive/spread.js";
 
 
+use({
+  compile: expr => sprae.constructor(`with (arguments[0]) { ${expr} }`),
+  dir,
+  ...signals
+})
+
+
 Object.assign(directive, {
   // default handler has syntax sugar: aliasing and sequences, eg. :ona:onb..onc:ond
   _: _default,
@@ -33,6 +40,99 @@ Object.assign(directive, {
   else: _else,
   each: _each
 })
+
+
+
+/**
+ * Multiprop sequences initializer, eg. :a:b..c:d
+ * @type {(el: HTMLElement, name:string, value:string, state:Object) => Function}
+ * */
+function dir (target, dirName, expr, state) {
+  let cur, // current step callback
+    off // current step disposal
+
+  // steps are like state machine: entering step inits directive, exiting step disposes it
+  // 99% cases there is just one step with one directive
+  let steps = dirName.slice(prefix.length).split('..').map((step, i, { length }) => (
+    // multiple attributes like :id:for=""
+    step.split(prefix).reduce((prev, str) => {
+      let [name, ...mods] = str.split('.'), initDir = directive[name] || directive._
+      const evaluate = parse(expr, initDir.parse).bind(target)
+
+      // a hack, but events have no signals
+      // FIXME: if we disjoint modApplier from directiveUpdater, we can avoid this
+      if (name.startsWith('on')) {
+        let type = name.slice(2),
+          fn = applyMods(
+            sx(
+              // single event vs chain
+              length == 1 ? e => evaluate(state, (fn) => call(fn, e)) :
+                (e => (cur = (!i ? e => call(evaluate(state), e) : cur)(e), off(), off = steps[(i + 1) % length]())),
+              { target }
+            ),
+            mods);
+
+        return (_poff) => (_poff = prev?.(), fn.target.addEventListener(type, fn, fn), () => (_poff?.(), fn.target.removeEventListener(type, fn)))
+      }
+
+      let dispose,
+        change = signal(0), // signal authorized to trigger effect: 0 = init; >0 = trigger
+        count = 0, // called effect count
+
+        fn = !mods.length ? () => (dispose = effect(() => evaluate(state, update))) :
+          // effect applier - first time it applies the effect, next times effect is triggered by change signal
+          applyMods(sx(
+            // NOTE: we needed a tick for separate stack to make sure planner effect call is finished before eval call, but turning it off doesn't break tests anymore
+            // also since events are done via directive now, we need to keep it sync
+            // throttle(
+            () => {
+              // bump change count to trigger effect to plan update
+              if (change.value++) return // all calls except for the first one are handled by effect
+              dispose = effect(() => (
+                // if planned count is same as actual count - plan new update, else update right away
+                change.value == count ? fn() :
+                  (count = change.value, evaluate(state, update))
+              ));
+            },
+            // ),
+            { target }
+          ), mods)
+
+
+      // props have no sequences and can be sync
+      // it's nice to see directive as taking some part of current context and returning new or updated context
+      let update = initDir(fn.target || target, state, expr, name)
+
+      // take over state if directive created it (mainly :scope)
+      if (target[_state]) state = target[_state]
+
+      return (_poff) => (
+        _poff = prev?.(),
+        // console.log('ON', name),
+        fn(),
+        () => (
+          // console.log('OFF', name, el),
+          _poff?.(), dispose?.(), change = dispose = null
+        )
+      )
+    }, null)
+  ));
+
+  // off can be changed on the go
+  return () => (off = steps[0]?.())
+}
+
+// apply modifiers to context (from the end due to nature of wrapping ctx.call)
+const applyMods = (fn, mods) => {
+  while (mods.length) {
+    let [name, ...params] = mods.pop().split('-')
+    fn = sx(modifier[name]?.(fn, ...params) ?? fn, fn)
+  }
+  return fn
+}
+// soft-extend missing props and ignoring signals
+const sx = (a, b) => { if (a != b) for (let k in b) (a[k] ??= b[k]); return a }
+
 
 Object.assign(modifier, {
   // timing
@@ -84,107 +184,6 @@ const keys = {
 for (let k in keys) modifier[k] = (fn, ...params) => (e) => keys[k](e) && params.every(k => keys[k]?.(e) ?? e.key === k) && fn(e)
 
 
-
-/**
- * Multiprop sequences initializer, eg. :a:b..c:d
- * @type {(el: HTMLElement, name:string, value:string, state:Object) => Function}
- * */
-const dir = (target, dirName, expr, state) => {
-  let cur, // current step callback
-    off // current step disposal
-
-  // steps are like state machine: entering step inits directive, exiting step disposes it
-  // 99% cases there is just one step with one directive
-  let steps = dirName.slice(prefix.length).split('..').map((step, i, { length }) => (
-    // multiple attributes like :id:for=""
-    step.split(prefix).reduce((prev, str) => {
-      let [name, ...mods] = str.split('.');
-      const evaluate = parse(expr, directive[name]?.parse).bind(target)
-
-      // a hack, but events have no signals and are handled differently
-      // FIXME: if we disjoint modApplier from directiveUpdater, we can avoid this
-      if (name.startsWith('on')) {
-        let type = name.slice(2),
-          fn = applyMods(
-            sx(
-              // single event vs chain
-              length == 1 ? e => evaluate(state, (fn) => call(fn, e)) :
-                (e => (cur = (!i ? e => call(evaluate(state), e) : cur)(e), off(), off = steps[(i + 1) % length]())),
-              { target }
-            ),
-            mods);
-
-        return (_poff) => (_poff = prev?.(), fn.target.addEventListener(type, fn, fn), () => (_poff?.(), fn.target.removeEventListener(type, fn)))
-      }
-
-      let dispose,
-        change = signal(0), // signal authorized to trigger effect: 0 = init; >0 = trigger
-        count = 0, // called effect count
-
-        fn = !mods.length ? () => (dispose = effect(() => evaluate(state, update))) :
-          // effect applier - first time it applies the effect, next times effect is triggered by change signal
-          applyMods(sx(
-            // NOTE: we needed a tick for separate stack to make sure planner effect call is finished before eval call, but turning it off doesn't break tests anymore
-            // also since events are done via directive now, we need to keep it sync
-            // throttle(
-            () => {
-              // bump change count to trigger effect to plan update
-              if (change.value++) return // all calls except for the first one are handled by effect
-              dispose = effect(() => (
-                // if planned count is same as actual count - plan new update, else update right away
-                change.value == count ? fn() :
-                  (count = change.value, evaluate(state, update))
-              ));
-            },
-            // ),
-            { target }
-          ), mods)
-
-
-      // props have no sequences and can be sync
-      // it's nice to see directive as taking some part of current context and returning new or updated context
-      let update = (directive[name] || directive._)(fn.target || target, state, expr, name)
-
-      // some directives are effect-less (eg. :ref) and unlikely used in combinations with other directives
-      if (!update) return
-
-      // take over state if directive created it (mainly :scope)
-      if (target[_state]) state = target[_state]
-
-      return (_poff) => (
-        _poff = prev?.(),
-        // console.log('ON', name),
-        fn(),
-        () => (
-          // console.log('OFF', name, el),
-          _poff?.(), dispose?.(), change = dispose = null
-        )
-      )
-    }, null)
-  ));
-
-  // off can be changed on the go
-  return () => (off = steps[0]?.())
-}
-
-// apply modifiers to context (from the end due to nature of wrapping ctx.call)
-const applyMods = (fn, mods) => {
-  while (mods.length) {
-    let [name, ...params] = mods.pop().split('-')
-    fn = sx(modifier[name]?.(fn, ...params) ?? fn, fn)
-  }
-  return fn
-}
-// soft-extend missing props and ignoring signals
-const sx = (a, b) => { if (a != b) for (let k in b) (a[k] ??= b[k]); return a }
-
-
-
-use({
-  compile: expr => sprae.constructor(`with (arguments[0]) { ${expr} }`),
-  dir,
-  ...signals
-})
 
 
 // expose for runtime config
