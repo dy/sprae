@@ -89,11 +89,10 @@ export let compile
  * @param {string} expr The expression to parse and compile into a function.
  * @returns {Function} The compiled evaluator function for the expression.
  */
-export const parse = (expr, prepare, _fn) => {
+export const parse = (expr, _fn) => {
   if (_fn = cache[expr]) return _fn
 
   let _expr = expr.trim() || 'undefined'
-  if (prepare) _expr = prepare(_expr)
 
   // if, const, let - no return
   if (/^(if|let|const)\b/.test(_expr) || /;(?![^{]*})/.test(_expr));

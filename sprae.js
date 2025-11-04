@@ -56,7 +56,7 @@ function dir(target, dirName, expr, state) {
     // multiple attributes like :id:for=""
     step.split(prefix).reduce((prev, str) => {
       let [name, ...mods] = str.split('.'), initDir = directive[name] || directive._
-      const evaluate = parse(expr, initDir.parse).bind(target)
+      const evaluate = parse(initDir.parse?.(expr) ?? expr).bind(target)
 
       // a hack, but events have no signals
       // FIXME: if we disjoint modApplier from directiveUpdater, we can avoid this
