@@ -64,40 +64,37 @@ function dir(target, dirName, expr, state) {
       let dispose,
         change = signal(0), // signal authorized to trigger effect: 0 = init; >0 = trigger
         count = 0, // called effect count
+        trigger = applyMods(Object.assign((arg) => invoke(arg), { target }), mods), // schedules invocation after modifiers chain
 
-        // effect applier - first time it applies the effect, next times effect is triggered by change signal
-        fire = applyMods(sx(
+        // throttle prevents multiple updates within one tick as well as isolates stack for each update
+        invoke = event ? (
           // single event vs chain
-          event ? (
-            length == 1 ? e => evaluate(state, (fn) => call(fn, e)) :
-              e => (!i ? evaluate(state, (fn) => cur = call(fn, e)) : cur = cur(e), off(), off = steps[(i + 1) % length]())
-          ) :
-            // throttle prevents multiple updates within one tick as well as isolates stack for each update
-            throttle(
-              // NOTE: recreating effect for each fire call is not efficient than controllable cycle
-              // !mods.length ? () => (dispose?.(), dispose = effect(() => evaluate(state, update))) :
-              () => {
-                // bump change count to plan update
-                change.value++
+          length == 1 ? e => evaluate(state, (fn) => call(fn, e)) :
+            e => (!i ? evaluate(state, (fn) => cur = call(fn, e)) : cur = cur(e), off(), off = steps[(i + 1) % length]())
+        ) : throttle(
+          // NOTE: recreating effect for each fire call is not efficient than controllable cycle
+          // !mods.length ? () => (dispose?.(), dispose = effect(() => evaluate(state, update))) :
+          // effect applier - first time it applies the effect, next times effect is triggered by change signal
+          () => {
+            // bump change count to plan update
+            change.value++
 
-                // all calls except for the first one are handled by effect
-                dispose ||= effect(() => (
-                  // if planned count is same as actual count - plan new update, else update right away
-                  change.value == count ? fire() : (count = change.value, evaluate(state, update))
-                ));
-              },
-            ),
-          { target }
-        ), mods)
+            // all calls except for the first one are handled by effect
+            dispose ||= effect(() => (
+              // if planned count is same as actual count - plan new update, else update right away
+              change.value == count ? trigger() : (count = change.value, evaluate(state, update))
+            ));
+          },
+        )
 
-      const update = createDir(fire.target || target, state, expr, name, fire)
+      const update = createDir(trigger.target || target, state, expr, name, trigger)
 
       // expression can be redefined by directive (mainly :each)
       const evaluate = update?.eval ?? parse(expr).bind(target)
 
       // FIXME: it's a hack, must move to directive itself
       if (event) {
-        return (_poff) => (_poff = prev?.(), fire.target.addEventListener(event, fire, fire), () => (_poff?.(), fire.target.removeEventListener(event, fire)))
+        return (_poff) => (_poff = prev?.(), trigger.target.addEventListener(event, trigger, trigger), () => (_poff?.(), trigger.target.removeEventListener(event, trigger)))
       }
 
       // take over state if directive created it (mainly :scope)
@@ -106,7 +103,7 @@ function dir(target, dirName, expr, state) {
       return (_poff) => (
         _poff = prev?.(),
         // console.log('ON', name),
-        fire(),
+        trigger(),
         () => (
           // console.log('OFF', name, el),
           _poff?.(), dispose?.(), dispose = null
@@ -120,16 +117,17 @@ function dir(target, dirName, expr, state) {
 }
 
 // apply modifiers to context (from the end due to nature of wrapping ctx.call)
-const applyMods = (fn, mods) => {
+const applyMods = (fn, mods, _mod, _fn) => {
   while (mods.length) {
     let [name, ...params] = mods.pop().split('-')
-    fn = sx(modifier[name]?.(fn, ...params) ?? fn, fn)
+    if (_mod = modifier[name]) {
+      _fn = _mod(fn, ...params)
+      if (_fn !== fn) for (let k in fn) (_fn[k] ??= fn[k]);
+      fn = _fn
+    }
   }
   return fn
 }
-// soft-extend missing props and ignoring signals
-const sx = (a, b) => { if (a != b) for (let k in b) (a[k] ??= b[k]); return a }
-
 
 Object.assign(modifier, {
   // timing
@@ -178,7 +176,7 @@ const keys = {
 };
 
 // augment modifiers with key testers
-for (let k in keys) modifier[k] = (fn, ...params) => (e) => keys[k](e) && params.every(k => keys[k]?.(e) ?? e.key === k) && fn(e)
+for (let k in keys) modifier[k] = (fn, a, b) => (e) => keys[k](e) && (!a || keys[a]?.(e)) && (!b || keys[b]?.(e)) && fn(e)
 
 
 

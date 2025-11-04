@@ -373,8 +373,8 @@ Prevent default or stop (immediate) propagation.
 
 Filter event by [`event.key`](https://developer.mozilla.org/en-US/docs/Web/API/UI_Events/Keyboard_event_key_values) or combination:
 
-* `.ctrl`, `.shift`, `.alt`, `.meta`, `.enter`, `.esc`, `.tab`, `.space` – direct key
-* `.delete` – delete or backspace
+* `.enter`, `.esc`, `.tab`, `.space`, `.delete` – direct key
+* `.ctrl`, `.shift`, `.alt`, `.meta`, `.cmd` – meta key
 * `.arrow` – up, right, down or left arrow
 * `.digit` – 0-9
 * `.letter` – A-Z, a-z or any [unicode letter](https://unicode.org/reports/tr18/#General_Category_Property)
