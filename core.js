@@ -40,7 +40,7 @@ const sprae = (el = document.body, state) => {
   el[_dispose] ||= () => (el[_off](), el[_off] = el[_on] = el[_dispose] = el[_add] = el[_state] = null)
 
   const add = el[_add] = (el) => {
-    let _attrs = el.attributes, fn;
+    let _attrs = el.attributes, start;
 
     // we iterate live collection (subsprae can init args)
     if (_attrs) for (let i = 0; i < _attrs.length;) {
@@ -52,7 +52,7 @@ const sprae = (el = document.body, state) => {
         currentDir = name;
 
         // directive initializer can be redefined
-        if (fn = dir(el, name, value, state)) fx.push(fn), offs.push(fn())
+        if (start = dir(el, name, value, state)) fx.push(start), offs.push(start())
 
         // stop after subsprae like :each, :if, :scope etc.
         if (_state in el) return
@@ -90,9 +90,9 @@ export let compile
  * @returns {Function} The compiled evaluator function for the expression.
  */
 export const parse = (expr, _fn) => {
-  if (_fn = cache[expr]) return _fn
+  if (_fn = cache[expr=expr.trim()]) return _fn
 
-  let _expr = expr.trim() || 'undefined'
+  let _expr = expr || 'undefined'
 
   // if, const, let - no return
   if (/^(if|let|const)\b/.test(_expr) || /;(?![^{]*})/.test(_expr));

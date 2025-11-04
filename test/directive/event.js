@@ -6,17 +6,19 @@ import test, { any, is } from "tst";
 const _dispose = Symbol.dispose;
 
 
-test("on: event target", () => {
+test("on: event target", async () => {
   let el = h`<div :onx="event => log.push(event.target)"></div>`;
   let state = sprae(el, { log: [] });
+  await tick();
   console.log('----- el.dispatchEvent')
   el.dispatchEvent(new window.Event("x"));
   is(state.log, [el]);
 });
 
-test("on: this context", () => {
+test("on: this context", async () => {
   let el = h`<div :onx="log.push(this)"></div>`;
   let state = sprae(el, { log: [] });
+  await tick();
   console.log('----- el.dispatchEvent')
   el.dispatchEvent(new window.Event("x"));
   is(state.log, [el]);
@@ -34,9 +36,10 @@ test("on: multiple events", () => {
   is(state.log, ["click", "scroll", "x"]);
 });
 
-test("on: once", () => {
+test("on: once", async  () => {
   let el = h`<x :onx.once="e => (x && log.push(x))" ></x>`;
   let s = sprae(el, { log: [], x: 1 });
+  await tick();
   el.dispatchEvent(new window.Event("x"));
   is(s.log, [1]);
   el.dispatchEvent(new window.Event("x"));

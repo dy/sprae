@@ -15,6 +15,7 @@ import _ref from "./directive/ref.js";
 import _scope from "./directive/scope.js";
 import _each from "./directive/each.js";
 import _default from "./directive/_.js";
+import _event from "./directive/event.js";
 import _spread from "./directive/spread.js";
 
 
@@ -27,6 +28,7 @@ use({
 
 Object.assign(directive, {
   // default handler has syntax sugar: aliasing and sequences, eg. :ona:onb..onc:ond
+  // _(el, state, expr, name, fn) { return (name.startsWith('on') ? _event : _default)(el, state, expr, name, fn) },
   _: _default,
   '': _spread,
   class: _class,
@@ -55,52 +57,48 @@ function dir(target, dirName, expr, state) {
   let steps = dirName.slice(prefix.length).split('..').map((step, i, { length }) => (
     // multiple attributes like :id:for=""
     step.split(prefix).reduce((prev, str) => {
-      let [name, ...mods] = str.split('.'), initDir = directive[name] || directive._
-      const evaluate = parse(initDir.parse?.(expr) ?? expr).bind(target)
+      let [name, ...mods] = str.split('.'), createDir = directive[name] || directive._
 
-      // a hack, but events have no signals
-      // FIXME: if we disjoint modApplier from directiveUpdater, we can avoid this
-      if (name.startsWith('on')) {
-        let type = name.slice(2),
-          fn = applyMods(
-            sx(
-              // single event vs chain
-              length == 1 ? e => evaluate(state, (fn) => call(fn, e)) :
-                (e => (!i ? evaluate(state, (fn) => cur = call(fn, e)) : cur = cur(e), off(), off = steps[(i + 1) % length]())),
-              { target }
-            ),
-            mods);
-
-        return (_poff) => (_poff = prev?.(), fn.target.addEventListener(type, fn, fn), () => (_poff?.(), fn.target.removeEventListener(type, fn)))
-      }
+      const event = name.startsWith('on') && name.slice(2)
 
       let dispose,
         change = signal(0), // signal authorized to trigger effect: 0 = init; >0 = trigger
         count = 0, // called effect count
 
-        fn = !mods.length ? () => (dispose = effect(() => evaluate(state, update))) :
-          // effect applier - first time it applies the effect, next times effect is triggered by change signal
-          applyMods(sx(
-            // NOTE: we needed a tick for separate stack to make sure planner effect call is finished before eval call, but turning it off doesn't break tests anymore
-            // also since events are done via directive now, we need to keep it sync
-            // throttle(
-            () => {
-              // bump change count to trigger effect to plan update
-              if (change.value++) return // all calls except for the first one are handled by effect
-              dispose = effect(() => (
-                // if planned count is same as actual count - plan new update, else update right away
-                change.value == count ? fn() :
-                  (count = change.value, evaluate(state, update))
-              ));
-            },
-            // ),
-            { target }
-          ), mods)
+        // effect applier - first time it applies the effect, next times effect is triggered by change signal
+        fire = applyMods(sx(
+          // single event vs chain
+          event ? (
+            length == 1 ? e => evaluate(state, (fn) => call(fn, e)) :
+              e => (!i ? evaluate(state, (fn) => cur = call(fn, e)) : cur = cur(e), off(), off = steps[(i + 1) % length]())
+          ) :
+            // throttle prevents multiple updates within one tick as well as isolates stack for each update
+            throttle(
+              // NOTE: recreating effect for each fire call is not efficient than controllable cycle
+              // !mods.length ? () => (dispose?.(), dispose = effect(() => evaluate(state, update))) :
+              () => {
+                // bump change count to plan update
+                change.value++
 
+                // all calls except for the first one are handled by effect
+                dispose ||= effect(() => (
+                  // if planned count is same as actual count - plan new update, else update right away
+                  change.value == count ? fire() : (count = change.value, evaluate(state, update))
+                ));
+              },
+            ),
+          { target }
+        ), mods)
 
-      // props have no sequences and can be sync
-      // it's nice to see directive as taking some part of current context and returning new or updated context
-      let update = initDir(fn.target || target, state, expr, name)
+      const update = createDir(fire.target || target, state, expr, name, fire)
+
+      // expression can be redefined by directive (mainly :each)
+      const evaluate = update?.eval ?? parse(expr).bind(target)
+
+      // FIXME: it's a hack, must move to directive itself
+      if (event) {
+        return (_poff) => (_poff = prev?.(), fire.target.addEventListener(event, fire, fire), () => (_poff?.(), fire.target.removeEventListener(event, fire)))
+      }
 
       // take over state if directive created it (mainly :scope)
       if (target[_state]) state = target[_state]
@@ -108,10 +106,10 @@ function dir(target, dirName, expr, state) {
       return (_poff) => (
         _poff = prev?.(),
         // console.log('ON', name),
-        fn(),
+        fire(),
         () => (
           // console.log('OFF', name, el),
-          _poff?.(), dispose?.(), change = dispose = null
+          _poff?.(), dispose?.(), dispose = null
         )
       )
     }, null)

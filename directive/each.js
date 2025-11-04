@@ -1,7 +1,9 @@
-import sprae, { store, _state, effect, _change, _signals, frag, throttle } from "../core.js";
+import sprae, { store, parse, _state, effect, _change, _signals, frag, throttle } from "../core.js";
 
-const each = (tpl, state, expr) => {
-  let [itemVar, idxVar = "$"] = expr.split(/\bin\b/)[0].trim().replace(/\(|\)/g, '').split(/\s*,\s*/);
+export default (tpl, state, expr) => {
+  const [lhs, rhs] = expr.split(/\bin\b/)
+
+  let [itemVar, idxVar = "$"] = lhs.trim().replace(/\(|\)/g, '').split(/\s*,\s*/);
 
   // we need :if to be able to replace holder instead of tpl for :if :each case
   let holder = document.createTextNode("");
@@ -65,7 +67,7 @@ const each = (tpl, state, expr) => {
   tpl.replaceWith(holder);
   tpl[_state] = null // mark as fake-spraed, to preserve :-attribs for template
 
-  return value => {
+  return Object.assign(value => {
     // resolve new items
     keys = null
     if (typeof value === "number") items = Array.from({ length: value }, (_, i) => i + 1)
@@ -80,10 +82,8 @@ const each = (tpl, state, expr) => {
       // make first render immediately, debounce subsequent renders
       update()
     })
-  }
+  }, {
+    // redefine evaluator for only right-hand side of `in` expression
+    eval:parse(rhs)
+  })
 }
-
-// :each directive skips v, k
-each.parse = (str) => str.split(/\bin\b/)[1].trim()
-
-export default each
