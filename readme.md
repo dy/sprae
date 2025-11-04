@@ -1,10 +1,6 @@
-# ∴ spræ
+# [∴](https://dy.github.io/sprae) spræ
 
 Microhydration for DOM tree with signals-based reactive attributes.
-
-#### [site](https://dy.github.io/sprae)   [docs](https://dy.github.io/sprae/docs)   [drops](https://dy.github.io/sprae/drops)
-
-## usage
 
 ```html
 <div id="counter" :scope="{count: 1}">
