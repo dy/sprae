@@ -104,7 +104,7 @@ export const parse = (expr, _fn) => {
   // static time errors
   try {
     _fn = compile(_expr)
-    Object.defineProperty(_fn, "name", { value: `∴ ${expr}` })
+    // Object.defineProperty(_fn, "name", { value: `∴ ${expr}` })
   } catch (e) { console.error(`∴ ${e}\n\n${currentDir}="${expr}"`) }
 
   // run time errors

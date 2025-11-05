@@ -1,6 +1,6 @@
 import { call, attr } from "../core.js";
 
-export default (el, _static) => (
+export default (_el, _static, _st, _n, {target:el}) => (
   _static = el.getAttribute("style"),
   v => {
     v = call(v, el.style)

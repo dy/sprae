@@ -28,7 +28,7 @@ use({
 
 Object.assign(directive, {
   // default handler has syntax sugar: aliasing and sequences, eg. :ona:onb..onc:ond
-  // _(el, state, expr, name, fn) { return (name.startsWith('on') ? _event : _default)(el, state, expr, name, fn) },
+  // _(el, state, expr, name, trigger) { return (name.startsWith('on') ? _event : _default)(el, state, expr, name, trigger) },
   _: _default,
   '': _spread,
   class: _class,
@@ -64,33 +64,35 @@ function dir(target, dirName, expr, state) {
       let dispose,
         change = signal(0), // signal authorized to trigger effect: 0 = init; >0 = trigger
         count = 0, // called effect count
-        trigger = applyMods(Object.assign((arg) => invoke(arg), { target }), mods), // schedules invocation after modifiers chain
-
-        // throttle prevents multiple updates within one tick as well as isolates stack for each update
-        invoke = event ? (
+        invoke =
+        event ? (
           // single event vs chain
           length == 1 ? e => evaluate(state, (fn) => call(fn, e)) :
             e => (!i ? evaluate(state, (fn) => cur = call(fn, e)) : cur = cur(e), off(), off = steps[(i + 1) % length]())
-        ) : throttle(
-          // NOTE: recreating effect for each fire call is not efficient than controllable cycle
-          // !mods.length ? () => (dispose?.(), dispose = effect(() => evaluate(state, update))) :
-          // effect applier - first time it applies the effect, next times effect is triggered by change signal
-          () => {
-            // bump change count to plan update
-            change.value++
+        ) :
+          // throttle prevents multiple updates within one tick as well as isolates stack for each update
+          throttle(
+            // NOTE: recreating effect for each fire call is not efficient than controllable cycle
+            // !mods.length ? () => (dispose?.(), dispose = effect(() => evaluate(state, update))) :
+            // effect applier - first time it applies the effect, next times effect is triggered by change signal
+            (arg) => {
+              // bump change count to plan update
+              change.value++
 
-            // all calls except for the first one are handled by effect
-            dispose ||= effect(() => (
-              // if planned count is same as actual count - plan new update, else update right away
-              change.value == count ? trigger() : (count = change.value, evaluate(state, update))
-            ));
-          },
-        )
+              // all calls except for the first one are handled by effect
+              dispose ||= effect(() => (
+                // if planned count is same as actual count - plan new update, else update right away
+                change.value == count ? trigger() : (count = change.value, evaluate(state, update))
+              ));
+            },
+          ),
+        trigger = applyMods(Object.assign(invoke, {target}), mods) // schedules invocation after modifiers chain
 
-      const update = createDir(trigger.target || target, state, expr, name, trigger)
+      const update = createDir(target, state, expr, name, trigger)
 
       // expression can be redefined by directive (mainly :each)
       const evaluate = update?.eval ?? parse(expr).bind(target)
+
 
       // FIXME: it's a hack, must move to directive itself
       if (event) {
@@ -106,7 +108,7 @@ function dir(target, dirName, expr, state) {
         trigger(),
         () => (
           // console.log('OFF', name, el),
-          _poff?.(), dispose?.(), dispose = null
+          _poff?.(), update?.[_off]?.(), dispose?.(), dispose = null
         )
       )
     }, null)
@@ -115,19 +117,19 @@ function dir(target, dirName, expr, state) {
   // off can be changed on the go
   return () => (off = steps[0]?.())
 }
-
-// apply modifiers to context (from the end due to nature of wrapping ctx.call)
-const applyMods = (fn, mods, _mod, _fn) => {
+const applyMods = (fn, mods) => {
+  // apply modifiers
   while (mods.length) {
-    let [name, ...params] = mods.pop().split('-')
-    if (_mod = modifier[name]) {
-      _fn = _mod(fn, ...params)
-      if (_fn !== fn) for (let k in fn) (_fn[k] ??= fn[k]);
-      fn = _fn
+    let [name, ...params] = mods.pop().split('-'), mod = modifier[name], wrapFn
+    if (mod) {
+      wrapFn = mod(fn, ...params)
+      if (wrapFn !== fn) for (let k in fn) wrapFn[k] ??= fn[k];
+      fn = wrapFn
     }
   }
   return fn
 }
+
 
 Object.assign(modifier, {
   // timing
