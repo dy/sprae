@@ -50,6 +50,11 @@
   - sprae is closer to spray
   - sprae is closer to a verb
 
+## [x] Acronyms
+
+  * Simple progressive enhancement
+  * Single purpose reasoning
+
 ## [x] :attr, :data, :id, :class, :style, :on, :aria - do we enforce JS syntax or support unscoped expression? -> Use JS convention, too many use-cases.
 
 1. JS object
@@ -1684,9 +1689,22 @@
     + exceptional case (events) defines the whole parsing method
   * The nature of events is different, as was discussed before
     * It applies modifiers not as prop, but as event listener
-  * Note: name aliases / chains are only applicable for `:<attr>` and `:on<event>`, doesn't make sense for other directives
+  + Name aliases / chains are only applicable for `:<attr>` and `:on<event>`, doesn't make sense for other directives
     * We can try moving `name` attr, mods parsing, sequences parsing, events handling - to some "default" handler
       + which will free up space for microsprae
+  - Moving out sequencing logic complicates single-event handler which we might want to connect
+    + It means we keep sequencing
+
+### [ ] Do we have to keep aliases on dir, or that's only last-resort _ directive feature?
+  + `:text:title=""`, `:value:title=""`
+  + `:text:href=""`
+  ~ `:id:name` in case if `:id` is both defined as custom directive
+  ~ `:placeholder`
+  ~ `:text:aria-label`
+  ~ `:text:data-tooltip`
+  ~ `:text:lang`
+  - overall no so much value as in events sequences/aliases `:onclick:onkeypress.document.arrow-down:onkeypress.document.key-s`
+  * that seems to be `sprae` build feature, because we cannot complicate event directive with syntax parsing either
 
 ## [x] Componentization: what can be done? -> likely no for now. When html-include / DCE is there we can talk
 

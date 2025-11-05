@@ -219,6 +219,7 @@
 
 * [ ] make :on a directive, not hardcoded
 * [ ] make :scope init untracked
+* [ ] test .outside - it doesn't work now
 * [ ] global calls like getComputedStyle fail without window.
 * [ ] typescript
 * [ ] microjs bundle
@@ -229,7 +230,7 @@
   * [x] Connect donation links
   * [x] Inverse color render
   * [ ] Docs page UI
-  * [ ] Acronym rotator in header
+  * [x] Acronym rotator in header
   * [ ] Playground
   * [ ] Drops page
     * [ ] UI randomizer
