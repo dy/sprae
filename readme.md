@@ -1,6 +1,6 @@
 # [∴](https://dy.github.io/sprae) spræ
 
-Microhydration for DOM tree with signals-based reactive attributes.
+Microhydration for DOM tree with signals-based attributes.
 
 ```html
 <div id="counter" :scope="{count: 1}">
@@ -8,7 +8,12 @@ Microhydration for DOM tree with signals-based reactive attributes.
   <button :onclick="count++">Click me</button>
 </div>
 
-<script src="https://unpkg.com/sprae" start="#counter"></script>
+<script type="module">
+  import sprae from '//unpkg.com/sprae?module'
+
+  const state = sprae(document.getElementById('counter'), { count: 0 })
+  state.count++
+</script>
 ```
 
 [`:text`](docs.md#text) [`:class`](docs.md#class) [`:style`](docs.md#style) [`:value`](docs.md#value) [`:<attr>`](docs.md#attr-) [`:if :else`](docs.md#if-else) [`:each`](docs.md#each) [`:scope`](docs.md#scope) [`:fx`](docs.md#fx) [`:ref`](docs.md#ref) [`:on<event>`](docs.md#onevent)
@@ -31,7 +36,7 @@ Micro sprae version is 2.5kb bundle with essentials:
 
 ## why
 
-Simple reactivity without overhead. Perfect for SPA.<br>
+Simple practical reactivity without overhead. Perfect for SPA.<br>
 Inspired by [alpine](https://github.com/alpinejs/alpine), [petite-vue](https://github.com/vuejs/petite-vue) and others. <!--[lucia](https://github.com/aidenybai/lucia), [nuejs](https://github.com/nuejs/nuejs), [hmpl](https://github.com/hmpl-language/hmpl), [unpoly](https://unpoly.com/up.link), [dagger](https://github.com/dagger8224/dagger.js)-->
 
 
