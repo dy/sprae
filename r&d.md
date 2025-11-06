@@ -1693,7 +1693,11 @@
     * We can try moving `name` attr, mods parsing, sequences parsing, events handling - to some "default" handler
       + which will free up space for microsprae
   - Moving out sequencing logic complicates single-event handler which we might want to connect
-    + It means we keep sequencing
+    + It means we keep sequencing in `dir`
+  - We cannot use regular effect invokator, since callback doesn't need to subscribe to variables change
+
+  * it feels like event can be a modifier `.event-<x>` which re-triggers a callback with arg
+    ~ we would need to handle "cancel" by modifiers, which would also be the case for .interval
 
 ### [ ] Do we have to keep aliases on dir, or that's only last-resort _ directive feature?
   + `:text:title=""`, `:value:title=""`
