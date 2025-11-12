@@ -4,9 +4,6 @@ import t, { is } from 'tst'
 import { signal, computed, effect, batch, use } from '../core.js'
 import { tick } from 'wait-please'
 
-// import * as signals from '@preact/signals-core'
-// use(signals)
-
 // value
 t('signal: readme', async () => {
   let log = []

@@ -19,14 +19,14 @@ export const signal = (v, _s, _obs = new Set, _v = () => _s.value) => (
   }
 )
 
-export const effect = (fn, _teardown, _fx, _deps, __tmp) => (
+export const effect = (fn, _teardown, _fx, _deps, _tmp) => (
   _fx = (prev) => {
-    __tmp = _teardown;
+    _tmp = _teardown;
     _teardown = null; // we null _teardown to avoid repeated call in case of recursive update
-    __tmp?.call?.();
+    _tmp?.call?.();
     prev = current, current = _fx
     if (depth++ > 10) throw 'Cycle detected';
-    try { _teardown = fn(); } finally { current = prev; depth-- }
+    try { _teardown = fn() } finally { current = prev; depth-- }
   },
   _deps = _fx.deps = [],
 

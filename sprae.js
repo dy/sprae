@@ -52,13 +52,14 @@ const dir = (target, name, expr, state) => {
     let trigger = decorate(Object.assign(throttle(() => change.value++), { target }), mods),
       change = signal(0), // signal authorized to trigger effect: 0 = init; >0 = trigger
       count = 0, // called effect count
-      evaluate = update.eval ?? parse(expr).bind(target)
+      evaluate = update.eval ?? parse(expr).bind(target),
+      out // effect trigger and invoke may happen in the same tick, so it will be effect-within-effect call - we need to store output of evaluate to return from trigger effect
 
     state =  target[_state] ?? state
 
     return effect(() => (
       // if planned count is same as actual count - plan new update, else update right away
-      change.value == count ? trigger() : (count = change.value, evaluate(state, update))
+      change.value == count ? (trigger(), out) : (count = change.value, out = evaluate(state, update))
     ))
   }
 }
@@ -120,7 +121,7 @@ use({
     if (name.includes('..')) return () => _seq(el, state, expr, name)[_dispose]
     return name.split(prefix).reduce((prev, str) => {
       let start = dir(el, str, expr, state)
-      return !prev ? start : (p, s) => ( p = prev(), s = start(), () => { p(); s() } )
+      return !prev ? start : (p, s) => (p = prev(), s = start(), () => { p(); s() })
     }, null)
   },
   ...signals

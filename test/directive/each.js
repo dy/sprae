@@ -574,7 +574,7 @@ test('each: unwanted extra subscription', async () => {
   let a = { label: signal(0) }, b = { label: signal(0) }
   console.log('--------rows.value = [a, b]')
   rows.value = [a, b]
-  await tick()
+  await tick(2)
   is(state._count, 2)
   is(el.innerHTML, `<x><a>0</a></x><x><a>0</a></x>`)
 

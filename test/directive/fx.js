@@ -5,11 +5,6 @@ import test, { any, is, ok } from "tst";
 import { store } from '../../store.js'
 import { use, signal, batch, untracked } from '../../core.js'
 
-// import * as signals from '@preact/signals-core'
-// use(signals)
-
-const _dispose = Symbol.dispose;
-
 test("fx: effects", async () => {
   let el = h`<x :fx="() => (_log.push(x), () => (console.log('out',_log),_log.push('out')))"></x>`;
   let x = signal(1)

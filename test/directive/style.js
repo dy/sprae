@@ -5,11 +5,6 @@ import test, { any, is, ok } from "tst";
 import { store } from '../../store.js'
 import { use, signal, batch, untracked } from '../../core.js'
 
-// import * as signals from '@preact/signals-core'
-// use(signals)
-
-const _dispose = Symbol.dispose;
-
 
 test("style: basic", async () => {
   let el = h`<x style="left: 1px" :style="style"></x>`;
