@@ -118,5 +118,8 @@ sprae.directive = directive
 sprae.modifier = modifier
 sprae.start = start
 
+// version placeholder for bundler
+sprae.version = "[VI]{{inject}}[/VI]"
+
 export default sprae
 export { sprae, store, signal, effect, computed, batch, untracked, start, use }

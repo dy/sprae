@@ -1,6 +1,7 @@
 import esbuild from "esbuild";
 import { umdWrapper } from "esbuild-plugin-umd-wrapper"
-
+import pkg from './package.json' with { type: 'json' };
+import { esbuildPluginVersionInjector } from 'esbuild-plugin-version-injector';
 
 // ESM bundle
 await esbuild.build({
@@ -10,7 +11,10 @@ await esbuild.build({
   bundle: true,
   minify: true,
   target: 'es2020',
-  sourcemap: 'external'
+  sourcemap: 'external',
+  plugins: [
+    esbuildPluginVersionInjector()
+  ]
 })
 
 
@@ -18,8 +22,8 @@ await esbuild.build({
 await esbuild.build({
   stdin: {
     contents:
-// MO immediately applies spraeable elements
-`var sprae = require("./sprae.js").default; module.exports = sprae; var cur = document.currentScript;
+      // MO immediately applies spraeable elements
+      `var sprae = require("./sprae.js").default; module.exports = sprae; var cur = document.currentScript;
 var prefix = cur.getAttribute("prefix") ?? cur.dataset.prefix ?? cur.dataset.spraePrefix;
 var start = cur.getAttribute("start") ?? cur.dataset.start ?? cur.dataset.spraeStart;
 if (prefix) sprae.use({ prefix });
@@ -32,9 +36,12 @@ if (start != null && start !== 'false') (start && start !== 'true' ? document.qu
   target: 'es2020',
   sourcemap: 'external',
   format: "umd",
-  plugins: [umdWrapper({
-    libraryName: "sprae"
-  })]
+  plugins: [
+    umdWrapper({
+      libraryName: "sprae"
+    }),
+    esbuildPluginVersionInjector()
+  ]
 })
 
 
