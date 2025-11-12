@@ -103,6 +103,7 @@ test("scope: new prop added to parent state", async () => {
 test('scope: parasitic updates', async () => {
   let a = h`<x :scope="x=''"><y :fx="x='x'" :text="x+y"></y></x>`
   let s = sprae(a, { y: 'y' })
+  await tick()
   is(a.innerHTML, `<y>xy</y>`)
   s.y = 'yy'
   await tick()

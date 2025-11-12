@@ -82,8 +82,5 @@ export default (tpl, state, expr) => {
       // make first render immediately, debounce subsequent renders
       update()
     })
-  }, {
-    // redefine evaluator for only right-hand side of `in` expression
-    eval:parse(rhs)
-  })
+  }, {eval:parse(rhs)})
 }

@@ -1,4 +1,4 @@
-import test, { is, ok } from "tst";
+import test, { any, is, ok, same } from "tst";
 import { tick, time } from "wait-please";
 import sprae, { start } from '../sprae.js'
 import store from '../store.js'
@@ -333,7 +333,7 @@ test('core: autostart nested case 2', async () => {
   a.appendChild(x)
   await time(10);
   is(container.innerHTML, `<y><x>1</x></y><y><x>2</x></y>`);
-  is(state.log.slice(-2), ['1','2'])
+  same(state.log.slice(-2), ['1','2'])
 })
 
 test('core: list length unsub (preact signals)', async () => {

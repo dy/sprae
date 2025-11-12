@@ -1,8 +1,13 @@
-import { call, attr } from "../core.js";
+import { call, attr, decorate } from "../core.js";
 
-export default (_el, _static, _st, _n, {target:el}) => (
-  _static = el.getAttribute("style"),
-  v => {
+export default (el, st, ex, name) => {
+  let _static;
+
+  // redefine target, if modifiers have one
+  if (name.includes('.')) el = decorate({target:el}, name.split('.').slice(1)).target ?? el;
+
+  return v => {
+    if (!_static) { _static = el.getAttribute("style") }
     v = call(v, el.style)
     if (typeof v === "string") attr(el, "style", _static + '; ' + v);
     else {
@@ -11,4 +16,4 @@ export default (_el, _static, _st, _n, {target:el}) => (
       for (let k in v) k[0] == '-' ? el.style.setProperty(k, v[k]) : k[0] > 'A' && (el.style[k] = v[k])
     }
   }
-)
+}

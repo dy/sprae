@@ -52,7 +52,7 @@ const sprae = (el = document.body, state) => {
         currentDir = name;
 
         // directive initializer can be redefined
-        if (start = dir(el, name, value, state)) fx.push(start), offs.push(start())
+        start = dir(el, name.slice(prefix.length), value, state), fx.push(start), offs.push(start())
 
         // stop after subsprae like :each, :if, :scope etc.
         if (_state in el) return
@@ -89,8 +89,9 @@ export let compile
  * @param {string} expr The expression to parse and compile into a function.
  * @returns {Function} The compiled evaluator function for the expression.
  */
-export const parse = (expr, _fn) => {
-  if (_fn = cache[expr=expr.trim()]) return _fn
+export const parse = (expr) => {
+  let fn  = cache[expr=expr.trim()]
+  if (fn) return fn
 
   let _expr = expr || 'undefined'
 
@@ -103,14 +104,14 @@ export const parse = (expr, _fn) => {
 
   // static time errors
   try {
-    _fn = compile(_expr)
-    // Object.defineProperty(_fn, "name", { value: `∴ ${expr}` })
+    fn = compile(_expr)
+    // Object.defineProperty(fn, "name", { value: `∴ ${expr}` })
   } catch (e) { console.error(`∴ ${e}\n\n${currentDir}="${expr}"`) }
 
   // run time errors
   return cache[expr] = function (state, cb, _out) {
     try {
-      let result = _fn?.call(this, state)
+      let result = fn?.call(this, state)
       // if cb is given (to handle async/await exprs, usually directive update) - call it with result and return a cleanup function
       if (cb) return result?.then ? (result.then(v => _out = cb(v)), () => call(_out)) : cb(result)
       else return result
@@ -137,7 +138,19 @@ export const use = (s) => (
   s.dir && (dir = s.dir)
 )
 
-
+// modifier applier
+export const decorate = (fn, mods) => {
+  while (mods.length) {
+    let [name, ...params] = mods.pop().split('-'), mod = modifier[name], wrapFn
+    if (mod) {
+      if ((wrapFn = mod(fn, ...params)) !== fn) {
+        for (let k in fn) wrapFn[k] ??= fn[k];
+        fn = wrapFn
+      }
+    }
+  }
+  return fn
+}
 
 // instantiated <template> fragment holder, like persisting fragment but with minimal API surface
 export const frag = (tpl) => {
@@ -182,10 +195,11 @@ export const clsx = (c, _out = []) => !c ? '' : typeof c === 'string' ? c : (
 
 // throttle function to (once per tick or other custom scheduler)
 export const throttle = (fn, schedule = queueMicrotask) => {
-  let _planned = 0;
+  let _planned = 0, arg;
   const throttled = (e) => {
-    if (!_planned++) fn(e), schedule((_dirty = _planned > 1) => (
-      _planned = 0, _dirty && throttled(e)
+    arg = e
+    if (!_planned++) fn(arg), schedule((_dirty = _planned > 1) => (
+      _planned = 0, _dirty && throttled(arg)
     ));
   }
   return throttled;

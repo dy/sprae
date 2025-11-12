@@ -1,5 +1,5 @@
 import store from "./store.js";
-import { batch, computed, effect, signal, untracked } from './core.js';
+import { batch, computed, effect, signal, untracked, decorate } from './core.js';
 import * as signals from './signal.js';
 import sprae, { use, directive, modifier, parse, throttle, debounce, _off, _state, _on, _dispose, _add, prefix, call } from './core.js';
 import pkg from './package.json' with { type: 'json' };
@@ -15,21 +15,13 @@ import _ref from "./directive/ref.js";
 import _scope from "./directive/scope.js";
 import _each from "./directive/each.js";
 import _default from "./directive/_.js";
-import _event from "./directive/event.js";
 import _spread from "./directive/spread.js";
-
-
-use({
-  compile: expr => sprae.constructor(`with (arguments[0]) { ${expr} }`),
-  dir,
-  ...signals
-})
+import _event from "./directive/event.js";
+import _seq from "./directive/sequence.js";
 
 
 Object.assign(directive, {
-  // default handler has syntax sugar: aliasing and sequences, eg. :ona:onb..onc:ond
-  // _(el, state, expr, name, trigger) { return (name.startsWith('on') ? _event : _default)(el, state, expr, name, trigger) },
-  _: _default,
+  _: (el, state, expr, name) => (name.startsWith('on') ? _event : _default)(el, state, expr, name),
   '': _spread,
   class: _class,
   text: _text,
@@ -45,99 +37,39 @@ Object.assign(directive, {
 
 
 /**
- * Multiprop sequences initializer, eg. :a:b..c:d
+ * Directive initializer (with modifiers support)
  * @type {(el: HTMLElement, name:string, value:string, state:Object) => Function}
  * */
-function dir(target, dirName, expr, state) {
-  let cur, // current step callback
-    off // current step disposal
+const dir = (target, name, expr, state) => {
+  let [dirName, ...mods] = name.split('.'), create = directive[dirName] || directive._
 
-  // steps are like state machine: entering step inits directive, exiting step disposes it
-  // 99% cases there is just one step with one directive
-  let steps = dirName.slice(prefix.length).split('..').map((step, i, { length }) => (
-    // multiple attributes like :id:for=""
-    step.split(prefix).reduce((prev, str) => {
-      let [name, ...mods] = str.split('.'), createDir = directive[name] || directive._
+  return () => {
+    let update = create(target, state, expr, name)
 
-      const event = name.startsWith('on') && name.slice(2)
+    if (!update?.call) return update?.[_dispose]
 
-      let dispose,
-        change = signal(0), // signal authorized to trigger effect: 0 = init; >0 = trigger
-        count = 0, // called effect count
-        invoke =
-        event ? (
-          // single event vs chain
-          length == 1 ? e => evaluate(state, (fn) => call(fn, e)) :
-            e => (!i ? evaluate(state, (fn) => cur = call(fn, e)) : cur = cur(e), off(), off = steps[(i + 1) % length]())
-        ) :
-          // throttle prevents multiple updates within one tick as well as isolates stack for each update
-          throttle(
-            // NOTE: recreating effect for each fire call is not efficient than controllable cycle
-            // !mods.length ? () => (dispose?.(), dispose = effect(() => evaluate(state, update))) :
-            // effect applier - first time it applies the effect, next times effect is triggered by change signal
-            (arg) => {
-              // bump change count to plan update
-              change.value++
+    // throttle prevents multiple updates within one tick as well as isolates stack for each update
+    let trigger = decorate(Object.assign(throttle(() => change.value++), { target }), mods),
+      change = signal(0), // signal authorized to trigger effect: 0 = init; >0 = trigger
+      count = 0, // called effect count
+      evaluate = update.eval ?? parse(expr).bind(target)
 
-              // all calls except for the first one are handled by effect
-              dispose ||= effect(() => (
-                // if planned count is same as actual count - plan new update, else update right away
-                change.value == count ? trigger() : (count = change.value, evaluate(state, update))
-              ));
-            },
-          ),
-        trigger = applyMods(Object.assign(invoke, {target}), mods) // schedules invocation after modifiers chain
+    state =  target[_state] ?? state
 
-      const update = createDir(target, state, expr, name, trigger)
-
-      // expression can be redefined by directive (mainly :each)
-      const evaluate = update?.eval ?? parse(expr).bind(target)
-
-
-      // FIXME: it's a hack, must move to directive itself
-      if (event) {
-        return (_poff) => (_poff = prev?.(), trigger.target.addEventListener(event, trigger, trigger), () => (_poff?.(), trigger.target.removeEventListener(event, trigger)))
-      }
-
-      // take over state if directive created it (mainly :scope)
-      if (target[_state]) state = target[_state]
-
-      return (_poff) => (
-        _poff = prev?.(),
-        // console.log('ON', name),
-        trigger(),
-        () => (
-          // console.log('OFF', name, el),
-          _poff?.(), update?.[_off]?.(), dispose?.(), dispose = null
-        )
-      )
-    }, null)
-  ));
-
-  // off can be changed on the go
-  return () => (off = steps[0]?.())
-}
-const applyMods = (fn, mods) => {
-  // apply modifiers
-  while (mods.length) {
-    let [name, ...params] = mods.pop().split('-'), mod = modifier[name], wrapFn
-    if (mod) {
-      wrapFn = mod(fn, ...params)
-      if (wrapFn !== fn) for (let k in fn) wrapFn[k] ??= fn[k];
-      fn = wrapFn
-    }
+    return effect(() => (
+      // if planned count is same as actual count - plan new update, else update right away
+      change.value == count ? trigger() : (count = change.value, evaluate(state, update))
+    ))
   }
-  return fn
 }
-
 
 Object.assign(modifier, {
   // timing
   debounce: (fn, _how = 250) => debounce(fn, (_how ||= 0, (fn) => setTimeout(fn, _how))),
   throttle: (fn, _how = 250) => throttle(fn, (_how ||= 0, (fn) => setTimeout(fn, _how))),
-  tick: (fn) => (e) => queueMicrotask(() => fn(e)),
+  tick: (fn) => (e) => (queueMicrotask(() => fn(e))),
   raf: (fn) => (e) => requestAnimationFrame(() => fn(e)),
-  once: (fn, _done, _fn) => Object.assign((e) => !_done && (_done = 1, fn(e)), { once: true }),
+  once: (fn, _done, _fn) => (_fn = (e) => !_done && (_done = 1, fn(e)), _fn.once = true, _fn),
 
   // target
   window: fn => (fn.target = fn.target.ownerDocument.defaultView, fn),
@@ -181,6 +113,18 @@ const keys = {
 for (let k in keys) modifier[k] = (fn, a, b) => (e) => keys[k](e) && (!a || keys[a]?.(e)) && (!b || keys[b]?.(e)) && fn(e)
 
 
+use({
+  compile: expr => sprae.constructor(`with (arguments[0]) { ${expr} }`),
+  dir: (el, name, expr, state) => {
+    // sequences shortcut
+    if (name.includes('..')) return () => _seq(el, state, expr, name)[_dispose]
+    return name.split(prefix).reduce((prev, str) => {
+      let start = dir(el, str, expr, state)
+      return !prev ? start : (p, s) => ( p = prev(), s = start(), () => { p(); s() } )
+    }, null)
+  },
+  ...signals
+})
 
 
 // expose for runtime config

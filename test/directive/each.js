@@ -405,6 +405,7 @@ test('each: items refer to current el', async () => {
   let el = h`<div><x :each="x in 3" :data-x="x" :scope="{el:null}" :ref="e=>(el=e)" :x="log.push(x, el.dataset.x)"></x></div>`;
   let log = signal([]);
   let state = sprae(el, { log, untracked });
+  await tick(2);
   is([...state.log], [1, "1", 2, "2", 3, "3"]);
 });
 

@@ -1,7 +1,7 @@
 import { parse } from "../core.js"
 // import { setter } from "./value.js"
 
-export default (el, state, expr, name, _prev, _set) => {
+export default (el, state, expr) => {
   // FIXME: we call eval twice here - once to check if it's fn, second for update (from core)
   if (typeof parse(expr)(state) == 'function') return v => (v(el))
 
