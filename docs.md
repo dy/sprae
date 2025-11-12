@@ -284,41 +284,46 @@ Trigger when element is connected / disconnected from DOM.
 
 ## Modifiers
 
-#### `.debounce-<ms>`
+#### `.debounce-<ms|raf>?-<immediate>?`
 
-Defer callback by interval in ms. Defaults to 250ms.
+Delay callback by interval since the last call.
+Undefined interval uses `tick`.
+Optional `immediate` indicates leading-edge debounce.
+See [lodash/debounce](https://lodash.com/docs/#debounce)
 
 ```html
 <!-- debounce keyboard input by 200ms -->
 <input :oninput.debounce-200="event => update(event)" />
 ```
 
-#### `.throttle-<ms>`
+#### `.throttle-<ms|raf>?-<immediate>?`
 
-Limit callback rate to interval in ms. By default 250ms.
+Limit callback rate to an interval. Undefined interval uses `tick`. Optional `immediate` indicates leading-edge response. See [lodash/throttle](https://lodash.com/docs/#throttle).
 
 ```html
 <!-- throttle text update -->
 <div :text.throttle-100="text.length"></div>
 ```
 
-#### `.tick`
+#### `.delay-<ms|raf>?`
 
-Run callback in the next tick.
+Run callback after an interval.
 
 ```html
 <!-- set class in the next tick -->
-<div :class.tick="{ active }">...</div>
+<div :class.delay="{ active }">...</div>
 ```
 
+<!--
 #### `.raf`
 
 Throttle callback by animation frames.
 
 ```html
-<!-- lock style update to animation frames -->
+<!-- lock style update to animation frames
 <div :onscroll.raf="progress = (scrollTop / scrollHeight) * 100"/>
 ```
+-->
 
 #### `.once`
 
@@ -357,7 +362,7 @@ Event listener [options](https://developer.mozilla.org/en-US/docs/Web/API/EventT
 <body :ontouchstart.capture="logTouch(e)"></body>
 ```
 
-#### `.prevent`, `.stop`, `.immediate`  <kbd>events only</kbd>
+#### `.prevent`, `.stop-<immediate?>`  <kbd>events only</kbd>
 
 Prevent default or stop (immediate) propagation.
 

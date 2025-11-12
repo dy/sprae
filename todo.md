@@ -217,14 +217,17 @@
 * [x] `.tick` alias, `.raf` alias - debounce + throttle
 * [x] ~~mobile click is super sluggish~~ not anymore. Is that tailwind?
 
+* [ ] add .delay
 * [ ] make :on a directive, not hardcoded
 * [ ] make :scope init untracked
+* [ ] disable observer for DOM mutations
 * [ ] test .outside - it doesn't work now
 * [ ] global calls like getComputedStyle fail without window.
 * [ ] typescript
 * [ ] microjs bundle
 * [ ] perf tests
 * [ ] alpine CSP syntax
+* [ ] extend .throttle to support lodash props: .throttle-lead, .throttle-trail
 
 ## [ ] Website
   * [x] Connect donation links
@@ -254,6 +257,8 @@
 
 ## [ ] Plugins
 
+* [ ] .before-n, .after-n, .defer (lodashes)
+* [ ] .interval
 * [ ] .persists
 * [ ] .screen-md
 * [ ] :onvisible
@@ -262,3 +267,4 @@
 * [ ] :item
 * [ ] :intersect
 * [ ] :scroll.view.x="progress => "
+* [ ] portal/teleport
