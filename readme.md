@@ -36,11 +36,8 @@ Micro sprae version is 2.5kb bundle with essentials:
 
 ## why
 
-Simple practical reactivity without overhead. Perfect for SPA.<br>
-Inspired by [alpine](https://github.com/alpinejs/alpine), [petite-vue](https://github.com/vuejs/petite-vue) and others. <!--[lucia](https://github.com/aidenybai/lucia), [nuejs](https://github.com/nuejs/nuejs), [hmpl](https://github.com/hmpl-language/hmpl), [unpoly](https://unpoly.com/up.link), [dagger](https://github.com/dagger8224/dagger.js)-->
-
-Simple reactivity without framework overhead. Perfect for SPA.<br>
-<!-- Perfect for static sites, Github Pages, micro-frontends, prototypes, lightweight UI.<br> -->
+Simple practical reactivity without overhead.<br>
+Perfect for SPA, static sites, prototypes, micro-frontends, lightweight UI.<br>
 Inspired by [preact-signals](https://github.com/preactjs/signals), [alpine](https://github.com/alpinejs/alpine), [lodash](https://lodash.com) and others.<br> <!--[petite-vue](https://github.com/vuejs/petite-vue) and others. <!--[lucia](https://github.com/aidenybai/lucia), [nuejs](https://github.com/nuejs/nuejs), [hmpl](https://github.com/hmpl-language/hmpl), [unpoly](https://unpoly.com/up.link), [dagger](https://github.com/dagger8224/dagger.js)-->
 Made with 🫰 for better DX.
  <!-- – for those who tired of complexity. -->
