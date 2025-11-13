@@ -1,11 +1,11 @@
 // events directive with enabled aliases and sequences like :onclick.ctrl.once..keyup.enter
-import { _dispose, call, parse, decorate, prefix } from "../core.js"
+import { _dispose, call, parse, decorate } from "../core.js"
 
 export default (el, state, expr, names) => {
   let cur, // current step callback
     off // current step disposal
 
-  let steps = names.split('..').map((step, i, { length }) => step.split(prefix).reduce(
+  let steps = names.split('..').map((step, i, { length }) => step.split(':').reduce(
     (prev, str) => {
       const [name, ...mods] = str.slice(2).split('.')
 

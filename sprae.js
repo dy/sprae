@@ -119,7 +119,7 @@ use({
   dir: (el, name, expr, state) => {
     // sequences shortcut
     if (name.includes('..')) return () => _seq(el, state, expr, name)[_dispose]
-    return name.split(prefix).reduce((prev, str) => {
+    return name.split(':').reduce((prev, str) => {
       let start = dir(el, str, expr, state)
       return !prev ? start : (p, s) => (p = prev(), s = start(), () => { p(); s() })
     }, null)
