@@ -6,7 +6,7 @@ let current, depth = 0, batched;
 export const signal = (v, _s, _obs = new Set, _v = () => _s.value) => (
   _s = {
     get value() {
-      current?.deps.push(_obs.add(current));
+      current?.deps.add(_obs.add(current));
       return v
     },
     set value(val) {
@@ -28,10 +28,10 @@ export const effect = (fn, _teardown, _fx, _deps, _tmp) => (
     if (depth++ > 10) throw 'Cycle detected';
     try { _teardown = fn() } finally { current = prev; depth-- }
   },
-  _deps = _fx.deps = [],
+  _deps = _fx.deps = new Set(),
 
   _fx(),
-  (dep) => { _teardown?.call?.(); while (dep = _deps.pop()) dep.delete(_fx); }
+  (dep) => { _teardown?.call?.(); for (dep of _deps) dep.delete(_fx); _deps.clear() }
 )
 
 export const computed = (fn, _s = signal(), _c, _e, _v = () => _c.value) => (

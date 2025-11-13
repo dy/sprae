@@ -336,3 +336,15 @@ t('batch: reversed change', () => {
   is(s.value, 1)
   is(c, 3, 'number of calls')
 })
+
+t.todo('effect: teardown calls itself')
+
+t.skip('effect: multiple subs', () => {
+  // NOTE: internally _deps was an array with duplicates which is wrong
+  let s = signal(0)
+  effect(() => {
+    s.value;
+    s.value;
+    s.value;
+  })
+})
