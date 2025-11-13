@@ -11,7 +11,7 @@ import { use } from '../core.js'
 import * as signals from '@preact/signals-core'
 // import * as signals from '@preact/signals'
 // import * as signals from '@webreflection/signal'
-use(signals)
+// use(signals)
 
 // patch outerHTML to document fragments
 Object.defineProperty(DocumentFragment.prototype, "outerHTML", {

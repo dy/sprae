@@ -15,7 +15,7 @@ export const signal = (v, _s, _obs = new Set, _v = () => _s.value) => (
       for (let sub of _obs) batched ? batched.add(sub) : sub(); // notify effects
     },
     peek() { return v },
-    toJSON: _v, then: _v, toString: _v, valueOf: _v
+    toJSON: _v, toString: _v, valueOf: _v
   }
 )
 
@@ -41,7 +41,7 @@ export const computed = (fn, _s = signal(), _c, _e, _v = () => _c.value) => (
       return _s.value
     },
     peek: _s.peek,
-    toJSON: _v, then: _v, toString: _v, valueOf: _v
+    toJSON: _v, toString: _v, valueOf: _v
   }
 )
 
