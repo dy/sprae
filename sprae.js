@@ -1,6 +1,8 @@
 import store from "./store.js";
-import { batch, computed, effect, signal, untracked } from './signal.js';
-import sprae, { use, directive, modifier, start, throttle, debounce, _off, _state, _on, _dispose } from './core.js';
+import { batch, computed, effect, signal, untracked } from './core.js';
+import * as signals from './signal.js';
+import sprae, { use, decorate, directive, modifier, parse, throttle, debounce, _off, _state, _on, _dispose, _add, call } from './core.js';
+import pkg from './package.json' with { type: 'json' };
 
 import _if from "./directive/if.js";
 import _else from "./directive/else.js";
@@ -12,55 +14,64 @@ import _value from "./directive/value.js";
 import _ref from "./directive/ref.js";
 import _scope from "./directive/scope.js";
 import _each from "./directive/each.js";
-import _default from "./directive/default.js";
+import _default from "./directive/_.js";
 import _spread from "./directive/spread.js";
+import _event from "./directive/event.js";
+import _seq from "./directive/sequence.js";
 
 
 Object.assign(directive, {
-  // :x="x"
-  '*': _default,
-
-  // FIXME
-  // 'on*': _on,
-
-  // :="{a,b,c}"
+  _: (el, state, expr, name) => (name.startsWith('on') ? _event : _default)(el, state, expr, name),
   '': _spread,
-
-  // :class="[a, b, c]"
   class: _class,
-
-  // :text="..."
   text: _text,
-
-  // :style="..."
   style: _style,
-
-  // :fx="..."
   fx: _fx,
-
-  // :value - 2 way binding like x-model
   value: _value,
-
-  // :ref="..."
   ref: _ref,
-
-  // :scope creates variables scope for a subtree
   scope: _scope,
-
   if: _if,
   else: _else,
-
-  // :each="v,k in src"
   each: _each
 })
+
+
+/**
+ * Directive initializer (with modifiers support)
+ * @type {(el: HTMLElement, name:string, value:string, state:Object) => Function}
+ * */
+const dir = (target, name, expr, state) => {
+  let [dirName, ...mods] = name.split('.'), create = directive[dirName] || directive._
+
+  return () => {
+    let update = create(target, state, expr, name)
+
+    if (!update?.call) return update?.[_dispose]
+
+    // throttle prevents multiple updates within one tick as well as isolates stack for each update
+    let trigger = decorate(Object.assign(throttle(() => change.value++), { target }), mods),
+      change = signal(0), // signal authorized to trigger effect: 0 = init; >0 = trigger
+      count = 0, // called effect count
+      evaluate = update.eval ?? parse(expr).bind(target),
+      _out, out = () => (_out && call(_out), _out=null) // effect trigger and invoke may happen in the same tick, so it will be effect-within-effect call - we need to store output of evaluate to return from trigger effect
+
+    state =  target[_state] ?? state
+
+    return effect(() => (
+      // if planned count is same as actual count - plan new update, else update right away
+      change.value == count ? (trigger()) : (count = change.value, _out = evaluate(state, update)),
+      out
+    ))
+  }
+}
 
 Object.assign(modifier, {
   // timing
   debounce: (fn, _how = 250) => debounce(fn, (_how ||= 0, (fn) => setTimeout(fn, _how))),
   throttle: (fn, _how = 250) => throttle(fn, (_how ||= 0, (fn) => setTimeout(fn, _how))),
-  tick: (fn) => (e) => queueMicrotask(() => fn(e)),
+  tick: (fn) => (e) => (queueMicrotask(() => fn(e))),
   raf: (fn) => (e) => requestAnimationFrame(() => fn(e)),
-  once: (fn, _done, _fn) => Object.assign((e) => !_done && (_done = 1, fn(e)), { once: true }),
+  once: (fn, _done, _fn) => (_fn = (e) => !_done && (_done = 1, fn(e)), _fn.once = true, _fn),
 
   // target
   window: fn => (fn.target = fn.target.ownerDocument.defaultView, fn),
@@ -87,7 +98,8 @@ const keys = {
   ctrl: e => e.ctrlKey || e.key === "Control" || e.key === "Ctrl",
   shift: e => e.shiftKey || e.key === "Shift",
   alt: e => e.altKey || e.key === "Alt",
-  meta: e => e.metaKey || e.key === "Meta" || e.key === "Command",
+  meta: e => e.metaKey || e.key === "Meta",
+  cmd: e => e.metaKey || e.key === "Command",
   arrow: e => e.key.startsWith("Arrow"),
   enter: e => e.key === "Enter",
   esc: e => e.key.startsWith("Esc"),
@@ -100,23 +112,54 @@ const keys = {
 };
 
 // augment modifiers with key testers
-for (let k in keys) modifier[k] = (fn, ...params) => (e) => keys[k](e) && params.every(k => keys[k]?.(e) ?? e.key === k) && fn(e)
+for (let k in keys) modifier[k] = (fn, a, b) => (e) => keys[k](e) && (!a || keys[a]?.(e)) && (!b || keys[b]?.(e)) && fn(e)
+
 
 use({
-  compile: expr => {
-    return sprae.constructor(`with (arguments[0]) { ${expr} }`)
+  compile: expr => sprae.constructor(`with (arguments[0]) { ${expr} }`),
+  dir: (el, name, expr, state) => {
+    // sequences shortcut
+    if (name.includes('..')) return () => _seq(el, state, expr, name)[_dispose]
+    return name.split(':').reduce((prev, str) => {
+      let start = dir(el, str, expr, state)
+      return !prev ? start : (p, s) => (p = prev(), s = start(), () => { p(); s() })
+    }, null)
   },
-
-  // signals
-  signal, effect, computed, batch, untracked
+  ...signals
 })
+
 
 // expose for runtime config
 sprae.use = use
 sprae.store = store
 sprae.directive = directive
 sprae.modifier = modifier
-sprae.start = start
+sprae.version = pkg.version;
+
+
+/**
+ * Lifecycle hanger: spraes automatically any new nodes
+ */
+const start = sprae.start = (root = document.body, values) => {
+  const state = store(values)
+  sprae(root, state);
+  const mo = new MutationObserver(mutations => {
+    for (const m of mutations) {
+      for (const el of m.addedNodes) {
+        // el can be spraed or removed by subsprae (like within :each/:if)
+        if (el.nodeType === 1 && el[_state] === undefined && root.contains(el)) {
+          // even if element has no spraeable attrs, some of its children can have
+          root[_add](el)
+          // sprae(el, state, root);
+        }
+      }
+      // for (const el of m.removedNodes) el[Symbol.dispose]?.()
+    }
+  });
+  mo.observe(root, { childList: true, subtree: true });
+  return state
+}
+
 
 // version placeholder for bundler
 sprae.version = "[VI]{{inject}}[/VI]"

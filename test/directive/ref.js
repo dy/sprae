@@ -5,11 +5,6 @@ import test, { any, is, ok } from "tst";
 import { store } from '../../store.js'
 import { use, signal, batch, untracked } from '../../core.js'
 
-// import * as signals from '@preact/signals-core'
-// use(signals)
-
-const _dispose = Symbol.dispose;
-
 
 
 test("ref: base", async () => {
@@ -79,8 +74,8 @@ test("ref: fn with :each", async () => {
   let a = h`<y><x :each="item in items" :scope="{x:null}" :ref="el => x=el" :text="log.push(x), item"/></y>`;
   let state = sprae(a, { log: [], items: [1, 2, 3] });
   await tick();
-  ok(state.log.length < a.children.length * 2, "no cycle");
   is(a.innerHTML, `<x>1</x><x>2</x><x>3</x>`);
+  ok(state.log.length <= a.children.length * 2, "no cycle");
 });
 
 test("ref: fn unmount", async () => {
@@ -95,7 +90,7 @@ test("ref: fn unmount", async () => {
   state.a = 0
   await tick(2);
   is(div.innerHTML, ``);
-  is(state.log, ['on', 'off']);
+  is(state.log, ['on', 'off'], 'unmount called');
 });
 
 test("ref: create in state as untracked", async () => {

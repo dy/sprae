@@ -5,11 +5,6 @@ import test, { any, is, ok } from "tst";
 import { store } from '../../store.js'
 import { use, signal, batch, untracked } from '../../core.js'
 
-// import * as signals from '@preact/signals-core'
-// use(signals)
-
-const _dispose = Symbol.dispose;
-
 
 test("scope: inline assign", async () => {
   let el = h`<x :scope="foo='bar'"><y :text="console.log('effect text',foo),foo + baz"></y></x>`;
@@ -103,6 +98,7 @@ test("scope: new prop added to parent state", async () => {
 test('scope: parasitic updates', async () => {
   let a = h`<x :scope="x=''"><y :fx="x='x'" :text="x+y"></y></x>`
   let s = sprae(a, { y: 'y' })
+  await tick()
   is(a.innerHTML, `<y>xy</y>`)
   s.y = 'yy'
   await tick()

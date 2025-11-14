@@ -50,6 +50,11 @@
   - sprae is closer to spray
   - sprae is closer to a verb
 
+## [x] Acronyms
+
+  * Simple progressive enhancement
+  * Single purpose reasoning
+
 ## [x] :attr, :data, :id, :class, :style, :on, :aria - do we enforce JS syntax or support unscoped expression? -> Use JS convention, too many use-cases.
 
 1. JS object
@@ -1094,6 +1099,19 @@
   + we already use sub-effect, so we can parse again and subeffect again
   - returned function is handled asynchronously
 
+### [x] The best way to redefine eval -> return `{eval}`
+
+  1. `dir.parse = expr => expr`
+  2. `dir = (,trigger) => trigger.eval = parse(expr).bind(el)`
+  3. `dir => ({ eval:... })`
+    + `eval` is more flexible than `expr`: can bind it to proper element, can redefine complete function / parser
+    + returning extra props on output can redefine part of internal context, not just updater
+  4. `function* dir() { yield expr|eval; return ...}`
+    + organic flow
+    + allows redefining expr and out function
+    - slight overhead for micro/sprae to run iterator
+    + allows returning independent off, not conditioned by modifiers
+
 ### [x] When signal with array is used as store value {rows:signal([1,2,3])} - what's expected update? -> let's make it full reinit array, since it's most direct
 
   1. Remove all, replace all - store plain array
@@ -1456,17 +1474,24 @@
   + natural way to postpone init of a subtree, eg. waiting for API response
   + standard way to provide `el[_state] = null`
 
-## [x] Does it make sense to have chain :ona..onb for any attrs, as :foo..bar? What would be the cases? -> no, can't see a single use case
+## [x] Does it make sense to have chain/sequence for any attrs, as :foo..bar? What would be the cases? -> no, can't see a single use case
 
   - bloats up core a bit
     + shorter code in total
   - looks useless, no clear idea what for
   + reduces load from events handler
-  + makes generic tool: altering attrs
+  + makes generic altering attrs
   - `:text..text="() => () => 'b'"` - is returned value a text or a function for next effect?
+    ~ `:text..text..text="count, ['a','b','c']"`
+      ~ same as `:text="['a','b','c'][count%3]"`
+  ? `:class..style`
   + if we convert all effects to events, then we'll have unified handling `:ontext..ontext`
     + `:click` will be same as `:onclick`
   ~ We can do `sprae.init` that handles kinds of syntax.
+  * It seems to be useful for only effect directives without returning value, eg.
+    * `:fx..fx="() => {a=1, () => {}}"`
+  * Take plugins in consideration?
+    * `:intersect..intersect=""`
 
 ## [x] `:ona:onb..onc:ond` -> `:ona:onb .. :onc:ond`
   + this allows binding multiple cross-related events
@@ -1670,12 +1695,85 @@
   + that would allow `sprae.stop()` counterpart to `sprae.start()`
   + alpine flavor would need it
 
-## [x] .debounce-tick becomes .tick, .debounce-frame becomes .raf
+## [x] ~~.debounce-tick becomes .tick, .debounce-frame becomes .raf~~ -> `-0` === `-tick`
 
   + `.debounce-tick` is too lengthy and non-intuitive, not cool
   + can get deprecated with fallback to debounce-0
   + .tick can be debounced right away, we never need first call and there never can be in-between (no need to cancel)
   + .raf never needs to be debounced, it is always throttled cept first frame
+
+  a. There's better option: `tick` becomes for value of 0
+    + so it disappears;
+    + `raf` becomes alternative to a number
+    + `.delay` is for another way of calling
+
+## [x] Factor out events to directives -> yes
+
+  + It should be able to be turned off
+  + There's too much overkill going on for simple prop directives with that steps state machine
+    + exceptional case (events) defines the whole parsing method
+  * The nature of events is different, as was discussed before
+    * It applies modifiers not as prop, but as event listener
+  + Name aliases / chains are only applicable for `:<attr>` and `:on<event>`, doesn't make sense for other directives
+    * We can try moving `name` attr, mods parsing, sequences parsing, events handling - to some "default" handler
+      + which will free up space for microsprae
+  - Moving out sequencing logic complicates single-event handler which we might want to connect
+    + It means we keep sequencing in `dir`
+  - We cannot use regular effect invokator, since callback doesn't need to subscribe to variables change
+
+  * it feels like event can be a modifier `.event-<x>` which re-triggers a callback with arg
+    ~ we would need to handle "cancel" by modifiers, which would also be the case for .interval
+    - still will end up in calling invoke... we have to redefine invoke
+
+### [x] Do we have to keep aliases on dir, or that's only last-resort _ directive feature? -> let's keep generic aliases, it's useful
+  + `:text:title=""`, `:value:title=""`
+  + `:text:href=""`
+  ~ `:id:name` in case if `:id` is both defined as custom directive
+  ~ `:placeholder`
+  ~ `:text:aria-label`
+  ~ `:text:data-tooltip`
+  ~ `:text:lang`
+  - overall no so much value as in events sequences/aliases `:onclick:onkeypress.document.arrow-down:onkeypress.document.key-s`
+  * that seems to be `sprae` build feature, because we cannot complicate event directive with syntax parsing either
+
+### [x] Where do we handle alias? -> dealias before `dir`
+  1. In `dir`
+    - perf/mem tax for all directives
+    - even if we trim `..` tail, we pass only head-of-chain aliases, ignoring the tail
+    - doesn't make sense cre
+  2. In `_`
+    - mixes concerns: it is supposed to be a router
+      ~ aliases can be part of routing concern
+    - recreates mods logic for aliases from `dir`
+      ~ we can disregard props aliases, it seems there's very few use-cases
+        - that's minor regression
+  3. Per-directive
+    + it's ok from DX point to have extended syntax for unnamed directives
+    - heavier weight for `event` directive
+      - no much sense for `micro.js`
+    + handling logic in one place
+    + `name` contains full string to handle any way we need
+    + reinforces passing meaningful directives info to directives
+      + empowers directives to deal with its internals
+  4. Dealias before `dir`
+    + reuses `dir` function
+    - need to detect `..` or elsehow for valid dealias syntax
+
+### [ ] Where do we handle steps for chains (sequences)?
+  1. In `event` directive
+    + Makes chains specific syntax for events
+    + Establishes pattern of empowering directives to handle custom syntax
+  2. In dealiaser (framework-level), passing `next` as callback argument to switch directive to next
+    + Generic sequencing logic
+    + Allows any other directives to have sequences
+    + Takes burden off micro.js, keeping event directive code minimal
+    - We might not be able to define how to iterate through values - we don't need to evaluate always, only 0th element, and we should run last returned function
+      - That flexibility of when to eval and what to run next makes directive tightly coupled with steps and is easier to be handled inside of directive
+
+### [x] What other custom syntax might be available for directives? -> no much ideas
+  * `class="active" :-class="{active}"` - remove class from static one
+    ~- can be handled as `:class={active:null}`
+  * `:text|uppercase="abc"`
 
 ## [x] Componentization: what can be done? -> likely no for now. When html-include / DCE is there we can talk
 

@@ -43,7 +43,7 @@ export const store = (values, parent) => {
     },
 
     set: (_, k, v, _s) => {
-      // console.group('SET', k, v, signals, k in signals)
+      // console.group('SET', k, v)
       if (k in signals) return set(signals, k, v), 1
 
       // turn off sandbox to check if parents have the prop - we don't want to create new prop in global scope

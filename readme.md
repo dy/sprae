@@ -18,9 +18,9 @@ Microhydration for DOM tree with signals-based attributes.
 
 [`:text`](docs.md#text) [`:class`](docs.md#class) [`:style`](docs.md#style) [`:value`](docs.md#value) [`:<attr>`](docs.md#attr-) [`:if :else`](docs.md#if-else) [`:each`](docs.md#each) [`:scope`](docs.md#scope) [`:fx`](docs.md#fx) [`:ref`](docs.md#ref) [`:on<event>`](docs.md#onevent)
 
-[`.debounce`](docs.md#debounce-ms) [`.throttle`](docs.md#throttle-ms) [`.tick`](docs.md#tick) [`.raf`](docs.md#raf) [`.once`](docs.md#once)<br>
+[`.debounce`](docs.md#debounce-ms) [`.throttle`](docs.md#throttle-ms) [`.delay`](docs.md#tick) [`.once`](docs.md#once)<br>
 [`.window`](docs.md#window-document-body-root-parent-outside-self) [`.document`](docs.md#window-document-body-root-parent-outside-self) [`.root`](docs.md#window-document-body-root-parent-outside-self) [`.body`](docs.md#window-document-body-root-parent-outside-self) [`.parent`](docs.md#window-document-body-root-parent-outside-self) [`.self`](docs.md#window-document-body-root-parent-outside-self) [`.outside`](docs.md#window-document-body-root-parent-outside-self)<br>
-[`.passive`](docs.md#passive-captureevents-only) [`.capture`](docs.md#passive-captureevents-only) [`.prevent`](docs.md#prevent-stop-immediateevents-only) [`.stop`](docs.md#prevent-stop-immediateevents-only) [`.immediate`](docs.md#prevent-stop-immediateevents-only) [`.<key>`](docs.md#key-filters)
+[`.passive`](docs.md#passive-captureevents-only) [`.capture`](docs.md#passive-captureevents-only) [`.prevent`](docs.md#prevent-stop-immediateevents-only) [`.stop`](docs.md#prevent-stop-immediateevents-only) [`.<key>`](docs.md#key-filters)
 
 <!--
 ## Micro
@@ -36,8 +36,11 @@ Micro sprae version is 2.5kb bundle with essentials:
 
 ## why
 
-Simple practical reactivity without overhead. Perfect for SPA.<br>
-Inspired by [alpine](https://github.com/alpinejs/alpine), [petite-vue](https://github.com/vuejs/petite-vue) and others. <!--[lucia](https://github.com/aidenybai/lucia), [nuejs](https://github.com/nuejs/nuejs), [hmpl](https://github.com/hmpl-language/hmpl), [unpoly](https://unpoly.com/up.link), [dagger](https://github.com/dagger8224/dagger.js)-->
+Simple practical reactivity without overhead.<br>
+Perfect for SPA (static sites, prototypes, micro-frontends, lightweight UI).<br>
+Inspired by [preact-signals](https://github.com/preactjs/signals), [alpine](https://github.com/alpinejs/alpine), [lodash](https://lodash.com) and others.<br> <!--[petite-vue](https://github.com/vuejs/petite-vue) and others. <!--[lucia](https://github.com/aidenybai/lucia), [nuejs](https://github.com/nuejs/nuejs), [hmpl](https://github.com/hmpl-language/hmpl), [unpoly](https://unpoly.com/up.link), [dagger](https://github.com/dagger8224/dagger.js)-->
+Made with 🫰 for better DX.
+ <!-- – for those who tired of complexity. -->
 
 
 <!--

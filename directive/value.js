@@ -7,7 +7,7 @@ export const setter = (expr, _set = parse(`${expr}=__`)) => (target, value) => {
   target.__ = value; _set(target), delete target.__
 }
 
-export default (el, state, expr, name) => {
+export default (el, state, expr) => {
   // bind back to value, but some values can be not bindable, eg. `:value="7"`
   try {
     const set = setter(expr)

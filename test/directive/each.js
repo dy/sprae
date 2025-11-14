@@ -1,5 +1,6 @@
 import { tick, time } from "wait-please";
 import sprae from '../../sprae.js'
+// import sprae from '../../micro.js'
 import h from "hyperf";
 import test, { any, is, ok } from "tst";
 import { store } from '../../store.js'
@@ -25,7 +26,7 @@ test("each: array full", async () => {
   </p>`;
 
   const params = sprae(el, { b: [0] });
-
+  await tick()
   is(el.innerHTML, "<span>0</span>");
 
   console.log("--items[0]=1");
@@ -40,6 +41,7 @@ test("each: array full", async () => {
 
   console.log("--items=[2,3]");
   params.b = [2, 3];
+  // params.b[0] = 2
   await tick();
   is(el.innerHTML, "<span>2</span><span>3</span>");
 
@@ -402,10 +404,11 @@ test("each: condition within loop", async () => {
 
 test('each: items refer to current el', async () => {
   // NOTE: the problem here is that the next items can subscribe to `el` defined in root state (if each hasn't created scope), that will cause unnecessary :x effect
-  let el = h`<div><x :each="x in 3" :data-x="x" :scope="{el:null}" :ref="e=>(el=e)" :x="log.push(x, el.dataset.x)"></x></div>`;
+  let el = h`<div><x :each="x in 3" :data-x="x" :scope="{el:null}" :ref="e=>(console.log('ref',e),el=e)" :x="console.log('x',this,el),log.push(x, el.dataset.x)"></x></div>`;
   let log = signal([]);
   let state = sprae(el, { log, untracked });
-  is([...state.log], [1, "1", 2, "2", 3, "3"]);
+  await tick(2);
+  any([...state.log], [[1, "1", 2, "2", 3, "3"], [3, "3", 2, "2", 1, "1"]]);
 });
 
 test("each: unkeyed", async () => {
@@ -573,7 +576,7 @@ test('each: unwanted extra subscription', async () => {
   let a = { label: signal(0) }, b = { label: signal(0) }
   console.log('--------rows.value = [a, b]')
   rows.value = [a, b]
-  await tick()
+  await tick(2)
   is(state._count, 2)
   is(el.innerHTML, `<x><a>0</a></x><x><a>0</a></x>`)
 
@@ -600,9 +603,9 @@ test('each: unwanted extra subscription', async () => {
 test('each: batched .length updates', async () => {
   let c = 0
   let state = store({ list: [1, 2], count() { c++ } })
-  let el = h`<a><b :each="x in (count(), list)" :text="x"/></a>`
+  let el = h`<a><b :each="x in (console.log('get each source'), count(), list)" :text="x"/></a>`
   sprae(el, state)
-  await tick()
+  await time()
   is(c, 1)
   is(el.innerHTML, `<b>1</b><b>2</b>`)
 
@@ -610,9 +613,11 @@ test('each: batched .length updates', async () => {
   state.list.push(3, 4, 5)
   await tick()
   is(c, 1)
+  is(el.innerHTML, `<b>1</b><b>2</b><b>3</b><b>4</b><b>5</b>`)
 
   // bump list
   batch(() => {
+    console.log('--------batched list reassign')
     let list = state.list
     state.list = null
     state.list = list

@@ -6,27 +6,47 @@ import test, { any, is } from "tst";
 const _dispose = Symbol.dispose;
 
 
-test("on: event target", () => {
+test("on: event target", async () => {
   let el = h`<div :onx="event => log.push(event.target)"></div>`;
   let state = sprae(el, { log: [] });
+  await tick();
   console.log('----- el.dispatchEvent')
   el.dispatchEvent(new window.Event("x"));
   is(state.log, [el]);
 });
 
-test("on: this context", () => {
+test("on: event with modifier", async () => {
+  let el = h`<div :onx.tick="event => (log.push(event.type) )"></div>`;
+  let state = sprae(el, { log: [] });
+  console.log('----- before tick')
+  await tick();
+  console.log('----- el.dispatchEvent')
+  el.dispatchEvent(new window.Event("x"));
+  await tick()
+  is(state.log, ['x']);
+  el[_dispose]();
+  console.log('----- after dispose el.dispatchEvent')
+  el.dispatchEvent(new window.Event("x"));
+  await tick()
+  is(state.log, ['x']);
+});
+
+test("on: this context", async () => {
   let el = h`<div :onx="log.push(this)"></div>`;
   let state = sprae(el, { log: [] });
+  await tick();
   console.log('----- el.dispatchEvent')
   el.dispatchEvent(new window.Event("x"));
   is(state.log, [el]);
 });
 
-test("on: multiple events", () => {
+test("on: multiple events", async () => {
   let el = h`<div :onscroll:onclick:onx="event=>log.push(event.type)"></div>`;
   let state = sprae(el, { log: [] });
-
+  // await tick();
+  console.log('----- el.dispatchEvent click')
   el.dispatchEvent(new window.Event("click"));
+  await tick();
   is(state.log, ["click"]);
   el.dispatchEvent(new window.Event("scroll"));
   is(state.log, ["click", "scroll"]);
@@ -34,9 +54,10 @@ test("on: multiple events", () => {
   is(state.log, ["click", "scroll", "x"]);
 });
 
-test("on: once", () => {
+test("on: once", async  () => {
   let el = h`<x :onx.once="e => (x && log.push(x))" ></x>`;
   let s = sprae(el, { log: [], x: 1 });
+  await tick();
   el.dispatchEvent(new window.Event("x"));
   is(s.log, [1]);
   el.dispatchEvent(new window.Event("x"));
@@ -166,6 +187,33 @@ test("on: throttle", async () => {
   is(state.log, ["x", "x", "x"]);
 });
 
+
+test("on: function with braces", async () => {
+  let el = h`<div :onx="e => { log.push(1); }"></div>`;
+  let state = sprae(el, { log: [] });
+  el.dispatchEvent(new window.Event("x"));
+  is(state.log, [1]);
+});
+
+test("on: async inline", async () => {
+  let el = h`<div :onx="let v = await Promise.resolve().then(()=>(1)); log.push(v);"></div>`;
+  let state = sprae(el, { log: [] });
+  el.dispatchEvent(new window.Event("x"));
+  is(state.log, []);
+  await tick(1);
+  is(state.log, [1]);
+});
+
+test("on: async function", async () => {
+  let el = h`<div :onx="async e => { let v = await Promise.resolve().then(()=>(1)); log.push(v); }"></div>`;
+  let state = sprae(el, { log: [] });
+  el.dispatchEvent(new window.Event("x"));
+  is(state.log, []);
+  await time();
+  is(state.log, [1]);
+});
+
+
 test('on: in-out events', () => {
   let el = h`<x :onmousedown..onmouseup="(e) => (x=e.target, log.push(e.type), e=>log.push(e.type))"></x>`
 
@@ -289,35 +337,35 @@ test('on: alias sequence', async () => {
   console.log('---------- emit a')
   el.dispatchEvent(new window.CustomEvent('a', { bubbles: true }));
   is(state.log, [])
-  await tick()
+  await tick(2)
   is(state.log, ['a'])
   console.log('---------- emit a, b')
   el.dispatchEvent(new window.CustomEvent('a', { bubbles: true }));
   el.dispatchEvent(new window.CustomEvent('b', { bubbles: true }));
-  await tick()
+  await tick(2)
   is(state.log, ['a'])
   console.log('---------- emit d')
   el.dispatchEvent(new window.CustomEvent('d', { bubbles: true }));
   is(state.log, ['a'])
-  await tick()
+  await tick(2)
   is(state.log, ['a','d'], 'd fulfilled')
   console.log('---------- emit c, d')
   el.dispatchEvent(new window.CustomEvent('c', { bubbles: true }));
   el.dispatchEvent(new window.CustomEvent('d', { bubbles: true }));
-  await tick()
+  await tick(2)
   is(state.log, ['a','d'])
   console.log('---------- emit b')
   el.dispatchEvent(new window.CustomEvent('b', { bubbles: true }));
   is(state.log, ['a','d'])
-  await tick()
+  await tick(2)
   is(state.log, ['a','d','b'])
   el.dispatchEvent(new window.CustomEvent('b', { bubbles: true }));
   el.dispatchEvent(new window.CustomEvent('a', { bubbles: true }));
-  await tick()
+  await tick(2)
   is(state.log, ['a','d','b'])
   el.dispatchEvent(new window.CustomEvent('c', { bubbles: true }));
   is(state.log, ['a','d','b'])
-  await tick()
+  await tick(2)
   is(state.log, ['a','d','b','c'])
 
   el[_dispose]()
@@ -328,28 +376,3 @@ test('on: alias sequence', async () => {
   await tick()
   is(state.log, ['a','d','b','c'])
 })
-
-test("on: function with braces", async () => {
-  let el = h`<div :onx="e => { log.push(1); }"></div>`;
-  let state = sprae(el, { log: [] });
-  el.dispatchEvent(new window.Event("x"));
-  is(state.log, [1]);
-});
-
-test("on: async inline", async () => {
-  let el = h`<div :onx="let v = await Promise.resolve().then(()=>(1)); log.push(v);"></div>`;
-  let state = sprae(el, { log: [] });
-  el.dispatchEvent(new window.Event("x"));
-  is(state.log, []);
-  await tick(1);
-  is(state.log, [1]);
-});
-
-test("on: async function", async () => {
-  let el = h`<div :onx="async e => { let v = await Promise.resolve().then(()=>(1)); log.push(v); }"></div>`;
-  let state = sprae(el, { log: [] });
-  el.dispatchEvent(new window.Event("x"));
-  is(state.log, []);
-  await time();
-  is(state.log, [1]);
-});

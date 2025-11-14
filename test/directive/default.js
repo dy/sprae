@@ -5,11 +5,6 @@ import test, { any, is, ok } from "tst";
 import { store } from '../../store.js'
 import { use, signal, batch, untracked } from '../../core.js'
 
-// import * as signals from '@preact/signals-core'
-// use(signals)
-
-const _dispose = Symbol.dispose;
-
 
 test("default: basic", async () => {
   let el = h`<label :for="name" :text="name" ></label><input type='text' :type="t => (log.push(t),name)" :id="name" :name="name" :disabled="!name"/><a :href="url"></a><img :src="url"/>`;

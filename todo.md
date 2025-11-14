@@ -216,18 +216,36 @@
 * [x] expose `this` - not a big deal
 * [x] `.tick` alias, `.raf` alias - debounce + throttle
 * [x] ~~mobile click is super sluggish~~ not anymore. Is that tailwind?
+* [x] make :on a directive, not hardcoded
 
-* [ ] make :on a directive, not hardcoded
+* [ ] add .delay
 * [ ] make :scope init untracked
+* [ ] disable observer for DOM mutations
+* [ ] test .outside - it doesn't work now
+* [ ] global calls like getComputedStyle fail without window.
 * [ ] typescript
 * [ ] microjs bundle
 * [ ] perf tests
 * [ ] alpine CSP syntax
 
+## [ ] v13
+
+* [ ] .before-n, .after-n
+* [ ] .stop-immediate
+* [ ] .defer
+* [ ] .throttle-immediate, .debounce-immediate
+* [ ] fx in directives instead of return
+* [ ] flavors: alpine, vue
+  * [ ] optionally keep attributes?
+  * [ ] `@` transforms for events
+* [ ] microsprae under 4kb ungzipped
+* [ ] plugins
+
 ## [ ] Website
   * [x] Connect donation links
   * [x] Inverse color render
   * [ ] Docs page UI
+  * [x] Acronym rotator in header
   * [ ] Playground
   * [ ] Drops page
     * [ ] UI randomizer
@@ -239,6 +257,10 @@
   * [ ] Examples
     * [ ] 7 GUIs
     * [ ] Wavearea
+    * [ ] Maetr
+    * [ ] SVG confetti gen
+    * [ ] SVG chat gen
+    * [ ] SVG counter gen
   * [ ] Used by
   * [ ] Sprae vs alpine
   * [ ] Better spraying interaction
@@ -247,6 +269,8 @@
 
 ## [ ] Plugins
 
+* [ ] .before-n, .after-n, .defer (lodashes)
+* [ ] .interval
 * [ ] .persists
 * [ ] .screen-md
 * [ ] :onvisible
@@ -255,3 +279,4 @@
 * [ ] :item
 * [ ] :intersect
 * [ ] :scroll.view.x="progress => "
+* [ ] portal/teleport
