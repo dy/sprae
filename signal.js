@@ -15,8 +15,7 @@ export const signal = (v, _s, _obs = new Set, _v = () => _s.value) => (
       for (let sub of _obs) batched ? batched.add(sub) : sub(); // notify effects
     },
     peek() { return v },
-    toJSON: _v, toString: _v, valueOf: _v,
-    _obs
+    toJSON: _v, toString: _v, valueOf: _v
   }
 )
 
