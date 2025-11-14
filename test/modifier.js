@@ -20,7 +20,7 @@ test("modifier: debounce-time", async () => {
 
 test("modifier: debounce-tick", async () => {
   // NOTE: debounce-tick is deprecated and falls back to debounce-0
-  let el = h`<div :class.debounce-tick="active && 'active'" :text="txt"></div>`;
+  let el = h`<div :class.debounce="active && 'active'" :text="txt"></div>`;
   let state = sprae(el, { active: false, txt: 'test' });
   is(el.className, '');
   state.active = true;
@@ -35,7 +35,7 @@ test("modifier: debounce-tick", async () => {
 });
 
 test("modifier: tick", async () => {
-  let el = h`<div :class.tick="active && 'active'" :text="txt"></div>`;
+  let el = h`<div :class.delay="active && 'active'" :text="txt"></div>`;
   let state = sprae(el, { active: false, txt: 'test' });
   is(el.className, '');
   state.active = true;
@@ -88,8 +88,23 @@ test("modifier: debounce-idle", async () => {
   let state = sprae(el, { log: [], txt: 'test' });
   await tick(1);
   is(state.log, []);
+  await tick(1);
+  is(state.log, []);
   await idle();
   is(state.log, ['test']);
+});
+
+test("modifier: delay", async () => {
+  let el = h`<div :fx.delay="log.push(txt)"></div>`;
+  let state = sprae(el, { log: [], txt: 'test' });
+  // await tick(1);
+  is(state.log, []);
+  await tick();
+  is(state.log, ['test']);
+  state.txt = 'again';
+  is(state.log, ['test']);
+  await tick();
+  is(state.log, ['test', 'again']);
 });
 
 test("modifier: any", async () => {

@@ -16,7 +16,7 @@ test("on: event target", async () => {
 });
 
 test("on: event with modifier", async () => {
-  let el = h`<div :onx.tick="event => (log.push(event.type) )"></div>`;
+  let el = h`<div :onx.debounce="event => (log.push(event.type) )"></div>`;
   let state = sprae(el, { log: [] });
   console.log('----- before tick')
   await tick();
@@ -332,7 +332,7 @@ test('on: modifiers chain', async () => {
 })
 
 test('on: alias sequence', async () => {
-  let el = h`<x :ona.tick:onb.tick..onc.tick:ond.tick="e=>(log.push(e.type),(e)=>log.push(e.type))"></x>`
+  let el = h`<x :ona.debounce:onb.debounce..onc.debounce:ond.debounce="e=>(log.push(e.type),(e)=>log.push(e.type))"></x>`
   let state = sprae(el, { log: [] })
   console.log('---------- emit a')
   el.dispatchEvent(new window.CustomEvent('a', { bubbles: true }));

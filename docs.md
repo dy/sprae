@@ -108,7 +108,7 @@ Bind input, textarea or select value.
 <input :value="value => value + str" />
 ```
 
-#### `:<attr>`, `:`
+#### `:<attr?>`
 
 Set any attribute(s).
 
@@ -284,11 +284,11 @@ Trigger when element is connected / disconnected from DOM.
 
 ## Modifiers
 
-#### `.debounce-<ms|raf>?-<immediate>?`
+#### `.debounce-<ms|raf>?`
 
 Delay callback by interval since the last call.
 Undefined interval uses `tick`.
-Optional `immediate` indicates leading-edge debounce.
+<!-- Optional `immediate` indicates leading-edge debounce. -->
 See [lodash/debounce](https://lodash.com/docs/#debounce)
 
 ```html
@@ -296,9 +296,11 @@ See [lodash/debounce](https://lodash.com/docs/#debounce)
 <input :oninput.debounce-200="event => update(event)" />
 ```
 
-#### `.throttle-<ms|raf>?-<immediate>?`
+#### `.throttle-<ms|raf>?`
 
-Limit callback rate to an interval. Undefined interval uses `tick`. Optional `immediate` indicates leading-edge response. See [lodash/throttle](https://lodash.com/docs/#throttle).
+Limit callback rate to an interval. Undefined interval uses `tick`.
+<!-- Optional `immediate` indicates leading-edge response. -->
+See [lodash/throttle](https://lodash.com/docs/#throttle).
 
 ```html
 <!-- throttle text update -->
@@ -362,7 +364,7 @@ Event listener [options](https://developer.mozilla.org/en-US/docs/Web/API/EventT
 <body :ontouchstart.capture="logTouch(e)"></body>
 ```
 
-#### `.prevent`, `.stop-<immediate?>`  <kbd>events only</kbd>
+#### `.prevent`, `.stop-<immediate>?`  <kbd>events only</kbd>
 
 Prevent default or stop (immediate) propagation.
 

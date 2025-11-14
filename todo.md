@@ -217,8 +217,9 @@
 * [x] `.tick` alias, `.raf` alias - debounce + throttle
 * [x] ~~mobile click is super sluggish~~ not anymore. Is that tailwind?
 * [x] make :on a directive, not hardcoded
+* [x] add .delay
+* [x] .stop-immediate
 
-* [ ] add .delay
 * [ ] make :scope init untracked
 * [ ] disable observer for DOM mutations
 * [ ] test .outside - it doesn't work now
@@ -230,9 +231,7 @@
 
 ## [ ] v13
 
-* [ ] .before-n, .after-n
-* [ ] .stop-immediate
-* [ ] .defer
+* [ ] .before-n, .after-n, .defer
 * [ ] .throttle-immediate, .debounce-immediate
 * [ ] fx in directives instead of return
 * [ ] flavors: alpine, vue

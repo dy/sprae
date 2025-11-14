@@ -66,11 +66,15 @@ const dir = (target, name, expr, state) => {
 }
 
 Object.assign(modifier, {
-  // timing
-  debounce: (fn, _how = 250) => debounce(fn, (_how ||= 0, (fn) => setTimeout(fn, _how))),
-  throttle: (fn, _how = 250) => throttle(fn, (_how ||= 0, (fn) => setTimeout(fn, _how))),
-  tick: (fn) => (e) => (queueMicrotask(() => fn(e))),
-  raf: (fn) => (e) => requestAnimationFrame(() => fn(e)),
+  // timing (lodash-like)
+  // FIXME: add immediate param
+  debounce: (fn, _how) => debounce(fn, (_how ||= 0, !_how ? undefined : _how === 'raf' ? requestAnimationFrame : (fn) => setTimeout(fn, _how))),
+  throttle: (fn, _how) => throttle(fn, (_how ||= 0, !_how ? undefined : _how === 'raf' ? requestAnimationFrame : (fn) => setTimeout(fn, _how))),
+  delay: (fn, ms) => !ms ? (e) => (queueMicrotask(() => fn(e))) : (e) => setTimeout(() => fn(e), ms),
+
+  tick: (fn) => (console.warn('Deprecated'), (e) => (queueMicrotask(() => fn(e)))),
+  raf: (fn) => (console.warn('Deprecated'), (e) => requestAnimationFrame(() => fn(e))),
+
   once: (fn, _done, _fn) => (_fn = (e) => !_done && (_done = 1, fn(e)), _fn.once = true, _fn),
 
   // target
@@ -87,8 +91,8 @@ Object.assign(modifier, {
 
   // events
   prevent: (fn) => (e) => (e?.preventDefault(), fn(e)),
-  stop: (fn) => (e) => (e?.stopPropagation(), fn(e)),
-  immediate: (fn) => (e) => (e?.stopImmediatePropagation(), fn(e)),
+  stop: (fn, _how) => (e) => (_how?.[0] === 'i' ? e?.stopImmediatePropagation() : e?.stopPropagation(), fn(e)),
+  immediate: (fn) => (console.warn('Deprecated'), (e) => (e?.stopImmediatePropagation(), fn(e))),
   passive: fn => (fn.passive = true, fn),
   capture: fn => (fn.capture = true, fn),
 })
