@@ -216,9 +216,9 @@
 * [x] expose `this` - not a big deal
 * [x] `.tick` alias, `.raf` alias - debounce + throttle
 * [x] ~~mobile click is super sluggish~~ not anymore. Is that tailwind?
+* [x] make :on a directive, not hardcoded
 
 * [ ] add .delay
-* [ ] make :on a directive, not hardcoded
 * [ ] make :scope init untracked
 * [ ] disable observer for DOM mutations
 * [ ] test .outside - it doesn't work now
