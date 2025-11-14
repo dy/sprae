@@ -52,7 +52,7 @@ const sprae = (el = document.body, state) => {
         currentDir = name;
 
         // directive initializer can be redefined
-        start = dir(el, name.slice(prefix.length), value, state), fx.push(start), offs.push(start())
+        fx.push(start = dir(el, name.slice(prefix.length), value, state)), offs.push(start())
 
         // stop after subsprae like :each, :if, :scope etc.
         if (_state in el) return
@@ -113,7 +113,7 @@ export const parse = (expr) => {
     try {
       let result = fn?.call(this, state)
       // if cb is given (to handle async/await exprs, usually directive update) - call it with result and return a cleanup function
-      if (cb) return result?.then ? (result.then(v => _out = cb(v)), () => call(_out)) : cb(result)
+      if (cb) return result?.then ? (result.then(v => _out = cb(v)), () => _out && call(_out)) : cb(result)
       else return result
     } catch (e) {
       console.error(`∴ ${e}\n\n${currentDir}="${expr}"`)

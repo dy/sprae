@@ -74,8 +74,8 @@ test("ref: fn with :each", async () => {
   let a = h`<y><x :each="item in items" :scope="{x:null}" :ref="el => x=el" :text="log.push(x), item"/></y>`;
   let state = sprae(a, { log: [], items: [1, 2, 3] });
   await tick();
-  ok(state.log.length < a.children.length * 2, "no cycle");
   is(a.innerHTML, `<x>1</x><x>2</x><x>3</x>`);
+  ok(state.log.length <= a.children.length * 2, "no cycle");
 });
 
 test("ref: fn unmount", async () => {

@@ -6,7 +6,7 @@ import { store } from '../../store.js'
 import { use, signal, batch, untracked } from '../../core.js'
 
 test("fx: effects", async () => {
-  let el = h`<x :fx="() => (_log.push(x), () => (console.log('out',_log),_log.push('out')))"></x>`;
+  let el = h`<x :fx="() => (_log.push(x), () => (console.log('out',_log), _log.push('out')))"></x>`;
   let x = signal(1)
   let state = sprae(el, { _log: [], x, console });
   is(el.outerHTML, `<x></x>`);

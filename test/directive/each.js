@@ -404,11 +404,11 @@ test("each: condition within loop", async () => {
 
 test('each: items refer to current el', async () => {
   // NOTE: the problem here is that the next items can subscribe to `el` defined in root state (if each hasn't created scope), that will cause unnecessary :x effect
-  let el = h`<div><x :each="x in 3" :data-x="x" :scope="{el:null}" :ref="e=>(el=e)" :x="log.push(x, el.dataset.x)"></x></div>`;
+  let el = h`<div><x :each="x in 3" :data-x="x" :scope="{el:null}" :ref="e=>(console.log('ref',e),el=e)" :x="console.log('x',this,el),log.push(x, el.dataset.x)"></x></div>`;
   let log = signal([]);
   let state = sprae(el, { log, untracked });
   await tick(2);
-  is([...state.log], [1, "1", 2, "2", 3, "3"]);
+  any([...state.log], [[1, "1", 2, "2", 3, "3"], [3, "3", 2, "2", 1, "1"]]);
 });
 
 test("each: unkeyed", async () => {

@@ -1,7 +1,7 @@
 import store from "./store.js";
-import { batch, computed, effect, signal, untracked, decorate } from './core.js';
+import { batch, computed, effect, signal, untracked } from './core.js';
 import * as signals from './signal.js';
-import sprae, { use, directive, modifier, parse, throttle, debounce, _off, _state, _on, _dispose, _add } from './core.js';
+import sprae, { use, decorate, directive, modifier, parse, throttle, debounce, _off, _state, _on, _dispose, _add, call } from './core.js';
 import pkg from './package.json' with { type: 'json' };
 
 import _if from "./directive/if.js";
@@ -53,13 +53,13 @@ const dir = (target, name, expr, state) => {
       change = signal(0), // signal authorized to trigger effect: 0 = init; >0 = trigger
       count = 0, // called effect count
       evaluate = update.eval ?? parse(expr).bind(target),
-      out // effect trigger and invoke may happen in the same tick, so it will be effect-within-effect call - we need to store output of evaluate to return from trigger effect
+      _out, out = () => (_out && call(_out), _out=null) // effect trigger and invoke may happen in the same tick, so it will be effect-within-effect call - we need to store output of evaluate to return from trigger effect
 
     state =  target[_state] ?? state
 
     return effect(() => (
       // if planned count is same as actual count - plan new update, else update right away
-      change.value == count ? (trigger(), out) : (count = change.value,  out = evaluate(state, update)),
+      change.value == count ? (trigger()) : (count = change.value, _out = evaluate(state, update)),
       out
     ))
   }

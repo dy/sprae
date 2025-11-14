@@ -8,7 +8,7 @@ export default (el, st, ex, name) => {
 
   return v => {
     if (!_static) { _static = el.getAttribute("style") }
-    v = call(v, el.style)
+    if (v) v = call(v, el.style)
     if (typeof v === "string") attr(el, "style", _static + '; ' + v);
     else {
       if (_static) attr(el, "style", _static);

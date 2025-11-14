@@ -227,7 +227,19 @@
 * [ ] microjs bundle
 * [ ] perf tests
 * [ ] alpine CSP syntax
-* [ ] extend .throttle to support lodash props: .throttle-lead, .throttle-trail
+
+## [ ] v13
+
+* [ ] .before-n, .after-n
+* [ ] .stop-immediate
+* [ ] .defer
+* [ ] .throttle-immediate, .debounce-immediate
+* [ ] fx in directives instead of return
+* [ ] flavors: alpine, vue
+  * [ ] optionally keep attributes?
+  * [ ] `@` transforms for events
+* [ ] microsprae under 4kb ungzipped
+* [ ] plugins
 
 ## [ ] Website
   * [x] Connect donation links
