@@ -5,7 +5,6 @@ import { _on, _off, _state, frag } from '../core.js';
 export default (el) => {
   let _el, _prev = el
 
-  // console.log(':else init', el)
   _el = el.content ? frag(el) : el
 
   // find holder

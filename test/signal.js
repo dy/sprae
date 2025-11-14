@@ -337,6 +337,19 @@ t('batch: reversed change', () => {
   is(c, 3, 'number of calls')
 })
 
+t('batch: effect within effect', () => {
+  // FIXME: this is not failing in some reason...
+  let s = signal(0), c = 0, bump = () => (s.value == c ? s.value++ : c =s.value)
+  effect(bump)
+  is(c, 1)
+  bump()
+  is(c, 2)
+  batch(() => {
+    bump()
+  })
+  is(c, 3)
+})
+
 t.todo('effect: teardown calls itself')
 
 t.skip('effect: multiple subs', () => {

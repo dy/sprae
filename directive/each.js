@@ -1,4 +1,4 @@
-import sprae, { store, parse, _state, effect, _change, _signals, frag, throttle } from "../core.js";
+import sprae, { store, parse, _state, effect, _change, _signals, frag, throttle, debounce } from "../core.js";
 
 export default (tpl, state, expr) => {
   const [lhs, rhs] = expr.split(/\bin\b/)
@@ -20,6 +20,7 @@ export default (tpl, state, expr) => {
       for (let s of cur[_signals] || []) s[Symbol.dispose]()
       cur = null, prevl = 0
     }
+
 
     // delete
     if (newl < prevl) cur.length = newl
@@ -76,7 +77,7 @@ export default (tpl, state, expr) => {
 
     // whenever list changes, we rebind internal change effect
     return effect(() => {
-      // subscribe to items change (.length) - we do it every time (not just in update) since preact unsubscribes unused signals
+      // subscribe to items change (.length) - we do it every time (not just in update) since preact signals unsubscribes unused signals
       items[_change]?.value
 
       // make first render immediately, debounce subsequent renders

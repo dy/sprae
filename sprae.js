@@ -1,7 +1,7 @@
 import store from "./store.js";
 import { batch, computed, effect, signal, untracked, decorate } from './core.js';
 import * as signals from './signal.js';
-import sprae, { use, directive, modifier, parse, throttle, debounce, _off, _state, _on, _dispose, _add, prefix, call } from './core.js';
+import sprae, { use, directive, modifier, parse, throttle, debounce, _off, _state, _on, _dispose, _add } from './core.js';
 import pkg from './package.json' with { type: 'json' };
 
 import _if from "./directive/if.js";
@@ -59,7 +59,8 @@ const dir = (target, name, expr, state) => {
 
     return effect(() => (
       // if planned count is same as actual count - plan new update, else update right away
-      change.value == count ? (trigger(), out) : (count = change.value, out = evaluate(state, update))
+      change.value == count ? (trigger(), out) : (count = change.value,  out = evaluate(state, update)),
+      out
     ))
   }
 }
