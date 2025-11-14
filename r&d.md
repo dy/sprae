@@ -1759,7 +1759,7 @@
     + reuses `dir` function
     - need to detect `..` or elsehow for valid dealias syntax
 
-### [ ] Where do we handle steps for chains (sequences)?
+### [x] Where do we handle steps for chains (sequences)? -> separate directive
   1. In `event` directive
     + Makes chains specific syntax for events
     + Establishes pattern of empowering directives to handle custom syntax
@@ -1850,7 +1850,6 @@
   * s-interval
     + instead of :fx.interval. An event - oninterval
   * ~~s-show?~~ use hidden attribute
-
 
 ## [ ] Plugins
 
