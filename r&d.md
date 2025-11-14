@@ -1938,6 +1938,7 @@
 
 ## [ ] Sketch/example UI randomization
 
+  * Canonical.ui collection
   * Sketches in drops may have "archetypal" uis and l&f can be randomized/reskinned
 
 ## [x] FAQ
