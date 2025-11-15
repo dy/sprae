@@ -83,21 +83,22 @@
 
     <header class="md:my-8">
       <div class="container max-w-6xl mx-auto md:grid grid-cols-6">
-        <h1 class="text-7xl md:text-8xl font-black text-blue-700 col-span-3 md:text-right mb-4 mt-4 tracking-tight md:leading-[4rem]"><span class="max-md:hidden">∴&thinsp;</span>spræ</h1>
+        <h1 class="group text-7xl md:text-8xl font-black text-blue-700 col-span-3 md:text-right mb-4 mt-4 tracking-tight md:leading-[4rem]"><span
+            class="max-md:hidden inline-block transition-transform origin-[center_70%] align-[8%] group-hover:rotate-3600 ease-in-out duration-9000">∴</span>&thinsp;spræ</h1>
       </div>
       <div class="container max-w-6xl mx-auto md:grid grid-cols-6 gap-16">
         <div class="col-start-4 col-span-3 text-blue-700">
           <h2 class="group text-3xl md:text-4xl font-bold md:leading-[2.5rem] cursor-pointer select-none" :scope="
             rand= s => s.split(' ').map(p => p.split('|')[Math.random()*p.split('|').length|0]).join(' '),
-            s = 'Simple|Subtle|Semantic|Structured|Scalable|Self-documenting|Systematic|Small|Smart|Stateful|Signal-based|Scriptless',
+            s = 'Simple|Subtle|Semantic|Structured|Scalable|Self-documenting|Systematic|Small|Smart|Stateful|Signal-based',
             sp = 'Signal-Powered',
             p = 'Progressive|Pragmatic|Practical|Purposeful|Pluggable|Powerful|Playful|Presentational|Performant',
             pr = 'PRogressive|PRagmatic|PRactical|PReactive|PRototype|PResentational',
-            prae = 'PRogressive Ænhancement|PReactive Ættributes|PRactical Æsthetics|PReactive ÆPI',
-            r = 'Reactive|Robust|Responsive|Rational|Runtime|Reusable|Readable|Radical|Rapid',
+            prae = 'PRogressive Ænhancement|PReactive Ættributes|PRogramming Æsthetics',
             rae = 'RÆctivity|Reactive Æsthetic|Reactive Ættributes|Reactive Æxpressions|Reactive Ænhancement|Reactive Æcosystem|Reactive Æffects|Reactive Æctions|Reactive ÆPI|Reactive Ængine',
-            ae = 'Æsthetic|Æsthetics|Æxpressions|Ættributes|Ænhancement|Æcosystem|Æffects|Æctions|ÆPI|Ængine|Ænvironment',
-            a = 'Aesthetic|Aesthetics|Attributes|Action|API',
+            r = 'Reactive|Robust|Responsive|Rational|Runtime|Reusable|Readable|Radical|Rapid',
+            ae = 'Æsthetic|Æsthetics|Æxpressions|Ættributes|Ænhancement|Æffects|Æctions',
+            a = 'Aesthetic|Aesthetics|Attributes|Actions',
             e = 'Enhancement|Ecosystem|Expressions|Effects|Engine|Environment',
             titles=[
               `${s} ${prae}`,
@@ -118,22 +119,23 @@
             title=getTitle()" :onclick="title=getTitle()">
             <span :text="title">Signal-Powered Reactive Ættributes</span>&nbsp;<span class="absolute cursor-pointer font-[100] group-hover:opacity-100 opacity-10 inline-block transition-transform group-hover:rotate-360 ease-linear duration-9000">↻</span>
           </h2>
-          <h5 class="my-4 text-xl md:text-2xl mb-4 md:leading-[2rem]">
-            Microhydration for HTML/JSX tree via signal-based reactive attributes. Define UI wiring at the markup layer, decluttering app logic and components.
+          <h5 class="my-4 text-xl md:text-xl mb-4">
+            Define UI wiring at the markup layer via reactive attributes, decluttering app logic and components.
           </h5>
         </div>
       </div>
     </header>
 
     <main>
-      <section class="container max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-6 md:my-20" :scope>
-        <pre class="p-6 md:p-8 col-span-3 microlight text-sm md:text-base"><code :ref="code">&lt;script src="//unpkg.com/sprae" start&gt;&lt;/script&gt;
-
-&lt;div :scope="count=0"&gt;
+      <section class="container max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-6 md:my-16" :scope>
+        <div class="relative col-span-3">
+          <span class="absolute bottom-0 right-0 text-white text-xs p-2 opacity-50">HTML</span>
+          <pre class="p-6 md:p-8 microlight text-sm"><code :ref="code">&lt;div :scope="count=0"&gt;
   &lt;button :onclick="count++"&gt;+&lt;/button&gt;
   &lt;button :onclick="count--"&gt;–&lt;/button&gt;
   Count: &lt;span :text="count"&gt;&lt;/span&gt;
 &lt;/div&gt;</code></pre>
+        </div>
         <div class="col-span-3 p-8 bg-graph-paper h-full text-lg" :ref="el => el.innerHTML = code.textContent">
         </div>
       </section>
@@ -233,11 +235,20 @@
         <div class="col-span-4 [&_h4]:text-xl [&_h4]:text-blue-700 [&_h4]:font-bold [&_h4]:mt-4 [&_p]:my-1">
           <h4>Why sprae?</h4>
           <p>
-            <!-- <cite>It hydrates DOM tree and perfect for SPA.</cite> -->
-            Minimal syntax, valid HTML, signals based, build-free, ecosystem-agnostic (CDN, ESM, JSX), extensible, configurable, open, safe, fast and practical.
-            It marries patterns from preact-signals, alpine and lodash/underscore. Made with 🫰 for better DX without complexity.
-            Perfect for SPA, static sites, landings, GitHub Pages, prototypes, lightweight UIs, etc.
+            Simple reactivity without framework overhead.
           </p>
+          <ul class="list-disc list-inside">
+            <li>Minimal syntax, valid HTML</li>
+            <li>Signals based, preact-signals compatible</li>
+            <li>No build step, no config, zero dependencies</li>
+            <li>Ecosystem-agnostic (CDN, ESM, JSX)</li>
+            <li>Open, extensible, configurable</li>
+            <li>Safe, fast and practical.</li>
+          </ul>
+          <p>
+            Perfect for SPA, PWA, static sites, GitHub Pages, prototypes, lightweight UIs, etc.
+          </p>
+          <p>Made with 🫰 for better DX.</p>
           <h4>Why not Alpine.js?</h4>
           <p>Less syntax, no magic, lighter, faster, signals support, open state, ESM, extensibility, aliases and sequences.</p>
           <h4>Why not Vanilla JS?</h4>
