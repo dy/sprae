@@ -2,7 +2,7 @@
 @font-face {
   font-family: 'Atkinson Hyperlegible';
   src: url('./AtkinsonHyperlegibleNextVF-Variable.woff2') format('woff2'),
-       url('./AtkinsonHyperlegibleNextVF-Variable.ttf') format('truetype');
+    url('./AtkinsonHyperlegibleNextVF-Variable.ttf') format('truetype');
   font-weight: 100 900;
   font-style: normal;
   font-display: swap;
@@ -11,13 +11,15 @@
 @font-face {
   font-family: 'Monaspace';
   src: url('./Monaspace\ Neon\ Var.woff2') format('woff2'),
-       url('./Monaspace\ Neon\ Var.woff') format('woff');
+    url('./Monaspace\ Neon\ Var.woff') format('woff');
   font-weight: 100 900;
   font-style: normal;
   font-display: swap;
 }
 
-* {touch-action: manipulation;}
+* {
+  touch-action: manipulation;
+}
 
 :root {
   font-size: max(16px, min(2.2vw, 22px));
@@ -46,8 +48,62 @@ body {
   min-height: 100vh;
 }
 
-pre, code {
+pre,
+code {
   font-family: 'Monaspace', monospace;
+}
+
+a {
+  color: var(--color-blue-700);
+  text-decoration-color: rgb(from currentColor r g b / 20%);
+  text-underline-offset: .2em;
+  text-decoration-line: underline;
+}
+
+a:hover {
+  text-decoration-color: var(--color-blue-700);
+}
+
+body::before {
+  content: '';
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  pointer-events: none;
+  background: radial-gradient(circle at var(--x, 50%) var(--y, 50%), rgb(from dodgerblue r g b / 54%), transparent 75%);
+  transition: background-position 0.05s;
+  z-index: 2;
+  mix-blend-mode: screen;
+}
+
+pre {
+  background: var(--color-blue-600);
+  color: white;
+  white-space: pre-wrap;
+  word-wrap: break-word;
+
+  /* microhighlight tweaks */
+  [style*="opacity:.7;"] {
+    color: #9dc7ff;
+    opacity: 1 !important;
+  }
+}
+
+button {
+  cursor: pointer;
+  background: var(--color-blue-700);
+  color: white;
+  padding: 0.65rem 1.2rem;
+  position: relative;
+  z-index: 1;
+}
+
+.bg-graph-paper {
+  background-image: linear-gradient(to right, rgb(from var(--color-blue-700) r g b / 20%) 1px, transparent 1px), linear-gradient(to bottom, rgb(from var(--color-blue-700) r g b / 20%) 1px, transparent 1px);
+  background-size: 1rem 1rem;
+  background-color: var(--color-bg);
 }
 
 
@@ -68,6 +124,7 @@ pre, code {
 
   a {
     text-underline-offset: .2em;
+
     &.anchorjs-link {
       text-decoration: none;
     }

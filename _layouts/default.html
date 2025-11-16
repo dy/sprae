@@ -1,10 +1,24 @@
 <!DOCTYPE html>
-<html>
-<head>
-  <link href="./style.css" rel="stylesheet">
-  <script>console.log('SCRIPT RUNS')</script>  <!-- Or inline <script>your logic here</script> -->
-</head>
-<body>
-  {{ content }}
-</body>
+<html lang="en">
+
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sprae – reactive PE</title>
+    <meta name="description" content="Sprae is a tiny (~5KB) declarative reactive library for progressive enhancement using signal-powered reactive attributes in HTML/JSX.">
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <!-- <script src="//unpkg.com/sprae" start></script> -->
+    <script src="./dist/sprae.umd.js" start></script>
+    <script src="//unpkg.com/microlight" start></script>
+    <!-- <script src="./microlight.js" start></script> -->
+    <link rel="stylesheet" href="../assets/style.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/github-markdown-css/5.5.0/github-markdown.min.css">
+  </head>
+
+  <body>
+    <article class="markdown-body">
+      {{ content }}
+    </article>
+  </body>
+
 </html>
