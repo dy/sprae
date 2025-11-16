@@ -1,9 +1,3 @@
----
-
-  foo:bar
-
----
-
 <aside>
 <nav :html="`<ul>` + [...document.querySelector('h2')].map(el=>`<li><a href='#${el.id}'>${el.textContent}</a></li>`) + `</ul>`"></nav>
 </aside>
