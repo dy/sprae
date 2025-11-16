@@ -454,16 +454,18 @@ state.navigator             // == undefined
 ```
 
 
+
 ## Signals
 
 Default signals can be replaced with _preact-signals_ alternative:
 
 ```js
-import sprae from 'sprae';
-import { signal, computed, effect, batch, untracked } from 'sprae/signal';
+import sprae, { signal, computed, effect, batch, untracked } from 'sprae';
 import * as signals from '@preact/signals-core';
 
 sprae.use(signals);
+
+signal(0); // uses @preact/signals-core
 ```
 
 Provider | Size | Feature
@@ -483,9 +485,9 @@ To make eval stricter & safer, any alternative can be used, eg. [_justin_](https
 
 ```js
 import sprae from 'sprae'
-import justin from 'subscript/justin'
+import compile from 'subscript/justin'
 
-sprae.use({compile: justin})
+sprae.use({ compile })
 ```
 
 _Justin_ is a minimal JS subset:
@@ -536,7 +538,7 @@ Sprae build can be tweaked for project needs / size:
 
 ```js
 // sprae.custom.js
-import sprae, { directive, use } from 'sprae/core'
+import sprae, { directive, modifier use } from 'sprae/core'
 import * as signals from '@preact/signals'
 import compile from 'subscript/justin'
 
@@ -602,4 +604,3 @@ Micro sprae version is 2.5kb bundle with essentials:
 3. Performance
 -->
 
-## Alternatives
