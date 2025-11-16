@@ -1,9 +1,10 @@
-<link rel="stylesheet" href="./assets/style.css"/>
+---
+test: abc
+---
 
-<!--
-#### [Start](#start)    [Directives](#directives)    [Modifiers](#modifiers)    [Store](#store)    [Signals](#signals)    [Evaluator](#evaluator)    [JSX](#jsx)    [Custom build](#custom-build)    [Hints](#hints)
--->
-
+<aside>
+<nav :html="`<ul>` + [...document.querySelector('h2')].map(el=>`<li><a href='#${el.id}'>${el.textContent}</a></li>`) + `</ul>`"></nav>
+</aside>
 
 ## Start
 
@@ -37,6 +38,10 @@ Manual ESM init:
 </script>
 ```
 
+<details>
+  <summary>CDN</summary>
+  <script src="https://unpkg.com/sprae" data-start></script>
+</details>
 
 ## Directives
 
