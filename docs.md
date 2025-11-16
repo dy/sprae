@@ -1,5 +1,7 @@
 ---
-test: abc
+
+  foo:bar
+
 ---
 
 <aside>
