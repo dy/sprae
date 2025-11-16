@@ -1,4 +1,4 @@
-import sprae, { store, call, untracked, _state, _signals, signal } from '../core.js'
+import sprae, { store, untracked, _state, _signals, signal } from '../core.js'
 
 export default (el, rootState) => {
   // 0 run pre-creates state to provide scope for the first effect - it can write vars in it, so we should already have it
@@ -8,7 +8,7 @@ export default (el, rootState) => {
   // 1st run spraes subtree with values from scope - it can be postponed by modifiers (we isolate reads from parent effect)
   // 2nd+ runs update subscope
   return values => {
-    values = call(values, state);
+    values = typeof values === 'function' ? values(state) : values;
 
     // we bind to subscope to alleviate friction using scope method directly
     // also returned props should force-create signals in subscope, not overwriting parent

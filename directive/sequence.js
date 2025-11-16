@@ -1,5 +1,5 @@
 // events directive with enabled aliases and sequences like :onclick.ctrl.once..keyup.enter
-import { _dispose, call, parse, decorate } from "../core.js"
+import { _dispose, parse, decorate } from "../core.js"
 
 export default (el, state, expr, names) => {
   let cur, // current step callback
@@ -12,7 +12,7 @@ export default (el, state, expr, names) => {
       const evaluate = parse(expr).bind(el)
 
       const trigger = decorate(Object.assign(
-        e => (!i ? evaluate(state, (fn) => cur = fn && call(fn, e)) : (cur = cur(e)), off(), off = steps[(i + 1) % length]()),
+        e => (!i ? evaluate(state, (fn) => cur = typeof fn === 'function' ? fn(e) : fn) : (cur = cur(e)), off(), off = steps[(i + 1) % length]()),
         { target: el }
       ), mods)
 

@@ -1,4 +1,4 @@
-import { call, parse, decorate } from "../core.js"
+import { parse, decorate } from "../core.js"
 
 export default (el, state, expr, name) => {
   // wrap inline cb into function
@@ -6,7 +6,7 @@ export default (el, state, expr, name) => {
 
   const [type, ...mods] = name.slice(2).split('.'),
     evaluate = parse(expr).bind(el),
-    trigger = decorate(Object.assign(e => evaluate(state, (fn) => fn && call(fn, e)), { target: el }), mods);
+    trigger = decorate(Object.assign(e => evaluate(state, (fn) => typeof fn === 'function' ? fn(e) : fn), { target: el }), mods);
 
   trigger.target.addEventListener(type, trigger, trigger)
   return {

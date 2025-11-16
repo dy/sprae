@@ -113,7 +113,7 @@ export const parse = (expr) => {
     try {
       let result = fn?.call(this, state)
       // if cb is given (to handle async/await exprs, usually directive update) - call it with result and return a cleanup function
-      if (cb) return result?.then ? (result.then(v => _out = cb(v)), () => _out && call(_out)) : cb(result)
+      if (cb) return result?.then ? (result.then(v => _out = cb(v)), () => typeof _out === 'function' && _out()) : cb(result)
       else return result
     } catch (e) {
       console.error(`∴ ${e}\n\n${currentDir}="${expr}"`)
@@ -177,9 +177,6 @@ export const frag = (tpl) => {
     // setAttributeNode() { }
   }
 }
-
-// if value is function - return result of its call
-export const call = (v, arg) => typeof v === 'function' ? v(arg) : v
 
 // camel to kebab
 export const dashcase = (str) => str.replace(/[A-Z\u00C0-\u00D6\u00D8-\u00DE]/g, (match, i) => (i ? '-' : '') + match.toLowerCase());

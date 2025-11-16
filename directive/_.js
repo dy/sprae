@@ -1,3 +1,3 @@
-import { attr, call } from "../core.js";
+import { attr } from "../core.js";
 
-export default (el, st, ex, name) => v => attr(el, name, v && call(v, el.getAttribute(name)))
+export default (el, st, ex, name) => v => attr(el, name, typeof v === 'function' ? v(el.getAttribute(name)) : v)

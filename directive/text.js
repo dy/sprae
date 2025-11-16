@@ -1,7 +1,7 @@
-import { frag, call } from "../core.js"
+import { frag } from "../core.js"
 
 export default el => (
   // <template :text="a"/> or previously initialized template
   el.content && el.replaceWith(el = frag(el).childNodes[0]),
-  v => (v = v && call(v, el.textContent), el.textContent = v == null ? "" : v)
+  v => (v = typeof v === 'function' ? v(el.textContent) : v, el.textContent = v == null ? "" : v)
 )

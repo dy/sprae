@@ -1,4 +1,4 @@
-import { call, attr, decorate } from "../core.js";
+import { attr, decorate } from "../core.js";
 
 export default (el, st, ex, name) => {
   let _static;
@@ -8,7 +8,7 @@ export default (el, st, ex, name) => {
 
   return v => {
     if (!_static) { _static = el.getAttribute("style") }
-    if (v) v = call(v, el.style)
+    v = typeof v === "function" ? v(el.style) : v
     if (typeof v === "string") attr(el, "style", _static + '; ' + v);
     else {
       if (_static) attr(el, "style", _static);

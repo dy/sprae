@@ -1,3 +1,1 @@
-import { call } from "../core.js"
-
-export default () => call
+export default () => (fn) => typeof fn === 'function' && fn()
