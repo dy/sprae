@@ -1,6 +1,6 @@
 # [∴](https://dy.github.io/sprae) spræ [![tests](https://github.com/dy/sprae/actions/workflows/node.js.yml/badge.svg)](https://github.com/dy/sprae/actions/workflows/node.js.yml) [![npm bundle size](https://img.shields.io/bundlephobia/minzip/sprae?color=white)](https://bundlephobia.com/package/sprae) [![npm](https://img.shields.io/npm/v/sprae?color=white)](https://www.npmjs.com/package/sprae) [![ॐ](https://img.shields.io/badge/MIT-%E0%A5%90-white)](https://krishnized.github.io/license)
 
-> Simple reactivity for HTML/JSX with signals-based attributes.
+Simple reactivity for HTML/JSX with signals-based attributes.
 
 ## usage
 
@@ -20,13 +20,19 @@
 
 ## docs
 
+[start](docs.md#start)  [store](docs.md#store)  [signals](docs.md#signals)  [evaluator](docs.md#evaluator)  [jsx](docs.md#jsx)  [build](docs.md#custom-build)  [hints](docs.md#hints)
+
+#### directives
+
 [`:text`](docs.md#text) [`:class`](docs.md#class) [`:style`](docs.md#style) [`:value`](docs.md#value) [`:<attr>`](docs.md#attr-) [`:if :else`](docs.md#if-else) [`:each`](docs.md#each) [`:scope`](docs.md#scope) [`:fx`](docs.md#fx) [`:ref`](docs.md#ref) [`:on<event>`](docs.md#onevent)
+
+#### modifiers
 
 [`.debounce`](docs.md#debounce-ms) [`.throttle`](docs.md#throttle-ms) [`.delay`](docs.md#tick) [`.once`](docs.md#once)<br>
 [`.window`](docs.md#window-document-body-root-parent-outside-self) [`.document`](docs.md#window-document-body-root-parent-outside-self) [`.root`](docs.md#window-document-body-root-parent-outside-self) [`.body`](docs.md#window-document-body-root-parent-outside-self) [`.parent`](docs.md#window-document-body-root-parent-outside-self) [`.self`](docs.md#window-document-body-root-parent-outside-self) [`.outside`](docs.md#window-document-body-root-parent-outside-self)<br>
 [`.passive`](docs.md#passive-captureevents-only) [`.capture`](docs.md#passive-captureevents-only) [`.prevent`](docs.md#prevent-stop-immediateevents-only) [`.stop`](docs.md#prevent-stop-immediateevents-only) [`.<key>`](docs.md#key-filters)
 
-[start](docs.md#start)  [store](docs.md#store)  [signals](docs.md#signals)  [evaluator](docs.md#evaluator)  [jsx](docs.md#jsx)  [build](docs.md#custom-build)  [hints](docs.md#hints)
+
 <!--
 ## Micro
 
