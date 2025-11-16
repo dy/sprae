@@ -597,7 +597,9 @@ Micro sprae version is 2.5kb bundle with essentials:
 <!--
 ## FAQ
 
-1. Errors handling?
-2. Typescript support?
-3. Performance tips?
+1. Errors handling
+2. Typescript
+3. Performance
 -->
+
+## Alternatives
