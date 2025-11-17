@@ -1,5 +1,5 @@
 <aside>
-<nav :html="`<ul>` + [...document.querySelector('h2')].map(el=>`<li><a href='#${el.id}'>${el.textContent}</a></li>`) + `</ul>`"></nav>
+<nav data-s-html="`<ul>` + [...document.querySelector('h2')].map(el=>`<li><a href='#${el.id}'>${el.textContent}</a></li>`) + `</ul>`"></nav>
 </aside>
 
 ## Start
@@ -475,8 +475,8 @@ Provider | Size | Feature
 [`signal`](https://ghub.io/@webreflection/signal) | 633b | Class-based, better performance, good for small-medium states.
 [`usignal`](https://ghub.io/usignal) | 955b | Class-based with optimizations and optional async effects.
 [`@preact/signals-core`](https://ghub.io/@preact/signals-core) | 1.47kb | Best performance, good for any states, industry standard.
-[`signal-polyfill`](https://ghub.io/signal-polyfill) | 2.5kb | Proposal signals. Use via [adapter](https://gist.github.com/dy/bbac687464ccf5322ab0e2fd0680dc4d).
-[`alien-signals`](https://github.com/WebReflection/alien-signals) | 2.67kb | Preact-flavored [alien signals](https://github.com/stackblitz/alien-signals).
+[`alien-signals`](https://github.com/webreflection/alien-signals) | 1.9kb | Preact-flavored [alien signals](https://github.com/stackblitz/alien-signals), presumably even better performance.
+[`signal-polyfill`](https://ghub.io/signal-polyfill) | 2.5kb | Standard signals proposal. Use via [adapter](https://gist.github.com/dy/bbac687464ccf5322ab0e2fd0680dc4d).
 
 
 ## Evaluator
@@ -604,4 +604,3 @@ Micro sprae version is 2.5kb bundle with essentials:
 2. Typescript
 3. Performance
 -->
-

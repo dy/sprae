@@ -8,8 +8,8 @@
     <meta name="description" content="Sprae is a tiny (~5KB) declarative reactive library for progressive enhancement using signal-powered reactive attributes in HTML/JSX.">
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
     <!-- <script src="//unpkg.com/sprae" start></script> -->
-    <script src="./dist/sprae.umd.js" start></script>
-    <script src="//unpkg.com/microlight" start></script>
+    <script src="./dist/sprae.umd.js" start async></script>
+    <script src="//unpkg.com/microlight" start defer></script>
     <!-- <script src="./microlight.js" start></script> -->
     <link rel="stylesheet" href="./assets/style.css" />
   </head>
@@ -23,8 +23,8 @@
 
     <nav class="container max-w-6xl mx-auto flex md:grid grid-cols-6 gap-16 top-8 right-8">
       <div class="col-start-4 col-span-2 flex flex-row gap-4 md:gap-8 bold text-lg font-semibold  md:leading-[1rem]">
-        <a href="./docs">docs</a>
-        <a href="./drops">drops</a>
+        <!-- <a href="./docs">docs</a> -->
+        <!-- <a href="./drops">drops</a> -->
         <!-- <a href="./changelog.html">play</a> -->
         <a href="https://github.com/dy/sprae" class="relative before:content-['⌥  '] before:absolute before:-ml-6 ml-6">v<span :text="window.sprae?.version || '12.1.0'"></span></a>
       </div>
