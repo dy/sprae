@@ -2,7 +2,6 @@ import store from "./store.js";
 import { batch, computed, effect, signal, untracked } from './core.js';
 import * as signals from './signal.js';
 import sprae, { use, decorate, directive, modifier, parse, throttle, debounce, _off, _state, _on, _dispose, _add } from './core.js';
-import pkg from './package.json' with { type: 'json' };
 
 import _if from "./directive/if.js";
 import _else from "./directive/else.js";
@@ -138,7 +137,6 @@ sprae.use = use
 sprae.store = store
 sprae.directive = directive
 sprae.modifier = modifier
-sprae.version = pkg.version;
 
 
 /**
