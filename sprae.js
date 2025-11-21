@@ -83,10 +83,7 @@ Object.assign(modifier, {
   body: fn => (fn.target = fn.target.ownerDocument.body, fn),
   parent: fn => (fn.target = fn.target.parentNode, fn),
   self: (fn) => (e) => (e.target === fn.target && fn(e)),
-  outside: (fn) => (e, _target) => (
-    _target = fn.target,
-    !_target.contains(e.target) && e.target.isConnected && (_target.offsetWidth || _target.offsetHeight)
-  ),
+  away: (fn) => Object.assign((e) => (!fn.target.contains(e.target) && e.target.isConnected && fn(e)), {target: fn.target.ownerDocument}),
 
   // events
   prevent: (fn) => (e) => (e?.preventDefault(), fn(e)),
@@ -95,6 +92,7 @@ Object.assign(modifier, {
   passive: fn => (fn.passive = true, fn),
   capture: fn => (fn.capture = true, fn),
 })
+modifier.outside = modifier.away
 
 // key testers
 const keys = {

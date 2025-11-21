@@ -340,13 +340,13 @@ Call only once.
 <div :fx.once="console.log('sprae init')">
 ```
 
-#### `.window`, `.document`, `.body`, `.root`, `.parent`, `.outside`, `.self`
+#### `.window`, `.document`, `.body`, `.root`, `.parent`, `.away`, `.self`
 
 Specify target.
 
 ```html
 <!-- close dropdown when click outside -->
-<div :onclick.outside="closeMenu()" :class="{ open: isOpen }">Dropdown</div>
+<div :onclick.away="closeMenu()" :class="{ open: isOpen }">Dropdown</div>
 
 <!-- interframe communication -->
 <div :onmessage.window="e => e.data.type === 'success' && complete()">...</div>

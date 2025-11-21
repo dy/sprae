@@ -123,7 +123,7 @@
           { title: ".root", text: "Set root as target.", example: `&lt;div :style.root="{&apos;--fs&apos;: fs + &apos;%&apos;}"&gt;...&lt;/div&gt;` },
           { title: ".body", text: "Set body as target.", example: `&lt;div :style.body="{&apos;--x&apos;: x + &apos;%&apos;}"&gt;...&lt;/div&gt;` },
           { title: ".parent", text: "Set parent as target.", example: `&lt;div :onclick.parent="doSomething()"&gt;...&lt;/div&gt;` },
-          { title: ".outside", text: "Set event target.", example: `&lt;div :onclick.outside="closeMenu()"&gt;Dropdown&lt;/div&gt;` },
+          { title: ".away", text: "Set event target.", example: `&lt;div :onclick.away="closeMenu()"&gt;Dropdown&lt;/div&gt;` },
           { title: ".self", text: "Trigger only if event target is the element itself.", example: `&lt;div :onclick.self="doSomething()"&gt;...&lt;/div&gt;` },
           { title: ".passive, .capture", text: "Event listener options.", example: `&lt;div :onscroll.passive="pos = e.scrollTop"&gt;...&lt;/div&gt;` },
           { title: ".prevent, .stop-<immediate>?", text: "Prevent default or stop (immediate) propagation.", example: `&lt;a :onclick.prevent="navigate(&apos;/page&apos;)" href="/default"&gt;Go&lt;/a&gt;` },

@@ -113,6 +113,23 @@ test("on: parent, self", () => {
   is(state.log, [1, 1, 1]);
 });
 
+test("on: outside", () => {
+  let el = h`<x :onx.outside="e => log.push(1)"><y :onx.outside="e => log.push(2)"></y></x>`;
+  document.body.appendChild(el);
+  let state = sprae(el, { log: [] });
+  console.log('----dispatch el x')
+  el.firstChild.dispatchEvent(new window.Event("x", { bubbles: true }));
+  is(state.log, []);
+  console.log('----dispatch el x')
+  el.dispatchEvent(new window.Event("x", { bubbles: true }));
+  is(state.log, [2]);
+  console.log('----dispatch window x')
+  document.dispatchEvent(new window.Event("x", { bubbles: true }));
+  is(state.log, [2, 1, 2]);
+  document.body.removeChild(el);
+});
+
+
 test("on: keys", () => {
   let el = h`<x :onkeydown.enter="e => log.push(1)"></x>`;
   let state = sprae(el, { log: [] });

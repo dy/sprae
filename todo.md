@@ -221,9 +221,9 @@
 * [x] .stop-immediate
 * [x] global calls like getComputedStyle fail without window.
 * [x] ~~make :scope init untracked~~ -> use :scope.once
+* [x] test .outside - it doesn't work now
 
 * [ ] disable observer for DOM mutations
-* [ ] test .outside - it doesn't work now
 * [ ] typescript
 * [ ] microjs bundle
 * [ ] perf tests
