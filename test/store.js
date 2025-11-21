@@ -293,11 +293,11 @@ t('store: sandbox', async () => {
 
 t('store: sandbox global context', async () => {
   let log = []
-  window._test = async function(){log.push(this)}
+  globalThis._test = async function(){log.push(this)}
   let s = store({  })
   let set = new Function('with(arguments[0]) { _test();  }')
   set(s)
-  is(log, [window])
+  is(log, [globalThis])
 })
 
 t('store: array items', async () => {

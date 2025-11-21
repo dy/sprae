@@ -1829,6 +1829,14 @@
   - chatgpt is super easy to ask to generate basic code
     + ask about sprae
 
+## [ ] Destructor option
+  1. `el[_dispose]`
+  2. `dispose(el)`
+    + no pollution
+    + more modern
+    + similar to `use`, `start` etc
+    + can be held as a pattern inside of directives `fx(...), cleanup(...)`
+
 ## [ ] Sprae static
   * Compiles away to plain html
 
