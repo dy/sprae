@@ -104,3 +104,13 @@ test('scope: parasitic updates', async () => {
   await tick()
   is(a.innerHTML, `<y>xyy</y>`)
 })
+
+test('scope: untracked init', async () => {
+  let a = h`<x :scope.once="x=y+1"><y :fx="log.push(x)"></y></x>`
+  let s = sprae(a, { y: 1, log: [] })
+  await tick()
+  is(s.log.length, 1, "initialized once")
+  s.y = 2
+  await tick()
+  is(s.log.length, 1, "not re-initialized")
+})
