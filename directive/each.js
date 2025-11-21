@@ -1,7 +1,7 @@
 import sprae, { store, parse, _state, effect, _change, _signals, frag, throttle, debounce } from "../core.js";
 
 export default (tpl, state, expr) => {
-  const [lhs, rhs] = expr.split(/\bin\b/)
+  const [lhs, rhs] = expr.split(/\bin|of\b/)
 
   let [itemVar, idxVar = "$"] = lhs.trim().replace(/\(|\)/g, '').split(/\s*,\s*/);
 
