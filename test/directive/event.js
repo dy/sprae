@@ -348,6 +348,20 @@ test('on: modifiers chain', async () => {
   is(state.log, ['x', 'x'])
 })
 
+test('on: unfinished sequence', async () => {
+  let el = h`<x :onx..ony="e=>(log.push(e.type))"></x>`
+  let state = sprae(el, { log: [] })
+  el.dispatchEvent(new window.Event('x'));
+  is(state.log, ['x'])
+  el.dispatchEvent(new window.Event('y'));
+  is(state.log, ['x'])
+  el.dispatchEvent(new window.Event('x'));
+  is(state.log, ['x', 'x'])
+  el.dispatchEvent(new window.Event('x'));
+  is(state.log, ['x', 'x'])
+})
+
+
 test('on: alias sequence', async () => {
   let el = h`<x :ona.debounce:onb.debounce..onc.debounce:ond.debounce="e=>(log.push(e.type),(e)=>log.push(e.type))"></x>`
   let state = sprae(el, { log: [] })

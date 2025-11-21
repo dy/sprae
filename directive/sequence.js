@@ -11,8 +11,9 @@ export default (el, state, expr, names) => {
 
       const evaluate = parse(expr).bind(el)
 
+      const next = (fn, e) => cur = typeof fn === 'function' ? fn(e) : fn
       const trigger = decorate(Object.assign(
-        e => (!i ? evaluate(state, (fn) => cur = typeof fn === 'function' ? fn(e) : fn) : (cur = cur(e)), off(), off = steps[(i + 1) % length]()),
+        e => (!i ? evaluate(state, (fn) => next(fn, e)) : next(cur, e), off(), off = steps[(i + 1) % length]()),
         { target: el }
       ), mods)
 
