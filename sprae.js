@@ -119,7 +119,7 @@ for (let k in keys) modifier[k] = (fn, a, b) => (e) => keys[k](e) && (!a || keys
 
 
 use({
-  compile: expr => sprae.constructor(`with (arguments[0]) { ${expr} }`),
+  compile: expr => sprae.constructor(`with(arguments[0]){${expr}}`),
   dir: (el, name, expr, state) => {
     // sequences shortcut
     if (name.includes('..')) return () => _seq(el, state, expr, name)[_dispose]

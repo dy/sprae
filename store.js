@@ -37,9 +37,8 @@ export const store = (values, parent) => {
     [_signals]: signals
   }), {
     get: (_, k) => {
-      // console.log('GET', k, signals)
       if (k in signals) return (signals[k] ? signals[k].valueOf() : signals[k])
-      return parent ? parent[k] : globalThis[k]
+      return parent ? parent[k] : (typeof globalThis[k] === 'function' && !globalThis[k].prototype ? globalThis[k].bind(globalThis) : globalThis[k])
     },
 
     set: (_, k, v, _s) => {

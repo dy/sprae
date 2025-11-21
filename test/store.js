@@ -291,6 +291,15 @@ t('store: sandbox', async () => {
   is(s.y, 2)
 })
 
+t('store: sandbox global context', async () => {
+  let log = []
+  window._test = async function(){log.push(this)}
+  let s = store({  })
+  let set = new Function('with(arguments[0]) { _test();  }')
+  set(s)
+  is(log, [window])
+})
+
 t('store: array items', async () => {
   // arrays get each item converted to signal struct
   let s5 = store({ list: [{ x: 1 }, { x: 2 }] })

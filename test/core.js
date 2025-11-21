@@ -293,7 +293,7 @@ test.todo('perf: must be fast', async () => {
 })
 
 test('core: setTimeout illegal invokation', async () => {
-  let el = h`<div :scope="c=0, x = ()=>{ window.setTimeout(() => (c++)) }" :onx="x" :text="c"></div>`
+  let el = h`<div :scope="c=0, x=()=>{ setTimeout(() => (c++)) }" :onx="x" :text="c"></div>`
   sprae(el)
   is(el.innerHTML, '0')
   el.dispatchEvent(new window.CustomEvent('x'))
