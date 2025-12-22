@@ -4,7 +4,7 @@
 
 ## Start
 
-The `start` / `data-start` attribute auto-starts sprae on the page root or on a selector you provide.
+`start` or `data-start` attribute autoinits sprae on the page root or on selector.
 
 Example (auto-init on `#counter`):
 
@@ -109,7 +109,7 @@ Bind input, textarea or select value.
 <input :value="value => value + str" />
 ```
 
-#### `:<attr?>`
+#### `:*`
 
 Set any attribute(s).
 
@@ -214,7 +214,7 @@ Get reference to element
 <textarea :ref="el => {/* onmount */ return () => {/* onunmount */}}" :if="show"></textarea>
 ```
 
-#### `:on<event>`
+#### `:on*`
 
 Add event listener.
 
@@ -286,30 +286,30 @@ Trigger when element is connected / disconnected from DOM.
 
 ## Modifiers
 
-#### `.debounce-<ms|raf>?`
+#### `.debounce-*?`
 
 Delay callback by interval since the last call.
 Undefined interval uses `tick`.
 <!-- Optional `immediate` indicates leading-edge debounce. -->
-See [lodash/debounce](https://lodash.com/docs/#debounce)
+<!--See [lodash/debounce](https://lodash.com/docs/#debounce)-->
 
 ```html
 <!-- debounce keyboard input by 200ms -->
 <input :oninput.debounce-200="event => update(event)" />
 ```
 
-#### `.throttle-<ms|raf>?`
+#### `.throttle-*`
 
 Limit callback rate to an interval. Undefined interval uses `tick`.
 <!-- Optional `immediate` indicates leading-edge response. -->
-See [lodash/throttle](https://lodash.com/docs/#throttle).
+<!--See [lodash/throttle](https://lodash.com/docs/#throttle).-->
 
 ```html
 <!-- throttle text update -->
 <div :text.throttle-100="text.length"></div>
 ```
 
-#### `.delay-<ms|raf>?`
+#### `.delay-*`
 
 Run callback after an interval.
 
@@ -366,7 +366,7 @@ Event listener [options](https://developer.mozilla.org/en-US/docs/Web/API/EventT
 <body :ontouchstart.capture="logTouch(e)"></body>
 ```
 
-#### `.prevent`, `.stop-<immediate>?`  <kbd>events only</kbd>
+#### `.prevent`, `.stop-immediate?`  <kbd>events only</kbd>
 
 Prevent default or stop (immediate) propagation.
 
@@ -375,10 +375,10 @@ Prevent default or stop (immediate) propagation.
 <a :onclick.prevent="navigate('/page')" href="/default">Go</a>
 
 <!-- stop immediate propagation -->
-<button :onclick.stop.immediate="criticalHandle()">Click</button>
+<button :onclick.stop-immediate="criticalHandle()">Click</button>
 ```
 
-#### `.<meta>-<key>` <kbd>events only</kbd>
+#### `.<meta>-*` <kbd>events only</kbd>
 
 Filter event by [`event.key`](https://developer.mozilla.org/en-US/docs/Web/API/UI_Events/Keyboard_event_key_values) or combination:
 
@@ -412,7 +412,7 @@ Persist value in local or session storage.
 ```
 -->
 
-#### `.<any>`
+#### `.*`
 
 Any other modifier has no effect, but allows binding multiple handlers.
 
