@@ -459,7 +459,7 @@ state.navigator             // == undefined
 
 ## Signals
 
-Default signals can be replaced with _preact-signals_ alternative:
+Default signals can be replaced with any _preact-signals_ compatible alternative:
 
 ```js
 import sprae, { signal, computed, effect, batch, untracked } from 'sprae';
