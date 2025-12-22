@@ -196,12 +196,13 @@ Run effect.
 
 #### `:ref`
 
-Expose an element in scope or get ref to the element.
+Get reference to element
 
 ```html
+<!-- expose element in scope -->
 <div :ref="card" :fx="handle(card)"></div>
 
-<!-- reference -->
+<!-- access element instance -->
 <div :ref="el => el.innerHTML = '...'"></div>
 
 <!-- local reference -->
