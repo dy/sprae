@@ -20,13 +20,9 @@ Simple reactivity for HTML/JSX with signals-based attributes.
 
 ## docs
 
-[start](docs.md#start)  [store](docs.md#store)  [signals](docs.md#signals)  [evaluator](docs.md#evaluator)  [jsx](docs.md#jsx)  [build](docs.md#custom-build)  [hints](docs.md#hints)
-
-#### directives
+<!-- [start](docs.md#start)  [store](docs.md#store)  [signals](docs.md#signals)  [evaluator](docs.md#evaluator)  [jsx](docs.md#jsx)  [build](docs.md#custom-build)  [hints](docs.md#hints) -->
 
 [`:text`](docs.md#text) [`:class`](docs.md#class) [`:style`](docs.md#style) [`:value`](docs.md#value) [`:<attr>`](docs.md#attr-) [`:if :else`](docs.md#if-else) [`:each`](docs.md#each) [`:scope`](docs.md#scope) [`:fx`](docs.md#fx) [`:ref`](docs.md#ref) [`:on<event>`](docs.md#onevent)
-
-#### modifiers
 
 [`.debounce`](docs.md#debounce-ms) [`.throttle`](docs.md#throttle-ms) [`.delay`](docs.md#tick) [`.once`](docs.md#once)<br>
 [`.window`](docs.md#window-document-body-root-parent-outside-self) [`.document`](docs.md#window-document-body-root-parent-outside-self) [`.root`](docs.md#window-document-body-root-parent-outside-self) [`.body`](docs.md#window-document-body-root-parent-outside-self) [`.parent`](docs.md#window-document-body-root-parent-outside-self) [`.self`](docs.md#window-document-body-root-parent-outside-self) [`.outside`](docs.md#window-document-body-root-parent-outside-self)<br>
