@@ -286,9 +286,9 @@ Trigger when element is connected / disconnected from DOM.
 
 ## Modifiers
 
-#### `.debounce-*?`
+#### `.debounce-*`
 
-Delay callback by interval since the last call.
+Delay callback by an interval in ms since the last call.
 Undefined interval uses `tick`.
 <!-- Optional `immediate` indicates leading-edge debounce. -->
 <!--See [lodash/debounce](https://lodash.com/docs/#debounce)-->
@@ -378,9 +378,9 @@ Prevent default or stop (immediate) propagation.
 <button :onclick.stop-immediate="criticalHandle()">Click</button>
 ```
 
-#### `.<meta>-*` <kbd>events only</kbd>
+#### `.<key>-*` <kbd>events only</kbd>
 
-Filter event by [`event.key`](https://developer.mozilla.org/en-US/docs/Web/API/UI_Events/Keyboard_event_key_values) or combination:
+Filter event by [`event.key`](https://developer.mozilla.org/en-US/docs/Web/API/UI_Events/Keyboard_event_key_values) or a combination:
 
 * `.enter`, `.esc`, `.tab`, `.space`, `.delete` – direct key
 * `.ctrl`, `.shift`, `.alt`, `.meta`, `.cmd` – meta key
@@ -424,7 +424,7 @@ Any other modifier has no effect, but allows binding multiple handlers.
 
 ## Store
 
-Sprae uses signals store for reactivity.
+Sprae uses signals-powered store for reactivity.
 
 ```js
 import sprae, { store, signal, effect, computed } from 'sprae'
