@@ -4,23 +4,7 @@
 
 ## Start
 
-`start` or `data-start` attribute autoinits sprae on the page root or on selector.
-
-Example (auto-init on `#counter`):
-
-```html
-<div id="counter" :scope="{count: 1}">
-  <p :text="`Clicked ${count} times`"></p>
-  <button :onclick="count++">Click me</button>
-</div>
-
-<script src="./sprae.js" data-start="#counter"></script>
-<script>
-  window.sprae; // available as global standalone
-</script>
-```
-
-Manual ESM init:
+To init sprae as ESM:
 
 ```html
 <script type="module">
@@ -33,6 +17,22 @@ Manual ESM init:
   state.count++
 </script>
 ```
+
+Sprae can also be used from CDN and auto-initialized with `start` or `data-start` attribute.
+
+```html
+<div id="counter" :scope="{count: 1}">
+  <p :text="`Clicked ${count} times`"></p>
+  <button :onclick="count++">Click me</button>
+</div>
+
+<!-- auto-init on `#counter` -->
+<script src="./sprae.js" data-start="#counter"></script>
+<script>
+  window.sprae; // available as global standalone
+</script>
+```
+
 
 <details>
   <summary>CDN</summary>
@@ -465,9 +465,10 @@ Default signals can be replaced with any _preact-signals_ compatible alternative
 import sprae, { signal, computed, effect, batch, untracked } from 'sprae';
 import * as signals from '@preact/signals-core';
 
+// switch signals to @preact/signals-core
 sprae.use(signals);
 
-signal(0); // uses @preact/signals-core
+signal(0);
 ```
 
 Provider | Size | Feature
@@ -506,16 +507,16 @@ _Justin_ is a minimal JS subset:
 
 ## JSX
 
-Sprae works with JSX via custom prefix (eg. `s-`).
-Useful to offload UI logic from server components in react / nextjs, instead of converting them to client components.
+Sprae works with JSX via custom prefix (eg. `js-`).
+Useful to offload UI logic from server components in react / nextjs, instead of switching to client components.
 
 ```jsx
 // app/page.jsx - server component
 export default function Page() {
   return <>
     <nav id="nav">
-      <a href="/" s-class="location.pathname === '/' && 'active'">Home</a>
-      <a href="/about" s-class="location.pathname === '/about' && 'active'">About</a>
+      <a href="/" js-class="location.pathname === '/' && 'active'">Home</a>
+      <a href="/about" js-class="location.pathname === '/about' && 'active'">About</a>
     </nav>
     ...
   </>
@@ -529,7 +530,7 @@ import Script from 'next/script'
 export default function Layout({ children }) {
   return <>
     {children}
-    <Script src="https://unpkg.com/sprae" data-prefix="s-" data-start />
+    <Script src="https://unpkg.com/sprae" data-prefix="js-" data-start />
   </>
 }
 ```
