@@ -18,7 +18,7 @@ Simple reactivity for HTML/JSX with signals-based attributes.
 </script>
 ```
 
-## [docs](./docs)
+## [docs](docs.md)
 
 <!-- [start](docs.md#start)  [store](docs.md#store)  [signals](docs.md#signals)  [evaluator](docs.md#evaluator)  [jsx](docs.md#jsx)  [build](docs.md#custom-build)  [hints](docs.md#hints) -->
 
