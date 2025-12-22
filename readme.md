@@ -46,7 +46,7 @@ Micro sprae version is 2.5kb bundle with essentials:
 
 ## why
 
-UI wiring in markup instead of app.<br>
+Move UI wiring to markup to clean app logic.<br>
 <!--Perfect for SPA, PWA, static sites, prototypes, micro-frontends, lightweight UI.<br> -->
 <!--Inspired by [preact-signals](https://github.com/preactjs/signals), [alpine](https://github.com/alpinejs/alpine), [lodash](https://lodash.com) and <span title="petite-vue, lucia, nuejs, hmpl, unpoly, dagger">others</span>. <!--[petite-vue](https://github.com/vuejs/petite-vue) and others. --> <!--[lucia](https://github.com/aidenybai/lucia), [nuejs](https://github.com/nuejs/nuejs), [hmpl](https://github.com/hmpl-language/hmpl), [unpoly](https://unpoly.com/up.link), [dagger](https://github.com/dagger8224/dagger.js)-->
 
