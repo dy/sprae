@@ -5,7 +5,7 @@ export default (el, rootState) => {
   // el[_state] even replaces own :scope effect state
   let state = el[_state] = store({}, rootState), init = false;
 
-  // 1st run spraes subtree with values from scope - it can be postponed by modifiers (we isolate reads from parent effect)
+  // 1st run spraes subtree with values from scope, it can be postponed by modifiers (we isolate reads from parent effect)
   // 2nd+ runs update subscope
   return values => {
     values = typeof values === 'function' ? values(state) : values;

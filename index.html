@@ -39,7 +39,7 @@
         <div class="col-start-4 col-span-3 text-blue-700">
           <h2 class="group text-3xl md:text-4xl font-bold md:leading-[2.5rem] cursor-pointer select-none" :scope="
             rand= s => s.split(' ').map(p => p.split('|')[Math.random()*p.split('|').length|0]).join(' '),
-            s = 'Simple|Subtle|Semantic|Structured|Scalable|Self-documenting|Systematic|Small|Smart|Stateful|Signal-based|Sprinkle',
+            s = 'Simple|Subtle|Semantic|Structured|Scalable|Self-documenting|Systematic|Small|Smart|Stateful|Signal-based',
             sp = 'Signal-Powered',
             p = 'Progressive|Pragmatic|Practical|Purposeful|Pluggable|Powerful|Playful|Presentational|Performant',
             pr = 'PRogressive|PRagmatic|PRactical|PReactive|PRototype|PResentational',
@@ -69,6 +69,7 @@
             <span :text="title">Signal-Powered Reactive Ættributes</span>&nbsp;<span class="absolute cursor-pointer font-[100] group-hover:opacity-100 opacity-10 inline-block transition-transform group-hover:rotate-360 ease-linear duration-9000">↻</span>
           </h2>
           <h5 class="my-4 text-xl md:text-xl mb-4">
+            Move UI wiring from app to markup.
             Sprinkle reactive attributes to hydrate your HTML/JSX tree.
           </h5>
         </div>
@@ -192,16 +193,15 @@
             <li>Fast, practical and safe.</li>
           </ul>
           <p>
-            Move UI wiring from app to markup.
             <!-- Perfect for SPA, PWA, static sites, GitHub Pages, prototypes, lightweight UIs, etc. -->
           </p>
           <!-- <p>Made for better DX.</p> -->
           <h4>Why not Alpine.js?</h4>
           <p>More coherent API, smaller, better ESM integration, open state, signals support, syntax sugar (prop modifiers, aliases, chains).</p>
           <h4>Why not vanilla JS?</h4>
-          <p><code>createElement</code> is wrong mantra. <a href="https://justfuckingusereact.com/">Just * use framework</a>. <!--But there is potential of static compilation.--></p>
+          <p><code>createElement</code> is wrong mantra. <a href="https://justfuckingusereact.com/">Just use framework</a>. <!--But there is potential of static compilation.--></p>
           <h4>Why not Next/React?</h4>
-          <p>Sprae plays well with <a href="https://dy.github.io/sprae/docs#jsx">JSX</a>, which can save server components. But some find react <a href="https://www.keithcirkel.co.uk/i-dont-have-time-to-learn-react/">not worth the time</a>.</p>
+          <p>Sprae augments <a href="https://dy.github.io/sprae/docs#jsx">JSX</a>, which can help server components. But some find react <a href="https://www.keithcirkel.co.uk/i-dont-have-time-to-learn-react/">not worth the time</a>.</p>
           <h4>Why signals?</h4>
           <p>It is <a href="https://github.com/tc39/proposal-signals">standard</a> for reactivity. <a href="https://github.com/preactjs/signals">Preact-signals</a> provide minimal API surface.
           </p>
@@ -217,8 +217,9 @@
           <p>If your HTML comes from strangers, there is <a href="https://dy.github.io/sprae/docs#evaluator">safe evaluator</a> for CSP.</p>
           <h4>Components support?</h4>
           <p>
-            Try to <a href="https://tailwindcss.com/docs/styling-with-utility-classes#managing-duplication">manage duplication</a>, otherwise plop simple web-component:
-            <code>
+            Try to <a href="https://tailwindcss.com/docs/styling-with-utility-classes#managing-duplication">manage duplication</a>, otherwise plop a simple web-component:
+          </p>
+          <code>
             class MyComponent extends HTMLElement {
               connectedCallback() {
                 if (!this.shadowRoot) {
@@ -229,7 +230,6 @@
             }
             customElements.define('my-component', MyComponent);
             </code>
-          </p>
           <!-- <h4>Is there ecosystem?</h4> -->
           <!-- <p>Not yet.</p> -->
           <h4>TypeScript support?</h4>

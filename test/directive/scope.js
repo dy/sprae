@@ -114,3 +114,17 @@ test('scope: untracked init', async () => {
   await tick()
   is(s.log.length, 1, "not re-initialized")
 })
+
+test.skip('scope: leak parent', async () => {
+  let a = h`<x><y :scope="a=2"><z :text="a"></z></y></x>`
+  let s = sprae(a, {a:1})
+  is(a.innerHTML, `<y><z>2</z></y>`)
+  is(s.a, 1, "parent not affected")
+})
+
+test('scope: leak parent', async () => {
+  let a = h`<x><y :scope="{a:2}"><z :text="a"></z></y></x>`
+  let s = sprae(a, {a:1})
+  is(a.innerHTML, `<y><z>2</z></y>`)
+  is(s.a, 1, "parent not affected")
+})
