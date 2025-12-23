@@ -1816,6 +1816,19 @@
 
   7. Parent -> child defining the behavior, like css or delegate does
 
+  8. From groke reply
+  ```
+  class MyComponent extends HTMLElement {
+    connectedCallback() {
+      if (!this.shadowRoot) {
+        this.attachShadow({mode: 'open'}).innerHTML = `<div :text="msg"></div>`;
+        sprae(this.shadowRoot, { msg: 'Hello' });
+      }
+    }
+  }
+  customElements.define('my-component', MyComponent);
+  ```
+
 ## [x] Reasons against sprae ->
 
   - requires loading script anyways - not native event callbacks

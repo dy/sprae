@@ -222,6 +222,7 @@
 * [x] global calls like getComputedStyle fail without window.
 * [x] ~~make :scope init untracked~~ -> use :scope.once
 * [x] test .outside - it doesn't work now
+* [ ] `:scope="duration=false"` overrides parent duration (leaks scope variable)
 
 * [ ] disable observer for DOM mutations
 * [ ] typescript
