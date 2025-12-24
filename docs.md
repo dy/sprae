@@ -4,9 +4,12 @@
 
 ## Start
 
-To init sprae as ESM:
-
 ```html
+<div id="counter" :scope="{count: 1}">
+  <p :text="`Clicked ${count} times`"></p>
+  <button :onclick="count++">Click me</button>
+</div>
+
 <script type="module">
   import sprae from './sprae.js'
 
@@ -21,23 +24,12 @@ To init sprae as ESM:
 Sprae can also be used from CDN and auto-initialized with `start` or `data-start` attribute.
 
 ```html
-<div id="counter" :scope="{count: 1}">
-  <p :text="`Clicked ${count} times`"></p>
-  <button :onclick="count++">Click me</button>
-</div>
-
 <!-- auto-init on `#counter` -->
-<script src="./sprae.js" data-start="#counter"></script>
+<script src="https://unpkg.com/sprae" data-start="#counter"></script>
 <script>
   window.sprae; // available as global standalone
 </script>
 ```
-
-
-<details>
-  <summary>CDN</summary>
-  <script src="https://unpkg.com/sprae" data-start></script>
-</details>
 
 ## Directives
 
