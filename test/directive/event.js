@@ -222,7 +222,10 @@ test("on: async inline", async () => {
 });
 
 test("on: async function", async () => {
-  let el = h`<div :onx="async e => { let v = await Promise.resolve().then(()=>(1)); log.push(v); }"></div>`;
+  let el = h`<div :onx="async e => {
+    let v = await (Promise.resolve().then(()=>(1))); log.push(v);
+    console.log({x:1}) // this object spoil the broth
+  }"></div>`;
   let state = sprae(el, { log: [] });
   el.dispatchEvent(new window.Event("x"));
   is(state.log, []);

@@ -96,7 +96,9 @@ export const parse = (expr) => {
   let _expr = expr || 'undefined'
 
   // if, const, let - no return
-  if (/^(if|let|const)\b/.test(_expr) || /;(?![^{]*})/.test(_expr));
+  if (/^(if|let|const)\b/.test(_expr));
+  // first-level semicolons - no return
+  else if (/^(?:[^{};]|\{[^}]*\})*;/.test(_expr));
   else _expr = `return ${_expr}`
 
   // async expression
