@@ -10,9 +10,9 @@ import sprae, { _dispose } from "../core.js"
 export default (el, state) => {
   // <template :html="a"/> - fragment case: use placeholder + range
   if (el.content) {
-    let start = document.createTextNode(''),
-        end = document.createTextNode(''),
-        range = document.createRange()
+    let start = el.ownerDocument.createTextNode(''),
+        end = el.ownerDocument.createTextNode(''),
+        range = el.ownerDocument.createRange()
     el.replaceWith(start, end)
     return v => {
       v = typeof v === 'function' ? v('') : v

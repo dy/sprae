@@ -362,13 +362,14 @@ export const frag = (tpl) => {
 
   let content = tpl.content.cloneNode(true), // document fragment holder of content
     attributes = [...tpl.attributes],
-    ref = document.createTextNode(''),
+    ref = tpl.ownerDocument.createTextNode(''),
     // ensure at least one node
     childNodes = (content.append(ref), [...content.childNodes])
 
   return {
     childNodes,
     content,
+    ownerDocument: ref.ownerDocument,
     remove: () => content.append(...childNodes),
     replaceWith(el) {
       if (el === ref) return
