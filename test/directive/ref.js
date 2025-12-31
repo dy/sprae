@@ -121,3 +121,9 @@ test("ref: duplicates", async () => {
   let state = sprae(el)
   is(state.y, el.lastChild)
 })
+
+test("ref: internal path", async () => {
+  let el = h`<x><y :ref="refs.y"></y></x>`
+  let state = sprae(el, {refs:{}})
+  is(state.refs.y, el.lastChild)
+})

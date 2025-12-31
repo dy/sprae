@@ -589,7 +589,8 @@ Micro sprae version is 2.5kb bundle with essentials:
 * To destroy state and detach sprae handlers, call `element[Symbol.dispose]()`.
 * `this` refers to current element, but it's recommended to use `:ref="element => {...}"`.
 * `key` is not used, `:each` uses direct list mapping instead of DOM diffing.
-* Expressions can be async: `<div :text="await load()"></div>`
+* Expressions can be async: `<div :text="await load()"></div>`.
+* Refs can be exposed under path, eg. as `<div :ref="$refs.el"></div>` in alpinejs style.
 
 <!--
 ## FAQ

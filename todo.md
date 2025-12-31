@@ -222,24 +222,28 @@
 * [x] global calls like getComputedStyle fail without window.
 * [x] ~~make :scope init untracked~~ -> use :scope.once
 * [x] test .outside - it doesn't work now
-* [ ] `:scope="duration=false"` overrides parent duration (leaks scope variable)
-
-* [ ] disable observer for DOM mutations
-* [ ] typescript
-* [ ] microjs bundle
-* [ ] perf tests
-* [ ] alpine CSP syntax
+* [x] ~~`:scope="duration=false"` overrides parent duration (leaks scope variable)~~
+* [ ] `:onclick="//..."` inline comments
+* [ ] passing dates, regexps, instances of classes to state: should not wrap or serialize, keep as is
+* [x] `:ref="refs.el"`
 
 ## [ ] v13
 
+* [ ] perf tests (memory/js-framework-bench) against alpine, vue
+* [ ] typescript
+* [ ] disable observer for DOM mutations
+* [ ] .throttle-idle
+* [ ] :ref="el => {dep}" should re-trigger on dep changes?
+* [ ] .throttle-100ms, .throttle-1s: parse-duration units
 * [ ] .before-n, .after-n, .defer
 * [ ] .throttle-immediate, .debounce-immediate
-* [ ] fx in directives instead of return
+* [ ] `fx()` in directives instead of return
 * [ ] flavors: alpine, vue
   * [ ] optionally keep attributes?
   * [ ] `@` transforms for events
 * [ ] microsprae under 4kb ungzipped
 * [ ] plugins
+* [ ] alpine CSP syntax
 
 ## [ ] Website
   * [x] Connect donation links
@@ -272,11 +276,11 @@
 * [ ] .before-n, .after-n, .defer (lodashes)
 * [ ] .interval
 * [ ] .persists
-* [ ] .screen-md
+* [ ] .screen-md modifier for media
 * [ ] :onvisible
 * [ ] :aria
 * [ ] :data
 * [ ] :item
 * [ ] :intersect
 * [ ] :scroll.view.x="progress => "
-* [ ] portal/teleport
+* [ ] :portal/teleport

@@ -1829,7 +1829,22 @@
   customElements.define('my-component', MyComponent);
   ```
 
-## [x] Reasons against sprae ->
+## [x] Separating refs -> be explicit
+
+  1. `state.$.el`
+    + transparent state inheritance
+    + exposes to outside
+    - implicit convention
+    - magic
+  2. `state.el`
+    + simpler exposure
+    + svelte, solid,
+    - occluded by state inheritance
+    - conflict with regular state vars
+  3. `:ref="refs.el"` - explicit export
+
+
+## [ ] Reasons against sprae ->
 
   - requires loading script anyways - not native event callbacks
     + 5kb is almost nothing
@@ -1841,10 +1856,17 @@
   - initial loading delay.
   - chatgpt is super easy to ask to generate basic code
     + ask about sprae
+  - look at wavearea: DOM structure defines app logic, if we deal with relative selectors (sections vs plain string, levels of wrapping etc)
+    * whenever structure changes, the app logic is broken. It's not like that in react
+    * in react, the logic produces structure, so it's easy to change structure not breaking the logic
+
 
 ## [ ] Destructor option
   1. `el[_dispose]`
+  1.1 `el[sprae.dispose]`
+    + comlink-like API
   2. `dispose(el)`
+  2.1 `sprae.dispose(el)`
     + no pollution
     + more modern
     + similar to `use`, `start` etc
