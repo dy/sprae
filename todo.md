@@ -223,15 +223,16 @@
 * [x] ~~make :scope init untracked~~ -> use :scope.once
 * [x] test .outside - it doesn't work now
 * [x] ~~`:scope="duration=false"` overrides parent duration (leaks scope variable)~~
-* [ ] `:onclick="//..."` inline comments
-* [ ] passing dates, regexps, instances of classes to state: should not wrap or serialize, keep as is
 * [x] `:ref="refs.el"`
+* [x] ~~`:onclick="//..."` inline comments~~ seems to work fine
+* [x] passing dates, regexps, instances of classes to state: should not wrap or serialize, keep as is
 
 ## [ ] v13
 
 * [ ] perf tests (memory/js-framework-bench) against alpine, vue
 * [ ] typescript
 * [ ] disable observer for DOM mutations
+* [ ] `sprae.disable(el)`
 * [ ] .throttle-idle
 * [ ] :ref="el => {dep}" should re-trigger on dep changes?
 * [ ] .throttle-100ms, .throttle-1s: parse-duration units
@@ -248,6 +249,7 @@
 ## [ ] Website
   * [x] Connect donation links
   * [x] Inverse color render
+  * [ ] index.md instead of index.html
   * [ ] Docs page UI
   * [x] Acronym rotator in header
   * [ ] Playground

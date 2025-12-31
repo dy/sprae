@@ -328,11 +328,14 @@ t('store: object patch', async () => {
 })
 
 t('store: set special object as prop', () => {
-  const a = new Date
-  let s = store({ a })
-  s.b = a
+  class X {}
+  const a = new Date, b = new X, c = /a/g, d = function(){}
+
+  let s = store({ a, b, c, d })
   is(s.a, a)
-  is(s.b, a)
+  is(s.b, b)
+  is(s.c, c)
+  is(s.d, d)
 })
 
 t.skip('store: arrays retain reference', () => {
