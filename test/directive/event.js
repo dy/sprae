@@ -233,16 +233,6 @@ test("on: async function", async () => {
   is(state.log, [1]);
 });
 
-test("on: comment", async () => {
-  let el = h`<div :onx="//xxx//12;">
-  </div>`;
-  let state = sprae(el, { log: [] });
-  el.dispatchEvent(new window.Event("x"));
-  is(state.log, []);
-  await time();
-  is(state.log, []);
-});
-
 
 test('on: in-out events', () => {
   let el = h`<x :onmousedown..onmouseup="(e) => (x=e.target, log.push(e.type), e=>log.push(e.type))"></x>`

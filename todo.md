@@ -224,7 +224,7 @@
 * [x] test .outside - it doesn't work now
 * [x] ~~`:scope="duration=false"` overrides parent duration (leaks scope variable)~~
 * [x] `:ref="refs.el"`
-* [x] ~~`:onclick="//..."` inline comments~~ seems to work fine
+* [x] `:onclick="//..."` inline comments
 * [x] passing dates, regexps, instances of classes to state: should not wrap or serialize, keep as is
 
 ## [ ] v13

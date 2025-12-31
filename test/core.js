@@ -52,9 +52,14 @@ test("core: empty strings", async () => {
   is(el.outerHTML, `<x></x>`);
 });
 
-test.skip("core: comments", async () => {
-  // NOTE: we don't support that anymore - no questionable value
+test("core: comments", async () => {
   let el = h`<x :="/* */" :x="/* */"></x>`;
+  sprae(el);
+  is(el.outerHTML, `<x></x>`);
+});
+
+test("core: inline comments", async () => {
+  let el = h`<x :x="//"></x>`;
   sprae(el);
   is(el.outerHTML, `<x></x>`);
 });

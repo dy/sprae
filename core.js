@@ -93,7 +93,7 @@ export const parse = (expr) => {
   let fn  = cache[expr=expr.trim()]
   if (fn) return fn
 
-  let _expr = expr || 'undefined'
+  let _expr = (expr || 'undefined') + '\n'
 
   // if, const, let - no return
   if (/^(if|let|const)\b/.test(_expr));
@@ -102,7 +102,7 @@ export const parse = (expr) => {
   else _expr = `return ${_expr}`
 
   // async expression
-  if (/\bawait\s/.test(_expr)) _expr = `return (async()=>{ ${_expr} })()`
+  if (/\bawait\s/.test(_expr)) _expr = `return (async()=>{${_expr}})()`
 
   // static time errors
   try {
