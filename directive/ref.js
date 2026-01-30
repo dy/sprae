@@ -1,6 +1,14 @@
 import { parse } from "../core.js"
 import { setter } from "./value.js"
 
+/**
+ * Ref directive - stores element reference in state.
+ * If expression is a function, calls it with element (returns dispose).
+ * @param {Element} el - Target element
+ * @param {Object} state - State object
+ * @param {string} expr - Variable name or function expression
+ * @returns {{ [Symbol.dispose]: () => void } | void} Disposal object or void
+ */
 export default (el, state, expr) => {
   let fn = parse(expr)(state)
 

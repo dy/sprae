@@ -1,8 +1,22 @@
-// preact-signals minimal implementation
-let current, depth = 0, batched;
+/**
+ * @fileoverview Minimal signals implementation (preact-signals compatible)
+ * @module sprae/signal
+ */
 
-// default signals impl
+/** @type {import('./core.js').EffectFn | null} */
+let current
 
+let depth = 0
+
+/** @type {Set<import('./core.js').EffectFn> | null} */
+let batched;
+
+/**
+ * Creates a reactive signal.
+ * @template T
+ * @param {T} v - Initial value
+ * @returns {import('./core.js').Signal<T>}
+ */
 export const signal = (v, _s, _obs = new Set, _v = () => _s.value) => (
   _s = {
     get value() {
@@ -19,6 +33,11 @@ export const signal = (v, _s, _obs = new Set, _v = () => _s.value) => (
   }
 )
 
+/**
+ * Creates a reactive effect that re-runs when dependencies change.
+ * @param {() => void | (() => void)} fn - Effect function, may return cleanup
+ * @returns {() => void} Dispose function
+ */
 export const effect = (fn, _teardown, _fx, _deps) => (
   _fx = (prev) => {
     let tmp = _teardown;
@@ -35,6 +54,12 @@ export const effect = (fn, _teardown, _fx, _deps) => (
   (dep) => { _teardown?.call?.(); for (dep of _deps) dep.delete(_fx); _deps.clear() }
 )
 
+/**
+ * Creates a computed signal derived from other signals.
+ * @template T
+ * @param {() => T} fn - Computation function
+ * @returns {import('./core.js').Signal<T>}
+ */
 export const computed = (fn, _s = signal(), _c, _e, _v = () => _c.value) => (
   _c = {
     get value() {
@@ -46,10 +71,23 @@ export const computed = (fn, _s = signal(), _c, _e, _v = () => _c.value) => (
   }
 )
 
+/**
+ * Batches multiple signal updates into a single notification.
+ * @template T
+ * @param {() => T} fn - Function containing updates
+ * @returns {T}
+ */
 export const batch = (fn, _first = !batched, _list) => {
   batched ??= new Set;
   try { fn(); }
   finally { if (_first) { [batched, _list] = [null, batched]; for (const fx of _list) fx(); } }
 }
 
+/**
+ * Runs a function without tracking dependencies.
+ * @template T
+ * @param {() => T} fn - Function to run untracked
+ * @returns {T}
+ */
 export const untracked = (fn, _prev, _v) => (_prev = current, current = null, _v = fn(), current = _prev, _v)
+

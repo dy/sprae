@@ -1,7 +1,12 @@
-// "centralized" version of :if
 import sprae, { throttle, _on, _off, _state, frag } from '../core.js';
 
-// :if="a"
+/**
+ * Conditional directive - shows/hides element based on condition.
+ * Works with :else and :else :if for branching.
+ * @param {Element | HTMLTemplateElement} el - Target element
+ * @param {Object} state - State object
+ * @returns {(value: any) => void} Update function
+ */
 export default (el, state) => {
   let _holder, _el, _match
 

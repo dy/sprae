@@ -1,5 +1,13 @@
 import sprae, { store, parse, _state, effect, _change, _signals, frag, throttle, debounce } from "../core.js";
 
+/**
+ * Each directive - renders list items from array/object/number.
+ * Syntax: `:each="item in items"` or `:each="(item, idx) of items"`
+ * @param {HTMLTemplateElement | Element} tpl - Template element
+ * @param {Object} state - State object
+ * @param {string} expr - Iterator expression
+ * @returns {{ eval: Function, [Symbol.dispose]: () => void }} Directive result
+ */
 export default (tpl, state, expr) => {
   const [lhs, rhs] = expr.split(/\bin|of\b/)
 

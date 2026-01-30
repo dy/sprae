@@ -1,19 +1,43 @@
-// signals-based proxy
+/**
+ * @fileoverview Signals-powered reactive proxy store
+ * @module sprae/store
+ */
+
 import { signal, computed, batch, untracked } from './core.js'
 
+/** Symbol for accessing the internal signals map */
+export const _signals = Symbol('signals')
 
-// _signals allows both storing signals and checking instance, which would be difficult with WeakMap
-export const _signals = Symbol('signals'),
-  // _change is a signal that tracks changes to the object keys or array length
-  _change = Symbol('change'),
-  // _set is stashed setter for computed values
-  _set = Symbol('set')
+/** Symbol for the change signal that tracks object keys or array length */
+export const _change = Symbol('change')
+
+/** Symbol for stashed setter on computed values */
+export const _set = Symbol('set')
 
 // a hack to simulate sandbox for `with` in evaluator
 let sandbox = true
 
-// object store is not lazy
-// parent defines parent scope or sandbox
+/**
+ * Reactive store with signals backing.
+ * @template T
+ * @typedef {T & { [_signals]: Record<string | symbol, import('./core.js').Signal<any>> }} ReactiveStore
+ */
+
+/**
+ * Creates a reactive proxy store from an object or array.
+ * Properties become signals for fine-grained reactivity.
+ * Supports nested objects, arrays, computed getters, and methods.
+ *
+ * @template {Object} T
+ * @param {T} values - Initial values object
+ * @param {Object} [parent] - Parent scope for inheritance
+ * @returns {ReactiveStore<T>} Reactive proxy store
+ *
+ * @example
+ * const state = store({ count: 0, get doubled() { return this.count * 2 } })
+ * state.count = 5  // triggers updates
+ * state.doubled    // 10 (computed)
+ */
 export const store = (values, parent) => {
   if (!values) return values
 
@@ -99,7 +123,13 @@ export const store = (values, parent) => {
   return state
 }
 
-// array store - signals are lazy since arrays can be very large & expensive
+/**
+ * Creates a reactive array store with lazy signal initialization.
+ * Arrays can be large, so signals are created on-demand.
+ * @param {any[]} values - Initial array values
+ * @param {Object} [parent=globalThis] - Parent scope
+ * @returns {ReactiveStore<any[]>} Reactive array proxy
+ */
 const list = (values, parent = globalThis) => {
 
   // gotta fill with null since proto methods like .reduce may fail
@@ -168,10 +198,21 @@ const list = (values, parent = globalThis) => {
   return state
 }
 
-// create signal value, skip untracked
+/**
+ * Creates a signal for a property value.
+ * Skips wrapping for untracked props (underscore prefix) and existing signals.
+ * @param {Object} signals - Signals storage object
+ * @param {string} k - Property key
+ * @param {any} v - Property value
+ */
 const create = (signals, k, v) => (signals[k] = (k[0] == '_' || v?.peek) ? v : signal(store(v)))
 
-// set/update signal value
+/**
+ * Updates a signal value, handling arrays specially for efficient patching.
+ * @param {Object} signals - Signals storage object
+ * @param {string} k - Property key
+ * @param {any} v - New value
+ */
 const set = (signals, k, v, _s, _v) => {
   // skip unchanged (although can be handled by last condition - we skip a few checks this way)
   return k[0] === '_' ? (signals[k] = v) :

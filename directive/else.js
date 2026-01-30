@@ -1,7 +1,11 @@
 import { _on, _off, _state, frag } from '../core.js';
 
-
-// NOTE: we can reach :else counterpart whereas prev :else :if is on hold
+/**
+ * Else directive - conditional branch following :if.
+ * Can be used as `:else` or `:else :if="condition"`.
+ * @param {Element | HTMLTemplateElement} el - Element with directive
+ * @returns {() => void} Update function
+ */
 export default (el) => {
   let _el, _prev = el
 

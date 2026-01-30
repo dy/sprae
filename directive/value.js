@@ -1,12 +1,22 @@
 import sprae, { attr, parse, _state } from "../core.js";
 
-
-// create expression setter, reflecting value back to state
+/**
+ * Creates a setter function for two-way binding.
+ * @param {string} expr - Expression to assign to
+ * @returns {(target: Object, value: any) => void} Setter function
+ */
 export const setter = (expr, _set = parse(`${expr}=__`)) => (target, value) => {
-  // save value to stash
   target.__ = value; _set(target), delete target.__
 }
 
+/**
+ * Value directive - two-way binding for form elements.
+ * Supports text, checkbox, radio, select, and textarea.
+ * @param {HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement} el - Form element
+ * @param {Object} state - State object
+ * @param {string} expr - Bound expression
+ * @returns {(value: any) => void} Update function
+ */
 export default (el, state, expr) => {
   // bind back to value, but some values can be not bindable, eg. `:value="7"`
   try {

@@ -1,5 +1,14 @@
 import { clsx, decorate } from "../core.js";
 
+/**
+ * Class directive - manages CSS classes reactively.
+ * Supports strings, arrays, and objects (like clsx/classnames).
+ * @param {Element} el - Target element
+ * @param {Object} st - State object
+ * @param {string} ex - Expression
+ * @param {string} name - Directive name with modifiers
+ * @returns {(v: string | string[] | Record<string, boolean>) => void} Update function
+ */
 export default (el, st, ex, name) => {
   let _cur = new Set, _new
 

@@ -1,5 +1,14 @@
 import { attr, decorate } from "../core.js";
 
+/**
+ * Style directive - sets inline styles reactively.
+ * Accepts string or object. Preserves static styles.
+ * @param {Element} el - Target element
+ * @param {Object} st - State object
+ * @param {string} ex - Expression
+ * @param {string} name - Directive name with modifiers
+ * @returns {(v: string | Record<string, string> | ((style: CSSStyleDeclaration) => any)) => void} Update function
+ */
 export default (el, st, ex, name) => {
   let _static;
 

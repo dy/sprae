@@ -1,3 +1,8 @@
+/**
+ * @fileoverview Sprae - lightweight reactive HTML templating library
+ * @module sprae
+ */
+
 import store from "./store.js";
 import { batch, computed, effect, signal, untracked } from './core.js';
 import * as signals from './signal.js';
@@ -17,6 +22,9 @@ import _default from "./directive/_.js";
 import _spread from "./directive/spread.js";
 import _event from "./directive/event.js";
 import _seq from "./directive/sequence.js";
+import _html from "./directive/html.js";
+import _portal from "./directive/portal.js";
+import _hidden from "./directive/hidden.js";
 
 
 Object.assign(directive, {
@@ -24,6 +32,7 @@ Object.assign(directive, {
   '': _spread,
   class: _class,
   text: _text,
+  html: _html,
   style: _style,
   fx: _fx,
   value: _value,
@@ -31,14 +40,20 @@ Object.assign(directive, {
   scope: _scope,
   if: _if,
   else: _else,
-  each: _each
+  each: _each,
+  portal: _portal,
+  hidden: _hidden
 })
 
 
 /**
- * Directive initializer (with modifiers support)
- * @type {(el: HTMLElement, name:string, value:string, state:Object) => Function}
- * */
+ * Directive initializer with modifiers support.
+ * @param {Element} target - Target element
+ * @param {string} name - Directive name with modifiers (e.g., 'onclick.throttle-500')
+ * @param {string} expr - Expression string
+ * @param {Object} state - Reactive state object
+ * @returns {() => (() => void) | void} Initializer function that returns a disposer
+ */
 const dir = (target, name, expr, state) => {
   let [dirName, ...mods] = name.split('.'), create = directive[dirName] || directive._
 
@@ -64,37 +79,56 @@ const dir = (target, name, expr, state) => {
   }
 }
 
+// Built-in modifiers for timing, targeting, and event handling
 Object.assign(modifier, {
-  // timing (lodash-like)
-  // FIXME: add immediate param
+  /** Delays callback by interval (ms) since last call. Use 'raf' for requestAnimationFrame. */
   debounce: (fn, _how) => debounce(fn, (_how ||= 0, !_how ? undefined : _how === 'raf' ? requestAnimationFrame : (fn) => setTimeout(fn, _how))),
+  /** Limits callback rate to interval (ms). Use 'raf' for requestAnimationFrame. */
   throttle: (fn, _how) => throttle(fn, (_how ||= 0, !_how ? undefined : _how === 'raf' ? requestAnimationFrame : (fn) => setTimeout(fn, _how))),
+  /** Runs callback after delay (ms). Defaults to next microtask. */
   delay: (fn, ms) => !ms ? (e) => (queueMicrotask(() => fn(e))) : (e) => setTimeout(() => fn(e), ms),
 
+  /** @deprecated Use .delay instead */
   tick: (fn) => (console.warn('Deprecated'), (e) => (queueMicrotask(() => fn(e)))),
+  /** @deprecated Use .throttle-raf instead */
   raf: (fn) => (console.warn('Deprecated'), (e) => requestAnimationFrame(() => fn(e))),
 
+  /** Calls handler only once. */
   once: (fn, _done, _fn) => (_fn = (e) => !_done && (_done = 1, fn(e)), _fn.once = true, _fn),
 
-  // target
+  /** Attaches event listener to window. */
   window: fn => (fn.target = fn.target.ownerDocument.defaultView, fn),
+  /** Attaches event listener to document. */
   document: fn => (fn.target = fn.target.ownerDocument, fn),
+  /** Attaches event listener to document root element (<html>). */
   root: fn => (fn.target = fn.target.ownerDocument.documentElement, fn),
+  /** Attaches event listener to body. */
   body: fn => (fn.target = fn.target.ownerDocument.body, fn),
+  /** Attaches event listener to parent element. */
   parent: fn => (fn.target = fn.target.parentNode, fn),
+  /** Triggers only when event target is the element itself. */
   self: (fn) => (e) => (e.target === fn.target && fn(e)),
+  /** Triggers when click is outside the element. */
   away: (fn) => Object.assign((e) => (!fn.target.contains(e.target) && e.target.isConnected && fn(e)), {target: fn.target.ownerDocument}),
 
-  // events
+  /** Calls preventDefault() before handler. */
   prevent: (fn) => (e) => (e?.preventDefault(), fn(e)),
+  /** Calls stopPropagation() or stopImmediatePropagation() (with -immediate). */
   stop: (fn, _how) => (e) => (_how?.[0] === 'i' ? e?.stopImmediatePropagation() : e?.stopPropagation(), fn(e)),
+  /** @deprecated Use .stop-immediate instead */
   immediate: (fn) => (console.warn('Deprecated'), (e) => (e?.stopImmediatePropagation(), fn(e))),
+  /** Sets passive option for event listener. */
   passive: fn => (fn.passive = true, fn),
+  /** Sets capture option for event listener. */
   capture: fn => (fn.capture = true, fn),
 })
+/** Alias for .away modifier */
 modifier.outside = modifier.away
 
-// key testers
+/**
+ * Key testers for keyboard event modifiers.
+ * @type {Record<string, (e: KeyboardEvent) => boolean>}
+ */
 const keys = {
   ctrl: e => e.ctrlKey || e.key === "Control" || e.key === "Ctrl",
   shift: e => e.shiftKey || e.key === "Shift",
@@ -112,10 +146,11 @@ const keys = {
   char: e => /^\S$/.test(e.key),
 };
 
-// augment modifiers with key testers
+// Augment modifiers with key testers (e.g., .enter, .ctrl, .shift-alt)
 for (let k in keys) modifier[k] = (fn, a, b) => (e) => keys[k](e) && (!a || keys[a]?.(e)) && (!b || keys[b]?.(e)) && fn(e)
 
 
+// Configure sprae with default compiler and signals
 use({
   compile: expr => sprae.constructor(`with(arguments[0]){${expr}}`),
   dir: (el, name, expr, state) => {
@@ -130,7 +165,7 @@ use({
 })
 
 
-// expose for runtime config
+// Expose for runtime configuration
 sprae.use = use
 sprae.store = store
 sprae.directive = directive
@@ -138,7 +173,18 @@ sprae.modifier = modifier
 
 
 /**
- * Lifecycle hanger: spraes automatically any new nodes
+ * Auto-initializes sprae on dynamically added elements.
+ * Uses MutationObserver to detect new DOM nodes and apply directives.
+ *
+ * @param {Element} [root=document.body] - Root element to observe
+ * @param {Object} [values] - Initial state values
+ * @returns {Object} The reactive state object
+ *
+ * @example
+ * ```js
+ * // Auto-init on page load
+ * sprae.start(document.body, { count: 0 })
+ * ```
  */
 const start = sprae.start = (root = document.body, values) => {
   const state = store(values)
@@ -161,7 +207,7 @@ const start = sprae.start = (root = document.body, values) => {
 }
 
 
-// version placeholder for bundler
+/** Package version (injected by bundler) */
 sprae.version = "[VI]{{inject}}[/VI]"
 
 export default sprae

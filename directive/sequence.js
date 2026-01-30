@@ -1,6 +1,14 @@
-// events directive with enabled aliases and sequences like :onclick.ctrl.once..keyup.enter
 import { _dispose, parse, decorate } from "../core.js"
 
+/**
+ * Sequence directive - chains event handlers.
+ * Syntax: `:onclick..keyup.enter="handler"` - click triggers, then waits for Enter.
+ * @param {Element} el - Target element
+ * @param {Object} state - State object
+ * @param {string} expr - Handler expression
+ * @param {string} names - Chained event names separated by `..`
+ * @returns {{ [Symbol.dispose]: () => void }} Disposal object
+ */
 export default (el, state, expr, names) => {
   let cur, // current step callback
     off // current step disposal

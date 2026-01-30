@@ -1,7 +1,10 @@
 import './directive/class.js';
 import './directive/each.js';
 import './directive/fx.js';
+import './directive/hidden.js';
+import './directive/html.js';
 import './directive/if.js';
+import './directive/portal.js';
 import './directive/ref.js';
 import './directive/scope.js';
 import './directive/style.js';

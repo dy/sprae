@@ -1,5 +1,12 @@
 import sprae, { store, untracked, _state, _signals, signal } from '../core.js'
 
+/**
+ * Scope directive - creates a child scope with local state.
+ * Properties merge into a new scope inheriting from parent.
+ * @param {Element} el - Target element
+ * @param {Object} rootState - Parent state object
+ * @returns {(values: Object | ((state: Object) => Object)) => void | boolean} Update function
+ */
 export default (el, rootState) => {
   // 0 run pre-creates state to provide scope for the first effect - it can write vars in it, so we should already have it
   // el[_state] even replaces own :scope effect state
