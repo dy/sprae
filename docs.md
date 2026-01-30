@@ -33,198 +33,217 @@ Sprae can also be used from CDN and auto-initialized with `start` or `data-start
 
 ## Directives
 
-#### `:text`
+#### `:text="value | text => expr"`
 
 Set text content.
 
 ```html
-Welcome, <span :text="user.name">Guest</span>.
+<span :text="user.name">Guest</span>
 
-<!-- fragment -->
-Welcome, <template :text="user.name"><template>.
-
-<!-- function -->
-<span :text="val => val + text"></span>
+<!-- function form: updates as `text` changes -->
+<span :text="text => text.toUpperCase()"></span>
 ```
 
-#### `:class`
+#### `:html="value | html => expr"`
+
+Set innerHTML and init nested directives.
+
+```html
+<article :html="markdown(content)"></article>
+
+<!-- function form -->
+<article :html="html => sanitize(html)"></article>
+```
+
+#### `:class="value | cls => expr"`
 
 Set className.
 
 ```html
-<div :class="foo"></div>
+<div :class="{ active: selected, disabled }"></div>
+<div :class="['btn', size, variant]"></div>
+<div :class="isActive && 'active'"></div>
 
-<!-- appends to static class -->
-<div class="bar" :class="baz"></div>
-
-<!-- array/object, a-la clsx -->
-<div :class="['foo', bar && 'bar', { baz }]"></div>
-
-<!-- function -->
-<div :class="str => [str, 'active']"></div>
+<!-- function form -->
+<div :class="cls => [cls, isActive && 'active']"></div>
 ```
 
-#### `:style`
+#### `:style="value | style => expr"`
 
 Set style.
 
 ```html
-<span :style="'display: inline-block'"></span>
+<div :style="{ opacity, '--progress': percent + '%' }"></div>
+<div :style="'color:' + color"></div>
 
-<!-- extends static style -->
-<div style="foo: bar" :style="'bar-baz: qux'">
-
-<!-- object -->
-<div :style="{bar: 'baz', '--qux': 'quv'}"></div>
-
-<!-- function -->
-<div :style="obj => ({'--bar': baz})"></div>
+<!-- function form -->
+<div :style="style => ({ ...style, color })"></div>
 ```
 
-#### `:value`
+#### `:value="state | val => expr"`
 
-Bind input, textarea or select value.
+Two-way bind input value.
 
 ```html
-<input :value="value" />
-<textarea :value="value" />
+<input :value="query" />
 
-<!-- handles option & selected attr -->
-<select :value="selected">
-  <option :each="i in 5" :value="i" :text="i"></option>
+<select :value="country">
+  <option :each="c in countries" :value="c.code" :text="c.name"></option>
 </select>
 
-<!-- checked attr -->
-<input type="checkbox" :value="item.done" />
+<input type="checkbox" :value="agreed" />
+<textarea :value="text"></textarea>
 
-<!-- function -->
-<input :value="value => value + str" />
+<!-- function form: one-way formatted output -->
+<input :value="v => '$' + v.toFixed(2)" />
 ```
 
-#### `:*`
+#### `:attr="value"`, `:="{ ...attrs }"`
 
-Set any attribute(s).
+Set attribute(s).
 
 ```html
-<label :for="name" :text="name" />
+<button :disabled="loading" :aria-busy="loading">Save</button>
+<input :id:name="field" />
 
-<!-- multiple -->
-<input :id:name="name" />
+<!-- spread: set multiple attributes -->
+<input :="{ type: 'text', placeholder, required }" />
 
-<!-- function -->
-<div :hidden="hidden => !hidden"></div>
-
-<!-- spread -->
-<input :="{ id: name, name, type: 'text', value, ...props  }" />
+<!-- function form -->
+<input :disabled="v => v > max" />
 ```
 
-#### `:if`, `:else`
+#### `:if="expr"`, `:else`
 
-Control flow.
-
-```html
-<span :if="foo">foo</span>
-<span :else :if="bar">bar</span>
-<span :else>baz</span>
-
-<!-- fragment -->
-<template :if="foo">foo <span>bar</span> baz</template>
-
-<!-- function -->
-<span :if="active => test()"></span>
-```
-
-#### `:each`
-
-Multiply content.
+Conditional rendering.
 
 ```html
-<ul><li :each="item in items" :text="item" /></ul>
+<span :if="loading">Loading...</span>
+<span :else :if="error" :text="error"></span>
+<span :else>Ready</span>
 
-<!-- cases -->
-<li :each="item, idx? in array" />
-<li :each="value, key? in object" />
-<li :each="count, idx? in number" />
-<li :each="item, idx? in function" />
-
-<!-- fragment -->
-<template :each="item in items">
-  <dt :text="item.term"/>
-  <dd :text="item.definition"/>
+<!-- fragment: multiple elements -->
+<template :if="showDetails">
+  <dt :text="term"></dt>
+  <dd :text="definition"></dd>
 </template>
 ```
 
-#### `:scope`
+#### `:each="item, idx? in expr"`
 
-Define state container for a subtree.
+Iterate over array, object, number, or function.
 
 ```html
-<!-- transparent -->
-<x :scope="{foo: 'foo'}">
-  <y :scope="{bar: 'bar'}" :text="foo + bar"></y>
-</x>
+<!-- array -->
+<li :each="item in items" :text="item.name"></li>
+<li :each="item, idx in items" :text="idx + '. ' + item.name"></li>
 
-<!-- define variables -->
-<x :scope="x=1, y=2" :text="x+y"></x>
+<!-- object -->
+<li :each="val, key in obj" :text="key + ': ' + val"></li>
 
-<!-- blank -->
-<x :scope :ref="id"></x>
+<!-- number -->
+<li :each="n in 5" :text="n"></li>
 
-<!-- access to local scope instance -->
-<x :scope="scope => { scope.x = 'foo'; return scope }" :text="x"></x>
+<!-- function: live range -->
+<li :each="item in () => items.filter(i => i.active)"></li>
+
+<!-- fragment: multiple elements -->
+<template :each="item in items">
+  <dt :text="item.term"></dt>
+  <dd :text="item.def"></dd>
+</template>
 ```
 
-#### `:fx`
+#### `:scope="state | scope => state"`
 
-Run effect.
+Create local state (extends parent scope).
 
 ```html
-<!-- inline -->
-<div :fx="a.value ? foo() : bar()" />
+<div :scope="{ count: 0 }">
+  <button :onclick="count++">+</button>
+  <span :text="count + ' / ' + total"></span> <!-- `total` from parent -->
+</div>
 
-<!-- function / cleanup -->
-<div :fx="() => (id = setInterval(tick, 1000), () => clearInterval(id))" />
+<!-- inline variables -->
+<span :scope="x = 1, y = 2" :text="x + y"></span>
+
+<!-- blank: just alias parent scope -->
+<span :scope :text="parentVar"></span>
+
+<!-- function: access current scope -->
+<span :scope="scope => ({ double: scope.x * 2 })"></span>
 ```
 
-#### `:ref`
+#### `:fx="expr | () => ondispose"`
 
-Get reference to element
+Run side-effect.
 
 ```html
-<!-- expose element in scope -->
-<div :ref="card" :fx="handle(card)"></div>
+<div :fx="visible && track('view')"></div>
 
-<!-- access element instance -->
-<div :ref="el => el.innerHTML = '...'"></div>
-
-<!-- local reference -->
-<li :each="item in items" :scope :ref="li">
-  <input :onfocus="e => li.classList.add('editing')"/>
-</li>
-
-<!-- mount / unmount -->
-<textarea :ref="el => {/* onmount */ return () => {/* onunmount */}}" :if="show"></textarea>
+<!-- return cleanup function -->
+<div :fx="() => { const id = setInterval(tick, 1000); return () => clearInterval(id) }"></div>
 ```
 
-#### `:on*`
+#### `:ref="name | el => expr"`
 
-Add event listener.
+Capture element reference.
 
 ```html
-<!-- inline -->
-<button :onclick="count++">Up</button>
+<canvas :ref="canvas" :fx="draw(canvas)"></canvas>
 
-<!-- function -->
-<input type="checkbox" :onchange="event => isChecked = event.target.value">
+<!-- function: direct access -->
+<input :ref="el => el.focus()" />
 
-<!-- multiple -->
-<input :onvalue="text" :oninput:onchange="event => text = event.target.value">
+<!-- with :each: collects array -->
+<li :each="item in items" :ref="itemEls" :text="item"></li>
+<!-- itemEls = [li, li, li, ...] -->
 
-<!-- sequence -->
-<button :onfocus..onblur="evt => { handleFocus(); return evt => handleBlur()}">
+<!-- mount/unmount callback -->
+<div :ref="el => (onmount(el), () => onunmount(el))"></div>
+```
 
-<!-- modifiers -->
-<button :onclick.throttle-500="handle()">Not too often</button>
+#### `:hidden="expr"`
+
+Toggle hidden attribute (keeps element in DOM, unlike `:if`).
+
+```html
+<div :hidden="!ready">Content</div>
+
+<dialog :hidden="!open">Modal</dialog>
+```
+
+#### `:portal="target"`
+
+Move element to target container.
+
+```html
+<!-- move to selector -->
+<div :portal="'#modals'">Modal content</div>
+
+<!-- move to body -->
+<div :portal="document.body">Toast</div>
+
+<!-- conditional: move when open, return when closed -->
+<dialog :portal="open && '#portal-target'">...</dialog>
+```
+
+#### `:on*="handler"`, `:on*..on*="e => () => dispose"`
+
+Attach event(s).
+
+```html
+<button :onclick="count++">Click</button>
+
+<form :onsubmit.prevent="submit()">...</form>
+
+<input :onkeydown.enter="send()" />
+
+<!-- multiple events -->
+<input :oninput:onchange="e => update(e)" />
+
+<!-- sequence: init on first, cleanup on second -->
+<div :onfocus..onblur="e => (open = true, () => open = false)"></div>
 ```
 
 <!--
@@ -280,138 +299,71 @@ Trigger when element is connected / disconnected from DOM.
 
 #### `.debounce-*`
 
-Delay callback by an interval in ms since the last call.
-Undefined interval uses `tick`.
-<!-- Optional `immediate` indicates leading-edge debounce. -->
-<!--See [lodash/debounce](https://lodash.com/docs/#debounce)-->
+Delay by interval (ms).
 
 ```html
-<!-- debounce keyboard input by 200ms -->
-<input :oninput.debounce-200="event => update(event)" />
+<input :oninput.debounce-300="e => search(e.target.value)" />
 ```
 
 #### `.throttle-*`
 
-Limit callback rate to an interval. Undefined interval uses `tick`.
-<!-- Optional `immediate` indicates leading-edge response. -->
-<!--See [lodash/throttle](https://lodash.com/docs/#throttle).-->
+Limit rate to interval (ms).
 
 ```html
-<!-- throttle text update -->
-<div :text.throttle-100="text.length"></div>
+<div :onscroll.throttle-100="updatePos()">...</div>
 ```
 
 #### `.delay-*`
 
-Run callback after an interval.
+Run after interval (ms).
 
 ```html
-<!-- set class in the next tick -->
-<div :class.delay="{ active }">...</div>
+<div :onmouseenter.delay-500="showTooltip = true">...</div>
 ```
-
-<!--
-#### `.raf`
-
-Throttle callback by animation frames.
-
-```html
-<!-- lock style update to animation frames
-<div :onscroll.raf="progress = (scrollTop / scrollHeight) * 100"/>
-```
--->
 
 #### `.once`
 
-Call only once.
+Run once.
 
 ```html
-<!-- run event callback only once -->
-<button :onclick.once="loadMoreData()">Start</button>
-
-<!-- run once on sprae init -->
-<div :fx.once="console.log('sprae init')">
+<button :onclick.once="init()">Start</button>
 ```
 
 #### `.window`, `.document`, `.body`, `.root`, `.parent`, `.away`, `.self`
 
-Specify target.
+Event target.
 
 ```html
-<!-- close dropdown when click outside -->
-<div :onclick.away="closeMenu()" :class="{ open: isOpen }">Dropdown</div>
+<div :onkeydown.window.esc="close()">...</div>
 
-<!-- interframe communication -->
-<div :onmessage.window="e => e.data.type === 'success' && complete()">...</div>
-
-<!-- set css variable on document root element (<html>) -->
-<main :style.root="{'--x': x}">...</main>
+<div :onclick.away="open = false">...</div>
 ```
 
-#### `.passive`, `.capture`  <kbd>events only</kbd>
+#### `.passive`, `.capture`
 
-Event listener [options](https://developer.mozilla.org/en-US/docs/Web/API/EventTarget/addEventListener#options).
+Listener [options](https://developer.mozilla.org/en-US/docs/Web/API/EventTarget/addEventListener#options).
 
 ```html
-<div :onscroll.passive="e => pos = e.scrollTop">Scroll me</div>
-
-<body :ontouchstart.capture="logTouch(e)"></body>
+<div :onscroll.passive="handleScroll">...</div>
 ```
 
-#### `.prevent`, `.stop-immediate?`  <kbd>events only</kbd>
+#### `.prevent`, `.stop`, `.stop-immediate`
 
-Prevent default or stop (immediate) propagation.
+Prevent default or stop propagation.
 
 ```html
-<!-- prevent default -->
-<a :onclick.prevent="navigate('/page')" href="/default">Go</a>
-
-<!-- stop immediate propagation -->
-<button :onclick.stop-immediate="criticalHandle()">Click</button>
+<a :onclick.prevent="navigate()" href="/fallback">Link</a>
 ```
 
-#### `.<key>-*` <kbd>events only</kbd>
+#### `.<key>`
 
-Filter event by [`event.key`](https://developer.mozilla.org/en-US/docs/Web/API/UI_Events/Keyboard_event_key_values) or a combination:
-
-* `.enter`, `.esc`, `.tab`, `.space`, `.delete` – direct key
-* `.ctrl`, `.shift`, `.alt`, `.meta`, `.cmd` – meta key
-* `.arrow` – up, right, down or left arrow
-* `.digit` – 0-9
-* `.letter` – A-Z, a-z or any [unicode letter](https://unicode.org/reports/tr18/#General_Category_Property)
-* `.char` – any non-space character
+Filter by key: `.enter`, `.esc`, `.tab`, `.space`, `.delete`, `.arrow`, `.ctrl`, `.shift`, `.alt`, `.meta`, `.digit`, `.letter`.
 
 ```html
-<!-- any arrow event -->
-<div :onkeydown.arrow="event => navigate(event.key)"></div>
+<input :onkeydown.enter="submit()" />
 
-<!-- key combination -->
-<input :onkeydown.prevent.ctrl-c="copy(clean(value))">
+<input :onkeydown.ctrl-s.prevent="save()" />
 ```
-
-<!--
-#### `.persist-<kind?>`  <kbd>props</kbd>
-
-Persist value in local or session storage.
-
-```html
-<textarea :value.persist="text" />
-
-<select :onchange="event => theme = event.target.value" :value.persist="theme">
-  <option value="light">Light</option>
-  <option value="dark">Dark</option>
-</select>
-```
--->
-
-#### `.*`
-
-Any other modifier has no effect, but allows binding multiple handlers.
-
-```html
-<span :fx.once="init(x)" :fx.update="() => (update(), () => destroy())">
-```
-
 
 
 ## Store
@@ -527,6 +479,18 @@ export default function Layout({ children }) {
 }
 ```
 
+## Custom directive
+
+```js
+sprae.directive.id = (el, state, expr) => {
+  // ...init
+  return newValue => {
+    // ...update
+    el.id = newValue
+  }
+}
+```
+
 ## Custom build
 
 Sprae build can be tweaked for project needs / size:
@@ -560,10 +524,9 @@ directive.default = _default;
 // custom directive :id="expression"
 directive.id = (el, state, expr) => {
   // ...init
-  return newValue => {
+  return value => {
     // ...update
-    let nextValue = el.id = newValue
-    return nextValue
+    el.id = value
   }
 }
 
@@ -587,7 +550,6 @@ Micro sprae version is 2.5kb bundle with essentials:
 * Attributes order matters, eg. `<li :each="el in els" :text="el.name"></li>` is not the same as `<li :text="el.name" :each="el in els"></li>`.
 * Invalid self-closing tags like `<a :text="item" />` cause error. Valid self-closing tags are: `li`, `p`, `dt`, `dd`, `option`, `tr`, `td`, `th`, `input`, `img`, `br`.
 * To destroy state and detach sprae handlers, call `element[Symbol.dispose]()`.
-* `this` refers to current element, but it's recommended to use `:ref="element => {...}"`.
 * `key` is not used, `:each` uses direct list mapping instead of DOM diffing.
 * Expressions can be async: `<div :text="await load()"></div>`.
 * Refs can be exposed under path, eg. as `<div :ref="$refs.el"></div>` in alpinejs style.

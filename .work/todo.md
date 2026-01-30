@@ -229,37 +229,95 @@
 
 ## [ ] v13
 
-* [ ] perf tests (memory/js-framework-bench) against alpine, vue
-* [ ] typescript
-* [ ] disable observer for DOM mutations
-* [ ] `sprae.disable(el)`
+* [ ] `Ctrl+[`, `Ctrl+]` or `Ctrl+\` is unclear
+  * [ ] `.capture.ctrl` - should be able to be called only on single modifier
+  * [ ] `.capture.ctrl-specific.prevent` - find a way to attach handlers for specific keys
+  * [ ] expose debounce, throttle etc - for manual use?
+
+### [ ] 0. AX (Agent experience)
+
+### [ ] 1: Foundation (DX)
+_Goal: Make sprae professional-grade for serious adoption_
+
+* [ ] **typescript**: add .d.ts definitions — table stakes for modern JS
+* [ ] **error boundaries**: catch expression errors gracefully, dev-mode helpful messages
+* [ ] **`sprae.debug = true`**: mode showing reactive updates in console
+* [ ] split deps: store, signal, schedulers
+* [ ] immediate scope `{lines:0, measure(){lines=count()}}`
+
+### [ ] 2: Documentation (Adoption Enablers)
+_Goal: Remove friction for new users, capture Alpine migrants_
+
+* [ ] **alpine migration guide**: side-by-side syntax, why switch, what's different
+* [ ] **recipes section**: tabs, modals, infinite scroll, form validation, dropdowns
+* [ ] **server components guide**: Next.js App Router integration as first-class use case
+* [ ] **"why sprae" section**: philosophy, not just API reference
+* [ ] better error messages documentation
+* [ ] FAQ / troubleshooting section
+
+### [ ] 3: Ecosystem (Network Effects)
+_Goal: Build community and extensibility_
+
+* [ ] **plugins system**: documented API for custom directives
+* [ ] **devtools**: browser extension or at minimum debug overlay
+* [ ] **signals proposal adapter**: be first to support native TC39 signals
+* [ ] flavors: alpine (`x-`), vue (`v-`) compatibility layers
+  * [ ] optionally keep attributes for debugging
+  * [ ] `@` transforms for events
+* [ ] community plugins directory (even just a readme list)
+
+### [ ] 4: Website & Marketing (Discoverability)
+_Goal: Make sprae findable and compelling_
+
+* [ ] **landing page overhaul**: values.md content → compelling index
+* [ ] **Sprae vs Alpine** comparison page with benchmarks
+* [ ] **playground**: interactive editor like Alpine's
+* [ ] drops/examples gallery: 7 GUIs, real-world patterns
+* [ ] "Used by" section with logos
+* [ ] SEO: "alpine alternative", "lightweight vue", "reactive html"
+
+### [ ] 5: Performance & Scale (Enterprise Ready)
+_Goal: Prove sprae at scale, address enterprise concerns_
+
+* [ ] **SSR story**: explore server-side rendering / hydration strategy
+* [ ] perf tests (memory/js-framework-bench) against alpine, vue — publish results
+* [ ] microsprae under 4kb ungzipped
+* [ ] `sprae.disable(el)` for cleanup
+* [ ] disable observer for DOM mutations (opt-in)
+
+### [ ] 6: Power Features (Differentiation)
+_Goal: Features that make sprae uniquely valuable_
+
+* [ ] possibly `sprae.directive(name, fn)` instead of assigning
+* [ ] possibly `:each="x,y in cols, rows"` for 2D iteration
+* [ ] alpine CSP syntax compatibility
+* [ ] swap directive update return as final disposer
+* [ ] `fx()` in directives instead of return
+
+### [ ] Ongoing: Modifiers & Polish
 * [ ] .throttle-idle
-* [ ] :ref="el => {dep}" should re-trigger on dep changes?
 * [ ] .throttle-100ms, .throttle-1s: parse-duration units
 * [ ] .before-n, .after-n, .defer
 * [ ] .throttle-immediate, .debounce-immediate
-* [ ] `fx()` in directives instead of return
-* [ ] flavors: alpine, vue
-  * [ ] optionally keep attributes?
-  * [ ] `@` transforms for events
-* [ ] microsprae under 4kb ungzipped
-* [ ] plugins
-* [ ] alpine CSP syntax
+* [ ] :ref="el => {dep}" should re-trigger on dep changes?
 
 ## [ ] Website
-  * [x] Connect donation links
+  * [ ] Display content from readme
+  * [ ] Connect donation links
   * [x] Inverse color render
-  * [ ] index.md instead of index.html
-  * [ ] Docs page UI
   * [x] Acronym rotator in header
-  * [ ] Playground
+  * [ ] Syntax highlighter
+  * [ ] index.md instead of index.html
+  * [ ] Values section (see values.md)
+    * [ ] One-liners / taglines
+    * [ ] Use cases grid
+    * [ ] Comparison table
+    * [ ] Market position diagram
+  * [ ] Docs page UI
+  * [ ] Playground (interactive editor)
+  * [ ] Sprae vs Alpine comparison page
   * [ ] Drops page
     * [ ] UI randomizer
-  * [ ] Icons for principles
-  * [ ] Subtle animations
-  * [x] Syntax highlighter
-    * [ ] Better highlighter
-  * [ ] Better reference examples
   * [ ] Examples
     * [ ] 7 GUIs
     * [ ] Wavearea
@@ -267,13 +325,16 @@
     * [ ] SVG confetti gen
     * [ ] SVG chat gen
     * [ ] SVG counter gen
-  * [ ] Used by
-  * [ ] Sprae vs alpine
+  * [ ] Used by section
+  * [ ] Better highlighter
+  * [ ] Better reference examples
+  * [ ] Icons for principles
+  * [ ] Subtle animations
   * [ ] Better spraying interaction
-    * [ ] Search
-  * [ ] Bench
+  * [ ] Search
+  * [ ] Bench page
 
-## [ ] Plugins
+## [ ] Plugins (Stage 3 details)
 
 * [ ] .before-n, .after-n, .defer (lodashes)
 * [ ] .interval
@@ -286,3 +347,8 @@
 * [ ] :intersect
 * [ ] :scroll.view.x="progress => "
 * [ ] :portal/teleport
+
+## [ ] Ideas
+
+* [ ] Alpine migration tool
+* [ ]

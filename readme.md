@@ -40,9 +40,9 @@ Micro sprae version is 2.5kb bundle with essentials:
 * no `:each`, `:if`, `:value`
 -->
 
-<!-- ## used by
+## used by
 
-[wavearea](), [maetr](), [settings-panel]() -->
+[watr repl](), [wavearea](), [maetr](), [settings-panel]()
 
 ## why
 
