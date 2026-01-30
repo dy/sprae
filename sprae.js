@@ -79,14 +79,33 @@ const dir = (target, name, expr, state) => {
   }
 }
 
+// Parses time string to ms: 100, 100ms, 1s, 1m
+const parseTime = (t) => !t ? 0 : typeof t === 'number' ? t :
+  (([, n, u] = t.match(/^(\d+)(ms|s|m)?$/) || []) => (n = +n, u === 's' ? n * 1000 : u === 'm' ? n * 60000 : n))()
+
+// Creates scheduler from time/keyword (idle, raf, tick, or ms)
+const scheduler = (t) =>
+  t === 'idle' ? requestIdleCallback :
+  t === 'raf' ? requestAnimationFrame :
+  !t || t === 'tick' ? queueMicrotask :
+  (fn) => setTimeout(fn, parseTime(t))
+
 // Built-in modifiers for timing, targeting, and event handling
 Object.assign(modifier, {
-  /** Delays callback by interval (ms) since last call. Use 'raf' for requestAnimationFrame. */
-  debounce: (fn, _how) => debounce(fn, (_how ||= 0, !_how ? undefined : _how === 'raf' ? requestAnimationFrame : (fn) => setTimeout(fn, _how))),
-  /** Limits callback rate to interval (ms). Use 'raf' for requestAnimationFrame. */
-  throttle: (fn, _how) => throttle(fn, (_how ||= 0, !_how ? undefined : _how === 'raf' ? requestAnimationFrame : (fn) => setTimeout(fn, _how))),
-  /** Runs callback after delay (ms). Defaults to next microtask. */
-  delay: (fn, ms) => !ms ? (e) => (queueMicrotask(() => fn(e))) : (e) => setTimeout(() => fn(e), ms),
+  /**
+   * Delays callback by interval since last call (trailing edge).
+   * Supports: tick (default), raf, idle, N, Nms, Ns, Nm. Add -immediate for leading edge.
+   * Examples: .debounce, .debounce-100, .debounce-1s, .debounce-raf, .debounce-idle, .debounce-100-immediate
+   */
+  debounce: (fn, a, b) => debounce(fn, scheduler(a === 'immediate' ? b : a), a === 'immediate' || b === 'immediate'),
+  /**
+   * Limits callback rate to interval (leading + trailing edges).
+   * Supports: tick (default), raf, idle, N, Nms, Ns, Nm.
+   * Examples: .throttle, .throttle-100, .throttle-1s, .throttle-raf, .throttle-idle
+   */
+  throttle: (fn, a) => throttle(fn, scheduler(a)),
+  /** Runs callback after delay. Supports: tick (default), raf, idle, N, Nms, Ns, Nm. */
+  delay: (fn, a) => ((sched = scheduler(a)) => (e) => sched(() => fn(e)))(),
 
   /** @deprecated Use .delay instead */
   tick: (fn) => (console.warn('Deprecated'), (e) => (queueMicrotask(() => fn(e)))),
@@ -146,8 +165,11 @@ const keys = {
   char: e => /^\S$/.test(e.key),
 };
 
-// Augment modifiers with key testers (e.g., .enter, .ctrl, .shift-alt)
-for (let k in keys) modifier[k] = (fn, a, b) => (e) => keys[k](e) && (!a || keys[a]?.(e)) && (!b || keys[b]?.(e)) && fn(e)
+// match key by name, or by e.key (case-insensitive), or by keyCode (digits)
+const keyMatch = (k, e) => keys[k]?.(e) || e.key.toLowerCase() === k || e.keyCode == k
+
+// Augment modifiers with key testers (e.g., .enter, .ctrl, .ctrl-a, .ctrl-65)
+for (let k in keys) modifier[k] = (fn, a, b) => (e) => keys[k](e) && (!a || keyMatch(a, e)) && (!b || keyMatch(b, e)) && fn(e)
 
 
 // Configure sprae with default compiler and signals
@@ -211,4 +233,4 @@ const start = sprae.start = (root = document.body, values) => {
 sprae.version = "[VI]{{inject}}[/VI]"
 
 export default sprae
-export { sprae, store, signal, effect, computed, batch, untracked, start, use }
+export { sprae, store, signal, effect, computed, batch, untracked, start, use, throttle, debounce }

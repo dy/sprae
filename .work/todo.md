@@ -229,9 +229,9 @@
 
 ## [ ] v13
 
-* [ ] `Ctrl+[`, `Ctrl+]` or `Ctrl+\` is unclear
+* [x] ~~`Ctrl+[`, `Ctrl+]` or `Ctrl+\` is unclear~~ do via char code
   * [x] `.capture.ctrl` - should be able to be called only on single modifier
-  * [ ] `.capture.ctrl-specific.prevent` - find a way to attach handlers for specific keys
+  * [x] `.capture.ctrl-specific.prevent` - find a way to attach handlers for specific keys
   * [ ] expose debounce, throttle etc - for manual use?
 
 ### [ ] 0. AX (Agent experience)
@@ -294,11 +294,11 @@ _Goal: Features that make sprae uniquely valuable_
 * [ ] swap directive update return as final disposer
 * [ ] `fx()` in directives instead of return
 
-### [ ] Ongoing: Modifiers & Polish
-* [ ] .throttle-idle
-* [ ] .throttle-100ms, .throttle-1s: parse-duration units
-* [ ] .before-n, .after-n, .defer
-* [ ] .throttle-immediate, .debounce-immediate
+### [x] Ongoing: Modifiers & Polish
+* [x] .throttle-idle
+* [x] .throttle-100ms, .throttle-1s: parse-duration units
+* [x] ~~.before-n, .after-n, .defer~~ not useful as much
+* [x] .throttle-immediate, .debounce-immediate
 * [ ] :ref="el => {dep}" should re-trigger on dep changes?
 
 ## [ ] Website

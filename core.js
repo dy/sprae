@@ -372,13 +372,14 @@ export const clsx = (c, _out = []) => !c ? '' : typeof c === 'string' ? c : (
 
 /**
  * Throttles a function to run at most once per tick (or custom scheduler).
+ * Fires on leading edge, then on trailing edge if called during throttle.
  * @template {Function} T
  * @param {T} fn - Function to throttle
- * @param {(cb: Function) => void} [schedule=queueMicrotask] - Scheduler function
+ * @param {number|Function} [ms] - Delay in ms or scheduler function (default: microtask)
  * @returns {T} Throttled function
  */
-export const throttle = (fn, schedule = queueMicrotask) => {
-  let _planned = 0, arg;
+export const throttle = (fn, ms) => {
+  let _planned = 0, arg, schedule = typeof ms === 'function' ? ms : ms ? (fn) => setTimeout(fn, ms) : queueMicrotask;
   const throttled = (e) => {
     arg = e
     if (!_planned++) fn(arg), schedule((_dirty = _planned > 1) => (
@@ -392,11 +393,22 @@ export const throttle = (fn, schedule = queueMicrotask) => {
  * Debounces a function to run after a delay since the last call.
  * @template {Function} T
  * @param {T} fn - Function to debounce
- * @param {(cb: Function) => void} [schedule=queueMicrotask] - Scheduler function
+ * @param {number|Function} [ms] - Delay in ms or scheduler function (default: microtask)
+ * @param {boolean} [immediate=false] - Fire on leading edge instead of trailing
  * @returns {T} Debounced function
  */
-export const debounce = (fn, schedule = queueMicrotask, _count = 0) => (arg, _planned = ++_count) => schedule(() => (_planned == _count && fn(arg)))
+export const debounce = (fn, ms, immediate) => {
+  let schedule = typeof ms === 'function' ? ms : ms ? (fn) => setTimeout(fn, ms) : queueMicrotask;
+  return immediate
+    ? ((_blocked) => (arg) => !_blocked && (fn(arg), _blocked = 1, schedule(() => _blocked = 0)))()
+    : ((_count = 0) => (arg, _c = ++_count) => schedule(() => _c == _count && fn(arg)))()
+}
 
+/**
+ * Parses time string to milliseconds. Supports: 100, 100ms, 1s, 1m
+ * @param {string|number} t - Time value
+ * @returns {number} Milliseconds
+ */
 export * from './store.js';
 
 export default sprae

@@ -297,28 +297,33 @@ Trigger when element is connected / disconnected from DOM.
 
 ## Modifiers
 
-#### `.debounce-*`
+#### `.debounce[-time][-immediate]`
 
-Delay by interval (ms).
+Delay until quiet. Time: number (ms), `100ms`, `1s`, `1m`, `idle`, `raf`, `tick`. Default: microtask.
 
 ```html
 <input :oninput.debounce-300="e => search(e.target.value)" />
+<input :oninput.debounce-1s="save" />
+<div :onscroll.debounce-raf="update">...</div>
+<button :onclick.debounce-100-immediate="submit()">Submit</button>  <!-- fires first, blocks rest -->
 ```
 
-#### `.throttle-*`
+#### `.throttle[-time]`
 
-Limit rate to interval (ms).
+Limit rate. Time: number (ms), `100ms`, `1s`, `1m`, `idle`, `raf`, `tick`. Default: microtask.
 
 ```html
 <div :onscroll.throttle-100="updatePos()">...</div>
+<div :onmousemove.throttle-raf="track">...</div>
 ```
 
-#### `.delay-*`
+#### `.delay[-time]`
 
-Run after interval (ms).
+Delay each call. Time: number (ms), `100ms`, `1s`, `1m`, `idle`, `raf`, `tick`. Default: microtask.
 
 ```html
 <div :onmouseenter.delay-500="showTooltip = true">...</div>
+<div :fx.delay-idle="heavyTask()">...</div>
 ```
 
 #### `.once`
@@ -371,7 +376,7 @@ Filter by key: `.enter`, `.esc`, `.tab`, `.space`, `.delete`, `.arrow`, `.ctrl`,
 Sprae uses signals-powered store for reactivity.
 
 ```js
-import sprae, { store, signal, effect, computed } from 'sprae'
+import sprae, { store, signal, effect, computed, throttle, debounce } from 'sprae'
 // or standalone
 import { store } from 'sprae/store'
 import { signal, effect, computed, batch, untracked } from 'sprae/signal'
@@ -394,13 +399,27 @@ const state = store(
 
 sprae(element, state).      // init
 
-state.inc(), state.count++  // update
+state.count++               // update
 name.value = 'bar'          // signal update
 state._i++                  // no update
 
 state.Math                  // == globalThis.Math
 state.navigator             // == undefined
 ```
+
+### Utilities
+
+```js
+import { throttle, debounce } from 'sprae'
+
+// throttle: limit call rate
+const fn = throttle(handler, 100)
+
+// debounce: delay until quiet, optional immediate (leading edge)
+const fn = debounce(handler, 100)
+const fn = debounce(handler, 100, true)  // fires first, blocks rest
+```
+
 
 
 

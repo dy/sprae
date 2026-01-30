@@ -435,3 +435,31 @@ test("on: single ctrl modifier", () => {
   el.dispatchEvent(new window.KeyboardEvent("keydown", { key: "a" }));
   is(state.log, ["Control", "a"]);
 });
+
+test("on: ctrl with specific key", () => {
+  let el = h`<x :onkeydown.ctrl-a="e => log.push('a')" :onkeydown.ctrl-b="e => log.push('b')"></x>`;
+  let state = sprae(el, { log: [] });
+  // ctrl+a
+  el.dispatchEvent(new window.KeyboardEvent("keydown", { key: "a", ctrlKey: true }));
+  is(state.log, ["a"]);
+  // ctrl+b
+  el.dispatchEvent(new window.KeyboardEvent("keydown", { key: "b", ctrlKey: true }));
+  is(state.log, ["a", "b"]);
+  // ctrl+c - neither handler fires
+  el.dispatchEvent(new window.KeyboardEvent("keydown", { key: "c", ctrlKey: true }));
+  is(state.log, ["a", "b"]);
+  // just a - no ctrl
+  el.dispatchEvent(new window.KeyboardEvent("keydown", { key: "a" }));
+  is(state.log, ["a", "b"]);
+});
+
+test("on: key by keyCode", () => {
+  let el = h`<x :onkeydown.ctrl-65="e => log.push('A')"></x>`;
+  let state = sprae(el, { log: [] });
+  // keyCode 65 = 'A'
+  el.dispatchEvent(new window.KeyboardEvent("keydown", { key: "a", keyCode: 65, ctrlKey: true }));
+  is(state.log, ["A"]);
+  // different keyCode
+  el.dispatchEvent(new window.KeyboardEvent("keydown", { key: "b", keyCode: 66, ctrlKey: true }));
+  is(state.log, ["A"]);
+});

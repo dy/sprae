@@ -107,6 +107,66 @@ test("modifier: delay", async () => {
   is(state.log, ['test', 'again']);
 });
 
+test("modifier: debounce-immediate", async () => {
+  let el = h`<div :onclick.debounce-50-immediate="e => log.push(++n)"></div>`;
+  let state = sprae(el, { log: [], n: 0 });
+  // first click fires immediately
+  el.click();
+  is(state.log, [1]);
+  // subsequent clicks within window are blocked
+  el.click();
+  el.click();
+  is(state.log, [1]);
+  // after window, first click fires again
+  await time(60);
+  el.click();
+  is(state.log, [1, 2]);
+});
+
+test("modifier: debounce with time units", async () => {
+  let el = h`<div :onclick.debounce-50ms="e => log.push(++n)"></div>`;
+  let state = sprae(el, { log: [], n: 0 });
+  el.click();
+  el.click();
+  is(state.log, []);
+  await time(60);
+  is(state.log, [1]);
+});
+
+test("modifier: throttle with time units", async () => {
+  let el = h`<div :onclick.throttle-50ms="e => log.push(++n)"></div>`;
+  let state = sprae(el, { log: [], n: 0 });
+  el.click();
+  is(state.log, [1]);
+  el.click();
+  el.click();
+  is(state.log, [1]);
+  await time(60);
+  is(state.log, [1, 2]);
+});
+
+test("modifier: throttle-raf", async () => {
+  let el = h`<div :onclick.throttle-raf="e => log.push(++n)"></div>`;
+  let state = sprae(el, { log: [], n: 0 });
+  el.click();
+  is(state.log, [1]); // fires immediately (leading edge)
+  el.click();
+  el.click();
+  is(state.log, [1]);
+  await frame(1);
+  is(state.log, [1, 2]); // trailing edge
+});
+
+test("modifier: delay with time", async () => {
+  let el = h`<div :onclick.delay-50="e => log.push(++n)"></div>`;
+  let state = sprae(el, { log: [], n: 0 });
+  el.click();
+  el.click();
+  is(state.log, []);
+  await time(60);
+  is(state.log, [1, 2]); // both delayed, not debounced
+});
+
 test("modifier: any", async () => {
   let el = h`<span :fx.once="log.push('init', x)" :fx.update="log.push('update', x)"></span>`;
   let state = sprae(el, { log: [], x: 1 });
