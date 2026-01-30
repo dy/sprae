@@ -372,6 +372,9 @@ Sprae uses signals-powered store for reactivity.
 
 ```js
 import sprae, { store, signal, effect, computed } from 'sprae'
+// or standalone
+import { store } from 'sprae/store'
+import { signal, effect, computed, batch, untracked } from 'sprae/signal'
 
 const name = signal('foo');
 const capname = computed(() => name.value.toUpperCase());

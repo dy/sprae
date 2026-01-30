@@ -7,16 +7,25 @@
   "umd:main": "dist/sprae.umd.js",
   "unpkg": "dist/sprae.umd.js",
   "types": "types/sprae.d.ts",
-  "typesVersions": {
-    "*": {
-      "sprae": ["types/sprae.d.ts"],
-      "core": ["types/core.d.ts"],
-      "store": ["types/store.d.ts"],
-      "signal": ["types/signal.d.ts"],
-      "*": ["types/*"]
+  "type": "module",
+  "exports": {
+    ".": {
+      "types": "./types/sprae.d.ts",
+      "default": "./sprae.js"
+    },
+    "./core": {
+      "types": "./types/core.d.ts",
+      "default": "./core.js"
+    },
+    "./store": {
+      "types": "./types/store.d.ts",
+      "default": "./store.js"
+    },
+    "./signal": {
+      "types": "./types/signal.d.ts",
+      "default": "./signal.js"
     }
   },
-  "type": "module",
   "files": [
     "core.js",
     "sprae.js",

@@ -239,10 +239,10 @@
 ### [ ] 1: Foundation (DX)
 _Goal: Make sprae professional-grade for serious adoption_
 
-* [ ] **typescript**: add .d.ts definitions — table stakes for modern JS
+* [x] **typescript**: add .d.ts definitions — table stakes for modern JS
+* [x] split deps: store, signal (sprae/store, sprae/signal)
 * [ ] **error boundaries**: catch expression errors gracefully, dev-mode helpful messages
 * [ ] **`sprae.debug = true`**: mode showing reactive updates in console
-* [ ] split deps: store, signal, schedulers
 * [ ] immediate scope `{lines:0, measure(){lines=count()}}`
 
 ### [ ] 2: Documentation (Adoption Enablers)
