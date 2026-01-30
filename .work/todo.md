@@ -230,7 +230,7 @@
 ## [ ] v13
 
 * [ ] `Ctrl+[`, `Ctrl+]` or `Ctrl+\` is unclear
-  * [ ] `.capture.ctrl` - should be able to be called only on single modifier
+  * [x] `.capture.ctrl` - should be able to be called only on single modifier
   * [ ] `.capture.ctrl-specific.prevent` - find a way to attach handlers for specific keys
   * [ ] expose debounce, throttle etc - for manual use?
 
@@ -243,7 +243,7 @@ _Goal: Make sprae professional-grade for serious adoption_
 * [x] split deps: store, signal (sprae/store, sprae/signal)
 * [x] **error handling**: element context in errors, async error handling, graceful propagation
 * [ ] **`sprae.debug = true`**: verbose logging of reactive updates (directive init/update, signal changes)
-* [ ] immediate scope `{lines:0, measure(){lines=count()}}`
+* [-] ~~immediate scope `{lines:0, measure(){lines=count()}}`~~ not feasible
 
 ### [ ] 2: Documentation (Adoption Enablers)
 _Goal: Remove friction for new users, capture Alpine migrants_

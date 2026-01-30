@@ -410,3 +410,28 @@ test('on: alias sequence', async () => {
   await tick()
   is(state.log, ['a','d','b','c'])
 })
+
+test("on: capture with ctrl modifier", () => {
+  let el = h`<x :onkeydown.capture.ctrl="e => log.push(1)"><y :onkeydown.ctrl="e => log.push(2)"></y></x>`;
+  let state = sprae(el, { log: [] });
+  // ctrl+key on child - capture should fire first
+  el.firstChild.dispatchEvent(new window.KeyboardEvent("keydown", { key: "a", ctrlKey: true, bubbles: true }));
+  is(state.log, [1, 2]);
+  // without ctrl - neither should fire
+  el.firstChild.dispatchEvent(new window.KeyboardEvent("keydown", { key: "a", bubbles: true }));
+  is(state.log, [1, 2]);
+});
+
+test("on: single ctrl modifier", () => {
+  let el = h`<x :onkeydown.ctrl="e => log.push(e.key)"></x>`;
+  let state = sprae(el, { log: [] });
+  // ctrl alone
+  el.dispatchEvent(new window.KeyboardEvent("keydown", { key: "Control", ctrlKey: true }));
+  is(state.log, ["Control"]);
+  // ctrl+other key
+  el.dispatchEvent(new window.KeyboardEvent("keydown", { key: "a", ctrlKey: true }));
+  is(state.log, ["Control", "a"]);
+  // no ctrl - should not fire
+  el.dispatchEvent(new window.KeyboardEvent("keydown", { key: "a" }));
+  is(state.log, ["Control", "a"]);
+});
