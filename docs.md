@@ -246,53 +246,7 @@ Attach event(s).
 <div :onfocus..onblur="e => (open = true, () => open = false)"></div>
 ```
 
-<!--
-#### `:data="values"`
 
-Set `data-*` attributes. CamelCase is converted to dash-case.
-
-```html
-<input :data="{foo: 1, barBaz: true}" />
-<!-- <input data-foo="1" data-bar-baz />
-```
-
-#### `:aria="values"`
-
-Set `aria-*` attributes. Boolean values are stringified.
-
-```html
-<input role="combobox" :aria="{
-  controls: 'joketypes',
-  autocomplete: 'list',
-  expanded: false,
-  activeOption: 'item1',
-  activedescendant: ''
-}" />
-<!--
-<input role="combobox" aria-controls="joketypes" aria-autocomplete="list" aria-expanded="false" aria-active-option="item1" aria-activedescendant>
-```
--->
-
-<!--
-#### `:onvisible..oninvisible="e => e => {}"`
-
-Trigger when element is in/out of the screen.
-
-```html
-<div :onvisible..oninvisible="e => (
-  e.target.classList.add('visible'),
-  e => e.target.classlist.remove('visible')
-)"/>
-```
-
-#### `:onmount..onunmount="e => e => {}"`
-
-Trigger when element is connected / disconnected from DOM.
-
-```html
-<div :onmount..onunmount="e => (dispose = init(), e => dispose())"/>
-```
--->
 
 
 ## Modifiers

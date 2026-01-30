@@ -298,8 +298,8 @@ _Goal: Features that make sprae uniquely valuable_
 * [x] .throttle-idle
 * [x] .throttle-100ms, .throttle-1s: parse-duration units
 * [x] ~~.before-n, .after-n, .defer~~ not useful as much
-* [x] .throttle-immediate, .debounce-immediate
-* [ ] :ref="el => {dep}" should re-trigger on dep changes?
+* [x] ~~.throttle-immediate~~, .debounce-immediate
+* [x] ~~:ref="el => {dep}" should re-trigger on dep changes?~~ will blur distinction
 
 ## [ ] Website
   * [ ] Display content from readme
@@ -334,21 +334,20 @@ _Goal: Features that make sprae uniquely valuable_
   * [ ] Search
   * [ ] Bench page
 
-## [ ] Plugins (Stage 3 details)
+## [x] Plugins (Stage 3 details)
 
-* [ ] .before-n, .after-n, .defer (lodashes)
-* [ ] .interval
-* [ ] .persists
-* [ ] .screen-md modifier for media
-* [ ] :onvisible
-* [ ] :aria
-* [ ] :data
-* [ ] :item
-* [ ] :intersect
-* [ ] :scroll.view.x="progress => "
-* [ ] :portal/teleport
+* [x] ~~.before-n, .after-n, .defer (lodashes)~~ rare cases
+* [x] ~~.interval~~ effects are reactive
+* [x] ~~.persists~~ concern of nadi - signals collection
+* [x] ~~.screen-md modifier for media~~ - conflate media and css
+* [x] ~~:onvisible~~ - do via signal
+* [x] ~~:aria~~ not needed
+* [x] ~~:data~~
+* [x] ~~:item~~
+* [x] ~~:intersect~~ - recipes / userland
+* [x] ~~:scroll.view.x="progress => "~~ not needed
+* [x] :portal/teleport
 
 ## [ ] Ideas
 
 * [ ] Alpine migration tool
-* [ ]
