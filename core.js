@@ -83,6 +83,32 @@ export let directive = {};
 export let modifier = {}
 
 let currentDir = null;
+let currentEl = null;
+
+/**
+ * Formats element for error message (minimal context).
+ * @param {Element} [el] - Element to format
+ * @returns {string} Element hint like "<div#id.class>"
+ */
+const elHint = (el) => {
+  if (!el?.tagName) return ''
+  let hint = el.tagName.toLowerCase()
+  if (el.id) hint += '#' + el.id
+  else if (el.className) hint += '.' + el.className.split(' ')[0]
+  return `<${hint}>`
+}
+
+/**
+ * Reports an error with context.
+ * @param {Error|string} e - Error to report
+ * @param {string} [expr] - Expression that caused error
+ */
+const err = (e, expr) => {
+  let msg = `∴ ${e}`
+  if (currentEl) msg += `\n  in ${elHint(currentEl)}`
+  if (currentDir && expr) msg += `\n  ${currentDir}="${expr}"`
+  console.error(msg)
+}
 
 /**
  * @callback DirectiveHandler
@@ -143,6 +169,7 @@ const sprae = (el = document.body, state) => {
         el.removeAttribute(name)
 
         currentDir = name;
+        currentEl = el;
 
         // directive initializer can be redefined
         fx.push(start = dir(el, name.slice(prefix.length), value, state)), offs.push(start())
@@ -202,17 +229,19 @@ export const parse = (expr) => {
   try {
     fn = compile(_expr)
     // Object.defineProperty(fn, "name", { value: `∴ ${expr}` })
-  } catch (e) { console.error(`∴ ${e}\n\n${currentDir}="${expr}"`) }
+  } catch (e) { err(e, expr) }
 
   // run time errors
   return cache[expr] = function (state, cb, _out) {
     try {
       let result = fn?.call(this, state)
       // if cb is given (to handle async/await exprs, usually directive update) - call it with result and return a cleanup function
-      if (cb) return result?.then ? (result.then(v => _out = cb(v)), () => typeof _out === 'function' && _out()) : cb(result)
+      if (cb) return result?.then
+        ? (result.then(v => _out = cb(v)).catch(e => err(e, expr)), () => typeof _out === 'function' && _out())
+        : cb(result)
       else return result
     } catch (e) {
-      console.error(`∴ ${e}\n\n${currentDir}="${expr}"`)
+      err(e, expr)
     }
   }
 }

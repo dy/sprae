@@ -271,6 +271,31 @@ test("core: runtime errors don't break sprae", async () => {
   is(el.innerHTML, `<x></x><x>b</x>`)
 })
 
+test("core: async errors don't break sprae", async () => {
+  console.log('---async error')
+  let el = h`<y><x :text="await Promise.reject('fail')"></x><x :text="b"></x></y>`
+  let state = sprae(el, {b:'b'})
+  await tick()
+  await new Promise(r => setTimeout(r, 10)) // wait for async to settle
+  is(el.innerHTML, `<x></x><x>b</x>`)
+})
+
+test("core: errors in one directive don't affect siblings", async () => {
+  console.log('---sibling errors')
+  let el = h`<y><x :text="a.b.c"></x><x :class="undefined.x"></x><x :text="ok"></x></y>`
+  let state = sprae(el, {ok:'ok'})
+  await tick()
+  is(el.innerHTML, `<x></x><x></x><x>ok</x>`)
+})
+
+test("core: errors in :each don't break loop", async () => {
+  console.log('---each errors')
+  let el = h`<y><x :each="item in items" :text="item.name"></x></y>`
+  let state = sprae(el, {items: [{name:'a'}, null, {name:'c'}]})
+  await tick()
+  is(el.innerHTML, `<x>a</x><x></x><x>c</x>`)
+})
+
 test.skip('core: memory allocation', async () => {
   let items = signal([])
   let el = h`<><x :each="item in items" :text="item.x"></x></>`

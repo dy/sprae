@@ -241,8 +241,8 @@ _Goal: Make sprae professional-grade for serious adoption_
 
 * [x] **typescript**: add .d.ts definitions — table stakes for modern JS
 * [x] split deps: store, signal (sprae/store, sprae/signal)
-* [ ] **error boundaries**: catch expression errors gracefully, dev-mode helpful messages
-* [ ] **`sprae.debug = true`**: mode showing reactive updates in console
+* [x] **error handling**: element context in errors, async error handling, graceful propagation
+* [ ] **`sprae.debug = true`**: verbose logging of reactive updates (directive init/update, signal changes)
 * [ ] immediate scope `{lines:0, measure(){lines=count()}}`
 
 ### [ ] 2: Documentation (Adoption Enablers)
