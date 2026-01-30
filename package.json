@@ -6,16 +6,25 @@
   "module": "./sprae.js",
   "umd:main": "dist/sprae.umd.js",
   "unpkg": "dist/sprae.umd.js",
-  "types": "dist/sprae.d.ts",
+  "types": "types/sprae.d.ts",
+  "typesVersions": {
+    "*": {
+      "sprae": ["types/sprae.d.ts"],
+      "core": ["types/core.d.ts"],
+      "store": ["types/store.d.ts"],
+      "signal": ["types/signal.d.ts"],
+      "*": ["types/*"]
+    }
+  },
   "type": "module",
   "files": [
     "core.js",
     "sprae.js",
     "store.js",
     "signal.js",
-    "micro.js",
     "directive",
-    "dist"
+    "dist",
+    "types"
   ],
   "devDependencies": {
     "@preact/signals": "^2.0.4",
@@ -29,15 +38,17 @@
     "jsdom": "^27.0.0",
     "requestidlecallback": "^0.3.0",
     "signal-polyfill": "^0.1.1",
-    "subscript": "^9.1.0",
-    "tst": "^8.0.2",
+    "subscript": "^10.1.5",
+    "tst": "^9.2.1",
     "ulive": "^1.0.7",
     "usignal": "^0.9.0",
     "wait-please": "^3.1.0"
   },
   "scripts": {
     "test": "node -r ./test/register.cjs test/test.js",
-    "build": "node .esbuild.js"
+    "build": "node .esbuild.js",
+    "types": "tsc --declaration --declarationMap --emitDeclarationOnly --outDir types --target ESNext --module ESNext --moduleResolution bundler --allowJs --skipLibCheck --noEmitOnError false sprae.js core.js store.js signal.js directive/*.js",
+    "prepublishOnly": "npm run build && npm run types"
   },
   "repository": {
     "type": "git",

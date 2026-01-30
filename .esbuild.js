@@ -43,17 +43,3 @@ if (start != null && start !== 'false') (start && start !== 'true' ? document.qu
     esbuildPluginVersionInjector()
   ]
 })
-
-
-// micro bundle
-await esbuild.build({
-  stdin: {
-    contents: `var sprae = require("./micro.js").default; module.exports = sprae;`,
-    resolveDir: '.'
-  },
-  outfile: "dist/sprae.micro.js",
-  bundle: true,
-  minify: true,
-  sourcemap: 'external',
-  format: "esm",
-})
