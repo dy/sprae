@@ -65,7 +65,7 @@ export const store = (values, parent) => {
       return parent ? parent[k] : (typeof globalThis[k] === 'function' && !globalThis[k].prototype ? globalThis[k].bind(globalThis) : globalThis[k])
     },
 
-    set: (_, k, v, _s) => {
+    set: (_, k, v) => {
       // console.group('SET', k, v)
       if (k in signals) return set(signals, k, v), 1
 

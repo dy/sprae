@@ -172,9 +172,30 @@ const keyMatch = (k, e) => keys[k]?.(e) || e.key.toLowerCase() === k || e.keyCod
 for (let k in keys) modifier[k] = (fn, a, b) => (e) => keys[k](e) && (!a || keyMatch(a, e)) && (!b || keyMatch(b, e)) && fn(e)
 
 
+// Checks for first-level semicolons (statement vs expression)
+const hasSemi = s => {
+  for (let d=0,i=0;i<s.length;i++) {
+    if (s[i]=='{') d++
+    else if (s[i]=='}') d--
+    else if (s[i]==';' && !d) return true
+  }
+  return false
+}
+
 // Configure sprae with default compiler and signals
 use({
-  compile: expr => sprae.constructor(`with(arguments[0]){${expr}}`),
+
+// Default compiler wraps expression for new Function
+  compile: expr => {
+    // if, const, let - no return
+    if (/^(if|let|const)\b/.test(expr));
+    // first-level semicolons - no return
+    else if (hasSemi(expr));
+    else expr = `return ${expr}`
+    // async expression
+    if (/\bawait\s/.test(expr)) expr = `return (async()=>{${expr}})()`
+    return sprae.constructor(`with(arguments[0]){${expr}}`)
+  },
   dir: (el, name, expr, state) => {
     // sequences shortcut
     if (name.includes('..')) return () => _seq(el, state, expr, name)[_dispose]
@@ -192,6 +213,12 @@ sprae.use = use
 sprae.store = store
 sprae.directive = directive
 sprae.modifier = modifier
+
+/**
+ * Disposes a spraed element, cleaning up all effects and state.
+ * @param {Element} el - Element to dispose
+ */
+sprae.dispose = (el) => el[_dispose]?.()
 
 
 /**
@@ -218,10 +245,9 @@ const start = sprae.start = (root = document.body, values) => {
         if (el.nodeType === 1 && el[_state] === undefined && root.contains(el)) {
           // even if element has no spraeable attrs, some of its children can have
           root[_add](el)
-          // sprae(el, state, root);
         }
       }
-      // for (const el of m.removedNodes) el[Symbol.dispose]?.()
+      for (const el of m.removedNodes) el.nodeType === 1 && el[_dispose]?.()
     }
   });
   mo.observe(root, { childList: true, subtree: true });
@@ -232,5 +258,7 @@ const start = sprae.start = (root = document.body, values) => {
 /** Package version (injected by bundler) */
 sprae.version = "[VI]{{inject}}[/VI]"
 
+const dispose = sprae.dispose
+
 export default sprae
-export { sprae, store, signal, effect, computed, batch, untracked, start, use, throttle, debounce }
+export { sprae, store, signal, effect, computed, batch, untracked, start, use, throttle, debounce, dispose }

@@ -5,6 +5,8 @@ import store from '../store.js'
 import { signal, use } from '../core.js'
 import h from "hyperf";
 
+const isJessie = process.env.SPRAE_COMPILER === 'jessie'
+
 test('core: version', () => {
   ok(sprae.version, '12.1.0')
 })
@@ -94,7 +96,8 @@ test("core: if", async () => {
   is(state.log, [1]);
 });
 
-test("core: bulk set", async () => {
+;(isJessie ? test.skip : test)("core: bulk set", async () => {
+  // jessie: 'for' is reserved keyword in object literals
   let el = h`<input :id="0" :="{for:1, title:2, help:3, type:4, placeholder: 5, value: 6, aB: 8}" :value="7"/>`;
   sprae(el);
   is(el.outerHTML, `<input id="0" for="1" title="2" help="3" type="4" placeholder="5" value="7" a-b="8">`);
@@ -271,7 +274,8 @@ test("core: runtime errors don't break sprae", async () => {
   is(el.innerHTML, `<x></x><x>b</x>`)
 })
 
-test("core: async errors don't break sprae", async () => {
+// jessie doesn't support `await` keyword
+;(isJessie ? test.skip : test)("core: async errors don't break sprae", async () => {
   console.log('---async error')
   let el = h`<y><x :text="await Promise.reject('fail')"></x><x :text="b"></x></y>`
   let state = sprae(el, {b:'b'})
@@ -357,7 +361,8 @@ test('core: autostart nested case 2', async () => {
   same(state.log.slice(-2), ['1','2'])
 })
 
-test('core: list length unsub (preact signals)', async () => {
+// jessie doesn't preserve `this` binding in compiled functions
+;(isJessie ? test.skip : test)('core: list length unsub (preact signals)', async () => {
   // list.push disables list.length reading as reactive (cycle prevention)
   // but then preact signals unsubscribe :text from list.length updates
   let a = h`<x :scope="{list:[], add(item){ this.list.push('item') }}" ><y :text="list.length"></y><button :onx="add"></button></x>`

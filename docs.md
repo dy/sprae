@@ -404,16 +404,16 @@ Provider | Size | Feature
 ## Evaluator
 
 Default evaluator is fast and compact, but violates "unsafe-eval" CSP.<br/>
-To make eval stricter & safer, any alternative can be used, eg. [_justin_](https://github.com/dy/subscript#justin):
+To make eval stricter & safer, any alternative can be used, eg. [_jessie_](https://github.com/dy/subscript#presets):
 
 ```js
 import sprae from 'sprae'
-import compile from 'subscript/justin'
+import jessie from 'subscript/jessie'
 
-sprae.use({ compile })
+sprae.use({ compile: jessie })
 ```
 
-_Justin_ is a minimal JS subset:
+_Jessie_ is a safe JS subset supporting statements, functions and control flow:
 
 `++ -- ! - + * / % ** && || ??`<br/>
 `= < <= > >= == != === !==`<br/>
@@ -421,7 +421,13 @@ _Justin_ is a minimal JS subset:
 `= += -= *= /= %= **= &&= ||= ??= ... ,`<br/>
 `[] {} "" ''`<br/>
 `1 2.34 -5e6 0x7a`<br/>
-`true false null undefined NaN`
+`true false null undefined NaN`<br/>
+`if else for while do return break continue function =>`
+
+#### Jessie Limitations
+
+* **`await` keyword**: Use `async () => Promise.then()` instead of `async () => await`
+* **`this` binding**: Jessie doesn't preserve `this` context in compiled functions
 
 
 
@@ -475,7 +481,7 @@ Sprae build can be tweaked for project needs / size:
 // sprae.custom.js
 import sprae, { directive, modifier use } from 'sprae/core'
 import * as signals from '@preact/signals'
-import compile from 'subscript/justin'
+import jessie from 'subscript/jessie'
 
 import _default from 'sprae/directive/default.js'
 import _if from 'sprae/directive/if.js'
@@ -489,7 +495,7 @@ use({
   ...signals,
 
   // use safer compiler
-  compile
+  compile: jessie
 })
 
 // standard directives
@@ -520,12 +526,41 @@ Micro sprae version is 2.5kb bundle with essentials:
 * no `:each`, `:if`, `:value`
 -->
 
+
+## Comparison
+
+|  | [Sprae](https://github.com/dy/sprae) | [Alpine](https://github.com/alpinejs/alpine) | [Petite-Vue](https://github.com/vuejs/petite-vue) |
+|--|:--:|:--:|:--:|
+| **Size** (min+gz) | ~5kb | ~16kb | ~6kb |
+| **Performance** | 1.00× | ~2× | ~1.5× |
+| **CSP** | Full | Limited | No |
+| **Signals** | [Pluggable](#signals) | Custom store | @vue/reactivity |
+| **Evaluator** | [Pluggable](#evaluator) | `new AsyncFunction` | `new Function` |
+| **Sandboxing** | Yes | No | No |
+| **TypeScript** | Full | Partial | No |
+| **JSX/SSR** | Yes | No | No |
+| **Prefix** | [Customizable](#custom-build) | `x-`, `:`, `@` | `v-`, `:`, `@` |
+| **Fragments** | Yes | Yes | No |
+| **Plugins** | Yes | Yes | No |
+| **Modifiers** | Yes | Yes | No |
+| **Maintained** | ✓ | ✓ | ✗ (2022) |
+
+<sub>Performance from internal benchmark (create 1000 rows). Lower is better.</sub>
+
+#### Feature Notes
+
+- **CSP**: Sprae with [jessie](docs.md#evaluator) passes strict CSP without `unsafe-eval`. Alpine CSP build has limitations (no arrow functions, no nested property assignments). Petite-vue requires `unsafe-eval`.
+- **Signals**: Sprae works with any preact-signals compatible library. Alpine uses custom reactive store. Petite-vue uses @vue/reactivity.
+- **Sandboxing**: Sprae isolates expressions from global scope by default. Alpine/petite-vue expose globals.
+- **Petite-vue**: Last updated 2022, essentially abandoned. Fast but lacks features and maintenance.
+
+
 ## Hints
 
 * To prevent [FOUC](https://en.wikipedia.org/wiki/Flash_of_unstyled_content) add `<style>[\:each],[\:if],[\:else] {visibility: hidden}</style>`.
 * Attributes order matters, eg. `<li :each="el in els" :text="el.name"></li>` is not the same as `<li :text="el.name" :each="el in els"></li>`.
 * Invalid self-closing tags like `<a :text="item" />` cause error. Valid self-closing tags are: `li`, `p`, `dt`, `dd`, `option`, `tr`, `td`, `th`, `input`, `img`, `br`.
-* To destroy state and detach sprae handlers, call `element[Symbol.dispose]()`.
+* To destroy state and detach sprae handlers, call `sprae.dispose(el)` or `element[Symbol.dispose]()`.
 * `key` is not used, `:each` uses direct list mapping instead of DOM diffing.
 * Expressions can be async: `<div :text="await load()"></div>`.
 * Refs can be exposed under path, eg. as `<div :ref="$refs.el"></div>` in alpinejs style.

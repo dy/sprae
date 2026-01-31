@@ -1,5 +1,6 @@
 // test store only (not sprae)
 
+import '../sprae.js' // initialize signals
 import store, { _change, _signals } from '../store.js'
 import { use, effect, batch, signal } from '../core.js'
 import t, { is, ok } from 'tst'

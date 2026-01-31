@@ -6,7 +6,6 @@ import { store } from '../../store.js'
 import { use, signal, batch, untracked } from '../../core.js'
 
 
-
 test("text: core", async () => {
   let el = h`<div :text="text"></div>`;
   let params = sprae(el, { text: "abc" });

@@ -42,41 +42,28 @@ Micro sprae version is 2.5kb bundle with essentials:
 
 ## used by
 
-[watr repl](), [wavearea](), [maetr](), [settings-panel]()
+[watr](), [wavearea](), [maetr](), [settings-panel]()
 
-## why
+## vs alpine
 
-Wire UI in markup for cleaner app logic.<br>
-<!--Perfect for SPA, PWA, static sites, prototypes, micro-frontends, lightweight UI.<br> -->
-<!--Inspired by [preact-signals](https://github.com/preactjs/signals), [alpine](https://github.com/alpinejs/alpine), [lodash](https://lodash.com) and <span title="petite-vue, lucia, nuejs, hmpl, unpoly, dagger">others</span>. <!--[petite-vue](https://github.com/vuejs/petite-vue) and others. -->
-<!-- [lucia](https://github.com/aidenybai/lucia), [nuejs](https://github.com/nuejs/nuejs), [hmpl](https://github.com/hmpl-language/hmpl), [unpoly](https://unpoly.com/up.link), [dagger](https://github.com/dagger8224/dagger.js) -->
+|                  | [Alpine](https://github.com/alpinejs/alpine) | Sprae |
+|------------------|--------|-------|
+| _Size_           | ~16kb | ~5kb |
+| _Performance_    | ~2× | 1.00× |
+| _CSP_            | Limited | Full |
+| _Reactivity_     | Custom | [Signals](docs.md#signals) |
+| _Sandboxing_     | No | Yes |
+| _TypeScript_     | Partial | Full |
+| _JSX/SSR_        | No | [Yes](docs.md#jsx) |
+| _Prefix_         | `x-`, `:`, `@` | [Customizable](docs.md#custom-build) |
 
-<!-- Made with 🫰 for better DX. -->
-<!-- – for those who tired of complexity. -->
+<sub>Performance from [js-framework-benchmark](https://krausest.github.io/js-framework-benchmark/current.html). CSP via [jessie](docs.md#evaluator) evaluator.</sub>
 
-
-<!--
-|                       | [AlpineJS](https://github.com/alpinejs/alpine)          | [Petite-Vue](https://github.com/vuejs/petite-vue)        | Sprae            |
-|-----------------------|-------------------|-------------------|------------------|
-| _Size_              | ~10KB             | ~6KB              | ~5KB             |
-| _Memory_            | 5.05             | 3.16              | 2.78             |
-| _Performance_       | 2.64             | 2.43              | 1.76             |
-| _CSP_               | Limited                | No                | Yes              |
-| _SSR_ | No | No | No |
-| _Evaluation_        | [`new AsyncFunction`](https://github.com/alpinejs/alpine/blob/main/packages/alpinejs/src/evaluator.js#L81) | [`new Function`](https://github.com/vuejs/petite-vue/blob/main/src/eval.ts#L20) | [`new Function`]() / [jessie](https://github.com/dy/subscript)           |
-| _Reactivity_        | `Alpine.store`    | _@vue/reactivity_   | _signals_ |
-| _Sandboxing_        | No                | No                | Yes              |
-| _Directives_ | `:`, `x-`, `{}` | `:`, `v-`, `@`, `{}` | `:` |
-| _Magic_               | `$data` | `$app`   | - |
-| _Fragments_ | Yes | No | Yes |
-| _Plugins_ | Yes | No | Yes |
-| _Modifiers_ | Yes | No | Yes |
-
-_Nested directives_ Yes
-_Inline directives_ Yes
--->
+→ [Migration guide](alpine.md)
 
 <!--
+[lucia](https://github.com/aidenybai/lucia), [nuejs](https://github.com/nuejs/nuejs), [hmpl](https://github.com/hmpl-language/hmpl), [unpoly](https://unpoly.com/up.link), [dagger](https://github.com/dagger8224/dagger.js), [petite-vue](https://github.com/vuejs/petite-vue)
+
 ### Drops
 
 * ToDo MVC: [demo](https://dy.github.io/sprae/examples/todomvc), [code](https://github.com/dy/sprae/blob/main/examples/todomvc.html)

@@ -6,7 +6,6 @@ import { store } from '../../store.js'
 import { use, signal, batch, untracked } from '../../core.js'
 
 
-
 test('class: basic', async () => {
   let el = h`<x class="base" :class="a"></x><y :class="[b, c]"></y><z :class="{c:d}"></z>`;
   const c = signal("z");

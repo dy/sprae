@@ -4,6 +4,7 @@ import h from "hyperf";
 import test, { any, is } from "tst";
 
 const _dispose = Symbol.dispose;
+const isJessie = process.env.SPRAE_COMPILER === 'jessie'
 
 
 test("on: event target", async () => {
@@ -31,7 +32,8 @@ test("on: event with modifier", async () => {
   is(state.log, ['x']);
 });
 
-test("on: this context", async () => {
+// jessie doesn't preserve `this` binding in compiled functions
+;(isJessie ? test.skip : test)("on: this context", async () => {
   let el = h`<div :onx="log.push(this)"></div>`;
   let state = sprae(el, { log: [] });
   await tick();
@@ -212,7 +214,8 @@ test("on: function with braces", async () => {
   is(state.log, [1]);
 });
 
-test("on: async inline", async () => {
+// jessie doesn't support `await` keyword
+;(isJessie ? test.skip : test)("on: async inline", async () => {
   let el = h`<div :onx="let v = await Promise.resolve().then(()=>(1)); log.push(v);"></div>`;
   let state = sprae(el, { log: [] });
   el.dispatchEvent(new window.Event("x"));
@@ -221,7 +224,8 @@ test("on: async inline", async () => {
   is(state.log, [1]);
 });
 
-test("on: async function", async () => {
+// jessie doesn't support `await` keyword
+;(isJessie ? test.skip : test)("on: async function", async () => {
   let el = h`<div :onx="async e => {
     let v = await (Promise.resolve().then(()=>(1))); log.push(v);
     console.log({x:1}) // this object spoil the broth
@@ -233,6 +237,15 @@ test("on: async function", async () => {
   is(state.log, [1]);
 });
 
+// jessie supports async functions with Promise.then (no await)
+test("on: async function (no await)", async () => {
+  let el = h`<div :onx="async e => Promise.resolve(1).then(v => log.push(v))"></div>`;
+  let state = sprae(el, { log: [] });
+  el.dispatchEvent(new window.Event("x"));
+  is(state.log, []);
+  await time();
+  is(state.log, [1]);
+});
 
 test('on: in-out events', () => {
   let el = h`<x :onmousedown..onmouseup="(e) => (x=e.target, log.push(e.type), e=>log.push(e.type))"></x>`

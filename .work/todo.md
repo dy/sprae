@@ -200,6 +200,11 @@
 * [x] test: finish ajamila poll with v12
 * [x] something is off with updating condition based on list length
 * [x] make dir/mod separate objects, outside of use
+[x] Jessie limitations
+  * [x] `await` keyword: `let v = await fetch()` - jessie doesn't support await (use `async () => Promise.then()`)
+  * [x] `this` binding: `this.x`, `log.push(this)` - jessie doesn't preserve `this` context
+  * [x] Function directives with state access: `:text="t => t + s"` - FIXED via receiver check in store.js
+  * [x] `Array.from({length: x}, ...)` with reactive x - FIXED via receiver check in store.js
 * [x] async functions... alpine does it well
 * [x] if, let, const, semicolon syntax allowance
 * [x] All TODO/FIXME address
@@ -226,24 +231,30 @@
 * [x] `:ref="refs.el"`
 * [x] `:onclick="//..."` inline comments
 * [x] passing dates, regexps, instances of classes to state: should not wrap or serialize, keep as is
-
-## [ ] v13
-
 * [x] ~~`Ctrl+[`, `Ctrl+]` or `Ctrl+\` is unclear~~ do via char code
   * [x] `.capture.ctrl` - should be able to be called only on single modifier
   * [x] `.capture.ctrl-specific.prevent` - find a way to attach handlers for specific keys
   * [x] expose debounce, throttle etc - for manual use?
-
-### [ ] 0. AX (Agent experience)
-
-### [ ] 1: Foundation (DX)
-_Goal: Make sprae professional-grade for serious adoption_
-
 * [x] **typescript**: add .d.ts definitions — table stakes for modern JS
 * [x] split deps: store, signal (sprae/store, sprae/signal)
 * [x] **error handling**: element context in errors, async error handling, graceful propagation
-* [ ] **`sprae.debug = true`**: verbose logging of reactive updates (directive init/update, signal changes)
 * [-] ~~immediate scope `{lines:0, measure(){lines=count()}}`~~ not feasible
+* [x] perf tests (memory/js-framework-bench) against alpine, vue — publish results
+* [x] `sprae.disable(el)` for cleanup
+* [x] ~~disable observer for DOM mutations (opt-in)~~ not feasible
+* [x] alpine CSP syntax compatibility (jessie supports all Alpine CSP syntax + more: arrow functions, nested property writes, control flow)
+
+* [ ] possibly `sprae.directive(name, fn)` instead of assigning
+* [ ] possibly `:each="x,y in cols, rows"` for 2D iteration
+* [ ] swap directive update return as final disposer
+* [ ] `fx()` in directives instead of return
+
+* [x] .throttle-idle
+* [x] .throttle-100ms, .throttle-1s: parse-duration units
+* [x] ~~.before-n, .after-n, .defer~~ not useful as much
+* [x] ~~.throttle-immediate~~, .debounce-immediate
+* [x] ~~:ref="el => {dep}" should re-trigger on dep changes?~~ will blur distinction
+
 
 ### [ ] 2: Documentation (Adoption Enablers)
 _Goal: Remove friction for new users, capture Alpine migrants_
@@ -275,31 +286,6 @@ _Goal: Make sprae findable and compelling_
 * [ ] drops/examples gallery: 7 GUIs, real-world patterns
 * [ ] "Used by" section with logos
 * [ ] SEO: "alpine alternative", "lightweight vue", "reactive html"
-
-### [ ] 5: Performance & Scale (Enterprise Ready)
-_Goal: Prove sprae at scale, address enterprise concerns_
-
-* [ ] **SSR story**: explore server-side rendering / hydration strategy
-* [ ] perf tests (memory/js-framework-bench) against alpine, vue — publish results
-* [ ] microsprae under 4kb ungzipped
-* [ ] `sprae.disable(el)` for cleanup
-* [ ] disable observer for DOM mutations (opt-in)
-
-### [ ] 6: Power Features (Differentiation)
-_Goal: Features that make sprae uniquely valuable_
-
-* [ ] possibly `sprae.directive(name, fn)` instead of assigning
-* [ ] possibly `:each="x,y in cols, rows"` for 2D iteration
-* [ ] alpine CSP syntax compatibility
-* [ ] swap directive update return as final disposer
-* [ ] `fx()` in directives instead of return
-
-### [x] Ongoing: Modifiers & Polish
-* [x] .throttle-idle
-* [x] .throttle-100ms, .throttle-1s: parse-duration units
-* [x] ~~.before-n, .after-n, .defer~~ not useful as much
-* [x] ~~.throttle-immediate~~, .debounce-immediate
-* [x] ~~:ref="el => {dep}" should re-trigger on dep changes?~~ will blur distinction
 
 ## [ ] Website
   * [ ] Display content from readme

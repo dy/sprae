@@ -218,20 +218,9 @@ export const parse = (expr) => {
   let fn  = cache[expr=expr.trim()]
   if (fn) return fn
 
-  let _expr = (expr || 'undefined') + '\n'
-
-  // if, const, let - no return
-  if (/^(if|let|const)\b/.test(_expr));
-  // first-level semicolons - no return
-  else if (hasSemi(_expr));
-  else _expr = `return ${_expr}`
-
-  // async expression
-  if (/\bawait\s/.test(_expr)) _expr = `return (async()=>{${_expr}})()`
-
   // static time errors
   try {
-    fn = compile(_expr)
+    fn = compile(expr || 'undefined')
     // Object.defineProperty(fn, "name", { value: `∴ ${expr}` })
   } catch (e) { err(e, expr) }
 
@@ -250,15 +239,6 @@ export const parse = (expr) => {
   }
 }
 const cache = {};
-
-const hasSemi = s => {
-  for (let d=0,i=0;i<s.length;i++) {
-    if (s[i]=='{') d++
-    else if (s[i]=='}') d--
-    else if (s[i]==';' && !d) return true
-  }
-  return false
-}
 
 
 /**
