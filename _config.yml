@@ -2,6 +2,12 @@ collections:
   examples:
     output: true
 
+kramdown:
+  parse_block_html: true
+  syntax_highlighter: rouge
+
+highlighter: rouge
+
 defaults:
   -
     scope:

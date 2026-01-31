@@ -1,6 +1,11 @@
-<aside>
-<nav data-s-html="`<ul>` + [...document.querySelector('h2')].map(el=>`<li><a href='#${el.id}'>${el.textContent}</a></li>`) + `</ul>`"></nav>
-</aside>
+---
+title: Docs
+---
+
+<nav>
+<a href="./">Home</a>
+<a href="drops">Drops</a>
+</nav>
 
 ## Start
 

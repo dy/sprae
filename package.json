@@ -64,7 +64,8 @@
     "bench": "node --expose-gc -r ./test/register-happy.cjs test/bench.js",
     "build": "node .esbuild.js",
     "types": "tsc --declaration --declarationMap --emitDeclarationOnly --outDir types --target ESNext --module ESNext --moduleResolution bundler --allowJs --skipLibCheck --noEmitOnError false sprae.js core.js store.js signal.js directive/*.js",
-    "prepublishOnly": "npm run build && npm run types"
+    "prepublishOnly": "npm run build && npm run types",
+    "site": "/opt/homebrew/Cellar/ruby/4.0.1/bin/bundle exec jekyll serve --livereload"
   },
   "repository": {
     "type": "git",

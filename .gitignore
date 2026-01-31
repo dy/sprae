@@ -2,4 +2,7 @@ node_modules
 .DS_Store
 dist
 types
-/test-results
+/test-results_site
+Gemfile.lock
+.jekyll-cache
+/_site

@@ -1,6 +1,11 @@
-<link rel="stylesheet" href="./assets/style.css"/>
+---
+title: Drops
+---
 
-<!-- FIXME: we need to use gist-based drops, and keep examples folder for basic UI examples -->
+<nav>
+<a href="./">Home</a>
+<a href="docs">Docs</a>
+</nav>
 
 <ul>
 {% for ex in site.examples %}
