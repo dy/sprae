@@ -38,17 +38,17 @@ Ræctive sprinkles for HTML/JSX
 |                  | [Alpine](https://github.com/alpinejs/alpine) | Sprae |
 |------------------|--------|-------|
 | _Size_           | ~16kb | ~5kb |
-| _Performance_    | ~2× | 1.00× |
+| _Performance_    | ~2× slower | 1.00× |
 | _CSP_            | Limited | Full |
 | _Reactivity_     | Custom | [Signals](docs.md#signals) |
 | _Sandboxing_     | No | Yes |
 | _TypeScript_     | Partial | Full |
 | _JSX/SSR_        | No | [Yes](docs.md#jsx) |
-| _Prefix_         | `x-`, `:`, `@` | [Customizable](docs.md#custom-build) |
+| _Prefix_         | `x-`, `:`, `@` | `:` or [custom](docs.md#custom-build) |
 
 <sub>Performance from [js-framework-benchmark](https://krausest.github.io/js-framework-benchmark/current.html). CSP via [jessie](docs.md#evaluator) evaluator.</sub>
 
-→ [Migration guide](alpine.md)
+→ [**migration guide**](alpine.md)
 
 
 ## used by
