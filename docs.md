@@ -463,15 +463,67 @@ export default function Layout({ children }) {
 
 ## Custom directive
 
+Directives are functions that receive element, state, expression, and full attribute name. Return an update function to react to expression changes.
+
 ```js
-sprae.directive.id = (el, state, expr) => {
-  // ...init
-  return newValue => {
-    // ...update
-    el.id = newValue
+import { directive, parse } from 'sprae'
+
+// Simple: :id="expr" → sets el.id
+directive.id = (el, state, expr) => value => el.id = value
+
+// With init: :autofocus
+directive.autofocus = (el) => (el.focus(), null)
+
+// With state access: :log="message"
+directive.log = (el, state, expr) => {
+  const evaluate = parse(expr)
+  return () => console.log(evaluate(state))
+}
+
+// With cleanup: :timer="interval"
+directive.timer = (el, state, expr) => {
+  let id
+  return value => {
+    clearInterval(id)
+    id = setInterval(() => el.textContent = Date.now(), value)
+    return () => clearInterval(id) // cleanup on unmount
   }
 }
+
+// Destructor only (no updates): :track
+directive.track = (el, state, expr) => {
+  analytics.track(expr)
+  return { [Symbol.dispose]: () => analytics.untrack(expr) }
+}
 ```
+
+#### Signature
+
+```ts
+(el: Element, state: object, expr: string, name: string) =>
+  void |                              // no updates needed
+  ((value: any) => void | (() => void)) |  // updater, optionally returns cleanup
+  { [Symbol.dispose]: () => void }    // destructor only
+```
+
+## Custom modifier
+
+Modifiers wrap event handlers or directive values. They receive the function and any dash-separated arguments.
+
+```js
+import { modifier } from 'sprae'
+
+// :onclick.log → logs before calling handler
+modifier.log = (fn) => (e) => (console.log('event:', e.type), fn(e))
+
+// :onclick.delay-500 → delays handler by 500ms
+modifier.delay = (fn, ms) => (e) => setTimeout(() => fn(e), +ms || 0)
+
+// :text.uppercase → transforms value
+modifier.uppercase = (fn) => (v) => fn(String(v).toUpperCase())
+```
+
+Usage: `<button :onclick.log.delay-200="save">Save</button>`
 
 ## Custom build
 
@@ -553,6 +605,116 @@ Micro sprae version is 2.5kb bundle with essentials:
 - **Signals**: Sprae works with any preact-signals compatible library. Alpine uses custom reactive store. Petite-vue uses @vue/reactivity.
 - **Sandboxing**: Sprae isolates expressions from global scope by default. Alpine/petite-vue expose globals.
 - **Petite-vue**: Last updated 2022, essentially abandoned. Fast but lacks features and maintenance.
+
+
+## Server / SSR
+
+Sprae enables client-side interactivity in server components without converting them to client components. Add directives to server-rendered HTML and initialize sprae once:
+
+```jsx
+// app/page.jsx — remains a server component
+export default function Page({ user }) {
+  return <main>
+    <h1>Welcome, {user.name}</h1>
+
+    {/* interactive counter — no 'use client' needed */}
+    <div id="counter" :scope="{count: 0}">
+      <button :onclick="count++">Clicked <span :text="count">0</span> times</button>
+    </div>
+  </main>
+}
+```
+
+```jsx
+// app/layout.jsx
+import Script from 'next/script'
+
+export default function Layout({ children }) {
+  return <html><body>
+    {children}
+    <Script src="https://unpkg.com/sprae" data-start />
+  </body></html>
+}
+```
+
+Server renders static HTML, sprae hydrates interactive parts. No client component boundary needed.
+
+> **Tip**: Server-render default content inside elements. Directives like `:text` replace content on hydration, providing graceful fallback.
+
+
+## Recipes
+
+#### Tabs
+
+```html
+<div :scope="{ tab: 'one' }">
+  <button :class="{ active: tab === 'one' }" :onclick="tab = 'one'">One</button>
+  <button :class="{ active: tab === 'two' }" :onclick="tab = 'two'">Two</button>
+
+  <div :if="tab === 'one'">Content one</div>
+  <div :else :if="tab === 'two'">Content two</div>
+</div>
+```
+
+#### Modal
+
+```html
+<div :scope="{ open: false }">
+  <button :onclick="open = true">Open</button>
+
+  <dialog :if="open" :onclick.self="open = false">
+    <h2>Modal</h2>
+    <button :onclick="open = false">Close</button>
+  </dialog>
+</div>
+```
+
+#### Dropdown
+
+```html
+<div :scope="{ open: false }">
+  <button :onclick="open = !open" :onfocusout.delay-100="open = false">Menu ▾</button>
+
+  <ul :if="open">
+    <li><a href="#">Item 1</a></li>
+    <li><a href="#">Item 2</a></li>
+  </ul>
+</div>
+```
+
+#### Form Validation
+
+```html
+<form :scope="{ email: '', valid: false }"
+      :onsubmit.prevent="valid && submit()">
+  <input type="email" :value="email"
+         :oninput="e => (email = e.target.value, valid = e.target.checkValidity())" />
+  <button :disabled="!valid">Submit</button>
+</form>
+```
+
+#### Infinite Scroll
+
+```html
+<div :scope="{ items: [], page: 1, load }"
+     :fx="load()"
+     :ref="el => new IntersectionObserver(([e]) => e.isIntersecting && load()).observe(el.lastElementChild)">
+  <div :each="item in items" :text="item.name"></div>
+</div>
+
+<script>
+  async function load() { items.push(...await fetch(`/api?page=${page++}`).then(r => r.json())) }
+</script>
+```
+
+#### Accordion
+
+```html
+<div :each="item in items" :scope="{ open: false }">
+  <button :onclick="open = !open" :text="item.title"></button>
+  <div :if="open" :text="item.content"></div>
+</div>
+```
 
 
 ## Hints

@@ -254,23 +254,14 @@
 * [x] ~~.before-n, .after-n, .defer~~ not useful as much
 * [x] ~~.throttle-immediate~~, .debounce-immediate
 * [x] ~~:ref="el => {dep}" should re-trigger on dep changes?~~ will blur distinction
-
-
-### [ ] 2: Documentation (Adoption Enablers)
-_Goal: Remove friction for new users, capture Alpine migrants_
-
 * [x] **alpine migration guide**: side-by-side syntax, why switch, what's different
-* [ ] **recipes section**: tabs, modals, infinite scroll, form validation, dropdowns
-* [ ] **server components guide**: Next.js App Router integration as first-class use case
-* [ ] **"why sprae" section**: philosophy, not just API reference
-* [ ] better error messages documentation
-* [ ] FAQ / troubleshooting section
+* [x] **recipes section**: tabs, modal, dropdown, form validation, infinite scroll, accordion
+* [x] **server components guide**: section in docs.md (Next.js, Astro, dynamic import pattern)
+* [x] ~~**"why sprae" section**~~ readme comparison table already serves this purpose
+* [x] ~~FAQ / troubleshooting section~~ already exists in index.html, docs.md has Hints for technical gotchas
 
-### [ ] 3: Ecosystem (Network Effects)
-_Goal: Build community and extensibility_
-
-* [ ] **plugins system**: documented API for custom directives
-* [ ] **devtools**: browser extension or at minimum debug overlay
+* [x] **plugins system**: documented API for custom directives and modifiers in docs.md
+* [x] ~~**devtools**~~ low priority, users can inspect state via console
 * [ ] **signals proposal adapter**: be first to support native TC39 signals
 * [ ] flavors: alpine (`x-`), vue (`v-`) compatibility layers
   * [ ] optionally keep attributes for debugging

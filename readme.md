@@ -1,4 +1,4 @@
-# [∴](https://dy.github.io/sprae) spræ [![tests](https://github.com/dy/sprae/actions/workflows/node.js.yml/badge.svg)](https://github.com/dy/sprae/actions/workflows/node.js.yml) [![npm bundle size](https://img.shields.io/bundlephobia/minzip/sprae?color=white)](https://bundlephobia.com/package/sprae) [![npm](https://img.shields.io/npm/v/sprae?color=white)](https://www.npmjs.com/package/sprae) [![ॐ](https://img.shields.io/badge/MIT-%E0%A5%90-white)](https://krishnized.github.io/license)
+# [∴](https://dy.github.io/sprae) spræ [![tests](https://github.com/dy/sprae/actions/workflows/node.js.yml/badge.svg)](https://github.com/dy/sprae/actions/workflows/node.js.yml) [![npm bundle size](https://img.shields.io/bundlephobia/minzip/sprae?color=white)](https://bundlephobia.com/package/sprae) [![npm](https://img.shields.io/npm/v/sprae?color=white)](https://www.npmjs.com/package/sprae)
 
 Ræctive sprinkles for HTML/JSX tree
 
@@ -29,20 +29,10 @@ Ræctive sprinkles for HTML/JSX tree
 [`.passive`](docs.md#passive-captureevents-only) [`.capture`](docs.md#passive-captureevents-only) [`.prevent`](docs.md#prevent-stop-immediateevents-only) [`.stop`](docs.md#prevent-stop-immediateevents-only) [`.<key>`](docs.md#key-filters)
 
 
-<!--
-## Micro
-
-Micro sprae version is 2.5kb bundle with essentials:
-
-* no multieffects `:a:b`
-* no modifiers `:a.x.y`
-* no sequences `:ona..onb`
-* no `:each`, `:if`, `:value`
--->
-
 ## used by
 
-[watr](), [wavearea](), [maetr](), [settings-panel]()
+[watr](https://dy.github.io/watr/play), [wavearea](https://dy.github.io/wavearea)
+<!-- , [maetr](), [settings-panel]() -->
 
 ## vs alpine
 
@@ -72,3 +62,7 @@ Micro sprae version is 2.5kb bundle with essentials:
 * Carousel: [demo](https://rwdevelopment.github.io/sprae_js_carousel/), [code](https://github.com/RWDevelopment/sprae_js_carousel)
 * Tabs: [demo](https://rwdevelopment.github.io/sprae_js_tabs/), [code](https://github.com/RWDevelopment/sprae_js_tabs?tab=readme-ov-file)-->
 <!-- * Prostogreen [demo](https://web-being.org/prostogreen/), [code](https://github.com/web-being/prostogreen/) -->
+
+<p align='center'>
+<a href="https://krishnized.github.io/license">ॐ</a>
+</p>
