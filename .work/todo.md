@@ -262,23 +262,17 @@
 
 * [x] **plugins system**: documented API for custom directives and modifiers in docs.md
 * [x] ~~**devtools**~~ low priority, users can inspect state via console
-* [ ] **signals proposal adapter**: be first to support native TC39 signals
-* [ ] flavors: alpine (`x-`), vue (`v-`) compatibility layers
-  * [ ] optionally keep attributes for debugging
-  * [ ] `@` transforms for events
-* [ ] community plugins directory (even just a readme list)
-
-### [ ] 4: Website & Marketing (Discoverability)
-_Goal: Make sprae findable and compelling_
-
-* [ ] **landing page overhaul**: values.md content → compelling index
-* [ ] **Sprae vs Alpine** comparison page with benchmarks
-* [ ] **playground**: interactive editor like Alpine's
-* [ ] drops/examples gallery: 7 GUIs, real-world patterns
-* [ ] "Used by" section with logos
-* [ ] SEO: "alpine alternative", "lightweight vue", "reactive html"
+* [x] ~~**signals proposal adapter**~~ already documented: signal-polyfill listed in Signals table with adapter link
+* [x] ~~flavors: alpine (`x-`), vue (`v-`) compatibility layers~~ custom prefix already supported via `sprae.use({ prefix })`, not worth maintaining separate flavors
+* [x] ~~community plugins directory~~ directives are 1-5 lines, docs teach the pattern instead
 
 ## [ ] Website
+  * [ ] **landing page overhaul**: values.md content → compelling index
+  * [ ] **Sprae vs Alpine** comparison page with benchmarks
+  * [ ] **playground**: interactive editor like Alpine's
+  * [ ] drops/examples gallery: 7 GUIs, real-world patterns
+  * [ ] "Used by" section with logos
+  * [ ] SEO: "alpine alternative", "lightweight vue", "reactive html"
   * [ ] Display content from readme
   * [ ] Connect donation links
   * [x] Inverse color render
@@ -324,7 +318,3 @@ _Goal: Make sprae findable and compelling_
 * [x] ~~:intersect~~ - recipes / userland
 * [x] ~~:scroll.view.x="progress => "~~ not needed
 * [x] :portal/teleport
-
-## [ ] Ideas
-
-* [ ] Alpine migration tool
