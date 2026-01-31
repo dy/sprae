@@ -313,15 +313,6 @@ test.skip('core: memory allocation', async () => {
   sprae(el, { items });
 })
 
-test.todo('perf: must be fast', async () => {
-  let el = h`<a :l="l"><b :each="i in l"><c :text="i"/></b></a>`
-  console.time('perf')
-  for (let i = 0; i < 1e2; i++) {
-    sprae(el.cloneNode(true), { l: 1e2 })
-  }
-  console.timeEnd('perf')
-})
-
 test('core: setTimeout illegal invokation', async () => {
   let el = h`<div :scope="c=0, x=()=>{ setTimeout(() => (c++)) }" :onx="x" :text="c"></div>`
   sprae(el)

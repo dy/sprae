@@ -19,7 +19,6 @@ export default (tpl, state, expr) => {
   // we re-create items any time new items are produced
   let cur, keys, items, prevl = 0
 
-  // FIXME: pass items to update instead of global
   let update = throttle(() => {
     let i = 0, newItems = items, newl = newItems.length
 
@@ -40,33 +39,50 @@ export default (tpl, state, expr) => {
       // update
       else while (i < prevl) cur[i] = newItems[i++]
 
+      // batch append using DocumentFragment for efficiency
+      let batchSize = newl - i
+      let batch = batchSize > 1 ? document.createDocumentFragment() : null
+      let pending = batch ? [] : null
+
       // append
       for (; i < newl; i++) {
         cur[i] = newItems[i]
 
-        let idx = i,
-          // inherited state must be cheaper in terms of memory and faster in terms of performance, compared to creating a proxy store
-          // subscope = store({
-          //   // NOTE: since we simulate signal, we have to make sure it's actual signal, not fake one
-          //   // FIXME: try to avoid this, we also have issue with wrongly calling dispose in store on delete
-          //   [itemVar]: cur[_signals]?.[idx]?.peek ? cur[_signals]?.[idx] : cur[idx],
-          //   [idxVar]: keys ? keys[idx] : idx
-          // }, state)
-        subscope = Object.create(state, {
-          [itemVar]: { get: () => cur[idx] },
-          [idxVar]: { value: keys ? keys[idx] : idx }
-        })
-
+        let idx = i
         let el = tpl.content ? frag(tpl) : tpl.cloneNode(true);
+        // el.content is DocumentFragment for frag() output, el itself for cloneNode
+        let insertNode = el.content || el
 
-        holder.before(el.content || el);
-        sprae(el, subscope);
+        // collect for batch insert
+        if (batch) {
+          batch.appendChild(insertNode)
+          pending.push([ el, idx ])
+        } else {
+          holder.before(insertNode)
+          let subscope = Object.create(state, {
+            [itemVar]: { get: () => cur[idx] },
+            [idxVar]: { value: keys ? keys[idx] : idx }
+          })
+          sprae(el, subscope)
+        }
 
         // signal/holder disposal removes element
         let _prev = ((cur[_signals] ||= [])[i] ||= {})[Symbol.dispose]
         cur[_signals][i][Symbol.dispose] = () => {
           _prev?.(), el[Symbol.dispose]?.(), el.remove()
         };
+      }
+
+      // batch insert all at once, then sprae
+      if (batch) {
+        holder.before(batch)
+        for (let [el, idx] of pending) {
+          let subscope = Object.create(state, {
+            [itemVar]: { get: () => cur[idx] },
+            [idxVar]: { value: keys ? keys[idx] : idx }
+          })
+          sprae(el, subscope)
+        }
       }
     }
 

@@ -167,7 +167,7 @@
 * [x] test: two refs with same name, like `list`.
 * [x] sandbox property for store
 
-## [ ] v12
+## [x] v12
 
 * [x] Don't do unnecessary customization like on*, *. Just do minimal workable bundle.
 * [x] generalize prop modifiers

@@ -180,8 +180,12 @@ const sprae = (el = document.body, state) => {
     }
 
     // :if and :each replace element with text node, which tweaks .children length, but .childNodes length persists
-    // for (let i = 0, child; i < (el.childNodes.length); i++) child =  el.childNodes[i], child.nodeType == 1 && add(child)
-    for (let child of [...el.childNodes]) child.nodeType == 1 && add(child)
+    // real DOM: firstChild/nextSibling avoids array copy; frag.childNodes is already snapshot array
+    if (el.firstChild !== undefined) {
+      let child = el.firstChild, next
+      while (child) (next = child.nextSibling, child.nodeType == 1 && add(child), child = next)
+    }
+    else for (let child of el.childNodes) child.nodeType == 1 && add(child)
   };
 
   add(el);
@@ -329,7 +333,6 @@ export const frag = (tpl) => {
     childNodes = (content.append(ref), [...content.childNodes])
 
   return {
-    // get parentNode() { return childNodes[0].parentNode },
     childNodes,
     content,
     remove: () => content.append(...childNodes),
@@ -340,7 +343,6 @@ export const frag = (tpl) => {
     },
     attributes,
     removeAttribute(name) { attributes.splice(attributes.findIndex(a => a.name === name), 1) },
-    // setAttributeNode() { }
   }
 }
 
