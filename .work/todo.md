@@ -244,10 +244,10 @@
 * [x] ~~disable observer for DOM mutations (opt-in)~~ not feasible
 * [x] alpine CSP syntax compatibility (jessie supports all Alpine CSP syntax + more: arrow functions, nested property writes, control flow)
 
-* [ ] possibly `sprae.directive(name, fn)` instead of assigning
-* [ ] possibly `:each="x,y in cols, rows"` for 2D iteration
-* [ ] swap directive update return as final disposer
-* [ ] `fx()` in directives instead of return
+* [x] ~~possibly `sprae.directive(name, fn)` instead of assigning~~ current object assignment is simpler, idiomatic JS
+* [x] ~~possibly `:each="x,y in cols, rows"` for 2D iteration~~ rare case, nested :each works, ambiguous semantics, YAGNI
+* [x] ~~swap directive update return as final disposer~~ current is cleaner: directives return pure updaters, `dir()` handles reactive plumbing
+* [x] ~~`fx()` in directives instead of return~~ couples directives to effect impl, loses functional purity, harder to test
 
 * [x] .throttle-idle
 * [x] .throttle-100ms, .throttle-1s: parse-duration units
@@ -259,7 +259,7 @@
 ### [ ] 2: Documentation (Adoption Enablers)
 _Goal: Remove friction for new users, capture Alpine migrants_
 
-* [ ] **alpine migration guide**: side-by-side syntax, why switch, what's different
+* [x] **alpine migration guide**: side-by-side syntax, why switch, what's different
 * [ ] **recipes section**: tabs, modals, infinite scroll, form validation, dropdowns
 * [ ] **server components guide**: Next.js App Router integration as first-class use case
 * [ ] **"why sprae" section**: philosophy, not just API reference
