@@ -1,0 +1,427 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>sprae vs Alpine.js vs petite-vue — Benchmark</title>
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 20px;
+      background: #f5f5f5;
+    }
+    h1 { text-align: center; margin-bottom: 10px; }
+    .subtitle { text-align: center; color: #666; margin-bottom: 30px; }
+    .benchmark {
+      background: white;
+      border-radius: 8px;
+      padding: 20px;
+      margin-bottom: 15px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+    .benchmark h3 {
+      margin: 0 0 15px;
+      font-size: 16px;
+      color: #333;
+    }
+    .results {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+    }
+    .result {
+      padding: 12px;
+      border-radius: 6px;
+      border-left: 4px solid #ddd;
+      background: #fafafa;
+    }
+    .result.fastest {
+      background: #e8f5e9;
+      border-left-color: #4caf50;
+    }
+    .result.slowest {
+      background: #ffebee;
+      border-left-color: #f44336;
+    }
+    .result-name {
+      font-weight: 600;
+      font-size: 13px;
+      color: #666;
+      margin-bottom: 4px;
+    }
+    .result-value {
+      font-size: 20px;
+      font-weight: bold;
+      color: #333;
+    }
+    .result-ratio {
+      font-size: 11px;
+      color: #999;
+      margin-top: 4px;
+    }
+    .controls {
+      text-align: center;
+      margin-bottom: 25px;
+    }
+    button {
+      padding: 12px 24px;
+      background: #0066cc;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 15px;
+      font-weight: 500;
+    }
+    button:hover { background: #0052a3; }
+    button:disabled { background: #ccc; cursor: not-allowed; }
+    #status { margin-left: 15px; color: #666; }
+    .summary {
+      background: white;
+      border-radius: 8px;
+      padding: 20px;
+      margin-top: 20px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+    .summary h3 { margin-top: 0; }
+    .summary table { width: 100%; border-collapse: collapse; }
+    .summary th, .summary td { padding: 8px 12px; text-align: left; border-bottom: 1px solid #eee; }
+    .summary th { font-weight: 600; color: #666; }
+    .winner { color: #4caf50; font-weight: 600; }
+  </style>
+</head>
+<body>
+  <h1>Framework Benchmark</h1>
+  <p class="subtitle">sprae vs Alpine.js vs petite-vue</p>
+  
+  <div class="controls">
+    <button id="runBtn">Run Benchmarks</button>
+    <span id="status"></span>
+  </div>
+
+  <div id="results"></div>
+  <div id="summary"></div>
+
+  <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/petite-vue@0.4.1/dist/petite-vue.iife.js"></script>
+  <script type="module">
+    import sprae from '../sprae.js'
+    
+    // Data helpers
+    const adjectives = ['pretty', 'large', 'big', 'small', 'tall', 'short', 'long', 'handsome', 'plain', 'quaint', 'clean', 'elegant', 'easy', 'angry', 'crazy', 'helpful', 'mushy', 'odd', 'unsightly', 'adorable', 'important', 'inexpensive', 'cheap', 'expensive', 'fancy']
+    const colours = ['red', 'yellow', 'blue', 'green', 'pink', 'brown', 'purple', 'brown', 'white', 'black', 'orange']
+    const nouns = ['table', 'chair', 'house', 'bbq', 'desk', 'car', 'pony', 'cookie', 'sandwich', 'burger', 'pizza', 'mouse', 'keyboard']
+    let nextId = 1
+
+    function buildData(count) {
+      const data = []
+      for (let i = 0; i < count; i++) {
+        data.push({
+          id: nextId++,
+          label: adjectives[Math.round(Math.random() * 1000) % adjectives.length] + ' ' + colours[Math.round(Math.random() * 1000) % colours.length] + ' ' + nouns[Math.round(Math.random() * 1000) % nouns.length],
+        })
+      }
+      return data
+    }
+
+    function resetId() { nextId = 1 }
+    const sleep = ms => new Promise(r => setTimeout(r, ms))
+    
+    async function measure(fn) {
+      const start = performance.now()
+      await fn()
+      await sleep(0) // allow repaint
+      return performance.now() - start
+    }
+
+    // --- App factories ---
+    
+    function createSpraeApp() {
+      resetId()
+      const el = document.createElement('div')
+      el.style.cssText = 'position:absolute;left:-9999px;'
+      el.innerHTML = `<table>
+        <tr :each="row in rows" :class="{selected: selected === row}">
+          <td :text="row.id"></td>
+          <td><a :onclick="select(row)" :text="row.label"></a></td>
+          <td><span :onclick="remove(row)">x</span></td>
+        </tr>
+      </table>`
+      document.body.appendChild(el)
+      
+      const state = sprae(el, {
+        rows: [],
+        selected: null,
+        select(row) { this.selected = row },
+        remove(row) {
+          const idx = this.rows.findIndex(r => r.id === row.id)
+          if (idx > -1) this.rows.splice(idx, 1)
+        }
+      })
+      
+      return {
+        state,
+        destroy() { el.remove() }
+      }
+    }
+
+    function createAlpineApp() {
+      resetId()
+      const el = document.createElement('div')
+      el.style.cssText = 'position:absolute;left:-9999px;'
+      el.innerHTML = `<div x-data="{ rows: [], selected: null }">
+        <table>
+          <template x-for="row in rows" :key="row.id">
+            <tr :class="{ selected: selected === row }">
+              <td x-text="row.id"></td>
+              <td><a @click="selected = row" x-text="row.label"></a></td>
+              <td><span @click="rows = rows.filter(r => r.id !== row.id)">x</span></td>
+            </tr>
+          </template>
+        </table>
+      </div>`
+      document.body.appendChild(el)
+      
+      window.Alpine.initTree(el)
+      const xdata = el.querySelector('[x-data]')._x_dataStack[0]
+      
+      return {
+        state: xdata,
+        destroy() { el.remove() }
+      }
+    }
+
+    function createPetiteVueApp() {
+      resetId()
+      const el = document.createElement('div')
+      el.style.cssText = 'position:absolute;left:-9999px;'
+      el.innerHTML = `<div v-scope="{ rows: [], selected: null }">
+        <table>
+          <tr v-for="row in rows" :key="row.id" :class="{ selected: selected === row }">
+            <td>{{ row.id }}</td>
+            <td><a @click="selected = row">{{ row.label }}</a></td>
+            <td><span @click="rows = rows.filter(r => r.id !== row.id)">x</span></td>
+          </tr>
+        </table>
+      </div>`
+      document.body.appendChild(el)
+      
+      const scope = { rows: [], selected: null }
+      window.PetiteVue.createApp(scope).mount(el)
+      
+      return {
+        state: scope,
+        destroy() { el.remove() }
+      }
+    }
+
+    // --- Benchmarks ---
+    
+    const benchmarks = [
+      {
+        name: 'Create 1,000 rows',
+        run: async (createApp) => {
+          const { state, destroy } = createApp()
+          const data = buildData(1000)
+          const t = await measure(async () => {
+            state.rows = data
+            await sleep(16)
+          })
+          destroy()
+          return t
+        }
+      },
+      {
+        name: 'Replace all rows',
+        run: async (createApp) => {
+          const { state, destroy } = createApp()
+          state.rows = buildData(1000)
+          await sleep(16)
+          const newData = buildData(1000)
+          const t = await measure(async () => {
+            state.rows = newData
+            await sleep(16)
+          })
+          destroy()
+          return t
+        }
+      },
+      {
+        name: 'Partial update (every 10th)',
+        run: async (createApp) => {
+          const { state, destroy } = createApp()
+          state.rows = buildData(1000)
+          await sleep(16)
+          const t = await measure(async () => {
+            for (let i = 0; i < state.rows.length; i += 10) {
+              state.rows[i].label += ' !!!'
+            }
+            await sleep(16)
+          })
+          destroy()
+          return t
+        }
+      },
+      {
+        name: 'Select row',
+        run: async (createApp) => {
+          const { state, destroy } = createApp()
+          state.rows = buildData(1000)
+          await sleep(16)
+          const row = state.rows[500]
+          const t = await measure(async () => {
+            state.selected = row
+            await sleep(16)
+          })
+          destroy()
+          return t
+        }
+      },
+      {
+        name: 'Swap rows',
+        run: async (createApp) => {
+          const { state, destroy } = createApp()
+          state.rows = buildData(1000)
+          await sleep(16)
+          const t = await measure(async () => {
+            const tmp = state.rows[1]
+            state.rows[1] = state.rows[998]
+            state.rows[998] = tmp
+            await sleep(16)
+          })
+          destroy()
+          return t
+        }
+      },
+      {
+        name: 'Remove row',
+        run: async (createApp) => {
+          const { state, destroy } = createApp()
+          state.rows = buildData(1000)
+          await sleep(16)
+          const t = await measure(async () => {
+            state.rows.splice(500, 1)
+            await sleep(16)
+          })
+          destroy()
+          return t
+        }
+      },
+      {
+        name: 'Clear rows',
+        run: async (createApp) => {
+          const { state, destroy } = createApp()
+          state.rows = buildData(1000)
+          await sleep(16)
+          const t = await measure(async () => {
+            state.rows = []
+            await sleep(16)
+          })
+          destroy()
+          return t
+        }
+      },
+      {
+        name: 'Append 1,000 rows',
+        run: async (createApp) => {
+          const { state, destroy } = createApp()
+          state.rows = buildData(1000)
+          await sleep(16)
+          const newData = buildData(1000)
+          const t = await measure(async () => {
+            state.rows.push(...newData)
+            await sleep(16)
+          })
+          destroy()
+          return t
+        }
+      }
+    ]
+
+    // --- UI ---
+    
+    function renderResult(name, results) {
+      const times = Object.values(results).filter(t => t != null)
+      const fastest = Math.min(...times)
+      const slowest = Math.max(...times)
+      
+      let html = `<div class="benchmark"><h3>${name}</h3><div class="results">`
+      
+      for (const [fw, time] of Object.entries(results)) {
+        const isFastest = time === fastest && times.length > 1
+        const isSlowest = time === slowest && time !== fastest && times.length > 1
+        const ratio = time != null ? (time / fastest).toFixed(2) : '-'
+        const marker = time == null ? 'error' : (isFastest ? 'fastest' : ratio + 'x')
+        
+        html += `<div class="result ${isFastest ? 'fastest' : ''} ${isSlowest ? 'slowest' : ''}">
+          <div class="result-name">${fw}</div>
+          <div class="result-value">${time != null ? time.toFixed(2) + 'ms' : 'N/A'}</div>
+          <div class="result-ratio">${marker}</div>
+        </div>`
+      }
+      
+      html += '</div></div>'
+      return html
+    }
+
+    async function runBenchmarks() {
+      const btn = document.getElementById('runBtn')
+      const status = document.getElementById('status')
+      const resultsDiv = document.getElementById('results')
+      const summaryDiv = document.getElementById('summary')
+      
+      btn.disabled = true
+      resultsDiv.innerHTML = ''
+      summaryDiv.innerHTML = ''
+      
+      const allResults = []
+      const wins = { sprae: 0, alpine: 0, 'petite-vue': 0 }
+      
+      for (let i = 0; i < benchmarks.length; i++) {
+        const bench = benchmarks[i]
+        status.textContent = `Running: ${bench.name} (${i + 1}/${benchmarks.length})`
+        await sleep(50)
+        
+        const results = {}
+        
+        try { results.sprae = await bench.run(createSpraeApp) } catch (e) { results.sprae = null; console.error('sprae:', e) }
+        try { results.alpine = await bench.run(createAlpineApp) } catch (e) { results.alpine = null; console.error('alpine:', e) }
+        try { results['petite-vue'] = await bench.run(createPetiteVueApp) } catch (e) { results['petite-vue'] = null; console.error('petite-vue:', e) }
+        
+        // Track wins
+        const times = Object.entries(results).filter(([, t]) => t != null)
+        if (times.length) {
+          const fastest = times.reduce((a, b) => a[1] < b[1] ? a : b)[0]
+          wins[fastest]++
+        }
+        
+        allResults.push({ name: bench.name, results })
+        resultsDiv.innerHTML += renderResult(bench.name, results)
+      }
+      
+      // Summary
+      const winner = Object.entries(wins).reduce((a, b) => a[1] > b[1] ? a : b)[0]
+      summaryDiv.innerHTML = `<div class="summary">
+        <h3>Summary</h3>
+        <table>
+          <tr><th>Framework</th><th>Wins</th></tr>
+          ${Object.entries(wins).map(([fw, w]) => `<tr><td>${fw}</td><td class="${fw === winner ? 'winner' : ''}">${w} ${fw === winner ? '🏆' : ''}</td></tr>`).join('')}
+        </table>
+      </div>`
+      
+      status.textContent = 'Complete!'
+      btn.disabled = false
+    }
+
+    document.getElementById('runBtn').addEventListener('click', runBenchmarks)
+    
+    // Wait for Alpine to load
+    document.addEventListener('alpine:init', () => {
+      setTimeout(runBenchmarks, 100)
+    })
+  </script>
+</body>
+</html>

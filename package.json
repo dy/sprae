@@ -39,12 +39,14 @@
     "@preact/signals": "^2.0.4",
     "@preact/signals-core": "^1.8.0",
     "@webreflection/signal": "^2.1.2",
+    "alpinejs": "^3.15.6",
     "es-module-shims": "^1.10.0",
     "esbuild": "^0.23.0",
     "esbuild-plugin-umd-wrapper": "^2.0.3",
     "esbuild-plugin-version-injector": "^1.2.1",
     "hyperf": "^1.7.0",
     "jsdom": "^27.0.0",
+    "petite-vue": "^0.4.1",
     "requestidlecallback": "^0.3.0",
     "signal-polyfill": "^0.1.1",
     "subscript": "^10.1.5",
@@ -55,6 +57,7 @@
   },
   "scripts": {
     "test": "node -r ./test/register.cjs test/test.js",
+    "bench": "node --expose-gc -r ./test/register.cjs test/bench.js",
     "build": "node .esbuild.js",
     "types": "tsc --declaration --declarationMap --emitDeclarationOnly --outDir types --target ESNext --module ESNext --moduleResolution bundler --allowJs --skipLibCheck --noEmitOnError false sprae.js core.js store.js signal.js directive/*.js",
     "prepublishOnly": "npm run build && npm run types"

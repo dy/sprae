@@ -232,7 +232,7 @@
 * [x] ~~`Ctrl+[`, `Ctrl+]` or `Ctrl+\` is unclear~~ do via char code
   * [x] `.capture.ctrl` - should be able to be called only on single modifier
   * [x] `.capture.ctrl-specific.prevent` - find a way to attach handlers for specific keys
-  * [ ] expose debounce, throttle etc - for manual use?
+  * [x] expose debounce, throttle etc - for manual use?
 
 ### [ ] 0. AX (Agent experience)
 

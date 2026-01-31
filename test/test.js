@@ -3,6 +3,7 @@ import './store.js'
 import './core.js'
 import './directive.js'
 import './modifier.js'
+// bench.js moved to npm run bench
 
 // switch signals to custom implementation
 import { use } from '../core.js'
