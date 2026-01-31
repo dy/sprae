@@ -35,18 +35,18 @@ Ræctive sprinkles for HTML/JSX
 
 ## vs alpine
 
-|                  | [Alpine](alpine.md) | Sprae |
+|                  | [alpine](alpine.md) | sprae |
 |------------------|--------|-------|
-| _Size_           | ~16kb | ~5kb |
-| _Performance_    | ~2× slower | 1.00× |
-| _CSP_            | Limited | Full |
-| _Reactivity_     | Custom | [Signals](docs.md#signals) |
-| _Sandboxing_     | No | Yes |
-| _TypeScript_     | Partial | Full |
-| _JSX/SSR_        | No | [Yes](docs.md#jsx) |
-| _Prefix_         | `x-`, `:`, `@` | `:` or [custom](docs.md#custom-build) |
+| _size_           | ~16kb | ~5kb |
+| _performance_    | ~2× slower | 1.00× |
+| _CSP_            | limited | full |
+| _reactivity_     | custom | [signals](docs.md#signals) |
+| _sandboxing_     | no | yes |
+| _typescript_     | partial | full |
+| _JSX/SSR_        | no | [yes](docs.md#jsx) |
+| _prefix_         | `x-`, `:`, `@` | `:` or [custom](docs.md#custom-build) |
 
-<sup>[Benchmark](https://krausest.github.io/js-framework-benchmark/current.html). CSP via [jessie](docs.md#evaluator).</sup>
+<sup>[benchmark](https://krausest.github.io/js-framework-benchmark/current.html). CSP via [jessie](docs.md#evaluator).</sup>
 
 
 ## used by
