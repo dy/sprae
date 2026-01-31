@@ -46,7 +46,7 @@ Ræctive sprinkles for HTML/JSX
 | _JSX/SSR_        | No | [Yes](docs.md#jsx) |
 | _Prefix_         | `x-`, `:`, `@` | `:` or [custom](docs.md#custom-build) |
 
-<sub>Performance from [js-framework-benchmark](https://krausest.github.io/js-framework-benchmark/current.html). CSP via [jessie](docs.md#evaluator) evaluator.</sub>
+<sup>Performance from [js-framework-benchmark](https://krausest.github.io/js-framework-benchmark/current.html). CSP via [jessie](docs.md#evaluator) evaluator.</sup>
 
 → [**migration guide**](alpine.md)
 
