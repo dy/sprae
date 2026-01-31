@@ -63,7 +63,7 @@ Wire UI in markup for cleaner app logic.<br>
 | _Performance_       | 2.64             | 2.43              | 1.76             |
 | _CSP_               | Limited                | No                | Yes              |
 | _SSR_ | No | No | No |
-| _Evaluation_        | [`new AsyncFunction`](https://github.com/alpinejs/alpine/blob/main/packages/alpinejs/src/evaluator.js#L81) | [`new Function`](https://github.com/vuejs/petite-vue/blob/main/src/eval.ts#L20) | [`new Function`]() / [justin](https://github.com/dy/subscript)           |
+| _Evaluation_        | [`new AsyncFunction`](https://github.com/alpinejs/alpine/blob/main/packages/alpinejs/src/evaluator.js#L81) | [`new Function`](https://github.com/vuejs/petite-vue/blob/main/src/eval.ts#L20) | [`new Function`]() / [jessie](https://github.com/dy/subscript)           |
 | _Reactivity_        | `Alpine.store`    | _@vue/reactivity_   | _signals_ |
 | _Sandboxing_        | No                | No                | Yes              |
 | _Directives_ | `:`, `x-`, `{}` | `:`, `v-`, `@`, `{}` | `:` |

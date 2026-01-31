@@ -1,19 +1,28 @@
-import './signal.js'
-import './store.js'
-import './core.js'
-import './directive.js'
-import './modifier.js'
-import './perf.js'
-// bench.js moved to npm run bench
-
-// switch signals to custom implementation
+import sprae from '../sprae.js'
 import { use } from '../core.js'
-// import * as signals from 'ulive'
-// import * as signals from 'usignal'
-import * as signals from '@preact/signals-core'
-// import * as signals from '@preact/signals'
-// import * as signals from '@webreflection/signal'
-// use(signals)
+
+// env-based configuration for test variants
+const { SPRAE_COMPILER, SPRAE_SIGNALS } = process.env
+
+if (SPRAE_COMPILER === 'jessie') {
+  const { default: jessie } = await import('subscript/jessie')
+  sprae.use({ compile: jessie })
+  console.log('Using jessie compiler')
+}
+
+if (SPRAE_SIGNALS === 'preact') {
+  const signals = await import('@preact/signals-core')
+  use(signals)
+  console.log('Using preact signals')
+}
+
+// dynamic imports ensure config is applied before tests register
+await import('./signal.js')
+await import('./store.js')
+await import('./core.js')
+await import('./directive.js')
+await import('./modifier.js')
+await import('./perf.js')
 
 // patch outerHTML to document fragments
 Object.defineProperty(DocumentFragment.prototype, "outerHTML", {
