@@ -1,21 +1,25 @@
 # [∴](https://dy.github.io/sprae) spræ [![tests](https://github.com/dy/sprae/actions/workflows/node.js.yml/badge.svg)](https://github.com/dy/sprae/actions/workflows/node.js.yml) ![size](https://img.shields.io/badge/size-~5kb-white) [![npm](https://img.shields.io/npm/v/sprae?color=white)](https://www.npmjs.com/package/sprae)
 
-Ræctive sprinkles for HTML/JSX tree
+Ræctive sprinkles for HTML/JSX
 
 ## usage
 
 ```html
-<div id="counter" :scope="{count: 1}">
-  <p :text="`Clicked ${count} times`"></p>
-  <button :onclick="count++">Click me</button>
-</div>
+<!-- Tabs -->
+<nav :scope="{tab: 'A'}">
+  <button :class="{active: tab=='A'}" :onclick="tab='A'">A</button>
+  <button :class="{active: tab=='B'}" :onclick="tab='B'">B</button>
+  <section :if="tab=='A'">Content A</section>
+  <section :if="tab=='B'">Content B</section>
+</nav>
 
-<script type="module">
-  import sprae from '//unpkg.com/sprae?module'
+<!-- Filter -->
+<input :scope="{q: ''}" :value="q" :oninput="q=e.target.value" placeholder="Search...">
+<ul :each="item in items.filter(i => i.includes(q))">
+  <li :text="item"></li>
+</ul>
 
-  const state = sprae(document.getElementById('counter'), { count: 0 })
-  state.count++
-</script>
+<script type="module" src="//unpkg.com/sprae"></script>
 ```
 
 ## [docs](docs.md)
@@ -28,11 +32,6 @@ Ræctive sprinkles for HTML/JSX tree
 [`.window`](docs.md#window-document-body-root-parent-away-self) [`.document`](docs.md#window-document-body-root-parent-away-self) [`.root`](docs.md#window-document-body-root-parent-away-self) [`.body`](docs.md#window-document-body-root-parent-away-self) [`.parent`](docs.md#window-document-body-root-parent-away-self) [`.self`](docs.md#window-document-body-root-parent-away-self) [`.away`](docs.md#window-document-body-root-parent-away-self)<br>
 [`.passive`](docs.md#passive-captureevents-only) [`.capture`](docs.md#passive-captureevents-only) [`.prevent`](docs.md#prevent-stop-immediateevents-only) [`.stop`](docs.md#prevent-stop-immediateevents-only) [`.<key>`](docs.md#key-filters)
 
-
-## used by
-
-[watr](https://dy.github.io/watr/play), [wavearea](https://dy.github.io/wavearea)
-<!-- , [maetr](), [settings-panel]() -->
 
 ## vs alpine
 
@@ -50,6 +49,13 @@ Ræctive sprinkles for HTML/JSX tree
 <sub>Performance from [js-framework-benchmark](https://krausest.github.io/js-framework-benchmark/current.html). CSP via [jessie](docs.md#evaluator) evaluator.</sub>
 
 → [Migration guide](alpine.md)
+
+
+## used by
+
+[watr](https://dy.github.io/watr/play), [wavearea](https://dy.github.io/wavearea)
+<!-- , [maetr](), [settings-panel]() -->
+
 
 <!--
 [lucia](https://github.com/aidenybai/lucia), [nuejs](https://github.com/nuejs/nuejs), [hmpl](https://github.com/hmpl-language/hmpl), [unpoly](https://unpoly.com/up.link), [dagger](https://github.com/dagger8224/dagger.js), [petite-vue](https://github.com/vuejs/petite-vue)
