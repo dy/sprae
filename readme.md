@@ -35,7 +35,7 @@ Ræctive sprinkles for HTML/JSX
 
 ## vs alpine
 
-|                  | [Alpine](https://github.com/alpinejs/alpine) | Sprae |
+|                  | [Alpine](alpine.md) | Sprae |
 |------------------|--------|-------|
 | _Size_           | ~16kb | ~5kb |
 | _Performance_    | ~2× slower | 1.00× |
@@ -46,9 +46,7 @@ Ræctive sprinkles for HTML/JSX
 | _JSX/SSR_        | No | [Yes](docs.md#jsx) |
 | _Prefix_         | `x-`, `:`, `@` | `:` or [custom](docs.md#custom-build) |
 
-<sup>Performance from [js-framework-benchmark](https://krausest.github.io/js-framework-benchmark/current.html). CSP via [jessie](docs.md#evaluator) evaluator.</sup>
-
-→ [**migration guide**](alpine.md)
+<sup>[Benchmark](https://krausest.github.io/js-framework-benchmark/current.html). CSP via [jessie](docs.md#evaluator).</sup>
 
 
 ## used by
