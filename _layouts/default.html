@@ -215,9 +215,83 @@
 
     <main>
       <nav>
+        {% unless page.url == "/" or page.url == "/index.html" %}
+        <a href="{{ '/' | relative_url }}" class="logo" aria-label="Home">∴</a>
+        {% endunless %}
         <a href="docs">docs</a>
         <a href="drops">drops</a>
       </nav>
+
+      <!-- Table of contents - auto-generated from headings -->
+      <aside id="toc" data-scope="{
+        items: [],
+        active: '',
+        activeSection: '',
+        
+        init() {
+          // Collect all h2 and h4 headings from main content
+          const headings = document.querySelectorAll('main h2, main h4')
+          let currentSection = ''
+          this.items = [...headings].map(h => {
+            const item = {
+              id: h.id || (h.id = h.textContent.trim().toLowerCase().replace(/[^a-z0-9]+/g, '-')),
+              text: h.textContent.replace(/[#:]/g, '').trim().split('\n')[0].split('=')[0].trim(),
+              level: h.tagName === 'H2' ? 2 : 4,
+              section: ''
+            }
+            if (item.level === 2) currentSection = item.id
+            item.section = currentSection
+            return item
+          })
+          if (this.items.length) {
+            this.active = this.items[0].id
+            this.activeSection = this.items[0].section
+          }
+          this.onScroll()
+        },
+        
+        onScroll() {
+          const scrollY = window.scrollY + 100
+          let newActive = this.items[0]?.id
+          let newSection = this.items[0]?.section
+          for (let i = this.items.length - 1; i >= 0; i--) {
+            const el = document.getElementById(this.items[i].id)
+            if (el && el.offsetTop <= scrollY) {
+              newActive = this.items[i].id
+              newSection = this.items[i].section
+              break
+            }
+          }
+          if (newActive !== this.active) {
+            this.active = newActive
+            this.activeSection = newSection
+            setTimeout(() => {
+              const activeEl = document.querySelector('#toc a.active')
+              if (activeEl) activeEl.scrollIntoView({ block: 'nearest', behavior: 'smooth' })
+            }, 50)
+          }
+        },
+        
+        isVisible(item) {
+          return item.level === 2 || item.section === this.activeSection
+        },
+        
+        goto(id) {
+          const el = document.getElementById(id)
+          if (el) el.scrollIntoView({ behavior: 'smooth' })
+        }
+      }"
+      data-onscroll.window.throttle-50="onScroll"
+      data-fx.once="init()">
+        <nav data-if="items.length > 3">
+          <a data-each="item in items"
+             data-if="isVisible(item)"
+             data-href="'#' + item.id"
+             data-text="item.text"
+             data-onclick.prevent="goto(item.id)"
+             data-class="{active: active === item.id, indent: item.level === 4}"></a>
+        </nav>
+      </aside>
 
       {{ content }}
     </main>

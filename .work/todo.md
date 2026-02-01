@@ -278,7 +278,7 @@
   * [x] Inverse color render
   * [x] Acronym rotator in header
   * [ ] Syntax highlighter
-  * [ ] index.md instead of index.html
+  * [x] index.md instead of index.html
   * [ ] Values section (see values.md)
     * [ ] One-liners / taglines
     * [ ] Use cases grid

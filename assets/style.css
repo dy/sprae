@@ -65,8 +65,87 @@ nav {
   justify-content: flex-end;
 }
 
+nav .logo {
+  margin-right: auto;
+  font-size: 1.5rem;
+  line-height: 1;
+  opacity: 0.7;
+  text-decoration: none;
+}
+
+nav .logo:hover {
+  opacity: 1;
+  text-decoration: none;
+}
+
 nav p {
   display: contents;
+}
+
+/* Table of Contents sidebar */
+#toc {
+  position: fixed;
+  top: 3rem;
+  left: max(1rem, calc((100vw - 48rem) / 2 - 14rem));
+  width: 12rem;
+  max-height: calc(100vh - 6rem);
+  overflow-y: auto;
+  font-size: 0.8rem;
+  z-index: 5;
+  scroll-behavior: smooth;
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-blue-600) transparent;
+
+  /* Fade in after first viewport */
+  opacity: 0;
+  animation: toc-fade-in linear both;
+  animation-timeline: scroll();
+  animation-range: 50vh 100vh;
+}
+
+@keyframes toc-fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+#toc nav {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+#toc a {
+  display: block;
+  padding: 0.25rem 0.5rem;
+  color: var(--color-blue-600);
+  text-decoration: none;
+  opacity: 0.6;
+  border-left: 2px solid transparent;
+  transition: opacity 0.15s, border-color 0.15s;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+#toc a.indent {
+  padding-left: 1rem;
+  font-size: 0.75rem;
+}
+
+#toc a:hover {
+  opacity: 1;
+}
+
+#toc a.active {
+  opacity: 1;
+  border-left-color: var(--color-blue-600);
+  color: var(--color-blue-700);
+}
+
+@media (max-width: 1100px) {
+  #toc {
+    display: none;
+  }
 }
 
 .tabs {
@@ -115,6 +194,12 @@ h2 {
   font-weight: 700;
   color: var(--color-blue-700);
   margin: 2.5rem 0 1rem;
+}
+
+h4 {
+  margin-top: 2em;
+  margin-bottom: 1em;
+  scroll-margin-top: 2em;
 }
 
 .demo {
