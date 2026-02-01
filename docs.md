@@ -1,418 +1,512 @@
-## Start
+## Getting Started
+
+Include sprae and add directives to your HTML:
 
 ```html
-<div id="counter" :scope="{count: 1}">
-  <p :text="`Clicked ${count} times`"></p>
-  <button :onclick="count++">Click me</button>
+<script src="https://unpkg.com/sprae" data-start></script>
+
+<ul :scope="{ items: ['Buy milk', 'Walk dog', 'Call mom'] }">
+  <li :each="item in items" :text="item"></li>
+</ul>
+```
+
+Or initialize manually for more control:
+
+```html
+<div id="app">
+  <input :value="search" placeholder="Search..." />
+  <ul>
+    <li :each="item in items.filter(i => i.includes(search))" :text="item"></li>
+  </ul>
 </div>
 
 <script type="module">
-  import sprae from './sprae.js'
+  import sprae from 'sprae'
 
-  // init
-  const state = sprae(document.getElementById('counter'), { count: 0 })
+  const state = sprae(document.getElementById('app'), {
+    search: '',
+    items: ['Apple', 'Banana', 'Cherry', 'Date']
+  })
 
-  // update state
-  state.count++
+  // Update state anytime
+  state.items.push('Elderberry')
 </script>
 ```
 
-Sprae can also be used from CDN and auto-initialized with `start` or `data-start` attribute.
+### CDN
 
 ```html
-<!-- auto-init on `#counter` -->
-<script src="https://unpkg.com/sprae" data-start="#counter"></script>
-<script>
-  window.sprae; // available as global standalone
+<!-- Auto-init with data-start -->
+<script src="https://unpkg.com/sprae" data-start></script>
+
+<!-- Or manual init -->
+<script type="module">
+  import sprae from 'https://unpkg.com/sprae?module'
 </script>
 ```
+
+### Package
+
+```bash
+npm i sprae
+```
+
+```js
+import sprae from 'sprae'
+```
+
+
+---
+
 
 ## Directives
 
-#### `:text="value | text => expr"`
 
-Set text content.
+### Content
+
+#### `:text`
+
+Set text content of an element.
 
 ```html
 <span :text="user.name">Guest</span>
+<span :text="count + ' items'"></span>
 
-<!-- function form: updates as `text` changes -->
-<span :text="text => text.toUpperCase()"></span>
+<!-- Function form: transform existing text -->
+<span :text="text => text.toUpperCase()">hello</span>
 ```
 
-#### `:html="value | html => expr"`
 
-Set innerHTML and init nested directives.
+#### `:html`
+
+Set innerHTML (initializes directives in inserted content).
 
 ```html
-<article :html="markdown(content)"></article>
+<article :html="marked(content)"></article>
 
-<!-- function form -->
-<article :html="html => sanitize(html)"></article>
+<!-- Function form -->
+<div :html="html => DOMPurify.sanitize(html)"></div>
 ```
 
-#### `:class="value | cls => expr"`
 
-Set className.
+### Attributes
+
+#### `:class`
+
+Set classes from object, array, or string.
 
 ```html
-<div :class="{ active: selected, disabled }"></div>
+<div :class="{ active: isActive, disabled }"></div>
 <div :class="['btn', size, variant]"></div>
-<div :class="isActive && 'active'"></div>
+<div :class="isError && 'error'"></div>
 
-<!-- function form -->
-<div :class="cls => [cls, isActive && 'active']"></div>
+<!-- Function form -->
+<div :class="cls => [...cls, 'extra']"></div>
 ```
 
-#### `:style="value | style => expr"`
 
-Set style.
+#### `:style`
+
+Set inline styles from object or string.
 
 ```html
-<div :style="{ opacity, '--progress': percent + '%' }"></div>
+<div :style="{ color, opacity, '--size': size + 'px' }"></div>
 <div :style="'color:' + color"></div>
 
-<!-- function form -->
+<!-- Function form -->
 <div :style="style => ({ ...style, color })"></div>
 ```
 
-#### `:value="state | val => expr"`
 
-Two-way bind input value.
+#### `:<attr>` or `:="{ ...attrs }"`
+
+Set any attribute. Use spread form for multiple.
+
+```html
+<button :disabled="loading" :aria-busy="loading">Save</button>
+<input :id:name="fieldName" />
+
+<!-- Spread multiple attributes -->
+<input :="{ type: 'email', required, placeholder }" />
+```
+
+
+#### `:hidden`
+
+Toggle `hidden` attribute (element stays in DOM, unlike `:if`).
+
+```html
+<div :hidden="!ready">Loading...</div>
+<dialog :hidden="!open">Modal content</dialog>
+```
+
+
+### Control Flow
+
+#### `:if` / `:else`
+
+Conditional rendering. Elements are removed from DOM when false.
+
+```html
+<div :if="loading">Loading...</div>
+<div :else :if="error" :text="error"></div>
+<div :else>Ready!</div>
+
+<!-- Multiple elements with template -->
+<template :if="showDetails">
+  <dt>Name</dt>
+  <dd :text="name"></dd>
+</template>
+```
+
+
+#### `:each`
+
+Iterate over arrays, objects, numbers, or live functions.
+
+```html
+<!-- Array -->
+<li :each="item in items" :text="item.name"></li>
+<li :each="item, index in items" :text="index + '. ' + item.name"></li>
+
+<!-- Object -->
+<li :each="value, key in user" :text="key + ': ' + value"></li>
+
+<!-- Range -->
+<li :each="n in 5" :text="'Item ' + n"></li>
+
+<!-- Filter (reactive) -->
+<li :each="item in items.filter(i => i.active)" :text="item.name"></li>
+
+<!-- Multiple elements with template -->
+<template :each="item in items">
+  <dt :text="item.term"></dt>
+  <dd :text="item.definition"></dd>
+</template>
+```
+
+
+### State & Effects
+
+#### `:scope`
+
+Create local reactive state. Inherits from parent scope.
+
+```html
+<div :scope="{ count: 0, open: false }">
+  <button :onclick="count++">Count: <span :text="count"></span></button>
+</div>
+
+<!-- Inline variables -->
+<span :scope="x = 1, y = 2" :text="x + y"></span>
+
+<!-- Access parent scope -->
+<div :scope="{ local: parentValue * 2 }">...</div>
+
+<!-- Function form -->
+<div :scope="scope => ({ double: scope.value * 2 })">...</div>
+```
+
+
+#### `:ref`
+
+Get element reference. In `:each`, creates local reference for each node.
+
+```html
+<canvas :ref="canvas" :fx="draw(canvas)"></canvas>
+
+<!-- Function form -->
+<input :ref="el => el.focus()" />
+
+<!-- With :each, local reference per iteration -->
+<li :each="item in items" :ref="el">
+  <!-- el is the current <li> in this iteration's scope -->
+</li>
+```
+
+**Lifecycle** — return a cleanup function:
+
+```html
+<div :ref="el => {
+  const observer = new IntersectionObserver(callback)
+  observer.observe(el)
+  return () => observer.disconnect()
+}"></div>
+
+<!-- Shorthand -->
+<div :ref="el => (setup(el), () => cleanup(el))"></div>
+```
+
+
+#### `:fx`
+
+Run side effects. Return cleanup function for disposal.
+
+```html
+<div :fx="console.log('count changed:', count)"></div>
+
+<!-- With cleanup -->
+<div :fx="() => {
+  const id = setInterval(tick, 1000)
+  return () => clearInterval(id)
+}"></div>
+```
+
+
+### Events
+
+#### `:on<event>`
+
+Attach event listeners. Chain modifiers with `.`.
+
+```html
+<button :onclick="count++">Click</button>
+<form :onsubmit.prevent="handleSubmit()">...</form>
+<input :onkeydown.enter="send()" />
+
+<!-- Multiple events -->
+<input :oninput:onchange="e => validate(e)" />
+
+<!-- Sequence: setup on first event, cleanup on second -->
+<div :onfocus..onblur="e => (active = true, () => active = false)"></div>
+```
+
+
+#### `:value`
+
+Two-way bind form inputs.
 
 ```html
 <input :value="query" />
+<textarea :value="content"></textarea>
+<input type="checkbox" :value="agreed" />
 
 <select :value="country">
   <option :each="c in countries" :value="c.code" :text="c.name"></option>
 </select>
 
-<input type="checkbox" :value="agreed" />
-<textarea :value="text"></textarea>
-
-<!-- function form: one-way formatted output -->
+<!-- One-way with formatting -->
 <input :value="v => '$' + v.toFixed(2)" />
 ```
 
-#### `:attr="value"`, `:="{ ...attrs }"`
 
-Set attribute(s).
+#### `:portal`
 
-```html
-<button :disabled="loading" :aria-busy="loading">Save</button>
-<input :id:name="field" />
-
-<!-- spread: set multiple attributes -->
-<input :="{ type: 'text', placeholder, required }" />
-
-<!-- function form -->
-<input :disabled="v => v > max" />
-```
-
-#### `:if="expr"`, `:else`
-
-Conditional rendering.
+Move element to another container.
 
 ```html
-<span :if="loading">Loading...</span>
-<span :else :if="error" :text="error"></span>
-<span :else>Ready</span>
-
-<!-- fragment: multiple elements -->
-<template :if="showDetails">
-  <dt :text="term"></dt>
-  <dd :text="definition"></dd>
-</template>
-```
-
-#### `:each="item, idx? in expr"`
-
-Iterate over array, object, number, or function.
-
-```html
-<!-- array -->
-<li :each="item in items" :text="item.name"></li>
-<li :each="item, idx in items" :text="idx + '. ' + item.name"></li>
-
-<!-- object -->
-<li :each="val, key in obj" :text="key + ': ' + val"></li>
-
-<!-- number -->
-<li :each="n in 5" :text="n"></li>
-
-<!-- function: live range -->
-<li :each="item in () => items.filter(i => i.active)"></li>
-
-<!-- fragment: multiple elements -->
-<template :each="item in items">
-  <dt :text="item.term"></dt>
-  <dd :text="item.def"></dd>
-</template>
-```
-
-#### `:scope="state | scope => state"`
-
-Create local state (extends parent scope).
-
-```html
-<div :scope="{ count: 0 }">
-  <button :onclick="count++">+</button>
-  <span :text="count + ' / ' + total"></span> <!-- `total` from parent -->
-</div>
-
-<!-- inline variables -->
-<span :scope="x = 1, y = 2" :text="x + y"></span>
-
-<!-- blank: just alias parent scope -->
-<span :scope :text="parentVar"></span>
-
-<!-- function: access current scope -->
-<span :scope="scope => ({ double: scope.x * 2 })"></span>
-```
-
-#### `:fx="expr | () => ondispose"`
-
-Run side-effect.
-
-```html
-<div :fx="visible && track('view')"></div>
-
-<!-- return cleanup function -->
-<div :fx="() => { const id = setInterval(tick, 1000); return () => clearInterval(id) }"></div>
-```
-
-#### `:ref="name | el => expr"`
-
-Capture element reference.
-
-```html
-<canvas :ref="canvas" :fx="draw(canvas)"></canvas>
-
-<!-- function: direct access -->
-<input :ref="el => el.focus()" />
-
-<!-- with :each: collects array -->
-<li :each="item in items" :ref="itemEls" :text="item"></li>
-<!-- itemEls = [li, li, li, ...] -->
-```
-
-##### Lifecycle
-
-Return a function from `:ref` to handle cleanup when element is removed:
-
-```html
-<div :ref="el => {
-  const observer = new IntersectionObserver(entries => { ... })
-  observer.observe(el)
-  return () => observer.disconnect()
-}"></div>
-
-<!-- or simply -->
-<div :ref="el => (setup(el), () => cleanup(el))"></div>
-```
-
-#### `:hidden="expr"`
-
-Toggle hidden attribute (keeps element in DOM, unlike `:if`).
-
-```html
-<div :hidden="!ready">Content</div>
-
-<dialog :hidden="!open">Modal</dialog>
-```
-
-#### `:portal="target"`
-
-Move element to target container.
-
-```html
-<!-- move to selector -->
 <div :portal="'#modals'">Modal content</div>
+<div :portal="document.body">Toast notification</div>
 
-<!-- move to body -->
-<div :portal="document.body">Toast</div>
-
-<!-- conditional: move when open, return when closed -->
+<!-- Conditional: move when true, return when false -->
 <dialog :portal="open && '#portal-target'">...</dialog>
 ```
 
-#### `:on*="handler"`, `:on*..on*="e => () => dispose"`
 
-Attach event(s).
-
-```html
-<button :onclick="count++">Click</button>
-
-<form :onsubmit.prevent="submit()">...</form>
-
-<input :onkeydown.enter="send()" />
-
-<!-- multiple events -->
-<input :oninput:onchange="e => update(e)" />
-
-<!-- sequence: init on first, cleanup on second -->
-<div :onfocus..onblur="e => (open = true, () => open = false)"></div>
-```
-
-
+---
 
 
 ## Modifiers
 
-#### `.debounce[-time][-immediate]`
+Modifiers transform directive behavior. Chain with `.` after directive name.
 
-Delay until quiet. Time: number (ms), `100ms`, `1s`, `1m`, `idle`, `raf`, `tick`. Default: microtask.
 
-```html
-<input :oninput.debounce-300="e => search(e.target.value)" />
-<input :oninput.debounce-1s="save" />
-<div :onscroll.debounce-raf="update">...</div>
-<button :onclick.debounce-100-immediate="submit()">Submit</button>  <!-- fires first, blocks rest -->
-```
+### Timing
 
-#### `.throttle[-time]`
+#### `.debounce`
 
-Limit rate. Time: number (ms), `100ms`, `1s`, `1m`, `idle`, `raf`, `tick`. Default: microtask.
+Delay until activity stops. Accepts time value.
 
 ```html
-<div :onscroll.throttle-100="updatePos()">...</div>
-<div :onmousemove.throttle-raf="track">...</div>
+<input :oninput.debounce="search()" />
+<input :oninput.debounce-300="search()" />
+<input :oninput.debounce-1s="save()" />
 ```
 
-#### `.delay[-time]`
+Time formats: `100` (ms), `100ms`, `1s`, `1m`, `raf`, `idle`, `tick`
 
-Delay each call. Time: number (ms), `100ms`, `1s`, `1m`, `idle`, `raf`, `tick`. Default: microtask.
+Add `-immediate` for leading edge (fires first, then blocks):
+```html
+<button :onclick.debounce-100-immediate="submit()">Submit</button>
+```
+
+
+#### `.throttle`
+
+Limit call frequency.
 
 ```html
-<div :onmouseenter.delay-500="showTooltip = true">...</div>
-<div :fx.delay-idle="heavyTask()">...</div>
+<div :onscroll.throttle-100="updatePosition()">...</div>
+<div :onmousemove.throttle-raf="trackMouse">...</div>
 ```
+
+
+#### `.delay`
+
+Delay each call.
+
+```html
+<div :onmouseenter.delay-500="showTooltip = true">Hover me</div>
+```
+
 
 #### `.once`
 
-Run once.
+Run only once.
 
 ```html
-<button :onclick.once="init()">Start</button>
+<button :onclick.once="init()">Initialize</button>
+<img :onload.once="loaded = true" />
 ```
 
-#### `.window`, `.document`, `.body`, `.root`, `.parent`, `.away`, `.self`
 
-Event target.
+### Event Targets
+
+#### `.window` `.document` `.body` `.parent` `.self`
+
+Change event target.
 
 ```html
-<div :onkeydown.window.esc="close()">...</div>
-
-<div :onclick.away="open = false">...</div>
+<div :onkeydown.window.escape="close()">...</div>
+<div :onclick.self="handleClick()">Only direct clicks</div>
 ```
 
-#### `.passive`, `.capture`
 
-Listener [options](https://developer.mozilla.org/en-US/docs/Web/API/EventTarget/addEventListener#options).
+#### `.away`
+
+Trigger when clicking outside element.
+
+```html
+<div :onclick.away="open = false">Dropdown content</div>
+```
+
+
+### Event Behavior
+
+#### `.prevent` `.stop` `.stop-immediate`
+
+Control event propagation.
+
+```html
+<a :onclick.prevent="navigate()" href="/fallback">Link</a>
+<button :onclick.stop="handleClick()">Don't bubble</button>
+```
+
+
+#### `.passive` `.capture`
+
+Listener options.
 
 ```html
 <div :onscroll.passive="handleScroll">...</div>
 ```
 
-#### `.prevent`, `.stop`, `.stop-immediate`
 
-Prevent default or stop propagation.
+### Key Filters
 
-```html
-<a :onclick.prevent="navigate()" href="/fallback">Link</a>
-```
-
-#### `.<key>`
-
-Filter by key: `.enter`, `.esc`, `.tab`, `.space`, `.delete`, `.arrow`, `.ctrl`, `.shift`, `.alt`, `.meta`, `.digit`, `.letter`.
+Filter keyboard events: `.enter`, `.esc`, `.tab`, `.space`, `.delete`, `.arrow`, `.ctrl`, `.shift`, `.alt`, `.meta`, `.digit`, `.letter`
 
 ```html
 <input :onkeydown.enter="submit()" />
-
 <input :onkeydown.ctrl-s.prevent="save()" />
+<input :onkeydown.shift-enter="newLine()" />
 ```
 
 
-## Store
+---
 
-Sprae uses signals-powered store for reactivity.
+
+## Store & Signals
+
+Sprae uses signals for fine-grained reactivity.
 
 ```js
-import sprae, { store, signal, effect, computed, throttle, debounce } from 'sprae'
-// or standalone
-import { store } from 'sprae/store'
-import { signal, effect, computed, batch, untracked } from 'sprae/signal'
+import { signal, computed, effect, batch } from 'sprae'
 
-const name = signal('foo');
-const capname = computed(() => name.value.toUpperCase());
+// Create reactive values
+const count = signal(0)
+const doubled = computed(() => count.value * 2)
 
-const state = store(
-  {
-    count: 0,                             // prop
-    inc(){ this.count++ },                // method
-    name, capname,                        // signal
-    get twice(){ return this.count * 2 }, // computed
-    _i: 0,                                // untracked
-  },
+// React to changes
+effect(() => console.log('Count:', count.value))
 
-  // globals / sandbox
-  { Math }
-)
+// Update
+count.value++
 
-sprae(element, state).      // init
-
-state.count++               // update
-name.value = 'bar'          // signal update
-state._i++                  // no update
-
-state.Math                  // == globalThis.Math
-state.navigator             // == undefined
+// Batch multiple updates
+batch(() => {
+  count.value++
+  count.value++
+}) // Effect runs once
 ```
+
+
+### Store
+
+`store()` creates reactive objects from plain data:
+
+```js
+import sprae, { store } from 'sprae'
+
+const state = store({
+  count: 0,
+  items: [],
+
+  // Methods
+  increment() { this.count++ },
+
+  // Getters become computed
+  get double() { return this.count * 2 },
+
+  // Underscore prefix = untracked
+  _cache: {}
+})
+
+sprae(element, state)
+
+state.count++           // Reactive
+state._cache.key = 1    // Not reactive
+```
+
 
 ### Utilities
 
 ```js
 import { throttle, debounce } from 'sprae'
 
-// throttle: limit call rate
-const fn = throttle(handler, 100)
-
-// debounce: delay until quiet, optional immediate (leading edge)
-const fn = debounce(handler, 100)
-const fn = debounce(handler, 100, true)  // fires first, blocks rest
+const search = debounce(query => fetch('/search?q=' + query), 300)
+const scroll = throttle(updatePosition, 100)
 ```
 
 
+### Custom Signals
 
-
-## Signals
-
-Default signals can be replaced with any _preact-signals_ compatible alternative:
+Replace built-in signals with any preact-signals compatible library:
 
 ```js
-import sprae, { signal, computed, effect, batch, untracked } from 'sprae';
-import * as signals from '@preact/signals-core';
+import sprae from 'sprae'
+import * as signals from '@preact/signals-core'
 
-// switch signals to @preact/signals-core
-sprae.use(signals);
-
-signal(0);
+sprae.use(signals)
 ```
 
-Provider | Size | Feature
-:---|:---|:---
-[`ulive`](https://ghub.io/ulive) | 350b | Minimal implementation, basic performance, good for small states.
-[`signal`](https://ghub.io/@webreflection/signal) | 633b | Class-based, better performance, good for small-medium states.
-[`usignal`](https://ghub.io/usignal) | 955b | Class-based with optimizations and optional async effects.
-[`@preact/signals-core`](https://ghub.io/@preact/signals-core) | 1.47kb | Best performance, good for any states, industry standard.
-[`alien-signals`](https://github.com/webreflection/alien-signals) | 1.9kb | Preact-flavored [alien signals](https://github.com/stackblitz/alien-signals), presumably even better performance.
-[`signal-polyfill`](https://ghub.io/signal-polyfill) | 2.5kb | Standard signals proposal. Use via [adapter](https://gist.github.com/dy/bbac687464ccf5322ab0e2fd0680dc4d).
+| Library | Size | Notes |
+|---------|------|-------|
+| Built-in | ~1kb | Default, good performance |
+| [@preact/signals-core](https://github.com/preactjs/signals) | 1.5kb | Industry standard, best performance |
+| [ulive](https://github.com/nickmccurdy/ulive) | 350b | Minimal, basic performance |
+| [usignal](https://github.com/nickmccurdy/usignal) | 955b | Async effects support |
 
 
-## Evaluator
+---
 
-Default evaluator is fast and compact, but violates "unsafe-eval" CSP.<br/>
-To make eval stricter & safer, any alternative can be used, eg. [_jessie_](https://github.com/dy/subscript#presets):
+
+## Configuration
+
+
+### Custom Evaluator
+
+Default uses `new Function` (fast but requires `unsafe-eval` CSP). Use [jessie](https://github.com/nickmccurdy/subscript) for strict CSP:
 
 ```js
 import sprae from 'sprae'
@@ -421,41 +515,68 @@ import jessie from 'subscript/jessie'
 sprae.use({ compile: jessie })
 ```
 
-_Jessie_ is a safe JS subset supporting statements, functions and control flow:
 
-`++ -- ! - + * / % ** && || ??`<br/>
-`= < <= > >= == != === !==`<br/>
-`<< >> >>> & ^ | ~ ?: . ?. [] ()=>{} in`<br/>
-`= += -= *= /= %= **= &&= ||= ??= ... ,`<br/>
-`[] {} "" ''`<br/>
-`1 2.34 -5e6 0x7a`<br/>
-`true false null undefined NaN`<br/>
-`if else for while do return break continue function =>`
+### Custom Prefix
 
-#### Jessie Limitations
+```js
+sprae.use({ prefix: 'data-' })
+```
 
-* **`await` keyword**: Use `async () => Promise.then()` instead of `async () => await`
-* **`this` binding**: Jessie doesn't preserve `this` context in compiled functions
+```html
+<div data-text="message">...</div>
+```
 
 
+### Custom Directive
 
-## JSX
+```js
+import { directive, parse } from 'sprae'
 
-Sprae works with JSX via custom prefix (eg. `js-`).
-Useful to offload UI logic from server components in react / nextjs, instead of switching to client components.
+// Simple: return update function
+directive.id = (el, state, expr) => value => el.id = value
 
-```jsx
-// app/page.jsx - server component
-export default function Page() {
-  return <>
-    <nav id="nav">
-      <a href="/" js-class="location.pathname === '/' && 'active'">Home</a>
-      <a href="/about" js-class="location.pathname === '/about' && 'active'">About</a>
-    </nav>
-    ...
-  </>
+// With state access
+directive.log = (el, state, expr) => {
+  const evaluate = parse(expr)
+  return () => console.log(evaluate(state))
+}
+
+// With cleanup
+directive.timer = (el, state, expr) => {
+  let id
+  return ms => {
+    clearInterval(id)
+    id = setInterval(() => el.textContent = Date.now(), ms)
+    return () => clearInterval(id)
+  }
 }
 ```
+
+
+### Custom Modifier
+
+```js
+import { modifier } from 'sprae'
+
+modifier.log = (fn) => (e) => (console.log(e.type), fn(e))
+modifier.uppercase = (fn) => (v) => fn(String(v).toUpperCase())
+```
+
+```html
+<button :onclick.log="save">Save</button>
+<span :text.uppercase="name"></span>
+```
+
+
+---
+
+
+## Integration
+
+
+### JSX / React / Next.js
+
+Use custom prefix to avoid JSX attribute conflicts:
 
 ```jsx
 // layout.jsx
@@ -464,281 +585,189 @@ import Script from 'next/script'
 export default function Layout({ children }) {
   return <>
     {children}
-    <Script src="https://unpkg.com/sprae" data-prefix="js-" data-start />
+    <Script src="https://unpkg.com/sprae" data-prefix="x-" data-start />
   </>
 }
 ```
 
-## Custom directive
-
-Directives are functions that receive element, state, expression, and full attribute name. Return an update function to react to expression changes.
-
-```js
-import { directive, parse } from 'sprae'
-
-// Simple: :id="expr" → sets el.id
-directive.id = (el, state, expr) => value => el.id = value
-
-// With init: :autofocus
-directive.autofocus = (el) => (el.focus(), null)
-
-// With state access: :log="message"
-directive.log = (el, state, expr) => {
-  const evaluate = parse(expr)
-  return () => console.log(evaluate(state))
-}
-
-// With cleanup: :timer="interval"
-directive.timer = (el, state, expr) => {
-  let id
-  return value => {
-    clearInterval(id)
-    id = setInterval(() => el.textContent = Date.now(), value)
-    return () => clearInterval(id) // cleanup on unmount
-  }
-}
-
-// Destructor only (no updates): :track
-directive.track = (el, state, expr) => {
-  analytics.track(expr)
-  return { [Symbol.dispose]: () => analytics.untrack(expr) }
+```jsx
+// page.jsx (server component)
+export default function Page() {
+  return <nav>
+    <a href="/" x-class="location.pathname === '/' && 'active'">Home</a>
+    <a href="/about" x-class="location.pathname === '/about' && 'active'">About</a>
+  </nav>
 }
 ```
 
-#### Signature
 
-```ts
-(el: Element, state: object, expr: string, name: string) =>
-  void |                              // no updates needed
-  ((value: any) => void | (() => void)) |  // updater, optionally returns cleanup
-  { [Symbol.dispose]: () => void }    // destructor only
-```
+### SSR / Hydration
 
-## Custom modifier
-
-Modifiers wrap event handlers or directive values. They receive the function and any dash-separated arguments.
-
-```js
-import { modifier } from 'sprae'
-
-// :onclick.log → logs before calling handler
-modifier.log = (fn) => (e) => (console.log('event:', e.type), fn(e))
-
-// :onclick.delay-500 → delays handler by 500ms
-modifier.delay = (fn, ms) => (e) => setTimeout(() => fn(e), +ms || 0)
-
-// :text.uppercase → transforms value
-modifier.uppercase = (fn) => (v) => fn(String(v).toUpperCase())
-```
-
-Usage: `<button :onclick.log.delay-200="save">Save</button>`
-
-## Custom build
-
-Sprae build can be tweaked for project needs / size:
-
-```js
-// sprae.custom.js
-import sprae, { directive, modifier use } from 'sprae/core'
-import * as signals from '@preact/signals'
-import jessie from 'subscript/jessie'
-
-import _default from 'sprae/directive/default.js'
-import _if from 'sprae/directive/if.js'
-import _text from 'sprae/directive/text.js'
-
-use({
-  // custom prefix, defaults to ':'
-  prefix: 'data-sprae-',
-
-  // use preact signals
-  ...signals,
-
-  // use safer compiler
-  compile: jessie
-})
-
-// standard directives
-directive.if = _if;
-directive.text = _text;
-directive.default = _default;
-
-// custom directive :id="expression"
-directive.id = (el, state, expr) => {
-  // ...init
-  return value => {
-    // ...update
-    el.id = value
-  }
-}
-
-export default sprae;
-```
-
-<!--
-## Micro
-
-Micro sprae version is 2.5kb bundle with essentials:
-
-* no multieffects `:a:b`
-* no modifiers `:a.x.y`
-* no sequences `:ona..onb`
-* no `:each`, `:if`, `:value`
--->
-
-
-## Comparison
-
-|  | [Sprae](https://github.com/dy/sprae) | [Alpine](https://github.com/alpinejs/alpine) | [Petite-Vue](https://github.com/vuejs/petite-vue) |
-|--|:--:|:--:|:--:|
-| **Size** (min+gz) | ~5kb | ~16kb | ~6kb |
-| **Performance** | 1.00× | ~2× | ~1.5× |
-| **CSP** | Full | Limited | No |
-| **Signals** | [Pluggable](#signals) | Custom store | @vue/reactivity |
-| **Evaluator** | [Pluggable](#evaluator) | `new AsyncFunction` | `new Function` |
-| **Sandboxing** | Yes | No | No |
-| **TypeScript** | Full | Partial | No |
-| **JSX/SSR** | Yes | No | No |
-| **Prefix** | [Customizable](#custom-build) | `x-`, `:`, `@` | `v-`, `:`, `@` |
-| **Fragments** | Yes | Yes | No |
-| **Plugins** | Yes | Yes | No |
-| **Modifiers** | Yes | Yes | No |
-| **Maintained** | ✓ | ✓ | ✗ (2022) |
-
-<sub>Performance from internal benchmark (create 1000 rows). Lower is better.</sub>
-
-#### Feature Notes
-
-- **CSP**: Sprae with [jessie](docs.md#evaluator) passes strict CSP without `unsafe-eval`. Alpine CSP build has limitations (no arrow functions, no nested property assignments). Petite-vue requires `unsafe-eval`.
-- **Signals**: Sprae works with any preact-signals compatible library. Alpine uses custom reactive store. Petite-vue uses @vue/reactivity.
-- **Sandboxing**: Sprae isolates expressions from global scope by default. Alpine/petite-vue expose globals.
-- **Petite-vue**: Last updated 2022, essentially abandoned. Fast but lacks features and maintenance.
-
-
-## Server / SSR
-
-Sprae enables client-side interactivity in server components without converting them to client components. Add directives to server-rendered HTML and initialize sprae once:
+Server renders HTML, sprae hydrates interactive parts:
 
 ```jsx
-// app/page.jsx — remains a server component
-export default function Page({ user }) {
-  return <main>
-    <h1>Welcome, {user.name}</h1>
-
-    {/* interactive counter — no 'use client' needed */}
-    <div id="counter" :scope="{count: 0}">
-      <button :onclick="count++">Clicked <span :text="count">0</span> times</button>
-    </div>
-  </main>
+// Server component — no 'use client' needed
+export default function Counter() {
+  return <div x-scope="{count: 0}">
+    <button x-onclick="count++">
+      Clicked <span x-text="count">0</span> times
+    </button>
+  </div>
 }
 ```
 
-```jsx
-// app/layout.jsx
-import Script from 'next/script'
+> **Tip**: Include default content inside elements. Directives replace it on hydration, providing graceful fallback if JS fails.
 
-export default function Layout({ children }) {
-  return <html><body>
-    {children}
-    <Script src="https://unpkg.com/sprae" data-start />
-  </body></html>
-}
-```
 
-Server renders static HTML, sprae hydrates interactive parts. No client component boundary needed.
-
-> **Tip**: Server-render default content inside elements. Directives like `:text` replace content on hydration, providing graceful fallback.
+---
 
 
 ## Recipes
 
-#### Tabs
+
+### Tabs
 
 ```html
 <div :scope="{ tab: 'one' }">
   <button :class="{ active: tab === 'one' }" :onclick="tab = 'one'">One</button>
   <button :class="{ active: tab === 'two' }" :onclick="tab = 'two'">Two</button>
 
-  <div :if="tab === 'one'">Content one</div>
-  <div :else :if="tab === 'two'">Content two</div>
+  <section :if="tab === 'one'">Content One</section>
+  <section :else>Content Two</section>
 </div>
 ```
 
-#### Modal
+
+### Modal
 
 ```html
 <div :scope="{ open: false }">
-  <button :onclick="open = true">Open</button>
+  <button :onclick="open = true">Open Modal</button>
 
-  <dialog :if="open" :onclick.self="open = false">
-    <h2>Modal</h2>
+  <dialog :if="open" :onclick.self="open = false" :onkeydown.window.escape="open = false">
+    <h2>Title</h2>
+    <p>Content</p>
     <button :onclick="open = false">Close</button>
   </dialog>
 </div>
 ```
 
-#### Dropdown
+
+### Dropdown
 
 ```html
 <div :scope="{ open: false }">
-  <button :onclick="open = !open" :onfocusout.delay-100="open = false">Menu ▾</button>
+  <button :onclick="open = !open" :onfocusout.delay-100="open = false">
+    Menu ▾
+  </button>
 
   <ul :if="open">
-    <li><a href="#">Item 1</a></li>
-    <li><a href="#">Item 2</a></li>
+    <li><a href="#">Option 1</a></li>
+    <li><a href="#">Option 2</a></li>
+    <li><a href="#">Option 3</a></li>
   </ul>
 </div>
 ```
 
-#### Form Validation
+
+### Form Validation
 
 ```html
-<form :scope="{ email: '', valid: false }"
-      :onsubmit.prevent="valid && submit()">
-  <input type="email" :value="email"
-         :oninput="e => (email = e.target.value, valid = e.target.checkValidity())" />
+<form :scope="{ email: '', valid: false }" :onsubmit.prevent="valid && submit()">
+  <input
+    type="email"
+    :value="email"
+    :oninput="e => (email = e.target.value, valid = e.target.checkValidity())"
+  />
   <button :disabled="!valid">Submit</button>
 </form>
 ```
 
-#### Infinite Scroll
+
+### Infinite Scroll
 
 ```html
-<div :scope="{ items: [], page: 1, load }"
+<div :scope="{ items: [], page: 1 }"
      :fx="load()"
-     :ref="el => new IntersectionObserver(([e]) => e.isIntersecting && load()).observe(el.lastElementChild)">
+     :ref="el => {
+       const io = new IntersectionObserver(([e]) => e.isIntersecting && load())
+       io.observe(el.lastElementChild)
+       return () => io.disconnect()
+     }">
   <div :each="item in items" :text="item.name"></div>
+  <div>Loading...</div>
 </div>
 
 <script>
-  async function load() { items.push(...await fetch(`/api?page=${page++}`).then(r => r.json())) }
+  async function load() {
+    const data = await fetch('/api?page=' + page++).then(r => r.json())
+    items.push(...data)
+  }
 </script>
 ```
 
-#### Accordion
+
+### Accordion
 
 ```html
-<div :each="item in items" :scope="{ open: false }">
-  <button :onclick="open = !open" :text="item.title"></button>
+<div :each="item, i in items" :scope="{ open: i === 0 }">
+  <button :onclick="open = !open">
+    <span :text="item.title"></span>
+    <span :text="open ? '−' : '+'"></span>
+  </button>
   <div :if="open" :text="item.content"></div>
 </div>
 ```
 
 
-## Hints
+### Live Search
 
-* To prevent [FOUC](https://en.wikipedia.org/wiki/Flash_of_unstyled_content) add `<style>[\:each],[\:if],[\:else] {visibility: hidden}</style>`.
-* Attributes order matters, eg. `<li :each="el in els" :text="el.name"></li>` is not the same as `<li :text="el.name" :each="el in els"></li>`.
-* Invalid self-closing tags like `<a :text="item" />` cause error. Valid self-closing tags are: `li`, `p`, `dt`, `dd`, `option`, `tr`, `td`, `th`, `input`, `img`, `br`.
-* To destroy state and detach sprae handlers, call `sprae.dispose(el)` or `element[Symbol.dispose]()`.
-* `key` is not used, `:each` uses direct list mapping instead of DOM diffing.
-* Expressions can be async: `<div :text="await load()"></div>`.
-* Refs can be exposed under path, eg. as `<div :ref="$refs.el"></div>` in alpinejs style.
+```html
+<div :scope="{ q: '', results: [] }">
+  <input :value="q" :oninput.debounce-300="e => search(e.target.value)" placeholder="Search..." />
 
-<!--
-## FAQ
+  <ul :if="results.length">
+    <li :each="r in results" :text="r.title"></li>
+  </ul>
+  <p :else :if="q">No results</p>
+</div>
 
-1. Errors handling
-2. Typescript
-3. Performance
--->
+<script>
+  async function search(query) {
+    results = query ? await fetch('/search?q=' + query).then(r => r.json()) : []
+  }
+</script>
+```
+
+
+---
+
+
+## Tips
+
+- **Prevent FOUC**: Add `<style>[\:each],[\:if],[\:else]{visibility:hidden}</style>`
+- **Attribute order matters**: `:each` should come before other directives on the same element
+- **Async expressions**: `<div :text="await fetchData()"></div>` works
+- **Dispose**: Call `sprae.dispose(el)` or `el[Symbol.dispose]()` to cleanup
+- **No `key` needed**: `:each` uses direct list mapping, not DOM diffing
+- **Expose refs**: Use paths like `:ref="$refs.myEl"` for Alpine-style ref access
+
+
+---
+
+
+## Comparison
+
+|  | Sprae | Alpine | Petite-Vue |
+|--|:--:|:--:|:--:|
+| Size (min+gz) | ~5kb | ~16kb | ~6kb |
+| Signals | Pluggable | Custom | @vue/reactivity |
+| CSP Support | Full | Limited | No |
+| TypeScript | Full | Partial | No |
+| Maintained | ✓ | ✓ | ✗ |
+| Event Modifiers | 10+ | Limited | Few |
+| Custom Directives | Yes | Yes | Limited |
+| No-build Required | ✓ | ✓ | ✓ |
+| SSR-friendly | ✓ | Limited | ✓ |
+
+**Coming from Alpine?** See [alpine.md](alpine.md) for a step-by-step migration guide.

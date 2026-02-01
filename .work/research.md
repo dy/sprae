@@ -1694,6 +1694,7 @@
     - not evaporating
   + that would allow `sprae.stop()` counterpart to `sprae.start()`
   + alpine flavor would need it
+  - forces :cloak
 
 ## [x] ~~.debounce-tick becomes .tick, .debounce-frame becomes .raf~~ -> `-0` === `-tick`
 
@@ -2042,3 +2043,59 @@ Fragments | Yes | Yes
 Ecosystem | No | Yes
 Plugins | 0 | Many
 Components | 0 | Many
+
+## [x] TC39 Signals Incompatibility -> tc39 signals reactivity are incompatible
+
+  **Status**: Investigated, abandoned
+
+  Sprae's reactivity pattern is fundamentally incompatible with TC39 signals specification.
+
+  ### The Problem
+
+  TC39 signals intentionally prevent re-entrant effects: modifying a signal during a computed evaluation is a hard error. This design prevents accidental infinite loops and makes effects predictable.
+
+  However, sprae's `dir()` function relies on this exact pattern for modifier chaining and state management:
+
+  ```js
+  // Simplified dir() pattern
+  function dir(el, state, expr) {
+    let change = signal(undefined)
+
+    computed(() => {
+      const value = evaluate(expr, state)
+      // If value changed, trigger re-run via change signal
+      if (change.value == value) {
+        change.value = Symbol() // Modify signal DURING computed
+      }
+      return value
+    })
+  }
+  ```
+
+  This allows modifiers to re-evaluate and chain properly. TC39 signals explicitly forbid this.
+
+  ### Test Results
+
+  Created adapter wrapping TC39 `Signal.State` and `Signal.Computed`:
+  - **Pure signal tests**: 17/19 pass (only edge cases around disposal)
+  - **Directive rendering**: Complete failure - directives don't initialize or update
+  - **Root cause**: When signals are modified during computed evaluation, TC39's effect system doesn't notify watchers, so DOM updates never trigger
+
+  ### Why Not Work Around It?
+
+  The pattern isn't an implementation detail - it's core to how sprae's directive system works. Removing it would require:
+  1. Complete rewrite of `dir()` function
+  2. New pattern for modifier chaining and re-evaluation
+  3. Fundamental changes to computed signal semantics
+
+  Not worth the complexity loss for minimal compatibility gain.
+
+  ### Decision
+
+  Keep sprae's synchronous signal implementation and preact-signals support. The built-in implementation is optimized for sprae's patterns and performs well. TC39 signals remain incompatible.
+
+  ### References
+
+  - TC39 signals proposal: https://github.com/tc39/proposal-signals
+  - Preact signals (compatible): https://github.com/preactjs/signals
+  - Issue: Signal modification during computed evaluation forbidden by spec

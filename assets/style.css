@@ -62,6 +62,26 @@ body {
   pointer-events: none;
 }
 
+#spray .cloud {
+  position: absolute;
+  left: var(--x);
+  top: var(--y);
+  width: var(--size);
+  height: var(--size);
+  margin: var(--margin);
+  border-radius: 50%;
+  background: radial-gradient(circle,
+    hsla(250, var(--center-s), var(--center-l), var(--alpha)) 0%,
+    hsla(220, 55%, 50%, calc(var(--alpha) * 0.5)) 35%,
+    hsla(190, 60%, 65%, calc(var(--alpha) * 0.2)) 60%,
+    transparent 100%
+  );
+  mix-blend-mode: multiply;
+  filter: blur(var(--blur));
+  pointer-events: none;
+  opacity: var(--opacity, 1);
+}
+
 .top-line {
   height: .5rem;
   background: var(--color-blue-600);
@@ -220,6 +240,31 @@ h4 {
   padding: 1.5rem;
   border-radius: 0rem;
   margin: 2rem 0;
+}
+
+.demo p {
+  margin: 0;
+}
+
+.demo input[type="text"],
+.demo input:not([type]) {
+  width: 100%;
+  padding: 0.5rem;
+  margin-bottom: 0.75rem;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font: inherit;
+}
+
+.demo ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.demo ul li {
+  padding: 0.5rem 0;
+  margin: 0;
 }
 
 .demo button {

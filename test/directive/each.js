@@ -20,6 +20,22 @@ test('each: number', async () => {
   is(el.innerHTML, `<x>1,0</x><x>2,1</x><x>3,2</x>`)
 })
 
+test('each: filter expression', async () => {
+  // Filter expressions are reactive - no function wrapper needed
+  let el = h`<div><x :each="item in items.filter(i => i > min)" :text="item"/></div>`
+  let state = sprae(el, { items: [1, 2, 3, 4, 5], min: 2 })
+  await tick()
+  is(el.innerHTML, `<x>3</x><x>4</x><x>5</x>`)
+
+  state.min = 3
+  await tick()
+  is(el.innerHTML, `<x>4</x><x>5</x>`)
+
+  state.items.push(6)
+  await tick()
+  is(el.innerHTML, `<x>4</x><x>5</x><x>6</x>`)
+})
+
 test("each: array full", async () => {
   let el = h`<p>
     <span :each="a in b" :text="a"></span>

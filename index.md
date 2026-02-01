@@ -4,31 +4,34 @@ title: ∴ spræ
 
 # ∴ spræ
 
-Reactive sprinkles for HTML/JSX
+DOM microhydration — reactive sprinkles for HTML/JSX
 
 <div class="example">
 ```html
-<div :scope="{count: 0}">
-  <p>Count: <span :text="count"></span></p>
-  <button :onclick="count++">+</button>
-  <button :onclick="count--">–</button>
+<div :scope="{ q: '', items: ['Apple', 'Apricot', 'Banana', 'Cherry', 'Date', 'Elderberry'] }">
+  <input :value="q" placeholder="Search fruits..." />
+  <ul>
+    <li :each="item in items.filter(i => i.includes(q))" :text="item"></li>
+  </ul>
 </div>
 ```
 
-<div class="demo bg-graph-paper" data-scope="{count: 0}">
-<p>Count: <strong data-text="count">0</strong></p>
-<button data-onclick="count++">+</button>
-<button data-onclick="count--">–</button>
+<div class="demo bg-graph-paper" data-scope="{ q: '', items: ['Apple', 'Apricot', 'Banana', 'Cherry', 'Date', 'Elderberry'], match(i) { return i.includes(q) } }">
+<input data-value="q" placeholder="Search fruits..." />
+<ul>
+<li data-each="item in items.filter(match)" data-text="item"></li>
+</ul>
 </div>
 </div>
 
 ## why
 
-- **No complexity fatigue** – no build step, no framework, no mental overhead
-- **No bundle bloat** – ~5kb vs 40kb+ for Alpine/Vue/React
-- **Use what you know** – standard JS expressions, no magic
-- **Future-proof** – built on [TC39 Signals](https://github.com/tc39/proposal-signals), not proprietary reactivity
-- **Works everywhere** – HTML, JSX, SSR, any backend template
+- ~5kb min+gzip
+- No build step
+- Standard JS expressions
+- Signals-based reactivity
+- Works with any backend template
+- TypeScript support
 
 ## usage
 
@@ -80,23 +83,32 @@ Reactive sprinkles for HTML/JSX
 
 ## FAQ
 
-**Why not just use Alpine.js?**
-Alpine is 3x larger, uses non-standard reactivity, and has quirky `$` magic. Sprae uses TC39 signals, weighs ~5kb, and has no magic variables.
+**vs Alpine?**
+Simpler API, 3x lighter, ESM-first, open state, signals support, prop modifiers. See [comparison](./alpine.md).
 
-**Can I use this in production?**
-Yes. Sprae powers production apps. It's stable, tested, and designed for progressive enhancement—not experimental.
+**vs vanilla JS?**
+`createElement` is wrong mantra. [Just use framework](https://justfuckingusereact.com/).
 
-**What about bundle size in frameworks?**
-Sprae is for HTML-first projects. If you're already in React/Vue, use their reactivity. Sprae shines when you want interactivity without a build step.
+**vs React/Vue?**
+Some find react [not worth the time](https://www.keithcirkel.co.uk/i-dont-have-time-to-learn-react/). Sprae augments [JSX](docs#jsx) for server components.
 
-**How do I debug reactivity issues?**
-State is plain objects with signals underneath. `console.log(state)` works. No devtools needed—inspect in browser console.
+**Why signals?**
+[Standard](https://github.com/tc39/proposal-signals) for reactivity. [Preact-signals](https://github.com/preactjs/signals) provide minimal API surface.
 
-**What if I need complex state management?**
-Pass the same state object to multiple `sprae()` calls. For cross-component state, use [signals](docs#signals) directly.
+**Is it just a toy?**
+Fun to play, production-ready too. 12 versions, 1.5k+ commits.
 
-**Does it work with SSR/hydration?**
-Yes. Server renders HTML, sprae hydrates on client. Works with Next.js, Astro, any SSR. See [server guide](docs#server-components).
+**Complex state?**
+As far as you and CPU can handle it.
+
+**CSP / `new Function`?**
+If HTML comes from strangers, there's [safe evaluator](docs#evaluator).
+
+**Components?**
+[Manage duplication](https://tailwindcss.com/docs/styling-with-utility-classes#managing-duplication) or plop a [web-component](docs#web-components).
+
+**Browser support?**
+Any browser with [Proxy](https://caniuse.com/proxy).
 
 <p align='center' style="margin-top:6rem">
 <a href="https://krishnized.github.io/license">ॐ</a>

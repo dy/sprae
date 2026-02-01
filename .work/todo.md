@@ -273,20 +273,20 @@
   * [ ] drops/examples gallery: 7 GUIs, real-world patterns
   * [ ] "Used by" section with logos
   * [ ] SEO: "alpine alternative", "lightweight vue", "reactive html"
-  * [ ] Display content from readme
+  * [x] Display content from readme
   * [ ] Connect donation links
   * [x] Inverse color render
   * [x] Acronym rotator in header
   * [ ] Syntax highlighter
   * [x] index.md instead of index.html
   * [ ] Values section (see values.md)
-    * [ ] One-liners / taglines
+    * [x] One-liners / taglines
     * [ ] Use cases grid
     * [ ] Comparison table
     * [ ] Market position diagram
-  * [ ] Docs page UI
+  * [x] Docs page UI
   * [ ] Playground (interactive editor)
-  * [ ] Sprae vs Alpine comparison page
+  * [x] Sprae vs Alpine comparison page
   * [ ] Drops page
     * [ ] UI randomizer
   * [ ] Examples
@@ -301,7 +301,7 @@
   * [ ] Better reference examples
   * [ ] Icons for principles
   * [ ] Subtle animations
-  * [ ] Better spraying interaction
+  * [x] Better spraying interaction
   * [ ] Search
   * [ ] Bench page
 

@@ -20,13 +20,14 @@
       clouds: [],
       mx: 0, my: 0,
       cx: 0, cy: 0,
-      cvx: 0, cvy: 0,
+      vx: 0, vy: 0,
+      speed: 0,
       pressed: false,
       mouseEntered: false,
-      activeIdx: -1,
       MAX: 30,
-      cursorSize: 30,
-      cursorIntensity: 0.15,
+      cursorSize: 54,
+      cursorIntensity: 0.35,
+      cursorOpacity: 1,
 
       init() {
         this.cx = innerWidth / 2
@@ -39,36 +40,38 @@
       },
 
       press(e) {
-        this.mx = e.pageX; this.my = e.pageY
+        this.mx = e.pageX
+        this.my = e.pageY
         this.pressed = true
-        if (this.clouds.length >= this.MAX) {
-          this.clouds.shift()
-          if (this.activeIdx >= 0) this.activeIdx--
-        }
-        this.clouds.push({
-          id: Date.now(),
-          x: this.cx, y: this.cy,
-          vx: this.cvx, vy: this.cvy,
-          size: this.cursorSize,
-          intensity: 0,
-          released: false,
-          age: 0
-        })
-        this.activeIdx = this.clouds.length - 1
       },
 
-      release() {
+      release(e) {
         this.pressed = false
-        if (this.activeIdx >= 0 && this.clouds[this.activeIdx]) {
-          const c = this.clouds[this.activeIdx]
-          c.released = true
-          c.vx = this.cvx
-          c.vy = this.cvy
-          c.age = 0
-          this.activeIdx = -1
+        // Add current cursor state as released cloud
+        const clouds = [...this.clouds]
+        if (clouds.length >= this.MAX) {
+          clouds.shift()
         }
-        this.cursorSize = 30
-        this.cursorIntensity = 0.15
+        // Capture speed fade so released cloud doesn't jump opacity
+        const speedFade = Math.max(0, 1 - this.speed * 0.1)
+        clouds.push({
+          id: Date.now(),
+          x: this.cx, y: this.cy,
+          vx: this.vx, vy: this.vy,
+          size: this.cursorSize,
+          intensity: this.cursorIntensity,
+          fade: speedFade,
+          age: 0
+        })
+        this.clouds = clouds
+        // Reset cursor
+        this.cx = e.pageX
+        this.cy = e.pageY
+        this.vx = 0
+        this.vy = 0
+        this.cursorSize = 54
+        this.cursorIntensity = 0
+        this.cursorOpacity = 0
       },
 
       move(e) {
@@ -84,35 +87,27 @@
       update() {
         const pageH = Math.max(document.body.scrollHeight, document.documentElement.scrollHeight)
 
-        // Cursor follows mouse with inertia
-        const dx = this.mx - this.cx
-        const dy = this.my - this.cy
-        this.cvx += dx * 0.08
-        this.cvy += dy * 0.08
-        this.cvx *= 0.85
-        this.cvy *= 0.85
-        this.cx += this.cvx
-        this.cy += this.cvy
+        // Cursor follows mouse - moves fraction of distance each frame (natural ease-out)
+        this.vx = (this.mx - this.cx) * 0.03
+        this.vy = (this.my - this.cy) * 0.03
+        this.cx += this.vx
+        this.cy += this.vy
+
+        // Track speed for transparency effect
+        this.speed = Math.sqrt(this.vx * this.vx + this.vy * this.vy)
 
         // While pressed, grow cursor cloud
         if (this.pressed) {
-          this.cursorSize += 0.4
+          this.cursorSize += 1
           this.cursorIntensity = Math.min(1, this.cursorIntensity + 0.06)
-        }
-
-        // Update active cloud to follow cursor
-        if (this.activeIdx >= 0 && this.clouds[this.activeIdx]) {
-          const c = this.clouds[this.activeIdx]
-          c.x = this.cx
-          c.y = this.cy
-          c.size = this.cursorSize
-          c.intensity = this.cursorIntensity
+        } else {
+          // Fade in cursor after release
+          this.cursorOpacity = Math.min(1, this.cursorOpacity + 0.01)
+          this.cursorIntensity = Math.min(0.35, this.cursorIntensity + 0.005)
         }
 
         // Update released clouds
         for (const c of this.clouds) {
-          if (!c.released) continue
-
           c.age++
           c.vy += 0.015
           c.vx *= 0.99
@@ -121,8 +116,12 @@
           c.x += c.vx
           c.y += c.vy
 
-          // Keep growing but don't increase intensity
-          c.size += 0.4 / (1 + c.age * 0.008)
+          // Gradually start growing (smooth transition from cursor)
+          const growRate = Math.min(1, c.age / 30) * 0.4 / (1 + c.age * 0.008)
+          c.size += growRate
+
+          // Gradually restore fade from speed
+          c.fade = Math.min(1, c.fade + 0.01)
 
           // Very slow intensity fade
           c.intensity = Math.max(0.05, c.intensity * 0.9995)
@@ -142,61 +141,40 @@
         this.clouds = [...this.clouds]
       },
 
-      cursorStyle() {
-        const blur = this.cursorSize * 0.3
-        const i = this.cursorIntensity
-        const centerL = 50 - i * 35  // 50% -> 15% (much darker)
-        const centerS = 60 + i * 35  // 60% -> 95%
-        const alpha = 0.15 + i * 0.7  // 0.15 -> 0.85
-        return `
-          position: absolute;
-          left: ${this.cx}px; top: ${this.cy}px;
-          width: ${this.cursorSize * 0.5}px; height: ${this.cursorSize * 0.5}px;
-          margin: ${-this.cursorSize * 0.25}px;
-          border-radius: 50%;
-          background: radial-gradient(circle,
-            hsla(250, ${centerS}%, ${centerL}%, ${alpha}) 0%,
-            hsla(220, 55%, 50%, ${alpha * 0.5}) 35%,
-            hsla(190, 60%, 65%, ${alpha * 0.2}) 60%,
-            transparent 100%
-          );
-          mix-blend-mode: multiply;
-          filter: blur(${blur}px);
-          pointer-events: none;
-        `
+      vars(x, y, size, intensity, speedFade = 0) {
+        const i = intensity
+        const fade = Math.max(0, 1 - speedFade * 0.1)  // fade based on speed
+        return {
+          '--x': x + 'px',
+          '--y': y + 'px',
+          '--size': size + 'px',
+          '--margin': -size * 0.5 + 'px',
+          '--blur': size * 0.3 + 'px',
+          '--center-s': (60 + i * 35) + '%',
+          '--center-l': (50 - i * 35) + '%',
+          '--alpha': (0.15 + i * 0.7) * fade,
+          '--opacity': 1
+        }
       },
 
-      style(c) {
-        const blur = c.size * 0.3
-        const i = c.intensity
-        const centerL = 50 - i * 35
-        const centerS = 60 + i * 35
-        const alpha = 0.15 + i * 0.7
-        return `
-          position: absolute;
-          left: ${c.x}px; top: ${c.y}px;
-          width: ${c.size * 0.5}px; height: ${c.size * 0.5}px;
-          margin: ${-c.size * 0.25}px;
-          border-radius: 50%;
-          background: radial-gradient(circle,
-            hsla(250, ${centerS}%, ${centerL}%, ${alpha}) 0%,
-            hsla(220, 55%, 50%, ${alpha * 0.5}) 35%,
-            hsla(190, 60%, 65%, ${alpha * 0.2}) 60%,
-            transparent 100%
-          );
-          mix-blend-mode: multiply;
-          filter: blur(${blur}px);
-          pointer-events: none;
-        `
+      cursorVars() {
+        const v = this.vars(this.cx, this.cy, this.cursorSize, this.cursorIntensity, this.speed)
+        v['--opacity'] = this.mouseEntered ? this.cursorOpacity : 0
+        return v
+      },
+
+      cloudVars(c) {
+        const v = this.vars(c.x, c.y, c.size, c.intensity)
+        v['--alpha'] = (0.15 + c.intensity * 0.7) * c.fade
+        return v
       }
     }"
     data-onmousemove.document="move"
     data-onmousedown.document="press"
     data-onmouseup.document="release"
     data-fx.once="init()">
-      <div data-if="mouseEntered && !pressed" data-style="cursorStyle()"></div>
-      <div data-each="c in clouds" data-if="c.released || activeIdx !== clouds.indexOf(c)" data-style="style(c)"></div>
-      <div data-if="pressed && activeIdx >= 0" data-style="style(clouds[activeIdx])"></div>
+      <div class="cloud" data-style="cursorVars()"></div>
+      <div class="cloud" data-each="c in clouds" data-style="cloudVars(c)"></div>
     </div>
 
     <div class="top-line"></div>
