@@ -90,10 +90,11 @@ Simpler API, 3x lighter, ESM-first, open state, signals support, prop modifiers.
 `createElement` is wrong mantra. [Just use framework](https://justfuckingusereact.com/).
 
 **vs React/Vue?**
-Some find react [not worth the time](https://www.keithcirkel.co.uk/i-dont-have-time-to-learn-react/). Sprae augments [JSX](docs#jsx) for server components.
+Some find react [not worth the time](https://www.keithcirkel.co.uk/i-dont-have-time-to-learn-react/). Sprae augments [JSX](docs#jsx--react--nextjs) for server components.
 
 **Why signals?**
-[Standard](https://github.com/tc39/proposal-signals) for reactivity. [Preact-signals](https://github.com/preactjs/signals) provide minimal API surface.
+<!-- [Standard](https://github.com/tc39/proposal-signals) for reactivity. -->
+[Preact-signals](https://github.com/preactjs/signals) provide minimal API surface.
 
 **Is it just a toy?**
 Fun to play, production-ready too. 12 versions, 1.5k+ commits.
@@ -102,10 +103,10 @@ Fun to play, production-ready too. 12 versions, 1.5k+ commits.
 As far as you and CPU can handle it.
 
 **CSP / `new Function`?**
-If HTML comes from strangers, there's [safe evaluator](docs#evaluator).
+If HTML comes from strangers, there's [safe evaluator](docs#custom-evaluator).
 
 **Components?**
-[Manage duplication](https://tailwindcss.com/docs/styling-with-utility-classes#managing-duplication) or plop a [web-component](docs#web-components).
+[Manage duplication](https://tailwindcss.com/docs/styling-with-utility-classes#managing-duplication) or plop a web component.
 
 **Browser support?**
 Any browser with [Proxy](https://caniuse.com/proxy).

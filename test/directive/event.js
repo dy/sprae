@@ -295,7 +295,7 @@ test('on: parallel chains', () => {
   let log = []
 
   // 1. skip in event and do directly out
-  let el = h`<x :onin.1.stop.immediate..onout.stop.immediate="io" :onin.2.stop.immediate..onout.stop.immediate="io"></x>`
+  let el = h`<x :onin.1.stop-immediate..onout.stop-immediate="io" :onin.2.stop-immediate..onout.stop-immediate="io"></x>`
   sprae(el, {
     io(e) {
       log.push(e.type)

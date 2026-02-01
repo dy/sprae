@@ -107,11 +107,6 @@ Object.assign(modifier, {
   /** Runs callback after delay. Supports: tick (default), raf, idle, N, Nms, Ns, Nm. */
   delay: (fn, a) => ((sched = scheduler(a)) => (e) => sched(() => fn(e)))(),
 
-  /** @deprecated Use .delay instead */
-  tick: (fn) => (console.warn('Deprecated: use .delay instead of .tick'), (e) => (queueMicrotask(() => fn(e)))),
-  /** @deprecated Use .throttle-raf instead */
-  raf: (fn) => (console.warn('Deprecated: use .debounce-raf instead of .raf'), (e) => requestAnimationFrame(() => fn(e))),
-
   /** Calls handler only once. */
   once: (fn, _done, _fn) => (_fn = (e) => !_done && (_done = 1, fn(e)), _fn.once = true, _fn),
 
@@ -134,8 +129,6 @@ Object.assign(modifier, {
   prevent: (fn) => (e) => (e?.preventDefault(), fn(e)),
   /** Calls stopPropagation() or stopImmediatePropagation() (with -immediate). */
   stop: (fn, _how) => (e) => (_how?.[0] === 'i' ? e?.stopImmediatePropagation() : e?.stopPropagation(), fn(e)),
-  /** @deprecated Use .stop-immediate instead */
-  immediate: (fn) => (console.warn('Deprecated: use .stop-immediate instead of .immediate'), (e) => (e?.stopImmediatePropagation(), fn(e))),
   /** Sets passive option for event listener. */
   passive: fn => (fn.passive = true, fn),
   /** Sets capture option for event listener. */
