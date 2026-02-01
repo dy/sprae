@@ -106,7 +106,11 @@ const elHint = (el) => {
 const err = (e, expr) => {
   let msg = `∴ ${e}`
   if (currentEl) msg += `\n  in ${elHint(currentEl)}`
-  if (currentDir && expr) msg += `\n  ${currentDir}="${expr}"`
+  if (currentDir && expr) {
+    // Truncate long expressions
+    const display = expr.length > 100 ? expr.slice(0, 80) + `… (${expr.length} chars)` : expr
+    msg += `\n  ${currentDir}="${display}"`
+  }
   console.error(msg)
 }
 

@@ -118,7 +118,6 @@ h2 {
 }
 
 .demo {
-  background: rgb(from var(--color-blue-600) r g b / 10%);
   padding: 1.5rem;
   border-radius: 0rem;
   margin: 2rem 0;
@@ -131,7 +130,7 @@ h2 {
 .example {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  align-items: start;
+  align-items: stretch;
   margin: 2rem 0;
 }
 
@@ -280,7 +279,7 @@ button:hover {
 .bg-graph-paper {
   background-image: linear-gradient(to right, rgb(from var(--color-blue-700) r g b / 20%) 1px, transparent 1px), linear-gradient(to bottom, rgb(from var(--color-blue-700) r g b / 20%) 1px, transparent 1px);
   background-size: 1rem 1rem;
-  background-color: var(--color-bg);
+  /* background-color: var(--color-bg); */
 }
 
 

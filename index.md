@@ -2,11 +2,6 @@
 title: ∴ spræ
 ---
 
-<nav>
-<a href="docs">Docs</a>
-<a href="drops">Drops</a>
-</nav>
-
 # ∴ spræ
 
 Reactive sprinkles for HTML/JSX
@@ -20,7 +15,7 @@ Reactive sprinkles for HTML/JSX
 </div>
 ```
 
-<div class="demo" data-scope="{count: 0}">
+<div class="demo bg-graph-paper" data-scope="{count: 0}">
 <p>Count: <strong data-text="count">0</strong></p>
 <button data-onclick="count++">+</button>
 <button data-onclick="count--">–</button>
