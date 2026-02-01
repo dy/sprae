@@ -7,14 +7,10 @@
     <title>{{ page.title | default: "Sprae" }} – reactive sprinkles</title>
     <meta name="description" content="{{ page.description | default: 'Sprae is a tiny (~5KB) reactive library for progressive enhancement using signal-powered attributes in HTML/JSX.' }}">
     <link rel="stylesheet" href="{{ '/assets/style.css' | relative_url }}" />
-    <script type="module">
-      import sprae, { use } from 'https://cdn.jsdelivr.net/npm/sprae/+esm'
-      use({ prefix: 'data-' })
-      sprae(document.body)
-    </script>
+    <script src="https://unpkg.com/sprae" data-prefix="data-" data-start></script>
   </head>
 
-  <body>
+  <body data-fx.once="document.querySelectorAll('h2[id], h3[id], h4[id], h5[id], h6[id]').forEach(function(h) { var a = document.createElement('a'); a.href = '#' + h.id; a.className = 'anchor'; a.textContent = '#'; h.prepend(a) })">
     <!-- Spray effect - cursor cloud with inertia -->
     <div id="spray" data-scope="{
       clouds: [],
@@ -28,15 +24,19 @@
       cursorSize: 54,
       cursorIntensity: 0.35,
       cursorOpacity: 1,
+      lastTime: 0,
 
       init() {
         this.cx = innerWidth / 2
         this.cy = innerHeight / 2
-        const loop = () => {
-          this.update()
+        this.lastTime = performance.now()
+        const loop = (now) => {
+          const dt = Math.min((now - this.lastTime) / 16.67, 3) // normalize to 60fps, cap at 3x
+          this.lastTime = now
+          this.update(dt)
           requestAnimationFrame(loop)
         }
-        loop()
+        requestAnimationFrame(loop)
       },
 
       press(e) {
@@ -84,12 +84,13 @@
         this.my = e.pageY
       },
 
-      update() {
+      update(dt = 1) {
         const pageH = Math.max(document.body.scrollHeight, document.documentElement.scrollHeight)
 
         // Cursor follows mouse - moves fraction of distance each frame (natural ease-out)
-        this.vx = (this.mx - this.cx) * 0.03
-        this.vy = (this.my - this.cy) * 0.03
+        const ease = 1 - Math.pow(0.97, dt)
+        this.vx = (this.mx - this.cx) * ease
+        this.vy = (this.my - this.cy) * ease
         this.cx += this.vx
         this.cy += this.vy
 
@@ -98,33 +99,33 @@
 
         // While pressed, grow cursor cloud
         if (this.pressed) {
-          this.cursorSize += 1
-          this.cursorIntensity = Math.min(1, this.cursorIntensity + 0.06)
+          this.cursorSize += 1 * dt
+          this.cursorIntensity = Math.min(1, this.cursorIntensity + 0.06 * dt)
         } else {
           // Fade in cursor after release
-          this.cursorOpacity = Math.min(1, this.cursorOpacity + 0.01)
-          this.cursorIntensity = Math.min(0.35, this.cursorIntensity + 0.005)
+          this.cursorOpacity = Math.min(1, this.cursorOpacity + 0.01 * dt)
+          this.cursorIntensity = Math.min(0.35, this.cursorIntensity + 0.005 * dt)
         }
 
         // Update released clouds
         for (const c of this.clouds) {
-          c.age++
-          c.vy += 0.015
-          c.vx *= 0.99
-          c.vy *= 0.995
-          c.vx += (Math.random() - 0.5) * 0.02
-          c.x += c.vx
-          c.y += c.vy
+          c.age += dt
+          c.vy += 0.015 * dt
+          c.vx *= Math.pow(0.99, dt)
+          c.vy *= Math.pow(0.995, dt)
+          c.vx += (Math.random() - 0.5) * 0.02 * dt
+          c.x += c.vx * dt
+          c.y += c.vy * dt
 
           // Gradually start growing (smooth transition from cursor)
           const growRate = Math.min(1, c.age / 30) * 0.4 / (1 + c.age * 0.008)
-          c.size += growRate
+          c.size += growRate * dt
 
           // Gradually restore fade from speed
-          c.fade = Math.min(1, c.fade + 0.01)
+          c.fade = Math.min(1, c.fade + 0.01 * dt)
 
           // Very slow intensity fade
-          c.intensity = Math.max(0.05, c.intensity * 0.9995)
+          c.intensity = Math.max(0.05, c.intensity * Math.pow(0.9995, dt))
 
           // Settle at bottom
           if (c.y > pageH - c.size * 0.3) {
@@ -172,6 +173,7 @@
     data-onmousemove.document="move"
     data-onmousedown.document="press"
     data-onmouseup.document="release"
+    data-onblur.window="release"
     data-fx.once="init()">
       <div class="cloud" data-style="cursorVars()"></div>
       <div class="cloud" data-each="c in clouds" data-style="cloudVars(c)"></div>
@@ -191,9 +193,6 @@
 
     <main>
       <nav>
-        {% unless page.url == "/" or page.url == "/index.html" %}
-        <a href="{{ '/' | relative_url }}" class="logo" aria-label="Home">∴</a>
-        {% endunless %}
         <a href="docs">docs</a>
       </nav>
 
@@ -258,6 +257,9 @@
       }"
       data-onscroll.window.throttle-50="onScroll"
       data-fx.once="init()">
+        {% unless page.url == "/" or page.url == "/index.html" %}
+        <a href="{{ '/' | relative_url }}" class="logo" aria-label="Home">∴</a>
+        {% endunless %}
         <nav data-if="items.length > 3">
           <a data-each="item in items"
              data-if="isVisible(item)"
@@ -270,6 +272,11 @@
 
       {{ content }}
     </main>
+
+<p align='center' style="margin:3rem 0">
+<a href="https://krishnized.github.io/license">ॐ</a>
+</p>
+
   </body>
 
 </html>

@@ -21,6 +21,10 @@
   touch-action: manipulation;
 }
 
+html {
+  scroll-behavior: smooth;
+}
+
 :root {
   font-size: max(16px, min(2.2vw, 22px));
   font-family: "Atkinson Hyperlegible", sans-serif;
@@ -119,7 +123,7 @@ nav p {
 /* Table of Contents sidebar */
 #toc {
   position: fixed;
-  top: 3rem;
+  top: 1.8rem;
   left: max(1rem, calc((100vw - 48rem) / 2 - 14rem));
   width: 12rem;
   max-height: calc(100vh - 6rem);
@@ -129,17 +133,23 @@ nav p {
   scroll-behavior: smooth;
   scrollbar-width: thin;
   scrollbar-color: var(--color-blue-600) transparent;
-
-  /* Fade in after first viewport */
-  opacity: 0;
-  animation: toc-fade-in linear both;
-  animation-timeline: scroll();
-  animation-range: 50vh 100vh;
 }
 
-@keyframes toc-fade-in {
-  from { opacity: 0; }
-  to { opacity: 1; }
+#toc .logo {
+  display: inline-block;
+  font-size: 2rem;
+  line-height: 1;
+  color: var(--color-blue-700);
+  text-decoration: none;
+  margin-bottom: 1.2rem;
+  opacity: 0.7;
+  transition: transform 9s ease-in-out, opacity 0.15s;
+  transform-origin: center 60%;
+}
+
+#toc .logo:hover {
+  opacity: 1;
+  transform: rotate(3600deg);
 }
 
 #toc nav {
@@ -214,10 +224,46 @@ nav p {
   vertical-align: middle;
 }
 
-h1 {
-  font-size: clamp(3rem, 10vw, 5rem);
-  font-weight: 900;
+h1, h2, h3, h4, h5, h6 {
   color: var(--color-blue-700);
+  margin-top: 2em;
+  margin-bottom: 0.5em;
+  scroll-margin-top: 1em;
+  position: relative;
+}
+
+/* Collapse distance between consecutive headers */
+h1 + h2, h1 + h3, h1 + h4,
+h2 + h3, h2 + h4,
+h3 + h4, h3 + h5,
+h4 + h5, h4 + h6,
+h5 + h6 {
+  margin-top: 0.5em;
+}
+
+/* Anchor links for headers */
+h2 > a.anchor, h3 > a.anchor, h4 > a.anchor, h5 > a.anchor, h6 > a.anchor {
+  position: absolute;
+  left: -1.5em;
+  width: 1.5em;
+  text-align: center;
+  text-decoration: none;
+  opacity: 0;
+  font-weight: 400;
+  transition: opacity 0.15s;
+}
+
+h2:hover > a.anchor, h3:hover > a.anchor, h4:hover > a.anchor, h5:hover > a.anchor, h6:hover > a.anchor {
+  opacity: 0.4;
+}
+
+h2 > a.anchor:hover, h3 > a.anchor:hover, h4 > a.anchor:hover, h5 > a.anchor:hover, h6 > a.anchor:hover {
+  opacity: 1;
+}
+
+h1 {
+  font-size: clamp(3rem, 10vw, 4.2rem);
+  font-weight: 900;
   letter-spacing: -0.02em;
   line-height: 1;
   margin: 1rem 0;
@@ -226,14 +272,7 @@ h1 {
 h2 {
   font-size: 1.5rem;
   font-weight: 700;
-  color: var(--color-blue-700);
   margin: 2.5rem 0 1rem;
-}
-
-h4 {
-  margin-top: 2em;
-  margin-bottom: 1em;
-  scroll-margin-top: 2em;
 }
 
 .demo {

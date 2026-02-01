@@ -23,9 +23,11 @@ await esbuild.build({
   stdin: {
     contents:
       // MO immediately applies spraeable elements
+      // Note: read prefix/start BEFORE using them, then remove data-attrs to prevent self-processing
       `var sprae = require("./sprae.js").default; module.exports = sprae; var cur = document.currentScript;
 var prefix = cur.getAttribute("prefix") ?? cur.dataset.prefix ?? cur.dataset.spraePrefix;
 var start = cur.getAttribute("start") ?? cur.dataset.start ?? cur.dataset.spraeStart;
+cur.removeAttribute("prefix"); cur.removeAttribute("start"); delete cur.dataset.prefix; delete cur.dataset.start; delete cur.dataset.spraePrefix; delete cur.dataset.spraeStart;
 if (prefix) sprae.use({ prefix });
 if (start != null && start !== 'false') (start && start !== 'true' ? document.querySelectorAll(start) : [document.body || document.documentElement]).forEach(el => sprae.start(el))`,
     resolveDir: '.'

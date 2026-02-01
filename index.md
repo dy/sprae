@@ -1,5 +1,4 @@
 ---
-title: ∴ spræ
 ---
 
 # ∴ spræ
@@ -83,34 +82,18 @@ DOM microhydration — reactive sprinkles for HTML/JSX
 
 ## FAQ
 
-**vs Alpine?**
-Simpler API, 3x lighter, ESM-first, open state, signals support, prop modifiers. See [comparison](./alpine.md).
+**Yet another framework?** — Not a framework. A 5kb enhancer for existing HTML. No build, no ecosystem lock-in.
 
-**vs vanilla JS?**
-`createElement` is wrong mantra. [Just use framework](https://justfuckingusereact.com/).
+**What's special?** — Open state (inspect/modify from console), signals reactivity, modular directives, works with any backend.
 
-**vs React/Vue?**
-Some find react [not worth the time](https://www.keithcirkel.co.uk/i-dont-have-time-to-learn-react/). Sprae augments [JSX](docs#jsx--react--nextjs) for server components.
+**Why not Alpine?** — 3× lighter, ESM-first, signals, prop modifiers. See [comparison](./alpine.md).
 
-**Why signals?**
-<!-- [Standard](https://github.com/tc39/proposal-signals) for reactivity. -->
-[Preact-signals](https://github.com/preactjs/signals) provide minimal API surface.
+**Why not React/Vue?** — No build step, no virtual DOM, augments [JSX](docs#jsx--react--nextjs) for server components.
 
-**Is it just a toy?**
-Fun to play, production-ready too. 12 versions, 1.5k+ commits.
+**Is it slow?** — [Benchmark](https://krausest.github.io/js-framework-benchmark/2024/table_chrome_130.0.6723.58.html). Faster than Alpine, comparable to Vue.
 
-**Complex state?**
-As far as you and CPU can handle it.
+**Components?** — [Manage duplication](https://tailwindcss.com/docs/styling-with-utility-classes#managing-duplication) or use [web components](docs#web-components).
 
-**CSP / `new Function`?**
-If HTML comes from strangers, there's [safe evaluator](docs#custom-evaluator).
+**Is it maintained?** — Yes. <span data-scope="{ years: 3, versions: 12 }" data-fx.once="fetch('https://api.github.com/repos/dy/sprae').then(function(r){ return r.json() }).then(function(d){ years = Math.floor((Date.now() - new Date(d.created_at)) / 31536000000) }); fetch('https://api.github.com/repos/dy/sprae/releases').then(function(r){ return r.json() }).then(function(d){ versions = new Set(d.map(function(r){ return r.tag_name.split('.')[0] })).size })"><span data-text="years">3</span>+ years, <span data-text="versions">12</span> major versions</span>. [Roadmap](https://github.com/dy/sprae/issues).
 
-**Components?**
-[Manage duplication](https://tailwindcss.com/docs/styling-with-utility-classes#managing-duplication) or plop a web component.
-
-**Browser support?**
-Any browser with [Proxy](https://caniuse.com/proxy).
-
-<p align='center' style="margin-top:6rem">
-<a href="https://krishnized.github.io/license">ॐ</a>
-</p>
+[More FAQ →](docs#faq)

@@ -1,3 +1,6 @@
+---
+---
+
 ## Getting Started
 
 Include sprae and add directives to your HTML:
@@ -55,8 +58,6 @@ npm i sprae
 import sprae from 'sprae'
 ```
 
-
----
 
 
 ## Directives
@@ -303,8 +304,6 @@ Move element to another container.
 ```
 
 
----
-
 
 ## Modifiers
 
@@ -413,7 +412,6 @@ Filter keyboard events: `.enter`, `.esc`, `.tab`, `.space`, `.delete`, `.arrow`,
 ```
 
 
----
 
 
 ## Store & Signals
@@ -498,7 +496,6 @@ sprae.use(signals)
 | [usignal](https://github.com/nickmccurdy/usignal) | 955b | Async effects support |
 
 
----
 
 
 ## Configuration
@@ -568,7 +565,6 @@ modifier.uppercase = (fn) => (v) => fn(String(v).toUpperCase())
 ```
 
 
----
 
 
 ## Integration
@@ -619,7 +615,43 @@ export default function Counter() {
 > **Tip**: Include default content inside elements. Directives replace it on hydration, providing graceful fallback if JS fails.
 
 
----
+### Web Components
+
+Sprae works with shadow DOM. Initialize in `connectedCallback`:
+
+```js
+class MyComponent extends HTMLElement {
+  connectedCallback() {
+    if (!this.shadowRoot) {
+      this.attachShadow({ mode: 'open' }).innerHTML = `
+        <div :scope="{ msg: 'Hello' }">
+          <span :text="msg"></span>
+        </div>
+      `
+      sprae(this.shadowRoot)
+    }
+  }
+}
+customElements.define('my-component', MyComponent)
+```
+
+Or pass state directly:
+
+```js
+class Counter extends HTMLElement {
+  connectedCallback() {
+    if (!this.shadowRoot) {
+      this.attachShadow({ mode: 'open' }).innerHTML = `
+        <button :onclick="count++">Count: <span :text="count"></span></button>
+      `
+      this.state = sprae(this.shadowRoot, { count: 0 })
+    }
+  }
+}
+customElements.define('my-counter', Counter)
+```
+
+
 
 
 ## Recipes
@@ -740,7 +772,6 @@ export default function Counter() {
 ```
 
 
----
 
 
 ## Tips
@@ -753,7 +784,96 @@ export default function Counter() {
 - **Expose refs**: Use paths like `:ref="$refs.myEl"` for Alpine-style ref access
 
 
----
+
+
+## FAQ
+
+**Why sprae?**
+
+- Minimal syntax, non-disruptive HTML
+- No build, no config
+- Ecosystem-agnostic (CDN, ESM, JSX)
+- Open, configurable
+- Preact-signals compatible
+- Fast, practical and safe
+
+**Yet another framework?**
+
+Not a framework. A 5kb enhancer for existing HTML. No ecosystem lock-in, works alongside anything.
+
+**Is it slow?**
+
+No. See [js-framework-benchmark](https://krausest.github.io/js-framework-benchmark/2024/table_chrome_130.0.6723.58.html) — faster than Alpine, comparable to Vue.
+
+**Why not Alpine.js?**
+
+Simpler API, 3× lighter, ESM-first, open state, signals support, prop modifiers, aliases, event chains. See [alpine.md](alpine.md) for migration guide.
+
+**Why not vanilla JS?**
+
+`createElement` is wrong mantra. [Just use framework](https://justfuckingusereact.com/).
+
+**Why not Next/React?**
+
+Sprae augments [JSX](#jsx--react--nextjs), which can help server components. Some find react [not worth the time](https://www.keithcirkel.co.uk/i-dont-have-time-to-learn-react/).
+
+**Why signals?**
+
+It is the emerging [standard](https://github.com/tc39/proposal-signals) for reactivity. [Preact-signals](https://github.com/preactjs/signals) provide minimal API surface.
+
+**Who cares for progressive enhancement?**
+
+PE is for long-lasting, low-maintenance, fail-proof, accessible, portable and SEO-optimized web.
+
+**Is it just a toy?**
+
+Fun to play, comes with state sandbox. But production-ready too.
+
+**Does it scale to complex state?**
+
+As far as you and CPU can handle it.
+
+**Is new Function unsafe?**
+
+If your HTML comes from strangers, there is [safe evaluator](#custom-evaluator) for CSP. If you control your HTML, it's no different from inline `onclick` handlers.
+
+**Learning curve?**
+
+If you know HTML and JS, you know sprae. No new syntax, no special compilation, just `:attribute="expression"`.
+
+**Components support?**
+
+[Manage duplication](https://tailwindcss.com/docs/styling-with-utility-classes#managing-duplication), otherwise plop a [web component](#web-components).
+
+**TypeScript support?**
+
+Yes, full types included. If you need more please [leave a request](https://github.com/dy/sprae/issues/new).
+
+**Browser compatibility?**
+
+Any browser with [Proxy support](https://caniuse.com/proxy).
+
+**Is it stable?**
+
+Yes, since v10.
+
+**How old is it?**
+
+3+ years old ([first commit](https://github.com/dy/sprae/commit/ee7e372fb372bde5bdd7bfd3524cdaa815793663) Nov 7, 2022).
+
+**Will it be maintained long-term?**
+
+12 versions, 1.5k+ commits and future plans.
+
+**What's future plan?**
+
+Plugins, components, integration cases, generators.
+
+**Is it backed by a company?**
+
+No, indie. You can [support it](https://github.com/sponsors/dy)!
+
+
 
 
 ## Comparison
@@ -770,4 +890,4 @@ export default function Counter() {
 | No-build Required | ✓ | ✓ | ✓ |
 | SSR-friendly | ✓ | Limited | ✓ |
 
-**Coming from Alpine?** See [alpine.md](alpine.md) for a step-by-step migration guide.
+**Coming from Alpine?** See [alpine](/alpine) for a step-by-step migration guide.
