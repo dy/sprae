@@ -194,9 +194,21 @@ Capture element reference.
 <!-- with :each: collects array -->
 <li :each="item in items" :ref="itemEls" :text="item"></li>
 <!-- itemEls = [li, li, li, ...] -->
+```
 
-<!-- mount/unmount callback -->
-<div :ref="el => (onmount(el), () => onunmount(el))"></div>
+##### Lifecycle
+
+Return a function from `:ref` to handle cleanup when element is removed:
+
+```html
+<div :ref="el => {
+  const observer = new IntersectionObserver(entries => { ... })
+  observer.observe(el)
+  return () => observer.disconnect()
+}"></div>
+
+<!-- or simply -->
+<div :ref="el => (setup(el), () => cleanup(el))"></div>
 ```
 
 #### `:hidden="expr"`

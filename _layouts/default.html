@@ -140,7 +140,6 @@
         }
 
         this.clouds = [...this.clouds]
-        document.getElementById('spray').style.height = pageH + 'px'
       },
 
       cursorStyle() {
@@ -194,8 +193,7 @@
     data-onmousemove.document="move"
     data-onmousedown.document="press"
     data-onmouseup.document="release"
-    data-fx.once="init()"
-    style="position:absolute;inset:0;z-index:-1;overflow:hidden;pointer-events:none;min-height:100%">
+    data-fx.once="init()">
       <div data-if="mouseEntered && !pressed" data-style="cursorStyle()"></div>
       <div data-each="c in clouds" data-if="c.released || activeIdx !== clouds.indexOf(c)" data-style="style(c)"></div>
       <div data-if="pressed && activeIdx >= 0" data-style="style(clouds[activeIdx])"></div>
@@ -219,7 +217,6 @@
         <a href="{{ '/' | relative_url }}" class="logo" aria-label="Home">∴</a>
         {% endunless %}
         <a href="docs">docs</a>
-        <a href="drops">drops</a>
       </nav>
 
       <!-- Table of contents - auto-generated from headings -->
@@ -227,7 +224,7 @@
         items: [],
         active: '',
         activeSection: '',
-        
+
         init() {
           // Collect all h2 and h4 headings from main content
           const headings = document.querySelectorAll('main h2, main h4')
@@ -249,7 +246,7 @@
           }
           this.onScroll()
         },
-        
+
         onScroll() {
           const scrollY = window.scrollY + 100
           let newActive = this.items[0]?.id
@@ -271,11 +268,11 @@
             }, 50)
           }
         },
-        
+
         isVisible(item) {
           return item.level === 2 || item.section === this.activeSection
         },
-        
+
         goto(id) {
           const el = document.getElementById(id)
           if (el) el.scrollIntoView({ behavior: 'smooth' })

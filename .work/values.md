@@ -8,6 +8,7 @@
 
 > **"DOM microhydration — reactive sprinkles for HTML."**
 
+Adding interactivity to HTML without a build step or framework overhead. Alpine.js alternative at 1/3 the size.
 
 ## Core Identity
 

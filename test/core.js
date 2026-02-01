@@ -96,8 +96,7 @@ test("core: if", async () => {
   is(state.log, [1]);
 });
 
-;(isJessie ? test.skip : test)("core: bulk set", async () => {
-  // jessie: 'for' is reserved keyword in object literals
+test("core: bulk set", async () => {
   let el = h`<input :id="0" :="{for:1, title:2, help:3, type:4, placeholder: 5, value: 6, aB: 8}" :value="7"/>`;
   sprae(el);
   is(el.outerHTML, `<input id="0" for="1" title="2" help="3" type="4" placeholder="5" value="7" a-b="8">`);
@@ -160,6 +159,7 @@ test("core: async prop", async () => {
 });
 
 test.skip("core: immediate scope", async () => {
+  // not feasible
   let el = h`<x :scope="{arr:[], inc(){ arr.push(1) }}" :onx="e=>inc()" :text="arr[0]"></x>`;
   sprae(el);
   is(el.outerHTML, `<x></x>`);
@@ -222,19 +222,6 @@ test('globals', async () => {
   is(el.outerHTML, `<x>3.14</x>`)
 })
 
-test.skip("core: switch signals", async () => {
-  const preact = await import('@preact/signals-core')
-  use(preact)
-
-  let el = h`<div :text="x"/>`
-  let state = sprae(el, { x: preact.signal(1) })
-  is(el.innerHTML, '1')
-  state.x = 2
-  await tick()
-  is(el.innerHTML, '2')
-
-  use(signals)
-})
 
 test("core: Math / other globals available in template", async () => {
   let el = h`<div :text="Math.max(2, 5, 1)"></div>`;
@@ -275,7 +262,7 @@ test("core: runtime errors don't break sprae", async () => {
 })
 
 // jessie doesn't support `await` keyword
-;(isJessie ? test.skip : test)("core: async errors don't break sprae", async () => {
+test("core: async errors don't break sprae", {skip:isJessie}, async () => {
   console.log('---async error')
   let el = h`<y><x :text="await Promise.reject('fail')"></x><x :text="b"></x></y>`
   let state = sprae(el, {b:'b'})
@@ -362,7 +349,7 @@ test('core: autostart nested case 2', async () => {
 })
 
 // jessie doesn't preserve `this` binding in compiled functions
-;(isJessie ? test.skip : test)('core: list length unsub (preact signals)', async () => {
+test('core: list length unsub (preact signals)', {skip: isJessie}, async () => {
   // list.push disables list.length reading as reactive (cycle prevention)
   // but then preact signals unsubscribe :text from list.length updates
   let a = h`<x :scope="{list:[], add(item){ this.list.push('item') }}" ><y :text="list.length"></y><button :onx="add"></button></x>`

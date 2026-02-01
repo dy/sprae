@@ -65,7 +65,7 @@ test("modifier: throttle-time", async () => {
 });
 
 test("modifier: debounce-raf", async () => {
-  let el = h`<div :style.raf="{'--progress': progress + '%'}"></div>`;
+  let el = h`<div :style.debounce-raf="{'--progress': progress + '%'}"></div>`;
   let state = sprae(el, { progress: 0 });
   state.progress = 10;
   state.progress = 20;

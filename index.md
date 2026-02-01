@@ -24,12 +24,11 @@ Reactive sprinkles for HTML/JSX
 
 ## why
 
-- **~5kb** gzipped, zero dependencies
-- **No build step** – just include and go
-- **Signals** – standard reactive primitives
-- **CSP-safe** – secure evaluator option
-- **TypeScript** – full type definitions
-- **JSX/SSR** – works with server components
+- **No complexity fatigue** – no build step, no framework, no mental overhead
+- **No bundle bloat** – ~5kb vs 40kb+ for Alpine/Vue/React
+- **Use what you know** – standard JS expressions, no magic
+- **Future-proof** – built on [TC39 Signals](https://github.com/tc39/proposal-signals), not proprietary reactivity
+- **Works everywhere** – HTML, JSX, SSR, any backend template
 
 ## usage
 
@@ -37,21 +36,13 @@ Reactive sprinkles for HTML/JSX
 <script type="module" src="//unpkg.com/sprae"></script>
 
 <!-- Tabs -->
-<nav :scope="{tab: 'A'}">
-  <button :class="{active: tab=='A'}" :onclick="tab='A'">A</button>
-  <button :class="{active: tab=='B'}" :onclick="tab='B'">B</button>
-  <section :if="tab=='A'">Content A</section>
-  <section :if="tab=='B'">Content B</section>
+<nav :scope="{tab: 'a'}">
+  <button :class="{active: tab=='a'}" :onclick="tab='a'">A</button>
+  <button :class="{active: tab=='b'}" :onclick="tab='b'">B</button>
+  <section :if="tab=='a'">Content A</section>
+  <section :if="tab=='b'">Content B</section>
 </nav>
-
-<!-- Filter -->
-<input :scope="{q: ''}" :value="q" :oninput="q=e.target.value" placeholder="Search...">
-<ul :each="item in items.filter(i => i.includes(q))">
-  <li :text="item"></li>
-</ul>
 ```
-
-## reference
 
 <div class="tabs" data-scope="{tab:'directives'}">
 <button data-class="{active: tab=='directives'}" data-onclick="tab='directives'">Directives <span class="badge">11</span></button>
@@ -106,3 +97,7 @@ Pass the same state object to multiple `sprae()` calls. For cross-component stat
 
 **Does it work with SSR/hydration?**
 Yes. Server renders HTML, sprae hydrates on client. Works with Next.js, Astro, any SSR. See [server guide](docs#server-components).
+
+<p align='center' style="margin-top:6rem">
+<a href="https://krishnized.github.io/license">ॐ</a>
+</p>

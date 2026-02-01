@@ -1,4 +1,4 @@
-# [∴](https://dy.github.io/sprae) spræ [![tests](https://github.com/dy/sprae/actions/workflows/node.js.yml/badge.svg)](https://github.com/dy/sprae/actions/workflows/node.js.yml) ![size](https://img.shields.io/badge/size-~5kb-white) [![npm](https://img.shields.io/npm/v/sprae?color=white)](https://www.npmjs.com/package/sprae)
+# [∴](https://dy.github.io/sprae) spræ [![tests](https://github.com/dy/sprae/actions/workflows/node.js.yml/badge.svg)](https://github.com/dy/sprae/actions/workflows/node.js.yml) ![size](https://img.shields.io/badge/size-~6kb-white) [![npm](https://img.shields.io/npm/v/sprae?color=white)](https://www.npmjs.com/package/sprae)
 
 Ræctive sprinkles for HTML/JSX
 
@@ -37,7 +37,7 @@ Ræctive sprinkles for HTML/JSX
 
 |                  | [alpine](alpine.md) | sprae |
 |------------------|--------|-------|
-| _size_           | ~16kb | ~5kb |
+| _size_           | ~16kb | ~6kb |
 | _performance_    | ~2× slower | 1.00× |
 | _CSP_            | limited | full |
 | _reactivity_     | custom | [signals](docs.md#signals) |

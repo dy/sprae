@@ -434,8 +434,27 @@ test("each: expression as source", async () => {
   is(el.innerHTML, `<x>1</x><x>2</x>`);
 });
 
-test.skip("each: unmounted elements remove listeners", async () => {
-  // let's hope they get removed without memory leaks...
+test("each: unmounted elements call dispose", async () => {
+  // NOTE: each is unkeyed - elements are reused by index, so disposal happens on the LAST element
+  let el = h`<div><x :each="item in items" :ref="e => (inits.push(item), () => disposes.push(item))"></x></div>`
+  let state = sprae(el, { items: [1, 2, 3], inits: [], disposes: [] })
+  is(el.innerHTML, `<x></x><x></x><x></x>`)
+  is([...state.inits], [1, 2, 3])
+  is([...state.disposes], [])
+
+  console.log('---shrink to 2 items')
+  state.items = [1, 3]
+  await tick()
+  is(el.innerHTML, `<x></x><x></x>`)
+  // Last element (index 2, which had item 3) gets disposed
+  is([...state.disposes], [3])
+
+  console.log('---remove all')
+  state.items = []
+  await tick()
+  is(el.innerHTML, ``)
+  // After shrink, elements had [1, 3]. Both get disposed.
+  is([...state.disposes], [3, 1, 3])
 });
 
 test("each: internal children get updated by state update, also: update by running again", async () => {

@@ -33,7 +33,7 @@ test("on: event with modifier", async () => {
 });
 
 // jessie doesn't preserve `this` binding in compiled functions
-;(isJessie ? test.skip : test)("on: this context", async () => {
+test("on: this context", {skip:isJessie}, async () => {
   let el = h`<div :onx="log.push(this)"></div>`;
   let state = sprae(el, { log: [] });
   await tick();
@@ -215,7 +215,7 @@ test("on: function with braces", async () => {
 });
 
 // jessie doesn't support `await` keyword
-;(isJessie ? test.skip : test)("on: async inline", async () => {
+test("on: async inline", {skip: isJessie}, async () => {
   let el = h`<div :onx="let v = await Promise.resolve().then(()=>(1)); log.push(v);"></div>`;
   let state = sprae(el, { log: [] });
   el.dispatchEvent(new window.Event("x"));
@@ -225,7 +225,7 @@ test("on: function with braces", async () => {
 });
 
 // jessie doesn't support `await` keyword
-;(isJessie ? test.skip : test)("on: async function", async () => {
+test("on: async function", {skip: isJessie}, async () => {
   let el = h`<div :onx="async e => {
     let v = await (Promise.resolve().then(()=>(1))); log.push(v);
     console.log({x:1}) // this object spoil the broth

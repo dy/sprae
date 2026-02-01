@@ -31,7 +31,7 @@ test("html: null/empty", async () => {
   is(el.outerHTML, `<div></div>`);
 });
 
-;(isJessie ? test.skip : test)("html: function", async () => {
+test("html: function", async () => {
   // jessie: causes hang after test completion
   let el = h`<div :html="h => h + suffix"></div>`;
   let params = sprae(el, { suffix: '!' });

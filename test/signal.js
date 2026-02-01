@@ -199,25 +199,34 @@ t('signal: internal effects', async () => {
 })
 
 // error
-t.todo('signal: error in mapper', async t => {
-  // NOTE: actually mb useful to have blocking error in mapper
+t('signal: error in computed', async () => {
   let x = signal(1)
-  let y = x.map(() => { throw Error('123') })
-  t.ok(y.error)
+  let y = computed(() => { throw Error('computed error') })
+  let err
+  try { y.value } catch (e) { err = e }
+  is(err?.message, 'computed error')
 })
 
-t.todo('signal: error in subscription', async () => {
+t('signal: error in effect', async () => {
   let x = signal(1)
-  x.subscribe(() => { throw new Error('x') })
+  let err
+  try {
+    effect(() => { throw new Error('effect error') })
+  } catch (e) { err = e }
+  is(err?.message, 'effect error')
 })
 
-t.todo('signal: error in init', async () => {
-  signal(() => { throw Error(123) });
-})
-
-t.todo('signal: error in set', async () => {
-  let x = signal(1)
-  x(() => { throw Error(123) })
+t('signal: error in effect update', async () => {
+  let x = signal(0)
+  let err, log = []
+  effect(() => {
+    log.push(x.value)
+    if (x.value > 0) throw new Error('update error')
+  })
+  is(log, [0])
+  try { x.value = 1 } catch (e) { err = e }
+  is(err?.message, 'update error')
+  is(log, [0, 1])
 })
 
 // effect
