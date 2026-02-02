@@ -249,7 +249,7 @@ const start = sprae.start = (root = document.body, values) => {
 
 
 /** Package version (injected by bundler) */
-sprae.version = "[VI]{{inject}}[/VI]"
+sprae.version = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'dev'
 
 const dispose = sprae.dispose
 

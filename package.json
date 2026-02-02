@@ -43,7 +43,6 @@
     "es-module-shims": "^1.10.0",
     "esbuild": "^0.23.0",
     "esbuild-plugin-umd-wrapper": "^2.0.3",
-    "esbuild-plugin-version-injector": "^1.2.1",
     "happy-dom": "^20.4.0",
     "hyperf": "^1.7.0",
     "jsdom": "^27.0.0",

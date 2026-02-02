@@ -1,7 +1,6 @@
 import esbuild from "esbuild";
 import { umdWrapper } from "esbuild-plugin-umd-wrapper"
 import pkg from './package.json' with { type: 'json' };
-import { esbuildPluginVersionInjector } from 'esbuild-plugin-version-injector';
 
 // ESM bundle
 await esbuild.build({
@@ -11,10 +10,8 @@ await esbuild.build({
   bundle: true,
   minify: true,
   target: 'es2020',
-  sourcemap: 'external',
-  plugins: [
-    esbuildPluginVersionInjector()
-  ]
+  define: { '__VERSION__': JSON.stringify(pkg.version) },
+  sourcemap: 'external'
 })
 
 
@@ -38,10 +35,10 @@ if (start != null && start !== 'false') (start && start !== 'true' ? document.qu
   target: 'es2020',
   sourcemap: 'external',
   format: "umd",
+  define: { '__VERSION__': JSON.stringify(pkg.version) },
   plugins: [
     umdWrapper({
       libraryName: "sprae"
-    }),
-    esbuildPluginVersionInjector()
+    })
   ]
 })
