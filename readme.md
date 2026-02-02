@@ -1,6 +1,6 @@
 # [∴](https://dy.github.io/sprae) spræ [![tests](https://github.com/dy/sprae/actions/workflows/node.js.yml/badge.svg)](https://github.com/dy/sprae/actions/workflows/node.js.yml) ![size](https://img.shields.io/badge/size-~6kb-white) [![npm](https://img.shields.io/npm/v/sprae?color=white)](https://www.npmjs.com/package/sprae)
 
-Microhydration for HTML/JSX tree
+Microhydration for HTML/JSX treeю
 
 ## usage
 
