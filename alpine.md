@@ -1,6 +1,3 @@
----
----
-
 # Migrating from Alpine to Sprae
 
 ## Quick Reference

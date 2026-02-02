@@ -267,8 +267,8 @@
 * [x] ~~community plugins directory~~ directives are 1-5 lines, docs teach the pattern instead
 
 ## [ ] Website
-  * [ ] **landing page overhaul**: values.md content → compelling index
-  * [ ] **Sprae vs Alpine** comparison page with benchmarks
+  * [x] **landing page overhaul**: values.md content → compelling index
+  * [x] **Sprae vs Alpine** comparison page with benchmarks
   * [ ] **playground**: interactive editor like Alpine's
   * [ ] drops/examples gallery: 7 GUIs, real-world patterns
   * [ ] "Used by" section with logos
@@ -282,7 +282,7 @@
   * [ ] Values section (see values.md)
     * [x] One-liners / taglines
     * [ ] Use cases grid
-    * [ ] Comparison table
+    * [x] Comparison table
     * [ ] Market position diagram
   * [x] Docs page UI
   * [ ] Playground (interactive editor)
@@ -296,8 +296,6 @@
     * [ ] SVG confetti gen
     * [ ] SVG chat gen
     * [ ] SVG counter gen
-  * [ ] Used by section
-  * [ ] Better highlighter
   * [ ] Better reference examples
   * [ ] Icons for principles
   * [ ] Subtle animations

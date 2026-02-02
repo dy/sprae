@@ -1,6 +1,3 @@
----
----
-
 <div class="no-toc">
 
 # <span class="logo">∴</span> spræ
@@ -28,29 +25,34 @@
 </div>
 </div>
 
-## principles
+<div id="principles-content">
 
-**minimal** — ~5kb min+gzip, tiny API, standard JS expressions
+## Principles
 
-**open** — inspectable state, signals reactivity, configurable directives
+**Minimal**
+: 5kb gzipped.<br>Standard JS expressions.<br> No new syntax.
 
-**practical** — no build step, works with any backend, TypeScript support
+**Open**
+: State as plain objects.<br>Preact-signals core.<br>Configurable parts.
 
-## usage
+**Practical**
+: No build step, no deps.<br>HTML, JSX, any template.<br>TypeScript support.
+
+</div>
+
+## Usage
 
 ```html
-<script type="module" src="//unpkg.com/sprae"></script>
+<!-- CDN -->
+<script src="//unpkg.com/sprae" data-start></script>
 
-<!-- Tabs -->
-<nav :scope="{tab: 'a'}">
-  <button :class="{active: tab=='a'}" :onclick="tab='a'">A</button>
-  <button :class="{active: tab=='b'}" :onclick="tab='b'">B</button>
-  <section :if="tab=='a'">Content A</section>
-  <section :if="tab=='b'">Content B</section>
-</nav>
+<!-- ESM -->
+<script type="module">import sprae from 'sprae'</script>
 ```
 
-## reference
+[Docs →](docs#faq)
+
+## Reference
 
 <div class="tabs" data-scope="{tab:'directives'}">
 <button data-class="{active: tab=='directives'}" data-onclick="tab='directives'">Directives</button>
@@ -90,27 +92,29 @@
 </div>
 </div>
 
+[API →](docs#faq)
+
 ## FAQ
 
-Yet another framework?
+**Yet another framework?**
 : Not a framework. A 5kb enhancer for existing HTML. No build, no ecosystem lock-in.
 
-What's special?
+**What's special?**
 : Open state (inspect/modify from console), signals reactivity, modular directives, works with any backend.
 
-Why not Alpine?
+**Why not Alpine?**
 : 3× lighter, ESM-first, signals, prop modifiers. See [comparison](./alpine.md).
 
-Why not React/Vue?
+**Why not React/Vue?**
 : No build step, no virtual DOM, augments [JSX](docs#jsx--react--nextjs) for server components.
 
-Is it slow?
+**Is it slow?**
 : [Benchmark](https://krausest.github.io/js-framework-benchmark/2024/table_chrome_130.0.6723.58.html). Faster than Alpine, comparable to Vue.
 
-Components?
+**Components?**
 : [Manage duplication](https://tailwindcss.com/docs/styling-with-utility-classes#managing-duplication) or use [web components](docs#web-components).
 
-Is it maintained?
+**Is it maintained?**
 : Yes. <span data-scope="{ years: 3, versions: 12 }" data-fx.once="fetch('https://api.github.com/repos/dy/sprae').then(function(r){ return r.ok ? r.json() : null }).then(function(d){ if(d) years = Math.floor((Date.now() - new Date(d.created_at)) / 31536000000) }); fetch('https://api.github.com/repos/dy/sprae/releases').then(function(r){ return r.ok ? r.json() : null }).then(function(d){ if(d) versions = new Set(d.map(function(r){ return r.tag_name.split('.')[0] })).size })"><span data-text="years">3</span>+ years, <span data-text="versions">12</span> major versions</span>. [Roadmap](https://github.com/dy/sprae/issues).
 
-[More FAQ →](docs#faq)
+[FAQ →](docs#faq)

@@ -1,3 +1,6 @@
+plugins:
+  - jekyll-optional-front-matter
+
 collections:
   examples:
     output: true
