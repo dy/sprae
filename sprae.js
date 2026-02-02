@@ -240,7 +240,10 @@ const start = sprae.start = (root = document.body, values) => {
           root[_add](el)
         }
       }
-      for (const el of m.removedNodes) el.nodeType === 1 && el[_dispose]?.()
+      for (const el of m.removedNodes) {
+        // Only dispose if element is truly removed, not just moved (e.g., by :if toggling)
+        if (el.nodeType === 1 && !root.contains(el)) el[_dispose]?.()
+      }
     }
   });
   mo.observe(root, { childList: true, subtree: true });
