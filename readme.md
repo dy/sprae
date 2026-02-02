@@ -29,9 +29,13 @@ Wanted alpine but with less syntax and magic, and with open state.
 
 <!-- [start](docs.md#start)  [store](docs.md#store)  [signals](docs.md#signals)  [evaluator](docs.md#evaluator)  [jsx](docs.md#jsx)  [build](docs.md#custom-build)  [hints](docs.md#hints) -->
 
-**Directives**: [`:text`](docs.md#text) [`:class`](docs.md#class) [`:style`](docs.md#style) [`:value`](docs.md#value) [`:<attr>`](docs.md#attr-) [`:if :else`](docs.md#if-else) [`:each`](docs.md#each) [`:scope`](docs.md#scope) [`:fx`](docs.md#fx) [`:ref`](docs.md#ref) [`:hidden`](docs.md#hidden) [`:portal`](docs.md#portal) [`:on<event>`](docs.md#onevent)
+#### Directives
 
-**Modifiers**: [`.debounce`](docs.md#debounce-ms) [`.throttle`](docs.md#throttle-ms) [`.delay`](docs.md#tick) [`.once`](docs.md#once)<br>
+[`:text`](docs.md#text) [`:class`](docs.md#class) [`:style`](docs.md#style) [`:value`](docs.md#value) [`:<attr>`](docs.md#attr-) [`:if :else`](docs.md#if-else) [`:each`](docs.md#each) [`:scope`](docs.md#scope) [`:fx`](docs.md#fx) [`:ref`](docs.md#ref) [`:hidden`](docs.md#hidden) [`:portal`](docs.md#portal) [`:on<event>`](docs.md#onevent)
+
+#### Modifiers
+
+[`.debounce`](docs.md#debounce-ms) [`.throttle`](docs.md#throttle-ms) [`.delay`](docs.md#tick) [`.once`](docs.md#once)<br>
 [`.window`](docs.md#window-document-body-root-parent-away-self) [`.document`](docs.md#window-document-body-root-parent-away-self) [`.root`](docs.md#window-document-body-root-parent-away-self) [`.body`](docs.md#window-document-body-root-parent-away-self) [`.parent`](docs.md#window-document-body-root-parent-away-self) [`.self`](docs.md#window-document-body-root-parent-away-self) [`.away`](docs.md#window-document-body-root-parent-away-self)<br>
 [`.passive`](docs.md#passive-captureevents-only) [`.capture`](docs.md#passive-captureevents-only) [`.prevent`](docs.md#prevent-stop-immediateevents-only) [`.stop`](docs.md#prevent-stop-immediateevents-only) [`.<key>`](docs.md#key-filters)
 
