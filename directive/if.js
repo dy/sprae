@@ -1,4 +1,4 @@
-import sprae, { throttle, _on, _off, _state, frag } from '../core.js';
+import sprae, { throttle, _on, _off, _state, frag, mutate } from '../core.js';
 
 /**
  * Conditional directive - shows/hides element based on condition.
@@ -16,8 +16,9 @@ export default (el, state) => {
     el[_state] ??= null
 
     _el = el.content ? frag(el) : el
+    _el[_state] ??= null  // mark _el (frag) as needing sprae
 
-    el.replaceWith(_holder = document.createTextNode(''))
+    mutate(() => el.replaceWith(_holder = document.createTextNode('')))
     _el._holder = _holder._holder = _holder
 
 
@@ -27,13 +28,15 @@ export default (el, state) => {
       let match = _holder._clauses.find(([, s]) => s)
 
       if (match != _match) {
-        _match?.[0].remove()
-        _match?.[0][_off]?.()
-        if (_match = match) {
-          _holder.before(_match[0].content || _match[0])
-          // there's no :else after :if, so lazy-sprae here doesn't risk adding own destructor to own list of destructors
-          !_match[0][_state] ? (delete _match[0][_state], sprae(_match[0], state)) : _match[0][_on]?.()
-        }
+        mutate(() => {
+          _match?.[0].remove()
+          _match?.[0][_off]?.()
+          if (_match = match) {
+            _holder.before(_match[0].content || _match[0])
+            // check if element needs initial sprae (null) vs just re-enabling (_on)
+            !_match[0][_state] ? (delete _match[0][_state], sprae(_match[0], state)) : _match[0][_on]?.()
+          }
+        })
       }
     })
   }

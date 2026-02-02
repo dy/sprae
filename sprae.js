@@ -6,7 +6,7 @@
 import store from "./store.js";
 import { batch, computed, effect, signal, untracked } from './core.js';
 import * as signals from './signal.js';
-import sprae, { use, decorate, directive, modifier, parse, throttle, debounce, _off, _state, _on, _dispose, _add } from './core.js';
+import sprae, { use, decorate, directive, modifier, parse, throttle, debounce, _off, _state, _on, _dispose, _add, start } from './core.js';
 
 import _if from "./directive/if.js";
 import _else from "./directive/else.js";
@@ -71,11 +71,10 @@ const dir = (target, name, expr, state) => {
 
     state =  target[_state] ?? state
 
-    return effect(() => (
-      // if planned count is same as actual count - plan new update, else update right away
-      change.value == count ? (trigger()) : (count = change.value, _out = evaluate(state, update)),
-      out
-    ))
+    return effect(() => {
+      const result = change.value == count ? (trigger()) : (count = change.value, _out = evaluate(state, update))
+      return out
+    })
   }
 }
 
@@ -211,50 +210,10 @@ sprae.modifier = modifier
  * Disposes a spraed element, cleaning up all effects and state.
  * @param {Element} el - Element to dispose
  */
-sprae.dispose = (el) => el[_dispose]?.()
+const dispose = sprae.dispose = (el) => el[_dispose]?.()
 
 
-/**
- * Auto-initializes sprae on dynamically added elements.
- * Uses MutationObserver to detect new DOM nodes and apply directives.
- *
- * @param {Element} [root=document.body] - Root element to observe
- * @param {Object} [values] - Initial state values
- * @returns {Object} The reactive state object
- *
- * @example
- * ```js
- * // Auto-init on page load
- * sprae.start(document.body, { count: 0 })
- * ```
- */
-const start = sprae.start = (root = document.body, values) => {
-  const state = store(values)
-  sprae(root, state);
-  const mo = new MutationObserver(mutations => {
-    for (const m of mutations) {
-      for (const el of m.addedNodes) {
-        // el can be spraed or removed by subsprae (like within :each/:if)
-        if (el.nodeType === 1 && el[_state] === undefined && root.contains(el)) {
-          // even if element has no spraeable attrs, some of its children can have
-          root[_add](el)
-        }
-      }
-      for (const el of m.removedNodes) {
-        // Only dispose if element is truly removed, not just moved (e.g., by :if toggling)
-        if (el.nodeType === 1 && !root.contains(el)) el[_dispose]?.()
-      }
-    }
-  });
-  mo.observe(root, { childList: true, subtree: true });
-  return state
-}
-
-
-/** Package version (injected by bundler) */
-sprae.version = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'dev'
-
-const dispose = sprae.dispose
+sprae.start = start
 
 export default sprae
 export { sprae, store, signal, effect, computed, batch, untracked, start, use, throttle, debounce, dispose }

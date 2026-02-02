@@ -788,90 +788,65 @@ customElements.define('my-counter', Counter)
 
 ## FAQ
 
-**Why sprae?**
+Why sprae?
+: Minimal syntax, non-disruptive HTML. No build, no config. Ecosystem-agnostic (CDN, ESM, JSX). Open, configurable. Preact-signals compatible. Fast, practical and safe.
 
-- Minimal syntax, non-disruptive HTML
-- No build, no config
-- Ecosystem-agnostic (CDN, ESM, JSX)
-- Open, configurable
-- Preact-signals compatible
-- Fast, practical and safe
+Yet another framework?
+: Not a framework. A 5kb enhancer for existing HTML. No ecosystem lock-in, works alongside anything.
 
-**Yet another framework?**
+Is it slow?
+: No. See [js-framework-benchmark](https://krausest.github.io/js-framework-benchmark/2024/table_chrome_130.0.6723.58.html) — faster than Alpine, comparable to Vue.
 
-Not a framework. A 5kb enhancer for existing HTML. No ecosystem lock-in, works alongside anything.
+Why not Alpine.js?
+: Simpler API, 3× lighter, ESM-first, open state, signals support, prop modifiers, aliases, event chains. See [alpine.md](alpine.md) for migration guide.
 
-**Is it slow?**
+Why not vanilla JS?
+: `createElement` is wrong mantra. [Just use framework](https://justfuckingusereact.com/).
 
-No. See [js-framework-benchmark](https://krausest.github.io/js-framework-benchmark/2024/table_chrome_130.0.6723.58.html) — faster than Alpine, comparable to Vue.
+Why not Next/React?
+: Sprae augments [JSX](#jsx--react--nextjs), which can help server components. Some find react [not worth the time](https://www.keithcirkel.co.uk/i-dont-have-time-to-learn-react/).
 
-**Why not Alpine.js?**
+Why signals?
+: It is the emerging [standard](https://github.com/tc39/proposal-signals) for reactivity. [Preact-signals](https://github.com/preactjs/signals) provide minimal API surface.
 
-Simpler API, 3× lighter, ESM-first, open state, signals support, prop modifiers, aliases, event chains. See [alpine.md](alpine.md) for migration guide.
+Who cares for progressive enhancement?
+: PE is for long-lasting, low-maintenance, fail-proof, accessible, portable and SEO-optimized web.
 
-**Why not vanilla JS?**
+Is it just a toy?
+: Fun to play, comes with state sandbox. But production-ready too.
 
-`createElement` is wrong mantra. [Just use framework](https://justfuckingusereact.com/).
+Does it scale to complex state?
+: As far as you and CPU can handle it.
 
-**Why not Next/React?**
+Is new Function unsafe?
+: If your HTML comes from strangers, there is [safe evaluator](#custom-evaluator) for CSP. If you control your HTML, it's no different from inline `onclick` handlers.
 
-Sprae augments [JSX](#jsx--react--nextjs), which can help server components. Some find react [not worth the time](https://www.keithcirkel.co.uk/i-dont-have-time-to-learn-react/).
+Learning curve?
+: If you know HTML and JS, you know sprae. No new syntax, no special compilation, just `:attribute="expression"`.
 
-**Why signals?**
+Components support?
+: [Manage duplication](https://tailwindcss.com/docs/styling-with-utility-classes#managing-duplication), otherwise plop a [web component](#web-components).
 
-It is the emerging [standard](https://github.com/tc39/proposal-signals) for reactivity. [Preact-signals](https://github.com/preactjs/signals) provide minimal API surface.
+TypeScript support?
+: Yes, full types included. If you need more please [leave a request](https://github.com/dy/sprae/issues/new).
 
-**Who cares for progressive enhancement?**
+Browser compatibility?
+: Any browser with [Proxy support](https://caniuse.com/proxy).
 
-PE is for long-lasting, low-maintenance, fail-proof, accessible, portable and SEO-optimized web.
+Is it stable?
+: Yes, since v10.
 
-**Is it just a toy?**
+How old is it?
+: 3+ years old ([first commit](https://github.com/dy/sprae/commit/ee7e372fb372bde5bdd7bfd3524cdaa815793663) Nov 7, 2022).
 
-Fun to play, comes with state sandbox. But production-ready too.
+Will it be maintained long-term?
+: 12 versions, 1.5k+ commits and future plans.
 
-**Does it scale to complex state?**
+What's future plan?
+: Plugins, components, integration cases, generators.
 
-As far as you and CPU can handle it.
-
-**Is new Function unsafe?**
-
-If your HTML comes from strangers, there is [safe evaluator](#custom-evaluator) for CSP. If you control your HTML, it's no different from inline `onclick` handlers.
-
-**Learning curve?**
-
-If you know HTML and JS, you know sprae. No new syntax, no special compilation, just `:attribute="expression"`.
-
-**Components support?**
-
-[Manage duplication](https://tailwindcss.com/docs/styling-with-utility-classes#managing-duplication), otherwise plop a [web component](#web-components).
-
-**TypeScript support?**
-
-Yes, full types included. If you need more please [leave a request](https://github.com/dy/sprae/issues/new).
-
-**Browser compatibility?**
-
-Any browser with [Proxy support](https://caniuse.com/proxy).
-
-**Is it stable?**
-
-Yes, since v10.
-
-**How old is it?**
-
-3+ years old ([first commit](https://github.com/dy/sprae/commit/ee7e372fb372bde5bdd7bfd3524cdaa815793663) Nov 7, 2022).
-
-**Will it be maintained long-term?**
-
-12 versions, 1.5k+ commits and future plans.
-
-**What's future plan?**
-
-Plugins, components, integration cases, generators.
-
-**Is it backed by a company?**
-
-No, indie. You can [support it](https://github.com/sponsors/dy)!
+Is it backed by a company?
+: No, indie. You can [support it](https://github.com/sponsors/dy)!
 
 
 

@@ -1,4 +1,4 @@
-import sprae, { store, parse, _state, effect, _change, _signals, frag, throttle, debounce } from "../core.js";
+import sprae, { store, parse, _state, effect, _change, _signals, frag, throttle, debounce, mutate } from "../core.js";
 
 /**
  * Each directive - renders list items from array/object/number.
@@ -19,7 +19,7 @@ export default (tpl, state, expr) => {
   // we re-create items any time new items are produced
   let cur, keys, items, prevl = 0
 
-  let update = throttle(() => {
+  let update = throttle(() => mutate(() => {
     let i = 0, newItems = items, newl = newItems.length
 
     // plain array update, not store (signal with array) - updates full list
@@ -59,10 +59,10 @@ export default (tpl, state, expr) => {
           pending.push([ el, idx ])
         } else {
           holder.before(insertNode)
-          let subscope = Object.create(state, {
-            [itemVar]: { get: () => cur[idx] },
-            [idxVar]: { value: keys ? keys[idx] : idx }
-          })
+          let subscope = store({
+            get [itemVar]() { return cur[idx] },
+            [idxVar]: keys ? keys[idx] : idx
+          }, state)
           sprae(el, subscope)
         }
 
@@ -77,19 +77,19 @@ export default (tpl, state, expr) => {
       if (batch) {
         holder.before(batch)
         for (let [el, idx] of pending) {
-          let subscope = Object.create(state, {
-            [itemVar]: { get: () => cur[idx] },
-            [idxVar]: { value: keys ? keys[idx] : idx }
-          })
+          let subscope = store({
+            get [itemVar]() { return cur[idx] },
+            [idxVar]: keys ? keys[idx] : idx
+          }, state)
           sprae(el, subscope)
         }
       }
     }
 
     prevl = newl
-  })
+  }))
 
-  tpl.replaceWith(holder);
+  mutate(() => tpl.replaceWith(holder))
   tpl[_state] = null // mark as fake-spraed, to preserve :-attribs for template
 
   return Object.assign(value => {

@@ -694,3 +694,73 @@ test('each: duplicate list #63', async () => {
   await tick()
   is(el.innerHTML, `<x>3</x><x>4</x><y>3</y><y>4</y>`)
 })
+
+// Regression: :if inside :each with parent scope signal dependency
+// When parent signal changes, :if should re-evaluate and show/hide items
+test('each: if with parent scope signal', async () => {
+  let el = h`<div>
+    <a :each="item in items"
+       :if="item.section === activeSection"
+       :text="item.text"></a>
+  </div>`
+
+  let state = sprae(el, {
+    items: [
+      { text: 'h2-a', section: 'sec-a' },
+      { text: 'h4-a1', section: 'sec-a' },
+      { text: 'h2-b', section: 'sec-b' },
+      { text: 'h4-b1', section: 'sec-b' }
+    ],
+    activeSection: 'sec-a'
+  })
+
+  await tick()
+  is(el.innerHTML, '<a>h2-a</a><a>h4-a1</a>', 'initial: only sec-a items visible')
+
+  state.activeSection = 'sec-b'
+  await tick()
+  is(el.innerHTML, '<a>h2-b</a><a>h4-b1</a>', 'after change: only sec-b items visible')
+
+  state.activeSection = 'sec-a'
+  await tick()
+  is(el.innerHTML, '<a>h2-a</a><a>h4-a1</a>', 'back to sec-a')
+})
+
+// Regression: :if inside :each with complex visibility function
+test('each: if with visibility function accessing parent scope', async () => {
+  let el = h`<nav>
+    <a :each="item in items"
+       :if="isVisible(item)"
+       :text="item.id"></a>
+  </nav>`
+
+  let state = sprae(el, {
+    items: [
+      { id: 'getting-started', level: 2, section: 'getting-started' },
+      { id: 'directives', level: 2, section: 'directives' },
+      { id: 'text', level: 4, section: 'directives' },
+      { id: 'html', level: 4, section: 'directives' },
+      { id: 'modifiers', level: 2, section: 'modifiers' },
+      { id: 'debounce', level: 4, section: 'modifiers' }
+    ],
+    activeSection: 'getting-started',
+    isVisible(item) {
+      return item.level === 2 || item.section === this.activeSection
+    }
+  })
+
+  await tick()
+  // h2s always visible, h4s only if their section matches activeSection
+  is(el.innerHTML, '<a>getting-started</a><a>directives</a><a>modifiers</a>',
+     'initial: only h2s visible (no h4s match getting-started)')
+
+  state.activeSection = 'directives'
+  await tick()
+  is(el.innerHTML, '<a>getting-started</a><a>directives</a><a>text</a><a>html</a><a>modifiers</a>',
+     'directives section: h2s + directives h4s visible')
+
+  state.activeSection = 'modifiers'
+  await tick()
+  is(el.innerHTML, '<a>getting-started</a><a>directives</a><a>modifiers</a><a>debounce</a>',
+     'modifiers section: h2s + modifiers h4s visible')
+})

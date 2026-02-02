@@ -1,5 +1,7 @@
 import store, { _change, _signals } from "./store.js";
 
+
+
 /** Symbol for disposal (using standard Symbol.dispose if available) */
 export const _dispose = (Symbol.dispose ||= Symbol("dispose"))
 
@@ -81,6 +83,7 @@ export let directive = {};
  * @type {Record<string, ModifierHandler>}
  */
 export let modifier = {}
+
 
 let currentDir = null;
 let currentEl = null;
@@ -202,6 +205,10 @@ const sprae = (el = document.body, state) => {
   return state;
 }
 
+/** Package version (injected by bundler) */
+sprae.version = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'dev'
+
+
 // directive initializer
 /** @type {(el: Element, name: string, expr: string, state: Object) => () => (() => void) | void} */
 export let dir
@@ -290,6 +297,49 @@ export const decorate = (fn, mods) => {
     }
   }
   return fn
+}
+
+
+/** MutationObserver reference, set by sprae.start() */
+export let mo = null
+/** Pauses MO during DOM mutations to prevent disposing managed elements */
+export const mutate = (fn) => { mo?.disconnect(); fn(); mo?.observe(mo._root, { childList: true, subtree: true }) }
+
+/**
+ * Auto-initializes sprae on dynamically added elements.
+ * Uses MutationObserver to detect new DOM nodes and apply directives.
+ *
+ * @param {Element} [root=document.body] - Root element to observe
+ * @param {Object} [values] - Initial state values
+ * @returns {Object} The reactive state object
+ *
+ * @example
+ * ```js
+ * // Auto-init on page load
+ * sprae.start(document.body, { count: 0 })
+ * ```
+ */
+export const start = (root = document.body, values) => {
+  const state = store(values)
+  sprae(root, state);
+  mo = new MutationObserver(mutations => {
+    for (const m of mutations) {
+      for (const el of m.addedNodes) {
+        // el can be spraed or removed by subsprae (like within :each/:if)
+        if (el.nodeType === 1 && el[_state] === undefined && root.contains(el)) {
+          // even if element has no spraeable attrs, some of its children can have
+          root[_add](el)
+        }
+      }
+      for (const el of m.removedNodes) {
+        // Only dispose if element is truly removed from document
+        if (el.nodeType === 1 && !root.contains(el)) el[_dispose]?.()
+      }
+    }
+  });
+  mo._root = root
+  mo.observe(root, { childList: true, subtree: true });
+  return state
 }
 
 /**

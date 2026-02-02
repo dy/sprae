@@ -10,6 +10,7 @@ export default (el) => {
   let _el, _prev = el
 
   _el = el.content ? frag(el) : el
+  _el[_state] ??= null  // mark _el (frag) as needing sprae
 
   // find holder
   while (_prev && !(_el._holder = _prev._holder)) _prev = _prev.previousSibling
