@@ -10,7 +10,7 @@
     <script src="https://unpkg.com/sprae" data-prefix="data-" data-start></script>
   </head>
 
-  <body data-fx.once="document.querySelectorAll('h2[id], h3[id], h4[id], h5[id], h6[id]').forEach(function(h) { var a = document.createElement('a'); a.href = '#' + h.id; a.className = 'anchor'; a.textContent = '#'; h.prepend(a) })">
+  <body id="page-{{ page.name | default: 'index' | split: '.' | first }}" data-fx.once="document.querySelectorAll('h2[id], h3[id], h4[id], h5[id], h6[id]').forEach(function(h) { var a = document.createElement('a'); a.href = '#' + h.id; a.className = 'anchor'; a.textContent = '#'; h.prepend(a) })">
     <!-- Spray effect - cursor cloud with inertia -->
     <div id="spray" data-scope="{
       clouds: [],
@@ -80,8 +80,11 @@
           this.cx = e.pageX
           this.cy = e.pageY
         }
-        this.mx = e.pageX
-        this.my = e.pageY
+        // Only follow mouse if not over main content
+        if (!e.target.closest('main')) {
+          this.mx = e.pageX
+          this.my = e.pageY
+        }
       },
 
       update(dt = 1) {
@@ -151,8 +154,8 @@
           '--size': size + 'px',
           '--margin': -size * 0.5 + 'px',
           '--blur': size * 0.3 + 'px',
-          '--center-s': (60 + i * 35) + '%',
-          '--center-l': (50 - i * 35) + '%',
+          '--center-s': (70 + i * 35) + '%',
+          '--center-l': (90 - i * 35) + '%',
           '--alpha': (0.15 + i * 0.7) * fade,
           '--opacity': 1
         }
@@ -194,6 +197,7 @@
     <main>
       <nav>
         <a href="docs">docs</a>
+        <a href="https://github.com/dy/sprae" class="version">v<span data-text="window.sprae?.version || '12.1.0'"></span></a>
       </nav>
 
       <!-- Table of contents - auto-generated from headings -->

@@ -31,7 +31,7 @@ html {
   font-weight: 400;
   --color-blue-700: color-mix(in oklab, color-mix(in oklab, midnightblue 70%, darkslategray) var(--scroll), color-mix(in oklab, mediumblue 70%, darkslategray));
   --color-blue-600: color-mix(in oklab, color-mix(in oklab, midnightblue 70%, lightslategray) var(--scroll), color-mix(in oklab, mediumblue 70%, lightslategray));
-  --color-bg: color-mix(in oklab, snow 10%, ghostwhite 90%);
+  --color-bg: #F5F5F5;
   --scroll: 0%;
   --x: 0;
   --y: 0;
@@ -75,10 +75,10 @@ body {
   margin: var(--margin);
   border-radius: 50%;
   background: radial-gradient(circle,
-    hsla(250, var(--center-s), var(--center-l), var(--alpha)) 0%,
-    hsla(220, 55%, 50%, calc(var(--alpha) * 0.5)) 35%,
-    hsla(190, 60%, 65%, calc(var(--alpha) * 0.2)) 60%,
-    transparent 100%
+    hsla(220, var(--center-s), var(--center-l), var(--alpha)) 0%,
+    hsla(200, 50%, 80%, calc(var(--alpha) * 0.5)) 75%,
+    /* hsla(250, 60%, 65%, calc(var(--alpha) * 0.2)) 60%, */
+    hsla(190, 50%, 80%, 0) 100%
   );
   mix-blend-mode: multiply;
   filter: blur(var(--blur));
@@ -101,6 +101,19 @@ nav {
   display: flex;
   gap: 1rem;
   justify-content: flex-end;
+  font-weight: bold;
+}
+
+nav .version {
+  position: relative;
+  margin-left: 1.5em;
+}
+
+nav .version::before {
+  content: '⌥';
+  position: absolute;
+  right: 100%;
+  margin-right: 0.3em;
 }
 
 nav .logo {
@@ -269,6 +282,16 @@ h1 {
   margin: 1rem 0;
 }
 
+h1 .logo {
+  display: inline-block;
+  transition: transform 9s ease-in-out;
+  transform-origin: center 60%;
+}
+
+h1:hover .logo {
+  transform: rotate(3600deg);
+}
+
 h2 {
   font-size: 1.5rem;
   font-weight: 700;
@@ -419,7 +442,7 @@ pre code {
 .highlight .mi, .highlight .mf { opacity: 0.75; } /* numbers */
 
 .github-corner {
-  position: fixed;
+  position: absolute;
   top: 0;
   right: 0;
   z-index: 10;
@@ -491,5 +514,12 @@ button:hover {
 
   ul {
     padding-left: 1.5ch;
+  }
+}
+
+#page-index {
+  h1 {
+    width: 50%;
+    text-align: right;
   }
 }

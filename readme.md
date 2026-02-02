@@ -1,38 +1,41 @@
 # [∴](https://dy.github.io/sprae) spræ [![tests](https://github.com/dy/sprae/actions/workflows/node.js.yml/badge.svg)](https://github.com/dy/sprae/actions/workflows/node.js.yml) ![size](https://img.shields.io/badge/size-~6kb-white) [![npm](https://img.shields.io/npm/v/sprae?color=white)](https://www.npmjs.com/package/sprae)
 
-Ræctive sprinkles for HTML/JSX
+Microhydration for HTML/JSX tree
 
 ## usage
 
 ```html
-<!-- Tabs -->
-<nav :scope="{tab: 'A'}">
-  <button :class="{active: tab=='A'}" :onclick="tab='A'">A</button>
-  <button :class="{active: tab=='B'}" :onclick="tab='B'">B</button>
-  <section :if="tab=='A'">Content A</section>
-  <section :if="tab=='B'">Content B</section>
-</nav>
+<!-- Day/Night switch -->
+<div :scope="{ isDark: false }">
+  <button :onclick="isDark = !isDark">
+    <span :text="isDark ? '🌙' : '☀️'"></span>
+  </button>
+  <div :class="isDark ? 'dark' : 'light'">Welcome to Spræ!</div>
+</div>
 
-<!-- Filter -->
-<input :scope="{q: ''}" :value="q" :oninput="q=e.target.value" placeholder="Search...">
-<ul :each="item in items.filter(i => i.includes(q))">
-  <li :text="item"></li>
-</ul>
+<style>
+  .light { background: #fff; color: #000; }
+  .dark { background: #333; color: #fff; }
+</style>
 
 <script type="module" src="//unpkg.com/sprae"></script>
 ```
+
+## why
+
+Wanted alpine but with less syntax and magic, and with open state.
 
 ## [docs](docs.md)
 
 <!-- [start](docs.md#start)  [store](docs.md#store)  [signals](docs.md#signals)  [evaluator](docs.md#evaluator)  [jsx](docs.md#jsx)  [build](docs.md#custom-build)  [hints](docs.md#hints) -->
 
-[`:text`](docs.md#text) [`:class`](docs.md#class) [`:style`](docs.md#style) [`:value`](docs.md#value) [`:<attr>`](docs.md#attr-) [`:if :else`](docs.md#if-else) [`:each`](docs.md#each) [`:scope`](docs.md#scope) [`:fx`](docs.md#fx) [`:ref`](docs.md#ref) [`:hidden`](docs.md#hidden) [`:portal`](docs.md#portal) [`:on<event>`](docs.md#onevent)
+**Directives**: [`:text`](docs.md#text) [`:class`](docs.md#class) [`:style`](docs.md#style) [`:value`](docs.md#value) [`:<attr>`](docs.md#attr-) [`:if :else`](docs.md#if-else) [`:each`](docs.md#each) [`:scope`](docs.md#scope) [`:fx`](docs.md#fx) [`:ref`](docs.md#ref) [`:hidden`](docs.md#hidden) [`:portal`](docs.md#portal) [`:on<event>`](docs.md#onevent)
 
-[`.debounce`](docs.md#debounce-ms) [`.throttle`](docs.md#throttle-ms) [`.delay`](docs.md#tick) [`.once`](docs.md#once)<br>
+**Modifiers**: [`.debounce`](docs.md#debounce-ms) [`.throttle`](docs.md#throttle-ms) [`.delay`](docs.md#tick) [`.once`](docs.md#once)<br>
 [`.window`](docs.md#window-document-body-root-parent-away-self) [`.document`](docs.md#window-document-body-root-parent-away-self) [`.root`](docs.md#window-document-body-root-parent-away-self) [`.body`](docs.md#window-document-body-root-parent-away-self) [`.parent`](docs.md#window-document-body-root-parent-away-self) [`.self`](docs.md#window-document-body-root-parent-away-self) [`.away`](docs.md#window-document-body-root-parent-away-self)<br>
 [`.passive`](docs.md#passive-captureevents-only) [`.capture`](docs.md#passive-captureevents-only) [`.prevent`](docs.md#prevent-stop-immediateevents-only) [`.stop`](docs.md#prevent-stop-immediateevents-only) [`.<key>`](docs.md#key-filters)
 
-
+<!--
 ## vs alpine
 
 |                  | [alpine](alpine.md) | sprae |
@@ -47,7 +50,7 @@ Ræctive sprinkles for HTML/JSX
 | _prefix_         | `x-`, `:`, `@` | `:` or [custom](docs.md#custom-build) |
 
 <sup>[benchmark](https://krausest.github.io/js-framework-benchmark/current.html). CSP via [jessie](docs.md#evaluator).</sup>
-
+-->
 
 ## used by
 
