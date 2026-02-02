@@ -105,6 +105,10 @@ Object.assign(modifier, {
   throttle: (fn, a) => throttle(fn, scheduler(a)),
   /** Runs callback after delay. Supports: tick (default), raf, idle, N, Nms, Ns, Nm. */
   delay: (fn, a) => ((sched = scheduler(a)) => (e) => sched(() => fn(e)))(),
+  /** Shortcut for delay-tick (next microtask). */
+  tick: (fn) => (e) => queueMicrotask(() => fn(e)),
+  /** Shortcut for delay-raf (next animation frame). */
+  raf: (fn) => (e) => requestAnimationFrame(() => fn(e)),
 
   /** Calls handler only once. */
   once: (fn, _done, _fn) => (_fn = (e) => !_done && (_done = 1, fn(e)), _fn.once = true, _fn),
