@@ -7,8 +7,8 @@
     <title>{{ page.title | default: "Sprae" }} – reactive sprinkles</title>
     <meta name="description" content="{{ page.description | default: 'Sprae is a tiny (~5KB) reactive library for progressive enhancement using signal-powered attributes in HTML/JSX.' }}">
     <link rel="stylesheet" href="{{ '/assets/style.css' | relative_url }}" />
-    <!-- <script src="https://unpkg.com/sprae" data-prefix="data-" data-start></script> -->
-    <script src="{{ '/dist/sprae.umd.js' | relative_url }}" data-prefix="data-" data-start></script>
+    <script src="https://unpkg.com/sprae" data-prefix="data-" data-start></script>
+    <!-- <script src="{{ '/dist/sprae.umd.js' | relative_url }}" data-prefix="data-" data-start></script> -->
   </head>
 
   <body id="page-{{ page.name | default: 'index' | split: '.' | first }}"
