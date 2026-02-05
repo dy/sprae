@@ -448,17 +448,8 @@ state._cache.key = 1    // Not reactive
 ```
 
 
-### Utilities
 
-```js
-import { throttle, debounce } from 'sprae'
-
-const search = debounce(query => fetch('/search?q=' + query), 300)
-const scroll = throttle(updatePosition, 100)
-```
-
-
-### Custom Signals
+### Signals
 
 Replace built-in signals with any preact-signals compatible library:
 
@@ -474,8 +465,21 @@ sprae.use(signals)
 | Built-in | ~1kb | Default, good performance |
 | [@preact/signals-core](https://github.com/preactjs/signals) | 1.5kb | Industry standard, best performance |
 | [ulive](https://github.com/nickmccurdy/ulive) | 350b | Minimal, basic performance |
-| [usignal](https://github.com/nickmccurdy/usignal) | 955b | Async effects support |
+| [`signal`](https://ghub.io/@webreflection/signal) | 633b | Enhanced performance. |
+| [usignal](https://github.com/nickmccurdy/usignal) | 955b | Optimized, async effects support |
 
+<!-- [`signal-polyfill`](https://ghub.io/signal-polyfill) | 2.5kb | Proposal signals. Use via [adapter](https://gist.github.com/dy/bbac687464ccf5322ab0e2fd0680dc4d). -->
+<!-- [`alien-signals`](https://github.com/WebReflection/alien-signals) | 2.67kb | Preact-flavored [alien signals](https://github.com/stackblitz/alien-signals). -->
+
+
+### Utils
+
+```js
+import { throttle, debounce } from 'sprae'
+
+const search = debounce(query => fetch('/search?q=' + query), 300)
+const scroll = throttle(updatePosition, 100)
+```
 
 
 
