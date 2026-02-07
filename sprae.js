@@ -28,7 +28,7 @@ import _hidden from "./directive/hidden.js";
 
 
 Object.assign(directive, {
-  _: (el, state, expr, name) => (name.startsWith('on') ? _event : _default)(el, state, expr, name),
+  _: _default,
   '': _spread,
   class: _class,
   text: _text,
@@ -58,18 +58,23 @@ const dir = (target, name, expr, state) => {
   let [dirName, ...mods] = name.split('.'), create = directive[dirName] || directive._
 
   return () => {
-    let update = create(target, state, expr, name)
+    // decorate trigger to resolve target from modifiers (parent, root, body, etc.)
+    let change = signal(0),
+
+      // throttle prevents multiple updates within one tick as well as isolates stack for each update
+      trigger = decorate(Object.assign(throttle(() => change.value++), { target }), mods),
+
+      el = trigger.target ?? target
+
+    let update = create(el, state, expr, dirName)
 
     if (!update?.call) return update?.[_dispose]
 
-    // throttle prevents multiple updates within one tick as well as isolates stack for each update
-    let trigger = decorate(Object.assign(throttle(() => change.value++), { target }), mods),
-      change = signal(0), // signal authorized to trigger effect: 0 = init; >0 = trigger
-      count = 0, // called effect count
-      evaluate = update.eval ?? parse(expr).bind(target),
+    let count = 0,
+      evaluate = update.eval ?? parse(expr).bind(el),
       _out, out = () => (typeof _out === 'function' && _out(), _out=null) // effect trigger and invoke may happen in the same tick, so it will be effect-within-effect call - we need to store output of evaluate to return from trigger effect
 
-    state =  target[_state] ?? state
+    state = el[_state] ?? state
 
     return effect(() => {
       const result = change.value == count ? (trigger()) : (count = change.value, _out = evaluate(state, update))
@@ -193,10 +198,11 @@ use({
     return sprae.constructor(`with(arguments[0]){${expr}}`)
   },
   dir: (el, name, expr, state) => {
-    // sequences shortcut
+    // sequences: handle own modifiers, return dispose
     if (name.includes('..')) return () => _seq(el, state, expr, name)[_dispose]
     return name.split(':').reduce((prev, str) => {
-      let start = dir(el, str, expr, state)
+      // events: handle own modifiers, return dispose
+      let start = str.startsWith('on') ? () => _event(el, state, expr, str)[_dispose] : dir(el, str, expr, state)
       return !prev ? start : (p, s) => (p = prev(), s = start(), () => { p(); s() })
     }, null)
   },

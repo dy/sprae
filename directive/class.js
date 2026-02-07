@@ -1,4 +1,4 @@
-import { clsx, decorate } from "../core.js";
+import { clsx } from "../core.js";
 
 /**
  * Class directive - manages CSS classes reactively.
@@ -11,9 +11,6 @@ import { clsx, decorate } from "../core.js";
  */
 export default (el, st, ex, name) => {
   let _cur = new Set, _new
-
-  // redefine target, if modifiers have one
-  name.includes('.') && (el = decorate({target:el}, name.split('.').slice(1)).target ?? el)
 
   return (v) => {
     _new = new Set

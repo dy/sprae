@@ -64,6 +64,13 @@ test('class: function', async () => {
   is(s.log, ['foo', 'foo a'])
 });
 
+test("class: .parent target", async () => {
+  let el = h`<div><x :class.parent="cls"></x></div>`;
+  let params = sprae(el, { cls: 'active' });
+  is(el.classList.contains('active'), true);
+  is(el.firstChild.classList.contains('active'), false);
+});
+
 test.skip("class: interpolation", async () => {
   let el = h`<x :class="'a $<b> c-$<c>'"></x>`;
   sprae(el, { a: 'a', b: 'b', c: 0 });

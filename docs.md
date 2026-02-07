@@ -759,16 +759,16 @@ customElements.define('my-counter', Counter)
 
 
 
-## Tips
+## Hints
 
-- **Prevent FOUC**: Add `<style>[\:each],[\:if],[\:else]{visibility:hidden}</style>`
-- **Attribute order matters**: `:each` should come before other directives on the same element
+- **Prevent [FOUC](https://en.wikipedia.org/wiki/Flash_of_unstyled_content)**: Add `<style>[\:each],[\:if],[\:else]{visibility:hidden}</style>`
+- **Attribute order matters**: `<li :each="el in els" :text="el.name"></li>` is not the same as `<li :text="el.name" :each="el in els"></li>`, or `<input tyle="slider" :max=1 :value=0.5 />`
+- **Validate self-closing tags**: `<a :text="item" />` will cause error. Valid self-closing tags are: `li`, `p`, `dt`, `dd`, `option`, `tr`, `td`, `th`, `input`, `img`, `br`.
 - **Async expressions**: `<div :text="await fetchData()"></div>` works
 - **Dispose**: Call `sprae.dispose(el)` or `el[Symbol.dispose]()` to cleanup
 - **No `key` needed**: `:each` uses direct list mapping, not DOM diffing
 - **Expose refs**: Use paths like `:ref="$refs.myEl"` for Alpine-style ref access
-
-
+- **`this` refers to current element**: but it's recommended to use `:ref="element => {...}"`.
 
 
 ## FAQ

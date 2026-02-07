@@ -1,4 +1,4 @@
-import { attr, decorate } from "../core.js";
+import { attr } from "../core.js";
 
 /**
  * Style directive - sets inline styles reactively.
@@ -11,9 +11,6 @@ import { attr, decorate } from "../core.js";
  */
 export default (el, st, ex, name) => {
   let _static;
-
-  // redefine target, if modifiers have one
-  if (name.includes('.')) el = decorate({target:el}, name.split('.').slice(1)).target ?? el;
 
   return v => {
     if (_static === undefined) _static = el.getAttribute("style") ?? ""

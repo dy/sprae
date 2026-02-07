@@ -65,6 +65,13 @@ test("style: no static style", async () => {
   is(el.outerHTML, `<x style="top: 2px"></x>`);
 });
 
+test("style: .parent target", async () => {
+  let el = h`<div><x :style.parent="style"></x></div>`;
+  let params = sprae(el, { style: { color: 'red' } });
+  is(el.style.color, 'red');
+  is(el.firstChild.style.color, '');
+});
+
 test("style: function", async () => {
   // NOTE: ...s is intentional mistake here
   let el = h`<x :style="s => (log.push(s),{...s, '--i':i})"></x>`;

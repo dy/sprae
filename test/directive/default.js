@@ -34,6 +34,13 @@ test("default: signal", async () => {
   is(el.outerHTML, `<x>2</x>`);
 });
 
+test("default: .parent target", async () => {
+  let el = h`<div><x :title.parent="t"></x></div>`;
+  let params = sprae(el, { t: 'hello' });
+  is(el.getAttribute('title'), 'hello');
+  is(el.firstChild.getAttribute('title'), null);
+});
+
 test("default: null result does nothing", async () => {
   let a = h`<x :="undefined"></x>`;
   sprae(a);
