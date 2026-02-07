@@ -16,9 +16,9 @@ export default (el, st, ex, name) => {
   if (name.includes('.')) el = decorate({target:el}, name.split('.').slice(1)).target ?? el;
 
   return v => {
-    if (!_static) { _static = el.getAttribute("style") }
+    if (_static === undefined) _static = el.getAttribute("style") ?? ""
     v = typeof v === "function" ? v(el.style) : v
-    if (typeof v === "string") attr(el, "style", _static + '; ' + v);
+    if (typeof v === "string") attr(el, "style", _static ? _static + '; ' + v : v);
     else {
       if (_static) attr(el, "style", _static);
       // NOTE: we skip names not starting with a letter - eg. el.style stores properties as { 0: --x } or JSDOM has _pfx

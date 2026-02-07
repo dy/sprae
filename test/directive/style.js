@@ -55,6 +55,16 @@ test("style: #33", async () => {
   is(el.outerHTML, `<header class="navbar" style="color: white; background-color: rgb(223, 0, 0);"></header>`)
 })
 
+test("style: no static style", async () => {
+  let el = h`<x :style="style"></x>`;
+  let params = sprae(el, { style: "top: 1px" });
+  is(el.outerHTML, `<x style="top: 1px"></x>`);
+
+  params.style = "top: 2px";
+  await tick();
+  is(el.outerHTML, `<x style="top: 2px"></x>`);
+});
+
 test("style: function", async () => {
   // NOTE: ...s is intentional mistake here
   let el = h`<x :style="s => (log.push(s),{...s, '--i':i})"></x>`;
