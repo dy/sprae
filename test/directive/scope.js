@@ -128,3 +128,12 @@ test('scope: leak parent', async () => {
   is(a.innerHTML, `<y><z>2</z></y>`)
   is(s.a, 1, "parent not affected")
 })
+
+test("scope: fragment", async () => {
+  let el = h`a<template :scope="{foo:'foo'}"><y :scope="{bar:b.bar}" :text="foo+bar"></y></template>`;
+  let params = sprae(el, { b: { bar: "bar" } });
+  is(el.outerHTML, `a<y>foobar</y>`);
+  params.b.bar = "baz";
+  await tick();
+  is(el.outerHTML, `a<y>foobaz</y>`);
+});

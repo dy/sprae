@@ -1,4 +1,4 @@
-import sprae, { store, untracked, _state, _signals, signal } from '../core.js'
+import sprae, { store, untracked, frag, _state, _signals, signal } from '../core.js'
 
 /**
  * Scope directive - creates a child scope with local state.
@@ -10,7 +10,11 @@ import sprae, { store, untracked, _state, _signals, signal } from '../core.js'
 export default (el, rootState) => {
   // 0 run pre-creates state to provide scope for the first effect - it can write vars in it, so we should already have it
   // el[_state] even replaces own :scope effect state
-  let state = el[_state] = store({}, rootState), init = false;
+  let state = el[_state] = store({}, rootState), init = false
+
+  // <template :scope="{}" /> or previously initialized template
+  let _el = el.content ? frag(el) : el, _holder
+  if (el.content) el.replaceWith(_holder = el.ownerDocument.createTextNode(''))
 
   // 1st run spraes subtree with values from scope, it can be postponed by modifiers (we isolate reads from parent effect)
   // 2nd+ runs update subscope
@@ -31,6 +35,6 @@ export default (el, rootState) => {
     }
 
     // Object.assign(subscope, call(values, subscope))
-    return !init && (init = true, delete el[_state], untracked(() => sprae(el, state)))
+    return !init && (init = true, delete el[_state], untracked(() => (_holder?.before(_el.content || _el), sprae(_el, state))))
   }
 }
