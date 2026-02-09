@@ -367,3 +367,23 @@ test('core: list length unsub (preact signals)', {skip: isJessie}, async () => {
   await time()
   is(a.innerHTML, `<y>2</y><button></button>`)
 })
+
+test('core: ownerDocument instead of global document (custom DOM)', async () => {
+  let a = h`<y><template :each="item in [{id:1}, {id:2}, {id:3}]" :if="item.id % 2"><x :text="item.id"></x></template></y>`
+  let b = h`<div><div id="target"></div><span :portal="'#target'">content</span></div>`
+  let c = h`<div :html="content"></div>`
+
+  // Shadow `document` with undefined — works in both Node and browser
+  ;(function (document) {
+    void document // suppress unused warning
+    sprae(a)
+    sprae(b)
+    sprae(c, { content: "<a>a</a>" })
+  })(undefined)
+
+  await tick()
+
+  is(a.outerHTML, `<y><x>1</x><x>3</x></y>`)
+  is(b.querySelector('#target').innerHTML, `<span>content</span>`)
+  is(c.outerHTML, `<div><a>a</a></div>`)
+})

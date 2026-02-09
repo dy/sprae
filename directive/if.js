@@ -18,7 +18,7 @@ export default (el, state) => {
     _el = el.content ? frag(el) : el
     _el[_state] ??= null  // mark _el (frag) as needing sprae
 
-    mutate(() => el.replaceWith(_holder = document.createTextNode('')))
+    mutate(() => el.replaceWith(_holder = el.ownerDocument.createTextNode('')))
     _el._holder = _holder._holder = _holder
 
 

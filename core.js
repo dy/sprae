@@ -360,13 +360,15 @@ export const start = (root = document.body, values) => {
 export const frag = (tpl) => {
   if (!tpl.nodeType) return tpl // existing tpl
 
-  let content = tpl.content.cloneNode(true), // document fragment holder of content
+  let doc = tpl.ownerDocument,
+    content = tpl.content.cloneNode(true), // document fragment holder of content
     attributes = [...tpl.attributes],
-    ref = document.createTextNode(''),
+    ref = doc.createTextNode(''),
     // ensure at least one node
     childNodes = (content.append(ref), [...content.childNodes])
 
   return {
+    ownerDocument: doc,
     childNodes,
     content,
     remove: () => content.append(...childNodes),
