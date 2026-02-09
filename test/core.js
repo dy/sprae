@@ -1,9 +1,10 @@
-import test, { any, is, ok, same } from "tst";
+import test, { any, is, ok, same, throws } from "tst";
 import { tick, time } from "wait-please";
 import sprae, { start } from '../sprae.js'
 import store from '../store.js'
 import { signal, use } from '../core.js'
 import h from "hyperf";
+import vm from 'node:vm'
 
 const isJessie = process.env.SPRAE_COMPILER === 'jessie'
 
@@ -369,20 +370,23 @@ test('core: list length unsub (preact signals)', {skip: isJessie}, async () => {
 })
 
 test('core: use ownerDocument to avoid global document requirement (for custom DOM)', async () => {
-  // rename global document to _document to ensure sprae uses el.ownerDocument
-  Object.defineProperty(global, "_document", Object.getOwnPropertyDescriptor(global, "document")); delete global.document
+  let a = h`<y><template :each="item in [{id:1}, {id:2}, {id:3}]" :if="item.id % 2"><x :text="item.id"></x></template></y>`
+  let b = h`<div><div id="target"></div><span :portal="'#target'">content</span></div>`
+  let c = h`<div :html="content"></div>`
 
-  let document = new DOMParser().parseFromString(
-    `<y><template :each="item in [{id:1}, {id:2}, {id:3}]" :if="item.id % 2"><x :text="item.id"></x></template></y>`, "text/html"
-  )
-  let s = sprae(document.body)
+  // Use a node:vm to ensure document is not global
+  const sandbox = { a, b, c, sprae, throws }
+  vm.createContext(sandbox)
+  vm.runInContext(`
+    throws(() => document.body, "ReferenceError: document")
+    sprae(a)
+    sprae(b)
+    sprae(c, { content: "<a>a</a>" })
+  `, sandbox)
+
   await tick()
 
-  try {
-    is(document.body.innerHTML, `<y><x>1</x><x>3</x></y>`)
-  }
-  finally {
-    // rename global _document back to document
-    Object.defineProperty(global, "document", Object.getOwnPropertyDescriptor(global, "_document")); delete global._document
-  }
+  is(a.outerHTML, `<y><x>1</x><x>3</x></y>`)
+  is(b.querySelector('#target').innerHTML, `<span>content</span>`)
+  is(c.outerHTML, `<div><a>a</a></div>`)
 })

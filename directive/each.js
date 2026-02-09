@@ -41,7 +41,7 @@ export default (tpl, state, expr) => {
 
       // batch append using DocumentFragment for efficiency
       let batchSize = newl - i
-      let batch = batchSize > 1 ? document.createDocumentFragment() : null
+      let batch = batchSize > 1 ? tpl.ownerDocument.createDocumentFragment() : null
       let pending = batch ? [] : null
 
       // append
