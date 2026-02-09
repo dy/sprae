@@ -8,22 +8,18 @@ import sprae, { _dispose } from "../core.js"
  * @returns {(v: string | ((html: string) => string)) => void | (() => void)} Update function
  */
 export default (el, state) => {
-  // <template :html="a"/> - fragment case: use placeholder + range
+  // <template :html="a"/> - fragment case: use placeholder
   if (el.content) {
-    let start = document.createTextNode(''),
-        end = document.createTextNode(''),
-        range = document.createRange()
-    el.replaceWith(start, end)
+    let _start = el.ownerDocument.createTextNode(''),
+        _end = el.ownerDocument.createTextNode(''),
+        _holder = el.ownerDocument.createElement('_')
+    _holder.append((el.replaceWith(_start, _end), el.content))
     return v => {
-      v = typeof v === 'function' ? v('') : v
-      range.setStartAfter(start)
-      range.setEndBefore(end)
-      range.deleteContents()
-      if (v != null && v !== '') {
-        let frag = range.createContextualFragment(v)
-        sprae(frag, state)
-        range.insertNode(frag)
-      }
+      v = typeof v === 'function' ? v(_holder.innerHTML) : v
+      _holder.innerHTML = v == null ? "" : v
+      sprae(_holder, state)
+      while(_start.nextSibling !== _end) _start.nextSibling.remove()
+      return (_end.before(..._holder.cloneNode(true).childNodes), _holder[_dispose])
     }
   }
   return v => (v = typeof v === 'function' ? v(el.innerHTML) : v, el.innerHTML = v == null ? "" : v, sprae(el, state), el[_dispose])

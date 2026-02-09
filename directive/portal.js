@@ -7,7 +7,7 @@
  * @returns {(value: string | Element | null | false) => void} Update function
  */
 export default (el, state, expr) => {
-  const comment = document.createComment(':portal')
+  const comment = el.ownerDocument.createComment(':portal')
   let currentTarget = null
 
   // Insert placeholder before element
@@ -18,9 +18,9 @@ export default (el, state, expr) => {
     // For selectors, first try within the same root, then document
     const root = el.getRootNode()
     const target = typeof value === 'string'
-      ? (root.querySelector?.(value) || document.querySelector(value))
+      ? (root.querySelector?.(value) || el.ownerDocument.querySelector(value))
       : value instanceof Element ? value
-        : value ? document.body : null
+        : value ? el.ownerDocument.body : null
 
     // No change needed
     if (target === currentTarget) return

@@ -14,7 +14,7 @@ export default (tpl, state, expr) => {
   let [itemVar, idxVar = "$"] = lhs.trim().replace(/\(|\)/g, '').split(/\s*,\s*/);
 
   // we need :if to be able to replace holder instead of tpl for :if :each case
-  let holder = document.createTextNode("");
+  let holder = tpl.ownerDocument.createTextNode("");
 
   // we re-create items any time new items are produced
   let cur, keys, items, prevl = 0
@@ -41,7 +41,7 @@ export default (tpl, state, expr) => {
 
       // batch append using DocumentFragment for efficiency
       let batchSize = newl - i
-      let batch = batchSize > 1 ? document.createDocumentFragment() : null
+      let batch = batchSize > 1 ? tpl.ownerDocument.createDocumentFragment() : null
       let pending = batch ? [] : null
 
       // append
