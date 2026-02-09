@@ -197,6 +197,7 @@ use({
     if (/\bawait\s/.test(expr)) expr = `return (async()=>{${expr}})()`
     return sprae.constructor(`with(arguments[0]){${expr}}`)
   },
+  // these 2 exceptions might look inconsistent, but arguably that's the cleanest way to avoid coupling
   dir: (el, name, expr, state) => {
     // sequences: handle own modifiers, return dispose
     if (name.includes('..')) return () => _seq(el, state, expr, name)[_dispose]
