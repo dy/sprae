@@ -59,7 +59,7 @@ Wanted alpine but with less syntax and magic, and with open state.
 
 ## used by
 
-[watr](https://dy.github.io/watr/play), [wavearea](https://dy.github.io/wavearea)
+[settings-panel](https://dy.github.io/settings-panel), [watr](https://dy.github.io/watr/play), [wavearea](https://dy.github.io/wavearea)
 <!-- , [maetr](), [settings-panel]() -->
 
 ## alternatives
