@@ -59,33 +59,33 @@
 
 | directive | description | example |
 |-----------|-------------|---------|
-| `:text` | Set text content | `<span :text="name">` |
-| `:html` | Set innerHTML | `<div :html="content">` |
-| `:class` | Set classes | `<div :class="{active: isOn}">` |
-| `:style` | Set styles | `<div :style="{color}">` |
-| `:value` | Bind input value | `<input :value="text">` |
-| `:<prop>` | Set any attribute | `<a :href="url">` |
-| `:hidden` | Toggle visibility | `<div :hidden="!show">` |
-| `:if` `:else` | Conditional render | `<div :if="cond">` |
-| `:each` | List render | `<li :each="item in list">` |
-| `:scope` | Define state | `<div :scope="{x:1}">` |
-| `:ref` | Get element ref | `<input :ref="el">` |
-| `:fx` | Run effect | `<div :fx="log(x)">` |
-| `:on<event>` | Event listener | `<button :onclick="fn()">` |
+| [`:text`](docs#text) | Set text content | `<span :text="name">` |
+| [`:html`](docs#html) | Set innerHTML | `<div :html="content">` |
+| [`:class`](docs#class) | Set classes | `<div :class="{active: isOn}">` |
+| [`:style`](docs#style) | Set styles | `<div :style="{color}">` |
+| [`:value`](docs#value) | Bind input value | `<input :value="text">` |
+| [`:<prop>`](docs#attr--or---attrs-) | Set any attribute | `<a :href="url">` |
+| [`:hidden`](docs#hidden) | Toggle visibility | `<div :hidden="!show">` |
+| [`:if` `:else`](docs#if--else) | Conditional render | `<div :if="cond">` |
+| [`:each`](docs#each) | List render | `<li :each="item in list">` |
+| [`:scope`](docs#scope) | Define state | `<div :scope="{x:1}">` |
+| [`:ref`](docs#ref) | Get element ref | `<input :ref="el">` |
+| [`:fx`](docs#fx) | Run effect | `<div :fx="log(x)">` |
+| [`:on<event>`](docs#onevent) | Event listener | `<button :onclick="fn()">` |
 
 </div>
 <div data-if="tab=='modifiers'">
 
 | modifier | description | example |
 |----------|-------------|---------|
-| `.once` | Run once | `:onclick.once` |
-| `.prevent` | Prevent default | `:onclick.prevent` |
-| `.stop` | Stop propagation | `:onclick.stop` |
-| `.window` `.document` `.self` | Change target | `:onkeydown.window` |
-| `.away` | Click outside | `:onclick.away` |
-| `.debounce` `.throttle` `.delay` | Timing control | `:oninput.debounce-300` |
-| `.passive` `.capture` | Listener options | `:onscroll.passive` |
-| `.enter` `.esc` `.ctrl` ... | Key filters | `:onkeydown.enter` |
+| [`.once`](docs#once) | Run once | `:onclick.once` |
+| [`.prevent`](docs#prevent-stop-stop-immediate) | Prevent default | `:onclick.prevent` |
+| [`.stop`](docs#prevent-stop-stop-immediate) | Stop propagation | `:onclick.stop` |
+| [`.window` `.document` `.self`](docs#window-document-body-parent-self) | Change target | `:onkeydown.window` |
+| [`.away`](docs#away) | Click outside | `:onclick.away` |
+| [`.debounce` `.throttle` `.delay`](docs#debounce) | Timing control | `:oninput.debounce-300` |
+| [`.passive` `.capture`](docs#passive-capture) | Listener options | `:onscroll.passive` |
+| [`.enter` `.esc` `.ctrl` ...](docs#key-filters) | Key filters | `:onkeydown.enter` |
 
 </div>
 </div>
