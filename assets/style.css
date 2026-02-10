@@ -105,7 +105,7 @@ nav .version {
 }
 
 nav .version::before {
-  content: '⌥';
+  content: '\2325';
   position: absolute;
   right: 100%;
   margin-right: 0.3em;
@@ -228,6 +228,8 @@ footer {
 
 #page-index {
   #principles-content {
+    margin: 3rem 0;
+
     dl {
       display: grid;
       grid-template-columns: repeat(6, 1fr);
@@ -350,7 +352,7 @@ footer {
   color: var(--color-blue-700);
   border-bottom: 2px solid transparent;
   border-radius: 0;
-  padding: 0.5rem 0;
+  padding: 0.5rem 1em;
   margin-right: 1.5rem;
 }
 
@@ -360,6 +362,7 @@ footer {
 
 .tabs button:hover {
   opacity: 1;
+  background: white;
 }
 
 .badge {
@@ -432,6 +435,13 @@ h2 {
   font-size: 2rem;
   font-weight: 700;
   margin: 2.5rem 0 1rem;
+}
+
+h2 > a:not(.anchor) {
+  float: right;
+  font-size: 0.5em;
+  font-weight: 400;
+  line-height: 2.5;
 }
 
 h2:first-of-type {
@@ -621,10 +631,10 @@ pre code {
 
 /* Rouge syntax highlighting - monotone */
 .highlight .c, .highlight .c1, .highlight .cm { opacity: 0.5; } /* comments */
-.highlight .k, .highlight .kd, .highlight .kn { opacity: 0.85; } /* keywords */
-.highlight .s, .highlight .s1, .highlight .s2 { opacity: 1; } /* strings/attributes */
-.highlight .na { color:white } /* attribute names */
-.highlight .nt { color:white } /* tags */
+.highlight .k, .highlight .kd, .highlight .kn { opacity: .85; } /* keywords */
+.highlight .s, .highlight .s1, .highlight .s2 { color: white; opacity: 1; } /* strings/attributes */
+.highlight .na {  } /* attribute names */
+.highlight .nt {  } /* tags */
 .highlight .nf, .highlight .nb { opacity: 0.95; } /* functions */
 .highlight .mi, .highlight .mf { opacity: 0.75; } /* numbers */
 
@@ -677,36 +687,36 @@ button:hover {
 
 
 /* FAQ two-column: question left, answer right */
-#faq ~ dl {
+[id^="faq"] ~ dl {
   display: grid;
-  grid-template-columns: minmax(20vw, 1fr) 3fr;
+  grid-template-columns: minmax(15vw, 1fr) 3fr;
   gap: 1.5rem 1.5rem;
   margin: 1.5rem 0;
 }
 
-#faq ~ dl dt {
+[id^="faq"] ~ dl dt {
   grid-column: 1;
   text-align: left;
   font-weight: 700;
   color: var(--color-blue-700);
 }
 
-#faq ~ dl dd {
+[id^="faq"] ~ dl dd {
   grid-column: 2;
   margin: 0;
 }
 
 @media (max-width: 768px) {
-  #faq ~ dl {
+  [id^="faq"] ~ dl {
     grid-template-columns: 1fr;
   }
 
-  #faq ~ dl dt {
+  [id^="faq"] ~ dl dt {
     text-align: left;
     margin-top: 1rem;
   }
 
-  #faq ~ dl dd {
+  [id^="faq"] ~ dl dd {
     grid-column: 1;
   }
 }

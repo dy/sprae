@@ -212,9 +212,12 @@
           const headings = document.querySelectorAll('main :not(.no-toc) > :is(h2, h3, h4), main > :is(h2, h3, h4)')
           let currentSection = ''
           this.items = [...headings].map(h => {
+            const clone = h.cloneNode(true)
+            clone.querySelectorAll('a:not(.anchor)').forEach(a => a.remove())
+            const cleanSlug = clone.textContent.trim().toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/-$/, '')
             const item = {
-              id: h.id || (h.id = h.textContent.trim().toLowerCase().replace(/[^a-z0-9]+/g, '-')),
-              text: h.textContent.replace(/[#:]/g, '').trim().split('\n')[0].split('=')[0].trim(),
+              id: h.id || (h.querySelector('[id]') || {}).id || (h.id = cleanSlug),
+              text: clone.textContent.replace(/[#:]/g, '').trim().split('\n')[0].split('=')[0].trim(),
               level: h.tagName === 'H2' ? 2 : h.tagName === 'H3' ? 3 : 4,
               section: ''
             }

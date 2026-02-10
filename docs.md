@@ -762,7 +762,7 @@ customElements.define('my-counter', Counter)
 ## Hints
 
 - **Prevent [FOUC](https://en.wikipedia.org/wiki/Flash_of_unstyled_content)**: Add `<style>[\:each],[\:if],[\:else]{visibility:hidden}</style>`
-- **Attribute order matters**: `<li :each="el in els" :text="el.name"></li>` is not the same as `<li :text="el.name" :each="el in els"></li>`, or `<input tyle="slider" :max=1 :value=0.5 />`
+- **Attribute order matters**: `<li :each="el in els" :text="el.name"></li>` is not the same as `<li :text="el.name" :each="el in els"></li>`, or `<input type="slider" :max=1 :value=0.5 />`
 - **Validate self-closing tags**: `<a :text="item" />` will cause error. Valid self-closing tags are: `li`, `p`, `dt`, `dd`, `option`, `tr`, `td`, `th`, `input`, `img`, `br`.
 - **Async expressions**: `<div :text="await fetchData()"></div>` works
 - **Dispose**: Call `sprae.dispose(el)` or `el[Symbol.dispose]()` to cleanup
@@ -773,65 +773,44 @@ customElements.define('my-counter', Counter)
 
 ## FAQ
 
-**Why sprae?**
-: Minimal syntax, non-disruptive HTML. No build, no config. Ecosystem-agnostic (CDN, ESM, JSX). Open, configurable. Preact-signals compatible. Fast, practical and safe.
-
-**Yet another framework?**
-: Not a framework. A 5kb enhancer for existing HTML. No ecosystem lock-in, works alongside anything.
-
-**Is it slow?**
-: No. See [js-framework-benchmark](https://krausest.github.io/js-framework-benchmark/2024/table_chrome_130.0.6723.58.html) — faster than Alpine, comparable to Vue.
-
-**Why not Alpine.js?**
-: Simpler API, 3× lighter, ESM-first, open state, signals support, prop modifiers, aliases, event chains. See [alpine.md](alpine.md) for migration guide.
-
-**Why not vanilla JS?**
-: `createElement` is wrong mantra. [Just use framework](https://justfuckingusereact.com/).
-
-**Why not Next/React?**
-: Sprae augments [JSX](#jsx--react--nextjs), which can help server components. Some find react [not worth the time](https://www.keithcirkel.co.uk/i-dont-have-time-to-learn-react/).
-
-**Why signals?**
-: It is the emerging [standard](https://github.com/tc39/proposal-signals) for reactivity. [Preact-signals](https://github.com/preactjs/signals) provide minimal API surface.
-
-**Who cares for progressive enhancement?**
-: PE is for long-lasting, low-maintenance, fail-proof, accessible, portable and SEO-optimized web.
-
-**Is it just a toy?**
-: Fun to play, comes with state sandbox. But production-ready too.
-
-**Does it scale to complex state?**
-: As far as you and CPU can handle it.
-
-**Is new Function unsafe?**
-: If your HTML comes from strangers, there is [safe evaluator](#custom-evaluator) for CSP. If you control your HTML, it's no different from inline `onclick` handlers.
+**What is sprae?**
+: A ~5kb script that adds reactivity to HTML via `:attribute="expression"` directives. No build step, no new syntax — just HTML and JS. Works alongside anything.
 
 **Learning curve?**
-: If you know HTML and JS, you know sprae. No new syntax, no special compilation, just `:attribute="expression"`.
+: If you know HTML and JS, you know sprae. Just `:attribute="expression"`.
 
-**Components support?**
-: [Manage duplication](https://tailwindcss.com/docs/styling-with-utility-classes#managing-duplication), otherwise plop a [web component](#web-components).
+**How does it compare to Alpine?**
+: 3× lighter, ESM-first, open state, pluggable signals, prop modifiers, event chains. Faster in [benchmarks](https://krausest.github.io/js-framework-benchmark/2024/table_chrome_130.0.6723.58.html). See [migration guide](alpine.md).
 
-**TypeScript support?**
-: Yes, full types included. If you need more please [leave a request](https://github.com/dy/sprae/issues/new).
+**How does it compare to React/Vue?**
+: No build step, no virtual DOM. Sprae can augment [JSX](#jsx--react--nextjs) for server components — useful for progressive enhancement without framework overhead.
 
-**Browser compatibility?**
-: Any browser with [Proxy support](https://caniuse.com/proxy).
+**Why signals?**
+: Signals are the emerging [standard](https://github.com/tc39/proposal-signals) for reactivity. [Preact-signals](https://github.com/preactjs/signals) provide minimal, interoperable API.
 
-**Is it stable?**
-: Yes, since v10.
+**Is new Function unsafe?**
+: If you control your HTML, it's no different from inline `onclick` handlers. For third-party HTML or strict CSP, use the [safe evaluator](#custom-evaluator).
 
-**How old is it?**
-: 3+ years old ([first commit](https://github.com/dy/sprae/commit/ee7e372fb372bde5bdd7bfd3524cdaa815793663) Nov 7, 2022).
+**Does it scale?**
+: State is plain reactive objects — scales as far as your data model does. For complex apps, use [store](#store) with computed getters and methods.
 
-**Will it be maintained long-term?**
-: 12 versions, 1.5k+ commits and future plans.
+**Components?**
+: [Manage duplication](https://tailwindcss.com/docs/styling-with-utility-classes#managing-duplication) with templates/includes, or use [web components](#web-components).
 
-**What's future plan?**
-: Plugins, components, integration cases, generators.
+**TypeScript?**
+: Full types included. [Request more](https://github.com/dy/sprae/issues/new) if needed.
+
+**Browser support?**
+: Any browser with [Proxy](https://caniuse.com/proxy) (all modern browsers, no IE).
+
+**Is it production-ready?**
+: <span data-scope="{ years: 3, versions: 12 }" data-fx.once="fetch('https://api.github.com/repos/dy/sprae').then(function(r){ return r.ok ? r.json() : null }).then(function(d){ if(d) years = Math.floor((Date.now() - new Date(d.created_at)) / 31536000000) }); fetch('https://api.github.com/repos/dy/sprae/releases').then(function(r){ return r.ok ? r.json() : null }).then(function(d){ if(d) versions = new Set(d.map(function(r){ return r.tag_name.split('.')[0] })).size })"><span data-text="years">3</span>+ years, <span data-text="versions">12</span> major versions</span>, 1.5k+ commits. Stable since v10.
+
+**Roadmap?**
+: Plugins, components, integration cases, generators. [Issues](https://github.com/dy/sprae/issues).
 
 **Is it backed by a company?**
-: No, indie. You can [support it](https://github.com/sponsors/dy)!
+: Indie project. [Support it](https://github.com/sponsors/dy).
 
 
 

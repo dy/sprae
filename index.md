@@ -29,18 +29,18 @@
 
 ## Principles
 
-**Minimal**
-: 5kb gzipped.<br>Standard JS expressions.<br> No new syntax.
+**HTML-native**
+: Add `:` attribs to existing HTML.<br>Standard JS expressions.<br>No build step, no config.
 
-**Open**
-: State as plain objects.<br>Preact-signals core.<br>Configurable parts.
+**Open state**
+: Controllable. ESM-first.<br>[Preact signals](https://github.com/preactjs/signals) enabled.<br>Sandboxed. Safe eval.
 
-**Practical**
-: No build step, no deps.<br>HTML, JSX, any template.<br>TypeScript support.
+**5kb, 0 deps**
+: CDN `<script>` or `npm i`.<br>Any backend, any template, +JSX.<br>No ecosystem lock-in.
 
 </div>
 
-## Usage
+## Usage [Docs →](docs#faq)
 
 ```html
 <!-- CDN -->
@@ -50,9 +50,7 @@
 <script type="module">import sprae from 'sprae'</script>
 ```
 
-[Docs →](docs#faq)
-
-## Reference
+## Reference [API →](docs#faq)
 
 <div class="tabs" data-scope="{tab:'directives'}">
 <button data-class="{active: tab=='directives'}" data-onclick="tab='directives'">Directives</button>
@@ -92,29 +90,23 @@
 </div>
 </div>
 
-[API →](docs#faq)
 
-## FAQ
+## FAQ [All questions →](docs#faq)
 
-**Yet another framework?**
-: Not a framework. A 5kb enhancer for existing HTML. No build, no ecosystem lock-in.
+**What is it?**
+: A ~5kb script that adds reactivity to HTML via `:attribute="expression"` directives. No build step, no new syntax — just HTML and JS you already know.
 
-**What's special?**
-: Open state (inspect/modify from console), signals reactivity, modular directives, works with any backend.
+**When to use it?**
+: Adding interactivity to server-rendered pages, static sites, prototypes, or anywhere a full framework is overkill. Works with any backend.
 
-**Why not Alpine?**
-: 3× lighter, ESM-first, signals, prop modifiers. See [comparison](./alpine.md).
+**How does it compare?**
+: 3× lighter than Alpine, faster in [benchmarks](https://krausest.github.io/js-framework-benchmark/2024/table_chrome_130.0.6723.58.html). Uses [signals](https://github.com/tc39/proposal-signals) (emerging standard) instead of custom reactivity. Full [comparison](./alpine.md).
 
-**Why not React/Vue?**
-: No build step, no virtual DOM, augments [JSX](docs#jsx--react--nextjs) for server components.
+**Does it work with React/Next.js?**
+: Yes. Sprae can augment [JSX](docs#jsx--react--nextjs) for server components without virtual DOM overhead.
 
-**Is it slow?**
-: [Benchmark](https://krausest.github.io/js-framework-benchmark/2024/table_chrome_130.0.6723.58.html). Faster than Alpine, comparable to Vue.
+**How to handle components?**
+: [Manage duplication](https://tailwindcss.com/docs/styling-with-utility-classes#managing-duplication) with templates/includes, or use [web components](docs#web-components).
 
-**Components?**
-: [Manage duplication](https://tailwindcss.com/docs/styling-with-utility-classes#managing-duplication) or use [web components](docs#web-components).
-
-**Is it maintained?**
-: Yes. <span data-scope="{ years: 3, versions: 12 }" data-fx.once="fetch('https://api.github.com/repos/dy/sprae').then(function(r){ return r.ok ? r.json() : null }).then(function(d){ if(d) years = Math.floor((Date.now() - new Date(d.created_at)) / 31536000000) }); fetch('https://api.github.com/repos/dy/sprae/releases').then(function(r){ return r.ok ? r.json() : null }).then(function(d){ if(d) versions = new Set(d.map(function(r){ return r.tag_name.split('.')[0] })).size })"><span data-text="years">3</span>+ years, <span data-text="versions">12</span> major versions</span>. [Roadmap](https://github.com/dy/sprae/issues).
-
-[FAQ →](docs#faq)
+**Is it production-ready?**
+: <span data-scope="{ years: 3, versions: 12 }" data-fx.once="fetch('https://api.github.com/repos/dy/sprae').then(function(r){ return r.ok ? r.json() : null }).then(function(d){ if(d) years = Math.floor((Date.now() - new Date(d.created_at)) / 31536000000) }); fetch('https://api.github.com/repos/dy/sprae/releases').then(function(r){ return r.ok ? r.json() : null }).then(function(d){ if(d) versions = new Set(d.map(function(r){ return r.tag_name.split('.')[0] })).size })"><span data-text="years">3</span>+ years, <span data-text="versions">12</span> major versions</span>, 1.5k+ commits. Full TypeScript support. [Roadmap](https://github.com/dy/sprae/issues).
