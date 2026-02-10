@@ -284,7 +284,7 @@ Move element to another container.
 
 ```html
 <div :portal="'#modals'">Modal content</div>
-<div :portal="document.body">Toast notification</div>
+<div :portal="'body'">Toast notification</div>
 
 <!-- Conditional: move when true, return when false -->
 <dialog :portal="open && '#portal-target'">...</dialog>

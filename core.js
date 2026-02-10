@@ -344,6 +344,7 @@ export const start = (root = document.body, values) => {
 
 /**
  * @typedef {Object} FragmentLike
+ * @property {Document} ownerDocument - The owner document
  * @property {Node[]} childNodes - Child nodes of the fragment
  * @property {DocumentFragment} content - The document fragment content
  * @property {() => void} remove - Remove the fragment from DOM

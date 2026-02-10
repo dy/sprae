@@ -20,7 +20,7 @@ export default (el, state, expr) => {
     const root = el.getRootNode()
     const target = typeof value === 'string'
       ? (root.querySelector?.(value) || doc.querySelector(value))
-      : value instanceof Element ? value
+      : value?.nodeType === 1 ? value
         : value ? doc.body : null
 
     // No change needed
