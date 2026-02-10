@@ -371,19 +371,20 @@ test('core: list length unsub (preact signals)', {skip: isJessie}, async () => {
 test('core: ownerDocument instead of global document (custom DOM)', async () => {
   let a = h`<y><template :each="item in [{id:1}, {id:2}, {id:3}]" :if="item.id % 2"><x :text="item.id"></x></template></y>`
   let b = h`<div><div id="target"></div><span :portal="'#target'">content</span></div>`
-  let c = h`<div :html="content"></div>`
+  let c = h`a<template :html="content"></template>`
 
-  // Shadow `document` with undefined — works in both Node and browser
-  ;(function (document) {
-    void document // suppress unused warning
+  // Delete 'document' a brief time — works in both Node and browser
+  ;(function (_document) {
+    delete globalThis.document
+    queueMicrotask(() => globalThis.document = _document) // defer re-add document to global even on exception
     sprae(a)
     sprae(b)
     sprae(c, { content: "<a>a</a>" })
-  })(undefined)
+  })(document)
 
   await tick()
 
   is(a.outerHTML, `<y><x>1</x><x>3</x></y>`)
   is(b.querySelector('#target').innerHTML, `<span>content</span>`)
-  is(c.outerHTML, `<div><a>a</a></div>`)
+  is(c.outerHTML, `a<a>a</a>`)
 })
