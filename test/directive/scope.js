@@ -137,3 +137,13 @@ test("scope: fragment", async () => {
   await tick();
   is(el.outerHTML, `a<y>foobaz</y>`);
 });
+
+test("scope: with :html", async () => {
+  let el = h`<div><div :scope="{ bar: 'bar' }" :html="html"></div></div>`;
+  let s = sprae(el, { foo: "foo", html: `<a :text="foo+bar"></a>` });
+  await tick();
+  is(el.innerHTML, `<div><a>foobar</a></div>`);
+  s.foo = "moo";
+  await tick();
+  is(el.innerHTML, `<div><a>moobar</a></div>`);
+})

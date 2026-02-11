@@ -1,4 +1,4 @@
-import sprae, { _dispose } from "../core.js"
+import sprae, { untracked, _dispose, _state } from "../core.js"
 
 /**
  * HTML directive - sets innerHTML and initializes nested directives.
@@ -27,5 +27,5 @@ export default (el, state) => {
       }
     }
   }
-  return v => (v = typeof v === 'function' ? v(el.innerHTML) : v, el.innerHTML = v == null ? "" : v, sprae(el, state), el[_dispose])
+  return v => (v = typeof v === 'function' ? v(el.innerHTML) : v, el.innerHTML = v == null ? "" : v, el[_state] &&= null, untracked(() => sprae(el, state)), el[_dispose])
 }
