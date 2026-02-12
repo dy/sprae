@@ -100,10 +100,10 @@
 : Adding interactivity to server-rendered pages, static sites, prototypes, or anywhere a full framework is overkill. Works with any backend.
 
 **How does it compare?**
-: 3× lighter than Alpine, faster in [benchmarks](https://krausest.github.io/js-framework-benchmark/2024/table_chrome_130.0.6723.58.html). Uses [signals](https://github.com/tc39/proposal-signals) (emerging standard) instead of custom reactivity. Full [comparison](./alpine.md).
+: 3× lighter than Alpine, faster in [benchmarks](https://krausest.github.io/js-framework-benchmark/). Uses [signals](https://github.com/tc39/proposal-signals) (emerging standard) instead of custom reactivity. Full [comparison](./alpine.md).
 
 **Does it work with React/Next.js?**
-: Yes. Sprae can augment [JSX](docs#jsx--react--nextjs) for server components without virtual DOM overhead.
+: Yes. Sprae can inject into [JSX](docs#jsx--react--nextjs) for server components to avoid client components overhead.
 
 **How to handle components?**
 : [Manage duplication](https://tailwindcss.com/docs/styling-with-utility-classes#managing-duplication) with templates/includes, or use [web components](docs#web-components).

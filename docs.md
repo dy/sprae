@@ -780,10 +780,10 @@ customElements.define('my-counter', Counter)
 : If you know HTML and JS, you know sprae. Just `:attribute="expression"`.
 
 **How does it compare to Alpine?**
-: 3× lighter, ESM-first, open state, pluggable signals, prop modifiers, event chains. Faster in [benchmarks](https://krausest.github.io/js-framework-benchmark/2024/table_chrome_130.0.6723.58.html). See [migration guide](alpine.md).
+: 3× lighter, ESM-first, open state, pluggable signals, prop modifiers, event chains. Faster in [benchmarks](https://krausest.github.io/js-framework-benchmark/). See [migration guide](alpine.md).
 
 **How does it compare to React/Vue?**
-: No build step, no virtual DOM. Sprae can augment [JSX](#jsx--react--nextjs) for server components — useful for progressive enhancement without framework overhead.
+: No build step, no virtual DOM. Sprae can inject into [JSX](#jsx--react--nextjs) for server components — useful for progressive enhancement without framework overhead.
 
 **Why signals?**
 : Signals are the emerging [standard](https://github.com/tc39/proposal-signals) for reactivity. [Preact-signals](https://github.com/preactjs/signals) provide minimal, interoperable API.
