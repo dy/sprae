@@ -221,7 +221,7 @@ const create = (signals, k, v) => (signals[k] = (k[0] == '_' || v?.peek) ? v : s
 const set = (signals, k, v, _s, _v) => {
   // skip unchanged (although can be handled by last condition - we skip a few checks this way)
   return k[0] === '_' ? (signals[k] = v) :
-    (v !== (_v = (_s = signals[k]).peek())) && (
+    (v !== (_v = (_s = signals[k]).peek?.() ?? _s)) && (
       // stashed _set for value with getter/setter
       _s[_set] ? _s[_set](v) :
         // patch array

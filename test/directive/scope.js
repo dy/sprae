@@ -137,3 +137,17 @@ test("scope: fragment", async () => {
   await tick();
   is(el.outerHTML, `a<y>foobaz</y>`);
 });
+
+test("scope: with :fx", async () => {
+  let el = h`<div><div :scope="{ bar: 'bar' }" :fx="() => ut(() => { count += 1 })"></div></div>`;
+  let params = sprae(el, { count: 0, ut: untracked });
+  await tick()
+  is(params.count, 1);
+});
+
+test("scope: fragment with :fx", async () => {
+  let el = h`<div><template :scope="{ bar: 'bar' }" :fx="() => ut(() => { count += 1 })"></template></div>`;
+  let params = sprae(el, { count: 0, ut: untracked });
+  await tick()
+  is(params.count, 1);
+});
