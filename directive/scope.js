@@ -13,8 +13,8 @@ export default (el, rootState) => {
   let state = el[_state] = store({}, rootState), init = false
 
   // <template :scope="{}" /> or previously initialized template
-  let _el = el.content ? frag(el) : el, _holder
-  if (el.content) el.replaceWith(_holder = el.ownerDocument.createTextNode(''))
+  let holder, _frag = el.content && frag(el)
+  if (_frag) el.replaceWith(holder = el.ownerDocument.createTextNode(''))
 
   // 1st run spraes subtree with values from scope, it can be postponed by modifiers (we isolate reads from parent effect)
   // 2nd+ runs update subscope
@@ -35,6 +35,6 @@ export default (el, rootState) => {
     }
 
     // Object.assign(subscope, call(values, subscope))
-    return !init && (init = true, delete el[_state], untracked(() => (_holder?.before(_el.content || _el), sprae(_el, state))))
+    return !init && (init = true, !holder && (delete el[_state]), untracked(() => (holder?.before(_frag.content || el), sprae(_frag || el, state))))
   }
 }
