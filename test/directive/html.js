@@ -130,3 +130,23 @@ test("html: doesnt get side-triggered", async () => {
   state.bool = true
   is(state._log, 1)
 })
+
+test("html: with :scope", async () => {
+  let el = h`<div><div :scope="{ bar: 'bar' }" :html="html"></div></div>`;
+  let s = sprae(el, { foo: "foo", html: `<a :text="foo+bar"></a>` });
+  await tick();
+  is(el.innerHTML, `<div><a>foobar</a></div>`);
+  s.foo = "moo";
+  await tick();
+  is(el.innerHTML, `<div><a>moobar</a></div>`);
+})
+
+test("html: fragment with :scope", async () => {
+  let el = h`<div><template :scope="{ bar: 'bar' }" :html="html"></template></div>`;
+  let s = sprae(el, { foo: "foo", html: `<a :text="foo+bar"></a>` });
+  await tick();
+  is(el.innerHTML, `<a>foobar</a>`);
+  s.foo = "moo";
+  await tick();
+  is(el.innerHTML, `<a>moobar</a>`);
+})

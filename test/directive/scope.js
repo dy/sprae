@@ -138,26 +138,6 @@ test("scope: fragment", async () => {
   is(el.outerHTML, `a<y>foobaz</y>`);
 });
 
-test("scope: with :html", async () => {
-  let el = h`<div><div :scope="{ bar: 'bar' }" :html="html"></div></div>`;
-  let s = sprae(el, { foo: "foo", html: `<a :text="foo+bar"></a>` });
-  await tick();
-  is(el.innerHTML, `<div><a>foobar</a></div>`);
-  s.foo = "moo";
-  await tick();
-  is(el.innerHTML, `<div><a>moobar</a></div>`);
-})
-
-test("scope: fragment with :html", async () => {
-  let el = h`<div><template :scope="{ bar: 'bar' }" :html="html"></template></div>`;
-  let s = sprae(el, { foo: "foo", html: `<a :text="foo+bar"></a>` });
-  await tick();
-  is(el.innerHTML, `<a>foobar</a>`);
-  s.foo = "moo";
-  await tick();
-  is(el.innerHTML, `<a>moobar</a>`);
-})
-
 test("scope: with :fx", async () => {
   let el = h`<div><div :scope="{ bar: 'bar' }" :fx="() => ut(() => { count += 1 })"></div></div>`;
   let params = sprae(el, { count: 0, ut: untracked });
