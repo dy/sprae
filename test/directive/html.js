@@ -31,6 +31,15 @@ test("html: null/empty", async () => {
   is(el.outerHTML, `<div></div>`);
 });
 
+test("html: fragment", async () => {
+  let el = h`a<template :html="html"/>`;
+  let params = sprae(el, { html: "<b>b</b>" });
+  is(el.outerHTML, `a<b>b</b>`);
+  params.html = '<i>c</i>';
+  await tick();
+  is(el.outerHTML, `a<i>c</i>`);
+});
+
 test("html: function", async () => {
   // jessie: causes hang after test completion
   let el = h`<div :html="h => h + suffix"></div>`;
@@ -41,13 +50,15 @@ test("html: function", async () => {
   is(el.outerHTML, `<div>!<b>!</b></div>`);
 });
 
-test("html: fragment", async () => {
-  let el = h`a<template :html="html"/>`;
-  let params = sprae(el, { html: "<b>b</b>" });
-  is(el.outerHTML, `a<b>b</b>`);
-  params.html = '<i>c</i>';
+
+test("html: fragment function", async () => {
+  // jessie: causes hang after test completion
+  let el = h`<div><template :html="h => h + suffix"></template></div>`;
+  let params = sprae(el, { suffix: '!' });
+  is(el.innerHTML, `!`);
+  params.suffix = '<b>!</b>';
   await tick();
-  is(el.outerHTML, `a<i>c</i>`);
+  is(el.innerHTML, `!<b>!</b>`);
 });
 
 test("html: nested sprae elements", async () => {
@@ -78,6 +89,18 @@ test("html: with condition", async () => {
   params.show = true;
   await tick();
   is(el.innerHTML, `<span><b>content</b></span>`);
+});
+
+test("html: fragment with condition", async () => {
+  let el = h`<div><template :if="show" :html="html"></template></div>`;
+  let params = sprae(el, { show: true, html: '<b>content</b>' });
+  is(el.innerHTML, `<b>content</b>`);
+  params.show = false;
+  await tick();
+  is(el.innerHTML, ``);
+  params.show = true;
+  await tick();
+  is(el.innerHTML, `<b>content</b>`);
 });
 
 test("html: special characters", async () => {

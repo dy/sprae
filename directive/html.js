@@ -1,4 +1,4 @@
-import sprae, { untracked, _dispose, _state } from "../core.js"
+import sprae, { untracked, frag, _dispose, _state } from "../core.js"
 
 /**
  * HTML directive - sets innerHTML and initializes nested directives.
@@ -8,24 +8,42 @@ import sprae, { untracked, _dispose, _state } from "../core.js"
  * @returns {(v: string | ((html: string) => string)) => void | (() => void)} Update function
  */
 export default (el, state) => {
-  // <template :html="a"/> - fragment case: use placeholder + range
+  // <template :html="a"/> - fragment case: use placeholder + frag
   if (el.content) {
-    let doc = el.ownerDocument,
-        start = doc.createTextNode(''),
-        end = doc.createTextNode(''),
-        range = doc.createRange()
-    el.replaceWith(start, end)
+    let _el, html = '',
+      doc = el.ownerDocument,
+      holder = el._holder
+
+    if (!holder) el.replaceWith(holder = doc.createTextNode(''))
+
     return v => {
-      v = typeof v === 'function' ? v('') : v
-      range.setStartAfter(start)
-      range.setEndBefore(end)
-      range.deleteContents()
+      if (typeof v === 'function') v = v(html)
+
+      // :if case: remove current content from DOM
+      if (el._holder) el.remove(), el.content.replaceChildren()
+      _el?.remove()
+
       if (v != null && v !== '') {
-        let frag = range.createContextualFragment(v)
-        sprae(frag, state)
-        range.insertNode(frag)
+        _el = frag((_el = doc.createElement('template'), _el.innerHTML = html = v, _el))
+
+        untracked(() => sprae(_el, state))
+
+        holder.before(_el.content)
+
+        // :if case: update childNodes in-place for remove() closure
+        if (el._holder) el.childNodes.splice(0, Infinity, ..._el.childNodes)
+
+        return _el[_dispose]
       }
+      else if (el._holder) el.childNodes.length = 0, html = ''
     }
   }
-  return v => (v = typeof v === 'function' ? v(el.innerHTML) : v, el.innerHTML = v == null ? "" : v, el[_state] &&= null, untracked(() => sprae(el, state)), el[_dispose])
+
+  return v => (
+    v = typeof v === 'function' ? v(el.innerHTML) : v,
+    el.innerHTML = v == null ? "" : v,
+    el[_state] &&= null,
+    untracked(() => sprae(el, state)),
+    el[_dispose]
+  )
 }
