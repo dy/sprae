@@ -42,23 +42,23 @@ test("html: fragment", async () => {
 
 test("html: function", async () => {
   // jessie: causes hang after test completion
-  let el = h`<div :html="h => h + suffix"></div>`;
+  let el = h`<div :html="h => h + suffix"><a>!</a></div>`;
   let params = sprae(el, { suffix: '!' });
-  is(el.outerHTML, `<div>!</div>`);
+  is(el.innerHTML, `<a>!</a>!`);
   params.suffix = '<b>!</b>';
   await tick();
-  is(el.outerHTML, `<div>!<b>!</b></div>`);
+  is(el.innerHTML, `<a>!</a>!<b>!</b>`);
 });
 
 
 test("html: fragment function", async () => {
   // jessie: causes hang after test completion
-  let el = h`<div><template :html="h => h + suffix"></template></div>`;
+  let el = h`<div><template :html="h => h + suffix"><a>!</a></template></div>`;
   let params = sprae(el, { suffix: '!' });
-  is(el.innerHTML, `!`);
+  is(el.innerHTML, `<a>!</a>!`);
   params.suffix = '<b>!</b>';
   await tick();
-  is(el.innerHTML, `!<b>!</b>`);
+  is(el.innerHTML, `<a>!</a>!<b>!</b>`);
 });
 
 test("html: nested sprae elements", async () => {

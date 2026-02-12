@@ -10,7 +10,7 @@ import sprae, { untracked, frag, _dispose, _state } from "../core.js"
 export default (el, state) => {
   // <template :html="a"/> - fragment case: use placeholder + frag
   if (el.content) {
-    let _el, html = '',
+    let _el, html = el.innerHTML,
       doc = el.ownerDocument,
       holder = el._holder
 
