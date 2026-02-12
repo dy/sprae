@@ -30,7 +30,7 @@
 ## Principles
 
 **HTML-native**
-: Add `:` attribs to existing HTML.<br>Standard JS expressions.<br>No build step, no config.
+: Keep existing HTML.<br>Standard JS expressions.<br>No build step, no config.
 
 **Open state**
 : Controllable. ESM-first.<br>[Preact signals](https://github.com/preactjs/signals) enabled.<br>Sandboxed. Safe eval.
