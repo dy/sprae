@@ -557,7 +557,7 @@ modifier.uppercase = (fn) => (v) => fn(String(v).toUpperCase())
 
 ### JSX / React / Next.js
 
-Use custom prefix to avoid JSX attribute conflicts:
+Avoids `'use client'` for UI interactivity — keep server components, let sprae handle toggles, dropdowns, tabs etc. client-side. Use custom prefix to avoid JSX attribute conflicts:
 
 ```jsx
 // layout.jsx
@@ -572,32 +572,68 @@ export default function Layout({ children }) {
 ```
 
 ```jsx
-// page.jsx (server component)
+// page.jsx — server component, no 'use client' needed
 export default function Page() {
-  return <nav>
-    <a href="/" x-class="location.pathname === '/' && 'active'">Home</a>
-    <a href="/about" x-class="location.pathname === '/about' && 'active'">About</a>
-  </nav>
-}
-```
+  return <>
+    <nav>
+      <a href="/" x-class="location.pathname === '/' && 'active'">Home</a>
+      <a href="/about" x-class="location.pathname === '/about' && 'active'">About</a>
+    </nav>
 
-
-### SSR / Hydration
-
-Server renders HTML, sprae hydrates interactive parts:
-
-```jsx
-// Server component — no 'use client' needed
-export default function Counter() {
-  return <div x-scope="{count: 0}">
-    <button x-onclick="count++">
-      Clicked <span x-text="count">0</span> times
-    </button>
-  </div>
+    {/* Interactive without client component */}
+    <div x-scope="{count: 0}">
+      <button x-onclick="count++">
+        Clicked <span x-text="count">0</span> times
+      </button>
+    </div>
+  </>
 }
 ```
 
 > **Tip**: Include default content inside elements. Directives replace it on hydration, providing graceful fallback if JS fails.
+
+
+### Markdown / Static Sites
+
+Sprae can be used with markdown (Jekyll, Hugo, Eleventy, Astro, etc.) including Github Pages.
+Markdown processors strip `:` attributes, so it needs special prefix:
+
+```html
+<!-- In layout template (e.g. _layouts/default.html) -->
+<script src="https://unpkg.com/sprae" data-prefix="data-" data-start></script>
+```
+
+Then use `data-` directives directly in markdown:
+
+```md
+## Live Counter
+
+<div data-scope="{ count: 0 }">
+  <button data-onclick="count++">
+    Clicked <span data-text="count">0</span> times
+  </button>
+</div>
+```
+
+Interactive elements hydrate on page load. Static content stays static — no build step, no client framework. This site itself is built this way (Jekyll + sprae).
+
+> **Note**: Enable HTML in markdown if your generator requires it (e.g. kramdown: `parse_block_html: true`).
+
+
+### Server Templates
+
+Same pattern works with PHP, Django, Rails, Jinja, EJS — server renders HTML, include sprae script, add directives to the markup:
+
+```html
+<!-- PHP / Blade / Twig / ERB — any server template -->
+<script src="https://unpkg.com/sprae" data-start></script>
+
+<div :scope="{ count: <?= $initial ?> }">
+  <button :onclick="count++">Count: <span :text="count"></span></button>
+</div>
+```
+
+Server provides initial data, sprae handles client interactivity.
 
 
 ### Web Components
