@@ -76,3 +76,31 @@ test.skip("class: interpolation", async () => {
   sprae(el, { a: 'a', b: 'b', c: 0 });
   is(el.outerHTML, `<x class="a b c-0"></x>`);
 });
+
+test('class: each + class with signal array', async () => {
+  let el = document.createElement('div')
+  el.innerHTML = `<button :each="opt in options" :class="{ selected: value.includes(opt) }" :text="opt"></button>`
+  document.body.appendChild(el)
+
+  const value = signal(['a'])
+  sprae(el, { options: ['a', 'b', 'c'], value })
+
+  await tick()
+  is(el.children[0].classList.contains('selected'), true, 'init: a selected')
+  is(el.children[1].classList.contains('selected'), false, 'init: b not selected')
+  is(el.children[2].classList.contains('selected'), false, 'init: c not selected')
+
+  value.value = ['a', 'b']
+  await tick()
+  is(el.children[0].classList.contains('selected'), true, 'step2: a selected')
+  is(el.children[1].classList.contains('selected'), true, 'step2: b selected')
+  is(el.children[2].classList.contains('selected'), false, 'step2: c not selected')
+
+  value.value = ['b']
+  await tick()
+  is(el.children[0].classList.contains('selected'), false, 'step3: a not selected')
+  is(el.children[1].classList.contains('selected'), true, 'step3: b selected')
+  is(el.children[2].classList.contains('selected'), false, 'step3: c not selected')
+
+  document.body.removeChild(el)
+});
