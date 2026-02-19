@@ -21,9 +21,11 @@ Microhydration for HTML/JSX tree.
 <script type="module" src="//unpkg.com/sprae"></script>
 ```
 
+<!--
 ## why
 
-Wanted alpine but with less syntax and magic, and with open state.
+The easiest harmless way to bring interactions to DOM and connect  open state.
+-->
 
 ## [docs](docs.md)
 
