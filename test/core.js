@@ -245,6 +245,46 @@ test("core: custom prefix", async () => {
   use({prefix:':'})
 })
 
+test("core: data- prefix consumes data-* attributes", async () => {
+  use({ prefix: 'data-' })
+  let el = h`<img data-src="url" />`;
+  sprae(el, { url: 'test.jpg' });
+  is(el.getAttribute('src'), 'test.jpg');
+  is(el.getAttribute('data-src'), null); // consumed by sprae
+  use({ prefix: ':' })
+})
+
+test("core: data- prefix spread for ambiguous attrs", async () => {
+  use({ prefix: 'data-' })
+  let el = h`<img data-="{ src: url, alt: desc }" />`;
+  sprae(el, { url: 'test.jpg', desc: 'photo' });
+  is(el.getAttribute('src'), 'test.jpg');
+  is(el.getAttribute('alt'), 'photo');
+  use({ prefix: ':' })
+})
+
+test("core: class reserved word — use cls instead", async () => {
+  let el = h`<div :class="cls"></div>`;
+  let state = sprae(el, { cls: 'active' });
+  is(el.className, 'active');
+  state.cls = 'disabled';
+  await tick();
+  is(el.className, 'disabled');
+})
+
+test("core: style/value/hidden as variable names work", async () => {
+  let el = h`<div :style="style" :hidden="hidden"></div>`;
+  sprae(el, { style: 'color:red', hidden: true });
+  is(el.getAttribute('style'), 'color:red');
+  is(el.hidden, true);
+})
+
+test("core: getters work in inline scope", async () => {
+  let el = h`<div :scope="{ count: 1, get double() { return this.count * 2 } }"><span :text="double"></span></div>`;
+  sprae(el);
+  is(el.querySelector('span').textContent, '2');
+})
+
 test("core: static errors don't break sprae", async () => {
   console.log('---again')
   let el = h`<y><x :text="0.toFixed(2)"></x><x :text="b"></x></y>`

@@ -87,34 +87,65 @@ import { signal, effect, computed, batch, untracked } from 'sprae/signal'
 
 ## Modifiers
 
-Apply to any directive: `:directive.mod1.mod2="expr"`
+Chain modifiers with `.` after directive name: `:directive.mod1.mod2-arg="expr"`. Modifiers work on any directive, not just events.
 
 ### Timing
-- `.debounce[-time]` — delay until quiet (default: microtask). `.debounce-immediate` for leading edge.
-- `.throttle[-time]` — limit rate (default: microtask).
+- `.debounce[-time]` — delay until quiet. `.debounce-immediate` for leading edge.
+- `.throttle[-time]` — limit rate.
 - `.delay[-time]` — delay each call.
-- `.tick` — shortcut for `.delay-tick` (next microtask).
-- `.raf` — shortcut for `.delay-raf` (next animation frame).
 - `.once` — run once.
 
 Time formats: `100` (ms), `100ms`, `1s`, `1m`, `raf`, `idle`, `tick`
 
+```html
+<input :oninput.debounce-300="search()" />
+<input :oninput.debounce-1s="save()" />
+<button :onclick.throttle-100="submit()">Submit</button>
+<button :onclick.once="init()">Initialize</button>
+<div :onmouseenter.delay-500="showTooltip = true">Hover</div>
+```
+
 ### Event Targets
-- `.window`, `.document`, `.body`, `.root`, `.parent` — attach to target.
+- `.window`, `.document`, `.body`, `.root`, `.parent` — attach listener to target.
 - `.away` (alias `.outside`) — trigger when clicking outside element.
 - `.self` — only if `e.target` is element itself.
+
+```html
+<div :onkeydown.window.escape="close()">Modal</div>
+<div :onclick.away="open = false">Dropdown</div>
+<div :onclick.self="handleClick()">Only direct clicks</div>
+```
 
 ### Event Behavior
 - `.prevent` — `preventDefault()`.
 - `.stop` — `stopPropagation()`. `.stop-immediate` — `stopImmediatePropagation()`.
 - `.passive`, `.capture` — listener options.
 
+```html
+<form :onsubmit.prevent="handleSubmit()">...</form>
+<a :onclick.prevent="navigate()" href="/fallback">Link</a>
+<div :onscroll.passive="handleScroll">...</div>
+```
+
 ### Key Filters
-- `.enter`, `.esc`, `.tab`, `.space`, `.delete`
+- `.enter`, `.esc`, `.tab`, `.space`, `.delete`, `.arrow`
 - `.ctrl`, `.shift`, `.alt`, `.meta`, `.cmd`
-- `.arrow`, `.digit`, `.letter`, `.char`
+- `.digit`, `.letter`, `.char`
 - Combinations: `.ctrl-s`, `.ctrl-shift-z`
-- Accepts key name (case-insensitive) or keyCode.
+
+```html
+<input :onkeydown.enter="submit()" />
+<input :onkeydown.ctrl-s.prevent="save()" />
+<input :onkeydown.escape="cancel()" />
+```
+
+### Combining Modifiers
+Modifiers chain naturally:
+```html
+<input :oninput.debounce-300.prevent="search()" />
+<div :onkeydown.window.ctrl-s.prevent="save()">Global save</div>
+<button :onclick.once.prevent="init()">Init</button>
+```
 
 ## State Management
 
@@ -189,6 +220,9 @@ modifier.log = (fn) => (e) => (console.log(e), fn(e))
 2. **Expressions can be async**: `:text="await load()"`.
 3. **Self-closing**: only valid HTML self-closing tags (`<input />`, not `<div />`).
 4. **Cleanup**: `el[Symbol.dispose]()` or `dispose(el)`.
-5. **FOUC prevention**: `<style>[\:each],[\:if],[\:else] {visibility: hidden}</style>`
+5. **FOUC prevention**: `<style>[\:each],[\:if],[\:else] {visibility: hidden}</style>`. With `data-` prefix: `[data-each],[data-if],[data-else]`.
 6. **`this`**: refers to current element in expressions.
 7. **Prefix**: default `:`, configurable via `use({ prefix })` or `data-prefix` attribute.
+8. **`data-` prefix eats all `data-*` attrs**: use spread for ambiguous names: `:="{ src: url }"`.
+9. **`class` is a reserved word**: use `cls` as variable name, not `class`.
+10. **Modifiers work on any directive**: `:text.once`, `:fx.debounce-300`, not just events.

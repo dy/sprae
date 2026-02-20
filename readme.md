@@ -25,7 +25,16 @@ Microhydration for HTML/JSX tree.
 ## why
 
 The easiest harmless way to bring interactions to DOM and connect  open state.
+
 -->
+
+```html
+<!-- Modifiers: debounce, throttle, key filters, event targets -->
+<input :oninput.debounce-300="search()" placeholder="Search..." />
+<button :onclick.once="init()">Initialize</button>
+<div :onkeydown.window.escape="close()">Press Esc to close</div>
+<form :onsubmit.prevent="save()">...</form>
+```
 
 ## [docs](docs.md)
 

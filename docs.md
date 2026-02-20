@@ -797,7 +797,9 @@ customElements.define('my-counter', Counter)
 
 ## Hints
 
-- **Prevent [FOUC](https://en.wikipedia.org/wiki/Flash_of_unstyled_content)**: Add `<style>[\:each],[\:if],[\:else]{visibility:hidden}</style>`
+- **Prevent [FOUC](https://en.wikipedia.org/wiki/Flash_of_unstyled_content)**: Add `<style>[\:each],[\:if],[\:else]{visibility:hidden}</style>`. With `data-` prefix: `<style>[data-each],[data-if],[data-else]{visibility:hidden}</style>`
+- **`data-` prefix eats all `data-*` attributes**: With `sprae.use({ prefix: 'data-' })`, every `data-*` attribute becomes a directive. Use spread for ambiguous names: `<img :="{ src: imageUrl, alt: desc }" />` instead of `<img data-src="imageUrl" />`.
+- **`class` is a JS reserved word**: Can't use `class` as variable name in expressions. Use `cls`, `className`, or spread: `:="{ class: expr }"`.
 - **Attribute order matters**: `<li :each="el in els" :text="el.name"></li>` is not the same as `<li :text="el.name" :each="el in els"></li>`, or `<input type="slider" :max=1 :value=0.5 />`
 - **Validate self-closing tags**: `<a :text="item" />` will cause error. Valid self-closing tags are: `li`, `p`, `dt`, `dd`, `option`, `tr`, `td`, `th`, `input`, `img`, `br`.
 - **Async expressions**: `<div :text="await fetchData()"></div>` works
