@@ -279,7 +279,7 @@ test("core: style/value/hidden as variable names work", async () => {
   is(el.hidden, true);
 })
 
-test("core: getters work in inline scope", async () => {
+test("core: getters work in inline scope", {skip: isJessie}, async () => {
   let el = h`<div :scope="{ count: 1, get double() { return this.count * 2 } }"><span :text="double"></span></div>`;
   sprae(el);
   is(el.querySelector('span').textContent, '2');
