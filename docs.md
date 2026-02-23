@@ -832,5 +832,3 @@ customElements.define('my-counter', Counter)
 | Custom Directives | Yes | Yes | Limited |
 | No-build Required | ✓ | ✓ | ✓ |
 | SSR-friendly | ✓ | Limited | ✓ |
-
-**Coming from Alpine?** See [alpine](/alpine) for a step-by-step migration guide.
