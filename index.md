@@ -79,10 +79,10 @@
 |----------|-------------|---------|
 | [`.once`](docs#once) | Run once | `:onclick.once="..."` |
 | [`.prevent`](docs#prevent-stop-stop-immediate) | Prevent default | `:onclick.prevent="..."` |
-| [`.stop[-immediate]`](docs#prevent-stop-stop-immediate) | Stop propagation | `:onclick.stop="..."` |
+| [`.stop`](docs#prevent-stop-stop-immediate) | Stop propagation | `:onclick.stop="..."` |
 | [`.window` `.document` `.self`](docs#window-document-body-parent-self) | Change target | `:onkeydown.window` |
 | [`.away`](docs#away) | Click outside | `:onclick.away` |
-| [`.debounce-[ms]` `.throttle-[ms]` `.delay-[ms]`](docs#debounce) | Timing control | `:oninput.debounce-300` |
+| [`.debounce` `.throttle` `.delay`](docs#debounce) | Timing control | `:oninput.debounce-300` |
 | [`.passive` `.capture`](docs#passive-capture) | Listener options | `:onscroll.passive` |
 | [`.enter` `.esc` `.ctrl` ...](docs#key-filters) | Key filters | `:onkeydown.enter` |
 
