@@ -19,6 +19,22 @@
   touch-action: manipulation;
 }
 
+.skip-link {
+  position: absolute;
+  top: -100%;
+  left: 1rem;
+  z-index: 100;
+  padding: 0.5rem 1rem;
+  background: var(--color-blue-700);
+  color: white;
+  text-decoration: none;
+  border-radius: 0 0 0.25rem 0.25rem;
+}
+
+.skip-link:focus {
+  top: 0;
+}
+
 html {
   scroll-behavior: smooth;
 }
@@ -677,6 +693,11 @@ button {
 
 button:hover {
   opacity: 0.9;
+}
+
+button:focus-visible {
+  outline: 2px solid white;
+  outline-offset: 2px;
 }
 
 .bg-graph-paper {

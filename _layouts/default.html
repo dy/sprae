@@ -13,6 +13,7 @@
 
   <body id="page-{{ page.name | default: 'index' | split: '.' | first }}"
     data-fx.once="document.querySelectorAll('h2[id], h3[id], h4[id], h5[id], h6[id]').forEach(function(h) { var a = document.createElement('a'); a.href = '#' + h.id; a.className = 'anchor'; a.textContent = '#'; h.prepend(a) })">
+    <a href="#main-content" class="skip-link">Skip to content</a>
     <!-- Spray effect - cursor cloud with inertia -->
     <div id="spray" data-scope="{
       clouds: [],
@@ -200,7 +201,7 @@
       </nav>
     </header>
 
-    <main>
+    <main id="main-content">
       <!-- Table of contents - auto-generated from headings -->
       <aside id="toc" data-scope="{
         items: [],
