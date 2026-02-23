@@ -3,6 +3,7 @@
 Include sprae and add directives to your HTML:
 
 ```html
+<!-- Auto-init with data-start -->
 <script src="https://unpkg.com/sprae" data-start></script>
 
 <ul :scope="{ items: ['Buy milk', 'Walk dog', 'Call mom'] }">
@@ -32,29 +33,6 @@ Or initialize manually for more control:
   state.items.push('Elderberry')
 </script>
 ```
-
-### CDN
-
-```html
-<!-- Auto-init with data-start -->
-<script src="https://unpkg.com/sprae" data-start></script>
-
-<!-- Or manual init -->
-<script type="module">
-  import sprae from 'https://unpkg.com/sprae?module'
-</script>
-```
-
-### Package
-
-```bash
-npm i sprae
-```
-
-```js
-import sprae from 'sprae'
-```
-
 
 
 ## Directives
