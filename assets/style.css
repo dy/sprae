@@ -21,18 +21,28 @@
 
 .skip-link {
   position: absolute;
-  top: -100%;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+}
+
+.skip-link:focus {
+  position: fixed;
+  top: 0;
   left: 1rem;
+  width: auto;
+  height: auto;
+  overflow: visible;
+  clip: auto;
+  white-space: normal;
   z-index: 100;
   padding: 0.5rem 1rem;
   background: var(--color-blue-700);
   color: white;
   text-decoration: none;
   border-radius: 0 0 0.25rem 0.25rem;
-}
-
-.skip-link:focus {
-  top: 0;
 }
 
 html {
