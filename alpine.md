@@ -20,7 +20,10 @@
 | `x-teleport="#target"` | `:portal="'#target'"` |
 | `x-cloak` | CSS: `[\:scope] { visibility: hidden }` |
 | `x-init="..."` | `:fx.once="..."` or `:scope.once="..."` |
-| `x-transition` | CSS transitions |
+| `x-transition` | CSS transitions (see [below](#x-transition)) |
+| `$el` | `:ref="el"` (preferred) or `this` |
+| `$root` | Use `:ref` on root element |
+| `$id()` | No equivalent (use native `id` attributes) |
 
 ## Directives
 
@@ -215,7 +218,7 @@ Use `:fx` or initialize in `:scope`:
 <div :fx.once="fetchData()">
 
 <!-- or in scope -->
-<div :scope.once="fetchData(), { data }">
+<div :scope="{ data: [] }" :fx.once="fetchData().then(d => data = d)">
 ```
 
 ### x-cloak
@@ -255,21 +258,45 @@ Use `:fx`:
 <div :scope :fx="console.log(count)">
 ```
 
+### $el
+
+Use `:ref` to get element reference:
+
+```html
+<!-- Alpine -->
+<div @click="$el.classList.toggle('active')">
+
+<!-- Sprae -->
+<div :ref="el" :onclick="el.classList.toggle('active')">
+```
+
+### $root
+
+No magic property. Use `:ref` on the root element:
+
+```html
+<!-- Alpine -->
+<div x-data @click="$root.style.color = 'red'">
+
+<!-- Sprae -->
+<div :scope :ref="root" :onclick="root.style.color = 'red'">
+```
+
 ### $dispatch
 
-Use native events:
+Use native `CustomEvent`:
 
 ```html
 <!-- Alpine -->
 <button @click="$dispatch('notify', { message: 'Hello' })">
 
-<!-- Sprae -->
-<button :onclick="dispatchEvent(new CustomEvent('notify', { detail: { message: 'Hello' }}))">
+<!-- Sprae: this = current element -->
+<button :onclick="this.dispatchEvent(new CustomEvent('notify', { bubbles: true, detail: { message: 'Hello' }}))">
 ```
 
 ### $nextTick
 
-Use `queueMicrotask` or `setTimeout`:
+Use `queueMicrotask`:
 
 ```html
 <!-- Alpine -->
@@ -278,6 +305,73 @@ Use `queueMicrotask` or `setTimeout`:
 <!-- Sprae -->
 <button :onclick="count++; queueMicrotask(() => console.log(countEl.innerText))">
 ```
+
+### x-transition
+
+Alpine's `x-transition` adds enter/leave classes automatically. In sprae, use CSS transitions on `:if` or `:hidden`:
+
+```html
+<!-- Alpine -->
+<div x-show="open" x-transition>Content</div>
+<div x-show="open" x-transition.opacity>Content</div>
+<div x-show="open" x-transition.duration.500ms>Content</div>
+
+<!-- Sprae: fade with :if -->
+<div :if="open" class="fade">Content</div>
+```
+
+```css
+.fade {
+  animation: fade-in 200ms;
+}
+
+@keyframes fade-in {
+  from { opacity: 0; }
+}
+```
+
+For enter + leave animations, use `:hidden` (keeps element in DOM):
+
+```html
+<div :hidden="!open" :class="{ 'fade-out': !open }" class="fade-in">Content</div>
+```
+
+```css
+.fade-in { transition: opacity 200ms; }
+.fade-out { opacity: 0; }
+```
+
+### Alpine.data()
+
+Alpine.data() registers reusable component logic. In sprae, use plain functions:
+
+```js
+// Alpine
+Alpine.data('counter', () => ({
+  count: 0,
+  increment() { this.count++ }
+}))
+// <div x-data="counter">
+
+// Sprae: plain function
+function counter() {
+  return { count: 0, increment() { this.count++ } }
+}
+// <div :scope="counter()">
+```
+
+### Alpine plugins
+
+| Alpine Plugin | Sprae Equivalent |
+|---------------|------------------|
+| `@alpine/intersect` | `:ref="el => { const io = new IntersectionObserver(cb); io.observe(el); return () => io.disconnect() }"` |
+| `@alpine/persist` | Read/write `localStorage` in `:scope` or `:fx` |
+| `@alpine/collapse` | CSS `transition: height` with `:style="{ height: open ? 'auto' : 0 }"` |
+| `@alpine/mask` | `:oninput="e => e.target.value = mask(e.target.value)"` |
+| `@alpine/sort` | No built-in. Use a sortable library + `:ref` for init. |
+| `@alpine/focus` | `:ref="el => el.focus()"` or native `autofocus` |
+
+No plugin system needed — sprae expressions have full JS access, so most Alpine plugins reduce to a few lines.
 
 ## CSP (Content Security Policy)
 
