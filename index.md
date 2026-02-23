@@ -65,6 +65,7 @@
 | [`:style`](docs#style) | Set styles | `<div :style="{color:'#fff'}">` |
 | [`:value`](docs#value) | Bind input value | `<input :value="text">` |
 | [`:<prop>`](docs#attr--or---attrs-) | Set any attribute | `<a :href="url">` |
+| [`:hidden`](docs#hidden) | Toggle visibility | `<div :hidden="!show">` |
 | [`:if` `:else`](docs#if--else) | Conditional render | `<div :if="cond">` |
 | [`:each`](docs#each) | List render | `<li :each="item in list">` |
 | [`:scope`](docs#scope) | Define state | `<div :scope="{x:1}">` |
