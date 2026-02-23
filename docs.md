@@ -125,16 +125,6 @@ Set any attribute. Use spread form for multiple.
 ```
 
 
-#### `:hidden`
-
-Toggle `hidden` attribute (element stays in DOM, unlike `:if`).
-
-```html
-<div :hidden="!ready">Loading...</div>
-<dialog :hidden="!open">Modal content</dialog>
-```
-
-
 #### `:if` / `:else`
 
 Conditional rendering. Elements are removed from DOM when false.
