@@ -430,10 +430,10 @@ sprae.use(signals)
 
 | Library | Size | Notes |
 |---------|------|-------|
-| Built-in | ~1kb | Default, good performance |
+| Built-in | ~300b | Default, good performance |
 | [@preact/signals-core](https://github.com/preactjs/signals) | 1.5kb | Industry standard, best performance |
 | [ulive](https://github.com/nickmccurdy/ulive) | 350b | Minimal, basic performance |
-| [`signal`](https://ghub.io/@webreflection/signal) | 633b | Enhanced performance. |
+| [signal](https://ghub.io/@webreflection/signal) | 633b | Enhanced performance. |
 | [usignal](https://github.com/nickmccurdy/usignal) | 955b | Optimized, async effects support |
 
 <!-- [`signal-polyfill`](https://ghub.io/signal-polyfill) | 2.5kb | Proposal signals. Use via [adapter](https://gist.github.com/dy/bbac687464ccf5322ab0e2fd0680dc4d). -->
@@ -765,17 +765,15 @@ customElements.define('my-counter', Counter)
 
 ## Hints
 
-- **Prevent [FOUC](https://en.wikipedia.org/wiki/Flash_of_unstyled_content)**: Add `<style>[\:each],[\:if],[\:else]{visibility:hidden}</style>`. With `data-` prefix: `<style>[data-each],[data-if],[data-else]{visibility:hidden}</style>`
-- **`data-` prefix eats all `data-*` attributes**: With `sprae.use({ prefix: 'data-' })`, every `data-*` attribute becomes a directive. Use spread for ambiguous names: `<img :="{ src: imageUrl, alt: desc }" />` instead of `<img data-src="imageUrl" />`.
-- **`class` is a JS reserved word**: Can't use `class` as variable name in expressions. Use `cls`, `className`, or spread: `:="{ class: expr }"`.
+- **Prevent [FOUC](https://en.wikipedia.org/wiki/Flash_of_unstyled_content)**: Add `<style>[\:each],[\:if],[\:else]{visibility:hidden}</style>`.
 - **Attribute order matters**: `<li :each="el in els" :text="el.name"></li>` is not the same as `<li :text="el.name" :each="el in els"></li>`, or `<input type="slider" :max=1 :value=0.5 />`
-- **Validate self-closing tags**: `<a :text="item" />` will cause error. Valid self-closing tags are: `li`, `p`, `dt`, `dd`, `option`, `tr`, `td`, `th`, `input`, `img`, `br`.
 - **Async expressions**: `<div :text="await fetchData()"></div>` works
 - **Dispose**: Call `sprae.dispose(el)` or `el[Symbol.dispose]()` to cleanup
 - **No `key` needed**: `:each` uses direct list mapping, not DOM diffing
 - **Expose refs**: Use paths like `:ref="$refs.myEl"` for Alpine-style ref access
 - **`this` refers to current element**: but it's recommended to use `:ref="element => {...}"`.
-
+- **Validate self-closing tags**: `<a :text="item" />` will cause error. Valid self-closing tags are: `li`, `p`, `dt`, `dd`, `option`, `tr`, `td`, `th`, `input`, `img`, `br`.
+- **`data-` prefix eats all `data-*` attributes**: With `sprae.use({ prefix: 'data-' })`, every `data-*` attribute becomes a directive.
 
 ## FAQ
 
