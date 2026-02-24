@@ -175,10 +175,18 @@ for (let k in keys) modifier[k] = (fn, a, b) => (e) => keys[k](e) && (!a || keyM
 
 // Checks for first-level semicolons (statement vs expression)
 const hasSemi = s => {
-  for (let d=0,i=0;i<s.length;i++) {
-    if (s[i]=='{') d++
-    else if (s[i]=='}') d--
-    else if (s[i]==';' && !d) return true
+  let d = 0, q = '', esc = 0
+  for (let ch of s) {
+    if (q) {
+      if (esc) esc = 0
+      else if (ch === '\\') esc = 1
+      else if (ch === q) q = ''
+      continue
+    }
+    if (ch === ';' && !d) return true
+    if (ch === '{') d++
+    else if (ch === '}') d--
+    else if (ch === '"' || ch === "'" || ch === '`') q = ch
   }
   return false
 }

@@ -39,6 +39,18 @@ test("style: props", async () => {
   is(el.style.getPropertyValue("--x"), '');
 });
 
+test("style: css vars from string", async () => {
+  let el = h`<x :style="'--x:1;--y:2'"></x>`;
+  sprae(el);
+
+  is(el.style.getPropertyValue("--x"), "1");
+  is(el.style.getPropertyValue("--y"), "2");
+
+  let single = h`<x :style="'--z:3'"></x>`;
+  sprae(single);
+  is(single.style.getPropertyValue("--z"), "3");
+});
+
 test("style: camel kebab", async () => {
   let el = h`<x :style="style"></x>`;
   let params = sprae(el, { style: { backgroundColor: "red" } });
