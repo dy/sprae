@@ -753,11 +753,11 @@ button:focus-visible {
 }
 
 /* Standalone links (solo link in paragraph) */
-p > a:only-child {
+/* p > a:only-child {
   display: block;
   margin: 1.5rem 0;
   opacity: 0.7;
-}
+} */
 
 p > a:only-child:hover {
   opacity: 1;

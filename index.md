@@ -42,13 +42,30 @@
 
 ## Usage [Docs →](docs#faq)
 
-```html
-<!-- CDN -->
-<script src="//unpkg.com/sprae" data-start></script>
 
-<!-- ESM -->
-<script type="module">import sprae from 'sprae'</script>
+<div class="tabs" data-scope="{tab:'cdn'}">
+<button data-class="{active: tab=='cdn'}" data-onclick="tab='cdn'">CDN</button>
+<button data-class="{active: tab=='esm'}" data-onclick="tab='esm'">ESM</button>
+
+<div data-if="tab=='cdn'">
+Copy and paste the following HTML into your page to load and sprae the page.
+```html
+<script src="//unpkg.com/sprae" data-start></script>
 ```
+</div>
+
+<div data-if="tab=='esm'">
+
+Download [sprae.js](https://unpkg.com/sprae/dist/sprae.js) and import as ESM:
+```html
+<script type="module">
+  import sprae from './sprae.js'
+
+  sprae(document.getElementById('app'), initState)
+</script>
+```
+</div>
+</div>
 
 ## Reference [API →](docs#faq)
 
