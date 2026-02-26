@@ -197,6 +197,8 @@ const sprae = (el = document.body, state) => {
 
   add(el);
 
+  currentDir = currentEl = null;
+
   // if element was spraed by inline :with/:if/:each/etc instruction (meaning it has state placeholder) - skip, otherwise save _state
   if (el[_state] === undefined) el[_state] = state
 
