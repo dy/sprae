@@ -62,6 +62,8 @@ export const store = (values, parent) => {
   }), {
     get: (_, k) => {
       if (k in signals) {
+        // raw methods (no prototype) - bind to state for consistent `this`
+        if (signals.hasOwnProperty(k) && typeof signals[k] === 'function' && !signals[k].prototype) return signals[k].bind(state)
         return (signals[k] ? signals[k].valueOf() : signals[k])
       }
       if (parent) {
@@ -205,12 +207,12 @@ const list = (values, parent = globalThis) => {
 
 /**
  * Creates a signal for a property value.
- * Skips wrapping for untracked props (underscore prefix) and existing signals.
+ * Skips wrapping for untracked props (underscore prefix), existing signals, and functions.
  * @param {Object} signals - Signals storage object
  * @param {string} k - Property key
  * @param {any} v - Property value
  */
-const create = (signals, k, v) => (signals[k] = (k[0] == '_' || v?.peek) ? v : signal(store(v)))
+const create = (signals, k, v) => (signals[k] = (k[0] == '_' || v?.peek || typeof v === 'function') ? v : signal(store(v)))
 
 /**
  * Updates a signal value, handling arrays specially for efficient patching.
@@ -220,7 +222,7 @@ const create = (signals, k, v) => (signals[k] = (k[0] == '_' || v?.peek) ? v : s
  */
 const set = (signals, k, v, _s, _v) => {
   // skip unchanged (although can be handled by last condition - we skip a few checks this way)
-  return k[0] === '_' ? (signals[k] = v) :
+  return k[0] === '_' || typeof signals[k] === 'function' ? (signals[k] = v) :
     (v !== (_v = (_s = signals[k]).peek?.() ?? _s)) && (
       // stashed _set for value with getter/setter
       _s[_set] ? _s[_set](v) :

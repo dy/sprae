@@ -408,6 +408,49 @@ test('core: list length unsub (preact signals)', {skip: isJessie}, async () => {
   is(a.innerHTML, `<y>2</y><button></button>`)
 })
 
+test('core: method this points to state', async () => {
+  let el = h`<div :text="label()"></div>`
+  let state = sprae(el, { x: 1, label() { return 'x=' + this.x } })
+  is(el.outerHTML, `<div>x=1</div>`)
+  state.x = 2
+  await tick()
+  is(el.outerHTML, `<div>x=2</div>`)
+})
+
+test('core: getter this points to state', async () => {
+  let el = h`<div :text="doubled"></div>`
+  let state = sprae(el, { count: 3, get doubled() { return this.count * 2 } })
+  is(el.outerHTML, `<div>6</div>`)
+  state.count = 5
+  await tick()
+  is(el.outerHTML, `<div>10</div>`)
+})
+
+test('core: method mutates state via this', async () => {
+  let el = h`<x :text="x" :onclick="inc"></x>`
+  let state = sprae(el, { x: 0, inc() { this.x++ } })
+  is(el.outerHTML, `<x>0</x>`)
+  el.click()
+  await tick()
+  is(el.outerHTML, `<x>1</x>`)
+  el.click()
+  await tick()
+  is(el.outerHTML, `<x>2</x>`)
+})
+
+test('core: method with getter this', async () => {
+  let el = h`<x :text="total()"></x>`
+  let state = sprae(el, {
+    price: 10, qty: 2,
+    get subtotal() { return this.price * this.qty },
+    total() { return '$' + this.subtotal }
+  })
+  is(el.outerHTML, `<x>$20</x>`)
+  state.qty = 3
+  await tick()
+  is(el.outerHTML, `<x>$30</x>`)
+})
+
 test('core: ownerDocument instead of global document (custom DOM)', async () => {
   let a = h`<y><template :each="item in [{id:1}, {id:2}, {id:3}]" :if="item.id % 2"><x :text="item.id"></x></template></y>`
   let b = h`<div><div id="target"></div><span :portal="'#target'">content</span></div>`

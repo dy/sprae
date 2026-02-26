@@ -34,7 +34,7 @@ t('store: signal-struct basics', async () => {
     set xy([x, y]) { return this.x = x, this.y = y }
   })
 
-  // functions are signals too
+  // functions are raw (not signal-wrapped)
   is(s.v(), 1)
   // subscribes to only x and y without need for .value access
   const zilog = []
@@ -523,6 +523,28 @@ t('store: untracked substates', async () => {
   is(log, [1, 0, 2, 0])
   s._y[0] = 0
   is(log, [1, 0, 2, 0])
+})
+
+t('store: method this points to state', async () => {
+  let s = store({ x: 1, inc() { this.x++ }, label() { return 'x=' + this.x } })
+  is(s.label(), 'x=1')
+  s.inc()
+  is(s.x, 2)
+  is(s.label(), 'x=2')
+})
+
+t('store: getter this points to state', async () => {
+  let s = store({ x: 3, get doubled() { return this.x * 2 } })
+  is(s.doubled, 6)
+  s.x = 5
+  is(s.doubled, 10)
+})
+
+t('store: method this via with()', async () => {
+  let s = store({ x: 1, inc() { this.x++ } })
+  let fn = new Function('with(arguments[0]){ inc() }')
+  fn(s)
+  is(s.x, 2)
 })
 
 t('store: parent props are set to the parent', async () => {
