@@ -160,7 +160,7 @@ const sprae = (el = document.body, state) => {
   // we don't call prevOn as convention: everything defined before :else :if won't be disabled by :if
   // imagine <x :onx="..." :if="..."/> - when :if is false, it disables directives after :if (calls _off) but ignores :onx
   el[_on] = () => (!offs && (offs = fx.map(fn => fn())))
-  el[_off] = () => (offs?.map(off => off()), offs = null)
+  el[_off] = () => (offs?.map(off => off?.()), offs = null)
 
   // destroy
   el[_dispose] ||= () => (el[_off](), el[_off] = el[_on] = el[_dispose] = el[_add] = el[_state] = null)

@@ -493,3 +493,35 @@ test('if: multiple truthy conditions', async () => {
   await tick(2)
   is(el.innerHTML, ``);
 })
+
+test("if: :ref inside :if does not break _off", async () => {
+  let el = h`<div>
+    <button class="open" :onclick="show = true">Open</button>
+    <div :if="show">
+      <input :ref="x">
+      <button class="close" :onclick="show = false">Close</button>
+    </div>
+  </div>`
+
+  let state = sprae(el, { show: false })
+  await tick()
+
+  // open
+  state.show = true
+  await tick()
+  ok(state.x, 'ref set to input element')
+
+  // close — this used to throw "off is not a function"
+  state.show = false
+  await tick()
+
+  // re-open — should work
+  state.show = true
+  await tick()
+  ok(state.x, 'ref restored after re-open')
+
+  // close via click
+  el.querySelector('.close').dispatchEvent(new window.Event('click'))
+  await tick()
+  is(state.show, false, 'closed via click')
+})
