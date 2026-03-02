@@ -319,6 +319,41 @@ test("core: errors in one directive don't affect siblings", async () => {
   is(el.innerHTML, `<x></x><x></x><x>ok</x>`)
 })
 
+test("core: errors show element context", async () => {
+  let errors = []
+  let _error = console.error
+  console.error = (...args) => errors.push(args.join(' '))
+
+  let el = h`<x id="eid" :text="a.b"></x>`
+  sprae(el, {})
+  await tick()
+  is(errors.length, 1)
+  ok(errors[0].includes('<x#eid>'), 'static error shows element')
+  ok(errors[0].includes('a.b'), 'static error shows expression')
+
+  console.error = _error
+})
+
+test("core: runtime errors show element context", async () => {
+  let errors = []
+  let _error = console.error
+  console.error = (...args) => errors.push(args.join(' '))
+
+  let el = h`<x id="rt" :text="a.b.c"></x>`
+  let state = sprae(el, { a: { b: { c: 'ok' } } })
+  await tick()
+  is(el.textContent, 'ok')
+  is(errors.length, 0)
+
+  state.a = {}
+  await tick()
+  is(errors.length, 1)
+  ok(errors[0].includes('<x#rt>'), 'runtime error shows element')
+  ok(errors[0].includes('a.b.c'), 'runtime error shows expression')
+
+  console.error = _error
+})
+
 test("core: errors in :each don't break loop", async () => {
   console.log('---each errors')
   let el = h`<y><x :each="item in items" :text="item.name"></x></y>`

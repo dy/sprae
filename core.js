@@ -106,13 +106,12 @@ const elHint = (el) => {
  * @param {Error|string} e - Error to report
  * @param {string} [expr] - Expression that caused error
  */
-const err = (e, expr) => {
+const err = (e, expr, el = currentEl) => {
   let msg = `∴ ${e}`
-  if (currentEl) msg += `\n  in ${elHint(currentEl)}`
-  if (currentDir && expr) {
-    // Truncate long expressions
+  if (el) msg += `\n  in ${elHint(el)}`
+  if (expr) {
     const display = expr.length > 100 ? expr.slice(0, 80) + `… (${expr.length} chars)` : expr
-    msg += `\n  ${currentDir}="${display}"`
+    msg += currentDir ? `\n  ${currentDir}="${display}"` : `\n  ="${display}"`
   }
   console.error(msg)
 }
@@ -243,11 +242,11 @@ export const parse = (expr) => {
       let result = fn?.call(this, state)
       // if cb is given (to handle async/await exprs, usually directive update) - call it with result and return a cleanup function
       if (cb) return result?.then
-        ? (result.then(v => _out = cb(v)).catch(e => err(e, expr)), () => typeof _out === 'function' && _out())
+        ? (result.then(v => _out = cb(v)).catch(e => err(e, expr, this)), () => typeof _out === 'function' && _out())
         : cb(result)
       else return result
     } catch (e) {
-      err(e, expr)
+      err(e, expr, this)
     }
   }
 }
