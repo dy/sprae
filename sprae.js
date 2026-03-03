@@ -155,9 +155,9 @@ const keys = {
   alt: e => e.altKey || e.key === "Alt",
   meta: e => e.metaKey || e.key === "Meta",
   cmd: e => e.metaKey || e.key === "Command",
-  arrow: e => e.key.startsWith("Arrow"),
+  arrow: e => e.key?.startsWith("Arrow"),
   enter: e => e.key === "Enter",
-  esc: e => e.key.startsWith("Esc"),
+  esc: e => e.key?.startsWith("Esc"),
   tab: e => e.key === "Tab",
   space: e => e.key === " " || e.key === "Space" || e.key === " ",
   delete: e => e.key === "Delete" || e.key === "Backspace",
@@ -167,7 +167,7 @@ const keys = {
 };
 
 // match key by name, or by e.key (case-insensitive), or by keyCode (digits)
-const keyMatch = (k, e) => keys[k]?.(e) || e.key.toLowerCase() === k || e.keyCode == k
+const keyMatch = (k, e) => keys[k]?.(e) || e.key?.toLowerCase() === k || e.keyCode == k
 
 // Augment modifiers with key testers (e.g., .enter, .ctrl, .ctrl-a, .ctrl-65)
 for (let k in keys) modifier[k] = (fn, a, b) => (e) => keys[k](e) && (!a || keyMatch(a, e)) && (!b || keyMatch(b, e)) && fn(e)

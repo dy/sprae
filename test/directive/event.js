@@ -476,3 +476,24 @@ test("on: key by keyCode", () => {
   el.dispatchEvent(new window.KeyboardEvent("keydown", { key: "b", keyCode: 66, ctrlKey: true }));
   is(state.log, ["A"]);
 });
+
+test("on: esc with undefined key (autofill events)", () => {
+  let el = h`<x :onkeydown.esc.document="e => log.push('esc')"></x>`;
+  let state = sprae(el, { log: [] });
+  document.dispatchEvent(new window.Event("keydown"));
+  is(state.log, []);
+  document.dispatchEvent(new window.KeyboardEvent("keydown", { key: "Escape" }));
+  is(state.log, ["esc"]);
+  el[_dispose]();
+});
+
+test("on: arrow with undefined key (autofill events)", () => {
+  let el = h`<x :onkeydown.arrow="e => log.push(e.key)"></x>`;
+  let state = sprae(el, { log: [] });
+  el.dispatchEvent(new window.Event("keydown"));
+  is(state.log, []);
+  el.dispatchEvent(new window.KeyboardEvent("keydown", { key: "ArrowDown" }));
+  is(state.log, ["ArrowDown"]);
+  el.dispatchEvent(new window.KeyboardEvent("keydown", { key: "ArrowUp" }));
+  is(state.log, ["ArrowDown", "ArrowUp"]);
+});
