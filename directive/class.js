@@ -17,6 +17,7 @@ export default (el, st, ex, name) => {
     if (v) clsx(typeof v === 'function' ? v(el.className) : v).split(' ').map(c => c && _new.add(c))
     for (let c of _cur) if (!_new.has(c)) el.classList.remove(c);
     for (let c of _new) if (!_cur.has(c)) el.classList.add(c);
+    if (!el.classList.length) el.removeAttribute('class')
     _cur = _new
   }
 }

@@ -764,3 +764,25 @@ test('each: if with visibility function accessing parent scope', async () => {
   is(el.innerHTML, '<a>getting-started</a><a>directives</a><a>modifiers</a><a>debounce</a>',
      'modifiers section: h2s + modifiers h4s visible')
 })
+
+test('each: :class object with parent state comparison (cycle bug)', async () => {
+  let el = h`<div>
+    <span :each="t in types" :class="{'active': current === t}" :text="t"></span>
+  </div>`
+
+  let state = sprae(el, {
+    types: ['a', 'b', 'c'],
+    current: 'a'
+  })
+
+  await tick()
+  is(el.innerHTML, '<span class="active">a</span><span>b</span><span>c</span>')
+
+  state.current = 'b'
+  await tick()
+  is(el.innerHTML, '<span>a</span><span class="active">b</span><span>c</span>')
+
+  state.current = 'c'
+  await tick()
+  is(el.innerHTML, '<span>a</span><span>b</span><span class="active">c</span>')
+})
