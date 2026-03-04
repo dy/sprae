@@ -786,3 +786,51 @@ test('each: :class object with parent state comparison (cycle bug)', async () =>
   await tick()
   is(el.innerHTML, '<span>a</span><span>b</span><span class="active">c</span>')
 })
+
+test('each: deep :if nesting + :each + item :if — false cycle on depth > 10 (mandala modal pattern)', async () => {
+  let cycles = 0
+  const _err = console.error
+  console.error = (...args) => { if (String(args[0]).includes('Cycle')) cycles++; _err(...args) }
+
+  let el = h`<p></p>`
+  el.innerHTML = [
+    '<div :if="show">',
+      '<div :if="page===\'finance\'">',
+        '<div :if="tab===\'expenses\'">',
+          '<div :if="detail">',
+            '<div :if="!editable">',
+              '<div :if="detail.items?.length">',
+                '<div :each="a in detail.items">',
+                  '<b :if="a.ok" :text="a.name"></b>',
+                  '<span :else :text="a.name"></span>',
+                '</div>',
+              '</div>',
+            '</div>',
+          '</div>',
+        '</div>',
+      '</div>',
+    '</div>',
+  ].join('')
+
+  let state = sprae(el, {
+    show: false, page: 'finance', tab: 'expenses',
+    detail: null,
+    get editable() { return !this.detail || this.detail.status === 'draft' },
+  })
+  is(el.innerHTML, '', 'hidden')
+
+  state.show = true
+  state.detail = {
+    status: 'paid',
+    items: [
+      { ok: true, name: 'photo.png' },
+      { ok: false, name: 'doc.pdf' },
+    ]
+  }
+  await tick()
+  console.error = _err
+
+  is(cycles, 0, 'no false cycle on deep nesting (depth limit too aggressive)')
+  ok(el.innerHTML.includes('photo.png'), 'image rendered')
+  ok(el.innerHTML.includes('doc.pdf'), 'pdf rendered')
+})

@@ -44,7 +44,7 @@ export const effect = (fn, _teardown, _fx, _deps) => (
     _teardown = null; // we null _teardown to avoid repeated call in case of recursive update
     tmp?.call?.();
     prev = current, current = _fx
-    if (depth++ > 10) throw 'Cycle detected';
+    if (depth++ > 50) throw 'Cycle detected';
     try { _teardown = fn() } finally { current = prev; depth-- }
   },
   _fx.fn = fn,
