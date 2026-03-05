@@ -5,7 +5,7 @@ import test, { any, is, ok } from "tst";
 import { store } from '../../store.js'
 import { use, signal, batch, untracked, _dispose } from '../../core.js'
 
-const isJessie = process.env.SPRAE_COMPILER === 'jessie'
+const isJessie = globalThis.process?.env?.SPRAE_COMPILER === 'jessie'
 
 test("html: core", async () => {
   let el = h`<div :html="html"></div>`;
@@ -149,4 +149,59 @@ test("html: fragment with :scope", async () => {
   s.foo = "moo";
   await tick();
   is(el.innerHTML, `<a>moobar</a>`);
+})
+
+test("html: async partial with :if toggle (modal pattern)", async () => {
+  let el = h`<div><div :html="html"></div><button :onclick="showAdd = true">open</button></div>`;
+  let s = sprae(el, { html: '', showAdd: false, activeTab: 'expenses' });
+  await tick();
+  is(el.querySelector('[data-modal]'), null);
+
+  s.html = '<div data-modal :if="showAdd && activeTab === \'expenses\'"><h2>Add Expense</h2></div>';
+  await tick();
+  is(el.querySelector('[data-modal]'), null, ':if hides when showAdd=false');
+
+  s.showAdd = true;
+  await tick();
+  ok(el.querySelector('[data-modal]'), ':if shows when showAdd=true');
+  ok(el.querySelector('h2'), 'heading visible');
+
+  s.showAdd = false;
+  await tick();
+  is(el.querySelector('[data-modal]'), null, ':if hides again');
+
+  s.showAdd = true;
+  await tick();
+  ok(el.querySelector('[data-modal]'), ':if re-shows');
+})
+
+test("html: :if with :onclick.outside inside :html (modal close pattern)", async () => {
+  let el = h`<div><div :html="html"></div><button id="open" :onclick="showAdd = true">open</button></div>`;
+  document.body.appendChild(el);
+  let s = sprae(el, { html: '', showAdd: false, activeTab: 'expenses' });
+  await tick();
+
+  s.html = '<div id="modal" :if="showAdd && activeTab === \'expenses\'"><div :onclick.outside="e => showAdd = false"><h2>Add Expense</h2></div></div>';
+  await tick();
+  is(el.querySelector('#modal'), null, 'modal hidden initially');
+
+  let btn = el.querySelector('#open');
+  let evt = btn.ownerDocument.createEvent('Event');
+  evt.initEvent('click', true, true);
+  btn.dispatchEvent(evt);
+  await tick();
+  ok(s.showAdd, 'showAdd stays true (away must not fire on opening click)');
+  ok(el.querySelector('#modal'), 'modal shows after button click');
+
+  s.showAdd = false;
+  await tick();
+  is(el.querySelector('#modal'), null, 'modal hides after showAdd=false');
+
+  let evt2 = btn.ownerDocument.createEvent('Event');
+  evt2.initEvent('click', true, true);
+  btn.dispatchEvent(evt2);
+  await tick();
+  ok(el.querySelector('#modal'), 'modal re-shows after second click');
+
+  el.remove();
 })

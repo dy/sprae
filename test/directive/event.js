@@ -4,7 +4,7 @@ import h from "hyperf";
 import test, { any, is } from "tst";
 
 const _dispose = Symbol.dispose;
-const isJessie = process.env.SPRAE_COMPILER === 'jessie'
+const isJessie = globalThis.process?.env?.SPRAE_COMPILER === 'jessie'
 
 
 test("on: event target", async () => {

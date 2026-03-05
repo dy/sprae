@@ -5,7 +5,8 @@ import store from '../store.js'
 import { signal, use } from '../core.js'
 import h from "hyperf";
 
-const isJessie = process.env.SPRAE_COMPILER === 'jessie'
+const isJessie = globalThis.process?.env?.SPRAE_COMPILER === 'jessie'
+const isNode = !!globalThis.process?.versions?.node
 
 test('core: version', () => {
   ok(sprae.version, '12.1.0')
@@ -486,7 +487,7 @@ test('core: method with getter this', async () => {
   is(el.outerHTML, `<x>$30</x>`)
 })
 
-test('core: ownerDocument instead of global document (custom DOM)', async () => {
+test('core: ownerDocument instead of global document (custom DOM)', {skip: !isNode}, async () => {
   let a = h`<y><template :each="item in [{id:1}, {id:2}, {id:3}]" :if="item.id % 2"><x :text="item.id"></x></template></y>`
   let b = h`<div><div id="target"></div><span :portal="'#target'">content</span></div>`
   let c = h`a<template :html="content"></template>`

@@ -135,10 +135,10 @@ Object.assign(modifier, {
   self: (fn) => (e) => (e.target === fn.target && fn(e)),
   /** Triggers when event is outside the element. Ignores drag-out (pointerdown inside, pointerup outside). */
   away: (fn, _pd) => {
-    let doc = fn.target.ownerDocument, pdHandler = e => _pd = e.target
+    let doc = fn.target.ownerDocument, pdHandler = e => _pd = e.target, _skip = doc.currentEvent || doc.defaultView?.event
     doc.addEventListener('pointerdown', pdHandler, true)
     return Object.assign(
-      (e) => !fn.target.contains(e.type === 'click' ? _pd ?? e.target : e.target) && e.target.isConnected && fn(e),
+      (e) => e !== _skip && !fn.target.contains(e.type === 'click' ? _pd ?? e.target : e.target) && e.target.isConnected && fn(e),
       { target: doc, [_dispose]: () => doc.removeEventListener('pointerdown', pdHandler, true) }
     )
   },
