@@ -52,6 +52,15 @@ Copy and paste the following HTML into your page to load and sprae the page.
 ```html
 <script src="//unpkg.com/sprae" data-start></script>
 ```
+
+Variants:
+```html
+<!-- CSP-safe (no eval) -->
+<script src="//unpkg.com/sprae/dist/sprae-csp.umd.js" data-start></script>
+
+<!-- Preact signals -->
+<script src="//unpkg.com/sprae/dist/sprae-preact.umd.js" data-start></script>
+```
 </div>
 
 <div data-if="tab=='esm'">
@@ -64,6 +73,8 @@ Download [sprae.js](https://unpkg.com/sprae/dist/sprae.js) and import as ESM:
   sprae(document.getElementById('app'), initState)
 </script>
 ```
+
+Variants: [sprae-csp.js](https://unpkg.com/sprae/dist/sprae-csp.js) (CSP-safe), [sprae-preact.js](https://unpkg.com/sprae/dist/sprae-preact.js) (preact signals).
 </div>
 </div>
 

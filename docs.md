@@ -419,7 +419,19 @@ state._cache.key = 1    // Not reactive
 
 ### Signals
 
-Replace built-in signals with any preact-signals compatible library:
+Replace built-in signals with any preact-signals compatible library. Use the pre-built preact variant:
+
+```html
+<!-- CDN -->
+<script src="//unpkg.com/sprae/dist/sprae-preact.umd.js" data-start></script>
+```
+
+```js
+// ESM
+import sprae from 'sprae/dist/sprae-preact.js'
+```
+
+Or wire manually:
 
 ```js
 import sprae from 'sprae'
@@ -456,7 +468,19 @@ const scroll = throttle(updatePosition, 100)
 
 ### Custom Evaluator
 
-Default uses `new Function` (fast but requires `unsafe-eval` CSP). Use [jessie](https://github.com/nickmccurdy/subscript) for strict CSP:
+Default uses `new Function` (fast but requires `unsafe-eval` CSP). For strict CSP, use the pre-built CSP variant:
+
+```html
+<!-- CDN -->
+<script src="//unpkg.com/sprae/dist/sprae-csp.umd.js" data-start></script>
+```
+
+```js
+// ESM
+import sprae from 'sprae/dist/sprae-csp.js'
+```
+
+Or wire [jessie](https://github.com/nickmccurdy/subscript) manually:
 
 ```js
 import sprae from 'sprae'

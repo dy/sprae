@@ -6,3 +6,5 @@ types
 Gemfile.lock
 .jekyll-cache
 /_site
+/.claude
+/test-results

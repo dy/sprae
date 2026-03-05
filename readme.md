@@ -18,7 +18,14 @@ Microhydration for HTML/JSX tree.
   .dark { background: #333; color: #fff; }
 </style>
 
+<!-- default -->
 <script type="module" src="//unpkg.com/sprae"></script>
+
+<!-- CSP-safe (no eval, uses jessie compiler) -->
+<!-- <script src="//unpkg.com/sprae/dist/sprae-csp.umd.js" data-start></script> -->
+
+<!-- Preact signals -->
+<!-- <script src="//unpkg.com/sprae/dist/sprae-preact.umd.js" data-start></script> -->
 ```
 
 <!--
