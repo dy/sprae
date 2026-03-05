@@ -77,8 +77,8 @@ The easiest harmless way to bring interactions to DOM and connect  open state.
 
 ## used by
 
-[settings-panel](https://dy.github.io/settings-panel), [wavearea](https://dy.github.io/wavearea), [watr](https://dy.github.io/watr/play)
-<!-- , [maetr](), [settings-panel]() -->
+[settings-panel](https://dy.github.io/settings-panel), [wavearea](https://dy.github.io/wavearea), [watr](https://dy.github.io/watr/play) and others
+<!-- , [maetr]() -->
 
 ## alternatives
 
