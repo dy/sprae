@@ -23,6 +23,7 @@ export default (el, state, expr) => {
     const set = setter(expr)
     const handleChange = el.type === 'checkbox' ? () => set(state, el.checked) :
       el.type === 'select-multiple' ? () => set(state, [...el.selectedOptions].map(o => o.value)) :
+        /^(date|time|month|week)/.test(el.type) ? () => set(state, el.value) :
         () => set(state, el.selectedIndex < 0 ? null : isNaN(el.valueAsNumber) ? el.value : el.valueAsNumber);
 
     el.oninput = el.onchange = handleChange; // hope user doesn't redefine these manually via `.oninput = somethingElse` - it saves 5 loc vs addEventListener

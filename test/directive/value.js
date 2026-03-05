@@ -269,3 +269,22 @@ test('value: number input', async () => {
   el.dispatchEvent(new window.Event('change'));
   is(state.num, 75, 'state type is number after user input');
 })
+
+test('value: date input keeps string format', async () => {
+  let el = h`<input type="date" :value="d" />`;
+  let state = sprae(el, { d: '2025-06-15' });
+
+  is(el.value, '2025-06-15');
+  is(state.d, '2025-06-15', 'state keeps string format');
+
+  state.d = '2025-12-25';
+  await tick();
+  is(el.value, '2025-12-25');
+  is(state.d, '2025-12-25', 'state stays string after update');
+
+  el.value = '2026-01-01';
+  el.dispatchEvent(new window.Event('input'));
+  is(state.d, '2026-01-01', 'state stays string after user input');
+  await tick();
+  is(el.value, '2026-01-01', 'input keeps date after re-render');
+})
