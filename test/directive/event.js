@@ -131,6 +131,22 @@ test("on: outside", () => {
   document.body.removeChild(el);
 });
 
+test("on: outside ignores drag-out (pointerdown inside, pointerup outside)", () => {
+  let el = h`<x :onclick.outside="e => log.push(1)"><y></y></x>`;
+  document.body.appendChild(el);
+  let state = sprae(el, { log: [] });
+
+  el.firstChild.dispatchEvent(new window.PointerEvent("pointerdown", { bubbles: true }));
+  document.dispatchEvent(new window.Event("click", { bubbles: true }));
+  is(state.log, [], 'drag-out should not trigger away');
+
+  document.dispatchEvent(new window.PointerEvent("pointerdown", { bubbles: true }));
+  document.dispatchEvent(new window.Event("click", { bubbles: true }));
+  is(state.log, [1], 'normal outside click should trigger');
+
+  document.body.removeChild(el);
+});
+
 
 test("on: keys", () => {
   let el = h`<x :onkeydown.enter="e => log.push(1)"></x>`;

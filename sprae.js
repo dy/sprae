@@ -130,8 +130,14 @@ Object.assign(modifier, {
   parent: fn => (fn.target = fn.target.parentNode, fn),
   /** Triggers only when event target is the element itself. */
   self: (fn) => (e) => (e.target === fn.target && fn(e)),
-  /** Triggers when click is outside the element. */
-  away: (fn) => Object.assign((e) => (!fn.target.contains(e.target) && e.target.isConnected && fn(e)), {target: fn.target.ownerDocument}),
+  /** Triggers when event is outside the element. Ignores drag-out (pointerdown inside, pointerup outside). */
+  away: (fn, _pd) => (
+    fn.target.ownerDocument.addEventListener('pointerdown', e => _pd = e.target, true),
+    Object.assign(
+      (e) => !fn.target.contains(e.type === 'click' ? _pd : e.target) && e.target.isConnected && fn(e),
+      {target: fn.target.ownerDocument}
+    )
+  ),
 
   /** Calls preventDefault() before handler. */
   prevent: (fn) => (e) => (e?.preventDefault(), fn(e)),
