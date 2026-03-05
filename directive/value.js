@@ -1,4 +1,4 @@
-import sprae, { attr, parse, _state } from "../core.js";
+import sprae, { attr, parse, _state, _dispose } from "../core.js";
 
 /**
  * Creates a setter function for two-way binding.
@@ -18,7 +18,6 @@ export const setter = (expr, _set = parse(`${expr}=__`)) => (target, value) => {
  * @returns {(value: any) => void} Update function
  */
 export default (el, state, expr) => {
-  // bind back to value, but some values can be not bindable, eg. `:value="7"`
   try {
     const set = setter(expr)
     const handleChange = el.type === 'checkbox' ? () => set(state, el.checked) :
@@ -26,25 +25,23 @@ export default (el, state, expr) => {
         /^(date|time|month|week)/.test(el.type) ? () => set(state, el.value) :
         () => set(state, el.selectedIndex < 0 ? null : isNaN(el.valueAsNumber) ? el.value : el.valueAsNumber);
 
-    el.oninput = el.onchange = handleChange; // hope user doesn't redefine these manually via `.oninput = somethingElse` - it saves 5 loc vs addEventListener
+    el.oninput = el.onchange = handleChange;
 
     if (el.type?.startsWith('select')) {
-      // select element also must observe any added/removed options or changed values (outside of sprae)
-      new MutationObserver(handleChange).observe(el, { childList: true, subtree: true, attributes: true });
-
-      // select options must be initialized before calling an update
+      let mo = new MutationObserver(() => handleChange())
+      mo.observe(el, { childList: true, subtree: true, attributes: true });
       sprae(el, state)
+      let _prevDispose = el[_dispose]
+      if (_prevDispose) el[_dispose] = () => { mo?.disconnect(); mo = null; _prevDispose() }
     }
 
-    // initial state value - setter has already cached it, so parse is fast
     parse(expr)(state) ?? handleChange()
   } catch { }
 
   return (el.type === "text" || el.type === "" || el.tagName === "TEXTAREA") ?
     (value, _from, _to) => (
-      // we retain selection in input
-      (_from = el.selectionStart),
-      (_to = el.selectionEnd),
+      _from = el.selectionStart,
+      _to = el.selectionEnd,
       el.setAttribute("value", (el.value = value == null ? "" : value)),
       _from && el.setSelectionRange(_from, _to)
     ) :

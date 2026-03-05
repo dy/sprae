@@ -93,6 +93,8 @@ export default (tpl, state, expr) => {
   mutate(() => tpl.replaceWith(holder))
   tpl[_state] = null // mark as fake-spraed, to preserve :-attribs for template
 
+  let disposeItems = () => { if (cur) { for (let s of cur[_signals] || []) s[Symbol.dispose]?.(); cur = null; prevl = 0 } }
+
   return Object.assign(value => {
     // resolve new items
     keys = null
@@ -101,12 +103,13 @@ export default (tpl, state, expr) => {
     else items = value || []
 
     // whenever list changes, we rebind internal change effect
-    return effect(() => {
+    let off = effect(() => {
       // subscribe to items change (.length) - we do it every time (not just in update) since preact signals unsubscribes unused signals
       items[_change]?.value
 
       // make first render immediately, debounce subsequent renders
       update()
     })
+    return () => { off(); disposeItems() }
   }, {eval:parse(rhs)})
 }

@@ -15,25 +15,19 @@ export default (el, state, expr) => {
   el.before(comment)
 
   return (value) => {
-    // Resolve target: selector string, element, or null/false to return home
-    // For selectors, first try within the same root, then document
     const root = el.getRootNode()
     const target = typeof value === 'string'
       ? (root.querySelector?.(value) || doc.querySelector(value))
       : value?.nodeType === 1 ? value
         : value ? doc.body : null
 
-    // No change needed
     if (target === currentTarget) return
 
-    if (target) {
-      // Move to target
-      target.appendChild(el)
-    } else {
-      // Return home (after placeholder)
-      comment.after(el)
-    }
+    if (target) target.appendChild(el)
+    else comment.after(el)
 
     currentTarget = target
+
+    return () => { currentTarget && (comment.after(el), currentTarget = null) }
   }
 }

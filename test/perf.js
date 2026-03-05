@@ -1,5 +1,7 @@
 import test, { ok } from 'tst';
-import sprae from '../sprae.js';
+import { tick } from 'wait-please';
+import sprae, { dispose } from '../sprae.js';
+import { _dispose } from '../core.js';
 import { createApp as createPetiteVue, reactive } from 'petite-vue';
 import h from 'hyperf';
 
@@ -42,4 +44,36 @@ test('perf: sprae vs petite-vue', async () => {
 
   console.log(`  create ${ROWS} rows (best of ${RUNS}): ratio=${bestRatio.toFixed(2)}`)
   ok(bestRatio < RATIO, `best ratio (${bestRatio.toFixed(2)}) should be < ${RATIO}`)
+})
+
+test('perf: memory stable after create+dispose cycles', { skip: !global.gc }, async () => {
+  const CYCLES = 100
+
+  async function cycle() {
+    let el = h`<div :scope="{x:1}">
+      <span :each="item in items" :text="item"></span>
+      <template :if="show"><b :text="x"></b></template>
+      <button :onclick="() => x++"></button>
+    </div>`
+    sprae(el, { items: [1, 2, 3, 4, 5], show: true })
+    await tick(4)
+    el[_dispose]()
+  }
+
+  for (let i = 0; i < 10; i++) await cycle()
+  global.gc(); global.gc()
+  const baseline = process.memoryUsage().heapUsed
+
+  for (let i = 0; i < CYCLES; i++) await cycle()
+  global.gc(); global.gc()
+  const mid = process.memoryUsage().heapUsed
+
+  for (let i = 0; i < CYCLES; i++) await cycle()
+  global.gc(); global.gc()
+  const after = process.memoryUsage().heapUsed
+
+  const drift = after - mid
+  const driftKB = (drift / 1024).toFixed(0)
+  console.log(`  ${CYCLES}→${2*CYCLES} cycles drift: ${driftKB}KB`)
+  ok(Math.abs(drift) < 256 * 1024, `memory drift ${driftKB}KB should be < 256KB`)
 })

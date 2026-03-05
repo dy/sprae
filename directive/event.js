@@ -21,6 +21,7 @@ export default (el, state, expr, name) => {
   return {
     [Symbol.dispose]() {
       trigger.target.removeEventListener(type, trigger)
+      trigger[Symbol.dispose]?.()
     }
   }
 }

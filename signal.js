@@ -51,7 +51,7 @@ export const effect = (fn, _teardown, _fx, _deps) => (
   _deps = _fx.deps = new Set(),
 
   _fx(),
-  (dep) => { _teardown?.call?.(); for (dep of _deps) dep.delete(_fx); _deps.clear() }
+  (dep) => { _teardown?.call?.(); _teardown = fn = _fx.fn = null; for (dep of _deps) dep.delete(_fx); _deps.clear() }
 )
 
 /**

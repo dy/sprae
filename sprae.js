@@ -76,10 +76,13 @@ const dir = (target, name, expr, state) => {
 
     state = el[_state] ?? state
 
-    return effect(() => {
+    let off = effect(() => {
       const result = change.value == count ? (trigger()) : (count = change.value, _out = evaluate(state, update))
       return out
     })
+    if (!(_state in el)) return off
+    let _d = 0
+    return () => { if (_d) return; _d = 1; off(); el[_dispose]?.() }
   }
 }
 
@@ -131,13 +134,14 @@ Object.assign(modifier, {
   /** Triggers only when event target is the element itself. */
   self: (fn) => (e) => (e.target === fn.target && fn(e)),
   /** Triggers when event is outside the element. Ignores drag-out (pointerdown inside, pointerup outside). */
-  away: (fn, _pd) => (
-    fn.target.ownerDocument.addEventListener('pointerdown', e => _pd = e.target, true),
-    Object.assign(
-      (e) => _pd !== undefined && !fn.target.contains(e.type === 'click' ? _pd : e.target) && e.target.isConnected && fn(e),
-      {target: fn.target.ownerDocument}
+  away: (fn, _pd) => {
+    let doc = fn.target.ownerDocument, pdHandler = e => _pd = e.target
+    doc.addEventListener('pointerdown', pdHandler, true)
+    return Object.assign(
+      (e) => !fn.target.contains(e.type === 'click' ? _pd ?? e.target : e.target) && e.target.isConnected && fn(e),
+      { target: doc, [_dispose]: () => doc.removeEventListener('pointerdown', pdHandler, true) }
     )
-  ),
+  },
 
   /** Calls preventDefault() before handler. */
   prevent: (fn) => (e) => (e?.preventDefault(), fn(e)),

@@ -34,7 +34,6 @@ export default (el, rootState) => {
       }
     }
 
-    // Object.assign(subscope, call(values, subscope))
     return !init && (init = true, !holder && (delete el[_state]), untracked(() => (holder?.before(_frag.content || el), sprae(_frag || el, state))))
   }
 }

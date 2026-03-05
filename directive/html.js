@@ -21,6 +21,7 @@ export default (el, state) => {
 
       // :if case: remove current content from DOM
       if (el._holder) el.remove(), el.content.replaceChildren()
+      _el?.[_dispose]?.()
       _el?.remove()
 
       if (v != null && v !== '') {
