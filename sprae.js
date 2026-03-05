@@ -134,7 +134,7 @@ Object.assign(modifier, {
   away: (fn, _pd) => (
     fn.target.ownerDocument.addEventListener('pointerdown', e => _pd = e.target, true),
     Object.assign(
-      (e) => !fn.target.contains(e.type === 'click' ? _pd : e.target) && e.target.isConnected && fn(e),
+      (e) => _pd !== undefined && !fn.target.contains(e.type === 'click' ? _pd : e.target) && e.target.isConnected && fn(e),
       {target: fn.target.ownerDocument}
     )
   ),
