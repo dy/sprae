@@ -205,3 +205,19 @@ test("html: :if with :onclick.outside inside :html (modal close pattern)", async
 
   el.remove();
 })
+
+test("html: nested :if - inner :text survives outer off/on", async () => {
+  let el = h`<root><x :if="outer"><y :if="inner"><z id="out" :text="form.name"></z></y></x></root>`;
+  let s = sprae(el, { outer: true, inner: true, form: { name: 'hello' } });
+  await tick(3);
+  is(el.querySelector('#out')?.textContent, 'hello', 'initial value');
+
+  s.outer = false;
+  await tick(3);
+
+  s.form = { name: 'world' };
+  s.outer = true;
+  await tick(3);
+
+  is(el.querySelector('#out')?.textContent, 'world', ':text reflects new state after outer off/on');
+})

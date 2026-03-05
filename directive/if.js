@@ -8,7 +8,7 @@ import sprae, { throttle, _on, _off, _state, frag, mutate } from '../core.js';
  * @returns {(value: any) => void} Update function
  */
 export default (el, state) => {
-  let _holder, _el, _match
+  let _holder, _el
 
   // new element :if
   if (!el._holder) {
@@ -23,18 +23,19 @@ export default (el, state) => {
 
 
     _holder._clauses = [_el._clause = [_el, false]]
+    _holder._match = null
 
     _holder.update = throttle(() => {
       let match = _holder._clauses.find(([, s]) => s)
 
-      if (match != _match) {
+      if (match != _holder._match) {
         mutate(() => {
-          _match?.[0].remove()
-          _match?.[0][_off]?.()
-          if (_match = match) {
-            _holder.before(_match[0].content || _match[0])
+          _holder._match?.[0].remove()
+          _holder._match?.[0][_off]?.()
+          if (_holder._match = match) {
+            _holder.before(_holder._match[0].content || _holder._match[0])
             // check if element needs initial sprae (null) vs just re-enabling (_on)
-            !_match[0][_state] ? (delete _match[0][_state], sprae(_match[0], state)) : _match[0][_on]?.()
+            !_holder._match[0][_state] ? (delete _holder._match[0][_state], sprae(_holder._match[0], state)) : _holder._match[0][_on]?.()
           }
         })
       }
@@ -45,8 +46,10 @@ export default (el, state) => {
 
   // :else may have children to init which is called after :if
   // or preact can schedule :else after :if, so we ensure order of call by next tick
-  return value => {
+  let cb = value => {
     _el._clause[1] = value
     _el._holder.update()
   }
+  cb[_off] = () => { _el._holder._match?.[0][_off]?.(); _el._holder._match = null }
+  return cb
 }

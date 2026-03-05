@@ -82,7 +82,7 @@ const dir = (target, name, expr, state) => {
     })
     if (!(_state in el)) return off
     let _d = 0
-    return () => { if (_d) return; _d = 1; off(); el[_dispose]?.() }
+    return () => { if (_d) return; _d = 1; off(); update[_off] ? update[_off]() : el[_dispose]?.() }
   }
 }
 
