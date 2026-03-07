@@ -122,7 +122,7 @@ Variants: [sprae-csp.js](https://unpkg.com/sprae/dist/sprae-csp.js) (CSP-safe), 
 ## FAQ [All questions →](docs#faq)
 
 **What is it?**
-: A ~5kb script that adds reactivity to HTML via `:attribute="expression"` directives. No build step, no new syntax — just HTML and JS you already know. Can be seen as an alternative species to [Alpine.js](https://alpinejs.dev) or [petite-vue](https://github.com/vuejs/petite-vue).
+: A ~5kb script that adds reactivity to HTML via `:attribute="expression"` directives. No build step, no new syntax — just HTML and JS you already know. Can be seen as an alternative to [Alpine.js](https://alpinejs.dev) or [petite-vue](https://github.com/vuejs/petite-vue).
 
 **When to use it?**
 : Adding interactivity to server-rendered pages, static sites, prototypes, or anywhere a full framework is overkill. Works with any backend.
