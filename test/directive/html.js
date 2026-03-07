@@ -79,6 +79,30 @@ test("html: dynamic content with state", async () => {
   is(el.outerHTML, `<div><span>42</span></div>`);
 });
 
+test("html: template element", async () => {
+  let tpl = h`<template><span :text="name"></span></template>`;
+  let el = h`<div :html="tpl"></div>`;
+  let params = sprae(el, { tpl, name: 'world' });
+  is(el.outerHTML, `<div><span>world</span></div>`);
+  params.name = 'sprae';
+  await tick();
+  is(el.outerHTML, `<div><span>sprae</span></div>`);
+});
+
+test("html: template element switch", async () => {
+  let a = h`<template><b :text="name"></b></template>`;
+  let b = h`<template><i :text="name"></i></template>`;
+  let el = h`<div :html="tpl"></div>`;
+  let params = sprae(el, { tpl: a, name: 'world' });
+  is(el.outerHTML, `<div><b>world</b></div>`);
+  params.tpl = b;
+  await tick();
+  is(el.outerHTML, `<div><i>world</i></div>`);
+  params.name = 'sprae';
+  await tick();
+  is(el.outerHTML, `<div><i>sprae</i></div>`);
+});
+
 test("html: with condition", async () => {
   let el = h`<div><span :if="show" :html="html"></span></div>`;
   let params = sprae(el, { show: true, html: '<b>content</b>' });
@@ -144,6 +168,17 @@ test("html: with :scope", async () => {
 test("html: fragment with :scope", async () => {
   let el = h`<div><template :scope="{ bar: 'bar' }" :html="html"></template></div>`;
   let s = sprae(el, { foo: "foo", html: `<a :text="foo+bar"></a>` });
+  await tick();
+  is(el.innerHTML, `<a>foobar</a>`);
+  s.foo = "moo";
+  await tick();
+  is(el.innerHTML, `<a>moobar</a>`);
+})
+
+test("html: fragment template element", async () => {
+  let tpl = h`<template><a :text="foo+bar"></a></template>`;
+  let el = h`<div><template :scope="{ bar: 'bar' }" :html="tpl"></template></div>`;
+  let s = sprae(el, { foo: "foo", tpl });
   await tick();
   is(el.innerHTML, `<a>foobar</a>`);
   s.foo = "moo";

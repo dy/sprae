@@ -270,6 +270,87 @@ test('value: number input', async () => {
   is(state.num, 75, 'state type is number after user input');
 })
 
+test('value: text input caret preserved when typing decimal', async () => {
+  let el = h`<input type="text" :value="amount" />`;
+  document.body.append(el)
+  let state = sprae(el, { amount: '' });
+
+  el.focus()
+
+  el.value = '1'
+  el.selectionStart = el.selectionEnd = 1
+  el.dispatchEvent(new window.Event('input'))
+  await tick()
+  is(state.amount, '1', 'state updated to "1"')
+  is(el.selectionStart, 1, 'caret at end after typing "1"')
+
+  el.value = '1.'
+  el.selectionStart = el.selectionEnd = 2
+  el.dispatchEvent(new window.Event('input'))
+  await tick()
+  is(state.amount, '1.', 'state updated to "1."')
+  is(el.selectionStart, 2, 'caret preserved after typing "."')
+
+  el.value = '1.5'
+  el.selectionStart = el.selectionEnd = 3
+  el.dispatchEvent(new window.Event('input'))
+  await tick()
+  is(state.amount, '1.5', 'state updated to "1.5"')
+  is(el.selectionStart, 3, 'caret preserved after typing "5"')
+
+  document.body.removeChild(el)
+})
+
+test('value: nested state caret preserved when typing decimal', async () => {
+  let el = h`<input type="text" :value="form.amount" />`;
+  document.body.append(el)
+  let state = sprae(el, { form: { amount: '' } });
+
+  el.focus()
+
+  el.value = '1'
+  el.selectionStart = el.selectionEnd = 1
+  el.dispatchEvent(new window.Event('input'))
+  await tick()
+  is(state.form.amount, '1', 'nested state updated to "1"')
+  is(el.selectionStart, 1, 'caret at end after typing "1"')
+
+  el.value = '1.'
+  el.selectionStart = el.selectionEnd = 2
+  el.dispatchEvent(new window.Event('input'))
+  await tick()
+  is(state.form.amount, '1.', 'nested state updated to "1."')
+  is(el.selectionStart, 2, 'caret preserved after decimal dot')
+
+  el.value = '1.5'
+  el.selectionStart = el.selectionEnd = 3
+  el.dispatchEvent(new window.Event('input'))
+  await tick()
+  is(state.form.amount, '1.5', 'nested state updated to "1.5"')
+  is(el.selectionStart, 3, 'caret preserved after typing "5"')
+
+  document.body.removeChild(el)
+})
+
+test('value: mid-string caret preserved on edit', async () => {
+  let el = h`<input type="text" :value="amount" />`;
+  document.body.append(el)
+  let state = sprae(el, { amount: '10.00' });
+  await tick()
+
+  el.focus()
+  is(el.value, '10.00')
+
+  el.value = '120.00'
+  el.selectionStart = el.selectionEnd = 2
+  el.dispatchEvent(new window.Event('input'))
+  await tick()
+  is(state.amount, '120.00')
+  is(el.selectionStart, 2, 'caret stays at insert position mid-string')
+
+  document.body.removeChild(el)
+})
+
 test('value: date input keeps string format', async () => {
   let el = h`<input type="date" :value="d" />`;
   let state = sprae(el, { d: '2025-06-15' });

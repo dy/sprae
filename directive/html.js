@@ -1,11 +1,13 @@
 import sprae, { untracked, frag, _dispose, _state } from "../core.js"
 
+const isTemplate = v => !!v?.content
+
 /**
  * HTML directive - sets innerHTML and initializes nested directives.
  * Supports templates for fragment insertion.
  * @param {Element | HTMLTemplateElement} el - Target element
  * @param {Object} state - State object
- * @returns {(v: string | ((html: string) => string)) => void | (() => void)} Update function
+ * @returns {(v: string | HTMLTemplateElement | ((html: string) => string)) => void | (() => void)} Update function
  */
 export default (el, state) => {
   // <template :html="a"/> - fragment case: use placeholder + frag
@@ -25,7 +27,9 @@ export default (el, state) => {
       _el?.remove()
 
       if (v != null && v !== '') {
-        _el = frag((_el = doc.createElement('template'), _el.innerHTML = html = v, _el))
+        _el = isTemplate(v)
+          ? (html = v.innerHTML, frag(v))
+          : frag((_el = doc.createElement('template'), _el.innerHTML = html = v, _el))
 
         untracked(() => sprae(_el, state))
 
@@ -42,7 +46,7 @@ export default (el, state) => {
 
   return v => (
     v = typeof v === 'function' ? v(el.innerHTML) : v,
-    el.innerHTML = v == null ? "" : v,
+    isTemplate(v) ? el.replaceChildren(v.content.cloneNode(true)) : (el.innerHTML = v == null ? "" : v),
     el[_state] &&= null,
     untracked(() => sprae(el, state)),
     el[_dispose]

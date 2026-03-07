@@ -269,6 +269,7 @@
 ## [ ] Website
   * [x] **landing page overhaul**: values.md content → compelling index
   * [x] **Sprae vs Alpine** comparison page with benchmarks
+  * [ ] Write docs in readme; website should be small, readme - big, but small enough for docs.
   * [ ] **playground**: interactive editor like Alpine's
   * [ ] drops/examples gallery: 7 GUIs, real-world patterns
   * [ ] "Used by" section with logos

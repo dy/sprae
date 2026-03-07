@@ -235,11 +235,16 @@
     ~ it should be separate tokens, like :else [do rest]
   - it can confuse `:if :else` for `:else :if` which is wrong
 
-## [ ] :else-if token?
+## [x] :else-if token? -> no: the current two-token is lazy, efficient (share holder, throttle updates), composable, correct
 
   + `:else.debounce-100 :if.debounce-200` is two separate commands, first adds token, second removes later
   * therefore if we reach `:else` that had no `:if` counterpart, likely that `:if` is prevented by inline `:else`, so we have to wait for it
   + `:else-if` can be more efficient: it would not initialize fully `:else` with children before going to `:if`. Essentially that would allow lazy init.
+  - it would save only one func call - negligible
+  - new directive
+  - modifier ambiguity: `:else-if.debounce` applies to what?
+  - breaking composition: twi separate directives
+
 
 ## [x] Keep className marker of directive or not? -> no
 
@@ -1845,7 +1850,7 @@
   3. `:ref="refs.el"` - explicit export
 
 
-## [ ] Reasons against sprae ->
+## [x] ~~Reasons against sprae~~ -> too late
 
   - requires loading script anyways - not native event callbacks
     + 5kb is almost nothing
@@ -1993,17 +1998,17 @@
 ## [ ] Website
 
   * refs: https://poolside.ai/, https://alpinejs.dev/
-  * [ ] Intro: core philosophy, features, quick meaningful example, "Get started"
-  * [ ] Why?: comparison, benefits (no build step, light, fast, SEO-friendly, no SSR needed), use-cases, testimonials, cases
-  * [ ] Docs: installing, core concepts, directives, recipes (forms, routing, animations), best practices (tips for perf, debugging, maintaining)
-  * [ ] Examples: todo, counter, dynamic form. Very common els
+  * [x] Intro: core philosophy, features, quick meaningful example, "Get started"
+  * [x] Why?: comparison, benefits (no build step, light, fast, SEO-friendly, no SSR needed), use-cases, testimonials, cases
+  * [x] Docs: installing, core concepts, directives, recipes (forms, routing, animations), best practices (tips for perf, debugging, maintaining)
+  * [x] Examples: todo, counter, dynamic form. Very common els
   * [ ] Showcase gallery?
   * [ ] Playground: share/download
   * [ ] Community: github, blog, tutorials, announcements
-  * [ ] FAQ: What's PE? How sprae compares to <framework>? Can I use with other FW? Is it suitable for large scale?
+  * [x] FAQ: What's PE? How sprae compares to <framework>? Can I use with other FW? Is it suitable for large scale?
   * [ ] Friends: related libs
   * [ ] Trust: contact, contributors, sponsor; built with: links
-  * [ ] JS-framework-benchmark ref
+  * [x] JS-framework-benchmark ref
   * [ ] Transition guide from alpine/petit
   * [ ] Sponsor development (of components)
     * [ ] paypal
@@ -2020,7 +2025,7 @@
   * [ ] Jhay
   * [ ] Codepen
 
-## [ ] Sprae vs Alpine
+## [x] Sprae vs Alpine
 
 * Let's be honest, is ther a big difference with alpine?
 

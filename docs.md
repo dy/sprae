@@ -53,10 +53,18 @@ Set text content of an element.
 
 #### `:html`
 
-Set innerHTML (initializes directives in inserted content).
+Set innerHTML or mount a `<template>` (initializes directives in inserted content).
 
 ```html
 <article :html="marked(content)"></article>
+
+<template id="card">
+  <article>
+    <h2 :text="title"></h2>
+  </article>
+</template>
+
+<section :html="document.querySelector('#card')"></section>
 
 <!-- Function form -->
 <div :html="html => DOMPurify.sanitize(html)"></div>
