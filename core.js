@@ -422,9 +422,11 @@ export const throttle = (fn, ms) => {
   let _planned = 0, arg, schedule = typeof ms === 'function' ? ms : ms ? (fn) => setTimeout(fn, ms) : queueMicrotask;
   const throttled = (e) => {
     arg = e
-    if (!_planned++) fn(arg), schedule((_dirty = _planned > 1) => (
-      _planned = 0, _dirty && throttled(arg)
-    ));
+    if (!_planned++) fn(arg), schedule(() => {
+      let dirty = _planned > 1
+      _planned = 0
+      dirty && throttled(arg)
+    });
   }
   return throttled;
 }

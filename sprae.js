@@ -77,7 +77,7 @@ const dir = (target, name, expr, state) => {
     state = el[_state] ?? state
 
     let off = effect(() => {
-      const result = change.value == count ? (trigger()) : (count = change.value, _out = evaluate(state, update))
+        const result = change.value == count ? (trigger()) : (count = change.value, _out = evaluate(state, update))
       return out
     })
     if (!(_state in el)) return off

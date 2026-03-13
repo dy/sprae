@@ -64,6 +64,38 @@ test("modifier: throttle-time", async () => {
   is(el.textContent, '3');
 });
 
+test("modifier: throttle-raf directive does not loop", async () => {
+  let el = h`<div :text.throttle-raf="txt"></div>`;
+  let state = sprae(el, { txt: 'hello' });
+  await frame(2);
+  is(el.textContent, 'hello');
+
+  // track mutations after value stabilizes
+  let mutations = 0;
+  let mo = new MutationObserver(() => mutations++);
+  mo.observe(el, { childList: true, characterData: true, subtree: true });
+
+  // wait several frames — should be zero mutations since txt hasn't changed
+  await frame(5);
+  mo.disconnect();
+  is(mutations, 0, 'should not keep setting textContent when value is unchanged');
+});
+
+test("modifier: throttle-time directive does not loop", async () => {
+  let el = h`<div :text.throttle-50="txt"></div>`;
+  let state = sprae(el, { txt: 'hello' });
+  await time(60);
+  is(el.textContent, 'hello');
+
+  let mutations = 0;
+  let mo = new MutationObserver(() => mutations++);
+  mo.observe(el, { childList: true, characterData: true, subtree: true });
+
+  await time(150);
+  mo.disconnect();
+  is(mutations, 0, 'should not keep setting textContent when value is unchanged');
+});
+
 test("modifier: debounce-raf", async () => {
   let el = h`<div :style.debounce-raf="{'--progress': progress + '%'}"></div>`;
   let state = sprae(el, { progress: 0 });
