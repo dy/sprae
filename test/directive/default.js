@@ -46,3 +46,56 @@ test("default: null result does nothing", async () => {
   sprae(a);
   is(a.outerHTML, `<x></x>`);
 });
+
+// web components: props should be set as element properties, not serialized to attributes
+test("default: web component prop (object)", async () => {
+  class XItems extends HTMLElement { constructor() { super() } }
+  customElements.define('x-items', XItems);
+
+  let items = [1, 2, 3];
+  let el = h`<x-items :items="items"></x-items>`;
+  sprae(el, { items });
+
+  // object/array values should be set as properties on custom elements
+  is(el.items, items);
+  // should not serialize to attribute
+  is(el.getAttribute('items'), null);
+});
+
+test("default: web component prop (primitive)", async () => {
+  class XLabel extends HTMLElement { constructor() { super() } }
+  customElements.define('x-label', XLabel);
+
+  let el = h`<x-label :title="t"></x-label>`;
+  sprae(el, { t: 'hello' });
+
+  // primitive values still go to attributes
+  is(el.getAttribute('title'), 'hello');
+});
+
+test("default: web component prop (reactive update)", async () => {
+  class XData extends HTMLElement { constructor() { super() } }
+  customElements.define('x-data', XData);
+
+  let el = h`<x-data :config="cfg"></x-data>`;
+  let state = sprae(el, { cfg: { a: 1 } });
+  is(el.config, { a: 1 });
+
+  state.cfg = { a: 2 };
+  await tick();
+  is(el.config, { a: 2 });
+});
+
+test("default: spread on web component", async () => {
+  class XSpread extends HTMLElement { constructor() { super() } }
+  customElements.define('x-spread', XSpread);
+
+  let el = h`<x-spread :="{ items, label }" ></x-spread>`;
+  let items = [1, 2, 3];
+  sprae(el, { items, label: 'test' });
+
+  // object prop set as property
+  is(el.items, items);
+  // primitive prop set as attribute
+  is(el.getAttribute('label'), 'test');
+});

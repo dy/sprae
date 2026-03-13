@@ -398,7 +398,9 @@ export const dashcase = (str) => str.replace(/[A-Z\u00C0-\u00D6\u00D8-\u00DE]/g,
  * @param {string | boolean | null | undefined} v - Attribute value (null/false removes, true sets empty)
  * @returns {void}
  */
-export const attr = (el, name, v) => (v == null || v === false) ? el.removeAttribute(name) : el.setAttribute(name, v === true ? "" : v);
+export const attr = (el, name, v) => (v == null || v === false) ? el.removeAttribute(name) :
+  (typeof v === 'object' && el.tagName?.includes('-')) ? el[name] = v :
+  el.setAttribute(name, v === true ? "" : v);
 
 /**
  * Converts class input to className string (like clsx/classnames).
