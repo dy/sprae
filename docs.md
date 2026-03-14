@@ -293,40 +293,25 @@ Lifecycle hook — runs once when element connects. Not reactive. Function form 
 
 #### `:intersect`
 
-IntersectionObserver wrapper. Fires when element enters or exits viewport.
+IntersectionObserver wrapper. Statement form fires on enter. Function form receives the entry for full control.
 
 ```html
 <img :intersect.once="loadImage()" :src="placeholder" />
 <div :intersect="visible = true"></div>
 
 <!-- Function form: receive IntersectionObserverEntry -->
-<div :intersect="entry => ratio = entry.intersectionRatio"></div>
-```
-
-Modifiers: `.once`, `.half` (threshold 0.5), `.full` (threshold 0.99), `.threshold-N` (0-100), `.margin-Npx`, `.leave` (fire on exit).
-
-```html
-<div :intersect.half="visible = true"></div>
-<div :intersect.leave="visible = false"></div>
-<div :intersect.threshold-75="inView = true"></div>
-<div :intersect.margin-200px="preload()"></div>
+<div :intersect="entry => visible = entry.isIntersecting"></div>
 ```
 
 
 #### `:resize`
 
-ResizeObserver wrapper. Fires when element dimensions change.
+ResizeObserver wrapper. Function form receives `{width, height, entry}`.
 
 ```html
-<!-- Function form: receive {width, height, entry} -->
 <div :resize="({width, height}) => cols = Math.floor(width / 200)"></div>
-
-<!-- With modifiers -->
 <div :resize.throttle-100="({width}) => narrow = width < 600"></div>
-<div :resize.border="({width}) => update(width)"></div>
 ```
-
-Modifiers: `.border` (observe border-box), `.throttle-N`, `.debounce-N`, `.raf`.
 
 
 #### `:portal`
