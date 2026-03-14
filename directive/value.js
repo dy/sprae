@@ -1,42 +1,17 @@
-import sprae, { attr, parse, _state, _dispose } from "../core.js";
+import sprae, { attr, _dispose } from "../core.js";
 
 /**
- * Creates a setter function for two-way binding.
- * @param {string} expr - Expression to assign to
- * @returns {(target: Object, value: any) => void} Setter function
- */
-export const setter = (expr, _set = parse(`${expr}=__`)) => (target, value) => {
-  target.__ = value; _set(target), delete target.__
-}
-
-/**
- * Value directive - two-way binding for form elements.
- * Supports text, checkbox, radio, select, and textarea.
+ * Value directive - one-way binding (state → DOM).
+ * Sets element value/checked/selected from state.
+ * For write-back (DOM → state), use :change directive.
+ *
  * @param {HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement} el - Form element
  * @param {Object} state - State object
- * @param {string} expr - Bound expression
  * @returns {(value: any) => void} Update function
  */
-export default (el, state, expr) => {
-  try {
-    const set = setter(expr)
-    const handleChange = el.type === 'checkbox' ? () => set(state, el.checked) :
-      el.type === 'select-multiple' ? () => set(state, [...el.selectedOptions].map(o => o.value)) :
-        /^(date|time|month|week)/.test(el.type) ? () => set(state, el.value) :
-        () => set(state, el.selectedIndex < 0 ? null : isNaN(el.valueAsNumber) ? el.value : el.valueAsNumber);
-
-    el.oninput = el.onchange = handleChange;
-
-    if (el.type?.startsWith('select')) {
-      let mo = new MutationObserver(() => handleChange())
-      mo.observe(el, { childList: true, subtree: true, attributes: true });
-      sprae(el, state)
-      let _prevDispose = el[_dispose]
-      if (_prevDispose) el[_dispose] = () => { mo?.disconnect(); mo = null; _prevDispose() }
-    }
-
-    parse(expr)(state) ?? handleChange()
-  } catch { }
+export default (el, state) => {
+  // select elements need children spraed first (for :each options)
+  if (el.type?.startsWith('select')) sprae(el, state)
 
   return (el.type === "text" || el.type === "" || el.tagName === "TEXTAREA") ?
     (value, _from, _to) => (
@@ -48,7 +23,7 @@ export default (el, state, expr) => {
     (el.type === "checkbox") ?
       (value) => (el.checked = value, attr(el, "checked", value)) :
       (el.type === 'radio') ? (value) => (
-        el.value === value && ((el.checked = value), attr(el, 'checked', value))
+        el.checked = el.value === value, attr(el, 'checked', el.checked || null)
       ) :
         (el.type === "select-one") ?
           (value) => {
@@ -57,8 +32,7 @@ export default (el, state, expr) => {
             el.value = value;
           } :
           (el.type === 'select-multiple') ? (value) => {
-            for (let o of el.options) o.removeAttribute('selected')
-            for (let v of value) el.querySelector(`[value="${v}"]`).setAttribute('selected', '')
+            for (let o of el.options) value.some(v => v == o.value) ? o.setAttribute('selected', '') : o.removeAttribute('selected')
           } :
-            (value) => (el.value = value);
+            (value) => (el.value = value)
 }
