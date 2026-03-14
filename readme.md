@@ -41,12 +41,17 @@ The easiest harmless way to bring interactions to DOM and connect  open state.
 <button :onclick.once="init()">Initialize</button>
 <div :onkeydown.window.escape="close()">Press Esc to close</div>
 <form :onsubmit.prevent="save()">...</form>
+
+<!-- Observer directives -->
+<img :intersect.once="loadImage()" :src="placeholder" />
+<div :resize.throttle-100="({ width }) => narrow = width < 600"></div>
+<canvas :mount="el => initChart(el)"></canvas>
 ```
 
 ## [docs](docs.md)
 
 #### directives
-[`:text`](docs.md#text) [`:class`](docs.md#class) [`:style`](docs.md#style) [`:value`](docs.md#value) [`:<attr>`](docs.md#attr-) [`:if :else`](docs.md#if-else) [`:each`](docs.md#each) [`:scope`](docs.md#scope) [`:fx`](docs.md#fx) [`:ref`](docs.md#ref) [`:hidden`](docs.md#hidden) [`:portal`](docs.md#portal) [`:on<event>`](docs.md#onevent)
+[`:text`](docs.md#text) [`:class`](docs.md#class) [`:style`](docs.md#style) [`:value`](docs.md#value) [`:change`](docs.md#change) [`:<attr>`](docs.md#attr-) [`:if :else`](docs.md#if-else) [`:each`](docs.md#each) [`:scope`](docs.md#scope) [`:fx`](docs.md#fx) [`:ref`](docs.md#ref) [`:hidden`](docs.md#hidden) [`:mount`](docs.md#mount) [`:intersect`](docs.md#intersect) [`:resize`](docs.md#resize) [`:portal`](docs.md#portal) [`:on<event>`](docs.md#onevent)
 
 #### modifiers
 [`.debounce`](docs.md#debounce-ms) [`.throttle`](docs.md#throttle-ms) [`.delay`](docs.md#tick) [`.once`](docs.md#once)<br>
