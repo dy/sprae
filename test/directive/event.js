@@ -179,7 +179,7 @@ test("on: key combinations", () => {
 });
 
 test("on: keys with prevent", () => {
-  let el = h`<y :onkeydown="event => log.push(event.key)"><x :ref="el => x=el" :onkeydown.enter.stop></x></y>`;
+  let el = h`<y :onkeydown="event => log.push(event.key)"><x :mount="e => x=e" :onkeydown.enter.stop></x></y>`;
   let state = sprae(el, { log: [], x: null });
   state.x.dispatchEvent(new window.KeyboardEvent("keydown", { key: "x", bubbles: true }));
   console.log("enter");
@@ -512,4 +512,28 @@ test("on: arrow with undefined key (autofill events)", () => {
   is(state.log, ["ArrowDown"]);
   el.dispatchEvent(new window.KeyboardEvent("keydown", { key: "ArrowUp" }));
   is(state.log, ["ArrowDown", "ArrowUp"]);
+});
+
+test("on: multi-event chaining :onclick:onkeydown", () => {
+  let el = h`<x :onclick:onkeydown.enter="e => log.push(e.type)"></x>`;
+  let state = sprae(el, { log: [] });
+  el.dispatchEvent(new window.Event("click"));
+  is(state.log, ["click"]);
+  el.dispatchEvent(new window.KeyboardEvent("keydown", { key: "Enter" }));
+  is(state.log, ["click", "keydown"]);
+  // non-enter keydown should not fire
+  el.dispatchEvent(new window.KeyboardEvent("keydown", { key: "a" }));
+  is(state.log, ["click", "keydown"]);
+});
+
+test("on: multi-event dispose", async () => {
+  let el = h`<x :onclick:onkeydown="e => log.push(e.type)"></x>`;
+  let state = sprae(el, { log: [] });
+  el.dispatchEvent(new window.Event("click"));
+  is(state.log, ["click"]);
+
+  el[_dispose]();
+  el.dispatchEvent(new window.Event("click"));
+  el.dispatchEvent(new window.KeyboardEvent("keydown", { key: "a" }));
+  is(state.log, ["click"], "no more events after dispose");
 });
