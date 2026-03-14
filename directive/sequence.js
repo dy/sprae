@@ -13,11 +13,11 @@ export default (el, state, expr, names) => {
   let cur, // current step callback
     off // current step disposal
 
+  const evaluate = parse(expr).bind(el)
+
   let steps = names.split('..').map((step, i, { length }) => step.split(':').reduce(
     (prev, str) => {
       const [name, ...mods] = str.slice(2).split('.')
-
-      const evaluate = parse(expr).bind(el)
 
       const next = (fn, e) => cur = typeof fn === 'function' ? fn(e) : fn
       const trigger = decorate(Object.assign(

@@ -14,7 +14,7 @@ export default (el, st, ex, name) => {
 
   return (v) => {
     _new = new Set
-    if (v) clsx(typeof v === 'function' ? v(el.className) : v).split(' ').map(c => c && _new.add(c))
+    if (v) for (let c of clsx(typeof v === 'function' ? v(el.className) : v).split(' ')) c && _new.add(c)
     for (let c of _cur) if (!_new.has(c)) el.classList.remove(c);
     for (let c of _new) if (!_cur.has(c)) el.classList.add(c);
     if (!el.classList.length) el.removeAttribute('class')
