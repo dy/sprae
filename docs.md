@@ -176,7 +176,7 @@ Create local reactive state. Inherits from parent scope.
 
 #### `:ref`
 
-Get element reference. In `:each`, creates local reference for each node.
+Store element reference in state. Function form calls with element.
 
 ```html
 <canvas :ref="canvas" :fx="draw(canvas)"></canvas>
@@ -188,20 +188,12 @@ Get element reference. In `:each`, creates local reference for each node.
 <li :each="item in items" :ref="el">
   <!-- el is the current <li> in this iteration's scope -->
 </li>
+
+<!-- Path reference -->
+<input :ref="$refs.email" />
 ```
 
-**Lifecycle** — return a cleanup function:
-
-```html
-<div :ref="el => {
-  const observer = new IntersectionObserver(callback)
-  observer.observe(el)
-  return () => observer.disconnect()
-}"></div>
-
-<!-- Shorthand -->
-<div :ref="el => (setup(el), () => cleanup(el))"></div>
-```
+> For lifecycle hooks with setup/cleanup, use [`:mount`](#mount).
 
 
 #### `:fx`
@@ -238,7 +230,7 @@ Attach event listeners. Chain modifiers with `.`.
 
 #### `:value`
 
-Two-way bind form inputs.
+One-way bind state to form inputs (state → DOM). Pair with `:change` for two-way binding.
 
 ```html
 <input :value="query" />
@@ -248,10 +240,93 @@ Two-way bind form inputs.
 <select :value="country">
   <option :each="c in countries" :value="c.code" :text="c.name"></option>
 </select>
-
-<!-- One-way with formatting -->
-<input :value="v => '$' + v.toFixed(2)" />
 ```
+
+
+#### `:change`
+
+Write-back from form inputs to state (DOM → state). Handles type coercion automatically — numbers, checkboxes, selects, dates.
+
+```html
+<!-- Two-way binding: :value (read) + :change (write) -->
+<input :value="query" :change="v => query = v" />
+<input type="number" :value="count" :change="v => count = v" />
+<input type="checkbox" :value="agreed" :change="v => agreed = v" />
+
+<select :value="country" :change="v => country = v">
+  <option :each="c in countries" :value="c.code" :text="c.name"></option>
+</select>
+
+<!-- With modifiers -->
+<input :value="search" :change.debounce-300="v => search = v" />
+```
+
+
+#### `:hidden`
+
+Toggle the `hidden` attribute. Unlike `:if`, keeps the element in DOM.
+
+```html
+<p :hidden="!ready">Loading...</p>
+<div :hidden="count < 5" :text="count"></div>
+```
+
+
+#### `:mount`
+
+Lifecycle hook — runs once when element connects. Not reactive. Function form receives element and can return cleanup.
+
+```html
+<canvas :mount="el => initChart(el)"></canvas>
+<input :mount="el => el.focus()" />
+
+<!-- With cleanup -->
+<div :mount="el => {
+  const timer = setInterval(tick, 1000)
+  return () => clearInterval(timer)
+}"></div>
+
+<!-- Statement form -->
+<div :mount="console.log('connected')"></div>
+```
+
+
+#### `:intersect`
+
+IntersectionObserver wrapper. Fires when element enters or exits viewport.
+
+```html
+<img :intersect.once="loadImage()" :src="placeholder" />
+<div :intersect="visible = true"></div>
+
+<!-- Function form: receive IntersectionObserverEntry -->
+<div :intersect="entry => ratio = entry.intersectionRatio"></div>
+```
+
+Modifiers: `.once`, `.half` (threshold 0.5), `.full` (threshold 0.99), `.threshold-N` (0-100), `.margin-Npx`, `.leave` (fire on exit).
+
+```html
+<div :intersect.half="visible = true"></div>
+<div :intersect.leave="visible = false"></div>
+<div :intersect.threshold-75="inView = true"></div>
+<div :intersect.margin-200px="preload()"></div>
+```
+
+
+#### `:resize`
+
+ResizeObserver wrapper. Fires when element dimensions change.
+
+```html
+<!-- Function form: receive {width, height, entry} -->
+<div :resize="({width, height}) => cols = Math.floor(width / 200)"></div>
+
+<!-- With modifiers -->
+<div :resize.throttle-100="({width}) => narrow = width < 600"></div>
+<div :resize.border="({width}) => update(width)"></div>
+```
+
+Modifiers: `.border` (observe border-box), `.throttle-N`, `.debounce-N`, `.raf`.
 
 
 #### `:portal`
@@ -638,25 +713,50 @@ Server provides initial data, sprae handles client interactivity.
 
 ### Web Components
 
-Sprae works with shadow DOM. Initialize in `connectedCallback`:
+Sprae treats custom elements as boundaries — directives on the element are processed, but sprae does not descend into children. The component owns its DOM.
 
-```js
-class MyComponent extends HTMLElement {
-  connectedCallback() {
-    if (!this.shadowRoot) {
-      this.attachShadow({ mode: 'open' }).innerHTML = `
-        <div :scope="{ msg: 'Hello' }">
-          <span :text="msg"></span>
-        </div>
-      `
-      sprae(this.shadowRoot)
-    }
-  }
-}
-customElements.define('my-component', MyComponent)
+Two wiring patterns:
+
+**Props object** — pass all props as a single object via `:props`:
+
+```html
+<expense-row :props="{ item: expense, onView: viewExpense }"></expense-row>
 ```
 
-Or pass state directly:
+```js
+customElements.define('expense-row', class extends HTMLElement {
+  set props(v) {
+    if (!this.children.length)
+      this.innerHTML = `<span :text="item.payee"></span>`,
+      this.state = sprae(this, v)
+    else Object.assign(this.state, v)
+  }
+})
+```
+
+**Individual attributes** — standard `observedAttributes` with microtask batching:
+
+```js
+customElements.define('user-card', class extends HTMLElement {
+  static observedAttributes = ['name', 'avatar']
+  attributeChangedCallback(k, _, v) {
+    if (this.state) { this.state[k] = v; return }
+    if (this._q) return
+    this._q = true
+    queueMicrotask(() => {
+      this._q = false
+      let attrs = {}
+      for (let a of this.constructor.observedAttributes) attrs[a] = this.getAttribute(a)
+      this.innerHTML = `<img :src="avatar" /><span :text="name"></span>`
+      this.state = sprae(this, attrs)
+    })
+  }
+})
+```
+
+#### Shadow DOM
+
+For style encapsulation, use shadow DOM:
 
 ```js
 class Counter extends HTMLElement {
@@ -730,7 +830,8 @@ customElements.define('my-counter', Counter)
   <input
     type="email"
     :value="email"
-    :oninput="e => (email = e.target.value, valid = e.target.checkValidity())"
+    :change="v => email = v"
+    :oninput="e => valid = e.target.checkValidity()"
   />
   <button :disabled="!valid">Submit</button>
 </form>
@@ -740,15 +841,9 @@ customElements.define('my-counter', Counter)
 ### Infinite Scroll
 
 ```html
-<div :scope="{ items: [], page: 1 }"
-     :fx="load()"
-     :ref="el => {
-       const io = new IntersectionObserver(([e]) => e.isIntersecting && load())
-       io.observe(el.lastElementChild)
-       return () => io.disconnect()
-     }">
+<div :scope="{ items: [], page: 1 }" :fx="load()">
   <div :each="item in items" :text="item.name"></div>
-  <div>Loading...</div>
+  <div :intersect.once="load()">Loading...</div>
 </div>
 
 <script>
@@ -777,7 +872,7 @@ customElements.define('my-counter', Counter)
 
 ```html
 <div :scope="{ q: '', results: [] }">
-  <input :value="q" :oninput.debounce-300="e => search(e.target.value)" placeholder="Search..." />
+  <input :value="q" :change.debounce-300="v => (q = v, search(v))" placeholder="Search..." />
 
   <ul :if="results.length">
     <li :each="r in results" :text="r.title"></li>
@@ -790,6 +885,17 @@ customElements.define('my-counter', Counter)
     results = query ? await fetch('/search?q=' + query).then(r => r.json()) : []
   }
 </script>
+```
+
+
+### Responsive Grid
+
+```html
+<div :scope="{ cols: 3 }" :resize="({width}) => cols = Math.max(1, Math.floor(width / 250))">
+  <div :style="{ 'grid-template-columns': 'repeat(' + cols + ', 1fr)' }">
+    <div :each="item in items" :text="item.name"></div>
+  </div>
+</div>
 ```
 
 
@@ -860,6 +966,7 @@ customElements.define('my-counter', Counter)
 | CSP Support | Full | Limited | No |
 | TypeScript | Full | Partial | No |
 | Maintained | ✓ | ✓ | ✗ |
+| Observer Directives | `:intersect`, `:resize`, `:mount` | No | No |
 | Event Modifiers | 10+ | Limited | Few |
 | Custom Directives | Yes | Yes | Limited |
 | No-build Required | ✓ | ✓ | ✓ |
