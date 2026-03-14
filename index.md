@@ -92,12 +92,16 @@ Variants: [sprae-csp.js](https://unpkg.com/sprae/dist/sprae-csp.js) (CSP-safe), 
 | [`:class`](docs#class) | Set classes | `<div :class="{active: true}">` |
 | [`:style`](docs#style) | Set styles | `<div :style="{color:'#fff'}">` |
 | [`:value`](docs#value) | Bind input value | `<input :value="text">` |
+| [`:change`](docs#change) | Write input back to state | `<input :change="v => text = v">` |
 | [`:<prop>`](docs#attr--or---attrs-) | Set any attribute | `<a :href="url">` |
 | [`:hidden`](docs#hidden) | Toggle visibility | `<div :hidden="!show">` |
 | [`:if` `:else`](docs#if--else) | Conditional render | `<div :if="cond">` |
 | [`:each`](docs#each) | List render | `<li :each="item in list">` |
 | [`:scope`](docs#scope) | Define state | `<div :scope="{x:1}">` |
 | [`:ref`](docs#ref) | Get element ref | `<input :ref="el => {...}">` |
+| [`:mount`](docs#mount) | Run connect/cleanup hook | `<canvas :mount="el => init(el)">` |
+| [`:intersect`](docs#intersect) | React to visibility | `<img :intersect.once="load()">` |
+| [`:resize`](docs#resize) | React to size changes | `<div :resize="({width}) => cols = width">` |
 | [`:fx`](docs#fx) | Run effect | `<div :fx="log(x)">` |
 | [`:on<event>`](docs#onevent) | Event listener | `<button :onclick="fn()">` |
 

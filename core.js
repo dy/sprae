@@ -149,28 +149,7 @@ const err = (e, expr, el = currentEl) => {
  */
 const sprae = (root = document.body, state) => {
   // repeated call can be caused by eg. :each with new objects with old keys
-  if (root[_state]) {
-    // custom elements: processor may have set _state in connectedCallback,
-    // but parent still needs to process directives (prop setters) against caller's state
-    if (isCE(root)) {
-      Object.assign(root[_state], state)
-      let callerState = store(state || {}), propOffs = []
-      let _attrs = root.attributes
-      if (_attrs) for (let i = 0; i < _attrs.length;) {
-        let { name, value } = _attrs[i]
-        if (name.startsWith(prefix)) {
-          root.removeAttribute(name)
-          let start = dir(root, name.slice(prefix.length), value, callerState)
-          propOffs.push(start())
-        } else i++
-      }
-      // chain prop effect cleanup to element disposal
-      let prevDispose = root[_dispose]
-      root[_dispose] = () => { propOffs.map(off => off?.()); prevDispose?.() }
-      return root[_state]
-    }
-    return Object.assign(root[_state], state)
-  }
+  if (root[_state]) return Object.assign(root[_state], state)
 
   // console.group('sprae', root)
 

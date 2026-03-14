@@ -224,67 +224,6 @@ test("default: spread all types as properties on web component", async () => {
   is(el.onClick(), 'hi');
 });
 
-// --- Custom element with _state: all directives must still be processed ---
-
-test("default: web component with _state processes all directives", async () => {
-  // Simulates define-element scenario: processor sets _state in connectedCallback,
-  // then parent sprae processes directives on the element (prop setters)
-  let propLog = [];
-  customElements.define('x-proc1', class extends HTMLElement {
-    constructor() { super() }
-    set name(v) { propLog.push('name:' + v); if (this[_state]) this[_state].name = v }
-    set count(v) { propLog.push('count:' + v); if (this[_state]) this[_state].count = v }
-  });
-
-  let el = h`<div><x-proc1 :name="n" :count="c"></x-proc1></div>`;
-  let ce = el.querySelector('x-proc1')
-
-  // simulate processor: hide parent directives, run sprae on defaults, restore
-  let saved = [...ce.attributes].reduce((a, {name, value}) =>
-    (name[0] === ':' && (ce.removeAttribute(name), a.push([name, value])), a), [])
-  ce.innerHTML = '<span :text="name"></span>'
-  ce[_state] = sprae(ce, { name: '', count: 0 })
-  for (let [n, v] of saved) ce.setAttribute(n, v)
-
-  propLog.length = 0
-  let state = sprae(el, { n: 'Ada', c: 42 });
-  await tick();
-
-  // both directives should be processed, not just the first one
-  ok(propLog.includes('name:Ada'), 'name prop should be set');
-  ok(propLog.includes('count:42'), 'count prop should be set — not skipped by _state check');
-
-  // template should reflect prop update
-  is(ce.querySelector('span').textContent, 'Ada');
-});
-
-// sprae() called on custom element that already has _state — must process directives
-// simulates :each clone scenario: processor ran, then parent sprae processes directives
-test("default: sprae() on web component with existing _state processes directives", async () => {
-  customElements.define('x-resprae', class extends HTMLElement {
-    constructor() { super() }
-    set label(v) { if (this[_state]) this[_state].label = v }
-    set count(v) { if (this[_state]) this[_state].count = v }
-  });
-
-  // simulate processor: element has _state and inner template
-  let ce = document.createElement('x-resprae')
-  ce.innerHTML = '<b :text="label"></b><em :text="count"></em>'
-  ce[_state] = sprae(ce, { label: '?', count: 0 })
-  is(ce.querySelector('b').textContent, '?')
-
-  // simulate :each clone scenario: parent directives restored on element after processor
-  ce.setAttribute(':label', 'name')
-  ce.setAttribute(':count', 'num')
-  // sprae(clone, subscope) — subscope has the variables from parent
-  sprae(ce, { name: 'Ada', num: 42 })
-  await tick();
-
-  // directives should have been processed, updating component state via setters
-  is(ce.querySelector('b').textContent, 'Ada')
-  is(ce.querySelector('em').textContent, '42')
-});
-
 
 // --- define-element processor pattern ---
 // Simulates define-element: processor(root, state) clones template and calls sprae(root, state).
