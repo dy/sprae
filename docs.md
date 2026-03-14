@@ -698,65 +698,75 @@ Server provides initial data, sprae handles client interactivity.
 
 ### Web Components
 
-Sprae treats custom elements as boundaries — directives on the element are processed, but sprae does not descend into children. The component owns its DOM.
+Sprae treats custom elements as boundaries — directives on the element are processed as prop setters, but sprae does not descend into children. The component owns its DOM.
 
-Two wiring patterns:
+#### define-element
 
-**Props object** — pass all props as a single object via `:props`:
+[define-element](https://github.com/dy/define-element) lets you declaratively define custom elements as HTML.
+
+<!--
+Wire sprae as its processor for reactive templates:
 
 ```html
-<expense-row :props="{ item: expense, onView: viewExpense }"></expense-row>
+<script src="https://unpkg.com/define-element" data-processor="sprae"></script>
+<script src="https://unpkg.com/sprae" data-start></script>
+
+<define-element>
+  <user-card name avatar>
+    <template>
+      <img :src="avatar" />
+      <span :text="name"></span>
+    </template>
+  </user-card>
+</define-element>
+
+<user-card :name="userName" :avatar="userAvatar"></user-card>
 ```
+-->
+
+Wire the processor:
 
 ```js
-customElements.define('expense-row', class extends HTMLElement {
-  set props(v) {
-    if (!this.children.length)
-      this.innerHTML = `<span :text="item.payee"></span>`,
-      this.state = sprae(this, v)
-    else Object.assign(this.state, v)
-  }
-})
-```
+import sprae from 'sprae'
 
-**Individual attributes** — standard `observedAttributes` with microtask batching:
-
-```js
-customElements.define('user-card', class extends HTMLElement {
-  static observedAttributes = ['name', 'avatar']
-  attributeChangedCallback(k, _, v) {
-    if (this.state) { this.state[k] = v; return }
-    if (this._q) return
-    this._q = true
-    queueMicrotask(() => {
-      this._q = false
-      let attrs = {}
-      for (let a of this.constructor.observedAttributes) attrs[a] = this.getAttribute(a)
-      this.innerHTML = `<img :src="avatar" /><span :text="name"></span>`
-      this.state = sprae(this, attrs)
-    })
-  }
-})
-```
-
-#### Shadow DOM
-
-For style encapsulation, use shadow DOM:
-
-```js
-class Counter extends HTMLElement {
-  connectedCallback() {
-    if (!this.shadowRoot) {
-      this.attachShadow({ mode: 'open' }).innerHTML = `
-        <button :onclick="count++">Count: <span :text="count"></span></button>
-      `
-      this.state = sprae(this.shadowRoot, { count: 0 })
-    }
-  }
+let DE = customElements.get('define-element')
+DE.processor = (root, state) => {
+  root.appendChild(root.template.content.cloneNode(true))
+  return sprae(root, state)
 }
-customElements.define('my-counter', Counter)
 ```
 
+Define and reuse custom elements:
+
+```html
+<define-element>
+  <user-card name avatar>
+    <template>
+      <img :src="avatar" />
+      <span :text="name"></span>
+    </template>
+  </user-card>
+</define-element>
+
+<user-card :name="userName" :avatar="userAvatar"></user-card>
+```
+
+Props flow reactively — primitives via attributes, objects via properties. No distinction at call site:
+
+```html
+<define-element>
+  <expense-row item on-view>
+    <template>
+      <div class="row" :onclick="onView?.(item)">
+        <span :text="item.payee"></span>
+        <span :text="item.amount"></span>
+      </div>
+    </template>
+  </expense-row>
+</define-element>
+
+<expense-row :item="expense" :onview="viewExpense"></expense-row>
+```
 
 
 

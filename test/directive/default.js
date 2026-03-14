@@ -284,3 +284,164 @@ test("default: sprae() on web component with existing _state processes directive
   is(ce.querySelector('b').textContent, 'Ada')
   is(ce.querySelector('em').textContent, '42')
 });
+
+
+// --- define-element processor pattern ---
+// Simulates define-element: processor(root, state) clones template and calls sprae(root, state).
+// Parent sprae then processes directives on the CE as prop setters.
+
+// Helper: simulates define-element processor pattern.
+// In real define-element, connectedCallback calls processor(root, state).
+// Here we simulate by using attributeChangedCallback with microtask batching,
+// matching the actual define-element integration pattern.
+const defineWithSprae = (tag, tpl, props) => {
+  customElements.define(tag, class extends HTMLElement {
+    static observedAttributes = props
+    attributeChangedCallback(k, _, v) {
+      if (this[_state]) { this[_state][k] = v; return }
+      if (this._q) return
+      this._q = true
+      queueMicrotask(() => {
+        this._q = false
+        // processor: mount template and sprae with initial state
+        this.innerHTML = tpl
+        let state = {}
+        for (let p of props) state[p] = this[`_$${p}`] ?? this.getAttribute(p)
+        this[_state] = sprae(this, state)
+      })
+    }
+  })
+  // property setters for object props
+  let C = customElements.get(tag)
+  for (let p of props) Object.defineProperty(C.prototype, p, {
+    set(v) {
+      if (this[_state]) this[_state][p] = v
+      else {
+        this[`_$${p}`] = v
+        if (!this._q) {
+          this._q = true
+          queueMicrotask(() => {
+            this._q = false
+            this.innerHTML = tpl
+            let state = {}
+            for (let pp of props) state[pp] = this[`_$${pp}`] ?? this.getAttribute(pp)
+            this[_state] = sprae(this, state)
+          })
+        }
+      }
+    },
+    get() { return this[_state]?.[p] ?? this[`_$${p}`] }
+  })
+}
+
+test("define-element: basic rendering", async () => {
+  defineWithSprae('de-basic', '<span :text="name"></span>', ['name'])
+
+  let el = h`<div><de-basic :name="n"></de-basic></div>`
+  let state = sprae(el, { n: 'Ada' })
+  await tick(2)
+
+  is(el.querySelector('span').textContent, 'Ada')
+});
+
+test("define-element: reactive prop update", async () => {
+  defineWithSprae('de-reactive', '<b :text="label"></b><em :text="count"></em>', ['label', 'count'])
+
+  let el = h`<div><de-reactive :label="l" :count="c"></de-reactive></div>`
+  let state = sprae(el, { l: 'hello', c: 1 })
+  await tick(2)
+
+  is(el.querySelector('b').textContent, 'hello')
+  is(el.querySelector('em').textContent, '1')
+
+  state.l = 'world'
+  state.c = 42
+  await tick()
+  is(el.querySelector('b').textContent, 'world')
+  is(el.querySelector('em').textContent, '42')
+});
+
+test("define-element: object prop via property", async () => {
+  defineWithSprae('de-objprop', '<span :text="item.name"></span>', ['item'])
+
+  let el = h`<div><de-objprop :item="obj"></de-objprop></div>`
+  let state = sprae(el, { obj: { name: 'test' } })
+  await tick(2)
+
+  is(el.querySelector('span').textContent, 'test')
+
+  state.obj = { name: 'updated' }
+  await tick()
+  is(el.querySelector('span').textContent, 'updated')
+});
+
+test("define-element: multiple instances", async () => {
+  defineWithSprae('de-multi', '<span :text="value"></span>', ['value'])
+
+  let el = h`<div>
+    <de-multi :value="a"></de-multi>
+    <de-multi :value="b"></de-multi>
+  </div>`
+  let state = sprae(el, { a: 'first', b: 'second' })
+  await tick(2)
+
+  let spans = el.querySelectorAll('span')
+  is(spans[0].textContent, 'first')
+  is(spans[1].textContent, 'second')
+
+  state.a = 'updated'
+  await tick()
+  is(spans[0].textContent, 'updated')
+  is(spans[1].textContent, 'second')
+});
+
+test("define-element: multiple instances via loop", async () => {
+  // In real DOM, define-element processor runs synchronously in connectedCallback.
+  // Here we simulate: pre-create instances with _state, then parent sprae sets props.
+  let tag = 'de-loop'
+  customElements.define(tag, class extends HTMLElement {
+    constructor() { super() }
+    set label(v) { if (this[_state]) this[_state].label = v }
+  })
+
+  let el = h`<div></div>`
+  let state = sprae(el, { items: ['a', 'b', 'c'] })
+
+  // simulate define-element processor: each clone gets template + sprae before parent sets props
+  for (let item of state.items) {
+    let ce = document.createElement(tag)
+    ce.innerHTML = '<span :text="label"></span>'
+    ce[_state] = sprae(ce, { label: item })
+    el.appendChild(ce)
+  }
+  await tick()
+
+  let spans = el.querySelectorAll('span')
+  is(spans.length, 3)
+  is(spans[0].textContent, 'a')
+  is(spans[1].textContent, 'b')
+  is(spans[2].textContent, 'c')
+});
+
+test("define-element: isolation (parent does not descend)", async () => {
+  defineWithSprae('de-iso', '<span :text="inner"></span>', ['inner'])
+
+  // parent has variable `outer`, but component template uses `inner`
+  let el = h`<div><de-iso :inner="outer"></de-iso></div>`
+  sprae(el, { outer: 'from-parent' })
+  await tick(2)
+
+  is(el.querySelector('span').textContent, 'from-parent')
+});
+
+test("define-element: callback prop", async () => {
+  defineWithSprae('de-callback', '<button :onclick="handler?.()"></button>', ['handler'])
+
+  let log = []
+  let el = h`<div><de-callback :handler="fn"></de-callback></div>`
+  sprae(el, { fn: () => log.push('clicked') })
+  await tick(2)
+
+  el.querySelector('button').click()
+  is(log, ['clicked'])
+});

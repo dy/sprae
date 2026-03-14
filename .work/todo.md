@@ -266,9 +266,6 @@
 * [x] ~~flavors: alpine (`x-`), vue (`v-`) compatibility layers~~ custom prefix already supported via `sprae.use({ prefix })`, not worth maintaining separate flavors
 * [x] ~~community plugins directory~~ directives are 1-5 lines, docs teach the pattern instead
 
-## [ ] v13
-
-
 
 ## [ ] Website
   * [x] **landing page overhaul**: values.md content → compelling index
