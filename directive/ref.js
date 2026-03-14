@@ -1,20 +1,27 @@
 import { parse } from "../core.js"
-import { setter } from "./value.js"
 
 /**
- * Ref directive - stores element reference in state.
- * If expression is a function, calls it with element (returns dispose).
+ * Creates a setter function for assigning a value to a state path.
+ * @param {string} expr - Expression to assign to (e.g., "x" or "refs.el")
+ * @returns {(target: Object, value: any) => void} Setter function
+ */
+const setter = (expr, _set = parse(`${expr}=__`)) => (target, value) => {
+  target.__ = value; _set(target), delete target.__
+}
+
+/**
+ * Ref directive - stores element reference in state or calls callback with element.
+ *
+ * :ref="x"                    → state.x = el
+ * :ref="refs.el"              → state.refs.el = el
+ * :ref="el => setup(el)"      → calls callback with element
+ *
  * @param {Element} el - Target element
  * @param {Object} state - State object
- * @param {string} expr - Variable name or function expression
- * @returns {{ [Symbol.dispose]: () => void } | void} Disposal object or void
+ * @param {string} expr - Variable name, path, or callback expression
  */
 export default (el, state, expr) => {
-  let fn = parse(expr)(state)
-
-  if (typeof fn == 'function') return {[Symbol.dispose]:fn(el)}
-
-  // NOTE: we have to set element statically (outside of effect) to avoid parasitic sub - multiple els with same :ref can cause recursion (eg. :each :ref="x")
-  // Object.defineProperty(state, expr, { value: el, configurable: true })
-  setter(expr)(state, el)
+  let result = parse(expr).call(el, state)
+  if (typeof result === 'function') result(el)
+  else setter(expr)(state, el)
 }

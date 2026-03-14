@@ -104,7 +104,7 @@ test("core: bulk set", async () => {
 });
 
 test("core: sets el.prop", async () => {
-  let el = h`<x :ref="e => el=e" :x="el.x=1" :y="el.y='abc'"></x>`;
+  let el = h`<x :mount="e => el=e" :x="el.x=1" :y="el.y='abc'"></x>`;
   sprae(el, { el: null });
   is(el.x, 1);
   is(el.y, "abc");
@@ -486,6 +486,32 @@ test('core: method with getter this', async () => {
   await tick()
   is(el.outerHTML, `<x>$30</x>`)
 })
+
+// hasSemi: tests for semicolon detection in expressions (drives return vs no-return in compiler)
+test("core: hasSemi — basic semicolons", () => {
+  // semicolons cause statement mode (no return)
+  let el = h`<x :fx="log.push(1); log.push(2)"></x>`;
+  let state = sprae(el, { log: [] });
+  is(state.log, [1, 2]);
+});
+
+test("core: hasSemi — semicolons inside strings are ignored", () => {
+  let el = h`<x :text="';'"></x>`;
+  sprae(el);
+  is(el.textContent, ';');
+});
+
+test("core: hasSemi — semicolons inside template literals are ignored", { skip: isJessie }, () => {
+  let el = h`<x :text="\`a;b\`"></x>`;
+  sprae(el);
+  is(el.textContent, 'a;b');
+});
+
+test("core: hasSemi — semicolons inside objects are ignored", () => {
+  let el = h`<x :text="({a: 1}).a"></x>`;
+  sprae(el);
+  is(el.textContent, '1');
+});
 
 test('core: ownerDocument instead of global document (custom DOM)', {skip: !isNode}, async () => {
   let a = h`<y><template :each="item in [{id:1}, {id:2}, {id:3}]" :if="item.id % 2"><x :text="item.id"></x></template></y>`

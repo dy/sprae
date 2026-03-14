@@ -420,7 +420,7 @@ test("each: condition within loop", async () => {
 
 test('each: items refer to current el', async () => {
   // NOTE: the problem here is that the next items can subscribe to `el` defined in root state (if each hasn't created scope), that will cause unnecessary :x effect
-  let el = h`<div><x :each="x in 3" :data-x="x" :scope="{el:null}" :ref="e=>(console.log('ref',e),el=e)" :x="console.log('x',this,el),log.push(x, el.dataset.x)"></x></div>`;
+  let el = h`<div><x :each="x in 3" :data-x="x" :scope="{el:null}" :mount="e=>(console.log('ref',e),el=e)" :x="console.log('x',this,el),log.push(x, el.dataset.x)"></x></div>`;
   let log = signal([]);
   let state = sprae(el, { log, untracked });
   await tick(2);
@@ -452,7 +452,7 @@ test("each: expression as source", async () => {
 
 test("each: unmounted elements call dispose", async () => {
   // NOTE: each is unkeyed - elements are reused by index, so disposal happens on the LAST element
-  let el = h`<div><x :each="item in items" :ref="e => (inits.push(item), () => disposes.push(item))"></x></div>`
+  let el = h`<div><x :each="item in items" :mount="e => (inits.push(item), () => disposes.push(item))"></x></div>`
   let state = sprae(el, { items: [1, 2, 3], inits: [], disposes: [] })
   is(el.innerHTML, `<x></x><x></x><x></x>`)
   is([...state.inits], [1, 2, 3])

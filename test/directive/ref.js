@@ -2,9 +2,7 @@ import { tick, time } from "wait-please";
 import sprae from '../../sprae.js'
 import h from "hyperf";
 import test, { any, is, ok } from "tst";
-import { store } from '../../store.js'
-import { use, signal, batch, untracked } from '../../core.js'
-
+import { signal } from '../../core.js'
 
 
 test("ref: base", async () => {
@@ -32,7 +30,6 @@ test("ref: signal", async () => {
 });
 
 test("ref: with :each", async () => {
-  // NOTE: if you have inf recursion here, look carefully: ref is expected to write to item own scope, but it might write to the root scope
   let a = h`<y><x :each="item in (items)" :ref="x" :text="log.push(x), item"/></y>`;
   let state = sprae(a, { log: [], items: [1, 2, 3, 4, 5, 6, 7] });
   await tick();
@@ -40,57 +37,10 @@ test("ref: with :each", async () => {
   is(a.innerHTML, `<x>1</x><x>2</x><x>3</x><x>4</x><x>5</x><x>6</x><x>7</x>`);
 });
 
-test("ref: t̵h̵i̵s̵ ̵r̵e̵f̵e̵r̵s̵ ̵t̵o̵ defines current element", async () => {
+test("ref: defines current element", async () => {
   let el = h`<x :ref="x" :text="log.push(x)"></x>`;
   let state = sprae(el, { log: [] });
   is(state.log, [el]);
-});
-
-test("ref: fn base", async () => {
-  let a = h`<a :ref="el => a=el" :fx="log.push(a)" :text="b"></a>`;
-  let state = sprae(a, { log: [], b: 1, a: null });
-  await tick();
-  is(state.log[0], a);
-  is(a.outerHTML, `<a>1</a>`);
-  state.b = 2;
-  await tick();
-  is(a.outerHTML, `<a>2</a>`);
-  is(state.a, a, "Exposes to the state");
-});
-
-test("ref: fn signal", async () => {
-  let a = h`<a :ref="el => a=el" :text="b"></a>`;
-  let state = sprae(a, { a: signal(), b: signal(1) });
-  await tick();
-  is(state.a, a);
-  is(a.outerHTML, `<a>1</a>`);
-  state.b = 2;
-  await tick();
-  is(a.outerHTML, `<a>2</a>`);
-  is(state.a, a, "Exposes to the state");
-});
-
-test("ref: fn with :each", async () => {
-  let a = h`<y><x :each="item in items" :scope="{x:null}" :ref="el => x=el" :text="log.push(x), item"/></y>`;
-  let state = sprae(a, { log: [], items: [1, 2, 3] });
-  await tick();
-  is(a.innerHTML, `<x>1</x><x>2</x><x>3</x>`);
-  ok(state.log.length <= a.children.length * 2, "no cycle");
-});
-
-test("ref: fn unmount", async () => {
-  let div = h`<div><a :if="a" :ref="el => (log.push('on'), () => log.push('off'))" :text="b"></a></div>`;
-
-  let state = sprae(div, { log: [], b: 1, a: 1 });
-  await tick();
-  is(state.log, ['on']);
-  is(div.innerHTML, `<a>1</a>`);
-
-  console.log('----state.a=0')
-  state.a = 0
-  await tick(2);
-  is(div.innerHTML, ``);
-  is(state.log, ['on', 'off'], 'unmount called');
 });
 
 test("ref: create in state as untracked", async () => {
@@ -110,7 +60,6 @@ test("ref: create in state as direct", async () => {
   let div = h`<div :scope="scope => (local=scope, {x:null,log(){console.log(x)}})" :onx="log"><x :ref="x" :text="x?.tagName"></x></div>`;
   let state = sprae(div, {local:{}})
   is(state.local.x, div.firstChild)
-  // reading :ref=x normally (one level) would not subscribe root, but nested one may subscribe parent :scope
   div.dispatchEvent(new window.CustomEvent("x"));
   await tick();
   is(state.local.x, div.firstChild)
@@ -120,10 +69,23 @@ test("ref: duplicates", async () => {
   let el = h`<x><y :ref="y"></y><z :ref="y"></z></x>`
   let state = sprae(el)
   is(state.y, el.lastChild)
-})
+});
 
 test("ref: internal path", async () => {
   let el = h`<x><y :ref="refs.y"></y></x>`
   let state = sprae(el, {refs:{}})
   is(state.refs.y, el.lastChild)
-})
+});
+
+test("ref: callback function", async () => {
+  let el = h`<x><y :ref="el => log.push(el.tagName)"></y></x>`
+  let state = sprae(el, { log: [] })
+  is(state.log, ['Y'])
+});
+
+test("ref: callback with setup", async () => {
+  let el = h`<input :ref="el => { el.max = 100; el.value = 50 }" />`
+  sprae(el)
+  is(el.max, '100')
+  is(el.value, '50')
+});

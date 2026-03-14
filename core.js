@@ -20,6 +20,9 @@ export const _add = Symbol('init')
 /** Directive prefix (default: ':') */
 export let prefix = ':';
 
+/** Check if element is a custom element (has hyphen in tag name) */
+export const isCE = (el) => el.localName?.includes('-')
+
 /**
  * A reactive signal containing a value.
  * @template T
@@ -144,16 +147,37 @@ const err = (e, expr, el = currentEl) => {
  * @param {Object} [state] - Initial state values to populate the element's reactive state.
  * @returns {SpraeState & Object} The reactive state object associated with the element.
  */
-const sprae = (el = document.body, state) => {
+const sprae = (root = document.body, state) => {
   // repeated call can be caused by eg. :each with new objects with old keys
-  if (el[_state]) return Object.assign(el[_state], state)
+  if (root[_state]) {
+    // custom elements: processor may have set _state in connectedCallback,
+    // but parent still needs to process directives (prop setters) against caller's state
+    if (isCE(root)) {
+      Object.assign(root[_state], state)
+      let callerState = store(state || {}), propOffs = []
+      let _attrs = root.attributes
+      if (_attrs) for (let i = 0; i < _attrs.length;) {
+        let { name, value } = _attrs[i]
+        if (name.startsWith(prefix)) {
+          root.removeAttribute(name)
+          let start = dir(root, name.slice(prefix.length), value, callerState)
+          propOffs.push(start())
+        } else i++
+      }
+      // chain prop effect cleanup to element disposal
+      let prevDispose = root[_dispose]
+      root[_dispose] = () => { propOffs.map(off => off?.()); prevDispose?.() }
+      return root[_state]
+    }
+    return Object.assign(root[_state], state)
+  }
 
-  // console.group('sprae', el)
+  // console.group('sprae', root)
 
   // take over existing state instead of creating a clone
   state = store(state || {})
 
-  let fx = [], offs = []
+  let el = root, fx = [], offs = []
 
   // on/off all effects
   // we don't call prevOn as convention: everything defined before :else :if won't be disabled by :if
@@ -181,9 +205,13 @@ const sprae = (el = document.body, state) => {
         fx.push(start = dir(el, name.slice(prefix.length), value, state)), offs.push(start())
 
         // stop after subsprae like :each, :if, :scope etc.
-        if (_state in el) return
+        // custom elements: continue processing all directives (prop setters), descent blocked separately (line 189)
+        if (_state in el && !isCE(el)) return
       } else i++
     }
+
+    // custom elements own their children — don't descend
+    if (el !== root && isCE(el)) return
 
     // :if and :each replace element with text node, which tweaks .children length, but .childNodes length persists
     // real DOM: firstChild/nextSibling avoids array copy; frag.childNodes is already snapshot array
@@ -398,8 +426,10 @@ export const dashcase = (str) => str.replace(/[A-Z\u00C0-\u00D6\u00D8-\u00DE]/g,
  * @param {string | boolean | null | undefined} v - Attribute value (null/false removes, true sets empty)
  * @returns {void}
  */
+const camelcase = (str) => str.replace(/-([a-z])/g, (_, c) => c.toUpperCase());
+
 export const attr = (el, name, v) => (v == null || v === false) ? el.removeAttribute(name) :
-  (typeof v === 'object' && el.tagName?.includes('-')) ? el[name] = v :
+  isCE(el) ? (el[camelcase(name)] = v) :
   el.setAttribute(name, v === true ? "" : v);
 
 /**
@@ -407,9 +437,9 @@ export const attr = (el, name, v) => (v == null || v === false) ? el.removeAttri
  * @param {string | string[] | Record<string, boolean> | null | undefined} c - Class input
  * @returns {string} Space-separated class string
  */
-export const clsx = (c, _out = []) => !c ? '' : typeof c === 'string' ? c : (
+export const clsx = (c) => !c ? '' : typeof c === 'string' ? c : (
   Array.isArray(c) ? c.map(clsx) :
-    Object.entries(c).reduce((s, [k, v]) => !v ? s : [...s, k], [])
+    Object.entries(c).reduce((s, [k, v]) => (v && s.push(k), s), [])
 ).join(' ')
 
 /**
@@ -448,11 +478,6 @@ export const debounce = (fn, ms, immediate) => {
     : ((_count = 0) => (arg, _c = ++_count) => schedule(() => _c == _count && fn(arg)))()
 }
 
-/**
- * Parses time string to milliseconds. Supports: 100, 100ms, 1s, 1m
- * @param {string|number} t - Time value
- * @returns {number} Milliseconds
- */
 export * from './store.js';
 
 export default sprae

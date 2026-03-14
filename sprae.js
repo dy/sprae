@@ -6,7 +6,7 @@
 import store from "./store.js";
 import { batch, computed, effect, signal, untracked } from './core.js';
 import * as signals from './signal.js';
-import sprae, { use, decorate, directive, modifier, parse, throttle, debounce, _off, _state, _on, _dispose, _add, start } from './core.js';
+import sprae, { use, decorate, directive, modifier, parse, throttle, debounce, _off, _state, _on, _dispose, _add, start, isCE } from './core.js';
 
 import _if from "./directive/if.js";
 import _else from "./directive/else.js";
@@ -25,7 +25,14 @@ import _seq from "./directive/sequence.js";
 import _html from "./directive/html.js";
 import _portal from "./directive/portal.js";
 import _hidden from "./directive/hidden.js";
+import _mount from "./directive/mount.js";
+import _change from "./directive/change.js";
+import _intersect from "./directive/intersect.js";
+import _resize from "./directive/resize.js";
 
+
+// mark observers: they handle own modifiers, bypass reactive plumbing
+_mount.observer = _change.observer = true
 
 Object.assign(directive, {
   _: _default,
@@ -42,7 +49,11 @@ Object.assign(directive, {
   else: _else,
   each: _each,
   portal: _portal,
-  hidden: _hidden
+  hidden: _hidden,
+  mount: _mount,
+  change: _change,
+  intersect: _intersect,
+  resize: _resize,
 })
 
 
@@ -74,7 +85,9 @@ const dir = (target, name, expr, state) => {
       evaluate = update.eval ?? parse(expr).bind(el),
       _out, out = () => (typeof _out === 'function' && _out(), _out=null) // effect trigger and invoke may happen in the same tick, so it will be effect-within-effect call - we need to store output of evaluate to return from trigger effect
 
-    state = el[_state] ?? state
+    // use element's own state for expression evaluation, unless it's a custom element
+    // (custom elements: directives are parent prop setters, must evaluate against parent state)
+    if (!isCE(el)) state = el[_state] ?? state
 
     let off = effect(() => {
         const result = change.value == count ? (trigger()) : (count = change.value, _out = evaluate(state, update))
@@ -220,8 +233,12 @@ use({
     // sequences: handle own modifiers, return dispose
     if (name.includes('..')) return () => _seq(el, state, expr, name)[_dispose]
     return name.split(':').reduce((prev, str) => {
-      // events: handle own modifiers, return dispose
-      let start = str.startsWith('on') ? () => _event(el, state, expr, str)[_dispose] : dir(el, str, expr, state)
+      let dirName = str.split('.')[0]
+      // events and observers handle own modifiers, return dispose
+      let obs = directive[dirName]
+      let start = str.startsWith('on') ? () => _event(el, state, expr, str)[_dispose]
+        : obs?.observer ? () => obs(el, state, expr, str)[_dispose]
+        : dir(el, str, expr, state)
       return !prev ? start : (p, s) => (p = prev(), s = start(), () => { p(); s() })
     }, null)
   },

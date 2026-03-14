@@ -1866,6 +1866,247 @@
     * whenever structure changes, the app logic is broken. It's not like that in react
     * in react, the logic produces structure, so it's easy to change structure not breaking the logic
 
+## [ ] Observer directives: `:mount`, `:change`, `:intersect`, `:resize`
+
+  ### Problems solved
+
+    1. **`:value` inconsistency**: 2-way binding is implicit magic — overwrites `oninput`/`onchange`, hides coercion, surprises define-element consumers expecting one-way prop
+    2. **`:ref` inconsistency**: string form implicitly writes to state; function form is actually a lifecycle hook disguised as a reference getter
+    3. **No lifecycle hooks**: no `:onconnect`/`:ondisconnect` — `:ref` function form was the workaround
+    4. **No observer API access**: IntersectionObserver, ResizeObserver require `:fx` + manual cleanup
+
+  ### Key insight
+
+    Sprae directives already ARE observers. The problem: `:value` and `:ref` combine observation AND state mutation internally, while `:fx`, `:onclick` leave mutation to user code. Observer directives fix this by separating observation from action.
+
+    Sprae has 3 directive categories:
+    * **Prop directives** (state → DOM): `:text`, `:class`, `:style`, `:value` (one-way), `:hidden`
+    * **Event directives** (DOM → user code): `:on*` — real addEventListener
+    * **Observer directives** (API → user code): `:mount`, `:change`, `:intersect`, `:resize` — wrap Observer APIs, accept statement or function
+
+  ### Why not `:on*` naming (`:onmount`, `:onchange`)
+
+    `:on*` in sprae means `addEventListener` — real DOM events. Observer directives are NOT events:
+    - No `dispatchEvent`, no bubbling, no `event.target`
+    - They wrap Observer APIs (IntersectionObserver, ResizeObserver, MutationObserver lifecycle)
+    - Custom events failed historically: reactivity won over pub/sub, bubbling couples to DOM structure, invisible in devtools
+
+    Registered directives don't collide with attributes (they take priority over `_` fallback), so direct names are safe.
+
+  ### The directives
+
+    **`:mount`** — lifecycle (replaces `:ref` function form)
+    ```html
+    <div :mount="console.log('connected')" />
+    <canvas :mount="el => (ctx = el.getContext('2d'), () => ctx = null)" />
+    <div :mount="el => x = el" />  <!-- replaces :ref="el => x = el" -->
+    ```
+    Named `:mount` over `:connect`/`:init`/`:attach`: short, unambiguous, react-familiar, natural cleanup via return fn.
+
+    **`:change`** — normalized input write-back with coercion (replaces 2-way `:value`)
+    ```html
+    <input :value="x" :change="v => x = v" />
+    <input :value="x" :change="v => (console.log(v), x = v)" />
+    <input type="checkbox" :value="agreed" :change="v => agreed = v" />  <!-- v is boolean -->
+    <select :value="sel" :change="v => sel = v" />  <!-- v is coerced -->
+    ```
+    Encapsulates type detection, valueAsNumber, checkbox→checked, select→selectedOptions, caret preservation.
+    `:value` becomes one-way only (sets el.value from state, like any prop directive).
+
+    **`:intersect`** — IntersectionObserver (plugin)
+    ```html
+    <div :intersect="visible = true" />
+    <div :intersect.once="loadContent()" />
+    <div :intersect="entry => ratio = entry.intersectionRatio" />
+    ```
+
+    **`:resize`** — ResizeObserver (plugin)
+    ```html
+    <div :resize="({width}) => cols = Math.floor(width / 200)" />
+    <div :resize.throttle-100="recalc()" />
+    ```
+
+    **Future candidates:** `:media` (matchMedia), `:mutate` (MutationObserver), `:animate` (Web Animations)
+
+  ### Statement vs function form
+
+    Each observer accepts both (same detection as `:ref` today — parse, check if result is function):
+    * **Statement**: `":mount="console.log('hi')"` — runs directly when triggered
+    * **Function**: `:mount="el => (setup(el), () => cleanup(el))"` — receives observer argument, can return cleanup
+
+    This pattern is called "inline statement handlers" (Vue) / "template statements" (Angular).
+
+  ### Impact on existing directives
+
+    * **`:value`** → one-way only (sets el.value from state). `:change` handles write-back.
+    * **`:ref`** → keep string form as sugar for "store element in state" (`:ref="x"` → `state.x = el`). Drop function form — use `:mount` instead.
+    * **`:on*`** → unchanged, still real DOM events via addEventListener.
+    * **`:fx`** → unchanged, still reactive effects. `:mount` is lifecycle (once), `:fx` is reactive (re-runs).
+
+  ### define-element integration
+
+    ```html
+    <!-- Component definition -->
+    <template id="my-input-tpl">
+      <input :value="value" :change="v => value = v" />
+    </template>
+
+    <!-- External usage — :value is just a one-way prop -->
+    <my-input :value="name" :onchange="e => name = e.detail"></my-input>
+    ```
+
+    * `:value` means the same thing at both levels — one-way prop
+    * Internal `:change` handles write-back explicitly
+    * Output via standard CustomEvent — framework-agnostic
+
+  ### Syntax: `:obs` vs `@obs` vs `:onobs`
+
+    **Should observers get their own prefix (`@`)?**
+
+    Vue/Alpine use `@click` (shorthand for `v-on:click` / `x-on:click`) to distinguish events from props.
+    Sprae uses `:onclick` — events are just directives starting with `on`.
+
+    Observers sit between props and events:
+    * Like props: they're declared on elements, configured per-element
+    * Like events: they call user code in response to something happening, accept statements
+    * Unlike events: they're not DOM events (no bubbling, no event object, no addEventListener)
+    * Unlike props: they don't set DOM state from reactive state
+
+    **Option A: `:mount`, `:change`, `:intersect` (prop syntax)**
+      + Simplest — no new syntax, just new registered directives
+      + Consistent: all sprae attributes start with `:`
+      + Works with existing modifier system: `:change.debounce-300`
+      + No parser changes needed
+      - Visually indistinguishable from props — `:text="x"` vs `:mount="el => ..."` look the same
+      - Reader must know which directives are observers vs props
+      - `:change` looks like it sets a `change` attribute
+
+    **Option B: `@mount`, `@change`, `@intersect` (dedicated prefix)**
+      + Visually distinct from props — immediately signals "this runs code"
+      + Reader can scan template and see data flow: `:` = state→DOM, `@` = DOM→code
+      + Vue/Alpine precedent — familiar to many developers
+      + Natural grouping: `@mount`, `@intersect`, `@resize` are clearly the same category
+      + Could unify with events: `@click`, `@mount`, `@change` — all "when X happens, do Y"
+      - New prefix = parser change in core.js (checking for `@` alongside `:`)
+      - Sprae's identity is single-prefix (`:`) — adding `@` doubles the syntax surface
+      - If `@` includes events, we'd have both `:onclick` and `@click` — migration mess or two systems
+      - If `@` is observers-only, it's a prefix for ~4 directives — disproportionate syntax tax
+      - HTML spec: `@` is technically valid in attribute names but unusual, may confuse validators
+
+    **Option C: `@` replaces `:on` for ALL event-like things (events + observers)**
+      * `@click`, `@mount`, `@change`, `@intersect`, `@resize`
+      * `:text`, `:class`, `:style`, `:value`, `:ref` — props stay with `:`
+      + Cleanest separation: `:` = state→DOM, `@` = triggers→code
+      + Shorter than `:onclick` — `@click` is 6 chars less
+      + Vue/Alpine familiar
+      + Observers naturally fit with events under "when X happens"
+      - Breaking change for all `:on*` users
+      - `:onclick:onkeypress` chains become `@click:@keypress`? Ugly
+        ~ Or `@click..keypress` sequences
+      - Two prefix systems to learn and remember
+      - Modifiers: `@click.prevent.stop` works, but parser needs to handle `@` prefix + `.` modifiers
+
+    **Analysis: observers gravitate toward events, not props**
+
+    The argument for `@`:
+    * Props are declarative (state→DOM): `:text="x"` means "keep text = x"
+    * Observers are imperative (trigger→code): `:mount="setup()"` means "when mounted, run this"
+    * Events are imperative (trigger→code): `:onclick="handle()"` means "when clicked, run this"
+    * Observers and events share: statement form, function form, cleanup, modifiers (debounce/throttle/once)
+    * Props don't share any of that
+
+    The argument against `@`:
+    * Sprae's minimal surface is a feature — one prefix, one mental model
+    * `:on` already distinguishes events from props visually
+    * Observers are few (mount, change, intersect, resize) — not worth a new prefix
+    * Convention > Configuration: adding syntax adds decisions
+
+    **Meaningful modifiers for observers:**
+
+    | Modifier | Applies to | Meaning |
+    |----------|-----------|---------|
+    | `.once` | all | Fire once, then disconnect |
+    | `.throttle-N` | `:change`, `:resize`, `:intersect` | Rate-limit callbacks |
+    | `.debounce-N` | `:change` | Delay until pause |
+    | `.tick` | all | Defer to microtask |
+    | `.raf` | `:resize`, `:intersect` | Defer to animation frame |
+    | `.self` | `:change` | Only if target is the element itself (not bubbled) |
+    | `.passive` | — | N/A (no events to mark passive) |
+    | `.prevent` / `.stop` | — | N/A (no event to prevent/stop) |
+
+    Key difference from event modifiers: `.prevent`, `.stop`, `.passive`, `.capture` don't apply (no real Event object). Target modifiers (`.window`, `.document`, `.parent`) don't apply (observer is bound to element). Only timing modifiers (`.once`, `.throttle`, `.debounce`, `.tick`, `.raf`) and future observer-specific modifiers make sense.
+
+    Observer-specific modifiers:
+    * `:intersect.threshold-50` — IntersectionObserver threshold 0.5
+    * `:intersect.root-<selector>` — custom root element (stretch)
+    * `:resize.border` / `:resize.content` — ResizeObserver box option
+    * `:change.number` / `:change.trim` — explicit coercion (Vue has these for v-model)
+      ~ But `:change` already coerces by type — extra modifiers may be unnecessary
+
+    **Conclusion: stay with `:` prefix**
+
+    Observers are registered directives under `:` — no `@` prefix.
+    * Sprae's single-prefix identity is worth preserving
+    * `:mount`, `:change` are visually distinct enough by name (not confusable with `:text`, `:class`)
+    * Modifiers work identically — no parser changes needed
+    * If demand grows, `@` can be added later as sugar (aliasing `@x` → `:x` in the parser) — non-breaking addition
+    * The 3 directive categories are distinguished by name convention, not syntax:
+      - Props: common words (`:text`, `:class`, `:style`, `:value`, `:hidden`)
+      - Events: `on` prefix (`:onclick`, `:oninput`)
+      - Observers: specific observer names (`:mount`, `:change`, `:intersect`, `:resize`)
+
+  ### Migration: deprecation path vs v13
+
+    **Can this be non-breaking (12.x)?**
+
+    Yes — introduce `:mount`, `:change` as new directives in 12.x without touching `:value`/`:ref`:
+    * 12.5: Add `:mount` directive, add `:change` directive. Fully additive, no breakage.
+    * 12.6: Add `console.warn` deprecation notices:
+      - `:ref` with function form → "use :mount instead"
+      - `:value` on form elements → "2-way binding deprecated, use :value + :change"
+    * 13.0: Remove deprecated behavior.
+
+    But this has problems:
+    - `:value` can't sanely be both one-way and two-way simultaneously during transition
+    - Deprecation warnings on `:value` would fire on every form in every existing app
+    - Users can't incrementally migrate — they'd need `:change` on every input where they use `:value`
+    - Two versions of `:value` existing at once creates confusion, not clarity
+
+    **v13 is cleaner.** The change is conceptually simple — `:value` becomes one-way, `:change` handles write-back, `:mount` replaces `:ref` function form. One migration, one explanation.
+
+    **What else goes into v13?**
+
+    | Change | Type | Notes |
+    |--------|------|-------|
+    | `:value` one-way only | Breaking | Remove 2-way binding, oninput/onchange override |
+    | `:change` directive | New | Observer: normalized input write-back |
+    | `:mount` directive | New | Observer: lifecycle (replaces `:ref` fn form) |
+    | `:ref` string-only | Breaking | Drop function form (→ `:mount`) |
+    | `define.js` integration | Enhancement | Clean prop/event contract |
+    | `:intersect` plugin | New | Observer: IntersectionObserver |
+    | `:resize` plugin | New | Observer: ResizeObserver |
+    | Destructor API | Breaking? | `dispose(el)` vs `el[_dispose]()` — pick one public API |
+    | Remove `:html` restore | Cleanup? | If any accumulated tech debt |
+
+    **Migration guide (v12 → v13):**
+    ```
+    <!-- v12 -->
+    <input :value="x" />
+    <canvas :ref="el => ctx = el.getContext('2d')" />
+    <div :ref="myDiv" />
+
+    <!-- v13 -->
+    <input :value="x" :change="v => x = v" />
+    <canvas :mount="el => ctx = el.getContext('2d')" />
+    <div :ref="myDiv" />  <!-- unchanged: string form stays -->
+    ```
+
+    Straightforward find-replace for most cases. `:ref` string form is unchanged. Only function `:ref` and 2-way `:value` need updating.
+
+  ### Built-in vs plugin
+
+    * **Built-in**: `:mount`, `:change` (core needs)
+    * **Plugin**: `:intersect`, `:resize`, `:media` (optional, register via `directive.intersect = ...`)
 
 ## [ ] Destructor option
   1. `el[_dispose]`

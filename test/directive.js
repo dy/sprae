@@ -11,5 +11,8 @@ import './directive/style.js';
 import './directive/text.js';
 import './directive/value.js';
 
+import './directive/mount.js';
+import './directive/change.js';
+
 import './directive/default.js';
 import './directive/event.js';
