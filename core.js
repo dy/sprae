@@ -206,7 +206,8 @@ const sprae = (root = document.body, state) => {
   currentDir = currentEl = null;
 
   // if element was spraed by inline :with/:if/:each/etc instruction (meaning it has state placeholder) - skip, otherwise save _state
-  if (el[_state] === undefined) el[_state] = state
+  // CE roots: don't claim _state — CE manages its own via connectedCallback (parent processes attrs, CE processes children)
+  if (el[_state] === undefined && !isCE(root)) el[_state] = state
 
   // console.groupEnd()
 

@@ -389,10 +389,7 @@ test("define-element: :each with simple CE (no internal sprae)", async () => {
   is(ces[1].textContent, 'b')
 });
 
-// FIXME: :each + CE with internal sprae() — parent's sprae(clone, subscope) sets _state,
-// blocking CE's deferred self-init. Needs: either CE-aware sprae() that doesn't claim CE roots,
-// or each.js processing CE attrs via parent's add() instead of full sprae() call.
-test.skip("define-element: :each with self-initializing CE", async () => {
+test("define-element: :each with self-initializing CE", async () => {
   defineWithSprae('de-each-self', '<b :text="label"></b>', ['label'])
 
   let el = h`<div><de-each-self :each="item in items" :label="item"></de-each-self></div>`
@@ -402,6 +399,110 @@ test.skip("define-element: :each with self-initializing CE", async () => {
   let bs = el.querySelectorAll('b')
   is(bs.length, 3)
   is(bs[0].textContent, 'x')
+  is(bs[1].textContent, 'y')
+  is(bs[2].textContent, 'z')
+
+  // reactive update
+  state.items = ['a', 'b']
+  await tick(3)
+  bs = el.querySelectorAll('b')
+  is(bs.length, 2)
+  is(bs[0].textContent, 'a')
+  is(bs[1].textContent, 'b')
+});
+
+test("define-element: :each with Lit-style CE (connectedCallback, no sprae)", async () => {
+  // Pattern: internal other-lib, external sprae
+  // CE self-initializes in connectedCallback (like Lit), parent sprae sets props
+  let tag = 'de-each-lit'
+  customElements.define(tag, class extends HTMLElement {
+    connectedCallback() {
+      if (!this._init) {
+        this._init = true
+        this.innerHTML = `<em>${this._label || ''}</em>`
+      }
+    }
+    set label(v) {
+      this._label = v
+      if (this._init) this.querySelector('em').textContent = v
+    }
+    get label() { return this._label }
+  })
+
+  let el = h`<div><${tag} :each="item in items" :label="item"></${tag}></div>`
+  document.body.appendChild(el) // need real DOM for connectedCallback
+  let state = sprae(el, { items: ['a', 'b', 'c'] })
+  await tick(2)
+
+  let ems = el.querySelectorAll('em')
+  is(ems.length, 3)
+  is(ems[0].textContent, 'a')
+  is(ems[1].textContent, 'b')
+  is(ems[2].textContent, 'c')
+
+  state.items = ['x']
+  await tick(2)
+  ems = el.querySelectorAll('em')
+  is(ems.length, 1)
+  is(ems[0].textContent, 'x')
+  el.remove()
+});
+
+test("define-element: :if on CE toggles correctly", async () => {
+  defineWithSprae('de-if-ce', '<b :text="label"></b>', ['label'])
+
+  let el = h`<div><de-if-ce :if="show" :label="name"></de-if-ce></div>`
+  let state = sprae(el, { show: true, name: 'on' })
+  await tick(2)
+
+  is(el.querySelector('b')?.textContent, 'on')
+
+  state.show = false
+  await tick(2)
+  is(el.querySelector('b'), null)
+
+  state.show = true
+  state.name = 'back'
+  await tick(2)
+  is(el.querySelector('b')?.textContent, 'back')
+});
+
+test("define-element: :each + :if on CE items", async () => {
+  defineWithSprae('de-each-if', '<b :text="label"></b>', ['label'])
+
+  let el = h`<div>
+    <de-each-if :each="item in items" :if="item.show" :label="item.name"></de-each-if>
+  </div>`
+  let state = sprae(el, { items: [
+    { name: 'a', show: true },
+    { name: 'b', show: false },
+    { name: 'c', show: true }
+  ] })
+  await tick(3)
+
+  let bs = el.querySelectorAll('b')
+  is(bs.length, 2)
+  is(bs[0].textContent, 'a')
+  is(bs[1].textContent, 'c')
+});
+
+test("define-element: :each with multiple props", async () => {
+  defineWithSprae('de-multi-prop', '<b :text="label"></b><em :text="count"></em>', ['label', 'count'])
+
+  let el = h`<div><de-multi-prop :each="item in items" :label="item.name" :count="item.n"></de-multi-prop></div>`
+  let state = sprae(el, { items: [
+    { name: 'x', n: 1 },
+    { name: 'y', n: 2 }
+  ] })
+  await tick(3)
+
+  let bs = el.querySelectorAll('b')
+  let ems = el.querySelectorAll('em')
+  is(bs.length, 2)
+  is(bs[0].textContent, 'x')
+  is(bs[1].textContent, 'y')
+  is(ems[0].textContent, '1')
+  is(ems[1].textContent, '2')
 });
 
 test("define-element: isolation (parent does not descend)", async () => {
