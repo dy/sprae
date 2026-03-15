@@ -334,9 +334,8 @@ test("define-element: multiple instances", async () => {
   is(spans[1].textContent, 'second')
 });
 
-test("define-element: multiple instances via loop", async () => {
-  // In real DOM, define-element processor runs synchronously in connectedCallback.
-  // Here we simulate: pre-create instances with _state, then parent sprae sets props.
+test("define-element: multiple instances via loop (manual)", async () => {
+  // Manual loop: pre-create instances with _state, then parent sprae sets props.
   let tag = 'de-loop'
   customElements.define(tag, class extends HTMLElement {
     constructor() { super() }
@@ -346,7 +345,6 @@ test("define-element: multiple instances via loop", async () => {
   let el = h`<div></div>`
   let state = sprae(el, { items: ['a', 'b', 'c'] })
 
-  // simulate define-element processor: each clone gets template + sprae before parent sets props
   for (let item of state.items) {
     let ce = document.createElement(tag)
     ce.innerHTML = '<span :text="label"></span>'
@@ -360,6 +358,50 @@ test("define-element: multiple instances via loop", async () => {
   is(spans[0].textContent, 'a')
   is(spans[1].textContent, 'b')
   is(spans[2].textContent, 'c')
+});
+
+test("define-element: :each with simple CE (no internal sprae)", async () => {
+  // Verifies: directive attrs on CE templates survive cloneNode naturally
+  // after the _state !== prev fix (no ceAttrs hack needed).
+  // Uses a vanilla CE (property setters only, no internal sprae call).
+  let tag = 'de-each-simple'
+  customElements.define(tag, class extends HTMLElement {
+    set label(v) { this._label = v; this.textContent = v }
+    get label() { return this._label }
+  })
+
+  let el = h`<div><${tag} :each="item in items" :label="item"></${tag}></div>`
+  let state = sprae(el, { items: ['x', 'y', 'z'] })
+  await tick(2)
+
+  let ces = el.querySelectorAll(tag)
+  is(ces.length, 3)
+  is(ces[0].textContent, 'x')
+  is(ces[1].textContent, 'y')
+  is(ces[2].textContent, 'z')
+
+  // reactive update
+  state.items = ['a', 'b']
+  await tick(2)
+  ces = el.querySelectorAll(tag)
+  is(ces.length, 2)
+  is(ces[0].textContent, 'a')
+  is(ces[1].textContent, 'b')
+});
+
+// FIXME: :each + CE with internal sprae() — parent's sprae(clone, subscope) sets _state,
+// blocking CE's deferred self-init. Needs: either CE-aware sprae() that doesn't claim CE roots,
+// or each.js processing CE attrs via parent's add() instead of full sprae() call.
+test.skip("define-element: :each with self-initializing CE", async () => {
+  defineWithSprae('de-each-self', '<b :text="label"></b>', ['label'])
+
+  let el = h`<div><de-each-self :each="item in items" :label="item"></de-each-self></div>`
+  let state = sprae(el, { items: ['x', 'y', 'z'] })
+  await tick(3)
+
+  let bs = el.querySelectorAll('b')
+  is(bs.length, 3)
+  is(bs[0].textContent, 'x')
 });
 
 test("define-element: isolation (parent does not descend)", async () => {

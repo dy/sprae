@@ -1701,6 +1701,119 @@
   + alpine flavor would need it
   - forces :cloak
 
+  #### Current behavior (remove): what happens step by step
+
+  core.js:178 does `el.removeAttribute(name)` immediately, before directive handler runs.
+  The iteration is over a live `el.attributes` collection — removing shrinks it, so `i` stays put and naturally visits the next attribute.
+
+  For regular elements this is fine: the element is the final DOM node, no cloning happens.
+
+  #### The friction with custom elements in `:each`
+
+  Consider: `<my-item :each="item in items" :label="item.name"></my-item>`
+
+  **For regular elements** `<li :each="..." :text="...">`:
+  - `:each` handler sets `tpl[_state] = null` (each.js:98)
+  - core.js:188: `_state in el && !isCE(el)` → true && true → **returns**
+  - `:text` stays on template, `cloneNode` preserves it naturally. No problem.
+
+  **For CEs** `<my-item :each="..." :label="...">`:
+  - Same `:each` handler sets `tpl[_state] = null`
+  - core.js:188: `_state in el && !isCE(el)` → true && **false** → does NOT return
+  - The `!isCE(el)` exception was added for the non-:each case: `<my-item :scope="{}" :label="x">` where `:scope` sets `_state` but we still want `:label` processed as prop setter.
+  - But when `:each` set `_state`, continuing is wrong — the element is now a template, not a live node.
+  - Loop continues: finds `:label`, removes it, evaluates `item.name` against parent state (where `item` doesn't exist). Silent error, dangling effect on detached template.
+
+  The `ceAttrs` workaround in each.js exists because of this:
+  1. Before `:each` handler runs, it saves `ceAttrs = [[":label", "item.name"]]`
+  2. After core.js removes `:label` (step above), the template loses it
+  3. On clone: `ceAttrs` re-applies via `setAttribute` — but this appends to END, breaking attribute order
+  4. `sprae(clone, subscope)` processes the restored `:label` correctly
+
+  Net result: it "works" but with multiple problems:
+  - core.js:188 can't distinguish `:scope` (continue correct) from `:each` (continue wrong) for CEs
+  - Dangling effect on template evaluating against wrong state
+  - `setAttribute` on clone breaks attribute order
+  - each.js must import `isCE` and `prefix` from core — coupling that shouldn't exist
+  - ceAttrs only covers `:each` — any other clone/move scenario has the same problem
+  - define-element's `attributeChangedCallback` doesn't fire for removed directive attrs
+
+  #### Why the loop test doesn't use `:each`
+
+  test/directive/default.js:337 "define-element: multiple instances via loop" manually creates elements instead of using `:each`. This IS the friction — `:each` + define-element doesn't work cleanly.
+
+  #### What define-element expects
+
+  define-element.js:99-152 `connectedCallback`:
+  - Reads `this.getAttribute(p.name)` for initial state (line 137-138)
+  - If sprae already removed directive attributes, define-element sees null → uses defaults
+  - Property setters (line 197-208) do work when parent sprae sets `el.label = value` later
+  - But the order matters: connectedCallback fires on DOM insertion (before parent sprae processes clone directives)
+  - So define-element initializes with DEFAULTS, then parent sprae updates via property setters
+  - This double-init (default → real value) causes flash/flicker and wasted work
+
+  define-element.js:216-220 custom `cloneNode`:
+  - Copies all current attributes: `for (let a of this.attributes) clone.setAttribute(a.name, a.value)`
+  - If directive attributes were already removed from template, cloneNode can't copy them
+  - ceAttrs workaround re-applies them after clone, but at wrong positions
+
+  #### What keeping attributes would solve
+
+  If directive attributes stay on DOM:
+  1. `tpl.cloneNode(true)` naturally preserves all attributes in correct order — no ceAttrs needed
+  2. define-element's `connectedCallback` can read `:label` attribute → correct initial state
+  3. No dangling effects on template (if we snapshot attrs before iterating)
+  4. each.js doesn't need to know about `isCE` or `prefix` — decoupled
+  5. Any CE library (Lit, Stencil, define-element) works naturally — attrs are just there
+  6. DevTools show what directives are active
+  7. Enables `sprae.stop(el)` / re-init pattern
+
+  #### What keeping attributes requires
+
+  The main challenge: core.js:174-189 iteration relies on `removeAttribute` shrinking the live collection.
+
+  Options:
+  1. **Snapshot attributes before iterating**: `[...el.attributes]` — iterate copy, live collection unchanged.
+     + Simplest, eliminates fragile live-collection index management
+     + Attributes stay on element naturally
+     - Snapshot is a one-time array copy (negligible cost)
+  2. **Mark processed attributes** (Set on element, skip if seen)
+     - More state to manage, cleanup concerns
+  3. **Rename** (`:text` → `::text` or `data-sprae-text`)
+     - Ugly, still mutates DOM
+
+  Option 1 is clearly best. Snapshot also eliminates the subtle `:each` + CE bug (step 6 above) because we can stop processing template attrs after `:each` returns, regardless of CE status.
+
+  #### What about the "dirty DOM" concern?
+
+  - Alpine keeps `x-` attrs and it's fine — devs expect framework attrs in DOM
+  - Sprae attrs are short (`:text`, `:if`) — minimal noise
+  - `:cloak` CSS is trivial: `[\\:each],[\\:if],[\\:text]{ visibility: hidden }` until spraed
+  - The "clean DOM" benefit is aesthetic, the "working CE integration" benefit is functional
+    + Function > aesthetics
+
+  #### What other libraries do
+
+  - Alpine: keeps `x-` attributes. Cloning, re-init, DevTools all work naturally.
+  - Vue: removes `v-` directives but owns entire render pipeline (virtual DOM), no cloning concern.
+  - Lit/Stencil: pure CE, no directive attrs to worry about.
+  - Petite-vue: removes directives (same model as current sprae).
+
+  Sprae is closer to Alpine's model (direct DOM, no vdom). Alpine's approach fits better.
+
+  #### Resolution: fix the iteration stop, keep evaporation
+
+  The real issue was NOT attribute removal vs keeping — it was core.js:188 using `!isCE(el)` as a blunt exception to the iteration stop check. This couldn't distinguish "CE already self-initialized" (continue correct) from ":each turned CE into template" (continue wrong).
+
+  **Fix**: replace `_state in el && !isCE(el)` with `el[_state] !== prev` — "did THIS directive change the element's state?" No CE special-casing needed. Covers all cases:
+  - Regular `:each`/`:scope`/`:if` → stops (state changed from undefined to something)
+  - CE already initialized, processing prop setters → continues (state unchanged)
+  - `:each` on CE → stops (state changed), remaining attrs survive `cloneNode` naturally
+
+  **Result**: ceAttrs hack in each.js eliminated entirely. No `isCE`/`prefix` imports needed. Sprae evaporates as intended — no need to keep attributes on DOM.
+
+  **Remaining friction**: `:each` + CEs with internal `sprae()` (like define-element processor pattern). `sprae(clone, subscope)` sets `_state` on clone, blocking CE's deferred `sprae(this, state)` self-init (hits early return at core.js:152). This is pre-existing and not caused by the fix. Tracked as skipped test. Vanilla CEs (property setters, Lit-style) work cleanly with `:each` now.
+
 ## [x] ~~.debounce-tick becomes .tick, .debounce-frame becomes .raf~~ -> `-0` === `-tick`
 
   + `.debounce-tick` is too lengthy and non-intuitive, not cool
@@ -1866,7 +1979,7 @@
     * whenever structure changes, the app logic is broken. It's not like that in react
     * in react, the logic produces structure, so it's easy to change structure not breaking the logic
 
-## [ ] Observer directives: `:mount`, `:change`, `:intersect`, `:resize`
+## [x] Observer directives: `:mount`, `:change`, `:intersect`, `:resize` -> yes
 
   ### Problems solved
 

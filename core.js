@@ -177,15 +177,15 @@ const sprae = (root = document.body, state) => {
       if (name.startsWith(prefix)) {
         el.removeAttribute(name)
 
+        let prev = el[_state]
         currentDir = name;
         currentEl = el;
 
         // directive initializer can be redefined
         fx.push(start = dir(el, name.slice(prefix.length), value, state)), offs.push(start())
 
-        // stop after subsprae like :each, :if, :scope etc.
-        // custom elements: continue processing all directives (prop setters), descent blocked separately (line 189)
-        if (_state in el && !isCE(el)) return
+        // stop after subsprae directives (:each, :if, :scope) that change element's state identity
+        if (el[_state] !== prev) return
       } else i++
     }
 

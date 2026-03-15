@@ -1,6 +1,9 @@
 # [∴](https://dy.github.io/sprae) spræ [![tests](https://github.com/dy/sprae/actions/workflows/node.js.yml/badge.svg)](https://github.com/dy/sprae/actions/workflows/node.js.yml) ![size](https://img.shields.io/badge/size-~6kb-white) [![npm](https://img.shields.io/npm/v/sprae?color=white)](https://www.npmjs.com/package/sprae)
 
-Microhydration for HTML/JSX tree.
+> Microhydration for HTML/JSX tree.
+
+Open & minimal PE framework with signals-based reactivity.
+<!-- Perfect for small-scale websites and micro-UI or large-scale coupled with [define-element](). -->
 
 ## usage
 
@@ -35,18 +38,7 @@ The easiest harmless way to bring interactions to DOM and connect  open state.
 
 -->
 
-```html
-<!-- Modifiers: debounce, throttle, key filters, event targets -->
-<input :oninput.debounce-300="search()" placeholder="Search..." />
-<button :onclick.once="init()">Initialize</button>
-<div :onkeydown.window.escape="close()">Press Esc to close</div>
-<form :onsubmit.prevent="save()">...</form>
-
-<!-- Observer directives -->
-<img :intersect.once="loadImage()" :src="placeholder" />
-<div :resize.throttle-100="({ width }) => narrow = width < 600"></div>
-<canvas :mount="el => initChart(el)"></canvas>
-```
+Sprae evaluates `:`-attributes and evaporates them, returning reactive state for updates.
 
 ## [docs](docs.md)
 
