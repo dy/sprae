@@ -1689,7 +1689,7 @@
     + we can make sync version for microsprae.
   * For now just skip only one .length read in mutators
 
-### [ ] Should we maintain directives attributes on elements instead of removing them?
+### [x] Should we maintain directives attributes on elements instead of removing them? -> we "evaporate" them - that's the core of sprae from the beginning, no chemistry
 
   + allows easier resprae of element
     + non-invasive
