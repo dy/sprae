@@ -11,8 +11,13 @@ export default el => (
   el.content && el.replaceWith(el = frag(el).childNodes[0]),
   v => {
     v = typeof v === 'function' ? v(el.textContent) : v
-    v = v == null ? "" : v
-    if (el.textContent === v) return
+    v = v == null ? "" : "" + v
+    let cur = el.textContent
+    if (cur === v) return
+
+    // append-only: reuse text node, skip caret save/restore
+    let node = el.firstChild
+    if (node && v.startsWith(cur)) { node.appendData(v.slice(cur.length)); return }
 
     // save caret position
     let s = el.getRootNode().getSelection?.()

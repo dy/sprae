@@ -181,6 +181,72 @@ test("text: throttle-raf does not destroy selection when unrelated state changes
   document.body.removeChild(el);
 });
 
+test("text: append preserves text node", async () => {
+  let el = h`<div :text="text"></div>`;
+  let state = sprae(el, { text: "abc" });
+  let textNode = el.firstChild;
+
+  state.text = "abcdef";
+  await tick();
+  is(el.textContent, 'abcdef');
+  is(el.firstChild, textNode, 'text node should be reused on append');
+});
+
+test("text: append preserves caret", async () => {
+  let el = h`<div :text="text" contenteditable></div>`;
+  document.body.appendChild(el);
+  let state = sprae(el, { text: "abc" });
+  await tick();
+
+  // place caret at position 2
+  let s = window.getSelection();
+  let r = new Range();
+  r.setStart(el.firstChild, 2);
+  r.collapse(true);
+  s.removeAllRanges();
+  s.addRange(r);
+
+  // append more text
+  state.text = "abcdef";
+  await tick();
+
+  is(el.textContent, 'abcdef');
+  ok(s.rangeCount > 0, 'selection should exist');
+  is(s.getRangeAt(0).startOffset, 2, 'caret should stay at original position');
+
+  document.body.removeChild(el);
+});
+
+test("text: non-append falls back to full replace", async () => {
+  let el = h`<div :text="text"></div>`;
+  let state = sprae(el, { text: "abc" });
+  let textNode = el.firstChild;
+
+  // completely different value
+  state.text = "xyz";
+  await tick();
+  is(el.textContent, 'xyz');
+
+  // shrink then grow (reset + append pattern)
+  state.text = "x";
+  await tick();
+  is(el.textContent, 'x');
+  state.text = "xyzabc";
+  await tick();
+  is(el.textContent, 'xyzabc');
+});
+
+test("text: append from empty", async () => {
+  let el = h`<div :text="text"></div>`;
+  let state = sprae(el, { text: "" });
+  is(el.textContent, '');
+
+  // empty -> non-empty: startsWith("") is true, but no firstChild yet
+  state.text = "hello";
+  await tick();
+  is(el.textContent, 'hello');
+});
+
 test("text: doesnt get side-triggered", async () => {
   let el = h`
     <div :text="_log++,str"></div>
