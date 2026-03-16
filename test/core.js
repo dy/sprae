@@ -533,3 +533,90 @@ test('core: ownerDocument instead of global document (custom DOM)', {skip: !isNo
   is(b.querySelector('#target').innerHTML, `<span>content</span>`)
   is(c.outerHTML, `a<a>a</a>`)
 })
+
+// Reproduces mandala finance page pattern: start(body) + :scope + :if + nested :each with async data
+test('core: start() + :scope + :if + nested :each async', async () => {
+  document.body.innerHTML = `
+    <section :class="{'hidden': tab !== 'exp'}" :scope="{showFilter: false}">
+      <div :if="view === 'list'">
+        <div :each="yr in years">
+          <div :each="g in yr.items">
+            <button class="header" :text="g.key"></button>
+            <div :each="x in g.items" class="item" :text="x.name"></div>
+          </div>
+        </div>
+      </div>
+    </section>
+  `
+  let s = start(document.body, { tab: 'exp', view: 'list', years: [] })
+  is(document.querySelectorAll('.item').length, 0)
+
+  // async data load
+  s.years = [
+    { key: '2026', items: [
+      { key: 'March', items: [{ name: 'exp1' }, { name: 'exp2' }] },
+      { key: 'Feb', items: [{ name: 'exp3' }] }
+    ]}
+  ]
+  await tick(3)
+
+  is(document.querySelectorAll('.header').length, 2, 'should have 2 month headers')
+  is(document.querySelectorAll('.item').length, 3, 'should have 3 expense items')
+  is(document.querySelectorAll('.item')[0].textContent, 'exp1')
+  is(document.querySelectorAll('.item')[1].textContent, 'exp2')
+  is(document.querySelectorAll('.item')[2].textContent, 'exp3')
+
+  // cleanup — dispose sprae's mutation observer before clearing body
+  sprae.dispose(document.body)
+  document.body.innerHTML = ''
+})
+
+// Reproduces define-element + sprae: CE with internal sprae(this, state) in :each
+// BUG: CE calls sprae(this, state) in connectedCallback. Parent :each also calls sprae(clone, subscope).
+// The two sprae calls on the same element conflict — parent's sprae(clone) processes directives that
+// the CE's internal sprae already processed (or vice versa).
+test('core: CE with internal sprae in :each', async () => {
+  let tag = 'de-internal-' + Math.random().toString(36).slice(2, 6)
+  let propNames = new Set(['x'])
+  class C extends HTMLElement {
+    constructor() { super(); this._init = false; this._p = {} }
+    connectedCallback() {
+      if (this._init) return
+      this._init = true
+
+      // strip non-prop attrs before processor (like define-element does)
+      let saved = [...this.attributes].filter(a => !propNames.has(a.name)).map(a => [a.name, a.value])
+      for (let [n] of saved) this.removeAttribute(n)
+
+      this.replaceChildren() // clear deep-clone children
+      this.innerHTML = '<b :text="x?.name"></b>'
+      this._state = sprae(this, { x: this._p.x })
+
+      // restore parent attrs
+      for (let [n, v] of saved) this.setAttribute(n, v)
+    }
+  }
+  Object.defineProperty(C.prototype, 'x', {
+    set(v) { this._p.x = v; if (this._init && this._state) this._state.x = v },
+    get() { return this._p.x }
+  })
+  customElements.define(tag, C)
+
+  document.body.innerHTML = `<section :scope="{f: false}"><${tag} :each="x in items" :x="x"></${tag}></section>`
+  let s = start(document.body, { items: [{ name: 'A' }, { name: 'B' }] })
+  await tick(8)
+
+  let ces = document.querySelectorAll(tag)
+  is(ces.length, 2, 'CE count')
+  is(ces[0].querySelector('b')?.textContent, 'A', 'first')
+  is(ces[1].querySelector('b')?.textContent, 'B', 'second')
+
+  s.items = [{ name: 'X' }]
+  await tick(8)
+  ces = document.querySelectorAll(tag)
+  is(ces.length, 1, 'shrunk')
+  is(ces[0].querySelector('b')?.textContent, 'X', 'updated')
+
+  sprae.dispose(document.body)
+  document.body.innerHTML = ''
+})

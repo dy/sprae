@@ -170,7 +170,6 @@ const sprae = (root = document.body, state) => {
   const add = el[_add] = (el) => {
     let _attrs = el.attributes, start;
 
-    // we iterate live collection (subsprae can init args)
     if (_attrs) for (let i = 0; i < _attrs.length;) {
       let { name, value } = _attrs[i]
 

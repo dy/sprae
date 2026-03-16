@@ -537,3 +537,41 @@ test("on: multi-event dispose", async () => {
   el.dispatchEvent(new window.KeyboardEvent("keydown", { key: "a" }));
   is(state.log, ["click"], "no more events after dispose");
 });
+
+test("on: bare .prevent without handler value", () => {
+  let prevented = false;
+  let el = h`<x :onkeydown.space.prevent></x>`;
+  sprae(el, {});
+  let e = new window.KeyboardEvent("keydown", { key: " ", cancelable: true });
+  el.dispatchEvent(e);
+  is(e.defaultPrevented, true, "bare .prevent should call preventDefault");
+});
+
+test("on: separate :on* attributes on same element", () => {
+  let el = h`<x :onclick="e => log.push('click')" :onkeydown="e => log.push('key')"></x>`;
+  let state = sprae(el, { log: [] });
+  el.dispatchEvent(new window.Event("click"));
+  is(state.log, ["click"], "click handler fires");
+  el.dispatchEvent(new window.KeyboardEvent("keydown", { key: "a" }));
+  is(state.log, ["click", "key"], "keydown handler fires separately");
+});
+
+test("on: colon-join modifiers scope per event", () => {
+  // .enter should only filter keydown, not click
+  let el = h`<x :onclick:onkeydown.enter="e => log.push(e.type)"></x>`;
+  let state = sprae(el, { log: [] });
+  el.dispatchEvent(new window.Event("click"));
+  is(state.log, ["click"], "click fires without enter filter");
+  el.dispatchEvent(new window.KeyboardEvent("keydown", { key: "a" }));
+  is(state.log, ["click"], "non-enter keydown filtered");
+  el.dispatchEvent(new window.KeyboardEvent("keydown", { key: "Enter" }));
+  is(state.log, ["click", "keydown"], "enter keydown fires");
+});
+
+test("on: colon-join .throttle-raf scopes to last event only", async () => {
+  let el = h`<x :onclick:onkeydown.throttle-raf="e => log.push(e.type)"></x>`;
+  let state = sprae(el, { log: [] });
+  // click should fire immediately (no throttle)
+  el.dispatchEvent(new window.Event("click"));
+  is(state.log, ["click"], "click fires immediately, not throttled");
+});
