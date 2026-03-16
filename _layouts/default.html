@@ -8,7 +8,6 @@
     <meta name="description" content="{{ page.description | default: 'Sprae is a tiny (~5KB) reactive library for progressive enhancement using signal-powered attributes in HTML/JSX.' }}">
     <link rel="stylesheet" href="{{ '/assets/style.css' | relative_url }}" />
     <script src="https://unpkg.com/sprae" data-prefix="data-" data-start></script>
-    <!-- <script src="{{ '/dist/sprae.umd.js' | relative_url }}" data-prefix="data-" data-start></script> -->
   </head>
 
   <body id="page-{{ page.name | default: 'index' | split: '.' | first }}"
@@ -23,6 +22,7 @@
       speed: 0,
       pressed: false,
       mouseEntered: false,
+      overContent: false,
       MAX: 30,
       cursorSize: 54,
       cursorIntensity: 0.35,
@@ -43,8 +43,7 @@
       },
 
       press(e) {
-        // Ignore clicks inside main content
-        if (e.target.closest('main')) return
+        if (this.overContent) return
         this.mx = e.pageX
         this.my = e.pageY
         this.pressed = true
@@ -85,11 +84,9 @@
           this.cx = e.pageX
           this.cy = e.pageY
         }
-        // Only follow mouse if not over main content
-        if (!e.target.closest('main')) {
-          this.mx = e.pageX
-          this.my = e.pageY
-        }
+        this.overContent = !!e.target.closest('main')
+        this.mx = e.pageX
+        this.my = e.pageY
       },
 
       update(dt = 1) {
@@ -110,8 +107,10 @@
           this.cursorSize += 1 * dt
           this.cursorIntensity = Math.min(1, this.cursorIntensity + 0.06 * dt)
         } else {
-          // Fade in cursor after release
-          this.cursorOpacity = Math.min(1, this.cursorOpacity + 0.01 * dt)
+          // Fade cursor based on whether over content
+          const targetOpacity = this.overContent ? 0 : 1
+          const fadeSpeed = this.overContent ? 0.08 : 0.02
+          this.cursorOpacity += (targetOpacity - this.cursorOpacity) * fadeSpeed * dt
           this.cursorIntensity = Math.min(0.35, this.cursorIntensity + 0.005 * dt)
         }
 
@@ -159,8 +158,7 @@
           '--size': size + 'px',
           '--margin': -size * 0.5 + 'px',
           '--blur': size * 0.3 + 'px',
-          '--center-s': (70 + i * 35) + '%',
-          '--center-l': (90 - i * 35) + '%',
+          '--center-l': (0.90 - i * 0.35),
           '--alpha': (0.15 + i * 0.7) * fade,
           '--opacity': 1
         }
@@ -196,7 +194,10 @@
 
     <header>
       <nav>
-        <a href="docs">docs</a>
+        {% unless page.url == "/" or page.url == "/index.html" %}
+        <a href="{{ '/' | relative_url }}" class="logo" aria-label="Home">∴</a>
+        {% endunless %}
+        <a href="drops">drops</a>
         <a href="https://github.com/dy/sprae" class="version">v<span data-text="window.sprae?.version || '12.1.0'"></span></a>
       </nav>
     </header>
@@ -264,9 +265,6 @@
           if (el) el.scrollIntoView({ behavior: 'smooth' })
         }
       }" data-onscroll.window.throttle-50="onScroll" data-fx.once="init()">
-        {% unless page.url == "/" or page.url == "/index.html" %}
-        <a href="{{ '/' | relative_url }}" class="logo" aria-label="Home">∴</a>
-        {% endunless %}
         <nav data-if="items.length >= 3">
           <a data-each="item in items" data-if="isVisible(item)" data-href="'#' + item.id" data-text="item.text" data-onclick.prevent="goto(item.id)" data-class="{active: active === item.id, indent: item.level >= 3, 'indent-2': item.level === 4}"></a>
         </nav>

@@ -1,5 +1,5 @@
 Reactive HTML templating. Bind state to DOM via `:` attributes. No build step.
-Full API in `docs.md`.
+Full API in `readme.md`.
 
 ## Codebase
 
@@ -12,7 +12,7 @@ Full API in `docs.md`.
 | `directive/` | One file per directive. `_.js` = default (any attribute). |
 | `test/` | `test.js` entry, `directive/` per-directive, `modifier.js`, `mods.js`. |
 | `types/` | Generated `.d.ts` (via `npm run types`). |
-| `docs.md` | Public docs. **API changes must be reflected here.** |
+| `readme.md` | Full docs (single-page reference). **API changes must be reflected here.** |
 
 ## Commands
 

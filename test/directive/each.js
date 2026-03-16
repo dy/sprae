@@ -1,4 +1,4 @@
-import { tick, time } from "wait-please";
+import { tick, time } from "wait-please"
 import sprae from '../../sprae.js'
 // import sprae from '../../micro.js'
 import h from "hyperf";
@@ -833,4 +833,59 @@ test('each: deep :if nesting + :each + item :if — false cycle on depth > 10 (m
   is(cycles, 0, 'no false cycle on deep nesting (depth limit too aggressive)')
   ok(el.innerHTML.includes('photo.png'), 'image rendered')
   ok(el.innerHTML.includes('doc.pdf'), 'pdf rendered')
+})
+
+
+test('each: :value + :change on nested objects does not loop', async () => {
+  // Reproduces: :each with array-of-objects, checkbox :value/:change on nested prop,
+  // computed getter reading all items — this pattern caused browser hangs via microtask loop.
+  let el = h`<div>
+    <x :each="o in opts">
+      <input type="checkbox" :value="o.on" :change="v => o.on = v" />
+      <span :text="o.name"></span>
+    </x>
+    <b :text="sel"></b>
+  </div>`
+
+  let cycles = 0
+  let _err = console.error
+  console.error = (msg) => { if (typeof msg === 'string' && msg.includes('loop')) cycles++ }
+
+  let state = sprae(el, {
+    opts: [{name:'A', on:true}, {name:'B', on:false}, {name:'C', on:true}],
+    get sel() { return this.opts.filter(i => i.on).map(i => i.name).join(', ') }
+  })
+  await tick()
+
+  is(state.sel, 'A, C', 'initial computed')
+
+  // Simulate checkbox toggle — dispatch change event like browser does
+  let cb = el.querySelector('input[type=checkbox]')
+  cb.checked = false
+  cb.dispatchEvent(new cb.ownerDocument.defaultView.Event('change'))
+  await tick(3)
+
+  console.error = _err
+  is(cycles, 0, 'no reactive loop detected')
+  is(state.sel, 'C', 'computed updated after toggle')
+})
+
+
+test('each: reactive loop is detected and stopped', async () => {
+  // An effect that reads+writes the same signal causes sync re-entry.
+  // Two-layer protection:
+  //   1. signal.js: disposes effect after 50 sync re-entries (stops sync loop)
+  //   2. throttle: stops trailing-edge microtask chain after 50 re-fires (stops async loop)
+  // Without fix: hangs the process (proven by this test hanging pre-fix).
+  let el = h`<div :fx="n = n + 1"></div>`
+
+  let loopDetected = false
+  let _err = console.error
+  console.error = (msg) => { if (typeof msg === 'string' && msg.includes('loop')) loopDetected = true }
+
+  sprae(el, { n: 0 })
+  await time(200)
+
+  console.error = _err
+  is(loopDetected, true, 'loop was detected and process did not hang')
 })

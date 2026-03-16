@@ -41,10 +41,15 @@ export const signal = (v, _s, _obs = new Set, _v = () => _s.value) => (
 export const effect = (fn, _teardown, _fx, _deps) => (
   _fx = (prev) => {
     let tmp = _teardown;
-    _teardown = null; // we null _teardown to avoid repeated call in case of recursive update
+    _teardown = null;
     tmp?.call?.();
     prev = current, current = _fx
-    if (depth++ > 50) throw 'Cycle detected';
+    if (depth++ > 50) {
+      depth--; current = prev;
+      // dispose: unsubscribe from all deps so this effect never fires again
+      _teardown = fn = _fx.fn = null; for (let dep of _deps) dep.delete(_fx); _deps.clear()
+      console.error('∴ Reactive loop detected'); return
+    }
     try { _teardown = fn() } finally { current = prev; depth-- }
   },
   _fx.fn = fn,

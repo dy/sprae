@@ -1,0 +1,66 @@
+:root {
+  /* Accent — oklch hue drives all colors */
+  color-scheme: light;
+  --accent-h: 262;
+  --accent-c: 0.2;
+
+  /* Colors — just ink, bg, and their variants */
+  --color-ink:      light-dark(oklch(0.40 var(--accent-c) var(--accent-h)), oklch(0.90 0.03 var(--accent-h)));
+  --color-bg:       light-dark(oklch(0.96 0.005 85), oklch(0.40 var(--accent-c) var(--accent-h)));
+  --color-bg-alt:   light-dark(oklch(1.00 0 0), oklch(0.45 0.15 var(--accent-h)));
+  --color-code-bg:  oklch(0.40 var(--accent-c) var(--accent-h));
+  --color-code-fg:  light-dark(oklch(0.82 0.06 var(--accent-h)), oklch(0.85 0.04 var(--accent-h)));
+  --color-overlay:  oklch(0 0 0 / 40%);
+
+  /* Alpha variants of ink */
+  --alpha-10: oklch(from var(--color-ink) l c h / 10%);
+  --alpha-20: oklch(from var(--color-ink) l c h / 20%);
+  --alpha-50: oklch(from var(--color-ink) l c h / 50%);
+
+  accent-color: var(--color-ink);
+
+  /* Typography */
+  --font-sans: "Atkinson Hyperlegible", sans-serif;
+  --font-mono: "Atkinson Hyperlegible Mono", ui-monospace, 'SF Mono', Monaco, 'Cascadia Code', 'Roboto Mono', Menlo, Consolas, monospace;
+  --font-base: max(16px, min(2.2vw, 22px));
+
+  /* Type scale */
+  --text-xs: 0.75rem;
+  --text-sm: 0.875rem;
+  --text-base: 1rem;
+  --text-md: 1.2rem;
+  --text-lg: 1.5rem;
+  --text-xl: 2rem;
+  --text-2xl: clamp(3rem, 10vw, 3.6rem);
+
+  /* Font weights */
+  --weight-normal: 400;
+  --weight-bold: 700;
+  --weight-black: 900;
+
+  /* Spacing scale — 4px base */
+  --sp-1: 0.25rem;
+  --sp-2: 0.5rem;
+  --sp-3: 0.75rem;
+  --sp-4: 1rem;
+  --sp-5: 1.5rem;
+  --sp-6: 2rem;
+  --sp-8: 3rem;
+
+  /* Border — one width, one color everywhere */
+  --border: var(--border-w) solid var(--color-ink);
+  --border-w: 3px;
+  --border-w-thin: 1px;
+
+  /* Layout */
+  --content-w: 48rem;
+  --toc-w: 12rem;
+
+  /* Transitions */
+  --ease: 0.15s;
+  --ease-slow: 0.3s;
+
+  /* Radii */
+  --radius-pill: 90rem;
+  --radius-sm: var(--radius-pill);
+}

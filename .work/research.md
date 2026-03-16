@@ -2221,7 +2221,7 @@
     * **Built-in**: `:mount`, `:change` (core needs)
     * **Plugin**: `:intersect`, `:resize`, `:media` (optional, register via `directive.intersect = ...`)
 
-## [ ] Destructor option
+## [x] Destructor option -> we support both
   1. `el[_dispose]`
   1.1 `el[sprae.dispose]`
     + comlink-like API
@@ -2235,15 +2235,16 @@
 ## [ ] Sprae static
   * Compiles away to plain html
 
-## [ ] Directives
+## [x] Directives -> done
 
   * s-cloak? Hides contents until sprae finishes loading
     * wait until needed
     + provided by lucia l-mask, alpine a-cloak, vue v-cloak
     ~ can be handled automatically?
+    - not needed since sprae evaporates attributes
 
   * s-ignore? Excludes element from spraing
-  * s-include / s-html?
+  * s-include / s-html? -> done
   * s-teleport
   * s-modelable
   * s-init

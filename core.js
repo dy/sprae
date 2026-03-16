@@ -431,13 +431,16 @@ export const clsx = (c) => !c ? '' : typeof c === 'string' ? c : (
  * @returns {T} Throttled function
  */
 export const throttle = (fn, ms) => {
-  let _planned = 0, arg, schedule = typeof ms === 'function' ? ms : ms ? (fn) => setTimeout(fn, ms) : queueMicrotask;
+  let _planned = 0, _depth = 0, arg, schedule = typeof ms === 'function' ? ms : ms ? (fn) => setTimeout(fn, ms) : queueMicrotask;
   const throttled = (e) => {
     arg = e
     if (!_planned++) fn(arg), schedule(() => {
       let dirty = _planned > 1
       _planned = 0
-      dirty && throttled(arg)
+      if (dirty) {
+        if (++_depth > 50) { _depth = 0; console.error('∴ Reactive loop detected'); return }
+        throttled(arg)
+      } else _depth = 0
     });
   }
   return throttled;

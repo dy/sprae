@@ -270,7 +270,7 @@
 ## [ ] Website
   * [x] **landing page overhaul**: values.md content → compelling index
   * [x] **Sprae vs Alpine** comparison page with benchmarks
-  * [ ] Write docs in readme; website should be small, readme - big, but small enough for docs.
+  * [x] Write docs in readme; website should be small, readme - big, but small enough for docs.
   * [ ] **playground**: interactive editor like Alpine's
   * [ ] drops/examples gallery: 7 GUIs, real-world patterns
   * [ ] "Used by" section with logos
@@ -289,10 +289,10 @@
   * [x] Docs page UI
   * [ ] Playground (interactive editor)
   * [x] Sprae vs Alpine comparison page
-  * [ ] Drops page
+  * [x] Drops page
     * [ ] UI randomizer
   * [ ] Examples
-    * [ ] 7 GUIs
+    * [x] 7 GUIs
     * [ ] Wavearea
     * [ ] Maetr
     * [ ] SVG confetti gen
@@ -300,10 +300,11 @@
     * [ ] SVG counter gen
   * [ ] Better reference examples
   * [ ] Icons for principles
-  * [ ] Subtle animations
+  * [x] Subtle animations
   * [x] Better spraying interaction
   * [ ] Search
   * [ ] Bench page
+
 
 ## [x] Plugins (Stage 3 details)
 
