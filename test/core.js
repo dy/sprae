@@ -620,3 +620,69 @@ test('core: CE with internal sprae in :each', async () => {
   sprae.dispose(document.body)
   document.body.innerHTML = ''
 })
+
+// Issue: cloneNode(true) copies stale children from initialized CE.
+// When clone connects, connectedCallback appends template AGAIN → double content.
+// define-element should clear stale children before mounting template.
+// CE must clear stale children before populating (define-element pattern)
+test('core: CE cloneNode deep-copies stale children', async () => {
+  let tag = 'de-dupe-' + Math.random().toString(36).slice(2, 6)
+  class C extends HTMLElement {
+    constructor() { super(); this._init = false }
+    connectedCallback() {
+      if (this._init) return
+      this._init = true
+      // define-element fix: clear stale children from cloneNode(true)
+      this.replaceChildren()
+      let b = document.createElement('b')
+      b.textContent = 'hello'
+      this.appendChild(b)
+    }
+  }
+  customElements.define(tag, C)
+
+  document.body.innerHTML = `<${tag} :each="x in items"></${tag}>`
+  let s = start(document.body, { items: ['a', 'b'] })
+  await tick(4)
+
+  let ces = document.querySelectorAll(tag)
+  is(ces.length, 2, 'CE count')
+  is(ces[0].querySelectorAll('b').length, 1, 'no duplicate children')
+
+  sprae.dispose(document.body)
+  document.body.innerHTML = ''
+})
+
+// CE must inject `host` ref for processor templates to dispatch events on the CE
+test('core: CE template dispatchEvent targets host, not window', async () => {
+  let tag = 'de-evt-' + Math.random().toString(36).slice(2, 6)
+  class C extends HTMLElement {
+    constructor() { super(); this._init = false }
+    connectedCallback() {
+      if (this._init) return
+      this._init = true
+      this.replaceChildren()
+      // define-element fix: inject `host` ref into scope; use JSDOM-realm Event
+      let E = this.ownerDocument.defaultView.Event
+      this.innerHTML = '<button :onclick="e => emit(\'action\')">go</button>'
+      sprae(this, { host: this, emit: (name) => this.dispatchEvent(new E(name, { bubbles: true })) })
+    }
+  }
+  customElements.define(tag, C)
+
+  let ceEvents = []
+  document.body.innerHTML = `<${tag}></${tag}>`
+  start(document.body, {})
+  await tick(4)
+
+  let ce = document.querySelector(tag)
+  ce.addEventListener('action', () => ceEvents.push(1))
+
+  ce.querySelector('button').click()
+  await tick(2)
+
+  is(ceEvents.length, 1, 'event should reach CE')
+
+  sprae.dispose(document.body)
+  document.body.innerHTML = ''
+})
