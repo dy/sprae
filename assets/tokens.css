@@ -21,7 +21,7 @@
 
   /* Typography */
   --font-sans: "Atkinson Hyperlegible", sans-serif;
-  --font-mono: "Atkinson Hyperlegible Mono", ui-monospace, 'SF Mono', Monaco, 'Cascadia Code', 'Roboto Mono', Menlo, Consolas, monospace;
+  --font-mono: ui-monospace, 'SF Mono', Monaco, 'Cascadia Code', 'Roboto Mono', Menlo, Consolas, monospace;
   --font-base: max(16px, min(2.2vw, 22px));
 
   /* Type scale */
