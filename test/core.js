@@ -686,3 +686,87 @@ test('core: CE template dispatchEvent targets host, not window', async () => {
   sprae.dispose(document.body)
   document.body.innerHTML = ''
 })
+
+// Issue: CE parsed before customElements.define → HTMLUnknownElement.
+// sprae :each uses cloneNode(true) → clone is also HTMLUnknownElement in real browsers.
+// connectedCallback never fires on clones → empty elements.
+// Fix: sprae should use createElement(tag) + copyAttrs for CEs instead of cloneNode.
+test('core: :each with late-defined CE uses createElement', async () => {
+  let tag = 'de-late-' + Math.random().toString(36).slice(2, 6)
+
+  // 1. Put CE in DOM BEFORE defining class (simulates HTML parsing order)
+  document.body.innerHTML = `<${tag} :each="x in items" :x="x"></${tag}>`
+
+  // 2. Define class later (like sync <script> after the HTML usage)
+  class C extends HTMLElement {
+    constructor() { super(); this._init = false; this._p = {} }
+    connectedCallback() {
+      if (this._init) return
+      this._init = true
+      this.innerHTML = '<b></b>'
+      this.querySelector('b').textContent = this._p.x?.name || ''
+    }
+  }
+  Object.defineProperty(C.prototype, 'x', {
+    set(v) { this._p.x = v; if (this._init) this.querySelector('b').textContent = v?.name || '' },
+    get() { return this._p.x }
+  })
+  customElements.define(tag, C)
+
+  // 3. sprae processes (like module script running after sync scripts)
+  let s = start(document.body, { items: [{ name: 'A' }, { name: 'B' }] })
+  await tick(4)
+
+  let ces = document.querySelectorAll(tag)
+  is(ces.length, 2, 'CE count')
+  // Each clone must be a proper CE instance (connectedCallback fired)
+  ok(ces[0]._init, 'first clone initialized')
+  ok(ces[1]._init, 'second clone initialized')
+  is(ces[0].querySelector('b')?.textContent, 'A', 'first content')
+  is(ces[1].querySelector('b')?.textContent, 'B', 'second content')
+
+  sprae.dispose(document.body)
+  document.body.innerHTML = ''
+})
+
+// BUG: MutationObserver in start() processes nodes added inside a CE.
+// When CE mounts its template, MO fires for the new children.
+// root[_add] processes them with PAGE scope instead of CE scope.
+// Fix: MO should skip nodes whose ancestor (between node and root) is a CE.
+test('core: start() MO skips nodes added inside CE', async () => {
+  let tag = 'de-mo-skip-' + Math.random().toString(36).slice(2, 6)
+  let propMap = { items: true }
+  class C extends HTMLElement {
+    constructor() { super(); this._init = false; this._props = { items: [] } }
+    connectedCallback() {
+      if (this._init) return
+      this._init = true
+
+      // Strip non-prop attrs (parent directives) — define-element pattern
+      let saved = [...this.attributes].filter(a => !(a.name in propMap)).map(a => [a.name, a.value])
+      for (let [n] of saved) this.removeAttribute(n)
+
+      // Mount template SYNCHRONOUSLY — matches real define-element behavior
+      this.innerHTML = '<div :each="g in items" class="inner" :text="g.key"></div>'
+      this.state = sprae(this, { items: this._props.items })
+
+      // Restore parent attrs
+      for (let [n, v] of saved) this.setAttribute(n, v)
+    }
+    set items(v) { this._props.items = v; if (this.state) this.state.items = v }
+    get items() { return this._props.items }
+  }
+  customElements.define(tag, C)
+
+  document.body.innerHTML = `<${tag} :items="data"></${tag}>`
+  let s = start(document.body, { data: [{ key: 'A' }, { key: 'B' }] })
+  await tick(4)
+
+  let inners = document.querySelectorAll('.inner')
+  is(inners.length, 2, 'CE should render 2 inner items')
+  is(inners[0].textContent, 'A', 'first item')
+  is(inners[1].textContent, 'B', 'second item')
+
+  sprae.dispose(document.body)
+  document.body.innerHTML = ''
+})

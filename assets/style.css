@@ -338,7 +338,7 @@ button {
   border: var(--border-w) solid var(--btn-bg);
   cursor: pointer;
   background: var(--btn-bg);
-  color: var(--color-bg-alt);
+  color: light-dark(var(--color-bg-alt), oklch(0.95 0.01 var(--accent-h)));
   padding: var(--sp-2) var(--sp-4);
   border-radius: var(--radius-sm);
   font: inherit;
