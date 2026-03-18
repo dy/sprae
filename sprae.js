@@ -72,8 +72,7 @@ const dir = (target, name, expr, state) => {
     // decorate trigger to resolve target from modifiers (parent, root, body, etc.)
     let change = signal(0),
 
-      // throttle prevents multiple updates within one tick as well as isolates stack for each update
-      trigger = decorate(Object.assign(throttle(() => change.value++), { target }), mods),
+      trigger = decorate(Object.assign(() => change.value++, { target }), mods),
 
       el = trigger.target ?? target
 

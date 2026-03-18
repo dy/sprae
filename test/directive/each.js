@@ -873,17 +873,16 @@ test('each: :value + :change on nested objects does not loop', async () => {
 
 test('each: reactive loop is detected and stopped', async () => {
   // An effect that reads+writes the same signal causes sync re-entry.
-  // Two-layer protection:
-  //   1. signal.js: disposes effect after 50 sync re-entries (stops sync loop)
-  //   2. throttle: stops trailing-edge microtask chain after 50 re-fires (stops async loop)
-  // Without fix: hangs the process (proven by this test hanging pre-fix).
+  // Signal backends handle this themselves:
+  //   - sprae's signal.js: disposes effect after 50 sync re-entries, logs error
+  //   - preact signals: throws "Cycle detected"
   let el = h`<div :fx="n = n + 1"></div>`
 
   let loopDetected = false
   let _err = console.error
-  console.error = (msg) => { if (typeof msg === 'string' && msg.includes('loop')) loopDetected = true }
+  console.error = (msg) => { if (typeof msg === 'string' && (msg.includes('loop') || msg.includes('Cycle'))) loopDetected = true }
 
-  sprae(el, { n: 0 })
+  try { sprae(el, { n: 0 }) } catch (e) { if (/cycle/i.test(e.message)) loopDetected = true }
   await time(200)
 
   console.error = _err
