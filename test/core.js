@@ -770,3 +770,93 @@ test('core: start() MO skips nodes added inside CE', async () => {
   sprae.dispose(document.body)
   document.body.innerHTML = ''
 })
+
+// --- Real define-element integration (not simulated) ---
+await import('define-element')
+const DefineElement = customElements.get('define-element')
+
+// Helper: define a CE via real define-element (async — connectedCallback defers via microtask)
+async function defCE(tag, attrs, tplHTML) {
+  let def = document.createElement('define-element')
+  let proto = document.createElement(tag)
+  if (attrs) for (let [k, v] of Object.entries(attrs)) proto.setAttribute(k, v)
+  if (tplHTML) { let t = document.createElement('template'); t.innerHTML = tplHTML; proto.appendChild(t) }
+  def.appendChild(proto)
+  document.body.appendChild(def)
+  await tick(2) // wait for deferred _init()
+}
+
+// Sprae processor for define-element: clone template, sprae, bridge prop changes
+const spraeProcessor = (root, state) => {
+  root.template && root.appendChild(root.template.content.cloneNode(true))
+  let s = sprae(root, state)
+  if (state.host) state.host.onpropchange = (name, val) => { if (name in s) s[name] = val }
+  return s
+}
+
+test('core: define-element — basic rendering with sprae processor', async () => {
+  let tag = 'de-real-' + Math.random().toString(36).slice(2, 6)
+  DefineElement.processor = spraeProcessor
+  await defCE(tag, { 'label:string': 'hello' }, '<b :text="label"></b>')
+
+  let wrap = document.createElement('div')
+  document.body.appendChild(wrap)
+  let el = document.createElement(tag)
+  el.setAttribute('label', 'world')
+  wrap.appendChild(el)
+  await tick(4)
+
+  is(el.querySelector('b')?.textContent, 'world', 'renders prop value')
+
+  el.label = 'updated'
+  await tick(4)
+  is(el.querySelector('b')?.textContent, 'updated', 'reactive update')
+
+  wrap.remove()
+  DefineElement.processor = null
+})
+
+test('core: define-element — :each with CE', async () => {
+  let tag = 'de-each-' + Math.random().toString(36).slice(2, 6)
+  DefineElement.processor = spraeProcessor
+  await defCE(tag, { 'name:string': '' }, '<span :text="name"></span>')
+
+  let wrap = document.createElement('div')
+  document.body.appendChild(wrap)
+  wrap.innerHTML = `<${tag} :each="item in items" :name="item.name"></${tag}>`
+  let s = sprae(wrap, { items: [{ name: 'A' }, { name: 'B' }, { name: 'C' }] })
+  await tick(8)
+
+  let ces = wrap.querySelectorAll(tag)
+  is(ces.length, 3, 'creates 3 CEs')
+  is(ces[0].querySelector('span')?.textContent, 'A', 'first')
+  is(ces[1].querySelector('span')?.textContent, 'B', 'second')
+  is(ces[2].querySelector('span')?.textContent, 'C', 'third')
+
+  s.items = [{ name: 'X' }]
+  await tick(8)
+  ces = wrap.querySelectorAll(tag)
+  is(ces.length, 1, 'shrunk to 1')
+  is(ces[0].querySelector('span')?.textContent, 'X', 'updated value')
+
+  sprae.dispose(wrap)
+  wrap.remove()
+  DefineElement.processor = null
+})
+
+test('core: define-element — host ref in scope', async () => {
+  let tag = 'de-host-' + Math.random().toString(36).slice(2, 6)
+  DefineElement.processor = spraeProcessor
+  await defCE(tag, {}, '<b :text="host.tagName.toLowerCase()"></b>')
+
+  let wrap = document.createElement('div')
+  document.body.appendChild(wrap)
+  let el = document.createElement(tag)
+  wrap.appendChild(el)
+  await tick(4)
+
+  is(el.querySelector('b')?.textContent, tag, 'host ref points to CE')
+
+  wrap.remove()
+  DefineElement.processor = null
+})

@@ -165,7 +165,11 @@ const sprae = (root = document.body, state) => {
   el[_off] = () => (offs?.map(off => off?.()), offs = null)
 
   // destroy
-  el[_dispose] ||= () => (el[_off](), el[_off] = el[_on] = el[_dispose] = el[_add] = el[_state] = null)
+  el[_dispose] ||= () => {
+    el[_off]()
+    if (mo?._root === el) { mo.disconnect(); mo = null }
+    el[_off] = el[_on] = el[_dispose] = el[_add] = el[_state] = null
+  }
 
   const add = el[_add] = (el) => {
     let _attrs = el.attributes, start;
