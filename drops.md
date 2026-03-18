@@ -969,9 +969,9 @@
 ```html
 <b :scope="{
   phrases: [
-    'simple practical reactive',
-    'sleek performant refined',
-    'small progressive reusable'
+    'Signal-Powered Reactive Attributes Engine',
+    'Structured Presentational Reactive Æsthetic',
+    'Simple PRogressive Ænhancement'
   ],
   i: 0 }"
   :fx="() => {
@@ -984,7 +984,7 @@
 ```
 
 </div>
-<div class="drop-demo demo bg-graph-paper" markdown="0" data-scope="{ phrases: ['simple practical reactive', 'sleek performant refined', 'small progressive reusable'], i: 0, _id: 0, tick() { this.i = (this.i + 1) % this.phrases.length } }" data-fx="clearInterval(_id); _id = setInterval(tick, 2000)">
+<div class="drop-demo demo bg-graph-paper" markdown="0" data-scope="{ phrases: ['Signal-Powered Reactive Attributes Engine', 'Structured Presentational Reactive Æsthetic', 'Simple PRogressive Ænhancement',], i: 0, _id: 0, tick() { this.i = (this.i + 1) % this.phrases.length } }" data-fx="clearInterval(_id); _id = setInterval(tick, 2000)">
 <b data-text="'sprae: ' + phrases[i]" style="font-size:var(--text-base)"></b>
 </div>
 </div>
