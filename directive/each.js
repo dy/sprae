@@ -14,8 +14,9 @@ export default (tpl, state, expr) => {
   let [itemVar, idxVar = "$"] = lhs.trim().replace(/\(|\)/g, '').split(/\s*,\s*/);
 
   // we need :if to be able to replace holder instead of tpl for :if :each case
+  // Reuse holder from previous init (survives :if off/on cycle)
   let doc = tpl.ownerDocument
-  let holder = doc.createTextNode("");
+  let holder = tpl._eachHolder || (tpl._eachHolder = doc.createTextNode(""));
 
   // we re-create items any time new items are produced
   let cur, keys, items, prevl = 0
@@ -61,7 +62,7 @@ export default (tpl, state, expr) => {
         } else {
           holder.before(insertNode)
           let subscope = store({
-            get [itemVar]() { return cur[idx] },
+            get [itemVar]() { return cur?.[idx] },
             [idxVar]: keys ? keys[idx] : idx
           }, state)
           sprae(el, subscope)
@@ -79,7 +80,7 @@ export default (tpl, state, expr) => {
         holder.before(batch)
         for (let [el, idx] of pending) {
           let subscope = store({
-            get [itemVar]() { return cur[idx] },
+            get [itemVar]() { return cur?.[idx] },
             [idxVar]: keys ? keys[idx] : idx
           }, state)
           sprae(el, subscope)
@@ -90,7 +91,8 @@ export default (tpl, state, expr) => {
     prevl = newl
   }))
 
-  mutate(() => tpl.replaceWith(holder))
+  // Replace template with holder (idempotent: skip if already replaced, e.g. :if re-activation)
+  if (tpl.parentNode) mutate(() => tpl.replaceWith(holder))
   tpl[_state] = null // mark as fake-spraed, to preserve :-attribs for template
 
   let disposeItems = () => { if (cur) { for (let s of cur[_signals] || []) s[Symbol.dispose]?.(); cur = null; prevl = 0 } }

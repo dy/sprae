@@ -860,3 +860,41 @@ test('core: define-element — host ref in scope', async () => {
   wrap.remove()
   DefineElement.processor = null
 })
+
+// :if on CE with define-element pattern (strip/restore)
+test('core: :if on CE should not prevent prop processing', async () => {
+  let tag = 'de-if-props-' + Math.random().toString(36).slice(2, 6)
+  let propMap = { items: true }
+  class C extends HTMLElement {
+    constructor() { super(); this._de = false; this.props = { items: [] } }
+    connectedCallback() {
+      if (!this._de) {
+        this._de = true
+        let saved = [...this.attributes].filter(a => !(a.name in propMap)).map(a => [a.name, a.value])
+        for (let [n] of saved) this.removeAttribute(n)
+        this.replaceChildren()
+        this.innerHTML = '<b :each="item in items" :text="item"></b>'
+        this._state = sprae(this, this.props)
+        for (let [n, v] of saved) this.setAttribute(n, v)
+      }
+    }
+  }
+  Object.defineProperty(C.prototype, 'items', {
+    set(v) { this.props.items = v; if (this._de && this._state) this._state.items = v },
+    get() { return this.props.items }
+  })
+  customElements.define(tag, C)
+
+  let wrap = document.createElement('div')
+  document.body.appendChild(wrap)
+  wrap.innerHTML = `<${tag} :if="show" :items="data"></${tag}>`
+  let s = sprae(wrap, { show: true, data: ['a', 'b', 'c'] })
+  await tick(8)
+
+  let el = wrap.querySelector(tag)
+  ok(el, 'CE should be in DOM')
+  is(el?.querySelectorAll('b').length, 3, 'CE should render 3 items from :items prop')
+
+  sprae.dispose(wrap)
+  wrap.remove()
+})

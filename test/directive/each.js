@@ -888,3 +888,34 @@ test('each: reactive loop is detected and stopped', async () => {
   console.error = _err
   is(loopDetected, true, 'loop was detected and process did not hang')
 })
+
+test('each: :each inside :if — items change while hidden', async () => {
+  let el = h`<div><div :if="show"><ul><li :each="item in items" :text="item"></li></ul></div></div>`
+  let s = sprae(el, { show: true, items: ['a', 'b'] })
+
+  is(el.querySelectorAll('li').length, 2, 'initially 2 items')
+  is(el.querySelector('li')?.textContent, 'a')
+
+  s.show = false
+  await time(10)
+  s.items = ['x', 'y', 'z']
+  s.show = true
+  await time(10)
+
+  is(el.querySelectorAll('li').length, 3, 'after re-show should have 3 items')
+  is(el.querySelector('li')?.textContent, 'x', 'first item should be x')
+})
+
+test('each: :each inside :if — constant array after toggle', async () => {
+  let el = h`<div><div :if="show"><select><option :each="o in opts" :value="o" :text="o"></option></select></div></div>`
+  let s = sprae(el, { show: true, opts: ['a', 'b', 'c'] })
+
+  is(el.querySelectorAll('option').length, 3, 'initially 3 options')
+
+  s.show = false
+  await time(10)
+  s.show = true
+  await time(10)
+
+  is(el.querySelectorAll('option').length, 3, 'after toggle should still have 3 options')
+})
