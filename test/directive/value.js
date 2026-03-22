@@ -142,3 +142,85 @@ test("value: text caret preserved on state update", async () => {
 
   document.body.removeChild(el)
 });
+
+test('value: input :value + :oninput with :if list should not throw fn is not a function', async () => {
+  let el = document.createElement('div')
+  el.innerHTML = `
+    <div :if="show">
+      <input id="inp" type="text" :value="query"
+        :onfocus="e => filter(query)"
+        :oninput="e => { filter(e.target.value) }"
+        :onblur="e => { hits = [] }">
+      <div :if="hits.length">
+        <div :each="m in hits" :text="m.name"></div>
+      </div>
+    </div>
+  `
+  document.body.appendChild(el)
+
+  let errors = []
+  let origError = console.error
+  console.error = (...args) => { errors.push(args.join(' ')); origError(...args) }
+
+  let s = sprae(el, {
+    show: true,
+    query: '',
+    hits: [],
+    filter(q) {
+      this.query = q
+      let all = [{id:1, name:'Alice'}, {id:2, name:'Bob'}, {id:3, name:'Carol'}]
+      this.hits = q ? all.filter(m => m.name.toLowerCase().includes(q.toLowerCase())) : all
+    }
+  })
+  await time(50)
+
+  let inp = el.querySelector('#inp')
+  inp.value = 'a'
+  inp.dispatchEvent(new InputEvent('input', { bubbles: true }))
+  await time(50)
+
+  is(s.query, 'a', 'query updated')
+  is(s.hits.length, 2, 'Alice and Carol match')
+
+  inp.dispatchEvent(new FocusEvent('blur', { bubbles: true }))
+  await time(50)
+
+  is(s.hits.length, 0, 'hits cleared on blur')
+
+  let spraeErrors = errors.filter(e => /not a function|∴ TypeError/.test(e))
+  is(spraeErrors.length, 0, 'should produce no sprae errors: ' + spraeErrors.join('; '))
+
+  console.error = origError
+  el.remove()
+})
+
+test('value: reactive loop from :value + :oninput cycle', async () => {
+  let el = document.createElement('div')
+  el.innerHTML = `
+    <input id="inp" type="text" :value="query"
+      :oninput="e => { query = e.target.value; items = [1,2,3] }">
+    <div :if="items.length">
+      <span :each="i in items" :text="i"></span>
+    </div>
+  `
+  document.body.appendChild(el)
+
+  let errors = []
+  let origError = console.error
+  console.error = (...args) => { errors.push(args.join(' ')); origError(...args) }
+
+  let s = sprae(el, { show: true, query: '', items: [] })
+  await time(50)
+
+  let inp = el.querySelector('#inp')
+  inp.value = 'x'
+  inp.dispatchEvent(new InputEvent('input', { bubbles: true }))
+  await time(100)
+
+  let loopErrors = errors.filter(e => /Reactive loop/.test(e))
+  is(loopErrors.length, 0, 'should not trigger reactive loop: ' + loopErrors.join('; '))
+
+  console.error = origError
+  el.remove()
+})
+

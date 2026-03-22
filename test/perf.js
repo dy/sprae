@@ -46,7 +46,7 @@ test('perf: sprae vs petite-vue', async () => {
   ok(bestRatio < RATIO, `best ratio (${bestRatio.toFixed(2)}) should be < ${RATIO}`)
 })
 
-test('perf: memory stable after create+dispose cycles', { skip: !global.gc }, async () => {
+test('perf: memory stable after create+dispose cycles', { skip: typeof global === 'undefined' || !global.gc }, async () => {
   const CYCLES = 100
 
   async function cycle() {

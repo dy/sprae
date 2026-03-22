@@ -575,3 +575,34 @@ test("on: colon-join .throttle-raf scopes to last event only", async () => {
   el.dispatchEvent(new window.Event("click"));
   is(state.log, ["click"], "click fires immediately, not throttled");
 });
+
+test('on: outside with literal assignment should not throw', async () => {
+  let el = document.createElement('div')
+  el.innerHTML = `
+    <div id="outer">
+      <div id="inner" :onclick.outside="panel = false">Inside</div>
+    </div>
+  `
+  document.body.appendChild(el)
+
+  let errors = []
+  let origError = console.error
+  console.error = (...args) => { errors.push(args.join(' ')); origError(...args) }
+
+  let s = sprae(el, { panel: true })
+  await time(10)
+
+  is(s.panel, true, 'panel starts true')
+
+  let outer = el.querySelector('#outer')
+  outer.dispatchEvent(new MouseEvent('click', { bubbles: true }))
+  await time(10)
+
+  is(s.panel, false, 'panel should be false after outside click')
+
+  let spraeErrors = errors.filter(e => /not a function|∴/.test(e))
+  is(spraeErrors.length, 0, 'should produce no sprae errors: ' + spraeErrors.join('; '))
+
+  console.error = origError
+  el.remove()
+})

@@ -82,8 +82,6 @@
     "preact-signals",
     "reactive",
     "template-parts",
-    "petit-vue",
-    "alpinejs",
     "templating"
   ],
   "author": "Dmitry Iv <df.creative@gmail.com>",

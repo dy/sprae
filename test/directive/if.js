@@ -525,3 +525,115 @@ test("if: :ref inside :if does not break _off", async () => {
   await tick()
   is(state.show, false, 'closed via click')
 })
+
+test('if: false hides element', async () => {
+  let el = document.createElement('div')
+  el.innerHTML = `<span :if="show" :text="'visible'">hidden</span><span>always</span>`
+  sprae(el, { show: false })
+
+  await time(10)
+
+  is(el.querySelectorAll('span').length, 1, 'only the always-visible span should be in DOM')
+  is(el.textContent.trim(), 'always', 'should only show the always-visible span')
+})
+
+test('if: true shows element', async () => {
+  let el = document.createElement('div')
+  el.innerHTML = `<span :if="show" :text="'visible'">hidden</span><span>always</span>`
+  sprae(el, { show: true })
+
+  await time(10)
+
+  is(el.textContent.includes('visible'), true, 'should show the conditional span')
+  is(el.textContent.includes('always'), true, 'should also show the always span')
+})
+
+test('if: CE template content does not affect sibling rendering', async () => {
+  let el = document.createElement('div')
+  el.innerHTML = `
+    <h3>Finance</h3>
+    <div :if="show">
+      <select>
+        <option :each="c in cats" :value="c" :text="c"></option>
+      </select>
+    </div>
+    <h3>Other</h3>
+  `
+  let s = sprae(el, { show: false, cats: ['a', 'b', 'c'] })
+
+  await time(10)
+
+  let headings = el.querySelectorAll('h3')
+  is(headings.length, 2, 'both h3 should be in DOM')
+  is(headings[0].textContent, 'Finance')
+  is(headings[1].textContent, 'Other')
+  is(el.querySelector('select'), null, 'select should not be in DOM when show=false')
+
+  s.show = true
+  await time(10)
+
+  is(el.querySelectorAll('option').length, 3, 'options should render')
+  is(el.querySelectorAll('h3').length, 2, 'h3 should still be visible')
+})
+
+test('if: double toggle should not throw', async () => {
+  let el = document.createElement('div')
+  el.innerHTML = `<div :if="show"><span :text="msg"></span></div>`
+  let s = sprae(el, { show: false, msg: 'hello' })
+
+  s.show = true
+  await time(10)
+  is(el.querySelector('span')?.textContent, 'hello', 'first show')
+
+  s.show = false
+  await time(10)
+  is(el.querySelector('span'), null, 'first hide')
+
+  s.show = true
+  await time(10)
+  is(el.querySelector('span')?.textContent, 'hello', 'second show')
+
+  s.show = false
+  await time(10)
+  is(el.querySelector('span'), null, 'second hide — should not throw')
+})
+
+test('if: double toggle with nested directives', async () => {
+  let el = document.createElement('div')
+  el.innerHTML = `<div :if="show" class="modal"><h2 :text="title"></h2><select :value="val"><option value="a">A</option><option value="b">B</option></select></div>`
+  let s = sprae(el, { show: false, title: 'Test', val: 'a' })
+
+  s.show = true
+  await time(10)
+  s.show = false
+  await time(10)
+
+  s.show = true
+  await time(10)
+  is(el.querySelector('h2')?.textContent, 'Test')
+  s.show = false
+  await time(10)
+  is(el.querySelector('.modal'), null, 'second hide — no error')
+
+  s.show = true
+  await time(10)
+  is(el.querySelector('h2')?.textContent, 'Test', 'third show works')
+  s.show = false
+  await time(10)
+  is(el.querySelector('.modal'), null, 'third hide — no error')
+})
+
+test('if: dispose is null-safe across repeated start() toggles', async () => {
+  let el = document.createElement('div')
+  el.innerHTML = `<div :if="show"><span :text="msg"></span><div :each="i in [1,2,3]" :text="i"></div></div>`
+  let s = sprae.start(el, { show: false, msg: 'test' })
+
+  for (let i = 0; i < 5; i++) {
+    s.show = true
+    await time(10)
+    s.show = false
+    await time(10)
+  }
+
+  is(el.querySelector('span'), null, 'hidden after 5 cycles — no throw')
+})

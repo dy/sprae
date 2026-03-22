@@ -40,6 +40,7 @@ export const signal = (v, _s, _obs = new Set, _v = () => _s.value) => (
  */
 export const effect = (fn, _teardown, _fx, _deps) => (
   _fx = (prev) => {
+    if (!fn) return // disposed during batch flush
     let tmp = _teardown;
     _teardown = null;
     tmp?.call?.();

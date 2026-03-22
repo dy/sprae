@@ -166,7 +166,7 @@ const sprae = (root = document.body, state) => {
 
   // destroy
   el[_dispose] ||= () => {
-    el[_off]()
+    el[_off]?.()
     if (mo?._root === el) { mo.disconnect(); mo = null }
     el[_off] = el[_on] = el[_dispose] = el[_add] = el[_state] = null
   }
