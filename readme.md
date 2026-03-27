@@ -510,40 +510,40 @@ Works with [define-element](https://github.com/dy/define-element), Lit, or any C
 
 ## FAQ
 
-**What is sprae?**
+**What is sprae?**<br>
 ~5kb script that adds reactivity to HTML via `:attribute="expression"`. No build step, no new syntax.
 
-**Learning curve?**
+**Learning curve?**<br>
 If you know HTML and JS, you know sprae. Just `:attribute="expression"`.
 
-**How does it compare to Alpine?**
+**How does it compare to Alpine?**<br>
 3x lighter, pluggable signals, prop modifiers, event chains. Faster in [benchmarks](https://krausest.github.io/js-framework-benchmark/).
 
-**How does it compare to React/Vue?**
+**How does it compare to React/Vue?**<br>
 No build step, no virtual DOM. Can inject into [JSX](#jsx--nextjs) for server components without framework overhead.
 
-**Why signals?**
+**Why signals?**<br>
 Signals are the emerging [standard](https://github.com/tc39/proposal-signals) for reactivity. Pluggable — first to support native signals when browsers ship.
 
-**Is new Function unsafe?**
+**Is new Function unsafe?**<br>
 No more than inline `onclick` handlers. For strict CSP, use the [safe evaluator](#csp-safe-evaluator).
 
-**Components?**
+**Components?**<br>
 Use [define-element](https://github.com/dy/define-element) for declarative web components, or any CE library. For simpler cases, [manage duplication](https://tailwindcss.com/docs/styling-with-utility-classes#managing-duplication) with templates/includes.
 
-**TypeScript?**
+**TypeScript?**<br>
 Full types included.
 
-**Browser support?**
+**Browser support?**<br>
 Any browser with [Proxy](https://caniuse.com/proxy) (all modern browsers, no IE).
 
-**Does it scale?**
+**Does it scale?**<br>
 State is plain reactive objects — scales as far as your data model does. Use [store](#store) with computed getters and methods for complex apps.
 
-**Is it production-ready?**
+**Is it production-ready?**<br>
 It is used by a few SaaS systems and landing pages of big guys.
 
-**Is it backed by a company?**
+**Is it backed by a company?**<br>
 Indie project. [Support it](https://github.com/sponsors/dy).
 
 
