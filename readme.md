@@ -397,35 +397,20 @@ sprae.use(signals)
 
 ## Configuration
 
-### CSP-safe evaluator
-
-Default uses `new Function` (fast, but requires `unsafe-eval` CSP).<br/>
-For strict CSP, use the pre-built variant or wire [jessie](https://github.com/dy/subscript) manually:
-
-```html
-<script src="//unpkg.com/sprae/dist/sprae-csp.umd.js" data-start></script>
-```
-
 ```js
-import sprae from 'sprae'
+import sprae, { directive, parse, modifier } from 'sprae'
 import jessie from 'subscript/jessie'
-sprae.use({ compile: jessie })
-```
 
-### Custom prefix
+sprae.use({
+  // CSP-safe evaluator: <script src="//unpkg.com/sprae/dist/sprae-csp.umd.js" data-start></script>
+  // or define manually
+  compile: jessie,
 
-```js
-sprae.use({ prefix: 'data-' })
-```
-```html
-<div data-text="message">...</div>
-```
+  // custom prefix: <div data-text="message">...</div>
+  prefix: 'data-'
+})
 
-### Custom directive
-
-```js
-import { directive, parse } from 'sprae'
-
+// Custom directive
 directive.id = (el, state, expr) => value => el.id = value
 
 directive.timer = (el, state, expr) => {
@@ -436,15 +421,10 @@ directive.timer = (el, state, expr) => {
     return () => clearInterval(id)
   }
 }
-```
 
-### Custom modifier
-
-```js
-import { modifier } from 'sprae'
+// Custom modifier
 modifier.log = (fn) => (e) => (console.log(e.type), fn(e))
 ```
-
 
 
 ## Integration
@@ -531,40 +511,40 @@ Works with [define-element](https://github.com/dy/define-element), Lit, or any C
 ## FAQ
 
 **What is sprae?**
-: ~5kb script that adds reactivity to HTML via `:attribute="expression"`. No build step, no new syntax.
+~5kb script that adds reactivity to HTML via `:attribute="expression"`. No build step, no new syntax.
 
 **Learning curve?**
-: If you know HTML and JS, you know sprae. Just `:attribute="expression"`.
+If you know HTML and JS, you know sprae. Just `:attribute="expression"`.
 
 **How does it compare to Alpine?**
-: 3x lighter, pluggable signals, prop modifiers, event chains. Faster in [benchmarks](https://krausest.github.io/js-framework-benchmark/).
+3x lighter, pluggable signals, prop modifiers, event chains. Faster in [benchmarks](https://krausest.github.io/js-framework-benchmark/).
 
 **How does it compare to React/Vue?**
-: No build step, no virtual DOM. Can inject into [JSX](#jsx--nextjs) for server components without framework overhead.
+No build step, no virtual DOM. Can inject into [JSX](#jsx--nextjs) for server components without framework overhead.
 
 **Why signals?**
-: Signals are the emerging [standard](https://github.com/tc39/proposal-signals) for reactivity. Pluggable — first to support native signals when browsers ship.
+Signals are the emerging [standard](https://github.com/tc39/proposal-signals) for reactivity. Pluggable — first to support native signals when browsers ship.
 
 **Is new Function unsafe?**
-: No more than inline `onclick` handlers. For strict CSP, use the [safe evaluator](#csp-safe-evaluator).
+No more than inline `onclick` handlers. For strict CSP, use the [safe evaluator](#csp-safe-evaluator).
 
 **Components?**
-: Use [define-element](https://github.com/dy/define-element) for declarative web components, or any CE library. For simpler cases, [manage duplication](https://tailwindcss.com/docs/styling-with-utility-classes#managing-duplication) with templates/includes.
+Use [define-element](https://github.com/dy/define-element) for declarative web components, or any CE library. For simpler cases, [manage duplication](https://tailwindcss.com/docs/styling-with-utility-classes#managing-duplication) with templates/includes.
 
 **TypeScript?**
-: Full types included.
+Full types included.
 
 **Browser support?**
-: Any browser with [Proxy](https://caniuse.com/proxy) (all modern browsers, no IE).
+Any browser with [Proxy](https://caniuse.com/proxy) (all modern browsers, no IE).
 
 **Does it scale?**
-: State is plain reactive objects — scales as far as your data model does. Use [store](#store) with computed getters and methods for complex apps.
+State is plain reactive objects — scales as far as your data model does. Use [store](#store) with computed getters and methods for complex apps.
 
 **Is it production-ready?**
-: It is used by a few SaaS systems and landing pages of big guys.
+It is used by a few SaaS systems and landing pages of big guys.
 
 **Is it backed by a company?**
-: Indie project. [Support it](https://github.com/sponsors/dy).
+Indie project. [Support it](https://github.com/sponsors/dy).
 
 
 ## Used by
