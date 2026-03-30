@@ -503,7 +503,7 @@ Works with [define-element](https://github.com/dy/define-element), Lit, or any C
 * Attribute order matters: `:each` before `:text`, not after.
 * Async expressions work: `<div :text="await fetchData()"></div>`
 * Dispose: `sprae.dispose(el)` or `el[Symbol.dispose]()`
-* No `key` needed — `:each` uses direct list mapping, not DOM diffing.
+* No `key` needed — `:each` auto-keys object items by identity; primitives use positional mapping.
 * `this` refers to current element, but prefer `:ref` or `:mount` for element access.
 * Properties prefixed with `_` are untracked.
 

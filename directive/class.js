@@ -10,14 +10,29 @@ import { clsx } from "../core.js";
  * @returns {(v: string | string[] | Record<string, boolean>) => void} Update function
  */
 export default (el, st, ex, name) => {
-  let _cur = new Set, _new
+  let _cur = null, _new, _prev = null
 
   return (v) => {
-    _new = new Set
-    if (v) for (let c of clsx(typeof v === 'function' ? v(el.className) : v).split(' ')) c && _new.add(c)
-    for (let c of _cur) if (!_new.has(c)) el.classList.remove(c);
-    for (let c of _new) if (!_cur.has(c)) el.classList.add(c);
-    if (!el.classList.length) el.removeAttribute('class')
+    v = typeof v === 'function' ? v(el.className) : v
+
+    if (v?.constructor === Object) {
+      _prev = null
+      if (_cur) for (let c of _cur) if (!v[c]) el.classList.remove(c), _cur.delete(c)
+      if (!_cur?.size) _cur = null
+      for (let c in v) if (v[c] && !_cur?.has(c)) el.classList.add(c), (_cur ||= new Set).add(c)
+      if (!_cur) el.removeAttribute('class')
+      return
+    }
+
+    v = clsx(v)
+    if (v === _prev) return
+    _prev = v
+
+    _new = null
+    if (v) for (let c of v.split(' ')) c && (_new ||= new Set).add(c)
+    if (_cur) for (let c of _cur) if (!_new?.has(c)) el.classList.remove(c)
+    if (_new) for (let c of _new) if (!_cur?.has(c)) el.classList.add(c)
+    if (!_new) el.removeAttribute('class')
     _cur = _new
   }
 }

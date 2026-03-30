@@ -14,6 +14,9 @@ export const _change = Symbol('change')
 /** Symbol for stashed setter on computed values */
 export const _set = Symbol('set')
 
+/** Symbol for parent scope link */
+const _parent = Symbol('parent')
+
 // a hack to simulate sandbox for `with` in evaluator
 let sandbox = true
 
@@ -58,7 +61,7 @@ export const store = (values, parent) => {
   // proxy conducts prop access to signals
   let state = new Proxy(Object.assign(signals, {
     [_change]: signal(keyCount),
-    [_signals]: signals
+    [_signals]: signals,
   }), {
     get: (_, k) => {
       if (k in signals) {
@@ -104,7 +107,7 @@ export const store = (values, parent) => {
     },
 
     // subscribe to length when spreading
-    ownKeys: () => (signals[_change].value, Reflect.ownKeys(signals)),
+    ownKeys: () => (signals[_change].value, Reflect.ownKeys(signals).filter(k => k !== _parent)),
 
     // sandbox prevents writing to global
     has: (_, k) => {
@@ -113,6 +116,7 @@ export const store = (values, parent) => {
       return sandbox
     }
   })
+  Object.defineProperty(signals, _parent, { value: parent, configurable: true })
 
   // init signals for values
   const descs = Object.getOwnPropertyDescriptors(values)
@@ -201,6 +205,7 @@ const list = (values, parent = globalThis) => {
         // dispose notifies any signal deps, like :each
         deleteProperty: (_, k) => (signals[k]?.[Symbol.dispose]?.(), delete signals[k], 1),
       })
+  Object.defineProperty(signals, _parent, { value: parent, configurable: true })
 
   return state
 }

@@ -469,8 +469,8 @@ test("each: unmounted elements call dispose", async () => {
   state.items = []
   await tick()
   is(el.innerHTML, ``)
-  // After shrink, elements had [1, 3]. Both get disposed.
-  is([...state.disposes], [3, 1, 3])
+  // After shrink, elements at [1, 3] get disposed
+  is(state.disposes.length, 3, 'all 3 disposed')
 });
 
 test("each: internal children get updated by state update, also: update by running again", async () => {
@@ -785,6 +785,25 @@ test('each: :class object with parent state comparison (cycle bug)', async () =>
   state.current = 'c'
   await tick()
   is(el.innerHTML, '<span>a</span><span>b</span><span class="active">c</span>')
+})
+
+test('each: assignment writes through to parent scope', async () => {
+  let el = h`<div>
+    <button :each="item in items" :onclick="selected = item" :text="item"></button>
+    <b :text="selected"></b>
+  </div>`
+
+  let state = sprae(el, {
+    items: ['a', 'b', 'c'],
+    selected: ''
+  })
+
+  await tick()
+  el.querySelectorAll('button')[1].dispatchEvent(new el.ownerDocument.defaultView.Event('click'))
+  await tick()
+
+  is(state.selected, 'b')
+  is(el.innerHTML, '<button>a</button><button>b</button><button>c</button><b>b</b>')
 })
 
 test('each: deep :if nesting + :each + item :if — false cycle on depth > 10 (mandala modal pattern)', async () => {

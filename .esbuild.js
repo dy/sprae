@@ -6,7 +6,7 @@ const common = {
   bundle: true,
   minify: true,
   target: 'es2020',
-  define: { '__VERSION__': JSON.stringify(pkg.version) },
+  define: { '__VERSION__': JSON.stringify(pkg.version), 'globalThis.__PROFILE__': 'false' },
   sourcemap: 'external'
 }
 
