@@ -39,9 +39,11 @@ export default (tpl, state, expr) => {
   let update = throttle(() => mutate(() => {
     let newItems = items, newl = newItems.length, prevl = rows.length
 
-    // detect keyed mode: first non-null item is object → keyed
+    // detect keyed mode: object items in plain (non-store) arrays only.
+    // store arrays must use positional mode: store wraps items in new Proxies,
+    // breaking identity matching on replace (every item looks "new").
     keyed = false
-    for (let i = 0; i < newl; i++) {
+    if (!newItems[_change]) for (let i = 0; i < newl; i++) {
       let item = newItems[i]
       if (item != null) { keyed = typeof item === 'object'; break }
     }

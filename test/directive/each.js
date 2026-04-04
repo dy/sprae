@@ -938,3 +938,29 @@ test('each: :each inside :if — constant array after toggle', async () => {
 
   is(el.querySelectorAll('option').length, 3, 'after toggle should still have 3 options')
 })
+
+test('each: store array replace preserves DOM rows', async () => {
+  // When items are objects in a store-backed array, replacing the array
+  // should update existing rows via signals — not destroy and recreate DOM.
+  // Regression: keyed diff used Proxy identity as Map key, but store wraps
+  // each item in a new Proxy on replace, so every row looked "new" → full
+  // DOM teardown + recreation (189s for 10k rows in Chrome).
+  let el = h`<div><span :each="item in items" :text="item.x"></span></div>`
+  let state = sprae(el, { items: [{ x: 'a' }, { x: 'b' }, { x: 'c' }] })
+  await tick()
+  is(el.innerHTML, '<span>a</span><span>b</span><span>c</span>')
+
+  // Capture DOM references before replace
+  let spans = [...el.querySelectorAll('span')]
+
+  // Replace with same-length array of new objects
+  state.items = [{ x: 'd' }, { x: 'e' }, { x: 'f' }]
+  await tick()
+  is(el.innerHTML, '<span>d</span><span>e</span><span>f</span>')
+
+  // DOM elements must be the same nodes (updated in-place), not recreated
+  let newSpans = [...el.querySelectorAll('span')]
+  is(newSpans[0], spans[0], 'row 0 DOM preserved')
+  is(newSpans[1], spans[1], 'row 1 DOM preserved')
+  is(newSpans[2], spans[2], 'row 2 DOM preserved')
+})
