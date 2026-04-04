@@ -323,6 +323,49 @@ test('each: fragment with condition', async () => {
   is(el.innerHTML, "");
 });
 
+test('each: quote rotator survives array swap with nested scope', async () => {
+  let el = document.createElement('div')
+  el.innerHTML = `
+    <div class="quotes-carousel">
+      <figure class="quote" :each="(q, i) in quotes" :class="{active: i === qi}">
+        <blockquote :text="q.text"></blockquote>
+      </figure>
+    </div>
+    <div :scope="state">
+      <form :if="step === 'password'">
+        <div :scope="{showPw: false}">
+          <input :type="showPw ? 'text' : 'password'">
+        </div>
+      </form>
+    </div>
+  `
+
+  const welcomeQuotes = [{ text: 'w1' }, { text: 'w2' }, { text: 'w3' }]
+  const managerQuotes = [{ text: 'm1' }, { text: 'm2' }, { text: 'm3' }]
+
+  const state = sprae(el, {
+    state: null,
+    quotes: welcomeQuotes,
+    qi: 1,
+    step: 'email',
+  })
+  state.state = state
+
+  await tick(2)
+  is(el.querySelectorAll('.quote').length, 3, 'preserves static quote class on init')
+  is(el.querySelectorAll('.quote.active').length, 1, 'has one active quote on init')
+  is(el.querySelector('.quote.active blockquote')?.textContent, 'w2', 'initial active quote')
+
+  state.step = 'password'
+  state.quotes = managerQuotes
+  state.qi = 0
+  await tick(2)
+
+  is(el.querySelectorAll('.quote').length, 3, 'renders swapped quote set')
+  is(el.querySelectorAll('.quote.active').length, 1, 'keeps one active quote after swap')
+  ok(['m1', 'm2', 'm3'].includes(el.querySelector('.quote.active blockquote')?.textContent), 'active quote stays within swapped set')
+})
+
 test("each: loop with condition", async () => {
   let el = h`<p>
   <span :each="a in b" :if="a!=1" :text="a"></span>

@@ -11,6 +11,7 @@ import { clsx } from "../core.js";
  */
 export default (el, st, ex, name) => {
   let _cur = null, _new, _prev = null
+  let clearAttr = () => !el.classList.length && el.removeAttribute('class')
 
   return (v) => {
     v = typeof v === 'function' ? v(el.className) : v
@@ -20,7 +21,7 @@ export default (el, st, ex, name) => {
       if (_cur) for (let c of _cur) if (!v[c]) el.classList.remove(c), _cur.delete(c)
       if (!_cur?.size) _cur = null
       for (let c in v) if (v[c] && !_cur?.has(c)) el.classList.add(c), (_cur ||= new Set).add(c)
-      if (!_cur) el.removeAttribute('class')
+      if (!_cur) clearAttr()
       return
     }
 
@@ -32,7 +33,7 @@ export default (el, st, ex, name) => {
     if (v) for (let c of v.split(' ')) c && (_new ||= new Set).add(c)
     if (_cur) for (let c of _cur) if (!_new?.has(c)) el.classList.remove(c)
     if (_new) for (let c of _new) if (!_cur?.has(c)) el.classList.add(c)
-    if (!_new) el.removeAttribute('class')
+    if (!_new) clearAttr()
     _cur = _new
   }
 }
