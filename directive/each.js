@@ -1,26 +1,32 @@
 import sprae, { parse, _state, _off, effect, _change, _signals, frag, throttle, mutate } from "../core.js";
 
-// Lightweight row scope — reads item via cur[idx] (positional) or direct ref (keyed).
-// Local vars (e.g. :ref) stored in `l` on first write.
-const posHandler = {
-  get: (s, k) => k === s.v ? s.c?.[s.i] : k === s.k ? (s.o ? s.o[s.i] : s.i) : k === _signals ? s : s.l?.[k] !== undefined ? s.l[k] : s.p?.[k],
-  set: (s, k, v) => (k === s.v ? (s.c && (s.c[s.i] = v)) : k === s.k ? 0 : s.l?.[k] !== undefined ? ((s.l[k] = v), 0) : k in (s.p?.[_signals] || {}) ? (s.p[k] = v) : (s.l ||= {})[k] = v, 1),
+// Row scope proxy — reads item via cur[idx] (positional, has `c`) or direct ref (keyed, has `r`).
+// Local vars stored in `l` on first write.
+const handler = {
+  get: (s, k) => k === s.v ? ('c' in s ? s.c?.[s.i] : s.r) : k === s.k ? ('c' in s ? (s.o ? s.o[s.i] : s.i) : s.i) : k === _signals ? s : s.l?.[k] !== undefined ? s.l[k] : s.p?.[k],
+  set: (s, k, v) => (k === s.v ? ('c' in s ? (s.c && (s.c[s.i] = v)) : (s.r = v)) : k === s.k ? 0 : s.l?.[k] !== undefined ? ((s.l[k] = v), 0) : k in (s.p?.[_signals] || {}) ? (s.p[k] = v) : (s.l ||= {})[k] = v, 1),
   has: () => true
 }
-// Keyed: `r` holds direct item reference — immune to store index shifts
-const keyHandler = {
-  get: (s, k) => k === s.v ? s.r : k === s.k ? s.i : k === _signals ? s : s.l?.[k] !== undefined ? s.l[k] : s.p?.[k],
-  set: (s, k, v) => (k === s.v ? (s.r = v) : k === s.k ? 0 : s.l?.[k] !== undefined ? ((s.l[k] = v), 0) : k in (s.p?.[_signals] || {}) ? (s.p[k] = v) : (s.l ||= {})[k] = v, 1),
-  has: () => true
+
+const dispose = r => { r.el[Symbol.dispose]?.(); r.el.remove() }
+
+const mkrow = (tpl, scope) => {
+  let proxy = new Proxy(scope, handler)
+  let el = tpl.content ? frag(tpl) : tpl.cloneNode(true)
+  return { el, scope, proxy, node: el.content || el }
+}
+
+const flush = (batch, pending, holder) => {
+  for (let [el, proxy] of pending) sprae(el, proxy)
+  holder.before(batch)
 }
 
 /**
  * Each directive - renders list items from array/object/number.
  * Syntax: `:each="item in items"` or `:each="(item, idx) of items"`
  *
- * Keyed by object identity: when items are objects, splice/remove only
- * disposes the removed row — survivors keep their DOM and don't re-evaluate.
- * Primitives fall back to index-based (positional) updates.
+ * Keyed by object identity for plain arrays of objects.
+ * Store arrays / primitives use positional (index-based) mode.
  */
 export default (tpl, state, expr) => {
   const [lhs, rhs] = expr.split(/\bin|of\b/)
@@ -28,20 +34,12 @@ export default (tpl, state, expr) => {
 
   let doc = tpl.ownerDocument
   let holder = tpl._eachHolder || (tpl._eachHolder = doc.createTextNode(""));
-
-  // Map<identity, {el, scope, proxy}> for keyed mode
-  // Array<{el, scope, proxy}> for positional mode
-  let rowMap = new Map, rows = [], items, keys, cur
-
-  // Can we use identity keying? Only for object items.
-  let keyed = false
+  let rowMap = new Map, rows = [], items, keys, cur, keyed = false
 
   let update = throttle(() => mutate(() => {
     let newItems = items, newl = newItems.length, prevl = rows.length
 
-    // detect keyed mode: object items in plain (non-store) arrays only.
-    // store arrays must use positional mode: store wraps items in new Proxies,
-    // breaking identity matching on replace (every item looks "new").
+    // detect keyed: object items in plain (non-store) arrays only
     keyed = false
     if (!newItems[_change]) for (let i = 0; i < newl; i++) {
       let item = newItems[i]
@@ -49,94 +47,57 @@ export default (tpl, state, expr) => {
     }
 
     if (keyed && prevl) {
-      // --- KEYED DIFF: only when we have existing rows to diff against ---
-
-      // fast path: pure append (list only grew, no removals possible)
-      if (newl > prevl && rowMap.size === prevl) {
-        let batch = (newl - prevl) > 1 ? doc.createDocumentFragment() : null
-        let pending = batch ? [] : null
-        for (let i = prevl; i < newl; i++) {
-          let identity = newItems[i]
-          let scope = { p: state, v: itemVar, k: idxVar, r: identity, i, l: null }
-          let proxy = new Proxy(scope, keyHandler)
-          let el = tpl.content ? frag(tpl) : tpl.cloneNode(true)
-          let insertNode = el.content || el
-          let row = { el, scope, proxy }
-          rowMap.set(identity, row)
-          rows.push(row)
-          if (batch) { batch.appendChild(insertNode); pending.push([el, proxy]) }
-          else { holder.before(insertNode); sprae(el, proxy) }
+      // --- KEYED DIFF ---
+      // remove stale rows
+      if (newl <= prevl) {
+        let newSet = new Set(newl > 0 ? newItems : [])
+        for (let [identity, row] of rowMap) {
+          if (!newSet.has(identity)) { dispose(row); rowMap.delete(identity) }
         }
-        if (batch && pending.length) {
-          holder.before(batch)
-          for (let [el, proxy] of pending) sprae(el, proxy)
-        }
-      } else {
-        // full diff: removals, reorders, mixed insert/remove
-        let removed = 0
-        if (newl <= prevl) {
-          let newSet = new Set
-          for (let i = 0; i < newl; i++) newSet.add(newItems[i])
-          for (let [identity, row] of rowMap) {
-            if (!newSet.has(identity)) {
-              row.el[Symbol.dispose]?.(); row.el.remove()
-              rowMap.delete(identity); removed++
-            }
-          }
-        }
-
-        let newRows = [], moved = false
-        let batch = null, pending = null
-        if (newl - rowMap.size > 1) batch = doc.createDocumentFragment(), pending = []
-
-        for (let i = 0; i < newl; i++) {
-          let identity = newItems[i], row = rowMap.get(identity)
-          if (row) {
-            if (row.scope.i !== i) moved = true
-            row.scope.i = i; row.scope.r = identity
-            newRows.push(row)
-          } else {
-            let scope = { p: state, v: itemVar, k: idxVar, r: identity, i, l: null }
-            let proxy = new Proxy(scope, keyHandler)
-            let el = tpl.content ? frag(tpl) : tpl.cloneNode(true)
-            let insertNode = el.content || el
-            row = { el, scope, proxy }
-            rowMap.set(identity, row)
-            newRows.push(row)
-            if (batch) { batch.appendChild(insertNode); pending.push([el, proxy]) }
-            else { holder.before(insertNode); sprae(el, proxy) }
-          }
-        }
-
-        if (batch && pending.length) {
-          holder.before(batch)
-          for (let [el, proxy] of pending) sprae(el, proxy)
-        }
-
-        if (moved || removed) {
-          let next = holder
-          for (let i = newRows.length - 1; i >= 0; i--) {
-            let node = newRows[i].el._holder || newRows[i].el.content || newRows[i].el
-            if (node.nextSibling !== next) next.before(node)
-            next = node
-          }
-        }
-
-        rows = newRows
       }
-    } else {
-      // --- POSITIONAL PATH: index-based (primitives, numbers) ---
 
-      // plain array replaced — full reset
-      if (prevl && cur !== newItems && !newItems[_change]) {
-        for (let r of rows) { r.el[Symbol.dispose]?.(); r.el.remove() }
+      let newRows = [], moved = false
+      let batch = newl - rowMap.size > 1 ? doc.createDocumentFragment() : null
+      let pending = batch ? [] : null
+
+      for (let i = 0; i < newl; i++) {
+        let identity = newItems[i], row = rowMap.get(identity)
+        if (row) {
+          if (row.scope.i !== i) moved = true
+          row.scope.i = i; row.scope.r = identity
+        } else {
+          row = mkrow(tpl, { p: state, v: itemVar, k: idxVar, r: identity, i, l: null })
+          rowMap.set(identity, row)
+          if (batch) { batch.appendChild(row.node); pending.push([row.el, row.proxy]) }
+          else { holder.before(row.node); sprae(row.el, row.proxy) }
+        }
+        newRows.push(row)
+      }
+
+      if (batch && pending.length) flush(batch, pending, holder)
+
+      if (moved || newl < prevl) {
+        let next = holder
+        for (let i = newRows.length - 1; i >= 0; i--) {
+          let node = newRows[i].el._holder || newRows[i].el.content || newRows[i].el
+          if (node.nextSibling !== next) next.before(node)
+          next = node
+        }
+      }
+
+      rows = newRows
+    } else {
+      // --- POSITIONAL PATH ---
+      // array replaced — full reset
+      if (prevl && cur !== newItems) {
+        for (let r of rows) dispose(r)
         rows.length = 0; prevl = 0; rowMap.clear()
       }
       cur = newItems
 
       // shrink
       if (newl < prevl) {
-        for (let i = newl; i < prevl; i++) { rows[i].el[Symbol.dispose]?.(); rows[i].el.remove() }
+        for (let i = newl; i < prevl; i++) dispose(rows[i])
         rows.length = newl
       }
 
@@ -152,41 +113,24 @@ export default (tpl, state, expr) => {
         let pending = batch ? [] : null
 
         for (let i = prevl; i < newl; i++) {
-          let handler = keyed ? keyHandler : posHandler
           let scope = keyed
             ? { p: state, v: itemVar, k: idxVar, r: newItems[i], i, l: null }
             : { p: state, v: itemVar, k: idxVar, c: newItems, i, o: keys, l: null }
-          let proxy = new Proxy(scope, handler)
-          let el = tpl.content ? frag(tpl) : tpl.cloneNode(true)
-          let insertNode = el.content || el
-          let row = { el, scope }
+          let row = mkrow(tpl, scope)
           rows.push(row)
           if (keyed) rowMap.set(newItems[i], row)
 
-          if (batch) {
-            batch.appendChild(insertNode)
-            pending.push([el, proxy])
-          } else {
-            holder.before(insertNode)
-            sprae(el, proxy)
-          }
+          if (batch) { batch.appendChild(row.node); pending.push([row.el, row.proxy]) }
+          else { holder.before(row.node); sprae(row.el, row.proxy) }
         }
 
-        if (batch) {
-          holder.before(batch)
-          for (let [el, proxy] of pending) sprae(el, proxy)
-        }
+        if (batch) flush(batch, pending, holder)
       }
     }
   }))
 
   if (tpl.parentNode) mutate(() => tpl.replaceWith(holder))
   tpl[_state] = null
-
-  let disposeAll = () => {
-    for (let r of rows) { r.el[Symbol.dispose]?.(); r.el.remove() }
-    rows.length = 0; rowMap.clear()
-  }
 
   let cb = value => {
     keys = null
@@ -201,6 +145,6 @@ export default (tpl, state, expr) => {
     return () => off()
   }
   cb.eval = parse(rhs)
-  cb[_off] = disposeAll
+  cb[_off] = () => { for (let r of rows) dispose(r); rows.length = 0; rowMap.clear() }
   return cb
 }

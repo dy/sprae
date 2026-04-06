@@ -3,7 +3,7 @@
  * @module sprae/store
  */
 
-import { signal, computed, batch, untracked } from './core.js'
+import { signal, computed } from './core.js'
 
 /** Symbol for accessing the internal signals map */
 export const _signals = Symbol('signals')
@@ -143,8 +143,8 @@ export const store = (values, parent) => {
  */
 const list = (values, parent = globalThis) => {
 
-  // gotta fill with null since proto methods like .reduce may fail
-  let signals = Array(values.length).fill(null),
+  // init signals eagerly — shallow() is cheap (1 Proxy + 1 signal per object item)
+  let signals = values.map(v => signal(shallow(v))),
 
     // if .length was accessed from mutator (.push/etc) method
     isMut = false,
@@ -177,9 +177,8 @@ const list = (values, parent = globalThis) => {
           // non-numeric
           if (typeof k === 'symbol' || isNaN(k)) return signals[k]?.valueOf() ?? parent[k];
 
-          // create signal (lazy)
-          // NOTE: if you decide to unlazy values, think about large arrays - init upfront can be costly
-          return (signals[k] ??= signal(store(values[k]))).valueOf()
+          // signals are eagerly initialized; null slots from .length extension default to undefined
+          return (signals[k] ??= signal(undefined)).valueOf()
         },
 
         set(_, k, v) {
@@ -194,10 +193,10 @@ const list = (values, parent = globalThis) => {
           }
 
           // force changing length, if eg. a=[]; a[1]=1 - need to come after setting the item
-          else if (k >= signals.length) create(signals, k, v), state.length = +k + 1
+          else if (k >= signals.length) create(signals, k, v, shallow), state.length = +k + 1
 
           // existing signal
-          else signals[k] ? set(signals, k, v) : create(signals, k, v)
+          else signals[k] ? set(signals, k, v, shallow) : create(signals, k, v, shallow)
 
           return 1
         },
@@ -217,7 +216,18 @@ const list = (values, parent = globalThis) => {
  * @param {string} k - Property key
  * @param {any} v - Property value
  */
-const create = (signals, k, v) => (signals[k] = (k[0] == '_' || v?.peek || typeof v === 'function') ? v : signal(store(v)))
+const create = (signals, k, v, wrap = store) => (signals[k] = (k[0] == '_' || v?.peek || typeof v === 'function') ? v : signal(wrap(v)))
+
+/** Lightweight reactive wrapper for array items — avoids full store() per item. */
+const shallow = (v) => {
+  if (!v || typeof v !== 'object' || v.constructor !== Object) return v
+  let ver = signal(0)
+  return new Proxy(v, {
+    get: (t, k) => k === _signals ? t : k === _change ? ver : (ver.value, t[k]),
+    set: (t, k, val) => { let prev = t[k]; t[k] = val; if (prev !== val) ver.value++; return 1 },
+    has: () => true
+  })
+}
 
 /**
  * Updates a signal value, handling arrays specially for efficient patching.
@@ -225,31 +235,15 @@ const create = (signals, k, v) => (signals[k] = (k[0] == '_' || v?.peek || typeo
  * @param {string} k - Property key
  * @param {any} v - New value
  */
-const set = (signals, k, v, _s, _v) => {
-  // skip unchanged (although can be handled by last condition - we skip a few checks this way)
-  return k[0] === '_' || typeof signals[k] === 'function' ? (signals[k] = v) :
-    (v !== (_v = (_s = signals[k]).peek?.() ?? _s)) && (
-      // stashed _set for value with getter/setter
-      _s[_set] ? _s[_set](v) :
-        // patch array
-        Array.isArray(v) && Array.isArray(_v) ?
-          // if we update plain array (stored in signal) - take over value instead
-          // since input value can be store, we have to make sure we don't subscribe to its length or values
-          // FIXME: generalize to objects
-          _change in _v ?
-            untracked(() => batch(() => {
-              for (let i = 0; i < v.length; i++) _v[i] = v[i]
-              _v.length = v.length // forces deleting tail signals
-            })) :
-            (_s.value = v) :
-          // .x = y
-          (_s.value = store(v))
-    )
+const set = (signals, k, v, wrap = store) => {
+  if (k[0] === '_' || typeof signals[k] === 'function') return (signals[k] = v)
+  let _s = signals[k], _v = _s.peek?.() ?? _s
+  if (v === _v) return
+  // stashed _set for value with getter/setter
+  if (_s[_set]) return _s[_set](v)
+  // replace array: create new list store, let :each teardown+recreate
+  if (Array.isArray(v) && Array.isArray(_v)) _s.value = _change in v ? v : list(v)
+  else _s.value = wrap(v)
 }
-
-
-// make sure state contains first element of path, eg. `a` from `a.b[c]`
-// NOTE: we don't need since we force proxy sandbox
-// export const ensure = (state, expr, _name = expr.match(/^\w+(?=\s*(?:\.|\[|$))/)) => _name && (state[_signals][_name[0]] ??= null)
 
 export default store

@@ -501,18 +501,16 @@ test("each: unmounted elements call dispose", async () => {
   is([...state.inits], [1, 2, 3])
   is([...state.disposes], [])
 
-  console.log('---shrink to 2 items')
-  state.items = [1, 3]
+  console.log('---shrink via splice')
+  state.items.splice(1, 1)
   await tick()
   is(el.innerHTML, `<x></x><x></x>`)
-  // Last element (index 2, which had item 3) gets disposed
-  is([...state.disposes], [3])
+  is(state.disposes.length, 1, 'splice disposes removed element')
 
   console.log('---remove all')
   state.items = []
   await tick()
   is(el.innerHTML, ``)
-  // After shrink, elements at [1, 3] get disposed
   is(state.disposes.length, 3, 'all 3 disposed')
 });
 
@@ -982,28 +980,99 @@ test('each: :each inside :if — constant array after toggle', async () => {
   is(el.querySelectorAll('option').length, 3, 'after toggle should still have 3 options')
 })
 
-test('each: store array replace preserves DOM rows', async () => {
-  // When items are objects in a store-backed array, replacing the array
-  // should update existing rows via signals — not destroy and recreate DOM.
-  // Regression: keyed diff used Proxy identity as Map key, but store wraps
-  // each item in a new Proxy on replace, so every row looked "new" → full
-  // DOM teardown + recreation (189s for 10k rows in Chrome).
+test('each: js-framework-benchmark operations', async () => {
+  // Reproduces js-framework-benchmark keyed scenario locally.
+  // Verifies all benchmark operations work correctly and within time budget.
+  const adjectives = ['pretty', 'large', 'big', 'small', 'tall']
+  const colours = ['red', 'yellow', 'blue', 'green', 'pink']
+  const nouns = ['table', 'chair', 'house', 'bbq', 'desk']
+  let nextId = 1
+  const buildData = (n) => Array.from({ length: n }, () => ({
+    id: nextId++,
+    label: `${adjectives[nextId % 5]} ${colours[nextId % 5]} ${nouns[nextId % 5]}`
+  }))
+
+  let el = h`<div>
+    <table><tbody>
+      <tr :each="item in data" :class="{danger: item.id === selected}">
+        <td :text="item.id"></td>
+        <td><a :text="item.label"></a></td>
+      </tr>
+    </tbody></table>
+  </div>`
+
+  let state = sprae(el, { data: [], selected: 0 })
+
+  // Create 1k
+  state.data = buildData(1000)
+  await tick()
+  is(el.querySelectorAll('tr').length, 1000, 'create 1k rows')
+
+  // Update every 10th
+  for (let i = 0; i < state.data.length; i += 10) state.data[i].label += ' !!!'
+  await tick()
+  is(el.querySelector('tr:nth-child(1) a').textContent.endsWith(' !!!'), true, 'update 10th appends !!!')
+  is(el.querySelector('tr:nth-child(2) a').textContent.endsWith(' !!!'), false, 'non-10th unchanged')
+
+  // Select row
+  state.selected = state.data[5].id
+  await tick()
+  is(el.querySelector('tr:nth-child(6)').className, 'danger', 'select row adds class')
+
+  // Swap rows
+  let tmp = state.data[1]; state.data[1] = state.data[998]; state.data[998] = tmp
+  await tick()
+  is(el.querySelectorAll('tr').length, 1000, 'swap preserves count')
+
+  // Remove row
+  state.data.splice(500, 1)
+  await tick()
+  is(el.querySelectorAll('tr').length, 999, 'remove one row')
+
+  // Replace 1k
+  state.data = buildData(1000)
+  await tick()
+  is(el.querySelectorAll('tr').length, 1000, 'replace 1k rows')
+
+  // Append 1k
+  state.data.push(...buildData(1000))
+  await tick()
+  is(el.querySelectorAll('tr').length, 2000, 'append 1k rows')
+
+  // Clear
+  state.data = []
+  await tick()
+  is(el.querySelectorAll('tr').length, 0, 'clear all rows')
+
+  // Create 10k (verify it completes, don't timeout)
+  let t0 = performance.now()
+  state.data = buildData(10000)
+  await tick()
+  let dt = performance.now() - t0
+  is(el.querySelectorAll('tr').length, 10000, 'create 10k rows')
+  ok(dt < 5000, `create 10k took ${dt.toFixed(0)}ms (budget: 5000ms)`)
+})
+
+test('each: store array replace renders correctly', async () => {
+  // Replace creates new list → teardown+recreate (fast path, ~40ms for 1k in Chrome).
+  // Regression test: keyed diff used Proxy identity as Map key causing 189s for 10k rows.
   let el = h`<div><span :each="item in items" :text="item.x"></span></div>`
   let state = sprae(el, { items: [{ x: 'a' }, { x: 'b' }, { x: 'c' }] })
   await tick()
   is(el.innerHTML, '<span>a</span><span>b</span><span>c</span>')
 
-  // Capture DOM references before replace
-  let spans = [...el.querySelectorAll('span')]
-
-  // Replace with same-length array of new objects
+  // Replace with new objects
   state.items = [{ x: 'd' }, { x: 'e' }, { x: 'f' }]
   await tick()
   is(el.innerHTML, '<span>d</span><span>e</span><span>f</span>')
 
-  // DOM elements must be the same nodes (updated in-place), not recreated
-  let newSpans = [...el.querySelectorAll('span')]
-  is(newSpans[0], spans[0], 'row 0 DOM preserved')
-  is(newSpans[1], spans[1], 'row 1 DOM preserved')
-  is(newSpans[2], spans[2], 'row 2 DOM preserved')
+  // Replace with different length
+  state.items = [{ x: 'g' }]
+  await tick()
+  is(el.innerHTML, '<span>g</span>')
+
+  // Replace back to 3
+  state.items = [{ x: 'h' }, { x: 'i' }, { x: 'j' }]
+  await tick()
+  is(el.innerHTML, '<span>h</span><span>i</span><span>j</span>')
 })
