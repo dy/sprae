@@ -96,4 +96,3 @@ export const batch = (fn, _first = !batched, _list) => {
  * @returns {T}
  */
 export const untracked = (fn, _prev, _v) => (_prev = current, current = null, _v = fn(), current = _prev, _v)
-

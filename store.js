@@ -3,7 +3,7 @@
  * @module sprae/store
  */
 
-import { signal, computed } from './core.js'
+import { signal, computed, batch } from './core.js'
 
 /** Symbol for accessing the internal signals map */
 export const _signals = Symbol('signals')
@@ -241,8 +241,11 @@ const set = (signals, k, v, wrap = store) => {
   if (v === _v) return
   // stashed _set for value with getter/setter
   if (_s[_set]) return _s[_set](v)
-  // replace array: create new list store, let :each teardown+recreate
-  if (Array.isArray(v) && Array.isArray(_v)) _s.value = _change in v ? v : list(v)
+  // patch store array in-place to preserve identity (avoids reactive loops when an effect reads + writes same prop)
+  if (Array.isArray(v) && Array.isArray(_v)) {
+    if (_change in _v) batch(() => { for (let i = 0; i < v.length; i++) _v[i] = v[i]; _v.length = v.length })
+    else _s.value = _change in v ? v : list(v)
+  }
   else _s.value = wrap(v)
 }
 
