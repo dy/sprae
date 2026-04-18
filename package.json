@@ -1,7 +1,7 @@
 {
   "name": "sprae",
   "description": "DOM microhydration",
-  "version": "13.3.4",
+  "version": "13.3.5",
   "main": "./sprae.js",
   "module": "./sprae.js",
   "umd:main": "dist/sprae.umd.js",
