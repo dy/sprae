@@ -3,7 +3,7 @@
  * @module sprae/store
  */
 
-import { signal, computed, batch } from './core.js'
+import { signal, computed, batch, untracked } from './core.js'
 
 /** Symbol for accessing the internal signals map */
 export const _signals = Symbol('signals')
@@ -221,6 +221,7 @@ const create = (signals, k, v, wrap = store) => (signals[k] = (k[0] == '_' || v?
 /** Lightweight reactive wrapper for array items — avoids full store() per item. */
 const shallow = (v) => {
   if (!v || typeof v !== 'object' || v.constructor !== Object) return v
+  if (v[_change]) return v // already reactive (store or shallow proxy)
   let ver = signal(0)
   return new Proxy(v, {
     get: (t, k) => k === _signals ? t : k === _change ? ver : (ver.value, t[k]),
@@ -243,7 +244,7 @@ const set = (signals, k, v, wrap = store) => {
   if (_s[_set]) return _s[_set](v)
   // patch store array in-place to preserve identity (avoids reactive loops when an effect reads + writes same prop)
   if (Array.isArray(v) && Array.isArray(_v)) {
-    if (_change in _v) batch(() => { for (let i = 0; i < v.length; i++) _v[i] = v[i]; _v.length = v.length })
+    if (_change in _v) untracked(() => batch(() => { for (let i = 0; i < v.length; i++) _v[i] = v[i]; _v.length = v.length }))
     else _s.value = _change in v ? v : list(v)
   }
   else _s.value = wrap(v)

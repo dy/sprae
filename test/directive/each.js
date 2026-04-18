@@ -981,8 +981,6 @@ test('each: :each inside :if — constant array after toggle', async () => {
 })
 
 test('each: js-framework-benchmark operations', async () => {
-  // Reproduces js-framework-benchmark keyed scenario locally.
-  // Verifies all benchmark operations work correctly and within time budget.
   const adjectives = ['pretty', 'large', 'big', 'small', 'tall']
   const colours = ['red', 'yellow', 'blue', 'green', 'pink']
   const nouns = ['table', 'chair', 'house', 'bbq', 'desk']
@@ -1044,7 +1042,7 @@ test('each: js-framework-benchmark operations', async () => {
   await tick()
   is(el.querySelectorAll('tr').length, 0, 'clear all rows')
 
-  // Create 10k (verify it completes, don't timeout)
+  // Create 10k
   let t0 = performance.now()
   state.data = buildData(10000)
   await tick()
@@ -1054,25 +1052,35 @@ test('each: js-framework-benchmark operations', async () => {
 })
 
 test('each: store array replace renders correctly', async () => {
-  // Replace creates new list → teardown+recreate (fast path, ~40ms for 1k in Chrome).
-  // Regression test: keyed diff used Proxy identity as Map key causing 189s for 10k rows.
+  // Keyed path (objects)
   let el = h`<div><span :each="item in items" :text="item.x"></span></div>`
   let state = sprae(el, { items: [{ x: 'a' }, { x: 'b' }, { x: 'c' }] })
   await tick()
   is(el.innerHTML, '<span>a</span><span>b</span><span>c</span>')
 
-  // Replace with new objects
   state.items = [{ x: 'd' }, { x: 'e' }, { x: 'f' }]
   await tick()
   is(el.innerHTML, '<span>d</span><span>e</span><span>f</span>')
 
-  // Replace with different length
   state.items = [{ x: 'g' }]
   await tick()
   is(el.innerHTML, '<span>g</span>')
 
-  // Replace back to 3
   state.items = [{ x: 'h' }, { x: 'i' }, { x: 'j' }]
   await tick()
   is(el.innerHTML, '<span>h</span><span>i</span><span>j</span>')
+
+  // Positional path (primitives)
+  let el2 = h`<div><span :each="x in items" :text="x"></span></div>`
+  let s2 = sprae(el2, { items: ['a', 'b', 'c'] })
+  await tick()
+  is(el2.innerHTML, '<span>a</span><span>b</span><span>c</span>')
+
+  s2.items = ['x']
+  await tick()
+  is(el2.innerHTML, '<span>x</span>')
+
+  s2.items = ['p', 'q', 'r', 's']
+  await tick()
+  is(el2.innerHTML, '<span>p</span><span>q</span><span>r</span><span>s</span>')
 })

@@ -558,10 +558,19 @@ t('store: parent props are set to the parent', async () => {
 })
 
 t('store: no reactive loop when effect reads and writes array prop', async () => {
-  // Reproduces the CE onpropchange pattern:
-  // parent computed returns new array each time, effect forwards it to child store.
-  // If effect reads child.arr (subscribes) then writes child.arr = plainArray,
-  // set() must not create a new list identity every time (which would re-trigger the effect).
+  // Minimal repro: set() created new list on every array assign,
+  // re-triggering any effect that reads + writes the same prop.
+  let s = store({ items: [1] })
+  let runs = 0
+  effect(() => { void s.items; s.items = [1, 2]; runs++ })
+  await tick()
+  ok(runs < 10, `expected few runs, got ${runs}`)
+  is(s.items.length, 2)
+})
+
+t('store: no reactive loop — parent computed to child store', async () => {
+  // Realistic CE pattern: parent computed returns new array each time,
+  // effect forwards it to child store. Must not loop.
   let parent = store({
     get items() { return ['a', 'b', 'c'] }
   })
