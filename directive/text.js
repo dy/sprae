@@ -19,8 +19,10 @@ export default el => (
     let node = el.firstChild
     if (node && v.startsWith(cur)) { node.appendData(v.slice(cur.length)); return }
 
-    // save caret position
-    let s = el.getRootNode().getSelection?.()
+    // caret preservation only matters when this element holds focus —
+    // calling getSelection() during DOM mutations forces sync layout in Chromium (O(n²) for lists)
+    let root = el.ownerDocument, active = root.activeElement
+    let s = active && (active === el || el.contains(active)) ? root.getSelection?.() : null
     let off = s?.rangeCount && el.contains(s.anchorNode) ? s.getRangeAt(0).startOffset : -1
 
     el.textContent = v

@@ -46,6 +46,29 @@ test('perf: sprae vs petite-vue', async () => {
   ok(bestRatio < RATIO, `best ratio (${bestRatio.toFixed(2)}) should be < ${RATIO}`)
 })
 
+test('perf: :each + :text scales linearly (no O(n²) regressions)', async () => {
+  // Regression guard: detects layout-thrashing in directives during list creation.
+  // happy-dom won't reproduce it; runs meaningfully only in a real browser (test:browser).
+  // Linear ratio for 4× rows is 4. Allow 5× headroom for variance; quadratic would be ~16×.
+  const buildData = (n) => Array.from({ length: n }, (_, i) => ({ id: i, label: 'row-' + i }))
+  const measure = (n) => {
+    const el = h`<table><tr :each="row in rows"><td :text="row.id"></td><td :text="row.label"></td></tr></table>`
+    document.body.appendChild(el)
+    const start = performance.now()
+    sprae(el, { rows: buildData(n) })
+    const t = performance.now() - start
+    el.remove()
+    return t
+  }
+  // warm up
+  measure(200); measure(200)
+  const t1 = Math.min(measure(500), measure(500))
+  const t2 = Math.min(measure(2000), measure(2000))
+  const ratio = t2 / Math.max(t1, 0.5)
+  console.log(`  scaling 500→2000: ${t1.toFixed(1)}ms → ${t2.toFixed(1)}ms (ratio=${ratio.toFixed(1)}, linear=4)`)
+  ok(ratio < 20, `scaling ratio ${ratio.toFixed(1)} should be < 20 (quadratic would exceed)`)
+})
+
 test('perf: memory stable after create+dispose cycles', { skip: typeof global === 'undefined' || !global.gc }, async () => {
   const CYCLES = 100
 
