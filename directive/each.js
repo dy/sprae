@@ -1,4 +1,4 @@
-import sprae, { parse, _state, _off, effect, _change, _signals, frag, throttle, mutate } from "../core.js";
+import sprae, { parse, _state, _off, effect, _change, _touch, _signals, frag, throttle, mutate } from "../core.js"
 
 // Row scope proxies — positional reads item via cur[idx], keyed holds direct ref
 const posHandler = {
@@ -12,7 +12,7 @@ const keyHandler = {
   has: () => true
 }
 
-const rm = r => { r.el[Symbol.dispose]?.(); r.el.remove() }
+const rm = r => { r.el.remove(); r.el[Symbol.dispose]?.() }
 
 /**
  * Each directive - renders list items from array/object/number.
@@ -29,10 +29,11 @@ export default (tpl, state, expr) => {
   let holder = tpl._eachHolder || (tpl._eachHolder = doc.createTextNode(""))
   let rowMap = new Map, rows = [], items, keys, cur, keyed = false
 
+  // _di tracks current DOM index so swap/reorder only touches actually-moved rows
   let mkrow = (scope, h) => {
     let proxy = new Proxy(scope, h)
     let el = tpl.content ? frag(tpl) : tpl.cloneNode(true)
-    return { el, scope, proxy, node: el.content || el }
+    return { el, scope, proxy, node: el.content || el, _di: scope.i }
   }
 
   let insert = pending => {
@@ -44,7 +45,7 @@ export default (tpl, state, expr) => {
   }
 
   let update = throttle(() => mutate(() => {
-    let src = items, newl = src.length, prevl = rows.length
+    let src = items, newl = src.length, prevl = rows.length, lenChanged = newl !== prevl
 
     // detect keyed: array of objects (store items are shallow proxies — keyed by proxy identity)
     keyed = false
@@ -63,7 +64,8 @@ export default (tpl, state, expr) => {
         }
         let row = rowMap.get(id)
         if (row) {
-          if (row.scope.i !== i) moved = true
+          // index-only shifts from remove/append keep DOM order — reorder only for same-length permutes (swap)
+          if (!lenChanged && row.scope.i !== i) moved = true
           row.scope.i = i; row.scope.r = id
         } else {
           row = mkrow({ p: state, v: itemVar, k: idxVar, r: id, i, l: null }, keyHandler)
@@ -73,18 +75,32 @@ export default (tpl, state, expr) => {
         newRows.push(row)
       }
 
-      for (let [id, row] of rowMap) if (!seen.has(id)) { rm(row); rowMap.delete(id); moved = true }
+      for (let [id, row] of rowMap) if (!seen.has(id)) { rm(row); rowMap.delete(id) }
 
       insert(pending)
 
       if (moved) {
-        let next = holder
-        for (let i = newRows.length - 1; i >= 0; i--) {
-          let n = newRows[i].el._holder || newRows[i].el.content || newRows[i].el
-          if (n.nextSibling !== next) next.before(n)
-          next = n
+        // collect rows whose DOM position no longer matches their list index
+        let fix = []
+        for (let i = 0; i < newRows.length; i++) {
+          let row = newRows[i]
+          if (row._di !== i) fix.push(row)
+          row._di = i
         }
-      }
+        // 2-node swap fast path (common case: JFB swap rows)
+        if (fix.length === 2) {
+          let a = fix[0].node, b = fix[1].node, t = doc.createTextNode('')
+          a.replaceWith(t); b.replaceWith(a); t.replaceWith(b)
+        } else {
+          // general reorder: backward sweep, only move rows that aren't already in place
+          let next = holder
+          for (let i = newRows.length - 1; i >= 0; i--) {
+            let n = newRows[i].node
+            if (n.nextSibling !== next) next.before(n)
+            next = n
+          }
+        }
+      } else for (let i = 0; i < newRows.length; i++) newRows[i]._di = i
 
       rows = newRows
     } else {
@@ -130,7 +146,7 @@ export default (tpl, state, expr) => {
     else items = value || []
     let off = effect(() => {
       items[_change]?.value
-      if (items[_signals]) for (let i = 0, n = items.length; i < n; i++) items[i] // index writes (swap/replace)
+      items[_touch] // O(1) subscribe to index/content changes (swap, splice) on list stores
       update()
     })
     return () => off()

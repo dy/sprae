@@ -41,7 +41,8 @@ import { signal, effect, computed, batch, untracked } from 'sprae/signal'
 | `_on` / `_off` | Enable/disable element effects |
 | `_add` | Init child element (walk + apply directives) |
 | `_signals` | Store's internal signals map |
-| `_change` | Store's key-count tracking signal |
+| `_change` | Store's key-count / array length signal |
+| `_touch` | Store list index-content bump (splice, index writes) |
 
 ## Gotchas
 

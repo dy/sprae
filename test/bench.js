@@ -253,7 +253,7 @@ test('bench: swap rows', async () => {
   })
 
   console.log('\n  swap rows:' + compare(results))
-  ok(results.sprae.time < 100, 'sprae < 100ms')
+  ok(results.sprae.time <= results.alpine.time * 1.15, `sprae swap <= alpine (${results.sprae.time.toFixed(2)} vs ${results.alpine.time.toFixed(2)}ms)`)
 })
 
 test('bench: remove row', async () => {
@@ -269,7 +269,7 @@ test('bench: remove row', async () => {
   results['petite-vue'] = await measure(async () => { p.state.rows.splice(500, 1); await tick(8) })
 
   console.log('\n  remove row:' + compare(results))
-  ok(results.sprae.time < 50, 'sprae < 50ms')
+  ok(results.sprae.time <= results.alpine.time * 1.15, `sprae remove <= alpine (${results.sprae.time.toFixed(2)} vs ${results.alpine.time.toFixed(2)}ms)`)
 })
 
 test('bench: clear rows', async () => {

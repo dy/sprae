@@ -11,6 +11,9 @@ export const _signals = Symbol('signals')
 /** Symbol for the change signal that tracks object keys or array length */
 export const _change = Symbol('change')
 
+/** Symbol for list index/content bumps (swap, splice, index writes) */
+export const _touch = Symbol('touch')
+
 /** Symbol for stashed setter on computed values */
 export const _set = Symbol('set')
 
@@ -154,17 +157,26 @@ const list = (values, parent = globalThis) => {
 
     length = signal(values.length),
 
+    // _touch bumps notify keyed :each of index/content changes (swap, splice) in O(1)
+    // instead of forcing :each to subscribe to all N index signals
+    touch = signal(0),
+    bump = () => { touch.value++ },
+
+    // capture native array mutators before they're shadowed on signals[]
+    asplice = signals.splice,
+
     // proxy passes prop access to signals
     state = new Proxy(
       Object.assign(signals, {
         [_change]: length,
+        [_touch]: touch,
         [_signals]: signals,
-        // patch mutators
+        // patch mutators — `this` must be the list proxy so set traps fire reactively
         push: mut(signals.push),
         pop: mut(signals.pop),
         shift: mut(signals.shift),
         unshift: mut(signals.unshift),
-        splice: mut(signals.splice),
+        splice: mut(function () { let r = asplice.apply(this, arguments); bump(); return r }),
       }),
       {
         get(_, k) {
@@ -195,8 +207,12 @@ const list = (values, parent = globalThis) => {
           // force changing length, if eg. a=[]; a[1]=1 - need to come after setting the item
           else if (k >= signals.length) create(signals, k, v, shallow), state.length = +k + 1
 
-          // existing signal
-          else signals[k] ? set(signals, k, v, shallow) : create(signals, k, v, shallow)
+          // existing signal — bump for :each index tracking (swap)
+          else if (signals[k]) {
+            let s = signals[k], prev = s.peek?.() ?? s.valueOf()
+            set(signals, k, v, shallow)
+            if ((s.peek?.() ?? s.valueOf()) !== prev) bump()
+          } else create(signals, k, v, shallow)
 
           return 1
         },
