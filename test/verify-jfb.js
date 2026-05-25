@@ -8,11 +8,13 @@
 //
 // Aborts (declares "hung") if any single op exceeds 30s — the same threshold
 // the krausest benchmark harness uses to call a framework broken.
+// Also runs upstream isKeyed mutation checks (swap / recreate / remove).
 import { chromium } from 'playwright'
 import { createServer } from 'node:http'
 import { readFile } from 'node:fs/promises'
 import { resolve, extname, dirname } from 'node:path'
 import { fileURLToPath } from 'node:url'
+import keyedDetector from './jfb/keyed-detector.js'
 
 const __dirname = dirname(fileURLToPath(import.meta.url))
 const FIXTURE = resolve(__dirname, 'jfb')
@@ -72,7 +74,41 @@ for (const [label, sel] of ops) {
   if (timedOut) { hung = true; break }
 }
 
+const check = (name, ok, detail = '') => {
+  console.log(`  isKeyed ${name.padEnd(7)}${ok ? 'OK' : 'FAIL' + (detail ? ` (${detail})` : '')}`)
+  return ok
+}
+
+let keyedFail = false
+try {
+  await page.evaluate(keyedDetector)
+  await page.click('#add')
+  await page.waitForFunction(() => document.querySelectorAll('tbody tr').length === 1000)
+  await page.evaluate('window.nonKeyedDetector_instrument()')
+
+  await page.evaluate('nonKeyedDetector_storeTr()')
+  await page.click('#swaprows')
+  await page.waitForFunction(() => document.querySelector('tbody>tr:nth-of-type(2)>td:nth-of-type(1)')?.textContent === '999')
+  let { tradded, trremoved, newNodes } = await page.evaluate('nonKeyedDetector_result()')
+  if (!check('swap', tradded > 0 && trremoved > 0 && newNodes === 0, `${tradded}+ ${trremoved}- ${newNodes} new`)) keyedFail = true
+
+  await page.evaluate('window.nonKeyedDetector_reset()')
+  await page.click('#run')
+  await page.waitForFunction(() => document.querySelector('tbody>tr:nth-of-type(1000)>td:nth-of-type(1)')?.textContent === '2000')
+  ;({ tradded, trremoved } = await page.evaluate('nonKeyedDetector_result()'))
+  if (!check('run', tradded >= 1000 && trremoved >= 1000, `${tradded}+ ${trremoved}-`)) keyedFail = true
+
+  await page.evaluate('nonKeyedDetector_storeTr(); window.nonKeyedDetector_reset()')
+  await page.click('tbody>tr:nth-of-type(2)>td:nth-of-type(3)>a>span:nth-of-type(1)')
+  await page.waitForFunction(() => document.querySelector('tbody>tr:nth-of-type(2)>td:nth-of-type(1)')?.textContent === '1003')
+  if (!check('remove', (await page.evaluate('nonKeyedDetector_result()')).removedStoredTr)) keyedFail = true
+} catch (e) {
+  console.error('  isKeyed error:', e.message)
+  keyedFail = true
+}
+
 await browser.close()
 server.close()
-console.log(hung ? '  → HUNG (matches krausest report)' : '  → OK')
-process.exit(hung ? 1 : 0)
+if (keyedFail) console.log('  → NOT KEYED (run npm run isKeyed in js-framework-benchmark before PR)')
+console.log(hung ? '  → HUNG' : keyedFail ? '  → KEYED CHECK FAILED' : '  → OK')
+process.exit(hung || keyedFail ? 1 : 0)

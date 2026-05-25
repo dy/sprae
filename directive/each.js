@@ -18,8 +18,8 @@ const rm = r => { r.el[Symbol.dispose]?.(); r.el.remove() }
  * Each directive - renders list items from array/object/number.
  * Syntax: `:each="item in items"` or `:each="(item, idx) of items"`
  *
- * Keyed by object identity for plain arrays of objects.
- * Store arrays / primitives use positional (index-based) mode.
+ * Keyed by object identity for arrays of objects (including store arrays).
+ * Primitives use positional (index-based) mode.
  */
 export default (tpl, state, expr) => {
   const [lhs, rhs] = expr.split(/\bin|of\b/)
@@ -46,18 +46,22 @@ export default (tpl, state, expr) => {
   let update = throttle(() => mutate(() => {
     let src = items, newl = src.length, prevl = rows.length
 
-    // detect keyed: plain array of objects (store arrays use positional — proxies break identity)
+    // detect keyed: array of objects (store items are shallow proxies — keyed by proxy identity)
     keyed = false
-    if (!src[_change]) for (let i = 0; i < newl; i++) {
+    for (let i = 0; i < newl; i++) {
       if (src[i] != null) { keyed = typeof src[i] === 'object'; break }
     }
 
     if (keyed && prevl) {
-      // --- KEYED DIFF ---
-      let newRows = [], pending = [], moved = false
+      let newRows = [], pending = [], seen = new Set(), moved = false
 
       for (let i = 0; i < newl; i++) {
-        let id = src[i], row = rowMap.get(id)
+        let id = src[i]
+        if (id != null && typeof id === 'object') {
+          if (seen.has(id)) return // intermediate swap — retry after next index write
+          seen.add(id)
+        }
+        let row = rowMap.get(id)
         if (row) {
           if (row.scope.i !== i) moved = true
           row.scope.i = i; row.scope.r = id
@@ -69,11 +73,7 @@ export default (tpl, state, expr) => {
         newRows.push(row)
       }
 
-      // remove stale (works even when list grew but items changed)
-      if (rowMap.size > newl) {
-        let keep = new Set(src)
-        for (let [id, row] of rowMap) if (!keep.has(id)) { rm(row); rowMap.delete(id); moved = true }
-      }
+      for (let [id, row] of rowMap) if (!seen.has(id)) { rm(row); rowMap.delete(id); moved = true }
 
       insert(pending)
 
@@ -128,7 +128,11 @@ export default (tpl, state, expr) => {
     if (typeof value === "number") items = Array.from({ length: value }, (_, i) => i + 1)
     else if (value?.constructor === Object) keys = Object.keys(value), items = Object.values(value)
     else items = value || []
-    let off = effect(() => { items[_change]?.value; update() })
+    let off = effect(() => {
+      items[_change]?.value
+      if (items[_signals]) for (let i = 0, n = items.length; i < n; i++) items[i] // index writes (swap/replace)
+      update()
+    })
     return () => off()
   }
   cb.eval = parse(rhs)

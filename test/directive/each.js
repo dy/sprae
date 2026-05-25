@@ -1051,6 +1051,18 @@ test('each: js-framework-benchmark operations', async () => {
   ok(dt < 5000, `create 10k took ${dt.toFixed(0)}ms (budget: 5000ms)`)
 })
 
+test('each: keyed swap moves DOM nodes', async () => {
+  let el = h`<table><tr :each="item in rows"><td :text="item.id"></td></tr></table>`
+  let state = sprae(el, { rows: [{ id: 1 }, { id: 2 }, { id: 3 }, { id: 4 }, { id: 5 }] })
+  await tick()
+  let trs = [...el.querySelectorAll('tr')], n2 = trs[1], n4 = trs[3]
+  let r = state.rows, t = r[1]; r[1] = r[3]; r[3] = t
+  await tick()
+  trs = [...el.querySelectorAll('tr')]
+  is(trs[1].textContent, '4')
+  ok(trs[1] === n4 && trs[3] === n2, 'reuses DOM nodes')
+})
+
 test('each: store array replace renders correctly', async () => {
   // Keyed path (objects)
   let el = h`<div><span :each="item in items" :text="item.x"></span></div>`
