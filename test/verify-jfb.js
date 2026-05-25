@@ -81,6 +81,8 @@ const check = (name, ok, detail = '') => {
 
 let keyedFail = false
 try {
+  await page.goto(`http://localhost:${port}/`)
+  await page.waitForSelector('#run', { state: 'attached' })
   await page.evaluate(keyedDetector)
   await page.click('#add')
   await page.waitForFunction(() => document.querySelectorAll('tbody tr').length === 1000)
@@ -99,7 +101,7 @@ try {
   if (!check('run', tradded >= 1000 && trremoved >= 1000, `${tradded}+ ${trremoved}-`)) keyedFail = true
 
   await page.evaluate('nonKeyedDetector_storeTr(); window.nonKeyedDetector_reset()')
-  await page.click('tbody>tr:nth-of-type(2)>td:nth-of-type(3)>a>span:nth-of-type(1)')
+  await page.evaluate(() => document.querySelector('tbody>tr:nth-of-type(2)>td:nth-of-type(3)>a').click())
   await page.waitForFunction(() => document.querySelector('tbody>tr:nth-of-type(2)>td:nth-of-type(1)')?.textContent === '1003')
   if (!check('remove', (await page.evaluate('nonKeyedDetector_result()')).removedStoredTr)) keyedFail = true
 } catch (e) {
