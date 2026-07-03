@@ -30,11 +30,13 @@
       pressed: false,
       mouseEntered: false,
       overContent: false,
-      MAX: 30,
+      MAX: 48,
       cursorSize: 54,
       cursorIntensity: 0.35,
       cursorOpacity: 1,
       lastTime: 0,
+      emitAcc: 0,
+      seq: 0,
 
       init() {
         this.cx = innerWidth / 2
@@ -42,9 +44,9 @@
         // seed ambient clouds — part of the page's graphic design, drift slowly
         const base = Math.min(innerWidth, 1200)
         this.clouds = [
-          { id: 1, x: innerWidth * 0.62, y: innerHeight * 0.48, vx: 0.03, vy: -0.01, size: base * 0.45, intensity: 0.5, fade: 1, age: 900, g: 0.0004 },
-          { id: 2, x: innerWidth * 0.22, y: innerHeight * 0.82, vx: -0.02, vy: 0.01, size: base * 0.26, intensity: 0.35, fade: 1, age: 700, g: 0.0004 },
-          { id: 3, x: innerWidth * 0.88, y: innerHeight * 0.18, vx: 0.015, vy: 0.015, size: base * 0.18, intensity: 0.3, fade: 1, age: 500, g: 0.0004 },
+          { id: ++this.seq, x: innerWidth * 0.62, y: innerHeight * 0.45, vx: 0.03, vy: -0.008, size: base * 0.5, intensity: 0.65, fade: 1, age: 900, g: 0.0003, amb: 1 },
+          { id: ++this.seq, x: innerWidth * 0.2, y: innerHeight * 0.8, vx: -0.02, vy: 0.008, size: base * 0.3, intensity: 0.5, fade: 1, age: 700, g: 0.0003, amb: 1 },
+          { id: ++this.seq, x: innerWidth * 0.88, y: innerHeight * 0.16, vx: 0.015, vy: 0.012, size: base * 0.2, intensity: 0.45, fade: 1, age: 500, g: 0.0003, amb: 1 },
         ]
         this.lastTime = performance.now()
         const loop = (now) => {
@@ -61,35 +63,38 @@
         this.mx = e.pageX
         this.my = e.pageY
         this.pressed = true
+        this.emitAcc = 5 // first puff right away
       },
 
-      release(e) {
+      release() {
+        // stop spraying — puffs are already out, nozzle eases back in update()
         this.pressed = false
-        // Add current cursor state as released cloud
+      },
+
+      // continuous spray while pressed: small puffs that fade in — no abrupt blob
+      emit(dt) {
+        if ((this.emitAcc += dt) < 5) return // ≈ every 80ms at 60fps
+        this.emitAcc = 0
         const clouds = [...this.clouds]
+        // over budget: let the oldest sprayed cloud dissolve instead of popping out
         if (clouds.length >= this.MAX) {
-          clouds.shift()
+          const old = clouds.find(c => !c.dying && !c.amb)
+          if (old) old.dying = true
         }
-        // Capture speed fade so released cloud doesn't jump opacity
-        const speedFade = Math.max(0, 1 - this.speed * 0.1)
+        const a = Math.random() * Math.PI * 2, r = this.cursorSize * 0.3 * Math.random()
         clouds.push({
-          id: Date.now(),
-          x: this.cx, y: this.cy,
-          vx: this.vx, vy: this.vy,
-          size: this.cursorSize,
-          intensity: this.cursorIntensity,
-          fade: speedFade,
-          age: 0
+          id: ++this.seq,
+          x: this.cx + Math.cos(a) * r,
+          y: this.cy + Math.sin(a) * r,
+          vx: this.vx * 0.4 + (Math.random() - 0.5) * 0.6,
+          vy: this.vy * 0.4 - Math.random() * 0.3,
+          size: this.cursorSize * (0.5 + Math.random() * 0.4),
+          intensity: 0.2 + Math.random() * 0.15,
+          fade: 0,
+          age: 0,
+          g: 0.0012 // gentle fall — lingers and travels instead of raining off-page
         })
         this.clouds = clouds
-        // Reset cursor
-        this.cx = e.pageX
-        this.cy = e.pageY
-        this.vx = 0
-        this.vy = 0
-        this.cursorSize = 54
-        this.cursorIntensity = 0
-        this.cursorOpacity = 0
       },
 
       move(e) {
@@ -116,16 +121,18 @@
         // Track speed for transparency effect
         this.speed = Math.sqrt(this.vx * this.vx + this.vy * this.vy)
 
-        // While pressed, grow cursor cloud
+        // While pressed: nozzle grows and sprays puffs; released: it eases back
         if (this.pressed) {
-          this.cursorSize += 1 * dt
-          this.cursorIntensity = Math.min(1, this.cursorIntensity + 0.06 * dt)
+          this.cursorSize = Math.min(90, this.cursorSize + 0.6 * dt)
+          this.cursorIntensity = Math.min(0.7, this.cursorIntensity + 0.04 * dt)
+          this.emit(dt)
         } else {
           // Fade cursor based on whether over content
           const targetOpacity = this.overContent ? 0 : 1
           const fadeSpeed = this.overContent ? 0.08 : 0.02
           this.cursorOpacity += (targetOpacity - this.cursorOpacity) * fadeSpeed * dt
-          this.cursorIntensity = Math.min(0.35, this.cursorIntensity + 0.005 * dt)
+          this.cursorSize += (54 - this.cursorSize) * 0.08 * dt
+          this.cursorIntensity += (0.35 - this.cursorIntensity) * 0.05 * dt
         }
 
         // Update released clouds (seeded ambient clouds carry own gravity g)
@@ -142,11 +149,11 @@
           const growRate = Math.min(1, c.age / 30) * 0.4 / (1 + c.age * 0.008)
           c.size += growRate * dt
 
-          // Gradually restore fade from speed
-          c.fade = Math.min(1, c.fade + 0.01 * dt)
+          // Fade in fresh puffs; dissolve dying ones
+          c.fade = c.dying ? Math.max(0, c.fade - 0.03 * dt) : Math.min(1, c.fade + 0.05 * dt)
 
-          // Very slow intensity fade
-          c.intensity = Math.max(0.05, c.intensity * Math.pow(0.9995, dt))
+          // Very slow intensity fade; ambient seeds don't decay
+          if (!c.amb) c.intensity = Math.max(0.05, c.intensity * Math.pow(0.9998, dt))
 
           // Settle at bottom
           if (c.y > pageH - c.size * 0.3) {
@@ -160,7 +167,7 @@
           if (c.x > innerWidth - c.size * 0.3) { c.x = innerWidth - c.size * 0.3; c.vx *= -0.3 }
         }
 
-        this.clouds = [...this.clouds]
+        this.clouds = this.clouds.filter(c => !(c.dying && c.fade <= 0))
       },
 
       vars(x, y, size, intensity, speedFade = 0) {

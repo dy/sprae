@@ -1,6 +1,6 @@
 <div class="no-toc">
 
-# spr<span class="logo">æ</span>
+# <span class="logo">∴</span> spræ
 
 ## Reactive sprinkles for HTML
 ### Makes the HTML you already have interactive: one ~8kb script, no build step, no lock-in. [~2× lighter & faster than Alpine](./compare).

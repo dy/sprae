@@ -252,7 +252,8 @@ h1 {
 
 /* Hero: display-size wordmark, calm description */
 .no-toc h1 {
-  font-size: var(--text-3xl);
+  font-size: clamp(4rem, 12vw, 6.5rem);
+  white-space: nowrap;
   margin: var(--sp-6) 0 0;
 }
 
