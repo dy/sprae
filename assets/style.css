@@ -384,7 +384,7 @@ button {
   background: var(--btn-bg);
   color: light-dark(var(--color-bg-alt), oklch(0.95 0.01 var(--accent-h)));
   /* Hyperlegible sits optically high in pills — settle it down a touch */
-  padding: calc(var(--sp-2) + 0.1em) var(--sp-4) calc(var(--sp-2) - 0.1em);
+  padding: calc(var(--sp-2) + 0.15em) var(--sp-4) calc(var(--sp-2) - 0.15em);
   border-radius: var(--radius-sm);
   font: inherit;
   font-size: var(--text-sm);
@@ -479,8 +479,30 @@ th { font-weight: var(--weight-bold); }
 .ref-list summary code { justify-self: start; }
 
 .ref-list summary::-webkit-details-marker { display: none; }
-.ref-list summary:hover,
-.ref-list details[open] summary { background: var(--color-bg-alt); }
+.ref-list summary { position: relative; }
+.ref-list summary:hover { background: var(--color-bg-alt); }
+
+/* chevron: down on hover (expand), up while open (collapse) */
+.ref-list summary::after {
+  content: '';
+  position: absolute;
+  right: var(--sp-3);
+  top: 50%;
+  width: 0.4em;
+  height: 0.4em;
+  border: solid currentColor;
+  border-width: 0 2px 2px 0;
+  transform: translateY(-75%) rotate(45deg);
+  opacity: 0;
+  transition: opacity var(--ease);
+}
+
+.ref-list summary:hover::after { opacity: 0.55; }
+
+.ref-list details[open] summary::after {
+  opacity: 0.55;
+  transform: translateY(-25%) rotate(-135deg);
+}
 
 /* fold/unfold animation */
 .ref-list details::details-content {
