@@ -146,15 +146,11 @@ nav {
 nav .gh {
   display: inline-flex;
   align-items: center;
-  gap: 0.4em;
-  border: var(--border-w) solid var(--color-ink);
-  border-radius: var(--radius-pill);
-  padding: 0.05em 0.6em;
   text-decoration: none;
-  font-size: var(--text-sm);
 }
 
-nav .gh:hover { background: var(--color-ink); color: var(--color-bg-alt); text-decoration: none; }
+nav .gh svg { width: 1.3em; height: 1.3em; display: block; }
+nav .gh:hover { opacity: 0.8; }
 
 nav .version {
   position: relative;
@@ -387,8 +383,8 @@ button {
   cursor: pointer;
   background: var(--btn-bg);
   color: light-dark(var(--color-bg-alt), oklch(0.95 0.01 var(--accent-h)));
-  /* Hyperlegible sits optically low in pills — raise a touch */
-  padding: calc(var(--sp-2) - 0.08em) var(--sp-4) calc(var(--sp-2) + 0.08em);
+  /* Hyperlegible sits optically high in pills — settle it down a touch */
+  padding: calc(var(--sp-2) + 0.1em) var(--sp-4) calc(var(--sp-2) - 0.1em);
   border-radius: var(--radius-sm);
   font: inherit;
   font-size: var(--text-sm);
@@ -473,11 +469,14 @@ th { font-weight: var(--weight-bold); }
   grid-template-columns: 20% 30% 50%;
   align-items: baseline;
   gap: var(--sp-2);
-  padding: var(--sp-2) 0;
+  padding: var(--sp-2);
   cursor: pointer;
   list-style: none;
   transition: background var(--ease);
 }
+
+/* chip hugs the code text, not the whole cell */
+.ref-list summary code { justify-self: start; }
 
 .ref-list summary::-webkit-details-marker { display: none; }
 .ref-list summary:hover,
@@ -700,10 +699,10 @@ th { font-weight: var(--weight-bold); }
   @media (min-width: 769px) {
     dl dt:nth-of-type(2) { grid-row: 1; grid-column: 5 / 7; }
     dl dd:nth-of-type(2) { grid-row: 1; grid-column: 7 / 9; }
-    dl dt:nth-of-type(1) { grid-row: 2; grid-column: 1 / 3; margin-top: var(--sp-6); }
-    dl dd:nth-of-type(1) { grid-row: 2; grid-column: 3 / 5; margin-top: var(--sp-6); }
-    dl dt:nth-of-type(3) { grid-row: 3; grid-column: 3 / 5; margin-top: var(--sp-6); }
-    dl dd:nth-of-type(3) { grid-row: 3; grid-column: 5 / 7; margin-top: var(--sp-6); }
+    dl dt:nth-of-type(1) { grid-row: 2; grid-column: 1 / 3; margin-top: var(--sp-2); }
+    dl dd:nth-of-type(1) { grid-row: 2; grid-column: 3 / 5; margin-top: var(--sp-2); }
+    dl dt:nth-of-type(3) { grid-row: 3; grid-column: 3 / 5; margin-top: var(--sp-8); }
+    dl dd:nth-of-type(3) { grid-row: 3; grid-column: 5 / 7; margin-top: var(--sp-8); }
   }
 }
 
