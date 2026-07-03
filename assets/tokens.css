@@ -38,6 +38,9 @@
   --weight-bold: 700;
   --weight-black: 900;
 
+  /* Line height — one token everywhere */
+  --leading: 1.5;
+
   /* Spacing scale — 4px base */
   --sp-1: 0.25rem;
   --sp-2: 0.5rem;

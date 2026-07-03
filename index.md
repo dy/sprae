@@ -10,10 +10,14 @@
 {::nomarkdown}
 <script type="text/plain" id="playground-css">
 @font-face { font-family: 'Atkinson Hyperlegible'; src: url(assets/AtkinsonHyperlegibleNextVF-Variable.woff2) format('woff2'); font-weight: 100 900 }
-body { font-family: 'Atkinson Hyperlegible', sans-serif; color: oklch(0.40 0.2 262); background: transparent; margin: 0; padding: 1.5rem }
-button { font: inherit; font-weight: 700; color: oklch(1 0 0); background: oklch(0.40 0.2 262); border: 3px solid oklch(0.40 0.2 262); border-radius: 90rem; padding: 0.55rem 1rem 0.35rem; cursor: pointer }
+body { font-family: 'Atkinson Hyperlegible', sans-serif; line-height: 1.5; color: oklch(0.40 0.2 262); background: transparent; margin: 0; padding: 1.5rem }
+button { font: inherit; font-weight: 700; color: oklch(1 0 0); background: oklch(0.40 0.2 262); border: 3px solid oklch(0.40 0.2 262); border-radius: 90rem; padding: 0.5rem 1rem; text-box-trim: both; text-box-edge: cap alphabetic; cursor: pointer }
 button:hover { opacity: 0.9 }
-input, select, textarea { font: inherit; color: inherit; border: 3px solid currentColor; border-radius: 90rem; padding: 0.5rem 0.75rem 0.3rem; background: oklch(1 0 0 / 60%) }
+input, select, textarea { font: inherit; color: inherit; border: 3px solid currentColor; border-radius: 90rem; padding: 0.4rem 0.75rem; text-box-trim: both; text-box-edge: cap alphabetic; background: oklch(1 0 0 / 60%) }
+@supports not (text-box-trim: both) {
+  button { padding: 0.6rem 1rem 0.4rem }
+  input, select, textarea { padding: 0.5rem 0.75rem 0.3rem }
+}
 ul, ol { list-style: none; padding: 0.25rem 0 0 0.75rem; margin: 0.5rem 0 }
 li { padding: 0.15rem 0 }
 h1, h2, h3, p { margin: 0.5rem 0 }
