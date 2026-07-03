@@ -153,7 +153,8 @@ const list = (values, parent = globalThis) => {
     isMut = false,
 
     // since array mutator methods read .length internally only once, we disable it on the moment of call, allowing rest of operations to be reactive
-    mut = fn => function () { isMut = true; return fn.apply(this, arguments); },
+    // batch: a single splice/push writes many index signals — notify subscribers once, not per index
+    mut = fn => function () { isMut = true; let r; batch(() => r = fn.apply(this, arguments)); return r },
 
     length = signal(values.length),
 
@@ -198,8 +199,8 @@ const list = (values, parent = globalThis) => {
 
           // .length
           if (k === 'length') {
-            // force cleaning up tail
-            for (let i = v; i < signals.length; i++) delete state[i]
+            // clean up tail directly — proxy delete per index is pure trap overhead
+            for (let i = v; i < signals.length; i++) signals[i]?.[Symbol.dispose]?.()
             // .length = N directly
             length.value = signals.length = v;
           }
@@ -238,10 +239,19 @@ const create = (signals, k, v, wrap = store) => (signals[k] = (k[0] == '_' || v?
 const shallow = (v) => {
   if (!v || typeof v !== 'object' || v.constructor !== Object) return v
   if (v[_change]) return v // already reactive (store or shallow proxy)
-  let ver = signal(0)
+  // per-key version signals: writing one key notifies only its readers, not the whole item
+  let sigs = {}, ver // ver tracks key set (adds/deletes), created on demand
   return new Proxy(v, {
-    get: (t, k) => k === _signals ? t : k === _change ? ver : (ver.value, t[k]),
-    set: (t, k, val) => { let prev = t[k]; t[k] = val; if (prev !== val) ver.value++; return 1 },
+    get: (t, k) => k === _signals ? t : k === _change ? (ver ??= signal(0)) : typeof k === 'symbol' ? t[k] : ((sigs[k] ??= signal(0)).value, t[k]),
+    set: (t, k, val) => {
+      if (t[k] !== val) {
+        let fresh = !(k in t)
+        t[k] = val
+        sigs[k] && sigs[k].value++
+        if (fresh && ver) ver.value++
+      }
+      return 1
+    },
     has: () => true
   })
 }

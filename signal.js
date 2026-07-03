@@ -11,27 +11,31 @@ let depth = 0
 /** @type {Set<import('./core.js').EffectFn> | null} */
 let batched;
 
+// class keeps instances light: prototype accessors share one shape, subscribers Set allocates lazily
+class Signal {
+  constructor(v) { this.v = v; this.o = null }
+  get value() {
+    if (current) current.deps.add((this.o ??= new Set).add(current))
+    return this.v
+  }
+  set value(val) {
+    if (val === this.v) return
+    this.v = val
+    if (this.o) for (let sub of this.o) batched ? batched.add(sub) : sub() // notify effects
+  }
+  peek() { return this.v }
+  valueOf() { return this.value }
+  toString() { return this.value }
+  toJSON() { return this.value }
+}
+
 /**
  * Creates a reactive signal.
  * @template T
  * @param {T} v - Initial value
  * @returns {import('./core.js').Signal<T>}
  */
-export const signal = (v, _s, _obs = new Set, _v = () => _s.value) => (
-  _s = {
-    get value() {
-      current?.deps.add(_obs.add(current));
-      return v
-    },
-    set value(val) {
-      if (val === v) return
-      v = val;
-      for (let sub of _obs) batched ? batched.add(sub) : sub(); // notify effects
-    },
-    peek() { return v },
-    toJSON: _v, toString: _v, valueOf: _v
-  }
-)
+export const signal = (v) => new Signal(v)
 
 /**
  * Creates a reactive effect that re-runs when dependencies change.
@@ -60,22 +64,25 @@ export const effect = (fn, _teardown, _fx, _deps) => (
   (dep) => { _teardown?.call?.(); _teardown = fn = _fx.fn = null; for (dep of _deps) dep.delete(_fx); _deps.clear() }
 )
 
+class Computed {
+  constructor(fn) { this.fn = fn; this.s = signal(); this.e = null }
+  get value() {
+    this.e ||= effect(() => this.s.value = this.fn())
+    return this.s.value
+  }
+  peek() { return this.s.v }
+  valueOf() { return this.value }
+  toString() { return this.value }
+  toJSON() { return this.value }
+}
+
 /**
  * Creates a computed signal derived from other signals.
  * @template T
  * @param {() => T} fn - Computation function
  * @returns {import('./core.js').Signal<T>}
  */
-export const computed = (fn, _s = signal(), _c, _e, _v = () => _c.value) => (
-  _c = {
-    get value() {
-      _e ||= effect(() => _s.value = fn());
-      return _s.value
-    },
-    peek: _s.peek,
-    toJSON: _v, toString: _v, valueOf: _v
-  }
-)
+export const computed = (fn) => new Computed(fn)
 
 /**
  * Batches multiple signal updates into a single notification.
@@ -95,4 +102,7 @@ export const batch = (fn, _first = !batched, _list) => {
  * @param {() => T} fn - Function to run untracked
  * @returns {T}
  */
-export const untracked = (fn, _prev, _v) => (_prev = current, current = null, _v = fn(), current = _prev, _v)
+export const untracked = (fn, _prev) => {
+  _prev = current, current = null
+  try { return fn() } finally { current = _prev }
+}

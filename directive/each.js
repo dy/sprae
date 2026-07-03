@@ -1,4 +1,4 @@
-import sprae, { parse, _state, _off, effect, _change, _touch, _signals, frag, throttle, mutate } from "../core.js"
+import sprae, { parse, _state, _off, effect, untracked, _change, _touch, _signals, frag, throttle, mutate } from "../core.js"
 
 // Row scope proxies — positional reads item via cur[idx], keyed holds direct ref
 const posHandler = {
@@ -12,7 +12,6 @@ const keyHandler = {
   has: () => true
 }
 
-const rm = r => { r.el.remove(); r.el[Symbol.dispose]?.() }
 
 /**
  * Each directive - renders list items from array/object/number.
@@ -29,6 +28,9 @@ export default (tpl, state, expr) => {
   let holder = tpl._eachHolder || (tpl._eachHolder = doc.createTextNode(""))
   let rowMap = new Map, rows = [], items, keys, cur, keyed = false
 
+  // removal always evicts from rowMap — every path (keyed diff, positional shrink, clear) must, or rows leak
+  let rm = r => { rowMap.delete(r.scope.r); r.el.remove(); r.el[Symbol.dispose]?.() }
+
   // _di tracks current DOM index so swap/reorder only touches actually-moved rows
   let mkrow = (scope, h) => {
     let proxy = new Proxy(scope, h)
@@ -41,10 +43,13 @@ export default (tpl, state, expr) => {
     let f = pending.length > 1 ? doc.createDocumentFragment() : null
     for (let r of pending) f ? f.appendChild(r.node) : holder.before(r.node)
     if (f) holder.before(f)
-    for (let r of pending) sprae(r.el, r.proxy)
+    // element rows pair with tpl as clone master: first row records the directive scan, rest replay it
+    for (let r of pending) sprae(r.el, r.proxy, tpl.content ? undefined : tpl)
   }
 
-  let update = throttle(() => mutate(() => {
+  // untracked: update reads item signals (src[i]) but must not subscribe the :each effect to them —
+  // it re-runs via _change/_touch only, else every index write re-notifies it (O(N) per splice)
+  let update = throttle(() => untracked(() => mutate(() => {
     let src = items, newl = src.length, prevl = rows.length, lenChanged = newl !== prevl
 
     // detect keyed: array of objects (store items are shallow proxies — keyed by proxy identity)
@@ -54,7 +59,7 @@ export default (tpl, state, expr) => {
     }
 
     if (keyed && prevl) {
-      let newRows = [], pending = [], seen = new Set(), moved = false
+      let newRows = [], pending = [], seen = new Set(), moved = false, misplaced = false
 
       for (let i = 0; i < newl; i++) {
         let id = src[i]
@@ -66,6 +71,8 @@ export default (tpl, state, expr) => {
         if (row) {
           // index-only shifts from remove/append keep DOM order — reorder only for same-length permutes (swap)
           if (!lenChanged && row.scope.i !== i) moved = true
+          // insert() appends new rows at the tail — a reused row after a new one means wrong placement
+          if (pending.length) misplaced = true
           row.scope.i = i; row.scope.r = id
         } else {
           row = mkrow({ p: state, v: itemVar, k: idxVar, r: id, i, l: null }, keyHandler)
@@ -75,11 +82,21 @@ export default (tpl, state, expr) => {
         newRows.push(row)
       }
 
-      for (let [id, row] of rowMap) if (!seen.has(id)) { rm(row); rowMap.delete(id) }
+      for (let [id, row] of rowMap) if (!seen.has(id)) rm(row)
 
       insert(pending)
 
-      if (moved) {
+      if (misplaced) {
+        // new rows sit at the tail — sweep everything into list order
+        let next = holder
+        for (let i = newRows.length - 1; i >= 0; i--) {
+          let n = newRows[i].node
+          if (n.nextSibling !== next) next.before(n)
+          next = n
+          newRows[i]._di = i
+        }
+      }
+      else if (moved) {
         // collect rows whose DOM position no longer matches their list index
         let fix = []
         for (let i = 0; i < newRows.length; i++) {
@@ -134,7 +151,7 @@ export default (tpl, state, expr) => {
         insert(pending)
       }
     }
-  }))
+  })))
 
   if (tpl.parentNode) mutate(() => tpl.replaceWith(holder))
   tpl[_state] = null

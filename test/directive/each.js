@@ -92,6 +92,38 @@ test("each: array full", async () => {
   is(el.innerHTML, "");
 });
 
+test('each: clear evicts keyed rows (stale rowMap regression)', async () => {
+  // clear after a keyed run takes the positional shrink path, which must evict rows
+  // from rowMap — else rows leak (unbounded memory across run/clear cycles) and a
+  // re-added item identity resolves to a disposed row that never re-enters the DOM
+  let el = h`<div><x :each="item in items" :text="item.x"></x></div>`
+  let state = sprae(el, { items: [] })
+
+  state.items = [{ x: 1 }, { x: 2 }]
+  await tick()
+  is(el.innerHTML, `<x>1</x><x>2</x>`)
+
+  state.items = [] // first clear: full-reset path
+  await tick()
+
+  state.items = [{ x: 3 }, { x: 4 }]
+  await tick()
+  let c = state.items[0] // keep reactive item identity (rowMap key)
+
+  state.items = [] // clear after keyed run: shrink path — must evict
+  await tick()
+  is(el.innerHTML, ``)
+
+  state.items = [{ x: 5 }]
+  await tick()
+  is(el.innerHTML, `<x>5</x>`)
+
+  // keyed diff path (non-empty → non-empty): stale row for c would swallow this item
+  state.items = [c, state.items[0]]
+  await tick()
+  is(el.innerHTML, `<x>3</x><x>5</x>`)
+})
+
 test('each: array internal signal reassign', async () => {
   let el = h`<p><span :each="a in b" :text="a"></span></p>`;
 

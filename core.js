@@ -140,14 +140,19 @@ const err = (e, expr, el = currentEl) => {
  * @property {Record<string, Signal>} [_signals] - Internal signals map
  */
 
+/** Symbol for cached directive scan on clone masters */
+const _dirs = Symbol('dirs')
+
 /**
  * Applies directives to an HTML element and manages its reactive state.
  *
  * @param {Element} [el=document.body] - The target HTML element to apply directives to.
  * @param {Object} [state] - Initial state values to populate the element's reactive state.
+ * @param {Element} [master] - Internal: clone source (eg. :each template) — first clone records
+ *   its directive scan on the master, later clones replay it without touching attributes.
  * @returns {SpraeState & Object} The reactive state object associated with the element.
  */
-const sprae = (root = document.body, state) => {
+const sprae = (root = document.body, state, master) => {
   // repeated call can be caused by eg. :each with new objects with old keys
   if (root[_state]) return Object.assign(root[_state], state)
 
@@ -181,25 +186,41 @@ const sprae = (root = document.body, state) => {
     el[_off] = el[_on] = el[_dispose] = el[_add] = el[_state] = null
   }
 
-  const add = el[_add] = (el) => {
-    let _attrs = el.attributes, start;
+  // apply one directive to el; true = stop (subsprae directives like :each/:if/:scope change state identity)
+  const apply = (el, name, short, value, prev = el[_state]) => (
+    currentDir = name, currentEl = el,
+    // directive initializer can be redefined
+    fx.push(start = dir(el, short, value, state)), offs.push(start()),
+    el[_state] !== prev
+  )
+  let start
 
-    if (_attrs) for (let i = 0; i < _attrs.length;) {
-      let { name, value } = _attrs[i]
+  const add = el[_add] = (el, mel) => {
+    let dirs = mel?.[_dirs]
 
-      if (name.startsWith(prefix)) {
-        el.removeAttribute(name)
+    // replay master's recorded scan — no attribute reads, no parsing
+    if (dirs !== undefined) {
+      for (let [name, short, value] of dirs) {
+        el.removeAttribute(name) // clones from the recording batch still carry attrs; no-op for later ones
+        if (apply(el, name, short, value)) return
+      }
+    }
+    else {
+      let _attrs = el.attributes, rec = mel && (mel[_dirs] = [])
 
-        let prev = el[_state]
-        currentDir = name;
-        currentEl = el;
+      if (_attrs) for (let i = 0; i < _attrs.length;) {
+        let { name, value } = _attrs[i]
 
-        // directive initializer can be redefined
-        fx.push(start = dir(el, name.slice(prefix.length), value, state)), offs.push(start())
+        if (name.startsWith(prefix)) {
+          el.removeAttribute(name)
+          // strip master too: later clones come out clean; unprocessed tail (after a stop) stays for subsprae
+          mel?.removeAttribute(name)
+          let short = name.slice(prefix.length)
+          rec?.push([name, short, value])
 
-        // stop after subsprae directives (:each, :if, :scope) that change element's state identity
-        if (el[_state] !== prev) return
-      } else i++
+          if (apply(el, name, short, value)) return
+        } else i++
+      }
     }
 
     // custom elements own their children — don't descend
@@ -208,13 +229,14 @@ const sprae = (root = document.body, state) => {
     // :if and :each replace element with text node, which tweaks .children length, but .childNodes length persists
     // real DOM: firstChild/nextSibling avoids array copy; frag.childNodes is already snapshot array
     if (el.firstChild !== undefined) {
-      let child = el.firstChild, next
-      while (child) (next = child.nextSibling, child.nodeType == 1 && add(child), child = next)
+      // master is never mutated structurally, so its pointers stay aligned with pre-captured clone pointers
+      let child = el.firstChild, mchild = mel?.firstChild, next
+      while (child) (next = child.nextSibling, child.nodeType == 1 && add(child, mchild), mchild &&= mchild.nextSibling, child = next)
     }
     else for (let child of el.childNodes) child.nodeType == 1 && add(child)
   };
 
-  add(el);
+  add(el, master);
 
   currentDir = currentEl = null;
 
