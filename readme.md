@@ -541,7 +541,7 @@ Any browser with [Proxy](https://caniuse.com/proxy) (all modern browsers, no IE)
 State is plain reactive objects — scales as far as your data model does. Use [store](#store) with computed getters and methods for complex apps.
 
 **Is it production-ready?**<br>
-3+ years, ~200 [releases](https://github.com/dy/sprae/releases), 0 open issues, 0 dependencies, full test suite incl. the CSP build.
+3+ years, ~200 [npm versions](https://www.npmjs.com/package/sprae?activeTab=versions), 0 open issues, 0 dependencies, full test suite incl. the CSP build.
 
 **Is it backed by a company?**<br>
 Indie project. [Support it](https://github.com/sponsors/dy).

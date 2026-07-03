@@ -10,6 +10,7 @@
 {::nomarkdown}
 <script type="text/plain" id="playground-css">
 @font-face { font-family: 'Atkinson Hyperlegible'; src: url(assets/AtkinsonHyperlegibleNextVF-Variable.woff2) format('woff2'); font-weight: 100 900 }
+html { scrollbar-width: none }
 body { font-family: 'Atkinson Hyperlegible', sans-serif; line-height: 1.5; color: oklch(0.40 0.2 262); background: transparent; margin: 0; padding: 1.5rem }
 button { font: inherit; font-weight: 700; color: oklch(1 0 0); background: oklch(0.40 0.2 262); border: 3px solid oklch(0.40 0.2 262); border-radius: 90rem; padding: 0.5rem 1rem; text-box-trim: both; text-box-edge: cap alphabetic; cursor: pointer }
 button:hover { opacity: 0.9 }
@@ -318,4 +319,4 @@ document.querySelectorAll('.ref-list pre').forEach(p => p.innerHTML = hl(p.textC
 : Any browser with [Proxy](https://caniuse.com/proxy) — all modern browsers, no IE.
 
 **Is it production-ready?**
-: <span data-scope="{ years: 3, issues: 0 }" data-fx.once="fetch('https://api.github.com/repos/dy/sprae').then(function(r){ return r.ok ? r.json() : null }).then(function(d){ if(d) { years = Math.floor((Date.now() - new Date(d.created_at)) / 31536000000); issues = d.open_issues_count } })"><span data-text="years">3</span>+ years · ~200 [releases](https://github.com/dy/sprae/releases) · <span data-text="issues">0</span> open issues</span> · 0 dependencies · full TypeScript types · [test suite](https://github.com/dy/sprae/actions).
+: <span data-scope="{ years: 3, releases: 20, issues: 0 }" data-fx.once="fetch('https://api.github.com/repos/dy/sprae').then(function(r){ return r.ok ? r.json() : null }).then(function(d){ if(d) { years = Math.floor((Date.now() - new Date(d.created_at)) / 31536000000); issues = d.open_issues_count } }); fetch('https://api.github.com/repos/dy/sprae/releases?per_page=1').then(function(r){ var m = (r.headers.get('link') || '').match(/page=(\d+)>; rel=.last./); if (m) releases = +m[1] })"><span data-text="years">3</span>+ years · <span data-text="releases">20</span>+ [releases](https://github.com/dy/sprae/releases) · <span data-text="issues">0</span> open issues</span> · 0 dependencies · full TypeScript types · [test suite](https://github.com/dy/sprae/actions).
