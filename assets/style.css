@@ -130,7 +130,7 @@ footer {
 
 /* a label attaches to the code block after it, separates from what precedes */
 .content p:has(+ .highlighter-rouge) {
-  margin: var(--sp-6) 0 var(--sp-2);
+  margin: var(--sp-5) 0 var(--sp-2);
 }
 
 
@@ -142,6 +142,19 @@ nav {
   justify-content: flex-end;
   font-weight: var(--weight-bold);
 }
+
+nav .gh {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4em;
+  border: var(--border-w) solid var(--color-ink);
+  border-radius: var(--radius-pill);
+  padding: 0.05em 0.6em;
+  text-decoration: none;
+  font-size: var(--text-sm);
+}
+
+nav .gh:hover { background: var(--color-ink); color: var(--color-bg-alt); text-decoration: none; }
 
 nav .version {
   position: relative;
@@ -177,7 +190,7 @@ nav p { display: contents; }
 
 #toc {
   position: fixed;
-  top: var(--sp-5);
+  top: calc(var(--sp-8) * 2);
   left: max(var(--sp-4), calc((100vw - var(--content-w)) / 2 - 14rem));
   width: var(--toc-w);
   max-height: calc(100vh - var(--sp-8) * 2);
@@ -325,7 +338,7 @@ a:hover { text-decoration-color: var(--color-ink); }
 code {
   background: var(--alpha-10);
   padding: 0.1em 0.3em;
-  font-size: 1em;
+  font-size: 0.875em; /* mono runs optically large next to Hyperlegible */
 }
 
 pre, code { font-family: var(--font-mono); }
@@ -333,7 +346,7 @@ pre, code { font-family: var(--font-mono); }
 pre {
   background: var(--color-code-bg);
   color: var(--color-code-fg);
-  font-size: var(--text-base);
+  font-size: var(--text-sm);
   line-height: var(--leading);
   white-space: pre-wrap;
   word-wrap: break-word;
@@ -347,7 +360,7 @@ pre {
 pre code { background: none; padding: 0; font-size: inherit; }
 
 /* Rouge syntax highlighting — dim structure, accent the code that matters */
-.highlight .c, .highlight .c1, .highlight .cm { color: var(--alpha-50); } /* comments */
+.highlight .c, .highlight .c1, .highlight .cm { color: oklch(0.82 0.06 var(--accent-h) / 55%); } /* comments — dimmed code-fg, visible on the dark block */
 .highlight .k, .highlight .kd, .highlight .kn { color: oklch(1 0 0); } /* keywords */
 .highlight .s, .highlight .s1, .highlight .s2 { color: oklch(1 0 0); } /* strings — the main code */
 .highlight .nf, .highlight .nb { color: var(--color-code-fg); } /* functions */
@@ -374,10 +387,8 @@ button {
   cursor: pointer;
   background: var(--btn-bg);
   color: light-dark(var(--color-bg-alt), oklch(0.95 0.01 var(--accent-h)));
-  /* center the cap band geometrically (same approach as .demo inputs) */
-  padding: var(--sp-2) var(--sp-4);
-  text-box-trim: both;
-  text-box-edge: cap alphabetic;
+  /* Hyperlegible sits optically low in pills — raise a touch */
+  padding: calc(var(--sp-2) - 0.08em) var(--sp-4) calc(var(--sp-2) + 0.08em);
   border-radius: var(--radius-sm);
   font: inherit;
   font-size: var(--text-sm);
@@ -385,11 +396,6 @@ button {
 }
 
 button:hover { opacity: 0.9; }
-
-/* Hyperlegible sits optically high — small nudge where text-box-trim can't center the cap band */
-@supports not (text-box-trim: both) {
-  button { padding: calc(var(--sp-2) + 0.1em) var(--sp-4) calc(var(--sp-2) - 0.1em); }
-}
 
 button:focus-visible {
   outline: var(--border-w) solid var(--color-bg-alt);
@@ -474,12 +480,8 @@ th { font-weight: var(--weight-bold); }
 }
 
 .ref-list summary::-webkit-details-marker { display: none; }
-.ref-list summary:hover { background: var(--color-bg-alt); }
-
-.ref-list summary code { background: none; }
-
-.ref-list details[open] summary { font-weight: var(--weight-bold); }
-.ref-list details[open] summary code { font-weight: var(--weight-normal); }
+.ref-list summary:hover,
+.ref-list details[open] summary { background: var(--color-bg-alt); }
 
 /* fold/unfold animation */
 .ref-list details::details-content {
@@ -563,7 +565,7 @@ th { font-weight: var(--weight-bold); }
   margin: 0;
   padding: var(--sp-5);
   font-family: var(--font-mono);
-  font-size: var(--text-base);
+  font-size: var(--text-sm);
   line-height: var(--leading);
   white-space: pre-wrap;
   overflow-wrap: break-word;
@@ -622,6 +624,7 @@ th { font-weight: var(--weight-bold); }
 
 [id^="faq"] ~ dl dt {
   grid-column: 1;
+  font-size: var(--text-md);
   font-weight: var(--weight-bold);
   color: var(--color-ink);
 }
@@ -693,14 +696,14 @@ th { font-weight: var(--weight-bold); }
     white-space: nowrap; /* lines are set by <br> — exactly three, bar stays short */
   }
 
-  /* Staggered composition in natural reading order: 1 top-left, 2 top-right, 3 below offset */
+  /* Floating particles: each principle on its own level — size top-right, native mid-left, open lower-center */
   @media (min-width: 769px) {
-    dl dt:nth-of-type(1) { grid-column: 1 / 3; }
-    dl dd:nth-of-type(1) { grid-column: 3 / 5; }
-    dl dt:nth-of-type(2) { grid-column: 5 / 7; }
-    dl dd:nth-of-type(2) { grid-column: 7 / 9; }
-    dl dt:nth-of-type(3) { grid-column: 3 / 5; margin-top: var(--sp-8); }
-    dl dd:nth-of-type(3) { grid-column: 5 / 7; margin-top: var(--sp-8); }
+    dl dt:nth-of-type(2) { grid-row: 1; grid-column: 5 / 7; }
+    dl dd:nth-of-type(2) { grid-row: 1; grid-column: 7 / 9; }
+    dl dt:nth-of-type(1) { grid-row: 2; grid-column: 1 / 3; margin-top: var(--sp-6); }
+    dl dd:nth-of-type(1) { grid-row: 2; grid-column: 3 / 5; margin-top: var(--sp-6); }
+    dl dt:nth-of-type(3) { grid-row: 3; grid-column: 3 / 5; margin-top: var(--sp-6); }
+    dl dd:nth-of-type(3) { grid-row: 3; grid-column: 5 / 7; margin-top: var(--sp-6); }
   }
 }
 

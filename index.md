@@ -2,8 +2,8 @@
 
 # <span class="logo">∴</span> spræ
 
-## Reactive sprinkles for HTML
-### Makes your HTML interactive: one ~8kb script, no build step, no lock-in. [~2× lighter & faster than Alpine](./compare).
+## DOM microhydration
+### Reactive sprinkles for HTML/JSX
 
 </div>
 
