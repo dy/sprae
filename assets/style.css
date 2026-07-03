@@ -187,6 +187,7 @@ nav p { display: contents; }
 
 #toc {
   position: fixed;
+  text-align: left;
   top: calc(var(--sp-8) * 2);
   left: max(var(--sp-4), calc((100vw - var(--content-w)) / 2 - 14rem));
   width: var(--toc-w);
@@ -385,7 +386,7 @@ button {
   background: var(--btn-bg);
   color: light-dark(var(--color-bg-alt), oklch(0.95 0.01 var(--accent-h)));
   /* Hyperlegible sits optically high in pills — settle it down a touch */
-  padding: calc(var(--sp-2) + 0.15em) var(--sp-4) calc(var(--sp-2) - 0.15em);
+  padding: calc(var(--sp-2) + 0.08em) var(--sp-4) calc(var(--sp-2) - 0.08em);
   border-radius: var(--radius-sm);
   font: inherit;
   font-size: var(--text-sm);
@@ -440,7 +441,6 @@ th { font-weight: var(--weight-bold); }
   color: var(--color-ink);
   border: var(--border);
   border-radius: var(--radius-sm);
-  padding: var(--sp-2) var(--sp-4);
   margin-right: var(--sp-2);
   font-size: var(--text-base);
   transition: background var(--ease), color var(--ease);
@@ -795,8 +795,7 @@ th { font-weight: var(--weight-bold); }
   overflow: visible;
 }
 
-/* drop demos: smaller type — the pill baseline nudge overshoots here, keep symmetric */
-.drop-demo button { margin-bottom: var(--sp-1); padding: var(--sp-2) var(--sp-4); }
+.drop-demo button { margin-bottom: var(--sp-1); }
 .drop-demo label { cursor: pointer; }
 
 .drop-demo kbd {

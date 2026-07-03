@@ -64,7 +64,7 @@ window.hl = s => {
 : One `<script>` tag or `npm i`.<br>Any backend, any template, +JSX.<br>No ecosystem lock-in.
 
 **Open & pluggable**
-: Controllable state. ESM-first.<br>Signals-powered reactivity.<br>Sandboxed. CSP-safe eval.
+: Direct state access.<br>Swappable signals, custom directives.<br>No eval — CSP-safe sandbox.
 
 </div>
 
@@ -165,63 +165,86 @@ Works with Jekyll, Hugo, Eleventy, Astro — and server templates: PHP, Django, 
 {::nomarkdown}
 <details><summary><code>:text</code><span>Set text content</span><code>&lt;span :text="name"&gt;</code></summary><pre>&lt;span :text="user.name"&gt;Guest&lt;/span&gt;
 &lt;span :text="count + ' items'"&gt;&lt;/span&gt;
-&lt;span :text="text =&gt; text.toUpperCase()"&gt;hello&lt;/span&gt;  &lt;!-- function form --&gt;</pre></details>
+&lt;!-- function form --&gt;
+&lt;span :text="text =&gt; text.toUpperCase()"&gt;hello&lt;/span&gt;</pre></details>
 <details><summary><code>:html</code><span>Set innerHTML</span><code>&lt;div :html="content"&gt;</code></summary><pre>&lt;article :html="marked(content)"&gt;&lt;/article&gt;
-&lt;section :html="document.querySelector('#card')"&gt;&lt;/section&gt;  &lt;!-- template form --&gt;
-&lt;div :html="html =&gt; DOMPurify.sanitize(html)"&gt;&lt;/div&gt;  &lt;!-- function form --&gt;</pre></details>
+&lt;!-- template element --&gt;
+&lt;section :html="document.querySelector('#card')"&gt;&lt;/section&gt;
+&lt;!-- function form --&gt;
+&lt;div :html="html =&gt; DOMPurify.sanitize(html)"&gt;&lt;/div&gt;</pre></details>
 <details><summary><code>:class</code><span>Set classes</span><code>&lt;div :class="{active: true}"&gt;</code></summary><pre>&lt;div :class="{ active: isActive, disabled }"&gt;&lt;/div&gt;
 &lt;div :class="['btn', size, variant]"&gt;&lt;/div&gt;
 &lt;div :class="isError &amp;&amp; 'error'"&gt;&lt;/div&gt;
-&lt;div :class="cls =&gt; [...cls, 'extra']"&gt;&lt;/div&gt;  &lt;!-- function form: extend existing --&gt;</pre></details>
-<details><summary><code>:style</code><span>Set styles</span><code>&lt;div :style="{color:'#fff'}"&gt;</code></summary><pre>&lt;div :style="{ color, opacity, '--size': size + 'px' }"&gt;&lt;/div&gt;  &lt;!-- CSS vars work --&gt;
+&lt;!-- function form: extend existing --&gt;
+&lt;div :class="cls =&gt; [...cls, 'extra']"&gt;&lt;/div&gt;</pre></details>
+<details><summary><code>:style</code><span>Set styles</span><code>&lt;div :style="{color:'#fff'}"&gt;</code></summary><pre>&lt;div :style="{ color, opacity, '--size': size + 'px' }"&gt;&lt;/div&gt;
 &lt;div :style="'color:' + color"&gt;&lt;/div&gt;
-&lt;div :style="style =&gt; ({ ...style, color })"&gt;&lt;/div&gt;  &lt;!-- function form --&gt;</pre></details>
+&lt;!-- function form --&gt;
+&lt;div :style="style =&gt; ({ ...style, color })"&gt;&lt;/div&gt;</pre></details>
 <details><summary><code>:value</code><span>Bind input (state→DOM)</span><code>&lt;input :value="text"&gt;</code></summary><pre>&lt;input :value="query" /&gt;
 &lt;textarea :value="content"&gt;&lt;/textarea&gt;
 &lt;input type="checkbox" :value="agreed" /&gt;
 &lt;select :value="country"&gt;&lt;option :each="c in countries" :value="c.code" :text="c.name"&gt;&lt;/option&gt;&lt;/select&gt;</pre></details>
 <details><summary><code>:change</code><span>Write input back (DOM→state)</span><code>&lt;input :change="v =&gt; text = v"&gt;</code></summary><pre>&lt;input :value="query" :change="v =&gt; query = v" /&gt;
-&lt;input type="number" :value="count" :change="v =&gt; count = v" /&gt;  &lt;!-- coerces type --&gt;
+&lt;!-- coerces type --&gt;
+&lt;input type="number" :value="count" :change="v =&gt; count = v" /&gt;
+&lt;!-- debounced write --&gt;
 &lt;input :value="search" :change.debounce-300="v =&gt; search = v" /&gt;</pre></details>
 <details><summary><code>:&lt;prop&gt;</code><span>Set any attribute</span><code>&lt;a :href="url"&gt;</code></summary><pre>&lt;button :disabled="loading" :aria-busy="loading"&gt;Save&lt;/button&gt;
-&lt;input :id:name="fieldName" /&gt;  &lt;!-- multiple attrs at once --&gt;
-&lt;input :="{ type: 'email', required, placeholder }" /&gt;  &lt;!-- spread form --&gt;</pre></details>
-<details><summary><code>:hidden</code><span>Toggle visibility</span><code>&lt;div :hidden="!show"&gt;</code></summary><pre>&lt;p :hidden="!ready"&gt;Loading...&lt;/p&gt;  &lt;!-- unlike :if, keeps element in DOM --&gt;</pre></details>
+&lt;!-- multiple attrs at once --&gt;
+&lt;input :id:name="fieldName" /&gt;
+&lt;!-- spread form --&gt;
+&lt;input :="{ type: 'email', required, placeholder }" /&gt;</pre></details>
+<details><summary><code>:hidden</code><span>Toggle visibility</span><code>&lt;div :hidden="!show"&gt;</code></summary><pre>&lt;p :hidden="!ready"&gt;Loading...&lt;/p&gt;</pre></details>
+&lt;!-- unlike :if, keeps the element in DOM --&gt;
 <details><summary><span class="nm"><code>:if</code> <code>:else</code></span><span>Conditional render</span><code>&lt;div :if="cond"&gt;</code></summary><pre>&lt;div :if="loading"&gt;Loading...&lt;/div&gt;
 &lt;div :else :if="error" :text="error"&gt;&lt;/div&gt;
 &lt;div :else&gt;Ready!&lt;/div&gt;
-&lt;template :if="showDetails"&gt;&lt;dt&gt;Name&lt;/dt&gt;&lt;dd :text="name"&gt;&lt;/dd&gt;&lt;/template&gt;  &lt;!-- fragment --&gt;</pre></details>
+&lt;!-- fragment --&gt;
+&lt;template :if="showDetails"&gt;&lt;dt&gt;Name&lt;/dt&gt;&lt;dd :text="name"&gt;&lt;/dd&gt;&lt;/template&gt;</pre></details>
 <details><summary><code>:each</code><span>List render</span><code>&lt;li :each="item in list"&gt;</code></summary><pre>&lt;li :each="item, index in items" :text="index + '. ' + item.name"&gt;&lt;/li&gt;
 &lt;li :each="value, key in object" :text="key + ': ' + value"&gt;&lt;/li&gt;
 &lt;li :each="n in 5" :text="'Item ' + n"&gt;&lt;/li&gt;
-&lt;li :each="item in items.filter(i =&gt; i.active)" :text="item.name"&gt;&lt;/li&gt;  &lt;!-- reactive filter --&gt;
+&lt;!-- reactive filter --&gt;
+&lt;li :each="item in items.filter(i =&gt; i.active)" :text="item.name"&gt;&lt;/li&gt;
+&lt;!-- fragment --&gt;
 &lt;template :each="item in items"&gt;&lt;dt :text="item.term"&gt;&lt;/dt&gt;&lt;dd :text="item.definition"&gt;&lt;/dd&gt;&lt;/template&gt;</pre></details>
-<details><summary><code>:scope</code><span>Create local state</span><code>&lt;div :scope="{x:1}"&gt;</code></summary><pre>&lt;div :scope="{ count: 0, open: false }"&gt;...&lt;/div&gt;  &lt;!-- inherits parent scope --&gt;
-&lt;span :scope="x = 1, y = 2" :text="x + y"&gt;&lt;/span&gt;  &lt;!-- inline variables --&gt;
+<details><summary><code>:scope</code><span>Create local state</span><code>&lt;div :scope="{x:1}"&gt;</code></summary><pre>&lt;div :scope="{ count: 0, open: false }"&gt;...&lt;/div&gt;
+&lt;!-- inline variables --&gt;
+&lt;span :scope="x = 1, y = 2" :text="x + y"&gt;&lt;/span&gt;
 &lt;div :scope="{ local: parentValue * 2 }"&gt;...&lt;/div&gt;
-&lt;div :scope="scope =&gt; ({ double: scope.value * 2 })"&gt;...&lt;/div&gt;  &lt;!-- function form --&gt;</pre></details>
+&lt;!-- function form --&gt;
+&lt;div :scope="scope =&gt; ({ double: scope.value * 2 })"&gt;...&lt;/div&gt;</pre></details>
 <details><summary><code>:ref</code><span>Element reference</span><code>&lt;input :ref="name"&gt;</code></summary><pre>&lt;canvas :ref="canvas" :fx="draw(canvas)"&gt;&lt;/canvas&gt;
-&lt;input :ref="el =&gt; el.focus()" /&gt;  &lt;!-- function form --&gt;
-&lt;input :ref="$refs.email" /&gt;  &lt;!-- path reference --&gt;</pre></details>
+&lt;!-- function form --&gt;
+&lt;input :ref="el =&gt; el.focus()" /&gt;
+&lt;!-- path reference --&gt;
+&lt;input :ref="$refs.email" /&gt;</pre></details>
 <details><summary><code>:mount</code><span>Connect/cleanup hook</span><code>&lt;canvas :mount="el =&gt; init(el)"&gt;</code></summary><pre>&lt;canvas :mount="el =&gt; initChart(el)"&gt;&lt;/canvas&gt;
+&lt;!-- return cleanup, runs on disconnect --&gt;
 &lt;div :mount="el =&gt; {
   const timer = setInterval(tick, 1000)
-  return () =&gt; clearInterval(timer)  &lt;!-- cleanup on disconnect --&gt;
+  return () =&gt; clearInterval(timer)
 }"&gt;&lt;/div&gt;</pre></details>
 <details><summary><code>:intersect</code><span>Visibility observer</span><code>&lt;img :intersect.once="load()"&gt;</code></summary><pre>&lt;img :intersect.once="loadImage()" :src="placeholder" /&gt;
-&lt;div :intersect="entry =&gt; visible = entry.isIntersecting"&gt;&lt;/div&gt;  &lt;!-- full control --&gt;</pre></details>
+&lt;!-- full control --&gt;
+&lt;div :intersect="entry =&gt; visible = entry.isIntersecting"&gt;&lt;/div&gt;</pre></details>
 <details><summary><code>:resize</code><span>Size observer</span><code>&lt;div :resize="({width}) =&gt; ..."&gt;</code></summary><pre>&lt;div :resize="({width}) =&gt; cols = Math.floor(width / 200)"&gt;&lt;/div&gt;</pre></details>
 <details><summary><code>:fx</code><span>Side effect</span><code>&lt;div :fx="log(x)"&gt;</code></summary><pre>&lt;div :fx="console.log('count changed:', count)"&gt;&lt;/div&gt;
+&lt;!-- return cleanup --&gt;
 &lt;div :fx="() =&gt; {
   const id = setInterval(tick, 1000)
-  return () =&gt; clearInterval(id)  &lt;!-- cleanup --&gt;
+  return () =&gt; clearInterval(id)
 }"&gt;&lt;/div&gt;</pre></details>
 <details><summary><code>:on&lt;event&gt;</code><span>Event listener</span><code>&lt;button :onclick="fn()"&gt;</code></summary><pre>&lt;form :onsubmit.prevent="handleSubmit()"&gt;...&lt;/form&gt;
 &lt;input :onkeydown.enter="send()" /&gt;
-&lt;input :oninput:onchange="e =&gt; validate(e)" /&gt;  &lt;!-- multiple events --&gt;
-&lt;div :onfocus..onblur="e =&gt; (active = true, () =&gt; active = false)"&gt;&lt;/div&gt;  &lt;!-- setup..cleanup sequence --&gt;</pre></details>
+&lt;!-- multiple events --&gt;
+&lt;input :oninput:onchange="e =&gt; validate(e)" /&gt;
+&lt;!-- setup..cleanup sequence --&gt;
+&lt;div :onfocus..onblur="e =&gt; (active = true, () =&gt; active = false)"&gt;&lt;/div&gt;</pre></details>
 <details><summary><code>:portal</code><span>Move to container</span><code>&lt;div :portal="'#modals'"&gt;</code></summary><pre>&lt;div :portal="'#modals'"&gt;Modal content&lt;/div&gt;
-&lt;dialog :portal="open &amp;&amp; '#portal-target'"&gt;...&lt;/dialog&gt;  &lt;!-- conditional --&gt;</pre></details>
+&lt;!-- conditional target --&gt;
+&lt;dialog :portal="open &amp;&amp; '#portal-target'"&gt;...&lt;/dialog&gt;</pre></details>
 {:/nomarkdown}
 
 </div>
@@ -229,17 +252,22 @@ Works with Jekyll, Hugo, Eleventy, Astro — and server templates: PHP, Django, 
 
 {::nomarkdown}
 <details><summary><code>.debounce</code><span>Delay until activity stops</span><code>:oninput.debounce-300</code></summary><pre>&lt;input :oninput.debounce-300="search()" /&gt;
-&lt;input :oninput.debounce-1s-immediate="save()" /&gt;  &lt;!-- leading edge --&gt;
-&lt;!-- time formats: 100 (ms), 100ms, 1s, 1m, raf, idle, tick --&gt;</pre></details>
+&lt;!-- leading edge --&gt;
+&lt;input :oninput.debounce-1s-immediate="save()" /&gt;
+&lt;!-- formats: 100, 100ms, 1s, 1m, raf, idle, tick --&gt;
+</pre></details>
 <details><summary><code>.throttle</code><span>Limit call frequency</span><code>:onscroll.throttle-100</code></summary><pre>&lt;div :onscroll.throttle-100="update()"&gt;...&lt;/div&gt;
-&lt;div :onmousemove.throttle-raf="track()"&gt;...&lt;/div&gt;  &lt;!-- once per frame --&gt;</pre></details>
+&lt;!-- once per frame --&gt;
+&lt;div :onmousemove.throttle-raf="track()"&gt;...&lt;/div&gt;</pre></details>
 <details><summary><code>.delay</code><span>Delay each call</span><code>:onmouseenter.delay-500</code></summary><pre>&lt;div :onmouseenter.delay-500="show = true"&gt;...&lt;/div&gt;</pre></details>
 <details><summary><code>.once</code><span>Run only once</span><code>:onclick.once</code></summary><pre>&lt;button :onclick.once="init()"&gt;Initialize&lt;/button&gt;
-&lt;div :fx.once="fetchData()"&gt;&lt;/div&gt;  &lt;!-- works on any directive --&gt;</pre></details>
+&lt;!-- works on any directive --&gt;
+&lt;div :fx.once="fetchData()"&gt;&lt;/div&gt;</pre></details>
 <details><summary><code>.window</code><span>Listen on window</span><code>:onkeydown.window.escape</code></summary><pre>&lt;div :onkeydown.window.escape="close()"&gt;...&lt;/div&gt;
 &lt;div :onresize.window="w = innerWidth"&gt;&lt;/div&gt;</pre></details>
 <details><summary><code>.document</code><span>Listen on document</span><code>:onclick.document</code></summary><pre>&lt;div :onselectionchange.document="onSelect()"&gt;&lt;/div&gt;</pre></details>
-<details><summary><span class="nm"><code>.body</code> <code>.root</code> <code>.parent</code></span><span>Other targets</span><code>:onclick.parent</code></summary><pre>&lt;li :onclick.parent="select()"&gt;...&lt;/li&gt;  &lt;!-- delegate to parent --&gt;</pre></details>
+&lt;!-- delegate to parent --&gt;
+<details><summary><span class="nm"><code>.body</code> <code>.root</code> <code>.parent</code></span><span>Other targets</span><code>:onclick.parent</code></summary><pre>&lt;li :onclick.parent="select()"&gt;...&lt;/li&gt;</pre></details>
 <details><summary><code>.self</code><span>Only direct target</span><code>:onclick.self</code></summary><pre>&lt;div :onclick.self="close()"&gt;ignores clicks on children&lt;/div&gt;</pre></details>
 <details><summary><code>.away</code><span>Click outside element</span><code>:onclick.away</code></summary><pre>&lt;menu :onclick.away="open = false"&gt;click outside to close&lt;/menu&gt;</pre></details>
 <details><summary><code>.prevent</code><span>Prevent default</span><code>:onclick.prevent</code></summary><pre>&lt;form :onsubmit.prevent="save()"&gt;...&lt;/form&gt;
@@ -249,7 +277,8 @@ Works with Jekyll, Hugo, Eleventy, Astro — and server templates: PHP, Django, 
 <details><summary><span class="nm"><code>.passive</code> <code>.capture</code></span><span>Listener options</span><code>:onscroll.passive</code></summary><pre>&lt;div :onscroll.passive="onScroll()"&gt;...&lt;/div&gt;
 &lt;div :onclick.capture="first()"&gt;...&lt;/div&gt;</pre></details>
 <details><summary><span class="nm"><code>.enter</code> <code>.esc</code> <code>.tab</code> <code>.space</code></span><span>Common keys</span><code>:onkeydown.enter</code></summary><pre>&lt;input :onkeydown.enter="submit()" /&gt;
-&lt;!-- also: .delete (delete or backspace), .arrow, .digit, .letter, .char --&gt;</pre></details>
+&lt;!-- also: .delete, .arrow, .digit, .letter, .char --&gt;
+</pre></details>
 <details><summary><span class="nm"><code>.ctrl</code> <code>.shift</code> <code>.alt</code> <code>.meta</code></span><span>Modifier keys, combos</span><code>:onkeydown.ctrl-s</code></summary><pre>&lt;input :onkeydown.ctrl-s.prevent="save()" /&gt;
 &lt;input :onkeydown.shift-enter="newLine()" /&gt;
 &lt;input :onkeydown.meta-x="cut()" /&gt;</pre></details>
@@ -266,7 +295,7 @@ document.querySelectorAll('.ref-list pre').forEach(p => p.innerHTML = hl(p.textC
 </script>
 
 
-## FAQ [All questions →](https://github.com/dy/sprae#faq)
+## FAQ
 
 **What is it?**
 : A ~8kb script that adds reactivity to HTML via `:attribute="expression"`. No build step, no new syntax — just HTML and JS you already know.
