@@ -51,7 +51,7 @@ window.hl = s => {
 </div>
 {:/nomarkdown}
 
-*Edit the HTML — it re-runs live. That's the whole build pipeline.*
+*Edit the HTML — it re-runs live.*
 
 <div id="principles-content">
 
@@ -195,8 +195,8 @@ Works with Jekyll, Hugo, Eleventy, Astro — and server templates: PHP, Django, 
 &lt;input :id:name="fieldName" /&gt;
 &lt;!-- spread form --&gt;
 &lt;input :="{ type: 'email', required, placeholder }" /&gt;</pre></details>
-<details><summary><code>:hidden</code><span>Toggle visibility</span><code>&lt;div :hidden="!show"&gt;</code></summary><pre>&lt;p :hidden="!ready"&gt;Loading...&lt;/p&gt;</pre></details>
-&lt;!-- unlike :if, keeps the element in DOM --&gt;
+<details><summary><code>:hidden</code><span>Toggle visibility</span><code>&lt;div :hidden="!show"&gt;</code></summary><pre>&lt;!-- unlike :if, keeps the element in DOM --&gt;
+&lt;p :hidden="!ready"&gt;Loading...&lt;/p&gt;</pre></details>
 <details><summary><span class="nm"><code>:if</code> <code>:else</code></span><span>Conditional render</span><code>&lt;div :if="cond"&gt;</code></summary><pre>&lt;div :if="loading"&gt;Loading...&lt;/div&gt;
 &lt;div :else :if="error" :text="error"&gt;&lt;/div&gt;
 &lt;div :else&gt;Ready!&lt;/div&gt;
@@ -296,12 +296,6 @@ document.querySelectorAll('.ref-list pre').forEach(p => p.innerHTML = hl(p.textC
 
 
 ## FAQ
-
-**What is it?**
-: A ~8kb script that adds reactivity to HTML via `:attribute="expression"`. No build step, no new syntax — just HTML and JS you already know.
-
-**When to use it?**
-: Adding interactivity to server-rendered pages, static sites, prototypes, or anywhere a full framework is overkill. Works with any backend — Rails, Django, PHP, Jekyll, Next.js.
 
 **How does it compare?**
 : ~2× lighter and ~2× faster than Alpine — [measured](./compare). Actively maintained, unlike petite-vue. [Signals](https://github.com/tc39/proposal-signals)-powered (emerging standard). Migrating? [Alpine → sprae guide](./alpine).

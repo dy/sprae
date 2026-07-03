@@ -140,9 +140,10 @@ nav {
   display: flex;
   gap: var(--sp-4);
   justify-content: flex-end;
-  align-items: center;
   font-weight: var(--weight-bold);
 }
+
+header nav { align-items: center; }
 
 nav .gh {
   display: inline-flex;
@@ -229,9 +230,7 @@ nav p { display: contents; }
   opacity: 0.6;
   border-left: var(--border-w) solid transparent;
   transition: opacity var(--ease), border-color var(--ease);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  text-wrap: balance;
 }
 
 #toc a.indent { padding-left: var(--sp-4); }
@@ -386,7 +385,7 @@ button {
   background: var(--btn-bg);
   color: light-dark(var(--color-bg-alt), oklch(0.95 0.01 var(--accent-h)));
   /* Hyperlegible sits optically high in pills — settle it down a touch */
-  padding: calc(var(--sp-2) + 0.08em) var(--sp-4) calc(var(--sp-2) - 0.08em);
+  padding: calc(var(--sp-2) + 0.04em) var(--sp-4) calc(var(--sp-2) - 0.04em);
   border-radius: var(--radius-sm);
   font: inherit;
   font-size: var(--text-sm);
@@ -634,6 +633,7 @@ th { font-weight: var(--weight-bold); }
 .playground + p {
   opacity: 0.65;
   margin-top: calc(-1 * var(--sp-5));
+  text-align: center;
 }
 
 
@@ -1135,7 +1135,7 @@ p > a:only-child:hover { opacity: 1; }
   }
 }
 
-@media (min-width: 768px) and (max-width: 1400px) {
+@media (min-width: 768px) and (max-width: 1700px) {
   header { max-width: none; padding: var(--sp-5) var(--sp-6) 0 calc(10rem + var(--sp-4)); }
   #page-drops header,
   #page-index header { max-width: calc(var(--content-w) + var(--sp-6) * 2); padding-left: var(--sp-6); }
