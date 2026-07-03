@@ -2,8 +2,8 @@
 
 # <span class="logo">∴</span> spræ
 
-## Reactive sprinkles for HTML
-### Makes the HTML you already have interactive: one ~8kb script, no build step, no lock-in. [~2× lighter & faster than Alpine](./compare).
+## Reactive sprinkles for HTML
+### Makes your HTML interactive: one ~8kb script, no build step, no lock-in. [~2× lighter & faster than Alpine](./compare).
 
 </div>
 
@@ -18,17 +18,21 @@ ul, ol { list-style: none; padding: 0.25rem 0 0 0.75rem; margin: 0.5rem 0 }
 li { padding: 0.15rem 0 }
 h1, h2, h3, p { margin: 0.5rem 0 }
 </script>
+<script>
+// shared HTML tokenizer: structure dim, directives light, values bright
+window.hl = s => {
+  s = s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+  return s.replace(/(&lt;!--[^]*?--&gt;)|(&lt;\/?[\w-]+)|(\/?&gt;)|(:[\w.-]+)(?==)|("[^"]*")/g, (m, cm, tag, br, dir, val) =>
+    cm ? '<i class=tp>' + cm + '</i>'
+    : tag ? '<i class=tp>' + tag.match(/^&lt;\/?/)[0] + '</i><i class=tn>' + tag.replace(/^&lt;\/?/, '') + '</i>'
+    : br ? '<i class=tp>' + br + '</i>'
+    : dir ? '<i class=dr>' + dir + '</i>'
+    : '<i class=vl>' + val + '</i>')
+}
+</script>
 <div class="playground" data-scope="{
   src: document.querySelector('#playground-src').value,
-  out: document.querySelector('#playground-src').value,
-  hl(s) {
-    s = s.replace(/&/g, '&amp;amp;').replace(/</g, '&amp;lt;').replace(/>/g, '&amp;gt;')
-    return s.replace(/(&amp;lt;\/?)([\w-]+)|(\/?&amp;gt;)|(:[\w.-]+)(?==)|(\x22[^\x22]*\x22)/g, (m, tp, tn, br, dir, val) =>
-      tn ? '<i class=tp>' + tp + '</i><i class=tn>' + tn + '</i>'
-      : br ? '<i class=tp>' + br + '</i>'
-      : dir ? '<i class=dr>' + dir + '</i>'
-      : '<i class=vl>' + val + '</i>')
-  }
+  out: document.querySelector('#playground-src').value
 }" data-oninput="e => src = e.target.value" data-fx.debounce-300="out = src">
 <div class="editor">
 <pre aria-hidden="true"><code data-html="hl(src)"></code></pre>
@@ -39,7 +43,7 @@ h1, h2, h3, p { margin: 0.5rem 0 }
   &lt;/ul&gt;
 &lt;/div&gt;</textarea>
 </div>
-<iframe class="bg-graph-paper" title="Live result" data-srcdoc="'<style>' + document.querySelector('#playground-css').textContent + 'body{font-size:' + getComputedStyle(document.querySelector('#playground-src')).fontSize + '}</style>' + out + '<scr' + 'ipt src=https://unpkg.com/sprae data-start></scr' + 'ipt>'"></iframe>
+<iframe class="bg-graph-paper" title="Live result" data-srcdoc="'<style>' + document.querySelector('#playground-css').textContent + 'body{font-size:' + getComputedStyle(document.body).fontSize + '}</style>' + out + '<scr' + 'ipt src=https://unpkg.com/sprae data-start></scr' + 'ipt>'"></iframe>
 </div>
 {:/nomarkdown}
 
@@ -217,29 +221,45 @@ Works with Jekyll, Hugo, Eleventy, Astro — and server templates: PHP, Django, 
 {:/nomarkdown}
 
 </div>
-<div data-if="tab=='modifiers'">
+<div data-if="tab=='modifiers'" class="ref-list">
 
-| modifier | description | example |
-|----------|-------------|---------|
-| `.debounce` | Delay until activity stops | `:oninput.debounce-300` |
-| `.throttle` | Limit call frequency | `:onscroll.throttle-100` |
-| `.delay` | Delay each call | `:onmouseenter.delay-500` |
-| `.once` | Run only once | `:onclick.once` |
-| `.window` | Listen on window | `:onkeydown.window.escape` |
-| `.document` | Listen on document | `:onclick.document` |
-| `.body` `.root` `.parent` | Other targets | `:onclick.parent` |
-| `.self` | Only direct target | `:onclick.self` |
-| `.away` | Click outside element | `:onclick.away` |
-| `.prevent` | Prevent default | `:onclick.prevent` |
-| `.stop` | Stop propagation | `:onclick.stop` |
-| `.passive` `.capture` | Listener options | `:onscroll.passive` |
-| `.enter` `.esc` `.tab` `.space` | Common keys | `:onkeydown.enter` |
-| `.ctrl` `.shift` `.alt` `.meta` | Modifier keys, combos | `:onkeydown.ctrl-s` |
-| `.arrow` `.digit` `.letter` `.delete` | Key groups | `:onkeydown.digit` |
+{::nomarkdown}
+<details><summary><code>.debounce</code><span>Delay until activity stops</span><code>:oninput.debounce-300</code></summary><pre>&lt;input :oninput.debounce-300="search()" /&gt;
+&lt;input :oninput.debounce-1s-immediate="save()" /&gt;  &lt;!-- leading edge --&gt;
+&lt;!-- time formats: 100 (ms), 100ms, 1s, 1m, raf, idle, tick --&gt;</pre></details>
+<details><summary><code>.throttle</code><span>Limit call frequency</span><code>:onscroll.throttle-100</code></summary><pre>&lt;div :onscroll.throttle-100="update()"&gt;...&lt;/div&gt;
+&lt;div :onmousemove.throttle-raf="track()"&gt;...&lt;/div&gt;  &lt;!-- once per frame --&gt;</pre></details>
+<details><summary><code>.delay</code><span>Delay each call</span><code>:onmouseenter.delay-500</code></summary><pre>&lt;div :onmouseenter.delay-500="show = true"&gt;...&lt;/div&gt;</pre></details>
+<details><summary><code>.once</code><span>Run only once</span><code>:onclick.once</code></summary><pre>&lt;button :onclick.once="init()"&gt;Initialize&lt;/button&gt;
+&lt;div :fx.once="fetchData()"&gt;&lt;/div&gt;  &lt;!-- works on any directive --&gt;</pre></details>
+<details><summary><code>.window</code><span>Listen on window</span><code>:onkeydown.window.escape</code></summary><pre>&lt;div :onkeydown.window.escape="close()"&gt;...&lt;/div&gt;
+&lt;div :onresize.window="w = innerWidth"&gt;&lt;/div&gt;</pre></details>
+<details><summary><code>.document</code><span>Listen on document</span><code>:onclick.document</code></summary><pre>&lt;div :onselectionchange.document="onSelect()"&gt;&lt;/div&gt;</pre></details>
+<details><summary><span class="nm"><code>.body</code> <code>.root</code> <code>.parent</code></span><span>Other targets</span><code>:onclick.parent</code></summary><pre>&lt;li :onclick.parent="select()"&gt;...&lt;/li&gt;  &lt;!-- delegate to parent --&gt;</pre></details>
+<details><summary><code>.self</code><span>Only direct target</span><code>:onclick.self</code></summary><pre>&lt;div :onclick.self="close()"&gt;ignores clicks on children&lt;/div&gt;</pre></details>
+<details><summary><code>.away</code><span>Click outside element</span><code>:onclick.away</code></summary><pre>&lt;menu :onclick.away="open = false"&gt;click outside to close&lt;/menu&gt;</pre></details>
+<details><summary><code>.prevent</code><span>Prevent default</span><code>:onclick.prevent</code></summary><pre>&lt;form :onsubmit.prevent="save()"&gt;...&lt;/form&gt;
+&lt;a :onclick.prevent="navigate()" href="/fallback"&gt;Link&lt;/a&gt;</pre></details>
+<details><summary><code>.stop</code><span>Stop propagation</span><code>:onclick.stop</code></summary><pre>&lt;button :onclick.stop="handleClick()"&gt;Don't bubble&lt;/button&gt;
+&lt;button :onclick.stop-immediate="only()"&gt;...&lt;/button&gt;</pre></details>
+<details><summary><span class="nm"><code>.passive</code> <code>.capture</code></span><span>Listener options</span><code>:onscroll.passive</code></summary><pre>&lt;div :onscroll.passive="onScroll()"&gt;...&lt;/div&gt;
+&lt;div :onclick.capture="first()"&gt;...&lt;/div&gt;</pre></details>
+<details><summary><span class="nm"><code>.enter</code> <code>.esc</code> <code>.tab</code> <code>.space</code></span><span>Common keys</span><code>:onkeydown.enter</code></summary><pre>&lt;input :onkeydown.enter="submit()" /&gt;
+&lt;!-- also: .delete (delete or backspace), .arrow, .digit, .letter, .char --&gt;</pre></details>
+<details><summary><span class="nm"><code>.ctrl</code> <code>.shift</code> <code>.alt</code> <code>.meta</code></span><span>Modifier keys, combos</span><code>:onkeydown.ctrl-s</code></summary><pre>&lt;input :onkeydown.ctrl-s.prevent="save()" /&gt;
+&lt;input :onkeydown.shift-enter="newLine()" /&gt;
+&lt;input :onkeydown.meta-x="cut()" /&gt;</pre></details>
+<details><summary><span class="nm"><code>.arrow</code> <code>.digit</code> <code>.letter</code> <code>.delete</code></span><span>Key groups</span><code>:onkeydown.digit</code></summary><pre>&lt;input :onkeydown.arrow="e =&gt; navigate(e.key)" /&gt;
+&lt;input :onkeydown.digit="e =&gt; enterPin(e.key)" /&gt;</pre></details>
+{:/nomarkdown}
 
-Time formats: `100` (ms), `1s`, `1m`, `raf`, `idle`, `tick`. Debounce takes `-immediate` for leading edge.
 </div>
 </div>
+
+<script>
+// highlight reference examples with the shared tokenizer
+document.querySelectorAll('.ref-list pre').forEach(p => p.innerHTML = hl(p.textContent))
+</script>
 
 
 ## FAQ [All questions →](https://github.com/dy/sprae#faq)
