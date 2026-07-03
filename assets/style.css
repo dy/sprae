@@ -124,7 +124,7 @@ footer {
   display: flex;
   justify-content: center;
   align-items: center;
-  gap: var(--sp-1);
+  gap: var(--sp-3);
   padding: var(--sp-8) 0;
 }
 
@@ -140,6 +140,7 @@ nav {
   display: flex;
   gap: var(--sp-4);
   justify-content: flex-end;
+  align-items: center;
   font-weight: var(--weight-bold);
 }
 
@@ -533,6 +534,8 @@ th { font-weight: var(--weight-bold); }
 .demo p { margin: 0; }
 
 .demo input[type="text"],
+.demo input[type="password"],
+.demo input[type="search"],
 .demo input:not([type]) {
   padding: var(--sp-2) var(--sp-3);
   margin-bottom: var(--sp-3);
@@ -792,7 +795,8 @@ th { font-weight: var(--weight-bold); }
   overflow: visible;
 }
 
-.drop-demo button { margin-bottom: var(--sp-1); }
+/* drop demos: smaller type — the pill baseline nudge overshoots here, keep symmetric */
+.drop-demo button { margin-bottom: var(--sp-1); padding: var(--sp-2) var(--sp-4); }
 .drop-demo label { cursor: pointer; }
 
 .drop-demo kbd {

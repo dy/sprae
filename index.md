@@ -3,7 +3,7 @@
 # <span class="logo">∴</span> spræ
 
 ## DOM microhydration
-### Reactive sprinkles for HTML/JSX
+### Reactive `:attributes` for your HTML/JSX --- interactivity without a framework.
 
 </div>
 
@@ -64,7 +64,7 @@ window.hl = s => {
 : One `<script>` tag or `npm i`.<br>Any backend, any template, +JSX.<br>No ecosystem lock-in.
 
 **Open & pluggable**
-: Controllable state. ESM-first.<br>[Signals](https://github.com/tc39/proposal-signals)-powered reactivity.<br>Sandboxed. [CSP-safe](./csp) eval.
+: Controllable state. ESM-first.<br>Signals-powered reactivity.<br>Sandboxed. CSP-safe eval.
 
 </div>
 

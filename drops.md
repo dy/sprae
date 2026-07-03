@@ -1,6 +1,6 @@
 <div class="no-toc">
 
-# Drops
+# drops
 
 <!-- ## Examples, recipes, patterns -->
 
@@ -1304,7 +1304,7 @@ Hover me
 {::nomarkdown}
 <div class="drop-demo demo bg-graph-paper" data-scope="{ target: '2027-01-01', now: Date.now(), _id: 0, tick() { this.now = Date.now() }, get diff() { return Math.max(0, new Date(this.target) - this.now) }, get d() { return Math.floor(this.diff / 86400000) }, get h() { return Math.floor(this.diff % 86400000 / 3600000) }, get m() { return Math.floor(this.diff % 3600000 / 60000) }, get s() { return Math.floor(this.diff % 60000 / 1000) } }" data-fx="clearInterval(_id); _id = setInterval(tick, 1000)">
 <span style="font-family:var(--font-mono);font-size:var(--text-lg);font-weight:bold"><span data-text="d"></span>d <span data-text="h"></span>h <span data-text="m"></span>m <span data-text="s"></span>s</span>
-<span style="font-size:var(--text-sm);margin-left:var(--sp-2)">until 2027</span>
+<span style="font-size:var(--text-lg);margin-left:var(--sp-2)">until 2027</span>
 </div>
 {:/nomarkdown}
 </div>
