@@ -39,6 +39,13 @@
       init() {
         this.cx = innerWidth / 2
         this.cy = innerHeight / 2
+        // seed ambient clouds — part of the page's graphic design, drift slowly
+        const base = Math.min(innerWidth, 1200)
+        this.clouds = [
+          { id: 1, x: innerWidth * 0.62, y: innerHeight * 0.48, vx: 0.03, vy: -0.01, size: base * 0.45, intensity: 0.5, fade: 1, age: 900, g: 0.0004 },
+          { id: 2, x: innerWidth * 0.22, y: innerHeight * 0.82, vx: -0.02, vy: 0.01, size: base * 0.26, intensity: 0.35, fade: 1, age: 700, g: 0.0004 },
+          { id: 3, x: innerWidth * 0.88, y: innerHeight * 0.18, vx: 0.015, vy: 0.015, size: base * 0.18, intensity: 0.3, fade: 1, age: 500, g: 0.0004 },
+        ]
         this.lastTime = performance.now()
         const loop = (now) => {
           const dt = Math.min((now - this.lastTime) / 16.67, 3) // normalize to 60fps, cap at 3x
@@ -121,10 +128,10 @@
           this.cursorIntensity = Math.min(0.35, this.cursorIntensity + 0.005 * dt)
         }
 
-        // Update released clouds
+        // Update released clouds (seeded ambient clouds carry own gravity g)
         for (const c of this.clouds) {
           c.age += dt
-          c.vy += 0.015 * dt
+          c.vy += (c.g ?? 0.015) * dt
           c.vx *= Math.pow(0.99, dt)
           c.vy *= Math.pow(0.995, dt)
           c.vx += (Math.random() - 0.5) * 0.02 * dt
@@ -187,7 +194,6 @@
       <div class="cloud" data-each="c in clouds" data-style="cloudVars(c)"></div>
     </div>
 
-    <div class="top-line"></div>
     <!-- <a href="https://github.com/dy/sprae" class="github-corner" aria-label="View on GitHub">
       <svg viewBox="0 0 250 250">
         <path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z"></path>
@@ -284,6 +290,7 @@
     </main>
 
     <footer>
+      <a href="https://github.com/dy/sprae/blob/main/license">MIT</a>
       <a href="https://krishnized.github.io/license">ॐ</a>
     </footer>
 

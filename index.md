@@ -1,9 +1,9 @@
 <div class="no-toc">
 
-# <span class="logo">∴</span> sprae
+# spr<span class="logo">æ</span>
 
 ## Reactive sprinkles for HTML
-### Makes the HTML you already have interactive: one ~8kb script, no build step, no lock-in.<br/>[~2× lighter & faster than Alpine](./compare).
+### Makes the HTML you already have interactive: one ~8kb script, no build step, no lock-in. [~2× lighter & faster than Alpine](./compare).
 
 </div>
 
@@ -132,6 +132,16 @@ Works with Jekyll, Hugo, Eleventy, Astro — and server templates: PHP, Django, 
 Edit the HTML — it re-runs live. This is the whole build pipeline.
 
 {::nomarkdown}
+<script type="text/plain" id="playground-css">
+@font-face { font-family: 'Atkinson Hyperlegible'; src: url(assets/AtkinsonHyperlegibleNextVF-Variable.woff2) format('woff2'); font-weight: 100 900 }
+body { font-family: 'Atkinson Hyperlegible', sans-serif; color: oklch(0.40 0.2 262); background: transparent; margin: 0; padding: 1.5rem }
+button { font: inherit; font-size: 0.875rem; font-weight: 700; color: oklch(1 0 0); background: oklch(0.40 0.2 262); border: 3px solid oklch(0.40 0.2 262); border-radius: 90rem; padding: 0.5rem 1rem; cursor: pointer }
+button:hover { opacity: 0.9 }
+input, select, textarea { font: inherit; color: inherit; border: 3px solid currentColor; border-radius: 90rem; padding: 0.4rem 0.75rem; background: oklch(1 0 0 / 60%) }
+ul, ol { list-style: none; padding: 0.25rem 0 0 0.75rem; margin: 0.5rem 0 }
+li { padding: 0.15rem 0 }
+h1, h2, h3, p { margin: 0.5rem 0 }
+</script>
 <div class="playground" data-scope="{ src: document.querySelector('#playground-src').value }" data-oninput.debounce-300="e => src = e.target.value">
 <textarea id="playground-src" spellcheck="false" rows="14" aria-label="Editable sprae example">&lt;div :scope="{ count: 0, fruits: ['🍎', '🍌', '🍒'] }"&gt;
   &lt;button :onclick="count++"&gt;
@@ -141,7 +151,7 @@ Edit the HTML — it re-runs live. This is the whole build pipeline.
     &lt;li :each="f in fruits" :text="f"&gt;&lt;/li&gt;
   &lt;/ul&gt;
 &lt;/div&gt;</textarea>
-<iframe class="bg-graph-paper" title="Playground result" data-srcdoc="'<style>body{font-family:system-ui;padding:1rem;background:transparent}</style>' + src + '<scr' + 'ipt src=https://unpkg.com/sprae data-start></scr' + 'ipt>'"></iframe>
+<iframe class="bg-graph-paper" title="Playground result" data-srcdoc="'<style>' + document.querySelector('#playground-css').textContent + '</style>' + src + '<scr' + 'ipt src=https://unpkg.com/sprae data-start></scr' + 'ipt>'"></iframe>
 </div>
 {:/nomarkdown}
 
