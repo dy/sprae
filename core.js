@@ -465,8 +465,11 @@ export const clsx = (c) => !c ? '' : typeof c === 'string' ? c : (
  * @param {number|Function} [ms] - Delay in ms or scheduler function (default: microtask)
  * @returns {T} Throttled function
  */
+/** Makes a scheduler from ms delay, custom scheduler fn, or default microtask */
+const sched = (ms) => typeof ms === 'function' ? ms : ms ? (fn) => setTimeout(fn, ms) : queueMicrotask
+
 export const throttle = (fn, ms) => {
-  let _planned = 0, _depth = 0, arg, schedule = typeof ms === 'function' ? ms : ms ? (fn) => setTimeout(fn, ms) : queueMicrotask;
+  let _planned = 0, _depth = 0, arg, schedule = sched(ms);
   const throttled = (e) => {
     arg = e
     if (!_planned++) fn(arg), schedule(() => {
@@ -490,7 +493,7 @@ export const throttle = (fn, ms) => {
  * @returns {T} Debounced function
  */
 export const debounce = (fn, ms, immediate) => {
-  let schedule = typeof ms === 'function' ? ms : ms ? (fn) => setTimeout(fn, ms) : queueMicrotask;
+  let schedule = sched(ms);
   return immediate
     ? ((_blocked) => (arg) => !_blocked && (fn(arg), _blocked = 1, schedule(() => _blocked = 0)))()
     : ((_count = 0) => (arg, _c = ++_count) => schedule(() => _c == _count && fn(arg)))()

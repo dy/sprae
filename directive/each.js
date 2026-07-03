@@ -1,14 +1,9 @@
 import sprae, { parse, _state, _off, effect, untracked, _change, _touch, _signals, frag, throttle, mutate } from "../core.js"
 
-// Row scope proxies — positional reads item via cur[idx], keyed holds direct ref
-const posHandler = {
-  get: (s, k) => k === s.v ? s.c?.[s.i] : k === s.k ? (s.o ? s.o[s.i] : s.i) : k === _signals ? s : s.l?.[k] !== undefined ? s.l[k] : s.p?.[k],
-  set: (s, k, v) => (k === s.v ? (s.c && (s.c[s.i] = v)) : k === s.k ? 0 : s.l?.[k] !== undefined ? ((s.l[k] = v), 0) : k in (s.p?.[_signals] || {}) ? (s.p[k] = v) : (s.l ||= {})[k] = v, 1),
-  has: () => true
-}
-const keyHandler = {
-  get: (s, k) => k === s.v ? s.r : k === s.k ? s.i : k === _signals ? s : s.l?.[k] !== undefined ? s.l[k] : s.p?.[k],
-  set: (s, k, v) => (k === s.v ? (s.r = v) : k === s.k ? 0 : s.l?.[k] !== undefined ? ((s.l[k] = v), 0) : k in (s.p?.[_signals] || {}) ? (s.p[k] = v) : (s.l ||= {})[k] = v, 1),
+// Row scope proxy — positional rows (s.c = source array) read item live via c[i], keyed rows hold direct ref s.r
+const rowHandler = {
+  get: (s, k) => k === s.v ? (s.c ? s.c[s.i] : s.r) : k === s.k ? (s.o ? s.o[s.i] : s.i) : k === _signals ? s : s.l?.[k] !== undefined ? s.l[k] : s.p?.[k],
+  set: (s, k, v) => (k === s.v ? (s.c ? s.c[s.i] = v : s.r = v) : k === s.k ? 0 : s.l?.[k] !== undefined ? ((s.l[k] = v), 0) : k in (s.p?.[_signals] || {}) ? (s.p[k] = v) : (s.l ||= {})[k] = v, 1),
   has: () => true
 }
 
@@ -32,10 +27,11 @@ export default (tpl, state, expr) => {
   let rm = r => { rowMap.delete(r.scope.r); r.el.remove(); r.el[Symbol.dispose]?.() }
 
   // _di tracks current DOM index so swap/reorder only touches actually-moved rows
-  let mkrow = (scope, h) => {
-    let proxy = new Proxy(scope, h)
+  // scope shape is uniform (keyed: r, positional: c/o) — monomorphic for the proxy traps
+  let mkrow = (r, c, i) => {
+    let scope = { p: state, v: itemVar, k: idxVar, r, c, i, o: keys, l: null }
     let el = tpl.content ? frag(tpl) : tpl.cloneNode(true)
-    return { el, scope, proxy, node: el.content || el, _di: scope.i }
+    return { el, scope, proxy: new Proxy(scope, rowHandler), node: el.content || el, _di: i }
   }
 
   let insert = pending => {
@@ -73,9 +69,9 @@ export default (tpl, state, expr) => {
           if (!lenChanged && row.scope.i !== i) moved = true
           // insert() appends new rows at the tail — a reused row after a new one means wrong placement
           if (pending.length) misplaced = true
-          row.scope.i = i; row.scope.r = id
+          row.scope.i = i; row.scope.r = id; row.scope.o = keys
         } else {
-          row = mkrow({ p: state, v: itemVar, k: idxVar, r: id, i, l: null }, keyHandler)
+          row = mkrow(id, null, i)
           rowMap.set(id, row)
           pending.push(row)
         }
@@ -141,9 +137,7 @@ export default (tpl, state, expr) => {
       if (newl > prevl) {
         let pending = []
         for (let i = prevl; i < newl; i++) {
-          let row = keyed
-            ? mkrow({ p: state, v: itemVar, k: idxVar, r: src[i], i, l: null }, keyHandler)
-            : mkrow({ p: state, v: itemVar, k: idxVar, c: src, i, o: keys, l: null }, posHandler)
+          let row = keyed ? mkrow(src[i], null, i) : mkrow(null, src, i)
           rows.push(row)
           if (keyed) rowMap.set(src[i], row)
           pending.push(row)

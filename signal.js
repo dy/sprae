@@ -64,16 +64,13 @@ export const effect = (fn, _teardown, _fx, _deps) => (
   (dep) => { _teardown?.call?.(); _teardown = fn = _fx.fn = null; for (dep of _deps) dep.delete(_fx); _deps.clear() }
 )
 
-class Computed {
-  constructor(fn) { this.fn = fn; this.s = signal(); this.e = null }
+// a computed is a signal with a lazy producer effect keeping it current
+class Computed extends Signal {
+  constructor(fn) { super(); this.fn = fn; this.e = null }
   get value() {
-    this.e ||= effect(() => this.s.value = this.fn())
-    return this.s.value
+    this.e ||= effect(() => super.value = this.fn())
+    return super.value
   }
-  peek() { return this.s.v }
-  valueOf() { return this.value }
-  toString() { return this.value }
-  toJSON() { return this.value }
 }
 
 /**

@@ -8,8 +8,7 @@ import { batch, computed, effect, signal, untracked } from './core.js';
 import * as signals from './signal.js';
 import sprae, { use, decorate, directive, modifier, parse, throttle, debounce, _off, _state, _on, _dispose, _add, start, isCE } from './core.js';
 
-import _if from "./directive/if.js";
-import _else from "./directive/else.js";
+import _if, { _else } from "./directive/if.js";
 import _text from "./directive/text.js";
 import _class from "./directive/class.js";
 import _style from "./directive/style.js";
@@ -136,10 +135,6 @@ Object.assign(modifier, {
   throttle: (fn, a) => throttle(fn, scheduler(a)),
   /** Runs callback after delay. Supports: tick (default), raf, idle, N, Nms, Ns, Nm. */
   delay: (fn, a) => ((sched = scheduler(a)) => (e) => sched(() => fn(e)))(),
-  /** Shortcut for delay-tick (next microtask). */
-  tick: (fn) => (e) => queueMicrotask(() => fn(e)),
-  /** Shortcut for delay-raf (next animation frame). */
-  raf: (fn) => (e) => requestAnimationFrame(() => fn(e)),
 
   /** Calls handler only once. */
   once: (fn, _done, _fn) => (_fn = (e) => !_done && (_done = 1, fn(e)), _fn.once = true, _fn),
@@ -177,6 +172,9 @@ Object.assign(modifier, {
 })
 /** Alias for .away modifier */
 modifier.outside = modifier.away
+/** Shortcuts for .delay-tick / .delay-raf */
+modifier.tick = fn => modifier.delay(fn)
+modifier.raf = fn => modifier.delay(fn, 'raf')
 
 /**
  * Key testers for keyboard event modifiers.
