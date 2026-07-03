@@ -14,6 +14,7 @@ body { font-family: 'Atkinson Hyperlegible', sans-serif; line-height: 1.5; color
 button { font: inherit; font-weight: 700; color: oklch(1 0 0); background: oklch(0.40 0.2 262); border: 3px solid oklch(0.40 0.2 262); border-radius: 90rem; padding: 0.5rem 1rem; text-box-trim: both; text-box-edge: cap alphabetic; cursor: pointer }
 button:hover { opacity: 0.9 }
 input, select, textarea { font: inherit; color: inherit; border: 3px solid currentColor; border-radius: 90rem; padding: 0.4rem 0.75rem; text-box-trim: both; text-box-edge: cap alphabetic; background: oklch(1 0 0 / 60%) }
+::placeholder { color: oklch(0.40 0.2 262 / 30%); opacity: 1 }
 @supports not (text-box-trim: both) {
   button { padding: 0.6rem 1rem 0.4rem }
   input, select, textarea { padding: 0.5rem 0.75rem 0.3rem }
@@ -24,23 +25,26 @@ h1, h2, h3, p { margin: 0.5rem 0 }
 </script>
 <script>
 // shared HTML tokenizer: structure dim, directives light, values bright
-window.hl = s => {
+window.hl = (s, line) => {
   s = s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
-  return s.replace(/(&lt;!--[^]*?--&gt;)|(&lt;\/?[\w-]+)|(\/?&gt;)|(:[\w.-]+)(?==)|("[^"]*")/g, (m, cm, tag, br, dir, val) =>
-    cm ? '<i class=tp>' + cm + '</i>'
-    : tag ? '<i class=tp>' + tag.match(/^&lt;\/?/)[0] + '</i><i class=tn>' + tag.replace(/^&lt;\/?/, '') + '</i>'
-    : br ? '<i class=tp>' + br + '</i>'
-    : dir ? '<i class=dr>' + dir + '</i>'
-    : '<i class=vl>' + val + '</i>')
+    .replace(/(&lt;!--[^]*?--&gt;)|(&lt;\/?[\w-]+)|(\/?&gt;)|(:[\w.-]+)(?==)|("[^"]*")/g, (m, cm, tag, br, dir, val) =>
+      cm ? '<i class=tp>' + cm + '</i>'
+      : tag ? '<i class=tp>' + tag.match(/^&lt;\/?/)[0] + '</i><i class=tn>' + tag.replace(/^&lt;\/?/, '') + '</i>'
+      : br ? '<i class=tp>' + br + '</i>'
+      : dir ? '<i class=dr>' + dir + '</i>'
+      : '<i class=vl>' + val + '</i>')
+  // block per source line — active one highlighted, wrapped rows included
+  return s.split('\n').map((ln, i) => '<i class="ln' + (i === line ? ' cl' : '') + '">' + ln + '</i>').join('')
 }
 </script>
 <div class="playground" data-scope="{
   src: document.querySelector('#playground-src').value,
-  out: document.querySelector('#playground-src').value
+  out: document.querySelector('#playground-src').value,
+  line: 0
 }" data-oninput="e => src = e.target.value" data-fx.debounce-300="out = src">
 <div class="editor">
-<pre aria-hidden="true"><code data-html="hl(src)"></code></pre>
-<textarea id="playground-src" spellcheck="false" autocomplete="off" autocorrect="off" autocapitalize="off" aria-label="Editable sprae example" data-value="src">&lt;div :scope="{ q: '', items: ['apple', 'apricot', 'banana', 'cherry', 'date', 'elderberry'] }"&gt;
+<pre aria-hidden="true"><code data-html="hl(src, line)"></code></pre>
+<textarea id="playground-src" spellcheck="false" autocomplete="off" autocorrect="off" autocapitalize="off" aria-label="Editable sprae example" data-value="src" data-onkeyup:onclick:oninput:onfocus="e => line = e.target.value.slice(0, e.target.selectionStart).split('\n').length - 1">&lt;div :scope="{ q: '', items: ['apple', 'apricot', 'banana', 'cherry', 'date', 'elderberry'] }"&gt;
   &lt;input :value="q" :change="v =&gt; q = v" placeholder="Search fruits..." /&gt;
   &lt;ul&gt;
     &lt;li :each="item in items.filter(i =&gt; i.match(q))" :text="item"&gt;&lt;/li&gt;
@@ -51,7 +55,7 @@ window.hl = s => {
 </div>
 {:/nomarkdown}
 
-*Edit the HTML — it re-runs live.*
+*Edit the HTML live.*
 
 <div id="principles-content">
 

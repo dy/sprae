@@ -268,7 +268,14 @@ h1 {
   margin: var(--sp-4) 0;
 }
 
-/* Hero: display-size wordmark, calm description */
+/* Hero: display-size wordmark, calm description; interaction-transparent — spray plays through it */
+.no-toc {
+  pointer-events: none;
+  user-select: none;
+}
+
+.no-toc a { pointer-events: auto; }
+
 .no-toc h1 {
   font-size: clamp(4rem, 12vw, 6.5rem);
   white-space: nowrap;
@@ -331,6 +338,11 @@ a {
 }
 
 a:hover { text-decoration-color: var(--color-ink); }
+
+::placeholder {
+  color: oklch(from var(--color-ink) l c h / 30%);
+  opacity: 1;
+}
 
 code {
   background: var(--alpha-10);
@@ -578,8 +590,12 @@ th { font-weight: var(--weight-bold); }
 
 /* Editor: highlighted <pre> below, transparent <textarea> above — pre auto-grows, no scrollbars */
 .playground .editor {
+  position: relative;
   display: grid;
   background: var(--color-code-bg);
+  font-family: var(--font-mono);
+  font-size: var(--text-sm);
+  line-height: var(--leading);
 }
 
 .playground .editor pre,
@@ -587,9 +603,8 @@ th { font-weight: var(--weight-bold); }
   grid-area: 1 / 1;
   margin: 0;
   padding: var(--sp-5);
-  font-family: var(--font-mono);
-  font-size: var(--text-sm);
-  line-height: var(--leading);
+  font: inherit;
+  line-height: inherit;
   white-space: pre-wrap;
   overflow-wrap: break-word;
   width: 100%;
@@ -608,12 +623,20 @@ th { font-weight: var(--weight-bold); }
   caret-color: var(--color-code-fg);
   border: none;
   resize: none;
+  outline: none;
   overflow: hidden;
 }
 
-.playground .editor textarea:focus-visible {
-  outline: var(--border-w) solid var(--color-code-fg);
-  outline-offset: calc(-1 * var(--border-w));
+/* logical source lines as blocks — the caret's line highlighted, wrapped rows included */
+.playground .editor i.ln {
+  display: block;
+  min-height: 1lh;
+}
+
+.playground .editor i.ln.cl {
+  background: oklch(1 0 0 / 8%);
+  margin: 0 calc(-1 * var(--sp-5));
+  padding: 0 var(--sp-5);
 }
 
 /* hl() tokens (editor + reference examples): structure dim, directives light, values (the main code) bright */
