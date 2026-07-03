@@ -55,8 +55,6 @@ window.hl = (s, line) => {
 </div>
 {:/nomarkdown}
 
-*Edit the HTML live.*
-
 <div id="principles-content">
 
 ## Principles
