@@ -96,10 +96,12 @@ body::before {
 
 /* === Layout === */
 
-/* Perimeter frame */
+/* Perimeter frame — wraps the whole document, scrolls with it */
+body { position: relative; }
+
 body::after {
   content: '';
-  position: fixed;
+  position: absolute;
   inset: 0;
   border: var(--sp-3) solid var(--color-ink);
   pointer-events: none;
@@ -113,7 +115,7 @@ main, header {
   box-sizing: border-box;
 }
 
-header { padding-top: var(--sp-5); }
+header { padding-top: var(--sp-6); }
 
 .content { padding: var(--sp-8) 0; }
 
@@ -335,12 +337,15 @@ pre {
 
 pre code { background: none; padding: 0; font-size: inherit; }
 
-/* Rouge syntax highlighting — muted base, bright for strings/keywords */
+/* Rouge syntax highlighting — dim structure, accent the code that matters */
 .highlight .c, .highlight .c1, .highlight .cm { color: var(--alpha-50); } /* comments */
 .highlight .k, .highlight .kd, .highlight .kn { color: oklch(1 0 0); } /* keywords */
-.highlight .s, .highlight .s1, .highlight .s2 { color: oklch(1 0 0); } /* strings */
+.highlight .s, .highlight .s1, .highlight .s2 { color: oklch(1 0 0); } /* strings — the main code */
 .highlight .nf, .highlight .nb { color: var(--color-code-fg); } /* functions */
 .highlight .mi, .highlight .mf { color: var(--color-code-fg); } /* numbers */
+.highlight .nt { color: oklch(0.66 0.09 var(--accent-h)); } /* tags + brackets — dim structure */
+.highlight .na { color: oklch(0.90 0.05 var(--accent-h)); } /* attributes — sprae directives */
+.highlight .p, .highlight .o { color: oklch(0.66 0.09 var(--accent-h)); } /* punctuation */
 
 ul, ol {
   padding-left: 0;
@@ -360,7 +365,8 @@ button {
   cursor: pointer;
   background: var(--btn-bg);
   color: light-dark(var(--color-bg-alt), oklch(0.95 0.01 var(--accent-h)));
-  padding: var(--sp-2) var(--sp-4);
+  /* Hyperlegible sits optically high in pills — shift text down a touch */
+  padding: calc(var(--sp-2) + 0.12em) var(--sp-4) calc(var(--sp-2) - 0.12em);
   border-radius: var(--radius-sm);
   font: inherit;
   font-size: var(--text-sm);
@@ -433,6 +439,37 @@ th { font-weight: var(--weight-bold); }
 }
 
 
+/* === Reference rows (expandable, FAQ-style) === */
+
+.ref-list details {
+  border-bottom: var(--border-w-thin) solid var(--alpha-20);
+}
+
+.ref-list summary {
+  display: grid;
+  grid-template-columns: 20% 30% 50%;
+  align-items: baseline;
+  gap: var(--sp-2);
+  padding: var(--sp-2);
+  margin: 0 calc(-1 * var(--sp-2));
+  cursor: pointer;
+  list-style: none;
+  transition: background var(--ease);
+}
+
+.ref-list summary::-webkit-details-marker { display: none; }
+.ref-list summary:hover { background: var(--color-bg-alt); }
+
+.ref-list summary code { background: none; }
+
+.ref-list details[open] summary { font-weight: var(--weight-bold); }
+.ref-list details[open] summary code { font-weight: var(--weight-normal); }
+
+.ref-list details pre {
+  margin: var(--sp-2) 0 var(--sp-4);
+}
+
+
 /* === Demo / Example === */
 
 .demo {
@@ -484,20 +521,52 @@ th { font-weight: var(--weight-bold); }
   margin: var(--sp-6) 0;
 }
 
-.playground textarea {
+/* Editor: highlighted <pre> below, transparent <textarea> above — pre auto-grows, no scrollbars */
+.playground .editor {
+  display: grid;
   background: var(--color-code-bg);
-  color: var(--color-code-fg);
+}
+
+.playground .editor pre,
+.playground .editor textarea {
+  grid-area: 1 / 1;
+  margin: 0;
+  padding: var(--sp-5);
   font-family: var(--font-mono);
   font-size: var(--text-sm);
   line-height: 1.5;
-  border: none;
-  margin: 0;
-  padding: var(--sp-5);
-  resize: vertical;
-  min-height: 16rem;
+  white-space: pre-wrap;
+  overflow-wrap: break-word;
   width: 100%;
+  min-height: 16rem;
   box-sizing: border-box;
 }
+
+.playground .editor pre {
+  color: var(--color-code-fg);
+  background: none;
+}
+
+.playground .editor textarea {
+  background: transparent;
+  color: transparent;
+  caret-color: var(--color-code-fg);
+  border: none;
+  resize: none;
+  overflow: hidden;
+}
+
+.playground .editor textarea:focus-visible {
+  outline: var(--border-w) solid var(--color-code-fg);
+  outline-offset: calc(-1 * var(--border-w));
+}
+
+/* Editor tokens: structure dim, directives light, values (the main code) bright */
+.playground .editor i { font-style: normal; }
+.playground .editor i.tp { color: oklch(0.60 0.09 var(--accent-h)); }
+.playground .editor i.tn { color: oklch(0.72 0.08 var(--accent-h)); }
+.playground .editor i.dr { color: oklch(0.90 0.05 var(--accent-h)); }
+.playground .editor i.vl { color: oklch(1 0 0); }
 
 .playground iframe {
   border: none;
@@ -589,10 +658,11 @@ th { font-weight: var(--weight-bold); }
   dl dt:nth-of-type(3) { --icon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M12 2h8v10h10v8H20v10h-8V20H2v-8h10z'/%3E%3C/svg%3E"); }
 
   dl dd {
-    border-left: var(--border-w) solid var(--color-ink);
+    border-left: 5px solid var(--color-ink);
     padding-left: var(--sp-5);
     margin: 0;
     font-size: smaller;
+    white-space: nowrap; /* lines are set by <br> — exactly three, bar stays short */
   }
 
   /* Staggered composition in natural reading order: 1 top-left, 2 top-right, 3 below offset */
@@ -971,6 +1041,9 @@ p > a:only-child:hover { opacity: 1; }
   .playground { grid-template-columns: 1fr; }
 
   body::after { border-width: var(--sp-2); }
+
+  .ref-list summary { grid-template-columns: auto 1fr; }
+  .ref-list summary code:last-child { display: none; }
 
   h2 {
     position: sticky;
