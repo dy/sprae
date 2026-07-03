@@ -7,23 +7,29 @@
 
 </div>
 
-<div class="example">
-```html
-<div :scope="{ q: '', items: ['Apple', 'Apricot', 'Banana', 'Cherry', 'Date', 'Elderberry'] }">
-  <input :value="q" :change="v => q = v" placeholder="Search fruits..." />
-  <ul>
-    <li :each="item in items.filter(i => i.includes(q))" :text="item"></li>
-  </ul>
+{::nomarkdown}
+<script type="text/plain" id="playground-css">
+@font-face { font-family: 'Atkinson Hyperlegible'; src: url(assets/AtkinsonHyperlegibleNextVF-Variable.woff2) format('woff2'); font-weight: 100 900 }
+body { font-family: 'Atkinson Hyperlegible', sans-serif; color: oklch(0.40 0.2 262); background: transparent; margin: 0; padding: 1.5rem }
+button { font: inherit; font-size: 0.875rem; font-weight: 700; color: oklch(1 0 0); background: oklch(0.40 0.2 262); border: 3px solid oklch(0.40 0.2 262); border-radius: 90rem; padding: 0.5rem 1rem; cursor: pointer }
+button:hover { opacity: 0.9 }
+input, select, textarea { font: inherit; color: inherit; border: 3px solid currentColor; border-radius: 90rem; padding: 0.4rem 0.75rem; background: oklch(1 0 0 / 60%) }
+ul, ol { list-style: none; padding: 0.25rem 0 0 0.75rem; margin: 0.5rem 0 }
+li { padding: 0.15rem 0 }
+h1, h2, h3, p { margin: 0.5rem 0 }
+</script>
+<div class="playground" data-scope="{ src: document.querySelector('#playground-src').value }" data-oninput.debounce-300="e => src = e.target.value">
+<textarea id="playground-src" spellcheck="false" aria-label="Editable sprae example">&lt;div :scope="{ q: '', items: ['apple', 'apricot', 'banana', 'cherry', 'date', 'elderberry'] }"&gt;
+  &lt;input :value="q" :change="v =&gt; q = v" placeholder="Search fruits..." /&gt;
+  &lt;ul&gt;
+    &lt;li :each="item in items.filter(i =&gt; i.match(q))" :text="item"&gt;&lt;/li&gt;
+  &lt;/ul&gt;
+&lt;/div&gt;</textarea>
+<iframe class="bg-graph-paper" title="Live result" data-srcdoc="'<style>' + document.querySelector('#playground-css').textContent + '</style>' + src + '<scr' + 'ipt src=https://unpkg.com/sprae data-start></scr' + 'ipt>'"></iframe>
 </div>
-```
+{:/nomarkdown}
 
-<div class="demo bg-graph-paper" data-scope="{ q: '', items: ['Apple', 'Apricot', 'Banana', 'Cherry', 'Date', 'Elderberry'], match(i) { return i.toLowerCase().includes(q.toLowerCase()) } }">
-<input data-value="q" data-change="v => q = v" placeholder="Search fruits..." />
-<ul>
-<li data-each="item in items.filter(match)" data-text="item"></li>
-</ul>
-</div>
-</div>
+*Edit the HTML — it re-runs live. That's the whole build pipeline.*
 
 <div id="principles-content">
 
@@ -126,34 +132,6 @@ Markdown processors strip `:` attributes — use the `data-` prefix:
 Works with Jekyll, Hugo, Eleventy, Astro — and server templates: PHP, Django, Rails, Jinja. This site is built this way.
 </div>
 </div>
-
-## Playground
-
-Edit the HTML — it re-runs live. This is the whole build pipeline.
-
-{::nomarkdown}
-<script type="text/plain" id="playground-css">
-@font-face { font-family: 'Atkinson Hyperlegible'; src: url(assets/AtkinsonHyperlegibleNextVF-Variable.woff2) format('woff2'); font-weight: 100 900 }
-body { font-family: 'Atkinson Hyperlegible', sans-serif; color: oklch(0.40 0.2 262); background: transparent; margin: 0; padding: 1.5rem }
-button { font: inherit; font-size: 0.875rem; font-weight: 700; color: oklch(1 0 0); background: oklch(0.40 0.2 262); border: 3px solid oklch(0.40 0.2 262); border-radius: 90rem; padding: 0.5rem 1rem; cursor: pointer }
-button:hover { opacity: 0.9 }
-input, select, textarea { font: inherit; color: inherit; border: 3px solid currentColor; border-radius: 90rem; padding: 0.4rem 0.75rem; background: oklch(1 0 0 / 60%) }
-ul, ol { list-style: none; padding: 0.25rem 0 0 0.75rem; margin: 0.5rem 0 }
-li { padding: 0.15rem 0 }
-h1, h2, h3, p { margin: 0.5rem 0 }
-</script>
-<div class="playground" data-scope="{ src: document.querySelector('#playground-src').value }" data-oninput.debounce-300="e => src = e.target.value">
-<textarea id="playground-src" spellcheck="false" rows="14" aria-label="Editable sprae example">&lt;div :scope="{ count: 0, fruits: ['🍎', '🍌', '🍒'] }"&gt;
-  &lt;button :onclick="count++"&gt;
-    Clicked &lt;span :text="count"&gt;0&lt;/span&gt; times
-  &lt;/button&gt;
-  &lt;ul&gt;
-    &lt;li :each="f in fruits" :text="f"&gt;&lt;/li&gt;
-  &lt;/ul&gt;
-&lt;/div&gt;</textarea>
-<iframe class="bg-graph-paper" title="Playground result" data-srcdoc="'<style>' + document.querySelector('#playground-css').textContent + '</style>' + src + '<scr' + 'ipt src=https://unpkg.com/sprae data-start></scr' + 'ipt>'"></iframe>
-</div>
-{:/nomarkdown}
 
 ## Reference [Docs →](https://github.com/dy/sprae#directives)
 
