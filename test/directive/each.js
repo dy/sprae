@@ -36,6 +36,23 @@ test('each: filter expression', async () => {
   is(el.innerHTML, `<x>4</x><x>5</x><x>6</x>`)
 })
 
+test('each: rhs with in/of substrings (includes, indexOf)', async () => {
+  // `/\bin|of\b/` used to match the `in` of `includes`, truncating the expression
+  let el = h`<div><x :each="item in items.filter(i => i.includes(q))" :text="item"/></div>`
+  let state = sprae(el, { items: ['apple', 'banana', 'cherry'], q: 'an' })
+  await tick()
+  is(el.innerHTML, `<x>banana</x>`)
+
+  state.q = 'e'
+  await tick()
+  is(el.innerHTML, `<x>apple</x><x>cherry</x>`)
+
+  let el2 = h`<div><x :each="item of items.filter(i => i.indexOf(q) >= 0)" :text="item"/></div>`
+  sprae(el2, { items: ['apple', 'banana'], q: 'app' })
+  await tick()
+  is(el2.innerHTML, `<x>apple</x>`)
+})
+
 test("each: array full", async () => {
   let el = h`<p>
     <span :each="a in b" :text="a"></span>

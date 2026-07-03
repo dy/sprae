@@ -16,7 +16,8 @@ const rowHandler = {
  * Primitives use positional (index-based) mode.
  */
 export default (tpl, state, expr) => {
-  const [lhs, rhs] = expr.split(/\bin|of\b/)
+  // first standalone `in`/`of` splits the expression — `\b` on both sides so `includes`, `index`, `typeof` etc. in rhs don't match
+  const [, lhs, rhs] = expr.match(/^(.*?)\b(?:in|of)\b(.*)$/s) || []
   let [itemVar, idxVar = "$"] = lhs.trim().replace(/\(|\)/g, '').split(/\s*,\s*/)
 
   let doc = tpl.ownerDocument
