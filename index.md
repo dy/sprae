@@ -2,8 +2,8 @@
 
 # <span class="logo">∴</span> sprae
 
-## DOM microhydration
-### Reactive sprinkles for HTML/JSX
+## Reactive sprinkles for HTML
+### Makes the HTML you already have interactive: one ~8kb script, no build step, no lock-in.<br/>[~2× lighter & faster than Alpine](./compare).
 
 </div>
 
@@ -32,11 +32,11 @@
 **HTML-native**
 : Keep existing HTML.<br>Standard JS expressions.<br>No build step, no config.
 
-**Open & pluggable**
-: Controllable state. ESM-first.<br>[Signals](https://github.com/tc39/proposal-signals)-powered reactivity.<br>Sandboxed. CSP-safe eval.
-
-**5kb, 0 deps**
+**~8kb, 0 deps**
 : One `<script>` tag or `npm i`.<br>Any backend, any template, +JSX.<br>No ecosystem lock-in.
+
+**Open & pluggable**
+: Controllable state. ESM-first.<br>[Signals](https://github.com/tc39/proposal-signals)-powered reactivity.<br>Sandboxed. [CSP-safe](./csp) eval.
 
 </div>
 
@@ -46,6 +46,8 @@
 <div class="tabs" data-scope="{tab:'cdn'}">
 <button data-class="{active: tab=='cdn'}" data-onclick="tab='cdn'">CDN</button>
 <button data-class="{active: tab=='esm'}" data-onclick="tab='esm'">ESM</button>
+<button data-class="{active: tab=='jsx'}" data-onclick="tab='jsx'">Next.js / JSX</button>
+<button data-class="{active: tab=='md'}" data-onclick="tab='md'">Markdown / SSG</button>
 
 <div data-if="tab=='cdn'">
 Add one script tag. Sprae evaluates `:` attributes and makes reactivity.
@@ -77,7 +79,71 @@ Install or download [sprae.js](https://unpkg.com/sprae/dist/sprae.js) and import
 
 Variants: [sprae-csp.js](https://unpkg.com/sprae/dist/sprae-csp.js) (CSP-safe), [sprae-preact.js](https://unpkg.com/sprae/dist/sprae-preact.js) (preact signals).
 </div>
+
+<div data-if="tab=='jsx'">
+
+Keep server components — sprae handles client interactivity, no `'use client'`:
+
+```jsx
+// layout.jsx
+import Script from 'next/script'
+export default function Layout({ children }) {
+  return <>
+    {children}
+    <Script src="https://unpkg.com/sprae" data-prefix="x-" data-start />
+  </>
+}
+```
+
+```jsx
+// page.jsx — server component, no 'use client' needed
+export default function Page() {
+  return <div x-scope="{count: 0}">
+    <button x-onclick="count++">
+      Clicked <span x-text="count">0</span> times
+    </button>
+  </div>
+}
+```
 </div>
+
+<div data-if="tab=='md'">
+
+Markdown processors strip `:` attributes — use the `data-` prefix:
+
+```html
+<script src="https://unpkg.com/sprae" data-prefix="data-" data-start></script>
+```
+
+```md
+<div data-scope="{ count: 0 }">
+  <button data-onclick="count++">
+    Clicked <span data-text="count">0</span> times
+  </button>
+</div>
+```
+
+Works with Jekyll, Hugo, Eleventy, Astro — and server templates: PHP, Django, Rails, Jinja. This site is built this way.
+</div>
+</div>
+
+## Playground
+
+Edit the HTML — it re-runs live. This is the whole build pipeline.
+
+{::nomarkdown}
+<div class="playground" data-scope="{ src: document.querySelector('#playground-src').value }" data-oninput.debounce-300="e => src = e.target.value">
+<textarea id="playground-src" spellcheck="false" rows="14" aria-label="Editable sprae example">&lt;div :scope="{ count: 0, fruits: ['🍎', '🍌', '🍒'] }"&gt;
+  &lt;button :onclick="count++"&gt;
+    Clicked &lt;span :text="count"&gt;0&lt;/span&gt; times
+  &lt;/button&gt;
+  &lt;ul&gt;
+    &lt;li :each="f in fruits" :text="f"&gt;&lt;/li&gt;
+  &lt;/ul&gt;
+&lt;/div&gt;</textarea>
+<iframe class="bg-graph-paper" title="Playground result" data-srcdoc="'<style>body{font-family:system-ui;padding:1rem;background:transparent}</style>' + src + '<scr' + 'ipt src=https://unpkg.com/sprae data-start></scr' + 'ipt>'"></iframe>
+</div>
+{:/nomarkdown}
 
 ## Reference [Docs →](https://github.com/dy/sprae#directives)
 
@@ -135,16 +201,19 @@ Variants: [sprae-csp.js](https://unpkg.com/sprae/dist/sprae-csp.js) (CSP-safe), 
 ## FAQ [All questions →](https://github.com/dy/sprae#faq)
 
 **What is it?**
-: A ~5kb script that adds reactivity to HTML via `:attribute="expression"`. No build step, no new syntax — just HTML and JS you already know.
+: A ~8kb script that adds reactivity to HTML via `:attribute="expression"`. No build step, no new syntax — just HTML and JS you already know.
 
 **When to use it?**
 : Adding interactivity to server-rendered pages, static sites, prototypes, or anywhere a full framework is overkill. Works with any backend — Rails, Django, PHP, Jekyll, Next.js.
 
 **How does it compare?**
-: 3x lighter than Alpine, faster in [benchmarks](https://krausest.github.io/js-framework-benchmark/). [Signals](https://github.com/tc39/proposal-signals)-powered (emerging standard). Full [comparison](./alpine.md).
+: ~2× lighter and ~2× faster than Alpine — [measured](./compare). Actively maintained, unlike petite-vue. [Signals](https://github.com/tc39/proposal-signals)-powered (emerging standard). Migrating? [Alpine → sprae guide](./alpine).
+
+**Strict CSP? Browser extension?**
+: Yes — the [CSP build](./csp) runs full JS expressions with no `eval` / `new Function`, where Alpine's CSP build forbids even arrow functions. Works in Chrome MV3 extensions.
 
 **Components?**
 : Use [define-element](https://github.com/dy/define-element) for declarative web components, or any CE library.
 
 **Is it production-ready?**
-: <span data-scope="{ years: 3, versions: 12 }" data-fx.once="fetch('https://api.github.com/repos/dy/sprae').then(function(r){ return r.ok ? r.json() : null }).then(function(d){ if(d) years = Math.floor((Date.now() - new Date(d.created_at)) / 31536000000) }); fetch('https://api.github.com/repos/dy/sprae/releases').then(function(r){ return r.ok ? r.json() : null }).then(function(d){ if(d) versions = new Set(d.map(function(r){ return r.tag_name.split('.')[0] })).size })"><span data-text="years">3</span>+ years, <span data-text="versions">12</span> major versions</span>. Used by a few SaaS systems and landing pages. Full TypeScript support.
+: <span data-scope="{ years: 3, issues: 0 }" data-fx.once="fetch('https://api.github.com/repos/dy/sprae').then(function(r){ return r.ok ? r.json() : null }).then(function(d){ if(d) { years = Math.floor((Date.now() - new Date(d.created_at)) / 31536000000); issues = d.open_issues_count } })"><span data-text="years">3</span>+ years · ~200 [releases](https://github.com/dy/sprae/releases) · <span data-text="issues">0</span> open issues</span> · 0 dependencies · full TypeScript types · [test suite](https://github.com/dy/sprae/actions).

@@ -1,8 +1,8 @@
-# [∴](https://dy.github.io/sprae) sprae [![tests](https://github.com/dy/sprae/actions/workflows/node.js.yml/badge.svg)](https://github.com/dy/sprae/actions/workflows/node.js.yml) ![size](https://img.shields.io/badge/size-~5kb-white) [![npm](https://img.shields.io/npm/v/sprae?color=white)](https://www.npmjs.com/package/sprae)
+# [∴](https://dy.github.io/sprae) sprae [![tests](https://github.com/dy/sprae/actions/workflows/node.js.yml/badge.svg)](https://github.com/dy/sprae/actions/workflows/node.js.yml) ![size](https://img.shields.io/badge/size-~8kb-white) [![npm](https://img.shields.io/npm/v/sprae?color=white)](https://www.npmjs.com/package/sprae)
 
-> Microhydration for HTML/JSX tree.
+> Reactive sprinkles for HTML/JSX.
 
-Open & minimal PE framework with signals-based reactivity.
+Open & minimal microhydration framework with signals-based reactivity.
 
 
 ## Usage
@@ -511,13 +511,13 @@ Works with [define-element](https://github.com/dy/define-element), Lit, or any C
 ## FAQ
 
 **What is sprae?**<br>
-~5kb script that adds reactivity to HTML via `:attribute="expression"`. No build step, no new syntax.
+~8kb script that adds reactivity to HTML via `:attribute="expression"`. No build step, no new syntax.
 
 **Learning curve?**<br>
 If you know HTML and JS, you know sprae. Just `:attribute="expression"`.
 
 **How does it compare to Alpine?**<br>
-3x lighter, pluggable signals, prop modifiers, event chains. Faster in [benchmarks](https://krausest.github.io/js-framework-benchmark/).
+~2× lighter and ~2× faster — [measured](https://dy.github.io/sprae/compare). Pluggable signals, built-in modifiers, event chains, full-JS [CSP build](https://dy.github.io/sprae/csp).
 
 **How does it compare to React/Vue?**<br>
 No build step, no virtual DOM. Can inject into [JSX](#jsx--nextjs) for server components without framework overhead.
@@ -526,7 +526,7 @@ No build step, no virtual DOM. Can inject into [JSX](#jsx--nextjs) for server co
 Signals are the emerging [standard](https://github.com/tc39/proposal-signals) for reactivity. Pluggable — first to support native signals when browsers ship.
 
 **Is new Function unsafe?**<br>
-No more than inline `onclick` handlers. For strict CSP, use the [safe evaluator](#csp-safe-evaluator).
+No more than inline `onclick` handlers. For strict CSP, use the [CSP build](https://dy.github.io/sprae/csp).
 
 **Components?**<br>
 Use [define-element](https://github.com/dy/define-element) for declarative web components, or any CE library. For simpler cases, [manage duplication](https://tailwindcss.com/docs/styling-with-utility-classes#managing-duplication) with templates/includes.
@@ -541,7 +541,7 @@ Any browser with [Proxy](https://caniuse.com/proxy) (all modern browsers, no IE)
 State is plain reactive objects — scales as far as your data model does. Use [store](#store) with computed getters and methods for complex apps.
 
 **Is it production-ready?**<br>
-It is used by a few SaaS systems and landing pages of big guys.
+3+ years, ~200 [releases](https://github.com/dy/sprae/releases), 0 open issues, 0 dependencies, full test suite incl. the CSP build.
 
 **Is it backed by a company?**<br>
 Indie project. [Support it](https://github.com/sponsors/dy).
