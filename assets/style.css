@@ -1143,6 +1143,10 @@ p > a:only-child:hover { opacity: 1; }
   #page-index #principles-content dl dt:nth-of-type(2) { grid-column: 5 / 7; }
   #page-index #principles-content dl dd:nth-of-type(2) { grid-column: 7 / 9; }
 
+  /* open principle border lands on the playground's center divider (col line 5 = 50%) */
+  #page-index #principles-content dl dt:nth-of-type(3) { grid-column: 3 / 5; }
+  #page-index #principles-content dl dd:nth-of-type(3) { grid-column: 5 / 7; }
+
   #page-index {
     h1 { width: 50%; text-align: right; }
     h1 + h2 { margin-left: 50%; margin-bottom: 0; }
