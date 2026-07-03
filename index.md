@@ -14,7 +14,7 @@ body { font-family: 'Atkinson Hyperlegible', sans-serif; line-height: 1.5; color
 button { font: inherit; font-weight: 700; color: oklch(1 0 0); background: oklch(0.40 0.2 262); border: 3px solid oklch(0.40 0.2 262); border-radius: 90rem; padding: 0.5rem 1rem; text-box-trim: both; text-box-edge: cap alphabetic; cursor: pointer }
 button:hover { opacity: 0.9 }
 input, select, textarea { font: inherit; color: inherit; border: 3px solid currentColor; border-radius: 90rem; padding: 0.4rem 0.75rem; text-box-trim: both; text-box-edge: cap alphabetic; background: oklch(1 0 0 / 60%) }
-::placeholder { color: oklch(0.40 0.2 262 / 30%); opacity: 1 }
+::placeholder { color: oklch(0.40 0.2 262 / 50%); opacity: 1 }
 @supports not (text-box-trim: both) {
   button { padding: 0.6rem 1rem 0.4rem }
   input, select, textarea { padding: 0.5rem 0.75rem 0.3rem }

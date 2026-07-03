@@ -274,7 +274,8 @@ h1 {
   user-select: none;
 }
 
-.no-toc a { pointer-events: auto; }
+.no-toc a,
+.no-toc .logo { pointer-events: auto; }
 
 .no-toc h1 {
   font-size: clamp(4rem, 12vw, 6.5rem);
@@ -340,7 +341,7 @@ a {
 a:hover { text-decoration-color: var(--color-ink); }
 
 ::placeholder {
-  color: oklch(from var(--color-ink) l c h / 30%);
+  color: oklch(from var(--color-ink) l c h / 50%);
   opacity: 1;
 }
 
@@ -474,6 +475,8 @@ th { font-weight: var(--weight-bold); }
 .ref-list details {
   border-bottom: var(--border-w-thin) solid var(--alpha-20);
   interpolate-size: allow-keywords;
+  /* row (hover + separator) bleeds a step; summary padding brings content flush with the section */
+  margin: 0 calc(-1 * var(--sp-2));
 }
 
 .ref-list summary {
