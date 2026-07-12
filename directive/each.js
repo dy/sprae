@@ -2,7 +2,8 @@ import sprae, { parse, _state, _off, effect, untracked, _change, _touch, _signal
 
 // Row scope proxy — positional rows (s.c = source array) read item live via c[i], keyed rows hold direct ref s.r
 const rowHandler = {
-  get: (s, k) => k === s.v ? (s.c ? s.c[s.i] : s.r) : k === s.k ? (s.o ? s.o[s.i] : s.i) : k === _signals ? s : s.l?.[k] !== undefined ? s.l[k] : s.p?.[k],
+  // Symbol.unscopables: `with` fetches it per identifier per eval — answer the miss here, don't walk scope→store→globalThis
+  get: (s, k) => k === s.v ? (s.c ? s.c[s.i] : s.r) : k === s.k ? (s.o ? s.o[s.i] : s.i) : k === _signals ? s : k === Symbol.unscopables ? undefined : s.l?.[k] !== undefined ? s.l[k] : s.p?.[k],
   set: (s, k, v) => (k === s.v ? (s.c ? s.c[s.i] = v : s.r = v) : k === s.k ? 0 : s.l?.[k] !== undefined ? ((s.l[k] = v), 0) : k in (s.p?.[_signals] || {}) ? (s.p[k] = v) : (s.l ||= {})[k] = v, 1),
   has: () => true
 }
@@ -26,6 +27,26 @@ export default (tpl, state, expr) => {
 
   // removal always evicts from rowMap — every path (keyed diff, positional shrink, clear) must, or rows leak
   let rm = r => { rowMap.delete(r.scope.r); r.el.remove(); r.el[Symbol.dispose]?.() }
+
+  // all current rows go: one replaceChildren instead of N .remove(), keeping non-row siblings (whitespace, holder).
+  // bail if any keeper is an element — reinserting one could drop focus/iframe/selection state
+  let rmAll = () => {
+    let parent = holder.parentNode, keep = [], node
+    if (rows.length && !tpl.content && parent?.replaceChildren && rows[0].node.parentNode === parent) {
+      for (node = parent.firstChild; node && node !== rows[0].node; node = node.nextSibling)
+        if (node.nodeType === 1) { keep = null; break } else keep.push(node)
+      if (keep) for (node = holder; node; node = node.nextSibling)
+        if (node.nodeType === 1) { keep = null; break } else keep.push(node)
+      if (keep) {
+        parent.replaceChildren(...keep)
+        for (let r of rows) rowMap.delete(r.scope.r), r.el[Symbol.dispose]?.()
+        rows.length = 0
+        return
+      }
+    }
+    for (let r of rows) rm(r)
+    rows.length = 0
+  }
 
   // _di tracks current DOM index so swap/reorder only touches actually-moved rows
   // scope shape is uniform (keyed: r, positional: c/o) — monomorphic for the proxy traps
@@ -56,7 +77,7 @@ export default (tpl, state, expr) => {
     }
 
     if (keyed && prevl) {
-      let newRows = [], pending = [], seen = new Set(), moved = false, misplaced = false
+      let newRows = [], pending = [], seen = new Set(), moved = false, misplaced = false, reused = 0
 
       for (let i = 0; i < newl; i++) {
         let id = src[i]
@@ -66,6 +87,7 @@ export default (tpl, state, expr) => {
         }
         let row = rowMap.get(id)
         if (row) {
+          reused++
           // index-only shifts from remove/append keep DOM order — reorder only for same-length permutes (swap)
           if (!lenChanged && row.scope.i !== i) moved = true
           // insert() appends new rows at the tail — a reused row after a new one means wrong placement
@@ -79,7 +101,9 @@ export default (tpl, state, expr) => {
         newRows.push(row)
       }
 
-      for (let [id, row] of rowMap) if (!seen.has(id)) rm(row)
+      // clear/replace-all: nothing reused — bulk-remove old rows (rowMap already holds new entries, rmAll evicts by old row)
+      if (!reused) rmAll()
+      else for (let [id, row] of rowMap) if (!seen.has(id)) rm(row)
 
       insert(pending)
 
@@ -120,14 +144,17 @@ export default (tpl, state, expr) => {
     } else {
       // --- POSITIONAL ---
       if (prevl && cur !== src) {
-        for (let r of rows) rm(r)
-        rows.length = 0; prevl = 0; rowMap.clear()
+        rmAll()
+        prevl = 0; rowMap.clear()
       }
       cur = src
 
       if (newl < prevl) {
-        for (let i = newl; i < prevl; i++) rm(rows[i])
-        rows.length = newl
+        if (!newl) rmAll()
+        else {
+          for (let i = newl; i < prevl; i++) rm(rows[i])
+          rows.length = newl
+        }
       }
 
       for (let i = 0; i < Math.min(prevl, newl); i++) {
@@ -164,6 +191,6 @@ export default (tpl, state, expr) => {
     return () => off()
   }
   cb.eval = parse(rhs)
-  cb[_off] = () => { for (let r of rows) rm(r); rows.length = 0; rowMap.clear() }
+  cb[_off] = () => { rmAll(); rowMap.clear() }
   return cb
 }

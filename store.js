@@ -47,12 +47,12 @@ let sandbox = true
 export const store = (values, parent) => {
   if (!values) return values
 
+  // bypass existing store (first: cheapest probe on row/store proxies — per :each row)
+  if (values[_signals]) return values
+
   // ignore globals
   // FIXME: handle via has trap
   if (values[Symbol.toStringTag]) return values;
-
-  // bypass existing store
-  if (values[_signals]) return values
 
   // non-objects: for array redirect to list
   if (values.constructor !== Object) return Array.isArray(values) ? list(values) : values
@@ -69,9 +69,11 @@ export const store = (values, parent) => {
     get: (_, k) => {
       if (k in signals) {
         // raw methods (no prototype) - bind to state for consistent `this`
-        if (signals.hasOwnProperty(k) && typeof signals[k] === 'function' && !signals[k].prototype) return signals[k].bind(state)
+        if (typeof signals[k] === 'function' && !signals[k].prototype && signals.hasOwnProperty(k)) return signals[k].bind(state)
         return (signals[k] ? signals[k].valueOf() : signals[k])
       }
+      // Symbol.unscopables: `with` fetches it per identifier per eval — answer the miss before parent/global walk
+      if (k === Symbol.unscopables) return
       if (parent) {
         return parent[k]
       }
@@ -172,8 +174,16 @@ const list = (values, parent = globalThis) => {
         [_change]: length,
         [_touch]: touch,
         [_signals]: signals,
+        // append directly: create signals in place, one length notify — per-index proxy traps are pure overhead
+        push(...items) {
+          let r
+          batch(() => {
+            for (let v of items) create(signals, signals.length, v, shallow)
+            r = length.value = signals.length
+          })
+          return r
+        },
         // patch mutators — `this` must be the list proxy so set traps fire reactively
-        push: mut(signals.push),
         pop: mut(signals.pop),
         shift: mut(signals.shift),
         unshift: mut(signals.unshift),
@@ -269,8 +279,21 @@ const set = (signals, k, v, wrap = store) => {
   // stashed _set for value with getter/setter
   if (_s[_set]) return _s[_set](v)
   // patch store array in-place to preserve identity (avoids reactive loops when an effect reads + writes same prop)
+  // direct signal writes with one touch/length notify — per-index proxy traps are pure overhead
   if (Array.isArray(v) && Array.isArray(_v)) {
-    if (_change in _v) untracked(() => batch(() => { for (let i = 0; i < v.length; i++) _v[i] = v[i]; _v.length = v.length }))
+    if (_change in _v) untracked(() => batch(() => {
+      let sigs = _v[_signals], n = sigs.length, m = v.length, changed = 0, i = 0, s, prev
+      for (; i < m && i < n; i++) {
+        s = sigs[i], prev = s?.peek ? s.peek() : s
+        set(sigs, i, v[i], shallow)
+        s = sigs[i]
+        if ((s?.peek ? s.peek() : s) !== prev) changed = 1
+      }
+      for (; i < m; i++) create(sigs, i, v[i], shallow)
+      if (m < n) { for (; i < n; i++) sigs[i]?.[Symbol.dispose]?.(); sigs.length = m }
+      if (changed) sigs[_touch].value++
+      if (m !== n) sigs[_change].value = m
+    }))
     else _s.value = _change in v ? v : list(v)
   }
   else _s.value = wrap(v)

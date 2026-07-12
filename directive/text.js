@@ -12,12 +12,16 @@ export default el => (
   v => {
     v = typeof v === 'function' ? v(el.textContent) : v
     v = v == null ? "" : "" + v
+
+    // empty element (first render): write directly — no caret to preserve, no textContent read
+    let node = el.firstChild
+    if (!node) { if (v !== '') el.textContent = v; return }
+
     let cur = el.textContent
     if (cur === v) return
 
     // append-only: reuse text node, skip caret save/restore
-    let node = el.firstChild
-    if (node && v.startsWith(cur)) { node.appendData(v.slice(cur.length)); return }
+    if (v.startsWith(cur)) { node.appendData(v.slice(cur.length)); return }
 
     // caret preservation only matters when this element holds focus —
     // calling getSelection() during DOM mutations forces sync layout in Chromium (O(n²) for lists)

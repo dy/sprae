@@ -141,6 +141,27 @@ test('each: clear evicts keyed rows (stale rowMap regression)', async () => {
   is(el.innerHTML, `<x>3</x><x>5</x>`)
 })
 
+test('each: bulk clear/replace preserves non-row siblings', async () => {
+  // clear & replace-all take the bulk removal path (replaceChildren) — text and
+  // element siblings outside the row run must survive intact
+  let el = h`<div><b>head</b> <x :each="item in items" :text="item.x"></x> <i>tail</i></div>`
+  let state = sprae(el, { items: [{ x: 1 }, { x: 2 }] })
+  await tick()
+  is(el.innerHTML, `<b>head</b> <x>1</x><x>2</x> <i>tail</i>`)
+
+  state.items = [{ x: 3 }, { x: 4 }] // replace-all: nothing reused
+  await tick()
+  is(el.innerHTML, `<b>head</b> <x>3</x><x>4</x> <i>tail</i>`)
+
+  state.items = []
+  await tick()
+  is(el.innerHTML, `<b>head</b>  <i>tail</i>`)
+
+  state.items = [{ x: 5 }]
+  await tick()
+  is(el.innerHTML, `<b>head</b> <x>5</x> <i>tail</i>`)
+})
+
 test('each: array internal signal reassign', async () => {
   let el = h`<p><span :each="a in b" :text="a"></span></p>`;
 

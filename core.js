@@ -172,16 +172,17 @@ const sprae = (root = document.body, state, master) => {
     for (let i = 0; i < fx.length; i++) offs[i] = fx[i]()
     return offs
   }
-  el[_off] = () => {
+  // final=1: teardown for good (dispose), not a temporary :if-style disable — lets directives skip undo work
+  el[_off] = (final) => {
     if (!offs) return
     let current = offs
     offs = null
-    for (let i = 0; i < current.length; i++) current[i]?.()
+    for (let i = 0; i < current.length; i++) current[i]?.(final)
   }
 
   // destroy
   el[_dispose] ||= () => {
-    el[_off]?.()
+    el[_off]?.(1)
     if (mo?._root === el) { mo.disconnect(); mo = null }
     el[_off] = el[_on] = el[_dispose] = el[_add] = el[_state] = null
   }
@@ -200,9 +201,13 @@ const sprae = (root = document.body, state, master) => {
 
     // replay master's recorded scan — no attribute reads, no parsing
     if (dirs !== undefined) {
-      for (let [name, short, value] of dirs) {
-        el.removeAttribute(name) // clones from the recording batch still carry attrs; no-op for later ones
-        if (apply(el, name, short, value)) return
+      // clones from the recording batch still carry directive attrs (more than master's residual) — strip them;
+      // later clones come from the stripped master and skip removeAttribute entirely
+      let strip = dirs.length && el.attributes.length > dirs.n, d
+      for (let i = 0; i < dirs.length; i++) {
+        d = dirs[i]
+        if (strip) el.removeAttribute(d[0])
+        if (apply(el, d[0], d[1], d[2])) return
       }
     }
     else {
@@ -218,9 +223,11 @@ const sprae = (root = document.body, state, master) => {
           let short = name.slice(prefix.length)
           rec?.push([name, short, value])
 
-          if (apply(el, name, short, value)) return
+          // n = master's residual attr count (directives may add attrs to el, so el.attributes can't be the reference)
+          if (apply(el, name, short, value)) return rec && (rec.n = mel.attributes.length), undefined
         } else i++
       }
+      if (rec) rec.n = mel.attributes.length
     }
 
     // custom elements own their children — don't descend
@@ -270,7 +277,7 @@ export let compile
  * @returns {(state: Object, cb?: (value: any) => any) => any} The compiled evaluator function for the expression.
  */
 export const parse = (expr) => {
-  let fn  = cache[expr=expr.trim()]
+  let fn = cache[expr] || cache[expr = expr.trim()]
   if (fn) return fn
 
   // static time errors

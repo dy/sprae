@@ -96,6 +96,12 @@ test("on: window, self", () => {
   console.log('----dispatch window x')
   window.dispatchEvent(new window.Event("x", { bubbles: true }));
   is(state.log, [1, 2]);
+
+  // final dispose must release retargeted listeners — window outlives the element
+  el[_dispose]();
+  window.dispatchEvent(new window.Event("x", { bubbles: true }));
+  el.dispatchEvent(new window.Event("x", { bubbles: true }));
+  is(state.log, [1, 2]);
 });
 
 test("on: parent, self", () => {

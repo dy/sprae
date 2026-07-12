@@ -21,6 +21,8 @@ npm run test:base   # run tests (default signals + compiler)
 npm run test        # run tests with all signal/compiler combos
 npm run build       # esbuild bundle → dist/
 npm run types       # generate types/ from JSDoc
+npm run verify:jfb  # js-framework-benchmark smoke + keyed checks (build first)
+node test/bench-jfb.js [buildA.js] [buildB.js]  # throttled JFB op medians; two builds interleave as A/B
 ```
 
 ## Exports
