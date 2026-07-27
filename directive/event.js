@@ -17,9 +17,9 @@ export default (el, state, expr, name) => {
   // if (!/^(?:[\w$]+|\([^()]*\))\s*=>/.test(expr) && !/^function\b/.test(expr)) expr = `()=>{${expr}}`;
 
   const [type, mods] = names[name] ??= (([t, ...m]) => [t, m])(name.slice(2).split('.')),
-    evaluate = parse(expr).bind(el),
+    evaluate = parse(expr),
     // decorate pops mods — pass a copy to keep the memo intact
-    trigger = decorate(Object.assign(e => evaluate(state, (fn) => typeof fn === 'function' ? fn(e) : fn), { target: el }), mods.length ? [...mods] : mods),
+    trigger = decorate(Object.assign(e => evaluate.call(el, state, (fn) => typeof fn === 'function' ? fn(e) : fn), { target: el }), mods.length ? [...mods] : mods),
     // stable dispatcher: dispose neutralizes by nulling — removeEventListener is undo work a dying node doesn't need
     handler = e => live && live(e);
   let live = trigger

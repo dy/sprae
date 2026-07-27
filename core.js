@@ -140,8 +140,15 @@ const err = (e, expr, el = currentEl) => {
  * @property {Record<string, Signal>} [_signals] - Internal signals map
  */
 
-/** Symbol for cached directive scan on clone masters */
-const _dirs = Symbol('dirs')
+/** Symbol for the flat directive program on clone masters: [{p: childNodes-index path, d: dirs}] in DFS order */
+const _prog = Symbol('program')
+
+/** Is q a strict descendant path of p */
+const inside = (p, q) => {
+  if (q.length <= p.length) return false
+  for (let i = 0; i < p.length; i++) if (p[i] !== q[i]) return false
+  return true
+}
 
 /**
  * Applies directives to an HTML element and manages its reactive state.
@@ -196,39 +203,27 @@ const sprae = (root = document.body, state, master) => {
   )
   let start
 
+  // recording state: prog collects (path, dirs) per directive-bearing element while the first clone is scanned
+  let prog = master ? master[_prog] : undefined, path = prog === undefined && master ? [] : null
+
   const add = el[_add] = (el, mel) => {
-    let dirs = mel?.[_dirs]
+    let _attrs = el.attributes, rec = mel && []
 
-    // replay master's recorded scan — no attribute reads, no parsing
-    if (dirs !== undefined) {
-      // clones from the recording batch still carry directive attrs (more than master's residual) — strip them;
-      // later clones come from the stripped master and skip removeAttribute entirely
-      let strip = dirs.length && el.attributes.length > dirs.n, d
-      for (let i = 0; i < dirs.length; i++) {
-        d = dirs[i]
-        if (strip) el.removeAttribute(d[0])
-        if (apply(el, d[0], d[1], d[2])) return
-      }
+    if (_attrs) for (let i = 0; i < _attrs.length;) {
+      let { name, value } = _attrs[i]
+
+      if (name.startsWith(prefix)) {
+        el.removeAttribute(name)
+        // strip master too: later clones come out clean; unprocessed tail (after a stop) stays for subsprae
+        mel?.removeAttribute(name)
+        let short = name.slice(prefix.length)
+        rec?.push([name, short, value])
+
+        // n = master's residual attr count (directives may add attrs to el, so el.attributes can't be the reference)
+        if (apply(el, name, short, value)) return rec?.length && (rec.n = mel.attributes.length, record(rec)), undefined
+      } else i++
     }
-    else {
-      let _attrs = el.attributes, rec = mel && (mel[_dirs] = [])
-
-      if (_attrs) for (let i = 0; i < _attrs.length;) {
-        let { name, value } = _attrs[i]
-
-        if (name.startsWith(prefix)) {
-          el.removeAttribute(name)
-          // strip master too: later clones come out clean; unprocessed tail (after a stop) stays for subsprae
-          mel?.removeAttribute(name)
-          let short = name.slice(prefix.length)
-          rec?.push([name, short, value])
-
-          // n = master's residual attr count (directives may add attrs to el, so el.attributes can't be the reference)
-          if (apply(el, name, short, value)) return rec && (rec.n = mel.attributes.length), undefined
-        } else i++
-      }
-      if (rec) rec.n = mel.attributes.length
-    }
+    if (rec?.length) rec.n = mel.attributes.length, record(rec)
 
     // custom elements own their children — don't descend
     if (el !== root && isCE(el)) return
@@ -237,13 +232,49 @@ const sprae = (root = document.body, state, master) => {
     // real DOM: firstChild/nextSibling avoids array copy; frag.childNodes is already snapshot array
     if (el.firstChild !== undefined) {
       // master is never mutated structurally, so its pointers stay aligned with pre-captured clone pointers
-      let child = el.firstChild, mchild = mel?.firstChild, next
-      while (child) (next = child.nextSibling, child.nodeType == 1 && add(child, mchild), mchild &&= mchild.nextSibling, child = next)
+      let child = el.firstChild, mchild = mel?.firstChild, next, idx = 0
+      while (child) (
+        next = child.nextSibling,
+        child.nodeType == 1 && (path?.push(idx), add(child, mchild), path?.pop()),
+        mchild &&= mchild.nextSibling, child = next, idx++
+      )
     }
     else for (let child of el.childNodes) child.nodeType == 1 && add(child)
   };
 
-  add(el, master);
+  const record = rec => path && prog.push({ p: path.slice(), d: rec })
+
+  // replay master's flat program — no attribute scans, no tree walk, dir-less elements never visited
+  const replay = prog => {
+    let m = prog.length, nodes = Array(m), node, p, d, e, h, i
+    // resolve all nodes upfront: applying a directive may move nodes (:portal) and shift later paths
+    for (e = 0; e < m; e++) {
+      p = prog[e].p, node = el
+      for (h = 0; h < p.length; h++) node = node.childNodes[p[h]]
+      nodes[e] = node
+    }
+    for (e = 0; e < m; e++) {
+      p = prog[e].p, d = prog[e].d, node = nodes[e]
+      // clones from the recording batch still carry directive attrs (more than master's residual) — strip them;
+      // later clones come from the stripped master and skip removeAttribute entirely
+      let strip = node.attributes.length > d.n
+      for (i = 0; i < d.length; i++) {
+        if (strip) node.removeAttribute(d[i][0])
+        if (apply(node, d[i][0], d[i][1], d[i][2])) {
+          // stop: skip this element's recorded descendants (subsprae owns them)
+          while (e + 1 < m && inside(p, prog[e + 1].p)) e++
+          break
+        }
+      }
+    }
+  }
+
+  if (prog !== undefined) replay(prog)
+  else {
+    if (path) prog = master[_prog] = []
+    add(el, master)
+    path = null // MO-added nodes reuse `add` later — no recording for those
+  }
 
   currentDir = currentEl = null;
 

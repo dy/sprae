@@ -222,6 +222,42 @@ const hasSemi = s => {
   return false
 }
 
+// Words that cannot (or must not) become destructuring bindings
+const RESERVED = new Set('true,false,null,undefined,this,typeof,instanceof,in,of,new,void,return,function,class,const,let,var,if,else,for,while,do,switch,case,default,break,continue,try,catch,finally,throw,yield,async,await,delete,with,super,import,export,extends,arguments'.split(','))
+
+// `with(scope)` disables identifier caching for the whole function — every read is a dynamic runtime
+// lookup, on every run of every effect. For gated read-only expressions we compile a destructured
+// prologue instead: identifiers become plain property reads V8 can optimize. Resolution is equivalent —
+// scope `has` always answers true and `get` falls through row → state → globalThis, exactly like `with`.
+// Gates (fall back to `with`): assignments/inc/dec (scope writes need the trap), ternaries/short-circuits
+// (destructuring would read both branches eagerly), templates/regex/semicolons (tokenizer simplicity).
+const destructurable = expr => !/(?<![=!<>])=(?![=>])|\+\+|--|\?(?!\.)|&&|\|\||[;`/]|\bdelete\b/.test(expr)
+
+// Free identifier candidates: skip strings, property access (after `.`), numeric tails, reserved words,
+// and object keys (`name:` can only be a key — ternaries are gated out). Over-extraction is harmless:
+// the extra name resolves through the same scope chain a `with` lookup would.
+const free = expr => {
+  let names = new Set, i = 0, n = expr.length, last = '', ch, j, k, word
+  while (i < n) {
+    ch = expr[i]
+    if (ch === '"' || ch === "'") { i++; while (i < n && expr[i] !== ch) i += expr[i] === '\\' ? 2 : 1; i++; last = ch; continue }
+    if (/[A-Za-z_$]/.test(ch)) {
+      j = i
+      while (j < n && /[\w$]/.test(expr[j])) j++
+      word = expr.slice(i, j)
+      if (last !== '.' && !/\d/.test(last) && !RESERVED.has(word)) {
+        k = j
+        while (k < n && /\s/.test(expr[k])) k++
+        if (expr[k] !== ':') names.add(word)
+      }
+      i = j; last = word[word.length - 1]; continue
+    }
+    if (!/\s/.test(ch)) last = ch
+    i++
+  }
+  return names
+}
+
 // Configure sprae with default compiler and signals
 use({
 
@@ -231,7 +267,13 @@ use({
     if (/^(if|let|const)\b/.test(expr));
     // first-level semicolons - no return
     else if (hasSemi(expr));
-    else expr = `return ${expr}`
+    else {
+      if (destructurable(expr)) try {
+        let names = free(expr)
+        return sprae.constructor(`${names.size ? `const{${[...names].join(',')}}=arguments[0];` : ''}return(${expr})`)
+      } catch (e) { } // odd extraction → with-mode
+      expr = `return ${expr}`
+    }
     // async expression
     if (/\bawait\s/.test(expr)) expr = `return (async()=>{${expr}})()`
     return sprae.constructor(`with(arguments[0]){${expr}}`)
