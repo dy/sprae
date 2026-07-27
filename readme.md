@@ -2,7 +2,7 @@
 
 > Reactive sprinkles for HTML/JSX.
 
-**DOM microhydration** — add reactivity to the HTML you already have via `:attributes` — no build step, no new syntax. [Signals](https://github.com/tc39/proposal-signals)-based and pluggable, with a full-JS [CSP build](https://dy.github.io/sprae/csp) for strict environments and browser extensions. Use it for server-rendered pages, static sites, or prototypes — anywhere a full framework is overkill, with any backend and +JSX.
+**DOM microhydration** — add reactivity to the HTML via `:attributes` — no build step, no new syntax. [Signals](https://github.com/tc39/proposal-signals)-based and pluggable, with a full-JS [CSP build](https://dy.github.io/sprae/csp) for strict environments and browser extensions. Use it for server-rendered pages, static sites, or prototypes — anywhere a full framework is overkill, with any backend and +JSX.
 
 [**Website & playground**](https://dy.github.io/sprae) · [Benchmark](https://krausest.github.io/js-framework-benchmark/) · [Compare](https://dy.github.io/sprae/compare) · [CSP build](https://dy.github.io/sprae/csp)
 
