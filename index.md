@@ -301,7 +301,7 @@ document.querySelectorAll('.ref-list pre').forEach(p => p.innerHTML = hl(p.textC
 ## FAQ
 
 **How does it compare?**
-: ~2× lighter and ~2× faster than Alpine — [measured](./compare). Actively maintained, unlike petite-vue. [Signals](https://github.com/tc39/proposal-signals)-powered (emerging standard). Migrating? [Alpine → sprae guide](./alpine).
+: ~1.6× lighter and ~1.7× faster than Alpine — [measured](./compare). Actively maintained, unlike petite-vue. [Signals](https://github.com/tc39/proposal-signals)-powered (emerging standard). Migrating? [Alpine → sprae guide](./alpine).
 
 **Strict CSP? Browser extension?**
 : Yes — the [CSP build](./csp) runs full JS expressions with no `eval` / `new Function`, where Alpine's CSP build forbids even arrow functions. Works in Chrome MV3 extensions.

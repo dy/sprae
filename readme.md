@@ -519,7 +519,7 @@ Works with [define-element](https://github.com/dy/define-element), Lit, or any C
 If you know HTML and JS, you know sprae. Just `:attribute="expression"`.
 
 **How does it compare to Alpine?**<br>
-~2× lighter and ~2× faster — [measured](https://dy.github.io/sprae/compare). Pluggable signals, built-in modifiers, event chains, full-JS [CSP build](https://dy.github.io/sprae/csp).
+~1.6× lighter and ~1.7× faster — [measured](https://dy.github.io/sprae/compare). Pluggable signals, built-in modifiers, event chains, full-JS [CSP build](https://dy.github.io/sprae/csp).
 
 **How does it compare to React/Vue?**<br>
 No build step, no virtual DOM. Can inject into [JSX](#jsx--nextjs) for server components without framework overhead.
