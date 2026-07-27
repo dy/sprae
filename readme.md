@@ -4,6 +4,8 @@
 
 Open & minimal microhydration framework with signals-based reactivity.
 
+[**Website & playground**](https://dy.github.io/sprae) · [Benchmark](https://krausest.github.io/js-framework-benchmark/) · [Compare](https://dy.github.io/sprae/compare) · [CSP build](https://dy.github.io/sprae/csp)
+
 
 ## Usage
 
