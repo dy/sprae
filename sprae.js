@@ -57,54 +57,51 @@ Object.assign(directive, {
 
 
 /**
- * Directive initializer with modifiers support.
+ * Activates one directive segment on an element; returns the disposer.
+ * Registry stays live: the factory resolves fresh on every activation.
  * @param {Element} target - Target element
- * @param {string} name - Directive name with modifiers (e.g., 'onclick.throttle-500')
+ * @param {{dirName: string, mods: string[]}} seg - Parsed name segment
  * @param {string} expr - Expression string
  * @param {Object} state - Reactive state object
- * @returns {() => (() => void) | void} Initializer function that returns a disposer
+ * @returns {(() => void) | void} Disposer
  */
-const dir = (target, dirName, mods, expr, state) => {
-  let create = directive[dirName] || directive._
-  let hasMods = mods.length > 0
+const dirRun = (target, seg, expr, state) => {
+  let create = directive[seg.dirName] || directive._
+  let el = target, update, change, trigger, count = 0
 
-  return () => {
-    let el = target, update, change, trigger, count = 0
-
-    if (hasMods) {
-      // modifiers can retarget the update or schedule it, so they keep the trigger indirection
-      change = signal(0)
-      trigger = decorate(Object.assign(() => change.value++, { target }), mods.slice())
-      el = trigger.target ?? target
-    }
-
-    update = create(el, state, expr, dirName)
-
-    if (!update?.call) return update?.[_dispose]
-
-    let evaluate = update.eval ?? parse(expr),
-      _out, out = () => (typeof _out === 'function' && _out(), _out=null) // effect trigger and invoke may happen in the same tick, so it will be effect-within-effect call - we need to store output of evaluate to return from trigger effect
-
-    // use element's own state for expression evaluation, unless it's a custom element
-    // (custom elements: directives are parent prop setters, must evaluate against parent state)
-    if (!isCE(el)) state = el[_state] ?? state
-
-    let off = hasMods ? effect(() => {
-      change.value == count ? trigger() : (count = change.value, _out = evaluate.call(el, state, update))
-      return out
-    }) : effect(() => (_out = evaluate.call(el, state, update), out))
-    if (!(_state in el)) return off
-    let _d = 0
-    return () => { if (_d) return; _d = 1; off(); update[_off] ? update[_off]() : el[_dispose]?.() }
+  if (seg.mods.length) {
+    // modifiers can retarget the update or schedule it, so they keep the trigger indirection
+    change = signal(0)
+    trigger = decorate(Object.assign(() => change.value++, { target }), seg.mods.slice())
+    el = trigger.target ?? target
   }
+
+  update = create(el, state, expr, seg.dirName)
+
+  if (!update?.call) return update?.[_dispose]
+
+  let evaluate = update.eval ?? parse(expr),
+    _out, out = () => (typeof _out === 'function' && _out(), _out=null) // effect trigger and invoke may happen in the same tick, so it will be effect-within-effect call - we need to store output of evaluate to return from trigger effect
+
+  // use element's own state for expression evaluation, unless it's a custom element
+  // (custom elements: directives are parent prop setters, must evaluate against parent state)
+  if (!isCE(el)) state = el[_state] ?? state
+
+  let off = change ? effect(() => {
+    change.value == count ? trigger() : (count = change.value, _out = evaluate.call(el, state, update))
+    return out
+  }) : effect(() => (_out = evaluate.call(el, state, update), out))
+  if (!(_state in el)) return off
+  let _d = 0
+  return () => { if (_d) return; _d = 1; off(); update[_off] ? update[_off]() : el[_dispose]?.() }
 }
 
 // events and observers handle own modifiers, return dispose
 const seg1 = (el, seg, expr, state) => {
   let obs = directive[seg.dirName]
-  return seg.on ? () => _event(el, state, expr, seg.str)[_dispose]
-    : obs?.observer ? () => obs(el, state, expr, seg.str)[_dispose]
-    : dir(el, seg.dirName, seg.mods, expr, state)
+  return seg.on ? _event(el, state, expr, seg.str)[_dispose]
+    : obs?.observer ? obs(el, state, expr, seg.str)[_dispose]
+    : dirRun(el, seg, expr, state)
 }
 
 // per-name parse memo: the same few attr names repeat across every :each row
@@ -287,16 +284,15 @@ use({
     return sprae.constructor(`with(arguments[0]){${expr}}`)
   },
   // these 2 exceptions might look inconsistent, but arguably that's the cleanest way to avoid coupling
+  // activates all segments of a directive name; returns composed disposer
   dir: (el, name, expr, state) => {
     let segs = recipe(name)
     // sequences: handle own modifiers, return dispose
-    if (!segs) return () => _seq(el, state, expr, name)[_dispose]
-    // single directive (the common case): no reduce callback
+    if (!segs) return _seq(el, state, expr, name)[_dispose]
+    // single directive (the common case)
     if (segs.length === 1) return seg1(el, segs[0], expr, state)
-    return segs.reduce((prev, seg) => {
-      let start = seg1(el, seg, expr, state)
-      return !prev ? start : (p, s) => (p = prev(), s = start(), () => { p(); s() })
-    }, null)
+    let offs = segs.map(seg => seg1(el, seg, expr, state))
+    return (final) => { for (let o of offs) o?.(final) }
   },
   ...signals
 })

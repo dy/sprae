@@ -176,7 +176,7 @@ const sprae = (root = document.body, state, master) => {
   el[_on] = () => {
     if (offs) return offs
     offs = Array(fx.length)
-    for (let i = 0; i < fx.length; i++) offs[i] = fx[i]()
+    for (let i = 0; i < fx.length; i++) offs[i] = run(fx[i])
     return offs
   }
   // final=1: teardown for good (dispose), not a temporary :if-style disable — lets directives skip undo work
@@ -194,19 +194,21 @@ const sprae = (root = document.body, state, master) => {
     el[_off] = el[_on] = el[_dispose] = el[_add] = el[_state] = null
   }
 
+  // fx holds [el, short, value] binding tuples — _on re-activates them through `run`, no per-directive closures
+  const run = f => dir(f[0], f[1], f[2], state)
+
   // apply one directive to el; true = stop (subsprae directives like :each/:if/:scope change state identity)
-  const apply = (el, name, short, value, prev = el[_state]) => (
+  const apply = (el, name, short, value, f, prev = el[_state]) => (
     currentDir = name, currentEl = el,
-    // directive initializer can be redefined
-    fx.push(start = dir(el, short, value, state)), offs.push(start()),
+    fx.push(f = [el, short, value]), offs.push(run(f)),
     el[_state] !== prev
   )
-  let start
 
   // recording state: prog collects (path, dirs) per directive-bearing element while the first clone is scanned
   let prog = master ? master[_prog] : undefined, path = prog === undefined && master ? [] : null
 
-  const add = el[_add] = (el, mel) => {
+  // scan machinery is cold-path only: replay rows never allocate it
+  const add = prog === undefined && (el[_add] = (el, mel) => {
     let _attrs = el.attributes, rec = mel && []
 
     if (_attrs) for (let i = 0; i < _attrs.length;) {
@@ -240,7 +242,7 @@ const sprae = (root = document.body, state, master) => {
       )
     }
     else for (let child of el.childNodes) child.nodeType == 1 && add(child)
-  };
+  })
 
   const record = rec => path && prog.push({ p: path.slice(), d: rec })
 
