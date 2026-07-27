@@ -17,11 +17,25 @@ export default (el, state, expr, name) => {
   // if (!/^(?:[\w$]+|\([^()]*\))\s*=>/.test(expr) && !/^function\b/.test(expr)) expr = `()=>{${expr}}`;
 
   const [type, mods] = names[name] ??= (([t, ...m]) => [t, m])(name.slice(2).split('.')),
-    evaluate = parse(expr),
-    // decorate pops mods — pass a copy to keep the memo intact
-    trigger = decorate(Object.assign(e => evaluate.call(el, state, (fn) => typeof fn === 'function' ? fn(e) : fn), { target: el }), mods.length ? [...mods] : mods),
+    evaluate = parse(expr)
+
+  // Bare local events need no decoration indirection.
+  if (!mods.length) {
+    let live = true
+    const listener = e => live && evaluate.call(el, state, (fn) => typeof fn === 'function' ? fn(e) : fn)
+    el.addEventListener(type, listener)
+    return {
+      [Symbol.dispose](final) {
+        live = false
+        if (!final) el.removeEventListener(type, listener)
+      }
+    }
+  }
+
+  // decorate pops mods — pass a copy to keep the memo intact
+  const trigger = decorate(Object.assign(e => evaluate.call(el, state, (fn) => typeof fn === 'function' ? fn(e) : fn), { target: el }), [...mods]),
     // stable dispatcher: dispose neutralizes by nulling — removeEventListener is undo work a dying node doesn't need
-    handler = e => live && live(e);
+    handler = e => live && live(e)
   let live = trigger
 
   trigger.target.addEventListener(type, handler, trigger)

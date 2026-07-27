@@ -12,6 +12,25 @@ test('core: version', () => {
   ok(sprae.version, '12.1.0')
 })
 
+test('core: directive registry remains live after first use', () => {
+  let prev = sprae.directive.audit
+  try {
+    sprae.directive.audit = el => value => el.textContent = `a${value}`
+    let a = h`<x :audit="1"></x>`
+    sprae(a)
+
+    sprae.directive.audit = el => value => el.textContent = `b${value}`
+    let b = h`<x :audit="2"></x>`
+    sprae(b)
+
+    is(a.textContent, 'a1')
+    is(b.textContent, 'b2')
+  } finally {
+    if (prev) sprae.directive.audit = prev
+    else delete sprae.directive.audit
+  }
+})
+
 test('core: pre-created store', async () => {
   let state = store({x:1,get(){return state.x}})
   let el = h`<x :text="get()"></x>`

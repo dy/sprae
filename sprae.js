@@ -99,6 +99,14 @@ const dir = (target, dirName, mods, expr, state) => {
   }
 }
 
+// events and observers handle own modifiers, return dispose
+const seg1 = (el, seg, expr, state) => {
+  let obs = directive[seg.dirName]
+  return seg.on ? () => _event(el, state, expr, seg.str)[_dispose]
+    : obs?.observer ? () => obs(el, state, expr, seg.str)[_dispose]
+    : dir(el, seg.dirName, seg.mods, expr, state)
+}
+
 // per-name parse memo: the same few attr names repeat across every :each row
 const recipes = {}
 const recipe = (name) => recipes[name] ??=
@@ -283,12 +291,10 @@ use({
     let segs = recipe(name)
     // sequences: handle own modifiers, return dispose
     if (!segs) return () => _seq(el, state, expr, name)[_dispose]
+    // single directive (the common case): no reduce callback
+    if (segs.length === 1) return seg1(el, segs[0], expr, state)
     return segs.reduce((prev, seg) => {
-      // events and observers handle own modifiers, return dispose
-      let obs = directive[seg.dirName]
-      let start = seg.on ? () => _event(el, state, expr, seg.str)[_dispose]
-        : obs?.observer ? () => obs(el, state, expr, seg.str)[_dispose]
-        : dir(el, seg.dirName, seg.mods, expr, state)
+      let start = seg1(el, seg, expr, state)
       return !prev ? start : (p, s) => (p = prev(), s = start(), () => { p(); s() })
     }, null)
   },
