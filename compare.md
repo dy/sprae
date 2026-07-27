@@ -11,7 +11,7 @@ Sprae, [Alpine](https://alpinejs.dev) and [petite-vue](https://github.com/vuejs/
 
 | | sprae | Alpine | petite-vue |
 |---|---|---|---|
-| CDN build, min+gzip | **9.1kb** | 16.7kb | 7.1kb |
+| CDN build, min+gzip | **10.7kb** | 16.7kb | 7.1kb |
 | CPU speed, [geometric mean](#performance) | **1.73× faster** | baseline | not benchmarked |
 | First paint (1k rows) | **83ms** | 165ms | not benchmarked |
 | Strict CSP / no-eval | [full JS expressions](./csp) | [restricted subset](https://alpinejs.dev/advanced/csp) | none |
@@ -22,9 +22,11 @@ Sprae, [Alpine](https://alpinejs.dev) and [petite-vue](https://github.com/vuejs/
 | Status | active, 0 open issues | active | frozen — last release Jan 2022 |
 | License | MIT | MIT | MIT |
 
+<small>Sizes current as of 2026-07-03 (sprae 13.7.1, Alpine 3.15.12, petite-vue 0.4.1); CPU speed and first paint are from the last full benchmark run at sprae 13.3.8 — see [Methodology](#methodology).</small>
+
 ## Performance
 
-Median times in ms (lower is better), [js-framework-benchmark](https://krausest.github.io/js-framework-benchmark/) keyed suite, sprae v13.3.8 vs Alpine v3.14.7, identical machine and Chrome:
+Median times in ms (lower is better), [js-framework-benchmark](https://krausest.github.io/js-framework-benchmark/) keyed suite, last full run at sprae v13.3.8 vs Alpine v3.14.7, identical machine and Chrome:
 
 | benchmark | sprae | Alpine | ratio |
 |---|---|---|---|
@@ -62,12 +64,14 @@ Honesty over conversion:
 
 ## Methodology
 
-Sizes measured 2026-07-02, default CDN entry of each package:
+Sizes measured 2026-07-03, unpkg default build of each package (sprae 13.7.1, Alpine 3.15.12, petite-vue 0.4.1):
 
 ```sh
-curl -sL https://unpkg.com/sprae      | gzip -9 | wc -c   # 9096
-curl -sL https://unpkg.com/alpinejs   | gzip -9 | wc -c   # 16704
-curl -sL https://unpkg.com/petite-vue | gzip -9 | wc -c   # 7075
+curl -sL https://unpkg.com/sprae      | gzip -9 | wc -c   # 10708
+curl -sL https://unpkg.com/alpinejs   | gzip -9 | wc -c   # 16694
+curl -sL https://unpkg.com/petite-vue | gzip -9 | wc -c   #  7061
 ```
 
-Performance: [js-framework-benchmark](https://github.com/krausest/js-framework-benchmark) official methodology, both frameworks run on the same machine, same Chrome, 15 samples per benchmark, medians reported. Transferred size row is measured by the benchmark harness itself.
+sprae's ESM build (`sprae.js`) is smaller — 9.7kb gzip, 8.9kb brotli — if you import it directly.
+
+Performance: [js-framework-benchmark](https://github.com/krausest/js-framework-benchmark) official methodology, both frameworks run on the same machine, same Chrome, 15 samples per benchmark, medians reported — last full run at sprae v13.3.8 vs Alpine v3.14.7. Transferred size row is measured by the benchmark harness itself.
