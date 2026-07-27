@@ -141,6 +141,29 @@ test('each: clear evicts keyed rows (stale rowMap regression)', async () => {
   is(el.innerHTML, `<x>3</x><x>5</x>`)
 })
 
+test('each: row-scope writes stay local, state writes pass through', async () => {
+  // unknown var assigned in a row expr becomes a row-local (scope-chain receiver), not a state prop;
+  // an existing state prop assigned in a row expr writes through to state
+  let el = h`<div><x :each="item in items" :fx="loc = item * 10" :text="loc"></x></div>`
+  let state = sprae(el, { items: [1, 2], shared: 0 })
+  await tick()
+  is(el.innerHTML, `<x>10</x><x>20</x>`)
+  is(state.loc, undefined, 'row-local does not leak to state')
+
+  let el2 = h`<div><y :each="item in items" :fx="shared = item"></y></div>`
+  let state2 = sprae(el2, { items: [1, 2], shared: 0 })
+  await tick()
+  is(state2.shared, 2, 'state prop write passes through')
+})
+
+test('each: item var shadows same-named index default', async () => {
+  // `:each="$ in items"` — $ is both item var and default idx name; item accessor must win
+  let el = h`<div><x :each="$ in items" :text="$"></x></div>`
+  sprae(el, { items: [7, 8] })
+  await tick()
+  is(el.innerHTML, `<x>7</x><x>8</x>`)
+})
+
 test('each: bulk clear/replace preserves non-row siblings', async () => {
   // clear & replace-all take the bulk removal path (replaceChildren) — text and
   // element siblings outside the row run must survive intact

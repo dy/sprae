@@ -1,13 +1,7 @@
 import sprae, { parse, _state, _off, effect, untracked, _change, _touch, _signals, frag, throttle, mutate } from "../core.js"
 
-// Row scope proxy — positional rows (s.c = source array) read item live via c[i], keyed rows hold direct ref s.r
-const rowHandler = {
-  // Symbol.unscopables: `with` fetches it per identifier per eval — answer the miss here, don't walk scope→store→globalThis
-  get: (s, k) => k === s.v ? (s.c ? s.c[s.i] : s.r) : k === s.k ? (s.o ? s.o[s.i] : s.i) : k === _signals ? s : k === Symbol.unscopables ? undefined : s.l?.[k] !== undefined ? s.l[k] : s.p?.[k],
-  set: (s, k, v) => (k === s.v ? (s.c ? s.c[s.i] = v : s.r = v) : k === s.k ? 0 : s.l?.[k] !== undefined ? ((s.l[k] = v), 0) : k in (s.p?.[_signals] || {}) ? (s.p[k] = v) : (s.l ||= {})[k] = v, 1),
-  has: () => true
-}
-
+/** Row data fields on scope objects — symbols stay invisible to `with` identifier lookups */
+const _r = Symbol('r'), _c = Symbol('c'), _i = Symbol('i'), _o = Symbol('o')
 
 /**
  * Each directive - renders list items from array/object/number.
@@ -21,12 +15,35 @@ export default (tpl, state, expr) => {
   const [, lhs, rhs] = expr.match(/^(.*?)\b(?:in|of)\b(.*)$/s) || []
   let [itemVar, idxVar = "$"] = lhs.trim().replace(/\(|\)/g, '').split(/\s*,\s*/)
 
+  // Row scope is a plain object prototype-chained to state (proxy stays only at the chain bottom):
+  // `with` identifier lookups resolve item/idx via native own-prop getters — no proxy trap crossings.
+  // Positional rows (_c = source array) read item live via c[i], keyed rows hold direct ref _r.
+  const desc = {
+    [itemVar]: {
+      get() { return this[_c] ? this[_c][this[_i]] : this[_r] },
+      set(v) { this[_c] ? this[_c][this[_i]] = v : this[_r] = v }
+    },
+    // `with` fetches it per identifier per eval — own undefined stops the walk to state/globalThis
+    [Symbol.unscopables]: { value: undefined },
+    // writable defaults let row scopes take the inherited-data write fast path (no proxy walk)
+    [_r]: { value: undefined, writable: true },
+    [_c]: { value: undefined, writable: true },
+    [_i]: { value: 0, writable: true },
+    [_o]: { value: undefined, writable: true }
+  }
+  // ??= keeps the item accessor when idx shares its name (`:each="$ in items"`)
+  desc[idxVar] ??= {
+    get() { return this[_o] ? this[_o][this[_i]] : this[_i] },
+    set() { } // index is not assignable
+  }
+  const proto = Object.create(state, desc)
+
   let doc = tpl.ownerDocument
   let holder = tpl._eachHolder || (tpl._eachHolder = doc.createTextNode(""))
-  let rowMap = new Map, rows = [], items, keys, cur, keyed = false
+  let rowMap = new Map, rows = [], items, keys, cur, keyed = false, gen = 0
 
   // removal always evicts from rowMap — every path (keyed diff, positional shrink, clear) must, or rows leak
-  let rm = r => { rowMap.delete(r.scope.r); r.el.remove(); r.el[Symbol.dispose]?.() }
+  let rm = r => { rowMap.delete(r.scope[_r]); r.el.remove(); r.el[Symbol.dispose]?.() }
 
   // all current rows go: one replaceChildren instead of N .remove(), keeping non-row siblings (whitespace, holder).
   // bail if any keeper is an element — reinserting one could drop focus/iframe/selection state
@@ -39,7 +56,7 @@ export default (tpl, state, expr) => {
         if (node.nodeType === 1) { keep = null; break } else keep.push(node)
       if (keep) {
         parent.replaceChildren(...keep)
-        for (let r of rows) rowMap.delete(r.scope.r), r.el[Symbol.dispose]?.()
+        for (let r of rows) rowMap.delete(r.scope[_r]), r.el[Symbol.dispose]?.()
         rows.length = 0
         return
       }
@@ -48,12 +65,14 @@ export default (tpl, state, expr) => {
     rows.length = 0
   }
 
-  // _di tracks current DOM index so swap/reorder only touches actually-moved rows
-  // scope shape is uniform (keyed: r, positional: c/o) — monomorphic for the proxy traps
+  // _di tracks current DOM index so swap/reorder only touches actually-moved rows;
+  // g is the diff generation stamp (replaces a per-update seen-Set)
+  // scope shape is uniform (keyed: _r, positional: _c/_o) — monomorphic for the accessors
   let mkrow = (r, c, i) => {
-    let scope = { p: state, v: itemVar, k: idxVar, r, c, i, o: keys, l: null }
+    let d = Object.create(proto)
+    d[_r] = r; d[_c] = c; d[_i] = i; d[_o] = keys
     let el = tpl.content ? frag(tpl) : tpl.cloneNode(true)
-    return { el, scope, proxy: new Proxy(scope, rowHandler), node: el.content || el, _di: i }
+    return { el, scope: d, node: el.content || el, _di: i, g: 0 }
   }
 
   let insert = pending => {
@@ -62,48 +81,50 @@ export default (tpl, state, expr) => {
     for (let r of pending) f ? f.appendChild(r.node) : holder.before(r.node)
     if (f) holder.before(f)
     // element rows pair with tpl as clone master: first row records the directive scan, rest replay it
-    for (let r of pending) sprae(r.el, r.proxy, tpl.content ? undefined : tpl)
+    for (let r of pending) sprae(r.el, r.scope, tpl.content ? undefined : tpl)
   }
 
   // untracked: update reads item signals (src[i]) but must not subscribe the :each effect to them —
   // it re-runs via _change/_touch only, else every index write re-notifies it (O(N) per splice)
   let update = throttle(() => untracked(() => mutate(() => {
-    let src = items, newl = src.length, prevl = rows.length, lenChanged = newl !== prevl
+    let src = items, newl = src.length, prevl = rows.length, lenChanged = newl !== prevl,
+      // raw signal peek — same item identity as proxy reads, minus per-index trap crossings
+      sigs = src[_signals], s,
+      val = sigs ? i => (s = sigs[i], s?.peek ? s.peek() : s) : i => src[i]
 
     // detect keyed: array of objects (store items are shallow proxies — keyed by proxy identity)
     keyed = false
     for (let i = 0; i < newl; i++) {
-      if (src[i] != null) { keyed = typeof src[i] === 'object'; break }
+      if (val(i) != null) { keyed = typeof val(i) === 'object'; break }
     }
 
     if (keyed && prevl) {
-      let newRows = [], pending = [], seen = new Set(), moved = false, misplaced = false, reused = 0
+      let newRows = [], pending = [], moved = false, misplaced = false, reused = 0
+      gen++
 
       for (let i = 0; i < newl; i++) {
-        let id = src[i]
-        if (id != null && typeof id === 'object') {
-          if (seen.has(id)) return // intermediate swap — retry after next index write
-          seen.add(id)
-        }
+        let id = val(i)
         let row = rowMap.get(id)
         if (row) {
+          if (row.g === gen) return // intermediate swap — retry after next index write
           reused++
           // index-only shifts from remove/append keep DOM order — reorder only for same-length permutes (swap)
-          if (!lenChanged && row.scope.i !== i) moved = true
+          if (!lenChanged && row.scope[_i] !== i) moved = true
           // insert() appends new rows at the tail — a reused row after a new one means wrong placement
           if (pending.length) misplaced = true
-          row.scope.i = i; row.scope.r = id; row.scope.o = keys
+          row.scope[_i] = i; row.scope[_r] = id; row.scope[_o] = keys
         } else {
           row = mkrow(id, null, i)
           rowMap.set(id, row)
           pending.push(row)
         }
+        row.g = gen
         newRows.push(row)
       }
 
       // clear/replace-all: nothing reused — bulk-remove old rows (rowMap already holds new entries, rmAll evicts by old row)
       if (!reused) rmAll()
-      else for (let [id, row] of rowMap) if (!seen.has(id)) rm(row)
+      else for (let [id, row] of rowMap) if (row.g !== gen) rm(row)
 
       insert(pending)
 
@@ -125,10 +146,13 @@ export default (tpl, state, expr) => {
           if (row._di !== i) fix.push(row)
           row._di = i
         }
-        // 2-node swap fast path (common case: JFB swap rows)
+        // 2-node swap fast path (common case: JFB swap rows) — sibling moves only:
+        // a text-node placeholder inside <tbody> churns table anonymous boxes
         if (fix.length === 2) {
-          let a = fix[0].node, b = fix[1].node, t = doc.createTextNode('')
-          a.replaceWith(t); b.replaceWith(a); t.replaceWith(b)
+          let a = fix[0].node, b = fix[1].node, an = a.nextSibling, bn = b.nextSibling
+          if (an === b) b.after(a)
+          else if (bn === a) a.after(b)
+          else { bn.before(a); an.before(b) }
         } else {
           // general reorder: backward sweep, only move rows that aren't already in place
           let next = holder
@@ -158,16 +182,16 @@ export default (tpl, state, expr) => {
       }
 
       for (let i = 0; i < Math.min(prevl, newl); i++) {
-        rows[i].scope.c = src
-        if (keys) rows[i].scope.o = keys
+        rows[i].scope[_c] = src
+        if (keys) rows[i].scope[_o] = keys
       }
 
       if (newl > prevl) {
         let pending = []
         for (let i = prevl; i < newl; i++) {
-          let row = keyed ? mkrow(src[i], null, i) : mkrow(null, src, i)
+          let row = keyed ? mkrow(val(i), null, i) : mkrow(null, src, i)
           rows.push(row)
-          if (keyed) rowMap.set(src[i], row)
+          if (keyed) rowMap.set(row.scope[_r], row)
           pending.push(row)
         }
         insert(pending)

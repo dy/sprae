@@ -66,11 +66,11 @@ export const store = (values, parent) => {
     [_change]: signal(keyCount),
     [_signals]: signals,
   }), {
-    get: (_, k) => {
-      if (k in signals) {
+    get: (_, k, s) => {
+      if ((s = signals[k]) !== undefined || k in signals) {
         // raw methods (no prototype) - bind to state for consistent `this`
-        if (typeof signals[k] === 'function' && !signals[k].prototype && signals.hasOwnProperty(k)) return signals[k].bind(state)
-        return (signals[k] ? signals[k].valueOf() : signals[k])
+        if (typeof s === 'function' && !s.prototype && signals.hasOwnProperty(k)) return s.bind(state)
+        return (s ? s.valueOf() : s)
       }
       // Symbol.unscopables: `with` fetches it per identifier per eval — answer the miss before parent/global walk
       if (k === Symbol.unscopables) return
@@ -80,7 +80,7 @@ export const store = (values, parent) => {
       return (typeof globalThis[k] === 'function' && !globalThis[k].prototype ? globalThis[k].bind(globalThis) : globalThis[k])
     },
 
-    set: (_, k, v) => {
+    set: (_, k, v, receiver) => {
       // console.group('SET', k, v)
       if (k in signals) return set(signals, k, v), 1
 
@@ -91,6 +91,10 @@ export const store = (values, parent) => {
       // if prop is defined in parent scope (except global) - write there
       if (parent && k in parent) {
         parent[k] = v
+      }
+      // prototype-chained scope (:each row): unknown prop becomes a local on the scope, not a state prop
+      else if (receiver !== state && receiver !== undefined) {
+        Reflect.defineProperty(receiver, k, { value: v, writable: true, enumerable: true, configurable: true })
       }
       // else create in current scope
       else {
