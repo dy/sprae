@@ -11,22 +11,32 @@ let depth = 0
 /** @type {Set<import('./core.js').EffectFn> | null} */
 let batched;
 
-// class keeps instances light: prototype accessors share one shape, subscribers Set allocates lazily
+// class keeps instances light: prototype accessors share one shape. The common single-subscriber
+// case stores the effect directly; a Set is allocated only when a second effect subscribes.
 class Signal {
   constructor(v) { this.v = v; this.o = null }
   get value() {
-    if (current) {
-      let o = this.o ??= new Set
-      // first run subscribes unconditionally; re-runs replace both idempotent adds with one membership
-      // probe — valid by the pairwise invariant: o ∈ effect.deps ⟺ effect ∈ o
-      if (current.fr || !current.deps.has(o)) current.deps.add(o.add(current))
+    // A sole subscriber re-reading its signal is already linked on both sides; skip Set.has.
+    if (current && this.o !== current && (current.fr || !current.deps.has(this))) {
+      current.deps.add(this)
+      let o = this.o
+      if (!o) this.o = current
+      else if (o !== current) o.add ? o.add(current) : this.o = new Set([o, current])
     }
     return this.v
   }
   set value(val) {
     if (val === this.v) return
     this.v = val
-    if (this.o) for (let sub of this.o) batched ? batched.add(sub) : sub() // notify effects
+    let o = this.o
+    if (o?.add) for (let sub of o) batched ? batched.add(sub) : sub()
+    else if (o) batched ? batched.add(o) : o()
+  }
+  /** Remove an effect subscriber. */
+  off(sub) {
+    let o = this.o
+    if (o === sub) this.o = null
+    else if (o?.delete) { o.delete(sub); if (!o.size) this.o = null }
   }
   peek() { return this.v }
   valueOf() { return this.value }
@@ -47,7 +57,12 @@ export const signal = (v) => new Signal(v)
  * @param {() => void | (() => void)} fn - Effect function, may return cleanup
  * @returns {() => void} Dispose function
  */
-export const effect = (fn, _teardown, _fx, _deps) => (
+const unsubscribe = fx => {
+  for (let dep of fx.deps) dep.off(fx)
+  fx.deps.clear()
+}
+
+export const effect = (fn, _teardown, _fx) => (
   _fx = (prev) => {
     if (!fn) return // disposed during batch flush
     let tmp = _teardown;
@@ -57,17 +72,15 @@ export const effect = (fn, _teardown, _fx, _deps) => (
     if (depth++ > 50) {
       depth--; current = prev;
       // dispose: unsubscribe from all deps so this effect never fires again
-      _teardown = fn = _fx.fn = null; for (let dep of _deps) dep.delete(_fx); _deps.clear()
+      _teardown = fn = null; unsubscribe(_fx)
       console.error('∴ Reactive loop detected'); return
     }
     try { _teardown = fn() } finally { current = prev; depth-- }
   },
-  _fx.fn = fn,
-  _deps = _fx.deps = new Set(),
-
+  _fx.deps = new Set(),
   // fr: first run — subscriptions are all new, skip dedupe probes
   _fx.fr = 1, _fx(), _fx.fr = 0,
-  (dep) => { _teardown?.call?.(); _teardown = fn = _fx.fn = null; for (dep of _deps) dep.delete(_fx); _deps.clear() }
+  () => { _teardown?.call?.(); _teardown = fn = null; unsubscribe(_fx) }
 )
 
 // a computed is a signal with a lazy producer effect keeping it current

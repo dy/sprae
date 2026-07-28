@@ -258,6 +258,25 @@ t('effect: teardown', async () => {
   is(log, ['in', 0, 'out', 0, 'in', 1, 'out', 1])
 })
 
+t('effect: dispose singleton and multiple subscribers', () => {
+  const value = signal(0), log = []
+  const off1 = effect(() => log.push('a' + value.value))
+  const off2 = effect(() => log.push('b' + value.value))
+
+  off1()
+  value.value = 1
+  is(log, ['a0', 'b0', 'b1'])
+
+  off2()
+  value.value = 2
+  is(log, ['a0', 'b0', 'b1'])
+
+  const off3 = effect(() => log.push('c' + value.value))
+  value.value = 3
+  off3()
+  is(log, ['a0', 'b0', 'b1', 'c2', 'c3'])
+})
+
 t('effect: subscribe to new props', () => {
   let a = signal(0), b = signal(0)
 

@@ -253,6 +253,9 @@ const list = (values, parent = globalThis) => {
  */
 const create = (signals, k, v, wrap = store) => (signals[k] = (k[0] == '_' || v?.peek || typeof v === 'function') ? v : signal(wrap(v)))
 
+/** Shared permissive `has` trap for shallow row objects. */
+const has = () => true
+
 /** Lightweight reactive wrapper for array items — avoids full store() per item. */
 const shallow = (v) => {
   if (!v || typeof v !== 'object' || v.constructor !== Object) return v
@@ -270,7 +273,7 @@ const shallow = (v) => {
       }
       return 1
     },
-    has: () => true
+    has
   })
 }
 
