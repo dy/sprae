@@ -87,7 +87,23 @@ export default (tpl, state, expr) => {
 
   // untracked: update reads item signals (src[i]) but must not subscribe the :each effect to them —
   // it re-runs via _change/_touch only, else every index write re-notifies it (O(N) per splice)
-  let update = throttle(() => untracked(() => mutate(() => {
+  // sync mount, microtask updates: initial render stays synchronous (sprae() returns rendered DOM),
+  // later mutations coalesce into ONE consistent diff pass — a leading-edge run on a multi-write
+  // mutation (swap) would scan a half-mutated list just to detect the intermediate state and abort.
+  // item-level effects (:text/:class) stay synchronous — only list structure defers.
+  let mounted = 0, planned = 0, depth = 0
+  let flush = () => {
+    planned = 0
+    // re-entry guard: a doUpdate that mutates the list re-plans another flush — cap runaway loops
+    if (++depth > 50) { depth = 0; console.error('∴ Reactive loop detected'); return }
+    doUpdate()
+    if (!planned) depth = 0
+  }
+  let update = () => {
+    if (!mounted) { mounted = 1; doUpdate(); return }
+    if (!planned++) queueMicrotask(flush)
+  }
+  let doUpdate = () => untracked(() => mutate(() => {
     let src = items, newl = src.length, prevl = rows.length, lenChanged = newl !== prevl,
       // raw signal peek — same item identity as proxy reads, minus per-index trap crossings
       sigs = src[_signals], s,
@@ -198,7 +214,7 @@ export default (tpl, state, expr) => {
         insert(pending)
       }
     }
-  })))
+  }))
 
   if (tpl.parentNode) mutate(() => tpl.replaceWith(holder))
   tpl[_state] = null
