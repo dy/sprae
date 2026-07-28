@@ -8,14 +8,22 @@ let current
 
 let depth = 0
 
+/** Monotonic effect-run id — lets signals skip re-subscribing an unchanged reader */
+let run = 0
+
 /** @type {Set<import('./core.js').EffectFn> | null} */
 let batched;
 
 // class keeps instances light: prototype accessors share one shape, subscribers Set allocates lazily
 class Signal {
-  constructor(v) { this.v = v; this.o = null }
+  constructor(v) { this.v = v; this.o = null; this.le = null; this.lr = 0 }
   get value() {
-    if (current) current.deps.add((this.o ??= new Set).add(current))
+    // le/lr: last reader + its run — a re-run of the same sole reader skips the Set bookkeeping
+    // (signals with one subscriber — every per-row item/field signal — hit this on each effect re-run)
+    if (current && (this.le !== current || this.lr !== current.r)) {
+      current.deps.add((this.o ??= new Set).add(current))
+      this.le = current; this.lr = current.r
+    }
     return this.v
   }
   set value(val) {
@@ -48,7 +56,7 @@ export const effect = (fn, _teardown, _fx, _deps) => (
     let tmp = _teardown;
     _teardown = null;
     tmp?.call?.();
-    prev = current, current = _fx
+    prev = current, current = _fx, _fx.r = ++run
     if (depth++ > 50) {
       depth--; current = prev;
       // dispose: unsubscribe from all deps so this effect never fires again
