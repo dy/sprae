@@ -204,6 +204,10 @@ const list = (values, parent = globalThis) => {
           // non-numeric
           if (typeof k === 'symbol' || isNaN(k)) return signals[k]?.valueOf() ?? parent[k];
 
+          // out of range: depend on length (growth re-runs the reader) — a lazy slot here would
+          // extend the raw array and desync it from the length signal, corrupting later mutators
+          if (+k >= signals.length) return length.value, undefined
+
           // signals are eagerly initialized; null slots from .length extension default to undefined
           return (signals[k] ??= signal(undefined)).valueOf()
         },

@@ -1207,3 +1207,22 @@ test('each: store array replace renders correctly', async () => {
   await tick()
   is(el2.innerHTML, '<span>p</span><span>q</span><span>r</span><span>s</span>')
 })
+
+test('each: clear + shared state rerun must not resurrect list slots', async () => {
+  // deferred structural flush leaves row effects alive for a microtask after truncation —
+  // their positional reads must not re-extend the raw list (13.8.1 regression: splice saw ghost length)
+  let el = h`<div><y :each="id in data" :text="labels[id]"></y></div>`
+  let state = sprae(el, { data: [1, 2], labels: { 1: 'a', 2: 'b' } })
+  await tick()
+  is(el.innerHTML, `<y>a</y><y>b</y>`)
+
+  state.data.length = 0
+  state.labels = {} // re-runs row text effects before the deferred structural flush
+  await tick()
+  is(el.innerHTML, '')
+
+  state.data.splice(0, state.data.length, 5, 6)
+  state.labels = { 5: 'e', 6: 'f' }
+  await tick()
+  is(el.innerHTML, `<y>e</y><y>f</y>`)
+})

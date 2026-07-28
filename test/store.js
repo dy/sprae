@@ -588,3 +588,18 @@ t('store: no reactive loop — parent computed to child store', async () => {
   is(child.items.length, 3)
   is(child.items[0], 'a')
 })
+
+t('store: out-of-range read must not corrupt list length', () => {
+  let s = store({ items: [1, 2, 3] })
+  let seen
+  let off = effect(() => { seen = s.items[10] }) // depends on length — must not extend the raw array
+  is(seen, undefined)
+  // mutators trust the raw array length — a resurrected slot would desync it from the length signal
+  s.items.splice(0, s.items.length, 9)
+  is([...s.items], [9])
+  is(s.items.length, 1)
+  s.items.push(8)
+  is([...s.items], [9, 8], 'growth re-runs out-of-range reader')
+  is(seen, undefined)
+  off()
+})
