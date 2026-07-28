@@ -1156,6 +1156,24 @@ test('each: keyed swap moves DOM nodes', async () => {
   ok(trs[1] === n4 && trs[3] === n2, 'reuses DOM nodes')
 })
 
+test('each: keyed index updates on move/delete (#76)', async () => {
+  let el = h`<div><p :each="item, i in items"><x :text="i + ':' + item.text"></x><y :if="i !== 0">up</y></p></div>`
+  let state = sprae(el, { items: [{ text: 'a' }, { text: 'b' }, { text: 'c' }] })
+  await tick()
+  is(el.innerHTML, '<p><x>0:a</x></p><p><x>1:b</x><y>up</y></p><p><x>2:c</x><y>up</y></p>')
+
+  // move down via destructuring swap, as in #76
+  let items = state.items;
+  [items[0], items[1]] = [items[1], items[0]]
+  await tick()
+  is(el.innerHTML, '<p><x>0:b</x></p><p><x>1:a</x><y>up</y></p><p><x>2:c</x><y>up</y></p>')
+
+  // delete head — remaining keyed rows shift indices
+  state.items.splice(0, 1)
+  await tick()
+  is(el.innerHTML, '<p><x>0:a</x></p><p><x>1:c</x><y>up</y></p>')
+})
+
 test('each: store array replace renders correctly', async () => {
   // Keyed path (objects)
   let el = h`<div><span :each="item in items" :text="item.x"></span></div>`
