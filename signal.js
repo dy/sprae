@@ -8,21 +8,18 @@ let current
 
 let depth = 0
 
-/** Monotonic effect-run id — lets signals skip re-subscribing an unchanged reader */
-let run = 0
-
 /** @type {Set<import('./core.js').EffectFn> | null} */
 let batched;
 
 // class keeps instances light: prototype accessors share one shape, subscribers Set allocates lazily
 class Signal {
-  constructor(v) { this.v = v; this.o = null; this.le = null; this.lr = 0 }
+  constructor(v) { this.v = v; this.o = null }
   get value() {
-    // le/lr: last reader + its run — a re-run of the same sole reader skips the Set bookkeeping
-    // (signals with one subscriber — every per-row item/field signal — hit this on each effect re-run)
-    if (current && (this.le !== current || this.lr !== current.r)) {
-      current.deps.add((this.o ??= new Set).add(current))
-      this.le = current; this.lr = current.r
+    if (current) {
+      let o = this.o ??= new Set
+      // first run subscribes unconditionally; re-runs replace both idempotent adds with one membership
+      // probe — valid by the pairwise invariant: o ∈ effect.deps ⟺ effect ∈ o
+      if (current.fr || !current.deps.has(o)) current.deps.add(o.add(current))
     }
     return this.v
   }
@@ -56,7 +53,7 @@ export const effect = (fn, _teardown, _fx, _deps) => (
     let tmp = _teardown;
     _teardown = null;
     tmp?.call?.();
-    prev = current, current = _fx, _fx.r = ++run
+    prev = current, current = _fx
     if (depth++ > 50) {
       depth--; current = prev;
       // dispose: unsubscribe from all deps so this effect never fires again
@@ -68,7 +65,8 @@ export const effect = (fn, _teardown, _fx, _deps) => (
   _fx.fn = fn,
   _deps = _fx.deps = new Set(),
 
-  _fx(),
+  // fr: first run — subscriptions are all new, skip dedupe probes
+  _fx.fr = 1, _fx(), _fx.fr = 0,
   (dep) => { _teardown?.call?.(); _teardown = fn = _fx.fn = null; for (dep of _deps) dep.delete(_fx); _deps.clear() }
 )
 
