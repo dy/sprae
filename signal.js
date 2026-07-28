@@ -13,15 +13,21 @@ let batched;
 
 // class keeps instances light: prototype accessors share one shape. The common single-subscriber
 // case stores the effect directly; a Set is allocated only when a second effect subscribes.
+// Effect deps mirror the same shape: sole dep inline, Set from the second dep on.
 class Signal {
   constructor(v) { this.v = v; this.o = null }
   get value() {
-    // A sole subscriber re-reading its signal is already linked on both sides; skip Set.has.
-    if (current && this.o !== current && (current.fr || !current.deps.has(this))) {
-      current.deps.add(this)
+    let c = current, d
+    // A sole subscriber re-reading its signal is already linked on both sides; skip the probes.
+    if (c && this.o !== c && (d = c.deps, c.fr || !(d === this || d?.has?.(this)))) {
+      // link effect → signal
+      if (!d) c.deps = this
+      else if (d.add) d.add(this)
+      else c.deps = new Set([d, this])
+      // link signal → effect
       let o = this.o
-      if (!o) this.o = current
-      else if (o !== current) o.add ? o.add(current) : this.o = new Set([o, current])
+      if (!o) this.o = c
+      else if (o !== c) o.add ? o.add(c) : this.o = new Set([o, c])
     }
     return this.v
   }
@@ -57,9 +63,9 @@ export const signal = (v) => new Signal(v)
  * @param {() => void | (() => void)} fn - Effect function, may return cleanup
  * @returns {() => void} Dispose function
  */
-const unsubscribe = fx => {
-  for (let dep of fx.deps) dep.off(fx)
-  fx.deps.clear()
+const unsubscribe = (fx, d = fx.deps) => {
+  if (d) d.off ? d.off(fx) : (d.forEach(dep => dep.off(fx)), d.clear())
+  fx.deps = null
 }
 
 export const effect = (fn, _teardown, _fx) => (
@@ -77,7 +83,7 @@ export const effect = (fn, _teardown, _fx) => (
     }
     try { _teardown = fn() } finally { current = prev; depth-- }
   },
-  _fx.deps = new Set(),
+  _fx.deps = null,
   // fr: first run — subscriptions are all new, skip dedupe probes
   _fx.fr = 1, _fx(), _fx.fr = 0,
   () => { _teardown?.call?.(); _teardown = fn = null; unsubscribe(_fx) }
