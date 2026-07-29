@@ -45,7 +45,7 @@
     "esbuild": "^0.23.0",
     "esbuild-plugin-umd-wrapper": "^2.0.3",
     "happy-dom": "^20.4.0",
-    "hyperf": "^1.7.0",
+    "hyperf": "^1.8.0",
     "jsdom": "^27.0.0",
     "lit": "^3.3.2",
     "petite-vue": "^0.4.1",
