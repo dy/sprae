@@ -11,9 +11,10 @@ Sprae, [Alpine](https://alpinejs.dev) and [petite-vue](https://github.com/vuejs/
 
 | | sprae | Alpine | petite-vue |
 |---|---|---|---|
-| CDN build, min+gzip | **10.7kb** | 16.7kb | 7.1kb |
-| CPU speed, [geometric mean](#performance) | **1.73× faster** | baseline | not benchmarked |
-| First paint (1k rows) | **83ms** | 165ms | not benchmarked |
+| CDN build, min+gzip | **10.9kb** | 16.7kb | 7.1kb |
+| CPU speed, [geometric mean](#performance) | **2.27× faster** | baseline | not benchmarked |
+| Runtime memory (1k rows) | **5.1MB** | 16.6MB | not benchmarked |
+| First paint (1k rows) | **76ms** | 107ms | not benchmarked |
 | Strict CSP / no-eval | [full JS expressions](./csp) | [restricted subset](https://alpinejs.dev/advanced/csp) | none |
 | Reactivity | pluggable signals ([TC39-track](https://github.com/tc39/proposal-signals)) | bundled @vue/reactivity | bundled @vue/reactivity |
 | Keyed lists | automatic (by identity) | manual `:key` | manual `:key` |
@@ -22,26 +23,27 @@ Sprae, [Alpine](https://alpinejs.dev) and [petite-vue](https://github.com/vuejs/
 | Status | active, 0 open issues | active | frozen — last release Jan 2022 |
 | License | MIT | MIT | MIT |
 
-<small>Sizes current as of 2026-07-03 (sprae 13.7.1, Alpine 3.15.12, petite-vue 0.4.1); CPU speed and first paint are from the last full benchmark run at sprae 13.3.8 — see [Methodology](#methodology).</small>
+<small>Sizes current as of 2026-07-28 (sprae 13.8.4, Alpine 3.15.12, petite-vue 0.4.1); CPU speed, memory and first paint are from a full benchmark run at sprae 13.8.4 — see [Methodology](#methodology).</small>
 
 ## Performance
 
-Median times in ms (lower is better), [js-framework-benchmark](https://krausest.github.io/js-framework-benchmark/) keyed suite, last full run at sprae v13.3.8 vs Alpine v3.14.7, identical machine and Chrome:
+Median times in ms (lower is better), [js-framework-benchmark](https://krausest.github.io/js-framework-benchmark/) keyed suite, full run 2026-07-28 at sprae v13.8.4 vs Alpine v3.14.7, identical machine and Chrome 147:
 
 | benchmark | sprae | Alpine | ratio |
 |---|---|---|---|
-| create 1,000 rows | 54.6 | 88.2 | 1.62× |
-| replace all rows | 56.4 | 109.5 | 1.94× |
-| partial update (every 10th) | 21.4 | 27.8 | 1.30× |
-| select row | 13.8 | 50.7 | 3.67× |
-| swap rows | 35.5 | 35.2 | 0.99× |
-| remove row | 19.3 | 26.2 | 1.36× |
-| create 10,000 rows | 515.9 | 883.7 | 1.71× |
-| append 1,000 rows | 59.0 | 97.9 | 1.66× |
-| clear rows | 32.8 | 80.9 | 2.47× |
-| **geometric mean** | | | **1.73×** |
-| first paint | 82.6 | 164.7 | 1.99× |
-| transferred size (benchmark app) | 7.9kb | 14.7kb | 1.86× |
+| create 1,000 rows | 29.7 | 67.7 | 2.28× |
+| replace all rows | 32.2 | 83.4 | 2.59× |
+| partial update (every 10th) | 19.8 | 22.4 | 1.13× |
+| select row | 7.4 | 41.4 | 5.59× |
+| swap rows | 20.8 | 38.1 | 1.83× |
+| remove row | 19.0 | 22.0 | 1.16× |
+| create 10,000 rows | 339.8 | 737.5 | 2.17× |
+| append 1,000 rows | 35.1 | 78.5 | 2.24× |
+| clear rows | 15.6 | 64.4 | 4.13× |
+| **geometric mean** | | | **2.27×** |
+| memory after create 1,000 rows | 5.1MB | 16.6MB | 3.27× |
+| first paint | 75.5 | 106.5 | 1.41× |
+| transferred size (benchmark app) | 10.0kb | 14.7kb | 1.47× |
 
 Run it independently: [krausest/js-framework-benchmark](https://github.com/krausest/js-framework-benchmark) includes both frameworks.
 
@@ -64,14 +66,14 @@ Honesty over conversion:
 
 ## Methodology
 
-Sizes measured 2026-07-03, unpkg default build of each package (sprae 13.7.1, Alpine 3.15.12, petite-vue 0.4.1):
+Sizes measured 2026-07-28, unpkg default build of each package (sprae 13.8.4, Alpine 3.15.12, petite-vue 0.4.1):
 
 ```sh
-curl -sL https://unpkg.com/sprae      | gzip -9 | wc -c   # 10708
+curl -sL https://unpkg.com/sprae      | gzip -9 | wc -c   # 10947
 curl -sL https://unpkg.com/alpinejs   | gzip -9 | wc -c   # 16694
 curl -sL https://unpkg.com/petite-vue | gzip -9 | wc -c   #  7061
 ```
 
-sprae's ESM build (`sprae.js`) is smaller — 9.7kb gzip, 8.9kb brotli — if you import it directly.
+sprae's ESM build (`sprae.js`) is smaller — 9.9kb gzip, 9.1kb brotli — if you import it directly.
 
-Performance: [js-framework-benchmark](https://github.com/krausest/js-framework-benchmark) official methodology, both frameworks run on the same machine, same Chrome, 15 samples per benchmark, medians reported — last full run at sprae v13.3.8 vs Alpine v3.14.7. Transferred size row is measured by the benchmark harness itself.
+Performance: [js-framework-benchmark](https://github.com/krausest/js-framework-benchmark) official webdriver-ts harness, both frameworks on the same machine, Chrome 147, 15 samples per benchmark, medians reported — full run 2026-07-28 at sprae v13.8.4 vs Alpine v3.14.7 (the Alpine version pinned by the benchmark's own implementation). Memory is the harness's GC'd heap after create-1k; transferred size and first paint are measured by the harness itself.
