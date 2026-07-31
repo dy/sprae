@@ -22,7 +22,7 @@
   /* Typography */
   --font-sans: "Atkinson Hyperlegible", sans-serif;
   --font-mono: ui-monospace, 'SF Mono', Monaco, 'Cascadia Code', 'Roboto Mono', Menlo, Consolas, monospace;
-  --font-base: max(16px, min(2.2vw, 22px));
+  --font-base: clamp(16px, calc(15px + 0.2vw), 18px);
 
   /* Type scale */
   --text-xs: 0.75rem;
@@ -31,7 +31,7 @@
   --text-md: 1.2rem;
   --text-lg: 1.5rem;
   --text-xl: 2rem;
-  --text-2xl: clamp(3rem, 10vw, 3.6rem);
+  --text-2xl: clamp(2.75rem, 8vw, 3.6rem);
 
   /* Font weights */
   --weight-normal: 400;

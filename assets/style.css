@@ -277,7 +277,7 @@ h1 {
 .no-toc .logo { pointer-events: auto; }
 
 .no-toc h1 {
-  font-size: clamp(4rem, 12vw, 6.5rem);
+  font-size: clamp(3.5rem, 10vw, 5.5rem);
   white-space: nowrap;
   margin: var(--sp-4) 0 0;
 }
