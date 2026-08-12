@@ -1,10 +1,13 @@
 # [∴](https://dy.github.io/sprae) sprae [![tests](https://github.com/dy/sprae/actions/workflows/node.js.yml/badge.svg)](https://github.com/dy/sprae/actions/workflows/node.js.yml) ![size](https://img.shields.io/badge/size-~8kb-white) ![deps](https://img.shields.io/badge/deps-0-white) [![npm](https://img.shields.io/npm/v/sprae?color=white)](https://www.npmjs.com/package/sprae) [![license](https://img.shields.io/npm/l/sprae?color=white)](./license)
 
-> Reactive sprinkles for HTML/JSX.
+**DOM microhydration**. Add reactivity to the HTML via `:`-attributes.
+- No build step, no new syntax.
+- [Signals](https://github.com/tc39/proposal-signals)-based and pluggable.
+- Full-JS [CSP build](https://dy.github.io/sprae/csp) for strict env and browser extensions.
 
-**DOM microhydration** — add reactivity to the HTML via `:attributes` — no build step, no new syntax. [Signals](https://github.com/tc39/proposal-signals)-based and pluggable, with a full-JS [CSP build](https://dy.github.io/sprae/csp) for strict environments and browser extensions. Use it for server-rendered pages, static sites, or prototypes — anywhere a full framework is overkill, with any backend and +JSX.
+Use for server-rendered pages, static sites, or prototypes – anywhere a full framework is overkill, with any backend and +JSX.
 
-[**website**](https://dy.github.io/sprae) | [bench](https://krausest.github.io/js-framework-benchmark/)
+<!-- [**website**](https://dy.github.io/sprae) | [bench](https://krausest.github.io/js-framework-benchmark/) -->
 
 
 ## Usage
