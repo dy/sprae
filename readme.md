@@ -515,12 +515,6 @@ Works with [define-element](https://github.com/dy/define-element), Lit, or any C
 
 ## FAQ
 
-**What is sprae?**<br>
-Sprae adds reactivity to HTML through `:attribute="expression"`. It is ~8kb and needs no build step.
-
-**Learning curve?**<br>
-You write JavaScript expressions in HTML attributes: `:attribute="expression"`.
-
 **How does it compare to Alpine?**<br>
 Sprae is ~1.5× smaller over the wire, ~2.3× faster, and uses ~3× less runtime memory in [this comparison](https://dy.github.io/sprae/compare). It has pluggable signals, built-in modifiers, event chains, and a full-JS [CSP build](https://dy.github.io/sprae/csp).
 
