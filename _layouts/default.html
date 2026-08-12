@@ -4,11 +4,11 @@
   <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{{ page.title | default: "Sprae" }} – reactive sprinkles</title>
-    <meta name="description" content="{{ page.description | default: 'Sprae is a tiny (~8kb) reactive library for progressive enhancement using signal-powered attributes in HTML/JSX.' }}">
+    <title>{{ page.title | default: "Sprae" }}: reactive sprinkles</title>
+    <meta name="description" content="{{ page.description | default: 'Sprae adds reactivity to HTML and JSX with attributes. It is ~8kb and needs no build step.' }}">
     <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='0.85em' font-size='95' fill='%230036b0'>∴</text></svg>">
-    <meta property="og:title" content="{{ page.title | default: 'Sprae' }} – reactive sprinkles">
-    <meta property="og:description" content="{{ page.description | default: 'Sprae is a tiny (~8kb) reactive library for progressive enhancement using signal-powered attributes in HTML/JSX.' }}">
+    <meta property="og:title" content="{{ page.title | default: 'Sprae' }}: reactive sprinkles">
+    <meta property="og:description" content="{{ page.description | default: 'Sprae adds reactivity to HTML and JSX with attributes. It is ~8kb and needs no build step.' }}">
     <meta property="og:type" content="website">
     <meta property="og:url" content="https://dy.github.io/sprae{{ page.url }}">
     <meta property="og:image" content="https://dy.github.io/sprae/assets/og.png">
@@ -41,7 +41,7 @@
       init() {
         this.cx = innerWidth / 2
         this.cy = innerHeight / 2
-        // seed ambient clouds — part of the page's graphic design, drift slowly
+        // seed slow-drifting ambient clouds
         const base = Math.min(innerWidth, 1200)
         this.clouds = [
           { id: ++this.seq, x: innerWidth * 0.3, y: innerHeight * 0.45, vx: 0.03, vy: 0.06, size: base * 0.5, intensity: 0.65, fade: 1, age: 900, g: 0.0012, amb: 1 },
@@ -67,11 +67,11 @@
       },
 
       release() {
-        // stop spraying — puffs are already out, nozzle eases back in update()
+        // update() eases the nozzle back after release
         this.pressed = false
       },
 
-      // continuous spray while pressed: small puffs that fade in — no abrupt blob
+      // fade in puffs to avoid an abrupt blob
       emit(dt) {
         if ((this.emitAcc += dt) < 5) return // ≈ every 80ms at 60fps
         this.emitAcc = 0
@@ -92,7 +92,7 @@
           intensity: 0.2 + Math.random() * 0.15,
           fade: 0,
           age: 0,
-          g: 0.0012 // gentle fall — lingers and travels instead of raining off-page
+          g: 0.0012 // gentle fall keeps puffs on the page
         })
         this.clouds = clouds
       },
@@ -103,7 +103,7 @@
           this.cx = e.pageX
           this.cy = e.pageY
         }
-        // hero title/subtitle let the spray through — cloud play starts right at the top
+        // let the spray pass through the hero
         this.overContent = !!e.target.closest('main') && !e.target.closest('.no-toc')
         this.mx = e.pageX
         this.my = e.pageY
@@ -301,7 +301,6 @@
 
     <footer>
       <a href="https://github.com/dy/sprae/blob/main/license">MIT</a>
-      ·
       <a href="https://krishnized.github.io/license">ॐ</a>
     </footer>
 

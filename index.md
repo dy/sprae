@@ -3,7 +3,7 @@
 # <span class="logo">∴</span> spræ
 
 ## DOM microhydration
-### Reactive `:attributes` for your HTML/JSX --- interactivity without a framework.
+### Add interactivity to HTML and JSX with reactive `:attributes`.
 
 </div>
 
@@ -34,7 +34,7 @@ window.hl = (s, line) => {
       : br ? '<i class=tp>' + br + '</i>'
       : dir ? '<i class=dr>' + dir + '</i>'
       : '<i class=vl>' + val + '</i>')
-  // block per source line — active one highlighted, wrapped rows included
+  // highlight the active source line, including wrapped rows
   return s.split('\n').map((ln, i) => '<i class="ln' + (i === line ? ' cl' : '') + '">' + ln + '</i>').join('')
 }
 </script>
@@ -61,13 +61,13 @@ window.hl = (s, line) => {
 ## Principles
 
 **HTML-native**
-: Keep existing HTML.<br>Standard JS expressions.<br>No build step, no config.
+: Keep your HTML.<br>Write standard JS expressions.<br>No build step or config.
 
 **~8kb, 0 deps**
-: One `<script>` tag or `npm i`.<br>Any backend, any template, +JSX.<br>No ecosystem lock-in.
+: One `<script>` tag or `npm i`.<br>Works with any backend or template.<br>Supports JSX.
 
 **Open & pluggable**
-: Direct state access.<br>Swappable signals, custom directives.<br>No eval — CSP-safe sandbox.
+: Direct state access.<br>Swappable signals and custom directives.<br>A separate CSP build without eval.
 
 </div>
 
@@ -81,7 +81,7 @@ window.hl = (s, line) => {
 <button data-class="{active: tab=='md'}" data-onclick="tab='md'">Markdown / SSG</button>
 
 <div data-if="tab=='cdn'">
-Add one script tag. Sprae evaluates `:` attributes and makes reactivity.
+Add one script tag. Sprae makes `:` attributes reactive.
 ```html
 <script src="//unpkg.com/sprae" data-start></script>
 ```
@@ -98,7 +98,7 @@ Variants:
 
 <div data-if="tab=='esm'">
 
-Install or download [sprae.js](https://unpkg.com/sprae/dist/sprae.js) and import:
+Download [sprae.js](https://unpkg.com/sprae/dist/sprae.js), then import it:
 ```html
 <script type="module">
   import sprae from './sprae.js'
@@ -108,12 +108,12 @@ Install or download [sprae.js](https://unpkg.com/sprae/dist/sprae.js) and import
 </script>
 ```
 
-Variants: [sprae-csp.js](https://unpkg.com/sprae/dist/sprae-csp.js) (CSP-safe), [sprae-preact.js](https://unpkg.com/sprae/dist/sprae-preact.js) (preact signals).
+Variants: [sprae-csp.js](https://unpkg.com/sprae/dist/sprae-csp.js) (CSP-safe), [sprae-preact.js](https://unpkg.com/sprae/dist/sprae-preact.js) (Preact Signals).
 </div>
 
 <div data-if="tab=='jsx'">
 
-Keep server components — sprae handles client interactivity, no `'use client'`:
+Sprae adds client-side interactivity to server components without `'use client'`:
 
 ```jsx
 // layout.jsx
@@ -127,7 +127,7 @@ export default function Layout({ children }) {
 ```
 
 ```jsx
-// page.jsx — server component, no 'use client' needed
+// page.jsx: server component without 'use client'
 export default function Page() {
   return <div x-scope="{count: 0}">
     <button x-onclick="count++">
@@ -140,7 +140,7 @@ export default function Page() {
 
 <div data-if="tab=='md'">
 
-Markdown processors strip `:` attributes — use the `data-` prefix:
+Markdown processors strip `:` attributes, so use the `data-` prefix:
 
 ```html
 <script src="https://unpkg.com/sprae" data-prefix="data-" data-start></script>
@@ -154,7 +154,7 @@ Markdown processors strip `:` attributes — use the `data-` prefix:
 </div>
 ```
 
-Works with Jekyll, Hugo, Eleventy, Astro — and server templates: PHP, Django, Rails, Jinja. This site is built this way.
+Sprae works with Jekyll, Hugo, Eleventy, and Astro, plus PHP, Django, Rails, and Jinja templates. This site uses the `data-` prefix.
 </div>
 </div>
 
@@ -230,7 +230,7 @@ Works with Jekyll, Hugo, Eleventy, Astro — and server templates: PHP, Django, 
   return () =&gt; clearInterval(timer)
 }"&gt;&lt;/div&gt;</pre></details>
 <details><summary><code>:intersect</code><span>Visibility observer</span><code>&lt;img :intersect.once="load()"&gt;</code></summary><pre>&lt;img :intersect.once="loadImage()" :src="placeholder" /&gt;
-&lt;!-- full control --&gt;
+&lt;!-- observer entry --&gt;
 &lt;div :intersect="entry =&gt; visible = entry.isIntersecting"&gt;&lt;/div&gt;</pre></details>
 <details><summary><code>:resize</code><span>Size observer</span><code>&lt;div :resize="({width}) =&gt; ..."&gt;</code></summary><pre>&lt;div :resize="({width}) =&gt; cols = Math.floor(width / 200)"&gt;&lt;/div&gt;</pre></details>
 <details><summary><code>:fx</code><span>Side effect</span><code>&lt;div :fx="log(x)"&gt;</code></summary><pre>&lt;div :fx="console.log('count changed:', count)"&gt;&lt;/div&gt;
@@ -301,22 +301,22 @@ document.querySelectorAll('.ref-list pre').forEach(p => p.innerHTML = hl(p.textC
 ## FAQ
 
 **How does it compare?**
-: ~1.5× smaller wire, ~2.3× faster, ~3× less runtime memory than Alpine — [measured](./compare). Actively maintained, unlike petite-vue. [Signals](https://github.com/tc39/proposal-signals)-powered (emerging standard). Migrating? [Alpine → sprae guide](./alpine).
+: Sprae is ~1.5× smaller over the wire, ~2.3× faster, and uses ~3× less runtime memory than Alpine in [this benchmark](./compare). See the [Alpine migration guide](./alpine).
 
 **Strict CSP? Browser extension?**
-: Yes — the [CSP build](./csp) runs full JS expressions with no `eval` / `new Function`, where Alpine's CSP build forbids even arrow functions. Works in Chrome MV3 extensions.
+: The [CSP build](./csp) interprets JavaScript expressions without `eval` or `new Function`. Bundle it locally for Chrome MV3 extensions. It supports arrow functions, unlike Alpine's CSP build.
 
 **Components?**
-: Use [define-element](https://github.com/dy/define-element) for declarative web components, or any CE library.
+: Use [define-element](https://github.com/dy/define-element) or any custom-element library.
 
 **Is `new Function` unsafe?**
-: No more than inline `onclick` handlers — expressions are sandboxed to state scope. For no-eval environments there's the [CSP build](./csp).
+: `new Function` executes directive expressions as JavaScript. Use the default build only with trusted markup. Under strict CSP, use the [CSP build](./csp).
 
 **Does it scale?**
-: State is plain reactive objects — scales as far as your data model does. Use [store](https://github.com/dy/sprae#store) with computed getters and methods for complex apps.
+: State uses plain reactive objects. For complex apps, use [store](https://github.com/dy/sprae#store) with computed getters and methods.
 
 **Browser support?**
-: Any browser with [Proxy](https://caniuse.com/proxy) — all modern browsers, no IE.
+: Sprae supports browsers with [Proxy](https://caniuse.com/proxy). Internet Explorer is not supported.
 
 **Is it production-ready?**
-: <span data-scope="{ years: 3, releases: 20, issues: 0 }" data-fx.once="fetch('https://api.github.com/repos/dy/sprae').then(function(r){ return r.ok ? r.json() : null }).then(function(d){ if(d) { years = Math.floor((Date.now() - new Date(d.created_at)) / 31536000000); issues = d.open_issues_count } }); fetch('https://api.github.com/repos/dy/sprae/releases?per_page=1').then(function(r){ var m = (r.headers.get('link') || '').match(/page=(\d+)>; rel=.last./); if (m) releases = +m[1] })"><span data-text="years">3</span>+ years · <span data-text="releases">20</span>+ [releases](https://github.com/dy/sprae/releases) · <span data-text="issues">0</span> open issues</span> · 0 dependencies · full TypeScript types · [test suite](https://github.com/dy/sprae/actions).
+: <span data-scope="{ years: 3, releases: 20, issues: 0 }" data-fx.once="fetch('https://api.github.com/repos/dy/sprae').then(function(r){ return r.ok ? r.json() : null }).then(function(d){ if(d) { years = Math.floor((Date.now() - new Date(d.created_at)) / 31536000000); issues = d.open_issues_count } }); fetch('https://api.github.com/repos/dy/sprae/releases?per_page=1').then(function(r){ var m = (r.headers.get('link') || '').match(/page=(\d+)>; rel=.last./); if (m) releases = +m[1] })">Sprae has shipped <span data-text="releases">20</span>+ [releases](https://github.com/dy/sprae/releases) over <span data-text="years">3</span>+ years and has <span data-text="issues">0</span> open issues.</span> It has no dependencies, TypeScript types, and an [automated test suite](https://github.com/dy/sprae/actions).
