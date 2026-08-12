@@ -4,7 +4,7 @@
 
 **DOM microhydration** — add reactivity to the HTML via `:attributes` — no build step, no new syntax. [Signals](https://github.com/tc39/proposal-signals)-based and pluggable, with a full-JS [CSP build](https://dy.github.io/sprae/csp) for strict environments and browser extensions. Use it for server-rendered pages, static sites, or prototypes — anywhere a full framework is overkill, with any backend and +JSX.
 
-[**website**](https://dy.github.io/sprae) | [bench](https://krausest.github.io/js-framework-benchmark/)
+[website](https://dy.github.io/sprae) | [bench](https://krausest.github.io/js-framework-benchmark/)
 
 
 ## Usage
@@ -14,7 +14,7 @@
 <div id="app" :scope="{ isDark: false }">
   <button :onclick="isDark = !isDark">
     <span :text="isDark ? '🌙' : '☀️'"></span>
-    </button>
+  </button>
   <div :class="isDark ? 'dark' : 'light'">Welcome to Spræ!</div>
 </div>
 
@@ -27,7 +27,7 @@
 <script type="module" src="//unpkg.com/sprae"></script>
 ```
 
-Or with module:
+With an ES module:
 
 ```js
 import sprae from 'sprae'
@@ -243,7 +243,7 @@ Toggle `hidden` attribute. Unlike `:if`, keeps element in DOM.
 
 #### `:mount`
 
-Lifecycle hook — runs once on connect. Not reactive. Can return cleanup.
+Run a non-reactive lifecycle hook once when the element connects. The hook can return a cleanup function.
 
 ```html
 <canvas :mount="el => initChart(el)"></canvas>
@@ -256,7 +256,7 @@ Lifecycle hook — runs once on connect. Not reactive. Can return cleanup.
 
 #### `:intersect`
 
-IntersectionObserver wrapper. Fires on enter, or receive entry for full control.
+Run an expression when the element enters the viewport. A function receives the observer entry.
 
 ```html
 <img :intersect.once="loadImage()" :src="placeholder" />
@@ -323,14 +323,14 @@ Add `-immediate` to debounce for leading edge.
 
 Filter keyboard events by key or combination.
 
-* `.ctrl`, `.shift`, `.alt`, `.meta` — modifier keys
-* `.enter`, `.esc`, `.tab`, `.space` — common keys
-* `.delete` — delete or backspace
-* `.arrow` — any arrow key
-* `.digit` — 0-9
-* `.letter` — any unicode letter
-* `.char` — any non-space character
-* `.ctrl-<key>`, `.alt-<key>`, `.meta-<key>`, `.shift-<key>` — combinations
+* `.ctrl`, `.shift`, `.alt`, `.meta`: modifier keys
+* `.enter`, `.esc`, `.tab`, `.space`: common keys
+* `.delete`: delete or backspace
+* `.arrow`: any arrow key
+* `.digit`: 0-9
+* `.letter`: any Unicode letter
+* `.char`: any non-space character
+* `.ctrl-<key>`, `.alt-<key>`, `.meta-<key>`, `.shift-<key>`: combinations
 
 ```html
 <input :onkeydown.enter="submit()" />
@@ -356,7 +356,7 @@ count.value++
 
 ### Store
 
-`store()` creates reactive objects from plain data. Getters become computed, `_`-prefixed properties are untracked.
+`store()` creates reactive objects from plain data. Getters become computed values. Properties prefixed with `_` are untracked.
 
 ```js
 import sprae, { store } from 'sprae'
@@ -376,7 +376,7 @@ state._cache.x = 1  // not reactive
 
 ### Alternative signals
 
-Replace built-in signals with any preact-signals compatible library:
+Replace the built-in signals with any Preact Signals-compatible library:
 
 ```html
 <script src="//unpkg.com/sprae/dist/sprae-preact.umd.js" data-start></script>
@@ -391,10 +391,10 @@ sprae.use(signals)
 | Library | Size | Notes |
 |---------|------|-------|
 | Built-in | ~300b | Default |
-| [@preact/signals-core](https://github.com/preactjs/signals) | 1.5kb | Industry standard, best performance |
-| [ulive](https://github.com/kethan/ulive) | 350b | Minimal |
-| [signal](https://ghub.io/@webreflection/signal) | 633b | Enhanced performance. |
-| [usignal](https://github.com/@webreflection/usignal) | 955b | Async effects support |
+| [@preact/signals-core](https://github.com/preactjs/signals) | 1.5kb | Compatibility target |
+| [ulive](https://github.com/kethan/ulive) | 350b | Smallest |
+| [signal](https://ghub.io/@webreflection/signal) | 633b | Minimal |
+| [usignal](https://github.com/@webreflection/usignal) | 955b | Async effects |
 
 
 ## Configuration
@@ -433,7 +433,7 @@ modifier.log = (fn) => (e) => (console.log(e.type), fn(e))
 
 ### JSX / Next.js
 
-Avoids `'use client'` — keep server components, let sprae handle client-side interactivity:
+Keep server components and let sprae handle client-side interactivity without `'use client'`:
 
 ```jsx
 // layout.jsx
@@ -447,7 +447,7 @@ export default function Layout({ children }) {
 ```
 
 ```jsx
-// page.jsx — server component, no 'use client' needed
+// page.jsx: server component without 'use client'
 export default function Page() {
   return <div x-scope="{count: 0}">
     <button x-onclick="count++">
@@ -473,12 +473,12 @@ Markdown processors strip `:` attributes, so use `data-` prefix:
 </div>
 ```
 
-Works with Jekyll, Hugo, Eleventy, Astro. Sprae site itself is built this way.
+Sprae works with Jekyll, Hugo, Eleventy, and Astro. Its own site uses this setup.
 
 
 ### Server Templates
 
-Same pattern works with PHP, Django, Rails, Jinja — server renders HTML, sprae handles client interactivity:
+PHP, Django, Rails, and Jinja can render the HTML while sprae handles client-side interactivity:
 
 ```html
 <script src="https://unpkg.com/sprae" data-start></script>
@@ -489,7 +489,7 @@ Same pattern works with PHP, Django, Rails, Jinja — server renders HTML, sprae
 
 ### Web Components
 
-Sprae treats custom elements as boundaries — directives on the element set props, but sprae does not descend into children. The component owns its DOM.
+Sprae treats a custom element as a boundary. Directives set its props, but sprae does not descend into its children. The component owns its DOM.
 
 ```html
 <user-card :each="u in users" :name="u.name" :avatar="u.avatar"></user-card>
@@ -505,7 +505,7 @@ Works with [define-element](https://github.com/dy/define-element), Lit, or any C
 * Attribute order matters: `:each` before `:text`, not after.
 * Async expressions work: `<div :text="await fetchData()"></div>`
 * Dispose: `sprae.dispose(el)` or `el[Symbol.dispose]()`
-* No `key` needed — `:each` auto-keys object items by identity; primitives use positional mapping.
+* `:each` keys object items by identity and primitives by position; no `key` is needed.
 * `this` refers to current element, but prefer `:ref` or `:mount` for element access.
 * Properties prefixed with `_` are untracked.
 
@@ -513,25 +513,25 @@ Works with [define-element](https://github.com/dy/define-element), Lit, or any C
 ## FAQ
 
 **What is sprae?**<br>
-~8kb script that adds reactivity to HTML via `:attribute="expression"`. No build step, no new syntax.
+Sprae adds reactivity to HTML through `:attribute="expression"`. It is ~8kb and needs no build step.
 
 **Learning curve?**<br>
-If you know HTML and JS, you know sprae. Just `:attribute="expression"`.
+You write JavaScript expressions in HTML attributes: `:attribute="expression"`.
 
 **How does it compare to Alpine?**<br>
-~1.5× smaller wire, ~2.3× faster, ~3× less runtime memory — [measured](https://dy.github.io/sprae/compare). Pluggable signals, built-in modifiers, event chains, full-JS [CSP build](https://dy.github.io/sprae/csp).
+Sprae is ~1.5× smaller over the wire, ~2.3× faster, and uses ~3× less runtime memory in [this comparison](https://dy.github.io/sprae/compare). It has pluggable signals, built-in modifiers, event chains, and a full-JS [CSP build](https://dy.github.io/sprae/csp).
 
 **How does it compare to React/Vue?**<br>
-No build step, no virtual DOM. Can inject into [JSX](#jsx--nextjs) for server components without framework overhead.
+Sprae needs no build step or virtual DOM. In [JSX](#jsx--nextjs), it adds client-side interactivity without `'use client'`.
 
 **Why signals?**<br>
-Signals are the emerging [standard](https://github.com/tc39/proposal-signals) for reactivity. Pluggable — first to support native signals when browsers ship.
+Signals have a [TC39 proposal](https://github.com/tc39/proposal-signals), and sprae accepts any Preact Signals-compatible implementation.
 
-**Is new Function unsafe?**<br>
-No more than inline `onclick` handlers. For strict CSP, use the [CSP build](https://dy.github.io/sprae/csp).
+**Is `new Function` unsafe?**<br>
+`new Function` executes directive expressions as JavaScript. Use the default build only with trusted markup; under strict CSP, use the [CSP build](https://dy.github.io/sprae/csp).
 
 **Components?**<br>
-Use [define-element](https://github.com/dy/define-element) for declarative web components, or any CE library. For simpler cases, [manage duplication](https://tailwindcss.com/docs/styling-with-utility-classes#managing-duplication) with templates/includes.
+Use [define-element](https://github.com/dy/define-element) for declarative web components, or any custom-element library. For simpler cases, [manage duplication](https://tailwindcss.com/docs/styling-with-utility-classes#managing-duplication) with templates or includes.
 
 **TypeScript?**<br>
 Full types included.
@@ -540,10 +540,10 @@ Full types included.
 Any browser with [Proxy](https://caniuse.com/proxy) (all modern browsers, no IE).
 
 **Does it scale?**<br>
-State is plain reactive objects — scales as far as your data model does. Use [store](#store) with computed getters and methods for complex apps.
+State uses plain reactive objects. For complex apps, use [store](#store) with computed getters and methods.
 
 **Is it production-ready?**<br>
-3+ years, ~200 [npm versions](https://www.npmjs.com/package/sprae?activeTab=versions), 0 open issues, 0 dependencies, full test suite incl. the CSP build.
+Sprae has 3+ years of releases across ~200 [npm versions](https://www.npmjs.com/package/sprae?activeTab=versions). It has no dependencies or open issues, and its tests include the CSP build.
 
 **Is it backed by a company?**<br>
 Indie project. [Support it](https://github.com/sponsors/dy).
@@ -551,10 +551,10 @@ Indie project. [Support it](https://github.com/sponsors/dy).
 
 ## Used by
 
-[settings-panel](https://dy.github.io/settings-panel) · [wavearea](https://dy.github.io/wavearea) · [watr](https://dy.github.io/watr/play)
+[settings-panel](https://dy.github.io/settings-panel), [wavearea](https://dy.github.io/wavearea), [watr](https://dy.github.io/watr/play)
 
 ## Refs
 
-<sup>[alpine](https://github.com/alpinejs/alpine) · [petite-vue](https://github.com/vuejs/petite-vue) · [lucia](https://github.com/aidenybai/lucia) · [nuejs](https://github.com/nuejs/nuejs) · [hmpl](https://github.com/hmpl-language/hmpl) · [unpoly](https://unpoly.com/up.link) · [dagger](https://github.com/dagger8224/dagger.js)</sup>
+<sup>[alpine](https://github.com/alpinejs/alpine), [petite-vue](https://github.com/vuejs/petite-vue), [lucia](https://github.com/aidenybai/lucia), [nuejs](https://github.com/nuejs/nuejs), [hmpl](https://github.com/hmpl-language/hmpl), [unpoly](https://unpoly.com/up.link), [dagger](https://github.com/dagger8224/dagger.js)</sup>
 
 <p align="center"><a href="https://krishnized.github.io/license">ॐ</a></p>
