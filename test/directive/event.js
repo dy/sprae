@@ -612,3 +612,17 @@ test('on: outside with literal assignment should not throw', async () => {
   console.error = origError
   el.remove()
 })
+
+test('event: shared bare listeners keep per-element scope', async () => {
+  // bare :on listeners share one function per (event, expr) — scope must resolve per element
+  let el = h`<div><x :each="item in items"><a :onclick="log.push(item.id)"></a></x></div>`
+  let state = sprae(el, { items: [{ id: 1 }, { id: 2 }], log: [] })
+  await tick()
+  el.querySelectorAll('a')[1].click()
+  el.querySelectorAll('a')[0].click()
+  is([...state.log], [2, 1])
+
+  state.items = []
+  await tick()
+  is(el.querySelectorAll('a').length, 0)
+})

@@ -3,6 +3,18 @@ import sprae, { parse, _state, _off, effect, untracked, _change, _touch, _signal
 /** Row data fields on scope objects — symbols stay invisible to `with` identifier lookups */
 const _r = Symbol('r'), _c = Symbol('c'), _i = Symbol('i'), _o = Symbol('o')
 
+/** Drop whitespace-only text nodes containing a newline (markup indentation, Vue condense rule) */
+const condense = (node) => {
+  if (node.localName === 'pre' || node.localName === 'textarea') return
+  let child = node.firstChild, next
+  while (child) {
+    next = child.nextSibling
+    if (child.nodeType === 3 && !child.data.trim()) { if (child.data.includes('\n')) child.remove() }
+    else if (child.nodeType === 1) condense(child)
+    child = next
+  }
+}
+
 /**
  * Each directive - renders list items from array/object/number.
  * Syntax: `:each="item in items"` or `:each="(item, idx) of items"`
@@ -43,8 +55,14 @@ export default (tpl, state, expr) => {
   let holder = tpl._eachHolder || (tpl._eachHolder = doc.createTextNode(""))
   let rowMap = new Map, rows = [], items, keys, cur, keyed = false, gen = 0
 
+  // condense pretty-print whitespace in the clone master (Vue-style: whitespace-only text node
+  // with a newline is markup indentation, not content) — it doubles per-row node count otherwise,
+  // taxing every clone, insert, layout and teardown; authored single-space gaps stay
+  condense(tpl.content || tpl)
+
   // removal always evicts from rowMap — every path (keyed diff, positional shrink, clear) must, or rows leak
-  let rm = r => { rowMap.delete(r.scope[_r]); r.el.remove(); r.el[Symbol.dispose]?.() }
+  // el can be null: a row from an aborted (mid-swap) pass whose item vanished before the retry
+  let rm = r => { rowMap.delete(r.scope[_r]); if (r.el) { r.el.remove(); r.el[Symbol.dispose]?.() } }
 
   // all current rows go: one replaceChildren instead of N .remove(), keeping non-row siblings (whitespace, holder).
   // reset=1 means no new keyed rows coexist in rowMap, so clear it once instead of deleting every old key.
@@ -74,17 +92,30 @@ export default (tpl, state, expr) => {
   let mkrow = (r, c, i) => {
     let d = Object.create(proto)
     d[_r] = r; d[_c] = c; d[_i] = signal(i); d[_o] = keys
-    let el = tpl.content ? frag(tpl) : tpl.cloneNode(true)
-    return { el, scope: d, node: el.content || el, _di: i, g: 0 }
+    return { el: null, scope: d, node: null, _di: i, g: 0 }
   }
 
+  // element rows pair with tpl as clone master: the first row's scan strips directive attrs off the
+  // master, so the rest of the batch clones it clean (no attr-node copies); rows init connected
+  // (single fragment insert before init) — a :mount inside a row sees the live document
+  let clone = r => (r.node = (r.el = tpl.content ? frag(tpl) : tpl.cloneNode(true)).content || r.el)
+  let scanned = 0
   let insert = pending => {
     if (!pending.length) return
-    let f = pending.length > 1 ? doc.createDocumentFragment() : null
-    for (let r of pending) f ? f.appendChild(r.node) : holder.before(r.node)
-    if (f) holder.before(f)
-    // element rows pair with tpl as clone master: first row records the directive scan, rest replay it
-    for (let r of pending) sprae(r.el, r.scope, tpl.content ? undefined : tpl)
+    let master = tpl.content ? undefined : tpl, i = 0
+    // first row alone: its scan records the program + strips the master before the rest clone it
+    if (master && !scanned) {
+      scanned = 1
+      holder.before(clone(pending[0]))
+      sprae(pending[0].el, pending[0].scope, master)
+      i = 1
+    }
+    if (pending.length > i) {
+      let f = pending.length - i > 1 ? doc.createDocumentFragment() : null
+      for (let j = i; j < pending.length; j++) f ? f.appendChild(clone(pending[j])) : holder.before(clone(pending[j]))
+      if (f) holder.before(f)
+      for (; i < pending.length; i++) sprae(pending[i].el, pending[i].scope, master)
+    }
   }
 
   // untracked: update reads item signals (src[i]) but must not subscribe the :each effect to them —
@@ -132,6 +163,8 @@ export default (tpl, state, expr) => {
           // insert() appends new rows at the tail — a reused row after a new one means wrong placement
           if (pending.length) misplaced = true
           row.scope[_i].value = i; row.scope[_r] = id; row.scope[_o] = keys
+          // aborted-pass orphan (never cloned/inserted): enqueue + force placement sweep
+          if (!row.el) pending.push(row), misplaced = true
         } else {
           row = mkrow(id, null, i)
           rowMap.set(id, row)

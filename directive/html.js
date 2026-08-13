@@ -38,7 +38,7 @@ export default (el, state) => {
         // :if case: update childNodes in-place for remove() closure
         if (el._holder) el.childNodes.splice(0, Infinity, ..._el.childNodes)
 
-        return _el[_dispose]
+        return () => _el?.[_dispose]?.()
       }
       else if (el._holder) el.childNodes.length = 0, html = ''
     }
@@ -49,6 +49,6 @@ export default (el, state) => {
     isTemplate(v) ? el.replaceChildren(v.content.cloneNode(true)) : (el.innerHTML = v == null ? "" : v),
     el[_state] &&= null,
     untracked(() => sprae(el, state)),
-    el[_dispose]
+    () => el[_dispose]?.()
   )
 }

@@ -140,14 +140,67 @@ const err = (e, expr, el = currentEl) => {
  * @property {Record<string, Signal>} [_signals] - Internal signals map
  */
 
-/** Symbol for the flat directive program on clone masters: [{p: childNodes-index path, d: dirs}] in DFS order */
+/** Symbol for the flat directive program on clone masters: [{p: childNodes-index path, w: walk steps, d: dirs}] in DFS order */
 const _prog = Symbol('program')
+
+/** Symbol for the element's directive tuple list (.st = eval state, .offs = active disposers) */
+const _fx = Symbol('fx')
+
+// shared element lifecycle methods — invoked as el[_on]() etc., `this` is the element
+// on/off convention: everything defined before :else :if won't be disabled by :if
+// imagine <x :onx="..." :if="..."/> - when :if is false, it disables directives after :if (calls _off) but ignores :onx
+const elOn = function () {
+  let fx = this[_fx], offs
+  if (!fx) return
+  if (offs = fx.offs) return offs
+  fx.offs = offs = Array(fx.length)
+  for (let i = 0; i < fx.length; i++) offs[i] = dir(fx[i][0], fx[i][1], fx[i][2], fx.st)
+  return offs
+}
+// final=1: teardown for good (dispose), not a temporary :if-style disable — lets directives skip undo work
+const elOff = function (final) {
+  let fx = this[_fx], offs = fx?.offs
+  if (!offs) return
+  fx.offs = null
+  for (let i = 0; i < offs.length; i++) offs[i]?.(final)
+}
+const elDispose = function () {
+  if (!this[_fx]) return
+  this[_off]?.(1)
+  if (mo?._root === this) { mo.disconnect(); mo = null }
+  this[_off] = this[_on] = this[_dispose] = this[_add] = this[_state] = this[_fx] = null
+}
+
+// the lifecycle protocol lives on Element.prototype under private symbols — spraeing an element
+// costs one expando (_fx) instead of four; unspraed elements no-op via the _fx guard
+const elProto = { [_on]: elOn, [_off]: elOff, [_dispose]: elDispose }
+// per-realm: iframe/other-document elements have their own Element.prototype
+const protoize = (root) => {
+  let E = root.ownerDocument?.defaultView?.Element || (typeof Element !== 'undefined' && Element)
+  if (E && !(_on in E.prototype)) Object.assign(E.prototype, elProto)
+}
 
 /** Is q a strict descendant path of p */
 const inside = (p, q) => {
   if (q.length <= p.length) return false
   for (let i = 0; i < p.length; i++) if (p[i] !== q[i]) return false
   return true
+}
+
+// compile each entry's path into walk steps relative to the previous entry:
+// w = [parent hops, sibling hops (-1 = descend from self), ...per-level child indices]
+// firstChild/nextSibling hops resolve nodes cheaper than repeated childNodes[i] walks from the root
+const compileWalk = (prog) => {
+  let prev = []
+  for (let e of prog) {
+    let p = e.p, k = 0, w, j
+    while (k < prev.length && k < p.length && prev[k] === p[k]) k++
+    if (k < prev.length) w = [prev.length - k - 1, p[k] - prev[k]], j = k + 1 // climb to fork level, hop siblings
+    else w = [0, -1], j = k // p extends prev — descend straight down
+    for (; j < p.length; j++) w.push(p[j])
+    e.w = w
+    prev = p
+  }
 }
 
 /**
@@ -165,42 +218,23 @@ const sprae = (root = document.body, state, master) => {
 
   // console.group('sprae', root)
 
-  // take over existing state instead of creating a clone
-  state = store(state || {})
+  // take over existing state instead of creating a clone (:each row scopes arrive pre-chained to a store)
+  if (!master) state = store(state || {})
 
-  let el = root, fx = [], offs = []
+  // fx holds [el, short, value] binding tuples — _on re-activates them via `dir`, no per-directive closures;
+  // it doubles as the element's lifecycle record (.st = eval state, .offs = active disposers),
+  // letting _on/_off/_dispose live on Element.prototype instead of three expandos per element (hot: :each rows)
+  protoize(root)
+  // a disposed element carries own null shadows — clear them so the protocol resolves again
+  if (root[_dispose] === null) delete root[_dispose], delete root[_on], delete root[_off], delete root[_add], delete root[_state]
 
-  // on/off all effects
-  // we don't call prevOn as convention: everything defined before :else :if won't be disabled by :if
-  // imagine <x :onx="..." :if="..."/> - when :if is false, it disables directives after :if (calls _off) but ignores :onx
-  el[_on] = () => {
-    if (offs) return offs
-    offs = Array(fx.length)
-    for (let i = 0; i < fx.length; i++) offs[i] = run(fx[i])
-    return offs
-  }
-  // final=1: teardown for good (dispose), not a temporary :if-style disable — lets directives skip undo work
-  el[_off] = (final) => {
-    if (!offs) return
-    let current = offs
-    offs = null
-    for (let i = 0; i < current.length; i++) current[i]?.(final)
-  }
-
-  // destroy
-  el[_dispose] ||= () => {
-    el[_off]?.(1)
-    if (mo?._root === el) { mo.disconnect(); mo = null }
-    el[_off] = el[_on] = el[_dispose] = el[_add] = el[_state] = null
-  }
-
-  // fx holds [el, short, value] binding tuples — _on re-activates them through `run`, no per-directive closures
-  const run = f => dir(f[0], f[1], f[2], state)
+  let el = root, fx = el[_fx] = []
+  fx.st = state, fx.offs = []
 
   // apply one directive to el; true = stop (subsprae directives like :each/:if/:scope change state identity)
   const apply = (el, name, short, value, f, prev = el[_state]) => (
     currentDir = name, currentEl = el,
-    fx.push(f = [el, short, value]), offs.push(run(f)),
+    fx.push(f = [el, short, value]), fx.offs.push(dir(f[0], f[1], f[2], fx.st)),
     el[_state] !== prev
   )
 
@@ -221,11 +255,10 @@ const sprae = (root = document.body, state, master) => {
         let short = name.slice(prefix.length)
         rec?.push([name, short, value])
 
-        // n = master's residual attr count (directives may add attrs to el, so el.attributes can't be the reference)
-        if (apply(el, name, short, value)) return rec?.length && (rec.n = mel.attributes.length, record(rec)), undefined
+        if (apply(el, name, short, value)) return rec?.length && record(rec), undefined
       } else i++
     }
-    if (rec?.length) rec.n = mel.attributes.length, record(rec)
+    if (rec?.length) record(rec)
 
     // custom elements own their children — don't descend
     if (el !== root && isCE(el)) return
@@ -244,27 +277,26 @@ const sprae = (root = document.body, state, master) => {
     else for (let child of el.childNodes) child.nodeType == 1 && add(child)
   })
 
-  const record = rec => path && prog.push({ p: path.slice(), d: rec })
+  const record = path && (rec => prog.push({ p: path.slice(), d: rec }))
 
-  // replay master's flat program — no attribute scans, no tree walk, dir-less elements never visited
+  // replay master's flat program — no attribute scans (clones come from the stripped master),
+  // no childNodes walks, dir-less elements never visited; scratch nodes array reused across rows
   const replay = prog => {
-    let m = prog.length, nodes = Array(m), node, p, d, e, h, i
+    let m = prog.length, nodes = prog.s ||= Array(m), node = el, w, d, e, i, j
     // resolve all nodes upfront: applying a directive may move nodes (:portal) and shift later paths
     for (e = 0; e < m; e++) {
-      p = prog[e].p, node = el
-      for (h = 0; h < p.length; h++) node = node.childNodes[p[h]]
+      w = prog[e].w
+      for (i = w[0]; i > 0; i--) node = node.parentNode
+      for (i = w[1]; i > 0; i--) node = node.nextSibling
+      for (j = 2; j < w.length; j++) { node = node.firstChild; for (i = w[j]; i > 0; i--) node = node.nextSibling }
       nodes[e] = node
     }
     for (e = 0; e < m; e++) {
-      p = prog[e].p, d = prog[e].d, node = nodes[e]
-      // clones from the recording batch still carry directive attrs (more than master's residual) — strip them;
-      // later clones come from the stripped master and skip removeAttribute entirely
-      let strip = node.attributes.length > d.n
+      d = prog[e].d, node = nodes[e]
       for (i = 0; i < d.length; i++) {
-        if (strip) node.removeAttribute(d[i][0])
         if (apply(node, d[i][0], d[i][1], d[i][2])) {
           // stop: skip this element's recorded descendants (subsprae owns them)
-          while (e + 1 < m && inside(p, prog[e + 1].p)) e++
+          while (e + 1 < m && inside(prog[e].p, prog[e + 1].p)) e++
           break
         }
       }
@@ -275,6 +307,7 @@ const sprae = (root = document.body, state, master) => {
   else {
     if (path) prog = master[_prog] = []
     add(el, master)
+    if (path) compileWalk(prog)
     path = null // MO-added nodes reuse `add` later — no recording for those
   }
 
@@ -464,6 +497,8 @@ export const frag = (tpl) => {
     },
     attributes,
     removeAttribute(name) { attributes.splice(attributes.findIndex(a => a.name === name), 1) },
+    // plain object misses Element.prototype — carry the lifecycle protocol along
+    ...elProto,
   }
 }
 

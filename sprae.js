@@ -81,16 +81,18 @@ const dirRun = (target, seg, expr, state) => {
   if (!update?.call) return update?.[_dispose]
 
   let evaluate = update.eval ?? parse(expr),
-    _out, out = () => (typeof _out === 'function' && _out(), _out=null) // effect trigger and invoke may happen in the same tick, so it will be effect-within-effect call - we need to store output of evaluate to return from trigger effect
+    _out, out // effect trigger and invoke may happen in the same tick (effect-within-effect) - stores evaluate output to return from trigger effect
 
   // use element's own state for expression evaluation, unless it's a custom element
   // (custom elements: directives are parent prop setters, must evaluate against parent state)
   if (!isCE(el)) state = el[_state] ?? state
 
-  let off = change ? effect(() => {
+  let off = change ? (out = () => (typeof _out === 'function' && _out(), _out = null), effect(() => {
     change.value == count ? trigger() : (count = change.value, _out = evaluate.call(el, state, update))
     return out
-  }) : effect(() => (_out = evaluate.call(el, state, update), out))
+  })) : effect(() => (_out = evaluate.call(el, state, update),
+    // teardown closure exists only once an expression actually yields a cleanup (async/:fx) — most never do
+    typeof _out === 'function' ? out ||= () => (typeof _out === 'function' && _out(), _out = null) : void 0))
   if (!(_state in el)) return off
   let _d = 0
   return () => { if (_d) return; _d = 1; off(); update[_off] ? update[_off]() : el[_dispose]?.() }
@@ -99,7 +101,7 @@ const dirRun = (target, seg, expr, state) => {
 // events and observers handle own modifiers, return dispose
 const seg1 = (el, seg, expr, state) => {
   let obs = directive[seg.dirName]
-  return seg.on ? _event(el, state, expr, seg.str)[_dispose]
+  return seg.on ? _event(el, state, expr, seg.str)
     : obs?.observer ? obs(el, state, expr, seg.str)[_dispose]
     : dirRun(el, seg, expr, state)
 }

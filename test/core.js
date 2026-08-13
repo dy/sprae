@@ -917,3 +917,28 @@ test('core: :if on CE should not prevent prop processing', async () => {
   sprae.dispose(wrap)
   wrap.remove()
 })
+
+test('core: re-sprae after dispose restores lifecycle', async () => {
+  // dispose leaves own null lifecycle shadows — a later sprae must clear them and work again
+  let el = h`<div :text="x"></div>`
+  sprae(el, { x: 1 })
+  await tick()
+  is(el.textContent, '1')
+
+  sprae.dispose(el)
+  // scan consumed the :text attr — restore it, as re-init of a disposed element implies fresh markup
+  el.setAttribute(':text', 'x')
+  let state2 = sprae(el, { x: 3 })
+  await tick()
+  is(el.textContent, '3')
+
+  state2.x = 4
+  await tick()
+  is(el.textContent, '4')
+
+  // second dispose round must be as terminal as the first
+  sprae.dispose(el)
+  state2.x = 5
+  await tick()
+  is(el.textContent, '4')
+})

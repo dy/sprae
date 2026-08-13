@@ -1237,3 +1237,45 @@ test('each: clear + shared state rerun must not resurrect list slots', async () 
   await tick()
   is(el.innerHTML, `<y>e</y><y>f</y>`)
 })
+
+test('each: condenses template indentation, keeps authored spaces and pre', async () => {
+  // newline whitespace inside the row template is markup indentation — dropped from clones
+  let el = h`<div><ul><li :each="x in items">
+    <b :text="x"></b>
+    <i :text="x"></i>
+  </li></ul></div>`
+  sprae(el, { items: [1] })
+  await tick()
+  is(el.querySelector('ul').innerHTML, `<li><b>1</b><i>1</i></li>`)
+
+  // single authored space (no newline) between inline elements is content — kept
+  let el2 = h`<div><ul><li :each="x in items"><b :text="x"></b> <i :text="x"></i></li></ul></div>`
+  sprae(el2, { items: [1] })
+  await tick()
+  is(el2.querySelector('ul').innerHTML, `<li><b>1</b> <i>1</i></li>`)
+
+  // pre master keeps its whitespace wholesale
+  let el3 = h`<div><pre :each="x in items">
+  <b :text="x"></b>
+</pre></div>`
+  sprae(el3, { items: [1] })
+  await tick()
+  is(el3.querySelector('pre').innerHTML, `\n  <b>1</b>\n`)
+})
+
+test('each: transient duplicate with new item recovers after retry', async () => {
+  // splice creates [w, b, b, c] in one batch: the duplicate aborts the diff pass after w's row
+  // was registered but before it was inserted — the retry must still clone + place w (#orphan)
+  let el = h`<div><x :each="item in items" :text="item.id"></x></div>`
+  let a = { id: 'a' }, b = { id: 'b' }, c = { id: 'c' }, w = { id: 'w' }
+  let state = sprae(el, { items: [a, b, c] })
+  await tick()
+  is(el.innerHTML, `<x>a</x><x>b</x><x>c</x>`)
+
+  state.items.splice(0, 1, w, b)
+  await tick()
+
+  state.items.splice(2, 1) // resolves to [w, b, c]
+  await tick()
+  is(el.innerHTML, `<x>w</x><x>b</x><x>c</x>`)
+})

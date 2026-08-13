@@ -64,3 +64,20 @@ test("mount: with :if", async () => {
   await tick();
   is(state.log, ['mounted']);
 });
+
+test('mount: inside :each batch fires connected', async () => {
+  // multi-row batches init detached in a fragment, connecting synchronously after —
+  // :mount defers a disconnected trigger one microtask so the cb sees the live document
+  let el = h`<ul><li :each="x in items" :mount="e => log.push(e.isConnected)"></li></ul>`
+  document.body.appendChild(el)
+  let state = sprae(el, { items: [1, 2], log: [] })
+  await tick()
+  is([...state.log], [true, true])
+
+  state.items.push(3) // single-row path
+  await tick()
+  is([...state.log], [true, true, true])
+
+  el.remove()
+  sprae.dispose(el)
+})
