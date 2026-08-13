@@ -141,6 +141,17 @@ test('each: clear evicts keyed rows (stale rowMap regression)', async () => {
   is(el.innerHTML, `<x>3</x><x>5</x>`)
 })
 
+test('each: bulk clear disposes every keyed row', async () => {
+  let el = h`<div><x :each="item in items" :mount="() => () => disposed.push(item.id)"></x></div>`
+  let state = sprae(el, { items: [{ id: 1 }, { id: 2 }, { id: 3 }], disposed: [] })
+
+  state.items = []
+  await tick()
+
+  is(el.innerHTML, ``)
+  is([...state.disposed], [1, 2, 3])
+})
+
 test('each: row-scope writes stay local, state writes pass through', async () => {
   // unknown var assigned in a row expr becomes a row-local (scope-chain receiver), not a state prop;
   // an existing state prop assigned in a row expr writes through to state

@@ -47,9 +47,11 @@ export default (tpl, state, expr) => {
   let rm = r => { rowMap.delete(r.scope[_r]); r.el.remove(); r.el[Symbol.dispose]?.() }
 
   // all current rows go: one replaceChildren instead of N .remove(), keeping non-row siblings (whitespace, holder).
+  // reset=1 means no new keyed rows coexist in rowMap, so clear it once instead of deleting every old key.
   // bail if any keeper is an element — reinserting one could drop focus/iframe/selection state
-  let rmAll = () => {
+  let rmAll = reset => {
     let parent = holder.parentNode, keep = [], node
+    if (reset) rowMap.clear()
     if (rows.length && !tpl.content && parent?.replaceChildren && rows[0].node.parentNode === parent) {
       for (node = parent.firstChild; node && node !== rows[0].node; node = node.nextSibling)
         if (node.nodeType === 1) { keep = null; break } else keep.push(node)
@@ -57,12 +59,12 @@ export default (tpl, state, expr) => {
         if (node.nodeType === 1) { keep = null; break } else keep.push(node)
       if (keep) {
         parent.replaceChildren(...keep)
-        for (let r of rows) rowMap.delete(r.scope[_r]), r.el[Symbol.dispose]?.()
+        for (let r of rows) !reset && rowMap.delete(r.scope[_r]), r.el[Symbol.dispose]?.()
         rows.length = 0
         return
       }
     }
-    for (let r of rows) rm(r)
+    for (let r of rows) reset ? (r.el.remove(), r.el[Symbol.dispose]?.()) : rm(r)
     rows.length = 0
   }
 
@@ -185,13 +187,13 @@ export default (tpl, state, expr) => {
     } else {
       // --- POSITIONAL ---
       if (prevl && cur !== src) {
-        rmAll()
-        prevl = 0; rowMap.clear()
+        rmAll(1)
+        prevl = 0
       }
       cur = src
 
       if (newl < prevl) {
-        if (!newl) rmAll()
+        if (!newl) rmAll(1)
         else {
           for (let i = newl; i < prevl; i++) rm(rows[i])
           rows.length = newl
@@ -232,6 +234,6 @@ export default (tpl, state, expr) => {
     return () => off()
   }
   cb.eval = parse(rhs)
-  cb[_off] = () => { rmAll(); rowMap.clear() }
+  cb[_off] = () => rmAll(1)
   return cb
 }
