@@ -301,7 +301,7 @@ document.querySelectorAll('.ref-list pre').forEach(p => p.innerHTML = hl(p.textC
 ## FAQ
 
 **How does it compare?**
-: Sprae is ~1.5× smaller over the wire, ~2.3× faster, and uses ~3× less runtime memory than Alpine in [this benchmark](./compare). See the [Alpine migration guide](./alpine).
+: Sprae is ~1.5× smaller, ~2.3× faster, and uses ~3× less runtime memory than Alpine in [this benchmark](./compare). In the official [js-framework-benchmark](https://krausest.github.io/js-framework-benchmark/current.html) (Chrome 150) it places ahead of Vue, Preact and React in CPU speed. See the [Alpine migration guide](./alpine).
 
 **Strict CSP? Browser extension?**
 : The [CSP build](./csp) interprets JavaScript expressions without `eval` or `new Function`. Bundle it locally for Chrome MV3 extensions. It supports arrow functions, unlike Alpine's CSP build.
