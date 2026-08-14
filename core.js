@@ -150,11 +150,14 @@ const _fx = Symbol('fx')
 // on/off convention: everything defined before :else :if won't be disabled by :if
 // imagine <x :onx="..." :if="..."/> - when :if is false, it disables directives after :if (calls _off) but ignores :onx
 const elOn = function () {
-  let fx = this[_fx], offs
+  let fx = this[_fx], offs, el, d
   if (!fx) return
   if (offs = fx.offs) return offs
-  fx.offs = offs = Array(fx.length)
-  for (let i = 0; i < fx.length; i++) offs[i] = dir(fx[i][0], fx[i][1], fx[i][2], fx.st)
+  fx.offs = offs = Array(fx.length >> 1)
+  for (let i = 0, j = 0; i < fx.length; i += 2, j++) (
+    el = fx[i], d = fx[i + 1],
+    offs[j] = d[3] ? d[3](el, fx.st) : dir(el, d[1], d[2], fx.st)
+  )
   return offs
 }
 // final=1: teardown for good (dispose), not a temporary :if-style disable — lets directives skip undo work
@@ -221,20 +224,22 @@ const sprae = (root = document.body, state, master) => {
   // take over existing state instead of creating a clone (:each row scopes arrive pre-chained to a store)
   if (!master) state = store(state || {})
 
-  // fx holds [el, short, value] binding tuples — _on re-activates them via `dir`, no per-directive closures;
+  // fx holds (el, descriptor) binding pairs — _on re-activates them via binder/`dir`, no per-directive closures;
   // it doubles as the element's lifecycle record (.st = eval state, .offs = active disposers),
   // letting _on/_off/_dispose live on Element.prototype instead of three expandos per element (hot: :each rows)
-  protoize(root)
+  // clone rows share the master's realm — already protoized when the master's root was spraed
+  if (!master) protoize(root)
   // a disposed element carries own null shadows — clear them so the protocol resolves again
   if (root[_dispose] === null) delete root[_dispose], delete root[_on], delete root[_off], delete root[_add], delete root[_state]
 
   let el = root, fx = el[_fx] = []
   fx.st = state, fx.offs = []
 
-  // apply one directive to el; true = stop (subsprae directives like :each/:if/:scope change state identity)
-  const apply = (el, name, short, value, f, prev = el[_state]) => (
-    currentDir = name, currentEl = el,
-    fx.push(f = [el, short, value]), fx.offs.push(dir(f[0], f[1], f[2], fx.st)),
+  // apply one directive descriptor [name, short, expr, binder] to el;
+  // true = stop (subsprae directives like :each/:if/:scope change state identity)
+  const apply = (el, d, prev = el[_state]) => (
+    currentDir = d[0], currentEl = el,
+    fx.push(el, d), fx.offs.push(d[3] ? d[3](el, fx.st) : dir(el, d[1], d[2], fx.st)),
     el[_state] !== prev
   )
 
@@ -252,13 +257,13 @@ const sprae = (root = document.body, state, master) => {
         el.removeAttribute(name)
         // strip master too: later clones come out clean; unprocessed tail (after a stop) stays for subsprae
         mel?.removeAttribute(name)
-        let short = name.slice(prefix.length)
-        rec?.push([name, short, value])
+        let d = [name, name.slice(prefix.length), value, 0]
+        rec?.push(d)
 
-        if (apply(el, name, short, value)) return rec?.length && record(rec), undefined
+        if (apply(el, d)) return rec?.length && record(rec, mel), undefined
       } else i++
     }
-    if (rec?.length) record(rec)
+    if (rec?.length) record(rec, mel)
 
     // custom elements own their children — don't descend
     if (el !== root && isCE(el)) return
@@ -277,7 +282,12 @@ const sprae = (root = document.body, state, master) => {
     else for (let child of el.childNodes) child.nodeType == 1 && add(child)
   })
 
-  const record = path && (rec => prog.push({ p: path.slice(), d: rec }))
+  // compile per-directive binders once per master: replay activates them directly,
+  // skipping the name-parse / registry-dispatch chain per row
+  const record = path && ((rec, mel) => {
+    if (bind) for (let d of rec) d[3] = bind(mel, d[1], d[2]) || 0
+    prog.push({ p: path.slice(), d: rec })
+  })
 
   // replay master's flat program — no attribute scans (clones come from the stripped master),
   // no childNodes walks, dir-less elements never visited; scratch nodes array reused across rows
@@ -294,7 +304,7 @@ const sprae = (root = document.body, state, master) => {
     for (e = 0; e < m; e++) {
       d = prog[e].d, node = nodes[e]
       for (i = 0; i < d.length; i++) {
-        if (apply(node, d[i][0], d[i][1], d[i][2])) {
+        if (apply(node, d[i])) {
           // stop: skip this element's recorded descendants (subsprae owns them)
           while (e + 1 < m && inside(prog[e].p, prog[e + 1].p)) e++
           break
@@ -329,6 +339,11 @@ sprae.version = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'dev'
 // directive initializer
 /** @type {(el: Element, name: string, expr: string, state: Object) => () => (() => void) | void} */
 export let dir
+
+// optional directive pre-binder: (masterEl, name, expr) => (el, state) => off — compiled once per
+// clone-master directive, activated per row without re-parsing the name or consulting the registry
+/** @type {(mel: Element, name: string, expr: string) => ((el: Element, state: Object) => (() => void) | void) | 0} */
+export let bind
 
 /**
  * Compiles an expression string into an evaluator function.
@@ -379,6 +394,7 @@ const cache = {};
  * @property {<T>(fn: () => T) => T} [batch] - Batch function
  * @property {<T>(fn: () => T) => T} [untracked] - Untracked function
  * @property {(el: Element, name: string, expr: string, state: Object) => () => (() => void) | void} [dir] - Directive initializer
+ * @property {(mel: Element, name: string, expr: string) => ((el: Element, state: Object) => (() => void) | void) | 0} [bind] - Directive pre-binder for clone masters
  */
 
 /**
@@ -394,7 +410,8 @@ export const use = (config) => (
   config.computed && (computed = config.computed),
   config.batch && (batch = config.batch),
   config.untracked && (untracked = config.untracked),
-  config.dir && (dir = config.dir)
+  config.dir && (dir = config.dir),
+  config.bind && (bind = config.bind)
 )
 
 /**

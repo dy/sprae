@@ -9,9 +9,10 @@ import { clsx } from "../core.js";
  * @param {string} name - Directive name with modifiers
  * @returns {(v: string | string[] | Record<string, boolean>) => void} Update function
  */
+const clearAttr = (el) => !el.classList.length && el.removeAttribute('class')
+
 export default (el, st, ex, name) => {
   let _cur = null, _new, _prev = null
-  let clearAttr = () => !el.classList.length && el.removeAttribute('class')
 
   return (v) => {
     v = typeof v === 'function' ? v(el.className) : v
@@ -23,7 +24,7 @@ export default (el, st, ex, name) => {
       if (!_cur?.size) _cur = null
       for (let c in v) if (v[c] && !_cur?.has(c)) el.classList.add(c), (_cur ||= new Set).add(c)
       // only touch the attribute if we actually removed something — this runs per row on shared-signal writes
-      if (!_cur && removed) clearAttr()
+      if (!_cur && removed) clearAttr(el)
       return
     }
 
@@ -35,7 +36,7 @@ export default (el, st, ex, name) => {
     if (v) for (let c of v.split(' ')) c && (_new ||= new Set).add(c)
     if (_cur) for (let c of _cur) if (!_new?.has(c)) el.classList.remove(c)
     if (_new) for (let c of _new) if (!_cur?.has(c)) el.classList.add(c)
-    if (!_new && _cur) clearAttr()
+    if (!_new && _cur) clearAttr(el)
     _cur = _new
   }
 }

@@ -24,7 +24,13 @@ const listener = (name, expr, key = name + '\0' + expr) => listeners[key] ??= (
     state && evaluate.call(this, state, (fn) => typeof fn === 'function' ? fn(e) : fn)
   })()
 
-export default (el, state, expr, name) => {
+/** Activator memo per (name, expr): type/mods/listener/evaluate resolve once, rows re-activate free */
+const binders = {}
+
+/** Prebound activator for a fixed (name, expr) pair */
+export const bind = (name, expr, key = name + '\0' + expr) => binders[key] ??= mkbind(name, expr)
+
+const mkbind = (name, expr) => {
   // wrap inline cb into function
   // if (!/^(?:[\w$]+|\([^()]*\))\s*=>/.test(expr) && !/^function\b/.test(expr)) expr = `()=>{${expr}}`;
 
@@ -33,24 +39,31 @@ export default (el, state, expr, name) => {
   // Bare local events share one listener function per (name, expr) — no per-element closure.
   if (!mods.length) {
     const fn = listener(name, expr)
-    el[_estate] = state
-    el.addEventListener(type, fn)
-    // final dispose on own element: null eval state, inert listener dies with the node
-    return (final) => final ? el[_estate] = null : el.removeEventListener(type, fn)
+    return (el, state) => (
+      el[_estate] = state,
+      el.addEventListener(type, fn),
+      // final dispose on own element: null eval state, inert listener dies with the node
+      (final) => final ? el[_estate] = null : el.removeEventListener(type, fn)
+    )
   }
 
-  const evaluate = parse(expr),
-    // decorate pops mods — pass a copy to keep the memo intact
-    trigger = decorate(Object.assign(e => evaluate.call(el, state, (fn) => typeof fn === 'function' ? fn(e) : fn), { target: el }), [...mods]),
-    // stable dispatcher: dispose neutralizes by nulling — removeEventListener is undo work a dying node doesn't need
-    handler = e => live && live(e)
-  let live = trigger
+  const evaluate = parse(expr)
+  return (el, state) => {
+    const
+      // decorate pops mods — pass a copy to keep the memo intact
+      trigger = decorate(Object.assign(e => evaluate.call(el, state, (fn) => typeof fn === 'function' ? fn(e) : fn), { target: el }), [...mods]),
+      // stable dispatcher: dispose neutralizes by nulling — removeEventListener is undo work a dying node doesn't need
+      handler = e => live && live(e)
+    let live = trigger
 
-  trigger.target.addEventListener(type, handler, trigger)
-  return (final) => {
-    live = null
-    // final dispose on own element: inert listener dies with the node; always release retargeted (window/document/…)
-    if (!final || trigger.target !== el) trigger.target.removeEventListener(type, handler)
-    trigger[Symbol.dispose]?.()
+    trigger.target.addEventListener(type, handler, trigger)
+    return (final) => {
+      live = null
+      // final dispose on own element: inert listener dies with the node; always release retargeted (window/document/…)
+      if (!final || trigger.target !== el) trigger.target.removeEventListener(type, handler)
+      trigger[Symbol.dispose]?.()
+    }
   }
 }
+
+export default (el, state, expr, name) => bind(name, expr)(el, state)

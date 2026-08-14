@@ -19,7 +19,7 @@ import _scope from "./directive/scope.js";
 import _each from "./directive/each.js";
 import _default from "./directive/_.js";
 import _spread from "./directive/spread.js";
-import _event from "./directive/event.js";
+import _event, { bind as bindEvent } from "./directive/event.js";
 import _seq from "./directive/sequence.js";
 import _html from "./directive/html.js";
 import _portal from "./directive/portal.js";
@@ -57,8 +57,8 @@ Object.assign(directive, {
 
 
 /**
- * Activates one directive segment on an element; returns the disposer.
- * Registry stays live: the factory resolves fresh on every activation.
+ * Activates one modifier-bearing directive segment; returns the disposer.
+ * Modifiers can retarget the update or schedule it, so they keep the trigger indirection.
  * @param {Element} target - Target element
  * @param {{dirName: string, mods: string[]}} seg - Parsed name segment
  * @param {string} expr - Expression string
@@ -67,16 +67,11 @@ Object.assign(directive, {
  */
 const dirRun = (target, seg, expr, state) => {
   let create = directive[seg.dirName] || directive._
-  let el = target, update, change, trigger, count = 0
-
-  if (seg.mods.length) {
-    // modifiers can retarget the update or schedule it, so they keep the trigger indirection
-    change = signal(0)
-    trigger = decorate(Object.assign(() => change.value++, { target }), seg.mods.slice())
-    el = trigger.target ?? target
-  }
-
-  update = create(el, state, expr, seg.dirName)
+  let count = 0,
+    change = signal(0),
+    trigger = decorate(Object.assign(() => change.value++, { target }), seg.mods.slice()),
+    el = trigger.target ?? target,
+    update = create(el, state, expr, seg.dirName)
 
   if (!update?.call) return update?.[_dispose]
 
@@ -87,12 +82,10 @@ const dirRun = (target, seg, expr, state) => {
   // (custom elements: directives are parent prop setters, must evaluate against parent state)
   if (!isCE(el)) state = el[_state] ?? state
 
-  let off = change ? (out = () => (typeof _out === 'function' && _out(), _out = null), effect(() => {
+  let off = (out = () => (typeof _out === 'function' && _out(), _out = null), effect(() => {
     change.value == count ? trigger() : (count = change.value, _out = evaluate.call(el, state, update))
     return out
-  })) : effect(() => (_out = evaluate.call(el, state, update),
-    // teardown closure exists only once an expression actually yields a cleanup (async/:fx) — most never do
-    typeof _out === 'function' ? out ||= () => (typeof _out === 'function' && _out(), _out = null) : void 0))
+  }))
   if (!(_state in el)) return off
   let _d = 0
   return () => { if (_d) return; _d = 1; off(); update[_off] ? update[_off]() : el[_dispose]?.() }
@@ -103,7 +96,38 @@ const seg1 = (el, seg, expr, state) => {
   let obs = directive[seg.dirName]
   return seg.on ? _event(el, state, expr, seg.str)
     : obs?.observer ? obs(el, state, expr, seg.str)[_dispose]
-    : dirRun(el, seg, expr, state)
+    : seg.mods.length ? dirRun(el, seg, expr, state)
+    : dirBind(el, seg.str, expr)(el, state)
+}
+
+// pre-binder for directives (core `bind` hook): name parse, registry lookup and CE check happen
+// once per clone master; rows run the returned activator directly. seg1 reuses it per activation.
+// Modifier/sequence/multi-segment names fall back to the generic `dir` (returns 0).
+const dirBind = (mel, name, expr) => {
+  const segs = recipe(name)
+  if (!segs || segs.length !== 1) return 0
+  const seg = segs[0]
+  if (seg.on) return bindEvent(seg.str, expr)
+  if (seg.mods.length) return 0
+  const ce = isCE(mel), { dirName, str } = seg
+  let create, evaluate
+  return (el, state) => {
+    // registry stays live: resolve on first activation, not at record time
+    create ??= directive[dirName] || directive._
+    if (create.observer) return create(el, state, expr, str)[_dispose]
+    let update = create(el, state, expr, dirName)
+    if (!update?.call) return update?.[_dispose]
+    evaluate ??= update.eval ?? parse(expr)
+    // use element's own state for expression evaluation, unless it's a custom element
+    if (!ce) state = el[_state] ?? state
+    let _out, out
+    let off = effect(() => (_out = evaluate.call(el, state, update),
+      // teardown closure exists only once an expression actually yields a cleanup (async/:fx) — most never do
+      typeof _out === 'function' ? out ||= () => (typeof _out === 'function' && _out(), _out = null) : void 0))
+    if (!(_state in el)) return off
+    let _d = 0
+    return () => { if (_d) return; _d = 1; off(); update[_off] ? update[_off]() : el[_dispose]?.() }
+  }
 }
 
 // per-name parse memo: the same few attr names repeat across every :each row
@@ -296,6 +320,7 @@ use({
     let offs = segs.map(seg => seg1(el, seg, expr, state))
     return (final) => { for (let o of offs) o?.(final) }
   },
+  bind: dirBind,
   ...signals
 })
 

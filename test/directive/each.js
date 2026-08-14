@@ -1279,3 +1279,19 @@ test('each: transient duplicate with new item recovers after retry', async () =>
   await tick()
   is(el.innerHTML, `<x>w</x><x>b</x><x>c</x>`)
 })
+
+test('each: event modifier state is per-row', async () => {
+  // rows 2+ activate via the master's prebound program — .once must keep own state per row,
+  // and the first (scanned) row must behave identically to replayed ones
+  let el = h`<div><x :each="item in items" :onx.once="e => log.push(item)"></x></div>`
+  let state = sprae(el, { items: [1, 2, 3], log: [] })
+  await tick()
+  let [a, b, c] = el.children
+  a.dispatchEvent(new window.Event('x'))
+  a.dispatchEvent(new window.Event('x'))
+  is(state.log, [1], 'once fires once on scanned row')
+  c.dispatchEvent(new window.Event('x'))
+  b.dispatchEvent(new window.Event('x'))
+  b.dispatchEvent(new window.Event('x'))
+  is(state.log, [1, 3, 2], 'each replayed row owns its once state')
+})

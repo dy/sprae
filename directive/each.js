@@ -1,9 +1,15 @@
-import sprae, { parse, _state, _off, effect, untracked, _change, _touch, _signals, frag, throttle, mutate, signal } from "../core.js"
+import sprae, { parse, prefix, _state, _off, effect, untracked, _change, _touch, _signals, frag, throttle, mutate, signal } from "../core.js"
 
 /** Row data fields on scope objects — symbols stay invisible to `with` identifier lookups */
-const _r = Symbol('r'), _c = Symbol('c'), _i = Symbol('i'), _o = Symbol('o')
+const _r = Symbol('r'), _c = Symbol('c'), _i = Symbol('i'), _o = Symbol('o'), _is = Symbol('isig')
 
-/** Drop whitespace-only text nodes containing a newline (markup indentation, Vue condense rule) */
+/** Is name the :text directive (exact, with modifiers, or compound tail) */
+const isText = (name, t = prefix + 'text', c = name[t.length]) =>
+  name.startsWith(t) && (c === undefined || c === '.' || c === ':')
+
+/** Drop whitespace-only text nodes containing a newline (markup indentation, Vue condense rule);
+ * seed empty :text targets with a text node — clones then update .data in place instead of
+ * creating + inserting a Text node per row (svelte templates carry the same placeholder) */
 const condense = (node) => {
   if (node.localName === 'pre' || node.localName === 'textarea') return
   let child = node.firstChild, next
@@ -13,6 +19,8 @@ const condense = (node) => {
     else if (child.nodeType === 1) condense(child)
     child = next
   }
+  if (!node.firstChild && node.attributes && node.localName !== 'template')
+    for (let a of node.attributes) if (isText(a.name)) { node.append(''); break }
 }
 
 /**
@@ -30,11 +38,12 @@ export default (tpl, state, expr) => {
   // Row scope is a plain object prototype-chained to state (proxy stays only at the chain bottom):
   // `with` identifier lookups resolve item/idx via native own-prop getters — no proxy trap crossings.
   // Positional rows (_c = source array) read item live via c[i], keyed rows hold direct ref _r.
-  // _i is a signal: keyed diff moves rows to new indices, so index reads must subscribe (#76)
+  // _i is a plain number; keyed diff moves rows, so index READS must subscribe (#76) —
+  // the _is signal materializes lazily on first idx read, rows that never read it skip the alloc
   const desc = {
     [itemVar]: {
-      get() { return this[_c] ? this[_c][this[_i].peek()] : this[_r] },
-      set(v) { this[_c] ? this[_c][this[_i].peek()] = v : this[_r] = v }
+      get() { return this[_c] ? this[_c][this[_i]] : this[_r] },
+      set(v) { this[_c] ? this[_c][this[_i]] = v : this[_r] = v }
     },
     // `with` fetches it per identifier per eval — own undefined stops the walk to state/globalThis
     [Symbol.unscopables]: { value: undefined },
@@ -42,14 +51,18 @@ export default (tpl, state, expr) => {
     [_r]: { value: undefined, writable: true },
     [_c]: { value: undefined, writable: true },
     [_i]: { value: undefined, writable: true },
+    [_is]: { value: undefined, writable: true },
     [_o]: { value: undefined, writable: true }
   }
   // ??= keeps the item accessor when idx shares its name (`:each="$ in items"`)
   desc[idxVar] ??= {
-    get() { let i = this[_i].value; return this[_o] ? this[_o][i] : i },
+    get() { let i = (this[_is] ??= signal(this[_i])).value; return this[_o] ? this[_o][i] : i },
     set() { } // index is not assignable
   }
   const proto = Object.create(state, desc)
+
+  /** Move a row to index i: plain field always, signal only if some idx read materialized it */
+  const setIdx = (d, i) => { d[_i] = i; if (d[_is]) d[_is].value = i }
 
   let doc = tpl.ownerDocument
   let holder = tpl._eachHolder || (tpl._eachHolder = doc.createTextNode(""))
@@ -91,7 +104,7 @@ export default (tpl, state, expr) => {
   // scope shape is uniform (keyed: _r, positional: _c/_o) — monomorphic for the accessors
   let mkrow = (r, c, i) => {
     let d = Object.create(proto)
-    d[_r] = r; d[_c] = c; d[_i] = signal(i); d[_o] = keys
+    d[_r] = r; d[_c] = c; d[_i] = i; d[_o] = keys
     return { el: null, scope: d, node: null, _di: i, g: 0 }
   }
 
@@ -159,10 +172,10 @@ export default (tpl, state, expr) => {
           if (row.g === gen) return // intermediate swap — retry after next index write
           reused++
           // index-only shifts from remove/append keep DOM order — reorder only for same-length permutes (swap)
-          if (!lenChanged && row.scope[_i].peek() !== i) moved = true
+          if (!lenChanged && row.scope[_i] !== i) moved = true
           // insert() appends new rows at the tail — a reused row after a new one means wrong placement
           if (pending.length) misplaced = true
-          row.scope[_i].value = i; row.scope[_r] = id; row.scope[_o] = keys
+          setIdx(row.scope, i); row.scope[_r] = id; row.scope[_o] = keys
           // aborted-pass orphan (never cloned/inserted): enqueue + force placement sweep
           if (!row.el) pending.push(row), misplaced = true
         } else {
