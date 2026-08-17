@@ -603,3 +603,51 @@ t('store: out-of-range read must not corrupt list length', () => {
   is(seen, undefined)
   off()
 })
+
+t('store: list item nested mutation is reactive', async () => {
+  let s = store({ items: [{ tags: ['a'] }] })
+  let txt; effect(() => txt = s.items[0].tags.join(' '))
+  is(txt, 'a')
+  s.items[0].tags.push('b')
+  await tick()
+  is(txt, 'a b', 'nested push updates')
+  s.items[0].tags = [...s.items[0].tags, 'c']
+  await tick()
+  is(txt, 'a b c', 'reassign updates')
+})
+
+t('store: deep chain under list item is reactive', async () => {
+  let s = store({ items: [{ meta: { deep: { x: 1 } } }] })
+  let x; effect(() => x = s.items[0].meta.deep.x)
+  is(x, 1)
+  s.items[0].meta.deep.x = 2
+  await tick()
+  is(x, 2)
+})
+
+t('store: list of lists is reactive', async () => {
+  let s = store({ rows: [[1, 2]] })
+  let txt; effect(() => txt = s.rows[0].join(','))
+  is(txt, '1,2')
+  s.rows[0].push(3)
+  await tick()
+  is(txt, '1,2,3')
+})
+
+t('store: aliased item shares wrapper and signals', async () => {
+  let shared = { n: 1, tags: ['t'] }
+  let s = store({ a: [shared], b: [shared] })
+  is(s.a[0] === s.b[0], true, 'one proxy per target')
+  is(s.a[0].tags === s.a[0].tags, true, 'stable identity across reads')
+  is(s.a[0].tags === s.b[0].tags, true, 'nested wrapper shared across aliases')
+  let n; effect(() => n = s.a[0].n)
+  s.b[0].n = 2
+  await tick()
+  is(n, 2, 'write via one alias updates readers of the other')
+})
+
+t('store: non-plain values under items stay raw', () => {
+  let d = new Date()
+  let s = store({ items: [{ date: d }] })
+  is(s.items[0].date === d, true, 'Date not proxied')
+})

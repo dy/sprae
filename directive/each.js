@@ -155,7 +155,7 @@ export default (tpl, state, expr) => {
       sigs = src[_signals], s,
       val = sigs ? i => (s = sigs[i], s?.peek ? s.peek() : s) : i => src[i]
 
-    // detect keyed: array of objects (store items are shallow proxies — keyed by proxy identity)
+    // detect keyed: array of objects (store items are lazy proxies — keyed by proxy identity)
     keyed = false
     for (let i = 0; i < newl; i++) {
       if (val(i) != null) { keyed = typeof val(i) === 'object'; break }

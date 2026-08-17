@@ -1295,3 +1295,36 @@ test('each: event modifier state is per-row', async () => {
   b.dispatchEvent(new window.Event('x'))
   is(state.log, [1, 3, 2], 'each replayed row owns its once state')
 })
+
+test('each: nested item mutation updates bindings', async () => {
+  let el = h`<p><x :each="item in items" :text="item.tags.join(' ')"></x></p>`
+  let state = sprae(el, { items: [{ tags: [] }] })
+  await tick()
+  is(el.innerHTML, '<x></x>', 'empty nested array renders')
+  state.items[0].tags.push('a')
+  await tick()
+  is(el.innerHTML, '<x>a</x>', 'push into empty nested array')
+  state.items[0].tags.push('b')
+  await tick()
+  is(el.innerHTML, '<x>a b</x>')
+})
+
+test('each: nested :each over item array', async () => {
+  let el = h`<p><y :each="item in items"><x :each="t in item.tags" :text="t"></x></y></p>`
+  let state = sprae(el, { items: [{ tags: ['a'] }] })
+  await tick()
+  is(el.innerHTML, '<y><x>a</x></y>')
+  state.items[0].tags.push('b')
+  await tick()
+  is(el.innerHTML, '<y><x>a</x><x>b</x></y>')
+  state.items[0].tags.splice(0, 1)
+  await tick()
+  is(el.innerHTML, '<y><x>b</x></y>', 'splice on nested list')
+})
+
+test('each: null and missing item fields read safely', async () => {
+  let el = h`<p><x :each="item in items" :text="item.x == null ? 'nil' : item.x"></x></p>`
+  let state = sprae(el, { items: [{ x: null }, {}] })
+  await tick()
+  is(el.innerHTML, '<x>nil</x><x>nil</x>')
+})

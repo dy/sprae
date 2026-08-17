@@ -152,8 +152,8 @@ export const store = (values, parent) => {
  */
 const list = (values, parent = globalThis) => {
 
-  // init signals eagerly — shallow() is cheap (1 Proxy + 1 signal per object item)
-  let signals = values.map(v => signal(shallow(v))),
+  // init signals eagerly — lazy() is cheap (1 Proxy + 1 signal per object item; depth wraps on read)
+  let signals = values.map(v => signal(lazy(v))),
 
     // if .length was accessed from mutator (.push/etc) method
     isMut = false,
@@ -182,7 +182,7 @@ const list = (values, parent = globalThis) => {
         push(...items) {
           let r
           batch(() => {
-            for (let v of items) create(signals, signals.length, v, shallow)
+            for (let v of items) create(signals, signals.length, v, lazy)
             r = length.value = signals.length
           })
           return r
@@ -224,14 +224,14 @@ const list = (values, parent = globalThis) => {
           }
 
           // force changing length, if eg. a=[]; a[1]=1 - need to come after setting the item
-          else if (k >= signals.length) create(signals, k, v, shallow), state.length = +k + 1
+          else if (k >= signals.length) create(signals, k, v, lazy), state.length = +k + 1
 
           // existing signal — bump for :each index tracking (swap)
           else if (signals[k]) {
             let s = signals[k], prev = s.peek?.() ?? s.valueOf()
-            set(signals, k, v, shallow)
+            set(signals, k, v, lazy)
             if ((s.peek?.() ?? s.valueOf()) !== prev) bump()
-          } else create(signals, k, v, shallow)
+          } else create(signals, k, v, lazy)
 
           return 1
         },
@@ -253,28 +253,39 @@ const list = (values, parent = globalThis) => {
  */
 const create = (signals, k, v, wrap = store) => (signals[k] = (k[0] == '_' || v?.peek || typeof v === 'function') ? v : signal(wrap(v)))
 
-/** Shared permissive `has` trap for shallow row objects. */
+/** Shared permissive `has` trap for lazy row objects. */
 const has = () => true
 
-/** Lightweight reactive wrapper for array items — avoids full store() per item. */
-const shallow = (v) => {
-  if (!v || typeof v !== 'object' || v.constructor !== Object) return v
-  if (v[_change]) return v // already reactive (store or shallow proxy)
-  // per-key version signals: writing one key notifies only its readers, not the whole item
-  let sigs = {}, ver // ver tracks key set (adds/deletes), created on demand
-  return new Proxy(v, {
-    get: (t, k) => k === _signals ? t : k === _change ? (ver ??= signal(0)) : typeof k === 'symbol' ? t[k] : ((sigs[k] ??= signal(0)).value, t[k]),
-    set: (t, k, val) => {
-      if (t[k] !== val) {
-        let fresh = !(k in t)
-        t[k] = val
-        sigs[k] && sigs[k].value++
-        if (fresh && ver) ver.value++
-      }
-      return 1
-    },
-    has
-  })
+/** target → wrapper cache: one proxy per object, so aliases share signals */
+const wrapped = new WeakMap()
+
+/** Lazy deep wrapper for list items — plain children wrap on read, cost only where data is actually read. */
+const lazy = (v) => {
+  if (!v || typeof v !== 'object' || v[_signals]) return v
+  let w = wrapped.get(v)
+  if (w === undefined) {
+    if (Array.isArray(v)) w = list(v)
+    else if (v.constructor !== Object) w = v // dates, class instances etc stay raw
+    else {
+      // per-key version signals: writing one key notifies only its readers, not the whole item
+      let sigs = {}, ver // ver tracks key set (adds/deletes), created on demand
+      w = new Proxy(v, {
+        get: (t, k) => k === _signals ? t : k === _change ? (ver ??= signal(0)) : typeof k === 'symbol' ? t[k] : ((sigs[k] ??= signal(0)).value, lazy(t[k])),
+        set: (t, k, val) => {
+          if (t[k] !== val) {
+            let fresh = !(k in t)
+            t[k] = val
+            sigs[k] && sigs[k].value++
+            if (fresh && ver) ver.value++
+          }
+          return 1
+        },
+        has
+      })
+    }
+    wrapped.set(v, w)
+  }
+  return w
 }
 
 /**
@@ -296,11 +307,11 @@ const set = (signals, k, v, wrap = store) => {
       let sigs = _v[_signals], n = sigs.length, m = v.length, changed = 0, i = 0, s, prev
       for (; i < m && i < n; i++) {
         s = sigs[i], prev = s?.peek ? s.peek() : s
-        set(sigs, i, v[i], shallow)
+        set(sigs, i, v[i], lazy)
         s = sigs[i]
         if ((s?.peek ? s.peek() : s) !== prev) changed = 1
       }
-      for (; i < m; i++) create(sigs, i, v[i], shallow)
+      for (; i < m; i++) create(sigs, i, v[i], lazy)
       if (m < n) { for (; i < n; i++) sigs[i]?.[Symbol.dispose]?.(); sigs.length = m }
       if (changed) sigs[_touch].value++
       if (m !== n) sigs[_change].value = m
