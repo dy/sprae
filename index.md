@@ -63,7 +63,7 @@ window.hl = (s, line) => {
 **HTML-native**
 : Keep your HTML.<br>Write standard JS expressions.<br>No build step or config.
 
-**~8kb, 0 deps**
+**11.6kb, 0 deps**
 : One `<script>` tag or `npm i`.<br>Works with any backend or template.<br>Supports JSX.
 
 **Open & pluggable**

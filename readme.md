@@ -1,13 +1,13 @@
-# [∴](https://dy.github.io/sprae) sprae [![tests](https://github.com/dy/sprae/actions/workflows/node.js.yml/badge.svg)](https://github.com/dy/sprae/actions/workflows/node.js.yml) ![size](https://img.shields.io/badge/size-~8kb-white) ![deps](https://img.shields.io/badge/deps-0-white) [![npm](https://img.shields.io/npm/v/sprae?color=white)](https://www.npmjs.com/package/sprae) [![license](https://img.shields.io/npm/l/sprae?color=white)](./license)
+# [∴](https://sprae.js.org) sprae [![tests](https://github.com/dy/sprae/actions/workflows/node.js.yml/badge.svg)](https://github.com/dy/sprae/actions/workflows/node.js.yml) ![size](https://img.shields.io/badge/size-11.6kb-white) ![deps](https://img.shields.io/badge/deps-0-white) [![npm](https://img.shields.io/npm/v/sprae?color=white)](https://www.npmjs.com/package/sprae) [![license](https://img.shields.io/npm/l/sprae?color=white)](./license)
 
 **DOM microhydration**. Add reactivity to the HTML via `:`-attributes.
 - No build step, no new syntax.
 - [Signals](https://github.com/tc39/proposal-signals)-based and pluggable.
-- Full-JS [CSP build](https://dy.github.io/sprae/csp) for strict env and browser extensions.
+- Full-JS [CSP build](https://sprae.js.org/csp) for strict env and browser extensions.
 
 Use for server-rendered pages, static sites, or prototypes – anywhere a full framework is overkill, with any backend and +JSX.
 
-<!-- [**website**](https://dy.github.io/sprae) | [bench](https://krausest.github.io/js-framework-benchmark/) -->
+<!-- [**website**](https://sprae.js.org) | [bench](https://krausest.github.io/js-framework-benchmark/) -->
 
 
 ## Usage
@@ -516,16 +516,16 @@ Works with [define-element](https://github.com/dy/define-element), Lit, or any C
 ## FAQ
 
 **How does it compare to Alpine?**<br>
-Sprae is ~1.5× smaller, ~2.3× faster, and uses ~3× less runtime memory in [this comparison](https://dy.github.io/sprae/compare). It has pluggable signals, built-in modifiers, event chains, and a full-JS [CSP build](https://dy.github.io/sprae/csp).
+Sprae is ~1.5× smaller, ~2.3× faster, and uses ~3× less runtime memory in [this comparison](https://sprae.js.org/compare). It has pluggable signals, built-in modifiers, event chains, and a full-JS [CSP build](https://sprae.js.org/csp).
 
 **How does it compare to React/Vue?**<br>
-In the official [js-framework-benchmark](https://krausest.github.io/js-framework-benchmark/current.html) (Chrome 150), sprae places ahead of Vue, Preact and React in CPU speed, at 10kb compressed, with no build step or virtual DOM. In [JSX](#jsx--nextjs), it adds client-side interactivity without `'use client'`.
+In the official [js-framework-benchmark](https://krausest.github.io/js-framework-benchmark/current.html) (Chrome 150), sprae places ahead of Vue, Preact and React in CPU speed, at 11.6kb compressed, with no build step or virtual DOM. In [JSX](#jsx--nextjs), it adds client-side interactivity without `'use client'`.
 
 **Why signals?**<br>
 Signals have a [TC39 proposal](https://github.com/tc39/proposal-signals), and sprae accepts any Preact Signals-compatible implementation.
 
 **Is `new Function` unsafe?**<br>
-`new Function` executes directive expressions as JavaScript. Use the default build only with trusted markup; under strict CSP, use the [CSP build](https://dy.github.io/sprae/csp).
+`new Function` executes directive expressions as JavaScript. Use the default build only with trusted markup; under strict CSP, use the [CSP build](https://sprae.js.org/csp).
 
 **Components?**<br>
 Use [define-element](https://github.com/dy/define-element) for declarative web components, or any custom-element library. For simpler cases, [manage duplication](https://tailwindcss.com/docs/styling-with-utility-classes#managing-duplication) with templates or includes.

@@ -43,7 +43,7 @@ Alpine offers a [CSP build](https://alpinejs.dev/advanced/csp) that restricts ex
 | `items.filter(i => i.active)` (arrow functions) | ✅ | ❌ |
 | `Math.max(a, b)`, `JSON.stringify(x)` (globals) | ✅ | ❌ |
 | `:html` / `x-html` | ✅ | ❌ |
-| size, min+gzip | **18.1kb** | 20.3kb |
+| size, min+gzip | **20.3kb** (sprae 13.9.1) | 22.5kb (@alpinejs/csp 3.16.2) |
 
 Alpine's recommended workaround is moving logic into `Alpine.data()` components — sprae just runs your expression.
 
