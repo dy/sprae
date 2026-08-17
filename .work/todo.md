@@ -319,3 +319,44 @@
 * [x] ~~:intersect~~ - recipes / userland
 * [x] ~~:scroll.view.x="progress => "~~ not needed
 * [x] :portal/teleport
+
+
+## [ ] Trust & wedges (contemplation 2026-08-17)
+
+Facts as of 2026-08-17: 190 stars, ~1.1k organic dl/wk (Aug 5-6 bot spike = 86% of monthly number), 0 sponsors,
+drops shipped 2025-10 with no per-pattern URLs -> star velocity fell 4.66->2.61/mo (undistributed test, not a verdict on patterns),
+dormant petite-vue still outsells 1.7x. Verdict: distribution before monetization; any paid thing is 50-250x traction away
+and only ever sold to a distinct richer persona (CSP/extension shops), never "developers generally".
+
+Trust patch:
+* [x] one measured size number everywhere (11.6kb umd, was ~8kb badge / 10kb FAQ / 10.9kb compare) + test/size.js in prepublishOnly
+* [x] csp.md size row was stale both sides: sprae 18.1->20.3kb, alpine 20.3->22.5kb (3.16.2) — still a win, now versioned
+* [x] drops sortable-table snippet: displayed comparator never returned 0 (demo was already fixed, snippet wasn't synced)
+* [x] ~~readme hint: :each items are reactive one level deep~~ fixed conceptually instead: lazy deep wrap
+* [x] complete reactivity: shallow() -> lazy() in store.js — wrap-on-read via WeakMap(target->proxy);
+      nested item mutations, nested :each, list-of-lists all reactive now; aliases share signals;
+      bench flat (create 1k 31.5->30.3ms, append 20.4->20.4ms), verify:jfb OK, 431 tests pass
+* [ ] refresh compare.md sizes at next full bench run (13.9.x grew ~0.7kb over 13.8.4)
+
+Wedges (ranked by pain x absence-of-incumbent x unlock size):
+* [ ] CSP/extension wedge: "reactive HTML in browser extensions, no eval" landing from csp.md + sprae-extension-template repo;
+      answer standing SO/Reddit "alpine csp" threads with it — only segment with pain + budget where alpine structurally can't follow
+* [ ] agent-native: llms.txt + editor skill = full reference + drops + gotchas; whole API fits in one prompt — unclaimed positioning;
+      makes AI emit correct sprae (today it confidently emits the nested-push bug)
+* [ ] playground permalinks: hash-encode editor content + share button (~50 lines, no backend) — every answer/issue/drop becomes a runnable link
+* [ ] drops as tool, not gallery: per-drop URL + OG image, copy button, text search; reuse index playground per drop;
+      reframe headline "how much code with other frameworks" -> "copy this"
+* [ ] answer #68 (reusable components) as documented pattern
+* [ ] one distribution act per release — artifact polish doesn't count
+
+Kill (ego audit):
+* [ ] "Used by" self-citations — cut until one external adopter
+* [x] $1,728/mo sponsor tier — keep $5 goodwill tier
+* [ ] tea.yaml
+* [ ] stop: design variants (15 exist, ship one), krausest rank-chasing, pattern count growth before drops have URLs
+
+Adjacent (money factored out) — collection direction:
+* [ ] drops as curated museum: distill (not bookmark) UI tricks to minimal canonical form, one URL each, source credit, search
+* [ ] every collected effect gets a control panel (params = state = sprae; settings-panel is prior art) — collections you play, not watch
+* [ ] audio/media UI drops: waveforms, knobs, envelopes, sequencers — unfair authority (wavearea, web-audio-api), zero competition
+* [ ] same corpus feeds three readers: self (reference), humans (gallery), agents (llms.txt)
