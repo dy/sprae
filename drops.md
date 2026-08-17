@@ -466,9 +466,8 @@
   sort(c) {
     if (col===c) asc=!asc
     else { col=c; asc=true }
-    rows.sort((a,b) => asc
-      ? (a[col]>b[col]?1:-1)
-      : (a[col]<b[col]?1:-1))
+    rows.sort((a,b) => (asc?1:-1) *
+      ((a[col]>b[col]) - (a[col]<b[col])))
   }
 }">
   <table>
