@@ -1,0 +1,2349 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#dfdfdf">
+  <title>spræ · minimal reactivity for HTML/JSX</title>
+  <meta name="description" content="Sprae evaluates :attributes and evaporates them, live binding DOM. ~11kb, no build step, works with any backend.">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='0.85em' font-size='95' fill='%230036b0'>∴</text></svg>">
+  <meta property="og:title" content="spræ · minimal reactivity for HTML/JSX">
+  <meta property="og:description" content="Sprae evaluates :attributes and evaporates them, live binding DOM. ~11kb, no build step, works with any backend.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://sprae.js.org/">
+  <meta property="og:image" content="https://sprae.js.org/assets/og.png">
+  <meta name="twitter:card" content="summary_large_image">
+  <link rel="preload" href="./assets/geist-latin-wght-normal.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="./assets/Monaspace Neon Var.woff2" as="font" type="font/woff2" crossorigin>
+  <script>
+    // quiet markup, cyan directives, white values, and restrained JS syntax
+    window.hl = s => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+      .replace(/(&lt;!--[^]*?--&gt;)|(\/\/[^\n]*|\/\*[^]*?\*\/)|(&lt;\/?[\w-]+)|(\/?&gt;)|(\s)(:[\w.-]*)(?=\s|=|\/?&gt;)|("(?:\\.|[^"\\])*"|'(?:\\.|[^'\\])*')|\b(import|from|const|let|return|await|new|function|async|if|else)\b/g, (m, htmlComment, comment, tag, bracket, gap, directive, value, keyword) =>
+        htmlComment || comment ? '<i class=c>' + m + '</i>'
+        : tag ? '<i class=t>' + tag.match(/^&lt;\/?/)[0] + '</i><i class=n>' + tag.replace(/^&lt;\/?/, '') + '</i>'
+        : bracket ? '<i class=t>' + bracket + '</i>'
+        : directive ? gap + '<i class=d>' + directive + '</i>'
+        : value ? '<i class=v>' + value + '</i>'
+        : '<i class=k>' + keyword + '</i>')
+  </script>
+  <script src="./dist/sprae.umd.js" data-start defer></script>
+  <script src="./assets/shaders.js" defer></script>
+  <style>
+    /* Hallmark · macrostructure: Poster Archive (DESIGN.md) · genre: editorial · tone: technical-archival
+     * theme: Blue Mist Archive · anchor: ink-blue · nav: N9 · footer: Ft2 · enrichment: WebGL spray/grainy generative Bloom + static Bands evidence
+     * pre-emit critique: P5 H5 E5 S5 R5 V5 · contrast: pass · responsive: pass · slop: pass (69/69)
+     */
+    @font-face {
+      font-family: Geist;
+      src: url('./assets/geist-latin-wght-normal.woff2') format('woff2');
+      font-style: normal;
+      font-weight: 100 900;
+      font-display: swap;
+    }
+    @font-face {
+      font-family: 'IBM Plex Sans';
+      src: url('./assets/ibm-plex-sans-latin-wght-normal.woff2') format('woff2');
+      font-style: normal;
+      font-weight: 100 700;
+      font-display: swap;
+    }
+    @font-face {
+      font-family: 'Monaspace Neon';
+      src: url('./assets/Monaspace Neon Var.woff2') format('woff2');
+      font-style: normal;
+      font-weight: 200 800;
+      font-display: swap;
+    }
+
+    :root {
+      color-scheme: light;
+
+      /* ── color ── */
+      --paper: #dfdfdf;
+      --paper-clear: rgb(223 223 223 / 0);
+      --paper-veil: rgb(223 223 223 / 0.5);
+      --feature-cover: rgb(223 223 223 / 0.64);
+      --ground: #f3f3f3;
+      --usage-ground: #d5d5d5;
+      --ink: #233A7E;
+      --rule: rgb(12 39 89 / 0.14);
+      --transition-rule: rgb(100 112 138 / 0.22);
+      --select: #b9c9ee;
+      --focus: #1747bd;
+      --focus-dark: #9db9f5;
+      --accent-cyan: #7ed8fa;
+      --wash-fallback-cyan: #85becd;
+      --wash-fallback-blue: #aebbd3;
+      --gradient-paper: #e2e2e2;
+      --gradient-blue: #1b9ffe;
+      --gradient-cyan: #4ac9ff;
+      --gradient-grain-opacity: 0.5;
+      --guide: rgb(196 92 92 / 0.3);
+      --plate-bg: rgb(15 26 62 / 0.97);
+      --plate-line: rgb(255 255 255 / 0.14);
+      --plate-edge: rgb(238 244 255 / 0.26);
+      --plate-ink: #eef2fc;
+      --plate-dim: #9fb0d8;
+      --plate-faint: #8093c5;
+      --plate-lit: #dfe7fa;
+      --plate-hi: #ffffff;
+      --plate-btn: rgb(214 226 248 / 0.5);
+      --plate-hover: rgb(255 255 255 / 0.08);
+      --plate-glow: rgb(255 255 255 / 0.7);
+      --plate-action: rgb(255 255 255 / 0.06);
+      --plate-action-hover: rgb(255 255 255 / 0.12);
+      --plate-surface: rgb(255 255 255 / 0.04);
+      --plate-code: rgb(4 10 30 / 0.6);
+      --plate-dot: rgb(255 255 255 / 0.06);
+      --plate-dot-major: rgb(255 255 255 / 0.13);
+      --surface: #f8f8f9;
+      --feature-card-mix: rgb(237 240 245 / 0.84);
+      --feature-card-mix-alt: rgb(227 233 243 / 0.64);
+      --feature-card-fade: rgb(237 240 245 / 0.38);
+      --feature-outline: rgb(35 58 126 / 0.32);
+      --feature-code: rgb(35 58 126 / 0.08);
+      --tag-fill: #d9e4f5;
+      --mask-solid: rgb(0 0 0 / 1);
+      --mask-clear: rgb(0 0 0 / 0);
+      --ink-muted: #465891;
+      --control-fill: rgb(223 223 223 / 0.78);
+      --control-edge: rgb(35 58 126 / 0.35);
+      --feature-shadow: 0 1.25rem 3rem -2rem rgb(28 54 122 / 0.32);
+      --shadow-plate: 0 1.25rem 3.5rem -1rem rgb(54 185 232 / 0.42), 0 2rem 5rem -1.25rem rgb(28 54 122 / 0.38);
+      --shadow-plate-focus: 0 1.25rem 3.5rem -0.75rem rgb(54 185 232 / 0.62), 0 2rem 5rem -1rem rgb(28 54 122 / 0.55);
+      --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+      --dur-short: 220ms;
+
+      /* ── type ── */
+      --font-display: Geist, ui-sans-serif, system-ui, sans-serif;
+      --font-body: 'IBM Plex Sans', ui-sans-serif, system-ui, sans-serif;
+      --font-mono: 'Monaspace Neon', ui-monospace, monospace;
+      --code-size: var(--fs-sm);
+      --code-weight: 500;
+      --code-leading: 1.7;
+
+      /* type scale — modular, ratio 1.25 from 1rem */
+      --fs-2xs: 0.6875rem;
+      --fs-xs: 0.75rem;
+      --fs-sm: 0.875rem;
+      --fs-0: 1rem;
+      --fs-1: 1.25rem;
+      --fs-2: 1.5625rem;
+      --fs-3: 1.953rem;
+      --fs-4: 2.441rem;
+      --fs-5: 3.052rem;
+      --fs-6: 3.815rem;
+      --fs-7: 4.768rem;
+      --fs-8: 5.96rem;
+      --fs-9: 7.451rem;
+      --fs-10: 9.313rem;
+      --fs-11: 11.642rem;
+
+      /* spacing — 4px-grid scale (tailwind) */
+      --sp-1: 0.25rem;
+      --sp-2: 0.5rem;
+      --sp-3: 0.75rem;
+      --sp-4: 1rem;
+      --sp-5: 1.25rem;
+      --sp-6: 1.5rem;
+      --sp-7: 1.75rem;
+      --sp-8: 2rem;
+      --sp-9: 2.25rem;
+      --sp-10: 2.5rem;
+      --sp-11: 2.75rem;
+      --sp-12: 3rem;
+      --sp-14: 3.5rem;
+      --sp-16: 4rem;
+      --sp-20: 5rem;
+      --sp-24: 6rem;
+      --sp-28: 7rem;
+      --sp-44: 11rem;
+
+      /* radius */
+      --r-1: 0.1875rem;
+      --r-2: 0.5rem;
+      --r-3: 0.75rem;
+
+      /* layout: 1080px container, 10 cols, axis at col 6/10 */
+      --shell: min(1080px, 100vw - var(--sp-12));
+      --axis: 60%;
+      --spill: clamp(0rem, (100vw - var(--shell)) / 2 - var(--sp-4), var(--sp-28));
+      --edge: clamp(var(--sp-4), 4.5vw, var(--sp-20));
+      --topbar: var(--sp-20);
+      --tap: var(--sp-11);
+      --transition-rule-size: 2px;
+      --hero-corner-fade: clamp(12rem, 30vw, 24rem);
+    }
+
+    * { box-sizing: border-box }
+    html { overflow-x: clip; scroll-behavior: smooth; background: var(--paper) }
+    body {
+      min-width: 320px;
+      margin: 0;
+      overflow-x: clip;
+      /* stacking root: keeps the absolute z:-2 canvas above the fallback wash */
+      isolation: isolate;
+      color: var(--ink);
+      /* fallback wash is confined to the opening viewport; later sections stay plain */
+      background-color: var(--paper);
+      background-image:
+        radial-gradient(60% 58% at 12% 35%, var(--wash-fallback-cyan) 0%, transparent 76%),
+        radial-gradient(52% 55% at 55% 78%, var(--wash-fallback-blue) 0%, transparent 78%);
+      background-position: top;
+      background-repeat: no-repeat;
+      background-size: 100% var(--wash-height, 120svh);
+      font: 400 var(--fs-0)/1.5 var(--font-body);
+    }
+    body.is-painting { user-select: none }
+    a { color: inherit; text-underline-offset: 0.2em }
+    button, a, input, textarea, select { font: inherit }
+    button:active, a:active { translate: 0 1px }
+    button:disabled, input:disabled, textarea:disabled, select:disabled {
+      cursor: not-allowed;
+      opacity: 0.55;
+    }
+    :focus-visible { outline: 0.1875rem solid var(--focus); outline-offset: 0.1875rem }
+    ::selection { color: var(--ink); background: var(--select) }
+    .sr-only {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      padding: 0;
+      overflow: hidden;
+      clip: rect(0, 0, 0, 0);
+      white-space: nowrap;
+      border: 0;
+    }
+
+    #wash {
+      position: absolute;
+      z-index: -2;
+      inset: 0 0 auto;
+      width: 100%;
+      height: 120vh;
+      height: var(--wash-height, 120svh);
+      display: block;
+      pointer-events: none;
+      -webkit-mask-image: linear-gradient(to bottom, var(--mask-solid) 0 calc(100% - 20svh), var(--mask-clear) 100%);
+      mask-image: linear-gradient(to bottom, var(--mask-solid) 0 calc(100% - 20svh), var(--mask-clear) 100%);
+      -webkit-mask-repeat: no-repeat;
+      mask-repeat: no-repeat;
+      -webkit-mask-size: 100% 100%;
+      mask-size: 100% 100%;
+    }
+    #wash.is-fallback { display: none }
+    #gradient-wash {
+      position: absolute;
+      z-index: -2;
+      inset: 0 0 auto;
+      width: 100%;
+      height: var(--wash-height, 120svh);
+      display: none;
+      overflow: hidden;
+      pointer-events: none;
+      background-color: var(--gradient-paper);
+      -webkit-mask-image: linear-gradient(to bottom, var(--mask-solid) 0 calc(100% - 20svh), var(--mask-clear) 100%);
+      mask-image: linear-gradient(to bottom, var(--mask-solid) 0 calc(100% - 20svh), var(--mask-clear) 100%);
+    }
+    .gradient-field {
+      position: absolute;
+      inset: 0;
+      opacity: 0;
+      transition: opacity 700ms var(--ease-out);
+    }
+    .gradient-field.is-active { opacity: 1 }
+    .gradient-field--reference {
+      background-image:
+        radial-gradient(circle at 54.5% 37.91%, var(--gradient-paper) 0%, color-mix(in srgb, var(--gradient-paper) 84.3%, transparent) 19.02%, color-mix(in srgb, var(--gradient-paper) 50%, transparent) 38.05%, color-mix(in srgb, var(--gradient-paper) 15.7%, transparent) 57.07%, transparent 76.1%),
+        radial-gradient(circle at 43.74% 91.2%, var(--gradient-blue) 0%, color-mix(in srgb, var(--gradient-blue) 84.3%, transparent) 12.9%, color-mix(in srgb, var(--gradient-blue) 50%, transparent) 25.8%, color-mix(in srgb, var(--gradient-blue) 15.7%, transparent) 38.7%, transparent 51.6%),
+        radial-gradient(circle at 25.82% 27.32%, var(--gradient-blue) 0%, color-mix(in srgb, var(--gradient-blue) 84.3%, transparent) 16.75%, color-mix(in srgb, var(--gradient-blue) 50%, transparent) 33.5%, color-mix(in srgb, var(--gradient-blue) 15.7%, transparent) 50.25%, transparent 67%),
+        radial-gradient(circle at 108.69% 81%, var(--gradient-cyan) 0%, color-mix(in srgb, var(--gradient-cyan) 84.3%, transparent) 10.28%, color-mix(in srgb, var(--gradient-cyan) 50%, transparent) 20.55%, color-mix(in srgb, var(--gradient-cyan) 15.7%, transparent) 30.83%, transparent 41.1%);
+    }
+    #gradient-wash::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E") 0 0 / 120px 120px repeat;
+      opacity: var(--gradient-grain-opacity);
+      mix-blend-mode: overlay;
+    }
+    html.wash-gradient #wash { display: none }
+    html.wash-gradient #gradient-wash { display: block }
+
+    /* printed-into-paper grain over everything, type and plate included */
+    body::after {
+      content: '';
+      position: fixed;
+      z-index: 30;
+      inset: 0;
+      background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='220'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.7' numOctaves='2' seed='3'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3CfeComponentTransfer%3E%3CfeFuncA type='discrete' tableValues='1'/%3E%3C/feComponentTransfer%3E%3C/filter%3E%3Crect width='220' height='220' filter='url(%23n)'/%3E%3C/svg%3E");
+      opacity: 0.35;
+      mix-blend-mode: overlay;
+      pointer-events: none;
+    }
+
+    .skip-link {
+      position: fixed;
+      z-index: 40;
+      inset: 0 auto auto 0;
+      min-height: var(--tap);
+      padding: var(--sp-3) var(--sp-4);
+      color: white;
+      background: var(--ink);
+      transform: translateY(-120%);
+    }
+    .skip-link:focus { transform: translateY(0) }
+
+    /* ── topbar ─────────────────────────────────────────── */
+
+    .topbar {
+      position: relative;
+      z-index: 3;
+      display: grid;
+      grid-template-columns: 1fr var(--shell) 1fr;
+      align-items: center;
+      min-height: var(--topbar);
+    }
+    .brand {
+      grid-column: 2;
+      grid-row: 1;
+      justify-self: start;
+      display: inline-flex;
+      align-items: center;
+      min-width: var(--tap);
+      min-height: var(--tap);
+      color: var(--ink);
+      text-decoration: none;
+    }
+    .brand__mark {
+      display: block;
+      font: 700 var(--fs-5)/1 var(--font-display);
+      letter-spacing: -0.08em;
+    }
+    .topbar nav {
+      /* shifted one shell column right of the brand mark */
+      grid-column: 2;
+      grid-row: 1;
+      display: flex;
+      gap: clamp(var(--sp-6), 4.5vw, var(--sp-20));
+      min-width: 0;
+      margin-inline-start: calc(var(--shell) / 10);
+    }
+    .topbar nav a {
+      display: inline-flex;
+      align-items: center;
+      min-height: var(--tap);
+      color: var(--ink);
+      font-size: var(--fs-0);
+      font-weight: 500;
+      text-decoration: none;
+      white-space: nowrap;
+    }
+    /* hover reads as selected text — same tone as ::selection */
+    .topbar nav a:hover, .topbar nav a[aria-current] {
+      color: var(--ink);
+      background: linear-gradient(var(--select) 0 0) center / calc(100% + 0.6em) 1.9em no-repeat;
+    }
+    .gh {
+      grid-column: 2;
+      grid-row: 1;
+      justify-self: end;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-width: var(--tap);
+      min-height: var(--tap);
+    }
+    .gh svg { width: var(--sp-6); height: var(--sp-6); fill: currentColor }
+
+    /* ── hero ───────────────────────────────────────────── */
+
+    .hero {
+      position: relative;
+      z-index: 1;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-end;
+      min-height: calc(100svh - var(--topbar));
+      padding-block-start: clamp(var(--sp-4), 4svh, var(--sp-16));
+    }
+    .hero > .shell {
+      z-index: 3;
+      width: var(--shell);
+      margin-inline: auto;
+    }
+
+    .page-guides {
+      display: none;
+      position: fixed;
+      z-index: 34;
+      inset-block: 0;
+      inset-inline-start: 50%;
+      width: var(--shell);
+      height: 100vh;
+      height: 100svh;
+      translate: -50% 0;
+      border-inline-end: 1px solid var(--guide);
+      background: repeating-linear-gradient(to right, var(--guide) 0 1px, transparent 1px calc(100% / 10));
+      pointer-events: none;
+    }
+    html.show-guides .page-guides { display: block }
+
+    /* Paper overlays form two soft 45° wedges, bottom-aligned to the transition rule. */
+    .hero__corner-vignette {
+      position: absolute;
+      z-index: 1;
+      inset-block-start: calc(var(--transition-y, 68%) - var(--hero-corner-fade));
+      inset-inline: 0;
+      height: var(--hero-corner-fade);
+      pointer-events: none;
+    }
+    .hero__corner-vignette::before,
+    .hero__corner-vignette::after {
+      content: '';
+      position: absolute;
+      inset-block: 0;
+      width: var(--hero-corner-fade);
+    }
+    .hero__corner-vignette::before {
+      inset-inline-start: 0;
+      background: linear-gradient(45deg, var(--paper) 0, var(--paper-veil) 22%, var(--paper-clear) 50%);
+    }
+    .hero__corner-vignette::after {
+      inset-inline-end: 0;
+      background: linear-gradient(-45deg, var(--paper) 0, var(--paper-veil) 22%, var(--paper-clear) 50%);
+    }
+
+    /* Features owns the continuous ground; this rule only marks where it begins. */
+    .hero__transition {
+      position: absolute;
+      z-index: 2;
+      inset-block-start: calc(var(--transition-y, 68%) - var(--transition-rule-size));
+      inset-inline: clamp(var(--sp-4), 2.5vw, var(--sp-8));
+      height: var(--transition-rule-size);
+      margin: 0;
+      border: 0;
+      background: var(--transition-rule);
+      mix-blend-mode: multiply;
+      pointer-events: none;
+    }
+
+    /* wordmark right-aligns to the axis */
+    .hero__word {
+      width: var(--axis);
+      margin: 0;
+      text-align: right;
+      font-family: var(--font-display);
+      font-size: clamp(var(--fs-7), 17vw - 0.5rem, var(--fs-10));
+      font-weight: 620;
+      letter-spacing: -0.06em;
+      line-height: 0.9;
+      color: var(--ink);
+    }
+
+    /* statement starts at the axis, may spill past the container */
+    .hero__stmt {
+      width: fit-content;
+      min-width: 0;
+      max-width: calc(100% - var(--axis) + var(--spill));
+      overflow-wrap: anywhere;
+      margin: clamp(var(--sp-2), 2svh, var(--sp-8)) 0 0 var(--axis);
+      font-family: var(--font-display);
+      font-size: clamp(var(--fs-3), 5.2vw - 0.15rem, var(--fs-5));
+      font-weight: 700;
+      letter-spacing: -0.045em;
+      line-height: 1.15;
+      color: var(--ink);
+    }
+
+    /* sub right-aligns to the axis, under the wordmark */
+    .hero__sub {
+      width: fit-content;
+      max-width: 33ch;
+      margin: clamp(var(--sp-2), 2svh, var(--sp-8)) calc(100% - var(--axis)) 0 auto;
+      text-align: right;
+      text-wrap: balance;
+      font-size: var(--fs-2);
+      font-weight: 500;
+      line-height: 1.55;
+      color: var(--ink);
+    }
+
+    .hero__edge {
+      width: fit-content;
+      margin: clamp(var(--sp-3), 2svh, var(--sp-6)) 0 0;
+      font: 650 var(--fs-xs)/1 var(--font-display);
+      letter-spacing: 0.125em;
+      color: var(--ink);
+    }
+    .hero__edge span {
+      position: relative;
+      display: inline-block;
+    }
+    .hero__edge span::after {
+      content: '';
+      position: absolute;
+      inset-inline-start: 0;
+      inset-block-end: -0.55em;
+      inline-size: 3em;
+      block-size: 2px;
+      background: currentColor;
+    }
+    @media (min-width: 60rem) {
+      .hero__edge {
+        /* vertical strip at the foot of the shell's last column, read bottom-to-top */
+        position: absolute;
+        z-index: 1;
+        right: calc((100vw - var(--shell)) / 2);
+        margin: 0;
+        writing-mode: vertical-rl;
+        transform: rotate(180deg);
+      }
+    }
+
+    /* ── code plate: editable live example, spans 7 of 10 cols ── */
+
+    .plate {
+      position: relative;
+      width: calc(7 * 100% / 10);
+      margin: clamp(var(--sp-6), 4.5svh, var(--sp-12)) 20% clamp(var(--sp-4), 3svh, var(--sp-9)) 10%;
+      border: 1px solid var(--plate-edge);
+      border-radius: var(--r-3);
+      color: var(--plate-ink);
+      background: var(--plate-bg);
+      box-shadow: var(--shadow-plate);
+      transition: box-shadow var(--dur-short) var(--ease-out);
+    }
+    .plate__live {
+      position: absolute;
+      top: var(--sp-5);
+      right: var(--sp-6);
+      display: inline-flex;
+      align-items: center;
+      gap: var(--sp-2);
+      font-size: var(--fs-xs);
+    }
+    .plate__live::before {
+      content: '';
+      width: var(--sp-2);
+      height: var(--sp-2);
+      border-radius: 50%;
+      background: var(--plate-hi);
+      box-shadow: 0 0 var(--sp-2) var(--plate-glow);
+    }
+
+    .plate__editor { position: relative }
+    .plate__editor pre,
+    .plate__editor textarea {
+      margin: 0;
+      padding: clamp(var(--sp-6), 3.2vw, var(--sp-12)) clamp(var(--sp-5), 4.5vw, var(--sp-16)) clamp(var(--sp-4), 2vw, var(--sp-8));
+      font: var(--code-weight) var(--code-size)/var(--code-leading) var(--font-mono);
+      white-space: pre;
+      overflow: hidden;
+    }
+    .plate__editor textarea {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      border: 0;
+      background: transparent;
+      color: transparent;
+      caret-color: var(--plate-hi);
+      resize: none;
+      overflow-x: auto;
+      overflow-y: hidden;
+      scrollbar-width: thin;
+      scrollbar-color: var(--plate-btn) transparent;
+    }
+    .plate__editor textarea:focus { outline: none }
+    /* focus reads as a denser glow that follows the plate's rounding — no inset ring */
+    .plate:focus-within { box-shadow: var(--shadow-plate-focus) }
+    .plate code, .ref__ex, .ex-specimen pre, .vs__side pre, .urow code { color: var(--plate-dim) }
+    .plate code i, .ref__ex i, .ex-specimen pre i, .vs__side pre i, .urow i { font-style: normal; font-weight: inherit }
+    .plate code .t, .ref__ex .t, .ex-specimen pre .t, .vs__side pre .t, .urow .t { color: var(--plate-faint) }
+    .plate code .n, .ref__ex .n, .ex-specimen pre .n, .vs__side pre .n, .urow .n { color: var(--plate-dim) }
+    .plate code .d, .ref__ex .d, .ex-specimen pre .d, .vs__side pre .d, .urow .d { color: var(--accent-cyan) }
+    .plate code .v, .ref__ex .v, .ex-specimen pre .v, .vs__side pre .v, .urow .v { color: var(--plate-hi) }
+    .plate code .k, .ref__ex .k, .ex-specimen pre .k, .vs__side pre .k, .urow .k { color: var(--plate-lit) }
+    .plate code .c, .ref__ex .c, .ex-specimen pre .c, .vs__side pre .c, .urow .c { color: var(--plate-faint) }
+
+    /* 32px registration dots sit directly over the quieter 8px grid */
+    .plate__demo {
+      background-image:
+        radial-gradient(circle at 1px 1px, var(--plate-dot-major) 0 1px, transparent 1.25px),
+        radial-gradient(circle at 1px 1px, var(--plate-dot) 0 1px, transparent 1.25px);
+      background-size: var(--sp-8) var(--sp-8), var(--sp-2) var(--sp-2);
+      background-position: 0 0;
+    }
+    .plate__out {
+      display: block;
+      width: 100%;
+      height: var(--sp-28);
+      border: 0;
+    }
+
+    /* ── features: four propositions + one capability field ── */
+
+    .feature-stage {
+      position: relative;
+      z-index: 0;
+      margin-block-start: calc(0px - var(--feature-overlap, 0px));
+      padding-block-start: calc(var(--feature-overlap, 0px) + clamp(var(--sp-10), 7vh, var(--sp-20)));
+      padding-block-end: clamp(var(--sp-16), 11vh, var(--sp-28));
+      background-image:
+        linear-gradient(to right, var(--paper) 0, var(--paper-clear) 9%, var(--paper-clear) 91%, var(--paper) 100%),
+        linear-gradient(to bottom, var(--feature-cover) 0, var(--paper) clamp(30rem, 64svh, 46rem));
+    }
+    .feature-grid {
+      width: var(--shell);
+      margin-inline: auto;
+      display: grid;
+      grid-template-columns: repeat(10, minmax(0, 1fr));
+      gap: var(--sp-3);
+    }
+    .feature-card {
+      position: relative;
+      min-width: 0;
+      overflow: hidden;
+      padding: clamp(var(--sp-5), 3vw, var(--sp-8));
+      border: 1px solid var(--feature-outline);
+      border-radius: var(--r-2);
+      background: var(--feature-card-mix);
+    }
+    .feature-card--html {
+      grid-column: 1 / -1;
+      grid-row: 1;
+      min-height: 21rem;
+      display: grid;
+      grid-template-columns: minmax(0, 6fr) minmax(0, 4fr);
+      align-items: center;
+      gap: var(--sp-8);
+    }
+    .feature-card--speed { grid-column: 1 / 5; grid-row: 2; min-height: 26rem }
+    .feature-card--open { grid-column: 5 / 8; grid-row: 2; min-height: 26rem }
+    .feature-card--secure { grid-column: 8 / -1; grid-row: 2; min-height: 26rem }
+    .feature-card__copy { min-width: 0 }
+    .feature-card--html .feature-graphic { margin-block-end: 0 }
+    .feature-card h2 {
+      min-width: 0;
+      margin: 0;
+      overflow-wrap: anywhere;
+      text-wrap: balance;
+      font: 680 clamp(var(--fs-2), 3vw, var(--fs-3))/1.1 var(--font-display);
+      letter-spacing: -0.03em;
+    }
+    .feature-card p { max-width: 48ch; margin: var(--sp-3) 0 0; text-wrap: pretty; line-height: 1.5 }
+    .feature-card a { font-weight: 650; white-space: nowrap }
+    .feature-card__links { display: flex; flex-wrap: wrap; gap: var(--sp-3) var(--sp-5); margin-block-start: var(--sp-4); font-size: var(--fs-xs) }
+    .feature-graphic {
+      position: relative;
+      min-width: 0;
+      height: 11rem;
+      margin-block-end: var(--sp-6);
+      color: var(--ink);
+    }
+
+    .html-map { display: grid; align-content: center; gap: var(--sp-5); height: 13rem }
+    .html-sources {
+      position: relative;
+      display: grid;
+      grid-template-columns: repeat(8, minmax(0, 1fr));
+      gap: var(--sp-2);
+    }
+    .html-sources span { min-width: 0; display: grid; place-items: center }
+    .html-sources i { width: var(--sp-10); height: var(--sp-10); display: grid; place-items: center }
+    .html-sources img { width: var(--sp-8); height: var(--sp-8); object-fit: contain; mix-blend-mode: multiply }
+
+    .benchmark-shot {
+      position: relative;
+      height: 18rem;
+      min-height: 18rem;
+      margin: 0 0 var(--sp-8);
+      overflow: hidden;
+      background: var(--feature-card-fade);
+    }
+    .benchmark-shot img { display: block; width: 100%; height: 100%; object-fit: cover; object-position: center 58%; opacity: 0.5; filter: saturate(0.35); mix-blend-mode: multiply }
+    .benchmark-shot::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background:
+        linear-gradient(to right, var(--paper), var(--paper-clear) 18%, var(--paper-clear) 82%, var(--paper)),
+        linear-gradient(to bottom, var(--paper), var(--paper-clear) 16%, var(--paper-clear) 84%, var(--paper));
+      pointer-events: none;
+    }
+
+    .open-map { min-height: 18rem; height: auto; display: grid; align-content: center }
+    .signal-list { border-block-start: 1px solid var(--feature-outline) }
+    .signal-list button {
+      width: 100%;
+      min-height: var(--tap);
+      display: flex;
+      align-items: center;
+      gap: var(--sp-3);
+      padding: 0;
+      border: 0;
+      border-block-end: 1px solid var(--feature-outline);
+      color: var(--ink-muted);
+      background: transparent;
+      text-align: start;
+      font: 550 var(--fs-xs)/1 var(--font-mono);
+      cursor: pointer;
+    }
+    .signal-list button::before { content: ''; flex: none; width: var(--sp-2); height: var(--sp-2); border: 1px solid var(--feature-outline); border-radius: 50% }
+    .signal-list button:hover { color: var(--ink) }
+    .signal-list button.on { color: var(--ink); font-weight: 700 }
+    .signal-list button.on::before { border-color: var(--ink); background: var(--ink) }
+    .signal-list small { color: var(--ink-muted); font: inherit }
+
+    .spec-list { min-height: 18rem; margin: 0; border-block-start: 1px solid var(--feature-outline) }
+    .spec-list div { min-width: 0; display: flex; align-items: baseline; justify-content: space-between; gap: var(--sp-3); padding-block: var(--sp-2); border-block-end: 1px solid var(--feature-outline); font: 550 var(--fs-2xs)/1.25 var(--font-mono) }
+    .spec-list dt { color: var(--ink-muted) }
+    .spec-list dd { margin: 0; text-align: end; font-weight: 650 }
+
+    .feature-cloud {
+      width: var(--shell);
+      margin: var(--sp-8) auto 0;
+      padding-block: var(--sp-4);
+    }
+    .feature-cloud__set {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: var(--sp-2);
+    }
+    .cap-tip {
+      padding: var(--sp-2) var(--sp-3);
+      border-radius: var(--r-1);
+      color: var(--ink-muted);
+      background: var(--tag-fill);
+      font: 550 var(--fs-xs)/1 var(--font-mono);
+      white-space: nowrap;
+      cursor: help;
+    }
+    .cap-tip:hover, .cap-tip:focus-visible { color: var(--ink); background: var(--select) }
+    .cap-tooltip {
+      position: fixed;
+      z-index: 50;
+      max-width: min(18rem, calc(100vw - var(--sp-8)));
+      padding: var(--sp-3) var(--sp-4);
+      border: 1px solid var(--plate-edge);
+      border-radius: var(--r-1);
+      color: var(--plate-ink);
+      background: var(--plate-bg);
+      box-shadow: var(--feature-shadow);
+      font: 500 var(--fs-xs)/1.45 var(--font-body);
+      pointer-events: none;
+    }
+    .cap-tooltip[hidden] { display: none }
+
+    /* Four full-width ruled bands, then a ten-column capability field. */
+    .feature-stage--bands .feature-grid { width: 100%; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 0; border-block: 1px dashed var(--rule) }
+    .feature-stage--bands .feature-card:nth-child(n) {
+      grid-column: auto;
+      grid-row: 1;
+      min-height: 34rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0;
+      border: 0;
+      border-inline-end: 1px dashed var(--rule);
+      border-radius: 0;
+      background: transparent;
+    }
+    .feature-stage--bands .feature-card:last-child { border-inline-end: 0 }
+    .feature-stage--bands .feature-card__copy { margin-block-start: auto }
+    .feature-stage--bands .feature-graphic { width: 100%; min-height: 18rem; margin-block-end: var(--sp-8) }
+    .feature-stage--bands .html-sources { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: var(--sp-6) var(--sp-2) }
+    .feature-stage--bands .feature-cloud { width: var(--shell); margin-block: var(--sp-8) 0 }
+
+    /* fixed construction grid; hidden by default */
+    .grid-toggle {
+      position: fixed;
+      z-index: 35;
+      inset: auto var(--sp-3) var(--sp-3) auto;
+      min-width: var(--tap);
+      height: var(--tap);
+      padding-inline: var(--sp-3);
+      border: 1px solid var(--control-edge);
+      border-radius: var(--r-1);
+      color: var(--ink);
+      background: var(--control-fill);
+      opacity: 0.62;
+      font: 550 var(--fs-2xs)/1 var(--font-mono);
+      cursor: pointer;
+    }
+    .grid-toggle:hover, .grid-toggle:focus-visible { opacity: 1 }
+    .grid-toggle:active { translate: 0 1px }
+    .grid-toggle.on { color: var(--paper); background: var(--ink) }
+    .wash-switch {
+      position: fixed;
+      z-index: 35;
+      inset: auto var(--sp-3) calc(var(--sp-3) + var(--tap) + var(--sp-2)) auto;
+      display: flex;
+      gap: var(--sp-1);
+      padding: var(--sp-1);
+      border: 1px solid var(--control-edge);
+      border-radius: var(--r-1);
+      background: var(--control-fill);
+    }
+    .wash-switch button {
+      min-height: var(--tap);
+      padding-inline: var(--sp-3);
+      border: 0;
+      border-radius: var(--r-1);
+      color: var(--ink-muted);
+      background: transparent;
+      font: 550 var(--fs-2xs)/1 var(--font-mono);
+      cursor: pointer;
+    }
+    .wash-switch button.on { color: var(--paper); background: var(--ink) }
+    .section-bar {
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-between;
+      gap: var(--sp-5) var(--sp-8);
+    }
+    /* ── usage: a flat, slightly darker documentation ground ── */
+
+    .usage {
+      padding-block: clamp(var(--sp-12), 8vh, var(--sp-20));
+      background: var(--usage-ground);
+    }
+    .usage .shell, .reference .shell { width: var(--shell); margin-inline: auto }
+    .sect-h {
+      min-width: 0;
+      margin: 0;
+      overflow-wrap: anywhere;
+      font: 700 clamp(var(--fs-4), 4.5vw, var(--fs-6))/1.05 var(--font-display);
+      letter-spacing: -0.03em;
+    }
+    .usage__line { margin: var(--sp-4) 0 var(--sp-6); max-width: 52ch }
+    .urow {
+      display: flex;
+      align-items: flex-start;
+      gap: var(--sp-4);
+      margin: 0;
+      padding: var(--sp-3) var(--sp-4);
+      border: 1px solid var(--plate-edge);
+      border-radius: var(--r-2);
+      color: var(--plate-ink);
+      background: var(--plate-bg);
+    }
+    .urow code {
+      flex: 1;
+      min-width: 0;
+      overflow: visible;
+      white-space: pre-wrap;
+      overflow-wrap: anywhere;
+      font: var(--code-weight) var(--code-size)/var(--code-leading) var(--font-mono);
+    }
+    .copy {
+      flex: none;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: var(--tap);
+      height: var(--tap);
+      border: 1px solid var(--plate-edge);
+      border-radius: var(--r-2);
+      background: transparent;
+      color: var(--plate-ink);
+      cursor: pointer;
+    }
+    .copy:hover { background: var(--plate-hover) }
+    .copy .ck { display: none }
+    .copy[data-copied] .cp { display: none }
+    .copy[data-copied] .ck { display: block }
+    .usage-cross {
+      position: relative;
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      grid-template-rows: repeat(2, minmax(0, 1fr));
+      margin-block-start: var(--sp-8);
+    }
+    .usage-cross::before, .usage-cross::after {
+      content: '';
+      position: absolute;
+      z-index: 1;
+      background: var(--rule);
+      pointer-events: none;
+    }
+    .usage-cross::before { inset: 0 auto 0 50%; width: 1px }
+    .usage-cross::after { inset: 50% 0 auto; height: 1px }
+    .usage-cross article { min-width: 0; padding: var(--sp-8) }
+    .usage-cross article:nth-child(-n + 2) { padding-block-start: 0 }
+    .usage-cross article:nth-child(n + 3) { padding-block-end: 0 }
+    .usage-cross article:nth-child(odd) { padding-inline-start: 0 }
+    .usage-cross article:nth-child(even) { padding-inline-end: 0 }
+    .usage-cross h3 { margin: 0; font: 680 var(--fs-2)/1.15 var(--font-display); letter-spacing: -0.02em }
+    .usage-cross .usage__line { margin: var(--sp-2) 0 var(--sp-5); font-size: var(--fs-0); line-height: 1.5 }
+    .usage-cross .urow { border-radius: 0 }
+
+    /* ── reference: compact 3/7 index with one continuous divider ── */
+
+    .reference {
+      background: var(--plate-bg);
+      color: var(--plate-ink);
+      padding-block: clamp(var(--sp-12), 9vh, var(--sp-24));
+    }
+    .reference :focus-visible { outline-color: var(--focus-dark) }
+    .reference ::selection { color: var(--plate-bg); background: var(--plate-lit) }
+    .ref-kind-tabs { display: flex; gap: var(--sp-8) }
+    .ref-kind-tabs button {
+      min-height: var(--tap);
+      margin-block-end: -1px;
+      padding: 0;
+      border: 0;
+      border-block-end: 2px solid transparent;
+      color: var(--plate-dim);
+      background: transparent;
+      font: 650 var(--fs-1)/1 var(--font-display);
+      cursor: pointer;
+    }
+    .ref-kind-tabs button:hover { color: var(--plate-hi) }
+    .ref-kind-tabs button.on { color: var(--plate-hi); border-color: var(--accent-cyan) }
+    .ref-kind-tabs small { margin-inline-start: var(--sp-2); color: var(--plate-faint); font: 500 var(--fs-xs)/1 var(--font-mono) }
+    .ref-list {
+      position: relative;
+      margin-block-start: var(--sp-5);
+    }
+    .ref-list::before {
+      content: '';
+      position: absolute;
+      inset-block: 0;
+      inset-inline-start: 30%;
+      width: 1px;
+      background: var(--plate-line);
+      pointer-events: none;
+    }
+    .ref-entry {
+      display: grid;
+      grid-template-columns: minmax(0, 3fr) minmax(0, 7fr);
+      align-items: start;
+      min-width: 0;
+    }
+    .ref-entry__copy {
+      min-width: 0;
+      padding: 0 var(--sp-6) 0 0;
+    }
+    .ref-entry__doc {
+      min-width: 0;
+      padding: 0 0 0 var(--sp-6);
+    }
+    .ref-entry + .ref-entry { margin-block-start: var(--sp-12) }
+    .ref__name {
+      margin: 0;
+      color: var(--accent-cyan);
+      font: 650 var(--fs-0)/1.15 var(--font-mono);
+    }
+    .ref__desc {
+      margin: var(--sp-1) 0 0;
+      max-width: 38ch;
+      color: var(--plate-dim);
+      font-size: var(--fs-sm);
+      line-height: 1.45;
+    }
+    .ref__desc code { color: var(--plate-lit); font: 500 0.92em var(--font-mono) }
+    .ref__ex {
+      width: 100%;
+      margin: 0;
+      padding: 0;
+      overflow: visible;
+      border: 0;
+      border-radius: 0;
+      color: var(--plate-ink);
+      background: transparent;
+      font: var(--code-weight) var(--code-size)/var(--code-leading) var(--font-mono);
+      white-space: pre-wrap;
+      overflow-wrap: anywhere;
+    }
+
+    /* ── examples: one guide, responsive specimen orientation ── */
+
+    .examples { background: var(--ground); padding-block: clamp(var(--sp-12), 8vh, var(--sp-20)) }
+    .examples .shell, .vs .shell, .faq .shell, .outro .shell { width: var(--shell); margin-inline: auto }
+    .ex-guide {
+      --example-choice: 4.25rem;
+      display: grid;
+      grid-template-columns: repeat(10, minmax(0, 1fr));
+      gap: var(--sp-6);
+      margin-block-start: var(--sp-8);
+      align-items: start;
+    }
+    .ex-guide__rail {
+      grid-column: 1 / 4;
+      display: grid;
+      grid-template-rows: repeat(6, var(--example-choice));
+      gap: var(--sp-2);
+      height: auto;
+    }
+    .ex-step {
+      display: grid;
+      grid-template-columns: var(--sp-8) minmax(0, 1fr);
+      align-items: baseline;
+      gap: var(--sp-3);
+      min-width: 0;
+      min-height: var(--tap);
+      padding: var(--sp-2) 0;
+      border: 0;
+      border-block-end: 1px solid var(--rule);
+      color: var(--ink-muted);
+      background: transparent;
+      text-align: start;
+      cursor: pointer;
+      text-decoration: none;
+    }
+    .ex-step > span { padding: 0; font: 650 var(--fs-xs)/1.2 var(--font-display); font-variant-numeric: tabular-nums }
+    .ex-step__copy { min-width: 0 }
+    .ex-step b { display: block; color: currentColor; font: 650 clamp(var(--fs-0), 1.5vw, var(--fs-1))/1.2 var(--font-display); letter-spacing: -0.015em }
+    .ex-step small { display: block; margin-block-start: var(--sp-1); overflow: hidden; color: var(--ink-muted); font: 450 var(--fs-xs)/1.4 var(--font-body); letter-spacing: 0; text-overflow: ellipsis; white-space: nowrap }
+    .ex-step:hover, .ex-step.on { color: var(--ink) }
+    .ex-specimen {
+      grid-column: 4 / -1;
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      min-width: 0;
+      overflow: hidden;
+      border: 1px solid var(--plate-edge);
+      border-radius: var(--r-3);
+      color: var(--plate-ink);
+      background: var(--plate-bg);
+      box-shadow: var(--feature-shadow);
+      height: auto;
+      min-height: 0;
+    }
+    .ex__code {
+      align-self: start;
+      min-width: 0;
+      min-height: 0;
+      max-height: none;
+      padding: var(--sp-5) var(--sp-6);
+      overflow: visible;
+    }
+    .ex__code pre {
+      margin: 0;
+      color: var(--plate-ink);
+      font: var(--code-weight) var(--code-size)/var(--code-leading) var(--font-mono);
+      white-space: pre-wrap;
+      overflow-wrap: anywhere;
+    }
+    .ex-guide--right .ex-guide__rail { grid-column: 8 / -1; grid-row: 1 }
+    .ex-guide--right .ex-specimen { grid-column: 1 / 8; grid-row: 1 }
+    .example-variant { display: flex; gap: var(--sp-6) }
+    .example-variant button {
+      min-height: var(--tap);
+      padding: 0;
+      border: 0;
+      border-block-end: 2px solid transparent;
+      color: var(--ink-muted);
+      background: transparent;
+      font: 600 var(--fs-xs)/1 var(--font-mono);
+      cursor: pointer;
+    }
+    .example-variant button:hover, .example-variant button.on { color: var(--ink); border-color: var(--ink) }
+    .ex-specimen iframe {
+      display: block;
+      width: 100%;
+      height: 100%;
+      min-height: 18rem;
+      border: 0;
+      background-image:
+        radial-gradient(circle at 1px 1px, var(--plate-dot-major) 0 1px, transparent 1.25px),
+        radial-gradient(circle at 1px 1px, var(--plate-dot) 0 1px, transparent 1.25px);
+      background-size: var(--sp-8) var(--sp-8), var(--sp-2) var(--sp-2);
+      background-position: 0 0;
+    }
+    /* ── comparison: external labels, paired code plates ── */
+
+    .vs { padding-block: clamp(var(--sp-12), 8vh, var(--sp-20)) }
+    .vs__compare {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+      grid-template-areas:
+        'sprae-label framework-tabs'
+        'sprae-code framework-code'
+        'sprae-meta framework-meta';
+      column-gap: var(--sp-3);
+      margin-block-start: var(--sp-6);
+    }
+    .vs__label {
+      grid-area: sprae-label;
+      display: flex;
+      align-items: end;
+      min-width: 0;
+      min-height: var(--sp-14);
+      padding: 0 var(--sp-5) var(--sp-3);
+    }
+    .vs__label h3 { margin: 0; color: var(--ink); font: 680 var(--fs-2)/1.1 var(--font-display) }
+    .vs__tabs {
+      grid-area: framework-tabs;
+      display: grid;
+      grid-template-columns: repeat(5, minmax(0, 1fr));
+      align-items: end;
+      min-width: 0;
+      min-height: var(--sp-14);
+      padding-block-end: var(--sp-3);
+    }
+    .vs__tabs button {
+      min-width: 0;
+      min-height: var(--tap);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: var(--sp-2);
+      padding: 0 var(--sp-2);
+      border: 0;
+      border-block-end: 2px solid transparent;
+      color: var(--ink-muted);
+      background: transparent;
+      font: 600 var(--fs-xs)/1 var(--font-display);
+      white-space: nowrap;
+      cursor: pointer;
+    }
+    .vs__tab-icon { flex: none; width: var(--sp-5); height: var(--sp-5); object-fit: contain; mix-blend-mode: multiply }
+    .vs__tabs button:hover { color: var(--ink); background: var(--feature-code) }
+    .vs__tabs button.on { color: var(--ink); border-color: var(--ink) }
+    .vs__side {
+      display: flex;
+      flex-direction: column;
+      min-width: 0;
+      overflow: hidden;
+      border: 1px solid var(--plate-edge);
+      color: var(--plate-ink);
+      background: var(--plate-bg);
+      box-shadow: var(--shadow-plate);
+    }
+    .vs__side--sprae { grid-area: sprae-code; border-radius: var(--r-3) }
+    .vs__side--framework { grid-area: framework-code; border-radius: var(--r-3) }
+    .vs__side pre {
+      flex: 1;
+      max-height: 38rem;
+      margin: 0;
+      padding: var(--sp-5);
+      overflow: auto;
+      color: var(--plate-ink);
+      font: var(--code-weight) var(--code-size)/var(--code-leading) var(--font-mono);
+      white-space: pre;
+      scrollbar-width: thin;
+      scrollbar-color: var(--plate-btn) transparent;
+    }
+    .vs__meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: var(--sp-2) var(--sp-6);
+      padding: var(--sp-3) var(--sp-2) 0;
+      color: var(--ink-muted);
+      font: 500 var(--fs-xs)/1.5 var(--font-mono);
+    }
+    .vs__meta--sprae { grid-area: sprae-meta }
+    .vs__meta--framework { grid-area: framework-meta }
+    .vs__meta b { color: var(--ink); font-weight: 650 }
+
+    /* ── faq: uncollapsed two-column answers ── */
+
+    .faq { background: var(--ground); padding-block: clamp(var(--sp-12), 8vh, var(--sp-20)) }
+    .faq__list {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: var(--sp-10) var(--sp-12);
+      margin-block-start: var(--sp-8);
+    }
+    .qa__q {
+      margin: 0 0 var(--sp-2);
+      font: 650 var(--fs-1)/1.3 var(--font-display);
+      letter-spacing: -0.01em;
+    }
+    .qa__a { margin: 0; max-width: 56ch; line-height: 1.6 }
+    .qa__a code { font: 500 0.92em var(--font-mono) }
+
+    /* ── outro: sponsorship ── */
+
+    .outro {
+      background: var(--plate-bg);
+      color: var(--plate-ink);
+      padding-block: clamp(var(--sp-16), 12vh, var(--sp-28));
+      text-align: center;
+    }
+    .outro__line {
+      margin: 0 auto;
+      max-width: 22ch;
+      font: 700 clamp(var(--fs-3), 4.5vw, var(--fs-5))/1.15 var(--font-display);
+      letter-spacing: -0.03em;
+      text-wrap: balance;
+      color: var(--plate-hi);
+    }
+    .outro__sub { margin: var(--sp-4) auto 0; max-width: 46ch; color: var(--plate-dim) }
+    .outro__cta {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.6em;
+      min-height: var(--tap);
+      margin-block-start: var(--sp-8);
+      padding-inline: var(--sp-8);
+      border: 1px solid var(--plate-edge);
+      border-radius: var(--r-2);
+      background: var(--plate-action);
+      color: var(--plate-hi);
+      font-weight: 650;
+      text-decoration: none;
+    }
+    .outro__cta:hover { background: var(--plate-action-hover) }
+    .outro :focus-visible { outline-color: var(--focus-dark) }
+
+    /* ── footer ── */
+
+    .footer { background: var(--ground); padding-block: var(--sp-10) }
+    .footer .shell {
+      width: var(--shell);
+      margin-inline: auto;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: var(--sp-4) var(--sp-8);
+    }
+    .footer__brand { display: inline-flex; align-items: baseline; gap: var(--sp-2); font-weight: 650 }
+    .footer nav { display: flex; flex-wrap: wrap; gap: 0 var(--sp-6) }
+    .footer nav a, .footer__brand {
+      display: inline-flex;
+      align-items: center;
+      min-height: var(--tap);
+      font-size: var(--fs-xs);
+      color: var(--ink);
+      text-decoration: none;
+    }
+    .footer nav a:hover { text-decoration: underline; text-underline-offset: 0.2em }
+    .footer small { font-size: var(--fs-xs); color: var(--ink-muted) }
+
+    /* ── responsive specimens + small screens ─────────── */
+
+    @media (max-width: 64rem) {
+      .ex-specimen {
+        grid-template-columns: minmax(0, 1fr);
+        grid-template-rows: auto 18rem;
+      }
+      .feature-stage--bands .feature-grid { grid-template-columns: repeat(2, minmax(0, 1fr)) }
+      .feature-stage--bands .feature-card:nth-child(n) { grid-column: auto; grid-row: auto; min-height: 34rem; border-inline-end: 0; border-block-end: 0 }
+      .feature-stage--bands .feature-card:nth-child(odd) { border-inline-end: 1px dashed var(--rule) }
+      .feature-stage--bands .feature-card:nth-child(-n + 2) { border-block-end: 1px dashed var(--rule) }
+    }
+
+    @media (max-width: 48rem) {
+      .topbar {
+        grid-template-columns: 1fr;
+        min-height: 0;
+        padding-block: var(--sp-2) 0;
+      }
+      .brand { grid-column: 1; grid-row: 1; margin-inline-start: var(--sp-4) }
+      .gh { grid-column: 1; grid-row: 1; margin-inline-end: var(--sp-2) }
+      .topbar nav {
+        grid-column: 1;
+        grid-row: 2;
+        gap: var(--sp-6);
+        margin-inline-start: 0;
+        overflow-x: auto;
+        padding-inline: var(--sp-4);
+      }
+      .hero__word { width: 100%; text-align: center }
+      .hero__stmt { max-width: 100%; margin-inline: auto }
+      .hero__sub { margin-inline: auto; text-align: center }
+      .plate { width: 100%; margin-inline: 0 }
+      .section-bar { align-items: flex-start; flex-direction: column }
+      .example-variant { display: none }
+      .feature-card--html .feature-graphic { margin-block-end: var(--sp-6) }
+      .html-sources { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: var(--sp-3) var(--sp-1) }
+      .html-map { height: auto }
+      .ex-guide { grid-template-columns: minmax(0, 1fr) }
+      .ex-guide__rail, .ex-specimen,
+      .ex-guide--right .ex-guide__rail, .ex-guide--right .ex-specimen { grid-column: 1; grid-row: auto }
+      .faq__list { grid-template-columns: minmax(0, 1fr) }
+      .vs__meta { gap: var(--sp-2) var(--sp-5) }
+      .footer .shell { justify-content: flex-start }
+    }
+
+    @media (max-width: 40rem) {
+      .feature-stage--bands .feature-grid { width: var(--shell); grid-template-columns: minmax(0, 1fr) }
+      .feature-stage--bands .feature-card:nth-child(n) { min-height: 0; border-inline-end: 0; border-block-end: 1px dashed var(--rule) }
+      .feature-stage--bands .feature-card:last-child { border-block-end: 0 }
+      .feature-stage--bands .feature-card__copy { margin-block-start: 0 }
+      .feature-stage--bands .feature-graphic { margin-block-end: var(--sp-6) }
+      .usage-cross { grid-template-columns: minmax(0, 1fr); grid-template-rows: none }
+      .usage-cross::before, .usage-cross::after { display: none }
+      .usage-cross article:nth-child(n) { padding: var(--sp-6) 0 }
+      .usage-cross article:first-child { padding-block-start: 0 }
+      .usage-cross article:last-child { padding-block-end: 0 }
+      .usage-cross article + article { border-block-start: 1px solid var(--rule) }
+      .ref-list::before { display: none }
+      .ref-entry { grid-template-columns: minmax(0, 1fr) }
+      .ref-entry__copy { padding: var(--sp-4) 0 var(--sp-2) }
+      .ref-entry__doc { padding: var(--sp-2) 0 var(--sp-4); border-block-end: 1px solid var(--plate-line) }
+    }
+
+    @media (max-width: 44rem) {
+      .vs__compare {
+        grid-template-columns: minmax(0, 1fr);
+        grid-template-areas:
+          'sprae-label'
+          'sprae-code'
+          'sprae-meta'
+          'framework-tabs'
+          'framework-code'
+          'framework-meta';
+      }
+      .vs__label { padding-inline: 0 }
+      .vs__tabs { margin-block-start: var(--sp-6) }
+    }
+
+    @media (max-width: 56rem) {
+      .vs__tab-label { display: none }
+      .vs__tabs button { padding-inline: var(--sp-1) }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      html { scroll-behavior: auto }
+      *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important }
+    }
+  </style>
+</head>
+
+<body>
+  <canvas id="wash" aria-hidden="true"></canvas>
+  <div id="gradient-wash" aria-hidden="true">
+    <div class="gradient-field gradient-field--reference is-active"></div>
+    <div class="gradient-field"></div>
+  </div>
+  <div class="page-guides" aria-hidden="true"></div>
+  <a class="skip-link" href="#main">Skip to content</a>
+
+  <header class="topbar">
+    <a class="brand" href="./" aria-label="spræ — home">
+      <span class="brand__mark" aria-hidden="true">∴</span>
+    </a>
+    <nav aria-label="Site">
+      <a href="#docs">docs</a>
+      <a href="#directives">reference</a>
+      <a href="#examples">examples</a>
+      <a href="#vs">vs</a>
+      <a href="#faq">faq</a>
+    </nav>
+    <a class="gh" href="https://github.com/dy/sprae" aria-label="Sprae on GitHub">
+      <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27s1.36.09 2 .27c1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8z"/></svg>
+    </a>
+  </header>
+
+  <!-- styles injected into the live demo frame -->
+  <script type="text/plain" id="demo-css">
+    @font-face { font-family: 'Monaspace Neon'; src: url('./assets/Monaspace Neon Var.woff2') format('woff2'); font-weight: 200 800 }
+    html { color-scheme: light }
+    body { margin: 0; display: flex; align-items: center; min-height: 100vh; padding: 0 clamp(20px, 8.5vw, 64px); background: transparent; font: 500 16px/1 'Monaspace Neon', ui-monospace, monospace; color: #eef2fc }
+    body > * { display: flex; align-items: center; gap: 48px; width: 100% }
+    button { min-width: 120px; min-height: 44px; padding: 0.9em 1.8em; border: 1px solid rgb(214 226 248 / 0.5); border-radius: 8px; background: #0f1a3e; color: inherit; font: inherit; cursor: pointer }
+    button:hover { background: #182452 }
+    button:active { translate: 0 1px }
+    input, textarea, select { padding: 0.5em 0.75em; border: 1px solid rgb(214 226 248 / 0.35); border-radius: 8px; background: rgb(255 255 255 / 0.06); color: inherit; font: inherit }
+    output { font-size: 31px; font-variant-numeric: tabular-nums }
+    ul, ol { margin: 0; padding: 0; list-style: none }
+    ::selection { color: #1c2a68; background: #b9c9ee }
+  </script>
+
+  <!-- styles injected into the example frames -->
+  <script type="text/plain" id="ex-css">
+    @font-face { font-family: Geist; src: url('./assets/geist-latin-wght-normal.woff2') format('woff2'); font-weight: 100 900 }
+    @font-face { font-family: 'IBM Plex Sans'; src: url('./assets/ibm-plex-sans-latin-wght-normal.woff2') format('woff2'); font-weight: 100 700 }
+    html { color-scheme: light }
+    body { margin: 0; padding: 20px 24px; background: transparent; font: 500 14px/1.55 'IBM Plex Sans', ui-sans-serif, system-ui, sans-serif; color: #eef2fc }
+    button { padding: 0.45em 0.9em; border: 1px solid rgb(214 226 248 / 0.5); border-radius: 6px; background: #0f1a3e; color: inherit; font: inherit; cursor: pointer }
+    button:hover { background: #182452 }
+    button:active { translate: 0 1px }
+    input { padding: 0.4em 0.65em; border: 1px solid rgb(214 226 248 / 0.35); border-radius: 6px; background: rgb(255 255 255 / 0.06); color: inherit; font: inherit; max-width: 11em }
+    table { border-collapse: collapse }
+    th, td { padding: 0.35em 1em 0.35em 0; border-bottom: 1px solid rgb(214 226 248 / 0.2); text-align: left }
+    th { cursor: pointer; user-select: none; color: #fff }
+    ul { margin: 14px 0 0; padding-left: 20px }
+    li { margin-block: 4px }
+    output { display: block; margin: 14px 0 12px; font: 650 30px/1 Geist, ui-sans-serif, system-ui, sans-serif; font-variant-numeric: tabular-nums }
+    ::selection { color: #1c2a68; background: #b9c9ee }
+  </script>
+
+  <main id="main">
+    <section class="hero" aria-labelledby="hero-title">
+      <div class="shell">
+        <p class="hero__word" aria-hidden="true">spræ</p>
+        <h1 class="hero__stmt" id="hero-title">Minimal reactivity<br>for HTML/JSX</h1>
+        <p class="hero__sub">Sprae evaluates :attributes and evaporates them, live binding DOM</p>
+
+        <p class="hero__edge"><span>NOT&nbsp;A&nbsp;FRAMEWORK</span></p>
+
+        <div class="plate"
+          :scope="{ src: document.querySelector('#demo-src').value, out: document.querySelector('#demo-src').value }"
+          :oninput="e => src = e.target.value"
+          :fx.debounce-300="out = src">
+          <div class="plate__editor" :ref="ed" :onscroll.capture="e => (ed.firstElementChild.scrollLeft = e.target.scrollLeft)">
+            <pre aria-hidden="true"><code :html="hl(src)">&lt;div :scope="{ n: 0 }" :fx.once="setInterval(() =&gt; n++, 1000)"&gt;
+  &lt;button :onclick="n = 0"&gt;reset&lt;/button&gt;
+  &lt;output :text="n + 's'"&gt;&lt;/output&gt;
+&lt;/div&gt;</code></pre>
+            <textarea id="demo-src" :value="src" spellcheck="false" wrap="off" autocomplete="off" autocorrect="off" autocapitalize="off" aria-label="Editable sprae example — edits re-run the result below"><div :scope="{ n: 0 }" :fx.once="setInterval(() => n++, 1000)">
+  <button :onclick="n = 0">reset</button>
+  <output :text="n + 's'"></output>
+</div></textarea>
+          </div>
+          <div class="plate__demo">
+            <iframe class="plate__out" title="Live result"
+              :srcdoc="'<style>' + document.querySelector('#demo-css').textContent + '</style>' + out + '<scr' + 'ipt src=./dist/sprae.umd.js data-start></scr' + 'ipt>'"></iframe>
+          </div>
+        </div>
+      </div>
+      <div class="hero__corner-vignette" aria-hidden="true"></div>
+      <hr class="hero__transition" aria-hidden="true">
+    </section>
+
+    <section class="feature-stage feature-stage--bands" id="features" aria-labelledby="features-title" :scope="{ sig: 'built-in' }">
+      <h2 class="sr-only" id="features-title">Features</h2>
+
+      <div class="feature-grid">
+        <article class="feature-card feature-card--html">
+          <div class="feature-graphic html-map" aria-label="HTML5, JSX, Next.js, Astro, Rails, PHP, Django, and Jekyll markup">
+            <div class="html-sources">
+              <span><i><img src="./assets/logo-html.png" alt=""></i></span>
+              <span><i><img src="./assets/logo-react.png" alt=""></i></span>
+              <span><i><img src="./assets/logo-next.png" alt=""></i></span>
+              <span><i><img src="./assets/logo-astro.svg" alt=""></i></span>
+              <span><i><img src="./assets/logo-rails.png" alt=""></i></span>
+              <span><i><img src="./assets/logo-php.png" alt=""></i></span>
+              <span><i><img src="./assets/logo-django.png" alt=""></i></span>
+              <span><i><img src="./assets/logo-jekyll.png" alt=""></i></span>
+            </div>
+          </div>
+          <div class="feature-card__copy"><h2>Keep your HTML.</h2><p>Add reactive attributes in place. No component rewrite or required build step; server components stay server-side.</p></div>
+        </article>
+
+        <article class="feature-card feature-card--speed">
+          <figure class="feature-graphic benchmark-shot">
+            <img src="./assets/benchmark-cpu.webp" alt="Published keyed CPU results centered on Sprae among Svelte and Preact implementations" loading="lazy" decoding="async">
+          </figure>
+          <div class="feature-card__copy"><h2>Direct DOM, measured.</h2><p>No virtual tree or diff. Published CPU runs place Sprae ahead of Vue, React, and Alpine; Svelte remains a fast peer.</p><div class="feature-card__links"><a href="https://krausest.github.io/js-framework-benchmark/current.html">Official results ↗</a><a href="./compare">Method ↗</a></div></div>
+        </article>
+
+        <article class="feature-card feature-card--open">
+          <div class="feature-graphic open-map" aria-label="Five compatible signal implementations and their compressed sizes">
+            <div class="signal-list">
+              <button type="button" :aria-pressed="sig == 'built-in' ? 'true' : 'false'" :class="{ on: sig == 'built-in' }" :onclick="sig = 'built-in'"><span>built-in <small>· ~300b</small></span></button>
+              <button type="button" :aria-pressed="sig == '@preact' ? 'true' : 'false'" :class="{ on: sig == '@preact' }" :onclick="sig = '@preact'"><span>@preact <small>· 1.5kb</small></span></button>
+              <button type="button" :aria-pressed="sig == 'ulive' ? 'true' : 'false'" :class="{ on: sig == 'ulive' }" :onclick="sig = 'ulive'"><span>ulive <small>· 350b</small></span></button>
+              <button type="button" :aria-pressed="sig == 'signal' ? 'true' : 'false'" :class="{ on: sig == 'signal' }" :onclick="sig = 'signal'"><span>signal <small>· 633b</small></span></button>
+              <button type="button" :aria-pressed="sig == 'usignal' ? 'true' : 'false'" :class="{ on: sig == 'usignal' }" :onclick="sig = 'usignal'"><span>usignal <small>· 955b</small></span></button>
+            </div>
+          </div>
+          <div class="feature-card__copy"><h2>Own state. Swap signals.</h2><p><code>sprae()</code> returns live state. Keep the built-in core or use any Preact-compatible implementation.</p><div class="feature-card__links"><a href="https://github.com/dy/sprae#signals">Signals API ↗</a></div></div>
+        </article>
+
+        <article class="feature-card feature-card--secure">
+          <dl class="feature-graphic spec-list" aria-label="Verified Sprae specification">
+            <div><dt>package</dt><dd>11.6kb gzip</dd></div>
+            <div><dt>dependencies</dt><dd>0</dd></div>
+            <div><dt>CPU</dt><dd>2.27× vs Alpine</dd></div>
+            <div><dt>memory</dt><dd>5.1MB / 1k</dd></div>
+            <div><dt>first paint</dt><dd>76ms / 1k</dd></div>
+            <div><dt>CSP build</dt><dd>full JS</dd></div>
+            <div><dt>vocabulary</dt><dd>20 + 20</dd></div>
+            <div><dt>license</dt><dd>MIT</dd></div>
+            <div><dt>version</dt><dd>13.9.1</dd></div>
+          </dl>
+          <div class="feature-card__copy"><h2>The specification.</h2><div class="feature-card__links"><a href="./compare">Methods ↗</a><a href="./csp">CSP build ↗</a></div></div>
+        </article>
+      </div>
+
+      <aside class="feature-cloud" aria-label="More Sprae capabilities">
+        <div class="feature-cloud__set" role="list">
+            <span class="cap-tip" role="listitem" tabindex="0" data-tip="Update measured DOM nodes directly, without a virtual tree or diff." aria-label="No virtual DOM — update measured DOM nodes directly, without a virtual tree or diff.">no virtual DOM</span>
+            <span class="cap-tip" role="listitem" tabindex="0" data-tip="Reconcile arrays by item identity without manual keys." aria-label="Keyless lists — reconcile arrays by item identity without manual keys.">keyless lists</span>
+            <span class="cap-tip" role="listitem" tabindex="0" data-tip="Remove directive attributes after initialization." aria-label="Attributes evaporate — directive attributes are removed after initialization.">attributes evaporate</span>
+            <span class="cap-tip" role="listitem" tabindex="0" data-tip="Keep state and DOM without a retained component hierarchy." aria-label="No component stack — no retained component hierarchy sits between state and DOM.">no component stack</span>
+            <span class="cap-tip" role="listitem" tabindex="0" data-tip="Effects write to the exact node that consumed the value." aria-label="Direct node effects — effects write to the exact node that consumed the value.">direct node effects</span>
+            <span class="cap-tip" role="listitem" tabindex="0" data-tip="Markup remains ordinary DOM owned by the document." aria-label="DOM stays yours — markup remains ordinary DOM owned by the document.">DOM stays yours</span>
+            <span class="cap-tip" role="listitem" tabindex="0" data-tip="Await promises directly inside reactive expressions." aria-label="Async expressions — await promises directly inside reactive expressions.">async expressions</span>
+            <span class="cap-tip" role="listitem" tabindex="0" data-tip="Run setup when an element connects." aria-label="Mount — run setup when an element connects.">:mount</span>
+            <span class="cap-tip" role="listitem" tabindex="0" data-tip="Dispose effects, listeners, and returned teardown functions." aria-label="Automatic cleanup — dispose effects, listeners, and returned teardown functions.">automatic cleanup</span>
+            <span class="cap-tip" role="listitem" tabindex="0" data-tip="React when an element enters or leaves the viewport." aria-label="Intersection — react when an element enters or leaves the viewport.">intersection</span>
+            <span class="cap-tip" role="listitem" tabindex="0" data-tip="React to changes in an element’s measured size." aria-label="Resize — react to changes in an element’s measured size.">resize</span>
+            <span class="cap-tip" role="listitem" tabindex="0" data-tip="Render an element into another DOM target." aria-label="Portals — render an element into another DOM target.">portals</span>
+            <span class="cap-tip" role="listitem" tabindex="0" data-tip="Respect custom-element scope boundaries." aria-label="Custom elements — respect custom-element scope boundaries.">custom elements</span>
+            <span class="cap-tip" role="listitem" tabindex="0" data-tip="Use getters and computed signals as reactive values." aria-label="Computed stores — use getters and computed signals as reactive values.">computed stores</span>
+            <span class="cap-tip" role="listitem" tabindex="0" data-tip="Capture an element or pass it to a function." aria-label="Refs — capture an element or pass it to a function.">refs</span>
+            <span class="cap-tip" role="listitem" tabindex="0" data-tip="Apply a reactive object of attributes at once." aria-label="Attribute spread — apply a reactive object of attributes at once.">attribute spread</span>
+            <span class="cap-tip" role="listitem" tabindex="0" data-tip="Sequence event handlers and their returned cleanup." aria-label="Event chains — sequence event handlers and their returned cleanup.">event chains</span>
+            <span class="cap-tip" role="listitem" tabindex="0" data-tip="Rate-limit any directive with modifiers." aria-label="Debounce and throttle — rate-limit any directive with modifiers.">debounce + throttle</span>
+            <span class="cap-tip" role="listitem" tabindex="0" data-tip="Ship generated declarations for the public API." aria-label="TypeScript — generated declarations for the public API.">TypeScript</span>
+        </div>
+      </aside>
+    </section>
+
+    <section class="usage" id="docs" aria-labelledby="usage-title">
+      <div class="shell">
+        <h2 class="sect-h" id="usage-title">Usage</h2>
+        <div class="usage-cross">
+          <article :each="key in Object.keys(usage)">
+            <h3 :text="usage[key].label"></h3>
+            <p class="usage__line" :text="usage[key].line"></p>
+            <div class="urow">
+              <code :html="hl(usage[key].code)"></code>
+              <button class="copy" :onclick="copyRow(usage[key].code, this)" :aria-label="'Copy ' + usage[key].label + ' setup to clipboard'"><svg class="cp" viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><rect x="5" y="5" width="9" height="9"/><path d="M11 5V2H2v9h3"/></svg><svg class="ck" viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M2.5 8.5 6 12 13.5 4"/></svg></button>
+            </div>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section class="reference" id="directives" aria-labelledby="ref-title">
+      <div class="shell" :scope="{ kind: 'dir' }">
+        <h2 class="sr-only" id="ref-title">Reference</h2>
+        <div class="ref-kind-tabs" role="tablist" aria-label="Reference group">
+          <button id="ref-tab-dir" type="button" role="tab" aria-controls="ref-list" :aria-selected="kind == 'dir' ? 'true' : 'false'" :class="{ on: kind == 'dir' }" :onclick="kind = 'dir'">Directives <small :text="ref.dir.length - 1"></small></button>
+          <button id="ref-tab-mod" type="button" role="tab" aria-controls="ref-list" :aria-selected="kind == 'mod' ? 'true' : 'false'" :class="{ on: kind == 'mod' }" :onclick="kind = 'mod'">Modifiers <small :text="ref.mod.length"></small></button>
+        </div>
+
+        <div class="ref-list" id="ref-list" role="tabpanel" :aria-labelledby="kind == 'dir' ? 'ref-tab-dir' : 'ref-tab-mod'">
+          <article class="ref-entry" :each="d in ref[kind].filter(d => kind != 'dir' || d.s != ':else')">
+            <div class="ref-entry__copy">
+              <h3 class="ref__name" :text="d.s == ':if' ? ':if / :else' : d.s"></h3>
+              <p class="ref__desc" :html="d.d"></p>
+            </div>
+            <div class="ref-entry__doc">
+              <pre class="ref__ex"><code :html="hl(referenceExample(d.s, d.x))"></code></pre>
+            </div>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section class="examples" id="examples" aria-labelledby="ex-title">
+      <div class="shell" :scope="{ exsel: 0, exview: 'right' }">
+        <div class="section-bar">
+          <h2 class="sect-h" id="ex-title">Examples</h2>
+          <div class="example-variant" role="group" aria-label="Example list position">
+            <button type="button" :aria-pressed="exview == 'left' ? 'true' : 'false'" :class="{ on: exview == 'left' }" :onclick="exview = 'left'">list left</button>
+            <button type="button" :aria-pressed="exview == 'right' ? 'true' : 'false'" :class="{ on: exview == 'right' }" :onclick="exview = 'right'">list right</button>
+          </div>
+        </div>
+
+        <div class="ex-guide" :class="exview == 'right' ? 'ex-guide--right' : ''">
+          <div class="ex-guide__rail" role="tablist" aria-label="Example">
+            <button class="ex-step" type="button" role="tab" :each="ex, i in examples" :aria-selected="exsel == i ? 'true' : 'false'" :class="{ on: exsel == i }" :onclick="exsel = i">
+              <span :text="'0' + (i + 1)"></span>
+              <span class="ex-step__copy"><b :text="ex.title"></b><small :text="ex.blurb"></small></span>
+            </button>
+            <a class="ex-step ex-step--all" href="./drops">
+              <span>06</span>
+              <span class="ex-step__copy"><b>All examples →</b><small>More patterns and drops.</small></span>
+            </a>
+          </div>
+          <article class="ex-specimen" aria-live="polite">
+            <div class="ex__code"><pre><code :html="hl(examples[exsel].code)"></code></pre></div>
+            <iframe :title="examples[exsel].title + ' — live result'"
+              :srcdoc="'<style>' + document.querySelector('#ex-css').textContent + '</style>' + examples[exsel].code + '<scr' + 'ipt src=./dist/sprae.umd.js data-start></scr' + 'ipt>'"></iframe>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section class="vs" id="vs" aria-labelledby="vs-title">
+      <div class="shell" :scope="{ vtab: 'alpine' }">
+        <h2 class="sect-h" id="vs-title">The same todo list, side by side</h2>
+        <div class="vs__compare">
+          <div class="vs__label"><h3>sprae</h3></div>
+          <div class="vs__tabs" role="tablist" aria-label="Comparison framework">
+            <button :each="k in Object.keys(vs).filter(k => k != 'sprae')" type="button" role="tab" :aria-label="vs[k].tab || vs[k].name" :aria-selected="vtab == k ? 'true' : 'false'" :class="{ on: vtab == k }" :onclick="vtab = k">
+              <img class="vs__tab-icon" :src="vsIcons[k]" alt="" width="20" height="20">
+              <span class="vs__tab-label" :text="vs[k].tab || vs[k].name"></span>
+            </button>
+          </div>
+          <article class="vs__side vs__side--sprae">
+            <pre><code :html="hl(vs.sprae.code.trim())"></code></pre>
+          </article>
+          <div class="vs__meta vs__meta--sprae">
+            <span><b :text="vs.sprae.code.trim().split('\n').length"></b> lines</span>
+            <span>build: <b :text="vs.sprae.build"></b></span>
+            <span>runtime: <b :text="vs.sprae.runtime"></b></span>
+          </div>
+          <article class="vs__side vs__side--framework" aria-live="polite">
+            <pre><code :html="hl(vs[vtab].code.trim())"></code></pre>
+          </article>
+          <div class="vs__meta vs__meta--framework">
+            <span><b :text="vs[vtab].code.trim().split('\n').length"></b> lines</span>
+            <span>build: <b :text="vs[vtab].build"></b></span>
+            <span>runtime: <b :text="vs[vtab].runtime"></b></span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="faq" id="faq" aria-labelledby="faq-title">
+      <div class="shell">
+        <h2 class="sect-h" id="faq-title">FAQ</h2>
+        <div class="faq__list">
+          <div class="qa">
+            <h3 class="qa__q">How does it compare to Alpine?</h3>
+            <p class="qa__a">Sprae is ~1.5× smaller, ~2.3× faster, and uses ~3× less runtime memory in <a href="./compare">this comparison</a>. It has pluggable signals, built-in modifiers, event chains, and a full-JS <a href="./csp">CSP build</a>. Migrating? See the <a href="./alpine">Alpine guide</a>.</p>
+          </div>
+          <div class="qa">
+            <h3 class="qa__q">How does it compare to React or Vue?</h3>
+            <p class="qa__a">In the official <a href="https://krausest.github.io/js-framework-benchmark/current.html">js-framework-benchmark</a> (Chrome 150), sprae places ahead of Vue, Preact and React in CPU speed, at 11.6kb compressed, with no build step or virtual DOM. In <a href="https://github.com/dy/sprae#jsx--nextjs">JSX</a>, it adds client-side interactivity without <code>'use client'</code>.</p>
+          </div>
+          <div class="qa">
+            <h3 class="qa__q">Strict CSP? Browser extension?</h3>
+            <p class="qa__a">The <a href="./csp">CSP build</a> interprets JavaScript expressions without <code>eval</code> or <code>new Function</code> — bundle it locally for Chrome MV3 extensions. It supports full expressions, arrow functions included, unlike Alpine's CSP build.</p>
+          </div>
+          <div class="qa">
+            <h3 class="qa__q">Is <code>new Function</code> unsafe?</h3>
+            <p class="qa__a"><code>new Function</code> executes directive expressions as JavaScript. Use the default build only with trusted markup; under strict CSP, use the <a href="./csp">CSP build</a>.</p>
+          </div>
+          <div class="qa">
+            <h3 class="qa__q">Components?</h3>
+            <p class="qa__a">Use <a href="https://github.com/dy/define-element">define-element</a> for declarative web components, or any custom-element library — sprae treats a custom element as a boundary and sets its props. For simpler cases, manage duplication with templates or includes.</p>
+          </div>
+          <div class="qa">
+            <h3 class="qa__q">Does it scale?</h3>
+            <p class="qa__a">State uses plain reactive objects. For complex apps, use <a href="https://github.com/dy/sprae#store">store</a> with computed getters and methods, or swap in <a href="https://github.com/dy/sprae#alternative-signals">any Preact-compatible signals</a>.</p>
+          </div>
+          <div class="qa">
+            <h3 class="qa__q">TypeScript? Browser support?</h3>
+            <p class="qa__a">Full types included. Runs in any browser with <a href="https://caniuse.com/proxy">Proxy</a> — all modern browsers, no IE.</p>
+          </div>
+          <div class="qa">
+            <h3 class="qa__q">Is it production-ready?</h3>
+            <p class="qa__a">Sprae has 3+ years of releases across ~200 <a href="https://www.npmjs.com/package/sprae?activeTab=versions">npm versions</a>. It has no dependencies or open issues, and its tests include the CSP build.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <aside class="outro" aria-label="Support">
+    <div class="shell">
+      <p class="outro__line">Independent. MIT.<br>No company behind it.</p>
+      <p class="outro__sub">If sprae carries weight in your product, help carry sprae.</p>
+      <a class="outro__cta" href="https://github.com/sponsors/dy">Sponsor on GitHub</a>
+    </div>
+  </aside>
+
+  <footer class="footer">
+    <div class="shell">
+      <a class="footer__brand" href="./">∴ spræ</a>
+      <nav aria-label="Site links">
+        <a href="https://github.com/dy/sprae">github</a>
+        <a href="https://www.npmjs.com/package/sprae">npm</a>
+        <a href="./drops">drops</a>
+        <a href="./compare">compare</a>
+        <a href="./csp">csp</a>
+        <a href="./alpine">alpine guide</a>
+      </nav>
+      <small>MIT · <a href="https://krishnized.github.io/license">ॐ</a></small>
+    </div>
+  </footer>
+
+  <script>
+    // Page data for the usage + reference scopes (declared before sprae starts).
+    window.usage = {
+      cdn: {
+        label: 'CDN',
+        line: 'Add one script tag. Sprae makes :attributes reactive.',
+        code: `<!-- default -->
+<script src="https://unpkg.com/sprae" data-start><\/script>
+<!-- strict CSP; no eval -->
+<script src="https://unpkg.com/sprae/dist/sprae-csp.umd.js" data-start><\/script>`
+      },
+      esm: {
+        label: 'ES module',
+        line: 'Import what you need. sprae() returns live state.',
+        code: `import sprae, { store, signal, effect, batch } from 'sprae'
+
+const state = sprae(document.querySelector('#app'), { count: 0 })`
+      },
+      jsx: {
+        label: 'Next.js / JSX',
+        line: 'Bind client-side while the page stays a Server Component.',
+        code: `{/* no 'use client' */}
+<Script src="https://unpkg.com/sprae" data-prefix="x-" data-start />`
+      },
+      md: {
+        label: 'Markdown / SSG',
+        line: 'Bind generated or server-rendered HTML in place.',
+        code: `<!-- generated HTML -->
+<script src="https://unpkg.com/sprae" data-prefix="data-" data-start><\/script>
+<div data-scope="{ open: false }">…</div>`
+      }
+    }
+
+    window.ref = {
+      dir: [
+        { s: ':scope', t: 'local state',
+          d: 'Declare reactive state for a subtree.',
+          x: `<div :scope="{ count: 0, open: false }">
+  <button :onclick="count++">
+    Count: <span :text="count"></span>
+  </button>
+</div>
+
+<!-- inline variables -->
+<span :scope="x = 1, y = 2" :text="x + y"></span>
+
+<!-- derive from parent scope -->
+<div :scope="scope => ({ double: scope.value * 2 })">…</div>`,
+          tips: [
+            'Getters become computed values, <code>_</code>-prefixed properties stay untracked — same rules as <code>store()</code>.',
+            'Methods refer to state via <code>this</code>: <code>inc() { this.count++ }</code>.'
+          ] },
+        { s: ':if', t: 'conditional DOM',
+          d: 'Insert conditional branches and dispose inactive DOM.',
+          x: `<div :if="loading">Loading…</div>
+
+<!-- fragment -->
+<template :if="showDetails">
+  <dt>Name</dt>
+  <dd :text="name"></dd>
+</template>`,
+          tips: [
+            'Use <code>&lt;template&gt;</code> to switch whole fragments without a wrapper element.',
+            'For show/hide that keeps element state, use <code>:hidden</code> instead.'
+          ] },
+        { s: ':else', t: 'conditional branch',
+          d: 'Continue an adjacent <code>:if</code> chain.',
+          x: `<div :if="loading">Loading…</div>
+<div :else :if="error" :text="error"></div>
+<div :else>Ready!</div>`,
+          tips: [
+            'Keep each branch adjacent and put <code>:else</code> before the branch’s other directives.'
+          ] },
+        { s: ':each', t: 'lists',
+          d: 'Iterate arrays, objects, or numbers without manual keys.',
+          x: `<li :each="item in items" :text="item.name"></li>
+<li :each="item, i in items" :text="i + '. ' + item.name"></li>
+<li :each="value, key in object" :text="key + ': ' + value"></li>
+<li :each="n in 5" :text="'Item ' + n"></li>
+
+<!-- reactive filter -->
+<li :each="item in items.filter(i => i.active)"
+  :text="item.name"></li>
+
+<!-- fragment per item -->
+<template :each="item in items">
+  <dt :text="item.term"></dt>
+  <dd :text="item.definition"></dd>
+</template>`,
+          tips: [
+            'Attribute order matters: put <code>:each</code> before <code>:text</code> and other directives on the same tag.',
+            'Mutate in place — <code>items.push(item)</code>, <code>item.done = true</code> — updates are granular, no list re-render.',
+            'Prevent flash of raw markup while sprae loads: <code>&lt;style&gt;[\\:each],[\\:if],[\\:else]{visibility:hidden}&lt;/style&gt;</code>'
+          ] },
+        { s: ':text', t: 'text content',
+          d: 'Set text content from a reactive expression.',
+          x: `<span :text="user.name">Guest</span>
+<span :text="count + ' items'"></span>
+<span :text="text => text.toUpperCase()">hello</span>
+
+<!-- async expressions work -->
+<div :text="await fetchData()"></div>`,
+          tips: [
+            'Async expressions are awaited — the binding updates when the promise resolves.'
+          ] },
+        { s: ':html', t: 'innerHTML',
+          d: 'Set reactive inner HTML and initialize its directives.',
+          x: `<article :html="marked(content)"></article>
+
+<!-- template form -->
+<section :html="document.querySelector('#card')"></section>
+
+<!-- function form -->
+<div :html="html => DOMPurify.sanitize(html)"></div>`,
+          tips: [
+            'Sanitize untrusted input — the function form composes with DOMPurify.'
+          ] },
+        { s: ':class', t: 'classes',
+          d: 'Merge reactive classes from an object, array, or string.',
+          x: `<div :class="{ active: isActive, disabled }"></div>
+<div :class="['btn', size, variant]"></div>
+<div :class="isError && 'error'"></div>
+
+<!-- function form: extend existing -->
+<div :class="cls => [...cls, 'extra']"></div>` },
+        { s: ':style', t: 'inline styles',
+          d: 'Set reactive inline styles from an object or string.',
+          x: `<div :style="{ color, opacity, '--size': size + 'px' }"></div>
+<div :style="'color:' + color"></div>
+
+<!-- function form -->
+<div :style="style => ({ ...style, color })"></div>` },
+        { s: ':<attr>', t: 'any attribute',
+          d: 'Set any attribute from a reactive expression.',
+          x: `<button :disabled="loading" :aria-busy="loading">Save</button>
+<input :id:name="fieldName" />` },
+        { s: ':="{…}"', t: 'attribute spread',
+          d: 'Spread a reactive object across multiple attributes.',
+          x: `<input :="{ type: 'email', required, placeholder }" />
+<img :="{ src: avatar, alt: user.name }" />` },
+        { s: ':value', t: 'input binding',
+          d: 'Bind reactive state into an input, select, or checkbox.',
+          x: `<input :value="query" />
+<textarea :value="content"></textarea>
+<input type="checkbox" :value="agreed" />
+<select :value="country">
+  <option :each="c in countries"
+    :value="c.code" :text="c.name"></option>
+</select>` },
+        { s: ':change', t: 'write-back',
+          d: 'Write an input’s coerced value back to state.',
+          x: `<input :value="query" :change="v => query = v" />
+<input type="number" :value="count" :change="v => count = v" />
+<input :value="search" :change.debounce-300="v => search = v" />` },
+        { s: ':on<event>', t: 'events',
+          d: 'Attach one handler to one or more DOM events.',
+          x: `<button :onclick="count++">Click</button>
+<form :onsubmit.prevent="handleSubmit()">…</form>
+<input :onkeydown.enter="send()" />
+<input :oninput:onchange="e => validate(e)" />
+
+<!-- sequence: setup on first, cleanup on second -->
+<div :onfocus..onblur="e => (active = true, () => active = false)"></div>` },
+        { s: ':fx', t: 'effects',
+          d: 'Run an effect whenever its reactive dependencies change.',
+          x: `<div :fx="console.log('count changed:', count)"></div>
+<div :fx="() => {
+  const id = setInterval(tick, 1000)
+  return () => clearInterval(id)
+}"></div>`,
+          tips: [
+            'Combine with time modifiers: <code>:fx.raf</code> for animation, <code>:fx.debounce-300</code> to settle.',
+            '<code>:fx.once</code> runs a single time — handy for init.'
+          ] },
+        { s: ':ref', t: 'element ref',
+          d: 'Store the element in state or pass it to a function.',
+          x: `<canvas :ref="canvas" :fx="draw(canvas)"></canvas>
+<input :ref="el => el.focus()" />
+
+<!-- path reference -->
+<input :ref="$refs.email" />`,
+          tips: [
+            'For setup/cleanup lifecycle, use <code>:mount</code>.'
+          ] },
+        { s: ':hidden', t: 'visibility',
+          d: 'Toggle visibility without unmounting the element or its state.',
+          x: `<p :hidden="!ready">Loading…</p>` },
+        { s: ':mount', t: 'lifecycle',
+          d: 'Run setup on connect and cleanup on disconnect.',
+          x: `<canvas :mount="el => initChart(el)"></canvas>
+<div :mount="el => {
+  const timer = setInterval(tick, 1000)
+  return () => clearInterval(timer)
+}"></div>` },
+        { s: ':intersect', t: 'viewport',
+          d: 'React when an element enters or leaves the viewport.',
+          x: `<img :intersect.once="loadImage()" :src="placeholder" />
+<div :intersect="entry => visible = entry.isIntersecting"></div>` },
+        { s: ':resize', t: 'measure',
+          d: 'React to changes in the element’s own size.',
+          x: `<div :resize="({width}) => cols = Math.floor(width / 200)"></div>` },
+        { s: ':portal', t: 'teleport',
+          d: 'Move an element into another DOM container.',
+          x: `<div :portal="'#modals'">Modal content</div>
+<dialog :portal="open && '#portal-target'">…</dialog>` }
+      ],
+      mod: [
+        { s: '.debounce-300', t: 'settle delay',
+          d: 'Run after activity settles; append <code>-immediate</code> for the leading edge.',
+          x: `<input :oninput.debounce-300="search()" />` },
+        { s: '.throttle-100', t: 'rate limit',
+          d: 'Limit calls to once per interval.',
+          x: `<div :onscroll.throttle-100="update()">…</div>` },
+        { s: '.delay-500', t: 'postpone',
+          d: 'Delay each call by the given interval.',
+          x: `<div :onmouseenter.delay-500="show = true">…</div>` },
+        { s: '.once', t: 'single run',
+          d: 'Run once, then remove the listener or effect.',
+          x: `<button :onclick.once="init()">Initialize</button>` },
+        { s: '.raf', t: 'animation frame',
+          d: 'Run on the next animation frame.',
+          x: `<div :fx.raf="frame()"></div>` },
+        { s: '.idle', t: 'idle callback',
+          d: 'Run when the browser becomes idle.',
+          x: `<div :fx.idle="prepare()"></div>` },
+        { s: '.tick', t: 'microtask',
+          d: 'Run on the next microtask.',
+          x: `<div :fx.tick="settle()"></div>` },
+        { s: '.window', t: 'window target',
+          d: 'Listen on <code>window</code>.',
+          x: `<div :onkeydown.window="route()"></div>` },
+        { s: '.document', t: 'document target',
+          d: 'Listen on <code>document</code>.',
+          x: `<div :onclick.document="track()"></div>` },
+        { s: '.body', t: 'body target',
+          d: 'Listen on <code>document.body</code>.',
+          x: `<div :onpointerdown.body="start()"></div>` },
+        { s: '.root', t: 'sprae root',
+          d: 'Listen on the Sprae root element.',
+          x: `<div :onkeydown.root="route()"></div>` },
+        { s: '.parent', t: 'parent target',
+          d: 'Listen on the element’s parent.',
+          x: `<button :onclick.parent="select()">Select</button>` },
+        { s: '.self', t: 'exact target',
+          d: 'Ignore events dispatched by descendants.',
+          x: `<div :onclick.self="select()">…</div>` },
+        { s: '.away', t: 'outside events',
+          d: 'Run when an event occurs outside the element.',
+          x: `<div :onclick.away="open = false">…</div>` },
+        { s: '.prevent', t: 'prevent default',
+          d: 'Prevent the event’s default action.',
+          x: `<form :onsubmit.prevent="save()">…</form>` },
+        { s: '.stop', t: 'stop propagation',
+          d: 'Stop event propagation.',
+          x: `<button :onclick.stop="open()">Open</button>` },
+        { s: '.stop-immediate', t: 'stop sibling listeners',
+          d: 'Prevent later listeners on the same target.',
+          x: `<button :onclick.stop-immediate="open()">Open</button>` },
+        { s: '.passive', t: 'passive listener',
+          d: 'Register a passive native listener.',
+          x: `<div :ontouchstart.passive="pull()">…</div>` },
+        { s: '.capture', t: 'capture phase',
+          d: 'Listen during the native capture phase.',
+          x: `<div :onclick.capture="audit()">…</div>` },
+        { s: '.enter', t: 'Enter key filter',
+          d: 'Run only when the Enter key is pressed.',
+          x: `<input :onkeydown.enter="submit()" />` }
+      ]
+    }
+
+    // five examples — each runs live in its frame, code shown is code run
+    window.examples = [
+      { title: 'Sortable table', blurb: 'Sort in place; DOM follows without keys.',
+        code: `<table :scope="{
+  rows: [
+    { name: 'Alice', age: 32 },
+    { name: 'Bob', age: 25 },
+    { name: 'Carol', age: 41 }
+  ],
+  col: 'name', asc: true,
+  sort(c) {
+    this.asc = this.col == c ? !this.asc : true
+    this.col = c
+    this.rows.sort((a, b) => (this.asc ? 1 : -1) *
+      ((a[c] > b[c]) - (a[c] < b[c])))
+  }
+}">
+  <tr>
+    <th :each="c in ['name', 'age']"
+      :onclick="sort(c)"
+      :text="c + (col != c ? '' : asc ? ' ↑' : ' ↓')"></th>
+  </tr>
+  <tr :each="r in rows">
+    <td :text="r.name"></td>
+    <td :text="r.age"></td>
+  </tr>
+</table>` },
+      { title: 'Tag input', blurb: 'Keyboard events mutate a plain array.',
+        code: `<div :scope="{ tags: ['sprae', 'reactive'], val: '' }">
+  <button :each="t, i in tags"
+    :onclick="tags.splice(i, 1)">
+    <span :text="t"></span> ×
+  </button>
+  <input :value="val" :change="v => val = v"
+    :onkeydown.enter="
+      val.trim() && tags.push(val.trim()); val = ''"
+    placeholder="Add tag…" />
+</div>` },
+      { title: 'Stopwatch', blurb: 'Computed state formats elapsed time.',
+        code: `<div :scope="{
+  ms: 0, id: null,
+  get t() {
+    return [this.ms / 60000,
+      this.ms % 60000 / 1000, this.ms % 1000 / 10]
+      .map(v => String(Math.floor(v))
+        .padStart(2, '0')).join(':')
+  },
+  toggle() {
+    if (this.id) {
+      clearInterval(this.id); this.id = null
+    } else this.id =
+      setInterval(() => this.ms += 10, 10)
+  }
+}">
+  <output :text="t"></output>
+  <button :onclick="toggle()"
+    :text="id ? 'Stop' : 'Start'"></button>
+  <button :onclick="clearInterval(id); id = null; ms = 0">
+    Reset</button>
+</div>` },
+      { title: 'Live filter', blurb: 'A derived list updates while you type.',
+        code: `<div :scope="{
+  query: '',
+  cities: ['Berlin', 'Lisbon', 'Kyoto', 'Lagos', 'Lima']
+}">
+  <input :value="query" :change="v => query = v"
+    placeholder="Filter cities…" />
+  <ul>
+    <li :each="city in cities.filter(c =>
+      c.toLowerCase().includes(query.toLowerCase()))"
+      :text="city"></li>
+  </ul>
+  <p :if="!cities.some(c =>
+    c.toLowerCase().includes(query.toLowerCase()))">
+    No matches
+  </p>
+</div>` },
+      { title: 'Async action', blurb: 'Await a promise inside an event.',
+        code: `<div :scope="{ status: 'Ready' }">
+  <button :onclick="
+    status = 'Loading…';
+    status = await new Promise(done =>
+      setTimeout(() => done('Loaded'), 700))">
+    Load data
+  </button>
+  <output :text="status"></output>
+</div>` }
+    ]
+
+    // Official site favicons, downloaded locally for stable comparison tabs.
+    window.vsIcons = {
+      alpine: './assets/logo-alpine.png',
+      vue: './assets/logo-vue.svg',
+      react: './assets/logo-react.png',
+      svelte: './assets/logo-svelte.png',
+      vanilla: './assets/logo-vanilla.svg'
+    }
+
+    // one todo list, five implementations — same behavior everywhere
+    window.vs = {
+      sprae: { name: 'sprae', build: 'none', runtime: '11.6kb gzip',
+        code: `
+<div :scope="{ items: [], text: '' }">
+  <form :onsubmit.prevent="
+    items.push({ text, done: false }); text = ''">
+    <input :value="text" :change="v => text = v"
+      placeholder="What needs doing?" />
+  </form>
+  <ul>
+    <li :each="item in items">
+      <input type="checkbox" :value="item.done"
+        :change="v => item.done = v" />
+      <span :text="item.text"></span>
+      <button :onclick="items.splice(items.indexOf(item), 1)">×</button>
+    </li>
+  </ul>
+  <p :text="items.filter(i => !i.done).length + ' left'"></p>
+</div>
+<script src="//unpkg.com/sprae" data-start><\/script>` },
+      alpine: { name: 'Alpine', build: 'none', runtime: '16.7kb gzip',
+        code: `
+<div x-data="{ items: [], text: '' }">
+  <form @submit.prevent="
+    items.push({ text, done: false }); text = ''">
+    <input x-model="text"
+      placeholder="What needs doing?">
+  </form>
+  <ul>
+    <template x-for="(item, i) in items" :key="i">
+      <li>
+        <input type="checkbox" x-model="item.done">
+        <span x-text="item.text"></span>
+        <button @click="items.splice(i, 1)">×</button>
+      </li>
+    </template>
+  </ul>
+  <p x-text="items.filter(i => !i.done).length + ' left'"></p>
+</div>
+<script src="//unpkg.com/alpinejs" defer><\/script>` },
+      vue: { name: 'Vue', build: 'none', runtime: '61kb gzip',
+        code: `
+<div id="app">
+  <form @submit.prevent="
+    items.push({ text, done: false }); text = ''">
+    <input v-model="text"
+      placeholder="What needs doing?">
+  </form>
+  <ul>
+    <li v-for="(item, i) in items" :key="i">
+      <input type="checkbox" v-model="item.done">
+      <span>{{ item.text }}</span>
+      <button @click="items.splice(i, 1)">×</button>
+    </li>
+  </ul>
+  <p>{{ items.filter(i => !i.done).length }} left</p>
+</div>
+<script src="//unpkg.com/vue@3"><\/script>
+<script>
+  Vue.createApp({
+    data: () => ({ items: [], text: '' })
+  }).mount('#app')
+<\/script>` },
+      react: { name: 'React', build: 'required', runtime: '47kb gzip',
+        code: `
+import { useState } from 'react'
+import { createRoot } from 'react-dom/client'
+
+function Todo() {
+  const [items, setItems] = useState([])
+  const [text, setText] = useState('')
+  return <>
+    <form onSubmit={e => {
+      e.preventDefault()
+      setItems([...items, { text, done: false }])
+      setText('')
+    }}>
+      <input value={text}
+        onChange={e => setText(e.target.value)}
+        placeholder="What needs doing?" />
+    </form>
+    <ul>
+      {items.map((item, i) =>
+        <li key={i}>
+          <input type="checkbox" checked={item.done}
+            onChange={e => setItems(items.map((it, j) =>
+              j == i ? { ...it, done: e.target.checked } : it))} />
+          <span>{item.text}</span>
+          <button onClick={() =>
+            setItems(items.filter((_, j) => j != i))}>×</button>
+        </li>)}
+    </ul>
+    <p>{items.filter(i => !i.done).length} left</p>
+  </>
+}
+createRoot(document.getElementById('app')).render(<Todo />)` },
+      svelte: { name: 'Svelte', build: 'required', runtime: 'app-dependent',
+        code: `
+<script>
+  let items = $state([])
+  let text = $state('')
+  function add(e) {
+    e.preventDefault()
+    items.push({ text, done: false })
+    text = ''
+  }
+<\/script>
+
+<form onsubmit={add}>
+  <input bind:value={text}
+    placeholder="What needs doing?" />
+</form>
+<ul>
+  {#each items as item, i}
+    <li>
+      <input type="checkbox" bind:checked={item.done} />
+      <span>{item.text}</span>
+      <button onclick={() => items.splice(i, 1)}>×</button>
+    </li>
+  {/each}
+</ul>
+<p>{items.filter(i => !i.done).length} left</p>` },
+      vanilla: { name: 'Vanilla', build: 'none', runtime: '0kb',
+        code: `
+<form id="form">
+  <input id="input" placeholder="What needs doing?">
+</form>
+<ul id="list"></ul>
+<p id="count"></p>
+<script>
+  const items = []
+  const render = () => {
+    list.textContent = ''
+    items.forEach((item, i) => {
+      const li = document.createElement('li')
+      const check = document.createElement('input')
+      check.type = 'checkbox'
+      check.checked = item.done
+      check.onchange = () => {
+        item.done = check.checked; render()
+      }
+      const span = document.createElement('span')
+      span.textContent = item.text
+      const del = document.createElement('button')
+      del.textContent = '×'
+      del.onclick = () => {
+        items.splice(i, 1); render()
+      }
+      li.append(check, span, del)
+      list.append(li)
+    })
+    count.textContent =
+      items.filter(i => !i.done).length + ' left'
+  }
+  form.onsubmit = e => {
+    e.preventDefault()
+    if (!input.value) return
+    items.push({ text: input.value, done: false })
+    input.value = ''
+    render()
+  }
+  render()
+<\/script>` }
+    }
+
+    window.referenceExample = (name, source) => {
+      if (name == ':if') return `<div :if="loading">Loading…</div>
+<div :else :if="error" :text="error"></div>
+<div :else>Ready!</div>`
+      const lines = source.trim().split('\n').filter(line => line.trim() && !line.trim().startsWith('<!--'))
+      const first = lines[0] || ''
+      const tag = first.match(/^<([a-z][\w-]*)\b/i)?.[1]
+      if (!tag || first.includes(`</${tag}>`) || /\/>\s*$/.test(first)) return first
+      const result = [first]
+      for (const line of lines.slice(1)) {
+        result.push(line)
+        if (line.includes(`</${tag}>`)) break
+      }
+      return result.join('\n')
+    }
+
+    window.copyRow = (text, btn) => {
+      navigator.clipboard?.writeText(text)
+      btn.dataset.copied = ''
+      setTimeout(() => { delete btn.dataset.copied }, 1600)
+    }
+
+    // The static capability cloud shares one delayed, keyboard-accessible tooltip.
+    const featureCloud = document.querySelector('.feature-cloud')
+    const capTooltip = document.createElement('div')
+    capTooltip.id = 'cap-tooltip'
+    capTooltip.className = 'cap-tooltip'
+    capTooltip.setAttribute('role', 'tooltip')
+    capTooltip.hidden = true
+    document.body.append(capTooltip)
+    let capTarget, capHoverTimer
+    const showCap = target => {
+      clearTimeout(capHoverTimer)
+      capTarget = target
+      capTooltip.textContent = target.dataset.tip
+      capTooltip.hidden = false
+      requestAnimationFrame(() => {
+        if (target != capTarget) return
+        const anchor = target.getBoundingClientRect()
+        const tip = capTooltip.getBoundingClientRect()
+        const gutter = 8
+        const left = Math.max(gutter, Math.min(innerWidth - tip.width - gutter, anchor.left + (anchor.width - tip.width) / 2))
+        let top = anchor.top - tip.height - gutter
+        if (top < gutter) top = anchor.bottom + gutter
+        capTooltip.style.left = left + 'px'
+        capTooltip.style.top = top + 'px'
+      })
+    }
+    const hideCap = () => {
+      clearTimeout(capHoverTimer)
+      capTarget = null
+      capTooltip.hidden = true
+    }
+    featureCloud?.addEventListener('pointerover', event => {
+      const target = event.target.closest?.('.cap-tip')
+      if (!target) return
+      clearTimeout(capHoverTimer)
+      capHoverTimer = setTimeout(() => showCap(target), 850)
+    })
+    featureCloud?.addEventListener('pointerout', event => {
+      const target = event.target.closest?.('.cap-tip')
+      if (target && !target.contains(event.relatedTarget) && document.activeElement != target) hideCap()
+    })
+    featureCloud?.addEventListener('focusin', event => {
+      const target = event.target.closest?.('.cap-tip')
+      if (target) showCap(target)
+    })
+    featureCloud?.addEventListener('focusout', event => {
+      if (event.target.closest?.('.cap-tip')) hideCap()
+    })
+    addEventListener('resize', hideCap)
+    addEventListener('scroll', () => {
+      if (capTarget && document.activeElement == capTarget) showCap(capTarget)
+      else hideCap()
+    }, true)
+
+    // Features overlaps back to the live-demo rule and owns the whole transition ground.
+    const setTransition = () => {
+      const hero = document.querySelector('.hero')
+      const demo = document.querySelector('.plate__demo')
+      const features = document.querySelector('#features')
+      if (!hero || !demo || !features) return
+      const heroRect = hero.getBoundingClientRect()
+      const y = demo.getBoundingClientRect().top - heroRect.top
+      const overlap = Math.max(0, heroRect.height - y)
+      const heroBottom = heroRect.bottom + scrollY
+      const washHeight = Math.ceil(heroBottom + innerHeight * 0.2)
+      hero.style.setProperty('--transition-y', y.toFixed(1) + 'px')
+      document.documentElement.style.setProperty('--feature-overlap', overlap.toFixed(1) + 'px')
+      document.documentElement.style.setProperty('--wash-height', washHeight + 'px')
+    }
+    setTransition()
+    addEventListener('resize', setTransition)
+    document.fonts?.ready.then(setTransition)
+
+    // Compare spray with a grain-rendered Bloom Field; "new" recomposes its four blooms.
+    const gradientFields = [...document.querySelectorAll('.gradient-field')]
+    let activeGradient = 0
+    const randomBetween = (min, max) => (min + Math.random() * (max - min)).toFixed(2)
+    const bloom = (token, x, y, stops) => `radial-gradient(circle at ${x}% ${y}%, var(${token}) 0%, color-mix(in srgb, var(${token}) 84.3%, transparent) ${stops[0]}%, color-mix(in srgb, var(${token}) 50%, transparent) ${stops[1]}%, color-mix(in srgb, var(${token}) 15.7%, transparent) ${stops[2]}%, transparent ${stops[3]}%)`
+    const createGradient = () => {
+      const next = 1 - activeGradient
+      gradientFields[next].style.backgroundImage = [
+        bloom('--gradient-paper', randomBetween(38, 68), randomBetween(20, 50), [19.02, 38.05, 57.07, 76.1]),
+        bloom('--gradient-blue', randomBetween(22, 58), randomBetween(76, 112), [12.9, 25.8, 38.7, 51.6]),
+        bloom('--gradient-blue', randomBetween(8, 42), randomBetween(12, 50), [16.75, 33.5, 50.25, 67]),
+        bloom('--gradient-cyan', randomBetween(88, 116), randomBetween(52, 98), [10.28, 20.55, 30.83, 41.1])
+      ].join(', ')
+      gradientFields[next].classList.add('is-active')
+      gradientFields[activeGradient].classList.remove('is-active')
+      activeGradient = next
+    }
+
+    const washSwitch = document.createElement('div')
+    washSwitch.className = 'wash-switch'
+    washSwitch.setAttribute('role', 'group')
+    washSwitch.setAttribute('aria-label', 'Hero background')
+    const newGradientButton = document.createElement('button')
+    newGradientButton.type = 'button'
+    newGradientButton.textContent = 'new'
+    newGradientButton.title = 'Create another Bloom Field composition'
+    newGradientButton.setAttribute('aria-label', 'Create another gradient composition')
+    newGradientButton.onclick = createGradient
+    const setWash = (view, persist = true) => {
+      document.documentElement.classList.toggle('wash-gradient', view == 'gradient')
+      for (const button of washSwitch.querySelectorAll('[data-view]')) {
+        const on = button.dataset.view == view
+        button.classList.toggle('on', on)
+        button.setAttribute('aria-pressed', on)
+      }
+      newGradientButton.hidden = view != 'gradient'
+      if (persist) localStorage.setItem('sprae-wash-view', view)
+    }
+    for (const view of ['spray', 'gradient']) {
+      const button = document.createElement('button')
+      button.type = 'button'
+      button.dataset.view = view
+      button.textContent = view
+      button.onclick = () => setWash(view)
+      washSwitch.append(button)
+    }
+    washSwitch.append(newGradientButton)
+    document.body.append(washSwitch)
+    setWash(localStorage.getItem('sprae-wash-view') == 'gradient' ? 'gradient' : 'spray', false)
+
+    // Persisted construction overlay stays fixed over the full document.
+    let guidesOn = localStorage.getItem('sprae-guides') === '1'
+    const guideButton = document.createElement('button')
+    guideButton.type = 'button'
+    guideButton.className = 'grid-toggle'
+    guideButton.textContent = 'grid'
+    guideButton.title = 'column guides'
+    guideButton.setAttribute('aria-label', 'Toggle column guides')
+    const setGuides = (on, persist = true) => {
+      guidesOn = on
+      document.documentElement.classList.toggle('show-guides', on)
+      guideButton.classList.toggle('on', on)
+      guideButton.setAttribute('aria-pressed', on)
+      if (persist) localStorage.setItem('sprae-guides', on ? '1' : '0')
+    }
+    guideButton.onclick = () => setGuides(!guidesOn)
+    document.body.append(guideButton)
+    setGuides(guidesOn, false)
+
+  </script>
+</body>
+
+</html>

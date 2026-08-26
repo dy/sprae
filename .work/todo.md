@@ -360,3 +360,58 @@ Adjacent (money factored out) — collection direction:
 * [ ] every collected effect gets a control panel (params = state = sprae; settings-panel is prior art) — collections you play, not watch
 * [ ] audio/media UI drops: waveforms, knobs, envelopes, sequencers — unfair authority (wavearea, web-audio-api), zero competition
 * [ ] same corpus feeds three readers: self (reference), humans (gallery), agents (llms.txt)
+
+
+## [ ] Indirect proposition / SEO articles (marketing pass 2026-08-21)
+
+Filter: starving crowd — actively searching NOW with inadequate options, relief on finding; not "devs would find this neat".
+Ranked: drops-URLs > CSP article > htmx companion > SSG tutorials > petite-vue intercept > effects→drops > agent-native; JSX killed.
+
+Propositions:
+* [ ] drops per-URL = the whole SEO strategy in one move: real queries are task-level ("sortable table vanilla js",
+      "tabs no framework", "html only accordion", "show hide element javascript") — competition is 2014 jQuery SO answers
+      + W3Schools; the drop page IS the answer (ideal ad = no ad), sprae rides along as the 11.6kb implementation detail;
+      proven play — Pines UI / Alpine Components drive real Alpine adoption; post-drops star-velocity fall is not a verdict:
+      the experiment never ran without URLs. Everything below is secondary to shipping this.
+* [ ] htmx companion (new, rank high): htmx docs/community openly hand-wave the client-side-sprinkles gap at alpine/hyperscript;
+      crowd is large, growing, pre-aligned (no build step, HTML-first, anti-React) and congregated — Dream-100 audience
+      someone else already built; Datastar's rise proves signals+hypermedia demand; sprae composes with htmx, doesn't replace it
+* [ ] SSG sprinkles (new): "add search to hugo site", "jekyll interactive component", "eleventy javascript without build step" —
+      persona-perfect (their whole aesthetic = no js toolchain); one tutorial per SSG, one concrete task each
+      (client-side search filter, dark-mode toggle, tabbed code blocks), each ends in a drop
+* [ ] petite-vue intercept: dormant repo outselling 1.7x = standing traffic with maintenance-anxiety objection already attached;
+      respectful + factual: migration table, what sprae does differently (signals, CSP, :each semantics), what petite-vue
+      still does fine — two-sided messaging is the best-evidenced credibility tactic for skeptical devs
+* [ ] effects: NO standalone collection — CSS owns motion now (view transitions, scroll-driven animations), GSAP entrenched,
+      scope creep risk; fold into ~3 drops: enter/leave transitions on :if/:each (targets "x-transition",
+      "animate element on remove javascript"), view-transitions with sprae
+* [ ] JSX: killed as wedge — "JSX without build step" searchers want to WRITE jsx; sprae is the inverse paradigm, wrong persona,
+      they bounce; real story is one docs paragraph: "render JSX server-side, hydrate with sprae, ship zero React"
+* [ ] agent-native as social currency (distribution, not SEO): "framework small enough an LLM never hallucinates its API" —
+      provable demo (AI confidently emits alpine's nested-push bug vs correct sprae); HN/Reddit act; compounds as AI answers
+      become their own discovery channel
+
+Article set (in order):
+* [ ] per-drop pages, each drop = one page — long-tail volume, the compounding asset
+* [ ] "Reactive UI in a Manifest V3 extension — no eval, no build" — q: "manifest v3 unsafe-eval", "alpine js csp",
+      "framework for chrome extension"; flagship for the #1 wedge (big fish small pond: in "reactive HTML under strict CSP"
+      sprae is the category leader, not an alternative)
+* [ ] "Client-side sprinkles for HTMX" — q: "htmx alpine", "htmx client side interactivity"
+* [ ] "Sprae vs Alpine.js, measured" — q: "alpine js alternative", "alpine vs"; measured sizes + krausest bench = proof
+      alpine content lacks; MUST include where alpine wins (ecosystem, plugins, docs breadth) — the disqualifier is what
+      makes the rest believable
+* [ ] "petite-vue alternatives, 2026" — q: "petite-vue maintained", "petite-vue alternative"
+* [ ] "Add interactivity to Hugo/Jekyll/Eleventy without a build step" — per-SSG queries, feeds drops
+
+Caveats (honest):
+* domain authority: sprae.js.org is young/low-authority; head terms ("alpine alternatives") vs LibHunt/dev.to listicles =
+  6-12mo if at all; drops long-tail winnable much sooner (specific queries, decade-stale competition); for the first months
+  an article's real distribution is SEEDING standing SO/Reddit/HN threads, not ranking — an article nobody seeds
+  is artifact polish (kill-list)
+* pain-first or don't write: product-first posts ("why sprae's reactivity is elegant") answer no standing query;
+  every article opens on the searcher's task, solves it completely, mentions sprae the way a recipe mentions the pan;
+  harvest actual thread language ("alpine csp" reddit, htmx discussions) before writing headlines
+* comparison pages = challenger tactic: boosts recall of the named incumbent (leaders avoid it, challengers exploit it);
+  only works with substantiated claims — sprae uniquely has them (versioned measured sizes, bench, csp table)
+* sequencing: drops URLs first (substrate every article links into), CSP article second,
+  then one article per release as the "one distribution act"
