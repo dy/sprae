@@ -22,6 +22,9 @@
     <link rel="preload" href="./assets/geist-latin-wght-normal.woff2" as="font" type="font/woff2" crossorigin>
     <link rel="preload" href="./assets/Monaspace Neon Var.woff2" as="font" type="font/woff2" crossorigin>
     <script>
+      // The hero settles in once: held back until the first frame has painted, then released. Without JS it simply shows.
+      document.documentElement.classList.add('pre')
+      addEventListener('DOMContentLoaded', () => requestAnimationFrame(() => requestAnimationFrame(() => document.documentElement.classList.remove('pre'))))
       // Escape first; tokenize once so highlighted markup is never parsed again.
       window.hl = s => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
         .replace(/(&lt;!--[^]*?--&gt;)|(\/\/[^\n]*|\/\*[^]*?\*\/)|(&lt;\/?[\w-]+)|(\/?&gt;)|(^|\s)(:(?:[\w.:-]+|(?==))|(?:x-|data-(?!prefix\b|start\b))[\w.-]+)(?:=("(?:\\.|[^"\\])*"|'(?:\\.|[^'\\])*'))?(?=\s|=|\/?&gt;)|("(?:\\.|[^"\\])*"|'(?:\\.|[^'\\])*'|`(?:\\.|[^`\\])*`)|\b(import|from|export|default|const|let|var|return|await|new|function|async|if|else|throw|try|catch|of|for|while|class|extends|this|true|false|null|undefined)\b|\b(0[xX][\da-fA-F]+|\d+(?:\.\d+)?)\b|(\.?[a-zA-Z_$][\w$]*)(?=\s*\()|(\.[a-zA-Z_$][\w$]*|\b[a-zA-Z_$][\w$]*(?=\s*:(?!:)))|\b([a-z]+(?:-[a-z]+)+)(?=\s|=|\/?&gt;)|([{}()[\],;=+*?!|%~-]|&amp;|&lt;)/g, (m, htmlComment, comment, tag, bracket, gap, directive, expr, value, keyword, number, call, prop, attr, op) =>
@@ -747,6 +750,29 @@
         width: 100%;
       }
 
+      /* the first second: the three texts settle in from a soft blur, top to bottom, once; the plate is simply there */
+      .hero__word,
+      .hero__stmt,
+      .hero__sub {
+        transition: opacity 1s var(--ease-out), translate 1s var(--ease-out), filter 1s var(--ease-out)
+      }
+
+      .hero__stmt {
+        transition-delay: 150ms
+      }
+
+      .hero__sub {
+        transition-delay: 300ms
+      }
+
+      html.pre .hero__word,
+      html.pre .hero__stmt,
+      html.pre .hero__sub {
+        opacity: 0;
+        translate: 0 8px;
+        filter: blur(6px)
+      }
+
       .hero__word {
         width: var(--axis);
         margin: 0;
@@ -1056,6 +1082,32 @@
       }
 
       /* cells are three grid columns wide with half-column gutters, so they start on 0, 3.5 and 7 at every width */
+      /* revealed when the grid enters the viewport; the hidden state applies only after hydration (sprae strips the :class attribute), so without the script everything shows */
+      .feature-grid:not([\:class]):not(.on) > .feature-cell {
+        opacity: 0;
+        translate: 0 6px
+      }
+
+      .feature-grid.on > .feature-cell {
+        transition: opacity var(--dur-preview) var(--ease-out), translate var(--dur-preview) var(--ease-out)
+      }
+
+      .feature-grid.on > .feature-cell:nth-child(2) {
+        transition-delay: 60ms
+      }
+
+      .feature-grid.on > .feature-cell:nth-child(3) {
+        transition-delay: 120ms
+      }
+
+      .spec-strip:not([\:class]):not(.on) {
+        opacity: 0
+      }
+
+      .spec-strip.on {
+        transition: opacity var(--dur-preview) var(--ease-out) 200ms
+      }
+
       .feature-grid {
         width: var(--shell);
         margin-inline: auto;
@@ -2354,6 +2406,28 @@
           transform: scaleX(1)
         }
 
+        .hero__word,
+        .hero__stmt,
+        .hero__sub,
+        .feature-grid > .feature-cell,
+        .spec-strip {
+          transition-duration: .3s;
+          transition-delay: 0s;
+          translate: none;
+          filter: none
+        }
+
+        html.pre .hero__word,
+        html.pre .hero__stmt,
+        html.pre .hero__sub {
+          translate: none;
+          filter: none
+        }
+
+        .feature-grid:not([\:class]):not(.on) > .feature-cell {
+          translate: none
+        }
+
         .gradient-field {
           animation: none
         }
@@ -2520,10 +2594,10 @@
         <p class="edge hero__edge"><span><b>NOT</b>&nbsp;A&nbsp;FRAMEWORK</span></p>
       </section>
 
-      <section class="feature-stage" id="features" aria-labelledby="features-title">
+      <section class="feature-stage" id="features" aria-labelledby="features-title" :scope="{ on: false }">
         <h2 class="sr-only" id="features-title">Features</h2>
 
-        <div class="feature-grid">
+        <div class="feature-grid" :intersect.once="on = true" :class="{ on }">
           <article class="feature-cell">
             <div class="feature-fig" aria-hidden="true">
               <svg viewBox="0 0 72 64" width="72" height="64">
@@ -2571,7 +2645,7 @@
           </article>
         </div>
 
-        <dl class="spec-strip" aria-label="Sprae specification">
+        <dl class="spec-strip" aria-label="Sprae specification" :class="{ on }">
           <div>
             <dt class="sr-only">size</dt>
             <dd><strong class="spec-value">11.6</strong><span class="spec-unit">KiB<br>gzip</span></dd>
