@@ -666,6 +666,8 @@
         justify-content: flex-end;
         min-height: calc(100svh - var(--topbar));
         padding-block-start: clamp(var(--sp-4), 4svh, var(--sp-16));
+        /* content sits at the bottom of the first screen, lifted so the plate is not on the fold */
+        padding-block-end: clamp(var(--sp-6), 5svh, var(--sp-12));
       }
 
       .hero>.shell {
@@ -1046,7 +1048,8 @@
         position: relative;
         z-index: 0;
         margin-block-start: calc(0px - var(--feature-overlap, 0px));
-        padding-block-start: calc(var(--feature-overlap, 0px) + clamp(var(--sp-8), 5vh, var(--sp-12)));
+        /* the icons start just under the fold: the gap to the plate is the hero's lift, nothing more */
+        padding-block-start: calc(var(--feature-overlap, 0px) + var(--sp-3));
         padding-block-end: var(--sp-8);
         background-image:
           linear-gradient(to right, var(--paper) 0, var(--paper-clear) 9%, var(--paper-clear) 91%, var(--paper) 100%),
@@ -1996,7 +1999,11 @@
       }
 
       .spec-unit {
-        font: var(--caption-font)
+        margin-inline-start: 2px;
+        font: var(--caption-font);
+        line-height: 1.3em;
+        bottom: -2px;
+        position: relative;
       }
 
       /* a one-line unit sits on the numeral's baseline; a two-line unit centres on it */
