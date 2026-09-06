@@ -2940,8 +2940,8 @@ layout: default
 
       window.ref = {
         intro: {
-          dir: 'An element can have multiple directives, initialized in order – <code>:if :each</code> is not the same as <code>:each :if</code>. Combined <code>:id:name="field"</code> sets both from one expression.',
-          mod: 'Directives can have modifiers applied left to right – <code>:onkeydown.ctrl-s.prevent</code> key-gates then prevents the default then runs expression.'
+          dir: 'An element can have multiple directives, initialized in order (<code>:if :each</code> is not <code>:each :if</code>). Combined <code>:id:name="field"</code> uses one expression for both.',
+          mod: 'Modifiers applied left to right, eg. <code>:onkeydown.ctrl-s.prevent</code> key-gates first, then prevents the default, then runs expression.'
         },
         dir: [
           {
