@@ -1220,11 +1220,6 @@
         margin-block-start: var(--sp-4)
       }
 
-      .feature-links a {
-        font-size: var(--fs-sm);
-        font-weight: 500
-      }
-
       /* Feature explanations share one native, viewport-wide scroll row. */
       /* aspects: a quiet strip of small notes beneath the three proofs; items fade out past the shell edges */
       .aspects {
@@ -2171,6 +2166,15 @@
       /* ── responsive specimens + small screens ─────────── */
 
       @media (max-width: 64rem) {
+        /* the hero line reaches the left edge here, so the label stands at the right one, its rule still on the inner side */
+        .hero__edge {
+          inset-inline: auto calc((100vw - var(--shell)) / 2 - var(--sp-2))
+        }
+
+        .edge span::after {
+          inset-block: -1.15em auto
+        }
+
         .urow__line {
           grid-template-columns: minmax(0, 1fr);
           padding-inline: var(--sp-5)
@@ -2253,9 +2257,7 @@
           font-size: var(--fs-2)
         }
 
-        /* the line stops short of the edge label's column */
         .hero__sub {
-          max-width: calc(100% - var(--sp-10));
           margin-inline: 0;
           text-align: left;
           font-size: var(--fs-0)
@@ -2296,10 +2298,24 @@
           background: var(--plate-bg)
         }
 
-        /* the label stands at the right shell edge beside the left-aligned hero text, its foot just above the plate, its rule on the inner side */
+        /* the texts in one column, the label in a narrow second one, its foot level with the line; the plate spans both */
+        .hero > .shell {
+          display: grid;
+          grid-template-columns: minmax(0, 1fr) auto;
+          column-gap: var(--sp-6);
+        }
+
+        .hero__word,
+        .hero__stmt,
+        .hero__sub {
+          grid-column: 1
+        }
+
         .hero__edge {
-          inset-inline: auto calc((100vw - var(--shell)) / 2);
-          bottom: calc(100% - var(--plate-y, 50%) + var(--sp-10));
+          position: static;
+          grid-column: 2;
+          grid-row: 1 / 4;
+          align-self: end;
           font-size: var(--fs-xs);
         }
 
@@ -2307,15 +2323,19 @@
           display: none
         }
 
+        .plate {
+          grid-column: 1 / -1
+        }
+
         /* one column, each proof reading as a row: figure beside its copy */
         .feature-grid {
           grid-template-columns: minmax(0, 1fr)
         }
 
-        /* the figure owns the first grid column; copy starts on column line 1 */
+        /* the figure owns a column and a half; copy starts on column line 1.5 */
         .feature-cell {
           display: grid;
-          grid-template-columns: calc(var(--shell) / 10) minmax(0, 1fr);
+          grid-template-columns: calc(1.5 * var(--shell) / 10) minmax(0, 1fr);
           align-items: flex-start;
           padding: var(--sp-3) 0;
         }
@@ -2349,11 +2369,8 @@
           margin-block-start: var(--sp-2)
         }
 
-        /* four stats in one row, the age stat left out; numerals at --fs-2, units stacked at --fs-xs */
+        /* four stats on the same two-column cells, the age stat left out; units stacked at --fs-xs, one line each */
         .spec-strip {
-          display: flex;
-          justify-content: space-between;
-          gap: var(--sp-3);
           margin-block-start: var(--sp-8);
           padding-block-start: var(--sp-6);
         }
@@ -2368,9 +2385,9 @@
         }
 
         .spec-unit {
-          margin-inline-start: 0;
           font-size: var(--fs-xs);
-          line-height: 1.2
+          line-height: 1.2;
+          white-space: nowrap
         }
 
         .usage-panel {
@@ -2499,6 +2516,14 @@
 
         .footer__license {
           grid-column: 2
+        }
+      }
+
+      /* phones: a stat is wider than two columns here, so two per row, on column lines 0 and 5 */
+      @media (max-width: 27rem) {
+        .spec-strip {
+          grid-template-columns: repeat(2, calc(5 * var(--shell) / 10));
+          row-gap: var(--sp-4)
         }
       }
 
@@ -2700,9 +2725,9 @@
               <iframe class="plate__out" title="Live result" :ref="frame" :onload="done = evaporated(this)" :srcdoc="'<style>' + demoCss() + '</style>' + src + '<scr' + 'ipt src=https://unpkg.com/sprae@13.9.1/dist/sprae.umd.js data-start></scr' + 'ipt>'"></iframe>
             </div>
           </div>
+          <p class="edge hero__edge"><span><b>NOT</b>&nbsp;A&nbsp;FRAMEWORK</span></p>
         </div>
         <hr class="hero__transition" aria-hidden="true">
-        <p class="edge hero__edge"><span><b>NOT</b>&nbsp;A&nbsp;FRAMEWORK</span></p>
       </section>
 
       <section class="feature-stage" id="features" aria-labelledby="features-title" :scope="{ on: false }">
@@ -2895,19 +2920,19 @@
           <div class="faq__list">
             <div class="qa">
               <h3 class="qa__q">Why a library, when AI writes the code?</h3>
-              <p class="qa__a">AI made code cheap to write and expensive to read. Sprae keeps the program in the markup: what you read is what runs.</p>
+              <p class="qa__a">Agents can write sprae code easily. Sprae removes frontend build step from your pipeline – perfect fit for static sites.</p>
             </div>
             <div class="qa">
               <h3 class="qa__q">Is evaluating attributes safe?</h3>
-              <p class="qa__a">Expressions compile with <code>new Function</code>: trust your markup, as with any inline script. The <a href="./csp">CSP build</a> interprets them without <code>eval</code>.</p>
+              <p class="qa__a">Expressions compile with <code>new Function</code>, same as any inline script. The <a href="./csp">CSP build</a> provides safe execution without <code>eval</code>.</p>
             </div>
             <div class="qa">
               <h3 class="qa__q">What if the script fails to load?</h3>
-              <p class="qa__a">The page still works: it is your HTML. Behavior comes with the script; until then <code>[\:if],[\:each]{visibility:hidden}</code> hides what is unhydrated.</p>
+              <p class="qa__a">Sprae provides progressive enhancement, so the page falls back to your HTML. To hide FOUC, use <code>[\:if],[\:each]{visibility:hidden}</code>.</p>
             </div>
             <div class="qa">
               <h3 class="qa__q">Does it have components?</h3>
-              <p class="qa__a">Custom elements, via <a href="https://github.com/dy/define-element">define-element</a> or any CE library: Sprae sets their props and stops at their boundary. For simpler cases, <a href="https://tailwindcss.com/docs/styling-with-utility-classes#managing-duplication">manage duplication</a> with templates or includes.</p>
+              <p class="qa__a">For simpler cases, <a href="https://tailwindcss.com/docs/styling-with-utility-classes#managing-duplication">manage duplication</a> with templates or includes. Otherwise use custom elements, via <a href="https://github.com/dy/define-element">define-element</a> or any CE library: sprae sets their props and stops at their boundary.</p>
             </div>
             <div class="qa">
               <h3 class="qa__q">Who is it not for?</h3>
@@ -2915,11 +2940,11 @@
             </div>
             <div class="qa">
               <h3 class="qa__q">How do I debug an expression?</h3>
-              <p class="qa__a">It is plain JS. An error names the element and the expression in the console. State is a plain object: <code>sprae(el)</code> returns it.</p>
+              <p class="qa__a">Expressions is plain JS, state is plain object. An error names the element and the expression in the console.</p>
             </div>
             <div class="qa">
               <h3 class="qa__q">Is it production-ready?</h3>
-              <p class="qa__a">3+ years of releases across ~200 <a href="https://www.npmjs.com/package/sprae?activeTab=versions">npm versions</a>, no dependencies, tests across both compilers and alternative signals, any browser with <code>Proxy</code>.</p>
+              <p class="qa__a">3+ years of releases, no dependencies, tests across both compilers and alternative signals, any browser with <code>Proxy</code>.</p>
             </div>
             <div class="qa">
               <h3 class="qa__q">Who maintains it?</h3>
@@ -3644,8 +3669,6 @@ createRoot(document.getElementById('app')).render(<Filter />)` },
         const overlap = Math.max(0, heroRect.height - y)
         const heroTop = heroRect.top + scrollY, heroBottom = heroRect.bottom + scrollY
         hero.style.setProperty('--transition-y', y.toFixed(1) + 'px')
-        // where the plate starts: on phones the edge label's foot rests just above it
-        hero.style.setProperty('--plate-y', (document.querySelector('.plate').getBoundingClientRect().top - heroRect.top).toFixed(1) + 'px')
         document.documentElement.style.setProperty('--feature-overlap', overlap.toFixed(1) + 'px')
         // the wash is solid to the divider and gone by the hero's bottom edge
         document.documentElement.style.setProperty('--wash-fade', (heroTop + y).toFixed(1) + 'px')

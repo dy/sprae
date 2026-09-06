@@ -34,7 +34,7 @@ has no heading or outbound link.
 - The source editor wraps on small screens. Highlighted code and the textarea must share
   the exact font, padding, and line height so the caret tracks the displayed text.
 - Mobile recomposes naturally rather than forcing a viewport-height opening.
-- Retain the left-edge “NOT A FRAMEWORK” annotation and existing hero transition. On phones the hero is left-aligned and smaller, and the annotation stands vertical and small at the right shell edge beside it, without its rule, its foot just above the plate (`--plate-y`, measured with the transition).
+- Retain the left-edge “NOT A FRAMEWORK” annotation and existing hero transition. Below 64rem the hero line reaches the left edge, so the annotation stands at the right shell edge instead, its rule on the inner side. On phones the hero is left-aligned and smaller, and the shell is a two-column grid: the texts in the first column, the annotation vertical, small and without its rule in a narrow second one, foot level with the hero line; the plate spans both. Nothing is measured for it.
 
 ### Atmosphere
 
@@ -82,7 +82,7 @@ Use five facts: package size, dependencies, runtime memory, speed, and project a
 Use the shared display scale capped at `--fs-5` (48.832px), reduced from the earlier oversized figures: 11.6 with KiB/gzip, 0 with deps, 2 with × Alpine/speed,
 +2 with ms first paint/vs vanilla, and 3 with +/years. There are no visible labels: the unit phrase
 beside each figure carries the meaning, and the `dt` labels serve assistive technology only. A single-line unit (deps) sits on the numeral's baseline; two-line units centre on it. Every value is a number in the same type role. No inter-stat rules.
-Phones keep four in one row, the age stat hidden, numerals at `--fs-2` with the units stacked at `--fs-xs`, spread across the shell. A 1px divider above the stats reuses the shared extended
+Below 48rem four remain, the age stat hidden, on the same two-column cells (the last two columns stay empty), numerals at their desktop size with the units stacked at `--fs-xs`, one line each. A stat is about 78px wide, so below 27rem, where two columns are narrower than that, the four sit two per row on column lines 0 and 5. A 1px divider above the stats reuses the shared extended
 `--rule-width`, `--rule-size`, and `--rule` tokens. Do not repeat build steps from the feature description.
 
 - First paint: **+2 ms vs vanilla**, 82.7ms against 81.1ms with 1,000 rows, from the local js-framework-benchmark
@@ -449,7 +449,7 @@ A short thick rule (≈2–4px × 1.5–3em, square ends, ink color) used as pun
 
 ### Metric anatomy
 
-Oversized numeral → rule beneath → small light multi-line caption below the rule (`~11kb` / rule / “Gzipped. Works with any backend or template.”). Stats sit side by side, top-aligned, on one row through tablets; below `48rem` four remain in one row, smaller, the age stat hidden. On the grid the strip is five cells of two columns each, so every stat starts on a column line. No visible labels.
+Oversized numeral → rule beneath → small light multi-line caption below the rule (`~11kb` / rule / “Gzipped. Works with any backend or template.”). Stats sit side by side, top-aligned, on one row through tablets; below `48rem` four remain, the age stat hidden, each still two columns wide; below `27rem` two per row on lines 0 and 5. On the grid the strip is five cells of two columns each, so every stat starts on a column line. No visible labels.
 
 ### Floating metadata stack
 
