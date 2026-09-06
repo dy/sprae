@@ -157,7 +157,7 @@
   <p :text="text.length + ' characters'"></p>
 </div>`
     </script>
-    <script src="./dist/sprae.umd.js" data-start defer></script>
+    <script src="https://unpkg.com/sprae@13.9.1/dist/sprae.umd.js" data-start defer></script>
     <style>
       /* Hallmark · macrostructure: Poster Archive (DESIGN.md) · genre: editorial · tone: technical-archival
      * theme: Blue Mist Archive · anchor: ink-blue · studied: user screenshots · Bloom Field + individual feature scroller + cursor-following reference
@@ -2691,7 +2691,7 @@
             </div>
             <div class="qa">
               <h3 class="qa__q">What if the script fails to load?</h3>
-              <p class="qa__a">Progressive enhancement: the page is your HTML, behavior comes with the script. Until then, <code>[\:if],[\:each]{visibility:hidden}</code> avoids a flash.</p>
+              <p class="qa__a">The page still works: it is your HTML. Behavior comes with the script; until then <code>[\:if],[\:each]{visibility:hidden}</code> hides what is unhydrated.</p>
             </div>
             <div class="qa">
               <h3 class="qa__q">Does it have components?</h3>
