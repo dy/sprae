@@ -1,5 +1,20 @@
+url: https://sprae.js.org
+
+exclude:
+  - AGENTS.md
+  - DESIGN.md
+  - design-variants
+  - test
+  - node_modules
+  - Gemfile
+  - Gemfile.lock
+  - package.json
+  - package-lock.json
+  - tea.yaml
+
 plugins:
   - jekyll-optional-front-matter
+  - jekyll-sitemap
 
 collections:
   examples:

@@ -8,3 +8,4 @@ Gemfile.lock
 /_site
 /.claude
 /test-results
+.playwright-mcp/

@@ -5,8 +5,8 @@
   --accent-c: 0.2;
 
   /* Colors — just ink, bg, and their variants */
-  --color-ink:      light-dark(oklch(0.40 var(--accent-c) var(--accent-h)), oklch(0.90 0.03 var(--accent-h)));
-  --color-bg:       light-dark(oklch(0.96 0.005 85), oklch(0.40 var(--accent-c) var(--accent-h)));
+  --color-ink:      light-dark(#233a7e, oklch(0.90 0.03 var(--accent-h)));
+  --color-bg:       light-dark(#f8f8f6, oklch(0.40 var(--accent-c) var(--accent-h)));
   --color-bg-alt:   light-dark(oklch(1.00 0 0), oklch(0.45 0.15 var(--accent-h)));
   --color-code-bg:  oklch(0.40 var(--accent-c) var(--accent-h));
   --color-code-fg:  light-dark(oklch(0.82 0.06 var(--accent-h)), oklch(0.85 0.04 var(--accent-h)));
@@ -20,8 +20,9 @@
   accent-color: var(--color-ink);
 
   /* Typography */
-  --font-sans: "Atkinson Hyperlegible", sans-serif;
-  --font-mono: ui-monospace, 'SF Mono', Monaco, 'Cascadia Code', 'Roboto Mono', Menlo, Consolas, monospace;
+  --font-sans: 'IBM Plex Sans', ui-sans-serif, system-ui, sans-serif;
+  --font-display: Geist, ui-sans-serif, system-ui, sans-serif;
+  --font-mono: 'Monaspace Neon', ui-monospace, monospace;
   --font-base: clamp(16px, calc(15px + 0.2vw), 18px);
 
   /* Type scale */
