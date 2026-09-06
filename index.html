@@ -124,10 +124,13 @@
         const doc = frame?.contentDocument, ta = doc?.querySelector('textarea')
         if (!ta) return
         const fire = () => ['input', 'change'].forEach(t => ta.dispatchEvent(new doc.defaultView.Event(t, { bubbles: true })))
-        let i = 0
-        ta.value = ''; fire()
-        const id = setInterval(() => { i < text.length ? (ta.value += text[i++], fire()) : clearInterval(id) }, 70)
-        return () => clearInterval(id)
+        let i = 0, id
+        // the hydrated value stays readable for a moment, then someone starts typing
+        const wait = setTimeout(() => {
+          ta.value = ''; fire()
+          id = setInterval(() => { i < text.length ? (ta.value += text[i++], fire()) : clearInterval(id) }, 70)
+        }, 2000)
+        return () => (clearTimeout(wait), clearInterval(id))
       }
       // Where the tab strip's ink sits: under the selected tab, found by id from state so it never reads a stale attribute. The last argument only re-runs it on resize and font load.
       window.ink = (tabs, id) => {
@@ -173,6 +176,8 @@
         'A mature oak lifts some 400 litres of water a day.',
         'Tree rings keep the weather of every year the tree lived.'
       ]
+      // A fresh saying each time, never the one just shown.
+      window.pick = (last => () => { let s; do s = window.sayings[Math.random() * window.sayings.length | 0]; while (s == last); return last = s })()
       window.demo = `<div :scope="{ text: 'Hello.' }">
   <textarea :value="text" :change="v => text = v"></textarea>
   <p :text="text.length + ' characters'"></p>
@@ -2486,12 +2491,12 @@
 
     <main id="main">
       <section class="hero" aria-labelledby="hero-title">
-        <div class="shell" :scope="{ src: window.demo, saying: window.sayings[Math.random() * window.sayings.length | 0], mode: '', done: '', play: '', view: 'src', phase: '' }">
+        <div class="shell" :scope="{ src: window.demo, saying: window.pick(), mode: '', done: '', play: '', view: 'src', phase: '' }">
           <p class="hero__word" aria-hidden="true">spræ</p>
           <h1 class="hero__stmt" id="hero-title">Minimal reactivity<br>for HTML/JSX</h1>
-          <p class="hero__sub" :onpointerenter="play = 'cycle'" :onpointerleave="(play = '', condense(m => mode = m, v => view = v, f => phase = f))" :fx="play && director(play, m => mode = m, v => view = v, f => phase = f)"><span>Sprinkle <b class="hot"
+          <p class="hero__sub" :onpointerenter="(saying = pick(), play = 'cycle')" :onpointerleave="(play = '', condense(m => mode = m, v => view = v, f => phase = f))" :fx="play && director(play, m => mode = m, v => view = v, f => phase = f)"><span>Sprinkle <b class="hot"
                 style="--sync: var(--dur-preview); --step: 1.4s" :class="{ on: mode == 'attrs' }" :onpointerenter="play = 'attrs'" :onpointerleave="play = 'cycle'">:attributes</b> on your HTML tree –</span><span>sprae <b class="hot" style="--sync: .8s; --step: 1.8s" :class="{ on: mode == 'evaporate' }"
-                :onpointerenter="play = 'evaporate'" :onpointerleave="play = 'cycle'">evaporates</b> them, <b class="hot" style="--sync: .8s" :style="{ '--step': (0.9 + saying.length * 0.07).toFixed(2) + 's' }" :class="{ on: mode == 'type' }" :onpointerenter="play = 'type'" :onpointerleave="play = 'cycle'">hydrating</b> the DOM</span></p>
+                :onpointerenter="play = 'evaporate'" :onpointerleave="play = 'cycle'">evaporates</b> them, <b class="hot" style="--sync: .8s; --step: .9s" :class="{ on: mode == 'type' }" :onpointerenter="(saying = pick(), play = 'type')" :onpointerleave="play = 'cycle'">hydrating</b> the DOM</span></p>
 
           <div class="plate" :fx="mode == 'type' && typewrite(frame, saying)">
             <div class="plate__editor">
