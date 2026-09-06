@@ -10,3 +10,4 @@ Gemfile.lock
 /test-results
 .playwright-mcp/
 design-variants/
+/.hallmark

@@ -749,6 +749,7 @@
 
       /* sub right-aligns to the axis, under the wordmark */
       .hero__sub {
+        cursor: pointer;
         width: fit-content;
         margin: clamp(var(--sp-2), 2svh, var(--sp-8)) calc(100% - var(--axis)) 0 auto;
         text-align: right;
@@ -849,32 +850,40 @@
         white-space: nowrap
       }
 
-      /* hook words in the hero line: dotted at rest, solid while the plate answers them */
+      /* hook words in the hero line: two underlines. The faint one fills at the plate's own transition speed (--sync), the solid one over the whole step (--step), a progress bar for what the plate is doing */
       .hero__sub .hot {
         position: relative;
-        font-weight: 600;
-        cursor: default
+        font-weight: 600
       }
 
+      .hero__sub .hot::before,
       .hero__sub .hot::after {
         content: '';
         position: absolute;
         inset-inline: 0;
-        inset-block-end: 0;
+        inset-block-end: -0.1em;
         height: var(--selection-rule);
         background: currentColor;
         transform: scaleX(0);
-        transform-origin: left;
-        transition: transform var(--dur-preview) var(--ease-preview);
+        transform-origin: left
       }
 
-      .hero__sub .hot::after {
-        inset-block-end: -0.1em
+      .hero__sub .hot::before {
+        opacity: .28
       }
 
-      .hero__sub .hot:hover::after,
+      .hero__sub .hot.on::before {
+        animation: fill var(--sync) var(--ease-preview) forwards
+      }
+
       .hero__sub .hot.on::after {
-        transform: scaleX(1)
+        animation: fill var(--step) linear forwards
+      }
+
+      @keyframes fill {
+        to {
+          transform: scaleX(1)
+        }
       }
 
       .plate code i {
@@ -2307,6 +2316,12 @@
       }
 
       @media (prefers-reduced-motion: reduce) {
+        .hero__sub .hot.on::before,
+        .hero__sub .hot.on::after {
+          animation: none;
+          transform: scaleX(1)
+        }
+
         .gradient-field {
           animation: none
         }
@@ -2454,8 +2469,8 @@
           <p class="hero__word" aria-hidden="true">spræ</p>
           <h1 class="hero__stmt" id="hero-title">Minimal reactivity<br>for HTML/JSX</h1>
           <p class="hero__sub" :onpointerenter="play = 'cycle'" :onpointerleave="(play = '', condense(m => mode = m, v => view = v, f => phase = f))" :fx="play && director(play, m => mode = m, v => view = v, f => phase = f)"><span>Sprinkle <b class="hot"
-                :class="{ on: mode == 'attrs' }" :onpointerenter="play = 'attrs'" :onpointerleave="play = 'cycle'">:attributes</b> on your HTML tree –</span><span>sprae <b class="hot" :class="{ on: mode == 'evaporate' }"
-                :onpointerenter="play = 'evaporate'" :onpointerleave="play = 'cycle'">evaporates</b> them, <b class="hot" :class="{ on: mode == 'type' }" :onpointerenter="play = 'type'" :onpointerleave="play = 'cycle'">hydrating</b> the DOM</span></p>
+                style="--sync: var(--dur-preview); --step: 1.4s" :class="{ on: mode == 'attrs' }" :onpointerenter="play = 'attrs'" :onpointerleave="play = 'cycle'">:attributes</b> on your HTML tree –</span><span>sprae <b class="hot" style="--sync: .8s; --step: 1.8s" :class="{ on: mode == 'evaporate' }"
+                :onpointerenter="play = 'evaporate'" :onpointerleave="play = 'cycle'">evaporates</b> them, <b class="hot" style="--sync: .8s; --step: 3s" :class="{ on: mode == 'type' }" :onpointerenter="play = 'type'" :onpointerleave="play = 'cycle'">hydrating</b> the DOM</span></p>
 
           <div class="plate" :fx="mode == 'type' && typewrite(frame)">
             <div class="plate__editor">
@@ -2676,15 +2691,15 @@
             </div>
             <div class="qa">
               <h3 class="qa__q">What if the script fails to load?</h3>
-              <p class="qa__a">Progressive enhancement: the HTML renders as written, defaults included, and behavior arrives with the script. <code>hidden</code> is the fallback for what must not flash; <code>:hidden</code> takes over.</p>
+              <p class="qa__a">Progressive enhancement: the page is your HTML, behavior comes with the script. Until then, <code>[\:if],[\:each]{visibility:hidden}</code> avoids a flash.</p>
             </div>
             <div class="qa">
               <h3 class="qa__q">Does it have components?</h3>
-              <p class="qa__a">No. Reuse with <code>&lt;template&gt;</code>, or custom elements via <a href="https://github.com/dy/define-element">define-element</a>. No router, no server rendering, no build either: Sprae only makes HTML reactive.</p>
+              <p class="qa__a">Custom elements, via <a href="https://github.com/dy/define-element">define-element</a> or any CE library: Sprae sets their props and stops at their boundary. For simpler cases, <a href="https://tailwindcss.com/docs/styling-with-utility-classes#managing-duplication">manage duplication</a> with templates or includes.</p>
             </div>
             <div class="qa">
               <h3 class="qa__q">Who is it not for?</h3>
-              <p class="qa__a">Apps that live in client state: routing, deep component trees, offline. Take a framework there. Sprae is for pages that start as HTML.</p>
+              <p class="qa__a">Apps that live in client state: routing, deep component trees, offline. Take a framework there. Sprae is for pages where a framework is overkill.</p>
             </div>
             <div class="qa">
               <h3 class="qa__q">How do I debug an expression?</h3>
@@ -2692,7 +2707,7 @@
             </div>
             <div class="qa">
               <h3 class="qa__q">Is it production-ready?</h3>
-              <p class="qa__a">No runtime dependencies, tests across both compilers and alternative signals, modern browsers with <code>Proxy</code>. See the <a href="https://github.com/dy/sprae/releases">release history</a>.</p>
+              <p class="qa__a">3+ years of releases across ~200 <a href="https://www.npmjs.com/package/sprae?activeTab=versions">npm versions</a>, no dependencies, tests across both compilers and alternative signals, any browser with <code>Proxy</code>.</p>
             </div>
             <div class="qa">
               <h3 class="qa__q">Who maintains it?</h3>
