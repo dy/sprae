@@ -65,6 +65,8 @@
       // Runs the hero phrase: highlight the attributes, evaporate them (the attributes alone blur and close up, then
       // the values condense in), then type into the hydrated specimen. A single word plays only its own step.
       // Returns the effect for :fx; its return clears the pending steps.
+      // Touch has no hover: its pointerenter and pointerleave fire together on a tap, so only a tap counts there.
+      window.fine = e => e.pointerType != 'touch'
       let heroPhase = ''
       window.director = (play, mode, view, phase) => () => {
         const timers = [], later = (fn, ms) => timers.push(setTimeout(fn, ms))
@@ -468,6 +470,31 @@
       @keyframes bloom-3 {
         50% {
           --bloom-center-3: 68% 76%
+        }
+      }
+
+      /* edge fades of a horizontal strip: a scroll timeline moves them from the far side to the near one */
+      @property --fade-l {
+        syntax: '<length>';
+        inherits: false;
+        initial-value: 0px
+      }
+
+      @property --fade-r {
+        syntax: '<length>';
+        inherits: false;
+        initial-value: 0px
+      }
+
+      @keyframes fade-edges {
+        from {
+          --fade-l: 0px;
+          --fade-r: var(--fade)
+        }
+
+        to {
+          --fade-l: var(--fade);
+          --fade-r: 0px
         }
       }
 
@@ -1193,6 +1220,11 @@
         margin-block-start: var(--sp-4)
       }
 
+      .feature-links a {
+        font-size: var(--fs-sm);
+        font-weight: 500
+      }
+
       /* Feature explanations share one native, viewport-wide scroll row. */
       /* aspects: a quiet strip of small notes beneath the three proofs; items fade out past the shell edges */
       .aspects {
@@ -1377,10 +1409,6 @@
 
       .usage-intro p + p {
         margin-block-start: 0
-      }
-
-      .usage-intro code {
-        white-space: nowrap
       }
 
       .usage-panel {
@@ -1749,27 +1777,7 @@
         pointer-events: auto
       }
 
-      .ref-preview__close {
-        display: none;
-        position: absolute;
-        z-index: 1;
-        inset: var(--sp-2) var(--sp-2) auto auto;
-        width: var(--tap);
-        height: var(--tap);
-        border: 0;
-        border-radius: var(--r-pill);
-        background: var(--plate-bg);
-        color: var(--plate-ink);
-        font: var(--label-font);
-        cursor: pointer
-      }
-
-      .ref-preview.is-pinned .ref-preview__close {
-        display: block
-      }
-
       .ref-preview.is-pinned {
-        padding-block-start: var(--sp-12);
         max-height: calc(100dvh - var(--sp-8));
         overflow: auto
       }
@@ -2190,85 +2198,113 @@
       }
 
       @media (max-width: 48rem) {
-        .footer__line {
-          display: flex;
-          flex-direction: column;
-          align-items: flex-start;
-          gap: var(--sp-4)
+        :root {
+          --shell: calc(100vw - var(--sp-8))
         }
 
-        .footer__links {
-          display: flex;
-          flex-wrap: wrap;
-          gap: var(--sp-2) var(--sp-6)
-        }
-
+        /* one row: mark, links, version, GitHub */
         .topbar {
-          grid-template-columns: 1fr;
+          display: flex;
+          align-items: center;
+          gap: var(--sp-3);
+          width: var(--shell);
           min-height: 0;
-          padding-block: var(--sp-2) 0;
+          margin-inline: auto;
+          padding-block: var(--sp-2);
         }
 
         .brand {
-          grid-column: 1;
-          grid-row: 1;
-          margin-inline-start: var(--sp-4)
+          min-width: var(--sp-8)
         }
 
-        .topbar__end {
-          grid-column: 1;
-          grid-row: 1;
-          margin-inline-end: var(--sp-2)
+        .brand__mark {
+          width: var(--sp-5);
+          height: var(--sp-5)
         }
 
         .topbar nav {
-          grid-column: 1;
-          grid-row: 2;
-          gap: var(--sp-6);
-          margin-inline-start: 0;
-          overflow-x: auto;
-          padding-inline: var(--sp-4);
+          flex: 1;
+          gap: var(--sp-4);
+          margin-inline-start: 0
+        }
+
+        .topbar nav a {
+          font-size: var(--fs-sm)
+        }
+
+        .topbar__end {
+          gap: var(--sp-1)
         }
 
         .hero {
           min-height: 0;
-          padding-block-start: var(--sp-12)
+          padding-block: var(--sp-6) var(--sp-4)
         }
 
         .hero__word {
           width: 100%;
-          text-align: center
+          text-align: left;
+          font-size: clamp(var(--fs-5), 14vw, var(--fs-7))
         }
 
         .hero__stmt {
           max-width: 100%;
-          margin-inline: auto
+          margin-inline: 0;
+          font-size: var(--fs-2)
         }
 
+        /* the line stops short of the edge label's column */
         .hero__sub {
-          margin-inline: auto;
-          text-align: center;
-          font-size: var(--fs-1)
+          max-width: calc(100% - var(--sp-10));
+          margin-inline: 0;
+          text-align: left;
+          font-size: var(--fs-0)
         }
 
         .hero__sub span {
           white-space: normal
         }
 
-        /* the plate spans the full shell here, so the strip lays down beneath it */
         .plate {
           width: 100%;
-          margin-inline: 0
+          margin-inline: 0;
+          margin-block-end: var(--sp-4)
         }
 
-        .edge {
-          position: static;
-          margin: clamp(var(--sp-3), 2svh, var(--sp-6)) auto var(--sp-4) calc((100vw - var(--shell)) / 2 - var(--sp-2));
+        /* code does not wrap on phones: it scrolls sideways under a thin translucent bar */
+        .plate__editor pre,
+        .urow code,
+        .ref__ex {
+          overflow-x: auto;
+          overflow-y: hidden;
+          white-space: pre;
+          scrollbar-width: thin;
+          scrollbar-color: var(--plate-edge) transparent;
         }
 
-        .edge span {
-          writing-mode: horizontal-tb;
-          transform: none
+        .urow__line {
+          width: max-content;
+          min-width: 100%
+        }
+
+        .urow__src {
+          white-space: pre
+        }
+
+        /* the code scrolls under the copy control, so it covers rather than shows through */
+        .copy {
+          background: var(--plate-bg)
+        }
+
+        /* the label stands at the right shell edge beside the left-aligned hero text, its foot just above the plate, its rule on the inner side */
+        .hero__edge {
+          inset-inline: auto calc((100vw - var(--shell)) / 2);
+          bottom: calc(100% - var(--plate-y, 50%) + var(--sp-10));
+          font-size: var(--fs-xs);
+        }
+
+        .edge span::after {
+          display: none
         }
 
         /* one column, each proof reading as a row: figure beside its copy */
@@ -2281,7 +2317,7 @@
           display: grid;
           grid-template-columns: calc(var(--shell) / 10) minmax(0, 1fr);
           align-items: flex-start;
-          padding: var(--sp-6) 0;
+          padding: var(--sp-3) 0;
         }
 
         .feature-cell:first-child {
@@ -2305,6 +2341,38 @@
           translate: none
         }
 
+        .feature-copy p {
+          margin-block-start: calc(var(--sp-3) / 2)
+        }
+
+        .feature-links {
+          margin-block-start: var(--sp-2)
+        }
+
+        /* four stats in one row, the age stat left out; numerals at --fs-2, units stacked at --fs-xs */
+        .spec-strip {
+          display: flex;
+          justify-content: space-between;
+          gap: var(--sp-3);
+          margin-block-start: var(--sp-8);
+          padding-block-start: var(--sp-6);
+        }
+
+        .spec-strip div:last-child {
+          display: none
+        }
+
+        .spec-strip dd {
+          gap: 2px;
+          min-height: 0
+        }
+
+        .spec-unit {
+          margin-inline-start: 0;
+          font-size: var(--fs-xs);
+          line-height: 1.2
+        }
+
         .usage-panel {
           width: 100%
         }
@@ -2312,7 +2380,7 @@
         .usage .shell,
         .section-intro {
           grid-template-columns: minmax(0, 1fr);
-          gap: var(--sp-6)
+          gap: var(--sp-4)
         }
 
         .section-intro {
@@ -2324,78 +2392,120 @@
         }
 
         .usage-intro p {
-          max-width: 46ch
+          max-width: 46ch;
+          margin-block: var(--sp-3)
         }
 
-        .usage,
+        .usage {
+          padding-block: var(--sp-8) var(--sp-6)
+        }
+
         .reference,
-        .vs,
         .faq {
-          padding-block: var(--sp-12)
+          padding-block: var(--sp-8)
+        }
+
+        .vs {
+          display: none
         }
 
         .section-intro p {
           font-size: var(--fs-0)
         }
 
-        .footer__note {
-          margin-inline-start: 0;
-          margin-block-end: var(--sp-10)
+        /* the tabs in one scrolling row that bleeds into the gutters */
+        .usage-tablist {
+          --fade: var(--sp-8);
+          flex-wrap: nowrap;
+          gap: var(--sp-4);
+          margin-block-end: var(--sp-3);
+          margin-inline: calc((var(--shell) - 100vw) / 2);
+          padding-inline: calc((100vw - var(--shell)) / 2);
+          overflow-x: auto;
+          overscroll-behavior-x: contain;
+          scrollbar-width: none;
         }
 
-        /* all five stay: three per row, sized to their content across the shell */
-        .spec-strip {
-          grid-template-columns: repeat(3, auto);
-          justify-content: space-between;
-          row-gap: var(--sp-6)
-        }
-
-        .faq__list {
-          grid-template-columns: minmax(0, 1fr)
-        }
-
-        .qa:nth-child(2) {
-          padding-block-start: var(--sp-6);
-          border-block-start: 1px solid var(--rule)
-        }
-      }
-
-      @media (max-width: 40rem) {
-        .spec-strip {
-          column-gap: var(--sp-4)
-        }
-
-        .spec-value {
-          font-size: var(--fs-4)
-        }
-
-        .vs__compare {
-          grid-template-columns: minmax(0, 1fr)
-        }
-
-        .vs__side pre {
-          padding: var(--sp-4)
-        }
-
-        .urow__line {
-          grid-template-columns: minmax(0, 1fr);
-          padding-inline: var(--sp-5)
-        }
-
-        .urow__line:nth-child(-n+2) {
-          padding-inline-end: var(--sp-16)
-        }
-
-        .urow__line::before {
+        .usage-tablist::-webkit-scrollbar {
           display: none
         }
 
-        .usage-panel {
-          --usage-inset: var(--sp-5)
+        .aspects__viewport {
+          --fade: var(--sp-12)
+        }
+
+        /* horizontal strips fade toward where more lies: scroll position drives each edge where supported; otherwise only the gutter fades */
+        .usage-tablist,
+        .aspects__viewport {
+          --fade-l: var(--sp-4);
+          --fade-r: var(--sp-4);
+          -webkit-mask-image: linear-gradient(to right, var(--mask-clear), var(--mask-solid) var(--fade-l), var(--mask-solid) calc(100% - var(--fade-r)), var(--mask-clear));
+          mask-image: linear-gradient(to right, var(--mask-clear), var(--mask-solid) var(--fade-l), var(--mask-solid) calc(100% - var(--fade-r)), var(--mask-clear));
+        }
+
+        @supports (animation-timeline: scroll()) {
+          .usage-tablist,
+          .aspects__viewport {
+            animation: fade-edges linear both;
+            animation-timeline: scroll(self inline);
+          }
         }
 
         .ref-list {
-          gap: var(--sp-6) var(--sp-4)
+          grid-template-columns: repeat(2, minmax(0, 1fr));
+          gap: var(--sp-3) var(--sp-4)
+        }
+
+        .faq__list {
+          grid-template-columns: minmax(0, 1fr);
+          gap: var(--sp-5);
+          margin-block-start: var(--sp-6)
+        }
+
+        .qa {
+          padding-block-start: var(--sp-4)
+        }
+
+        .qa:nth-child(2) {
+          padding-block-start: var(--sp-4);
+          border-block-start: 1px solid var(--rule)
+        }
+
+        .footer {
+          padding-block: var(--sp-10) var(--sp-6)
+        }
+
+        .footer__note {
+          margin-inline-start: 0;
+          margin-block-end: var(--sp-6)
+        }
+
+        /* the mark on its own row; links and license share the next */
+        .footer__line {
+          grid-template-columns: minmax(0, 1fr) auto;
+          row-gap: var(--sp-2)
+        }
+
+        .footer__brand {
+          grid-column: 1 / -1
+        }
+
+        .footer__links {
+          grid-column: 1;
+          display: flex;
+          flex-wrap: wrap;
+          gap: 0 var(--sp-4)
+        }
+
+        .footer__license {
+          grid-column: 2
+        }
+      }
+
+      /* the narrowest phones: the version leaves the row to the links */
+      @media (max-width: 22.5rem) {
+        .topbar__ver {
+          display: none
         }
       }
 
@@ -2574,9 +2684,10 @@
         <div class="shell" :scope="{ src: window.demo, saying: window.pick(), mode: '', done: '', play: '', view: 'src', phase: '' }">
           <p class="hero__word" aria-hidden="true">spræ</p>
           <h1 class="hero__stmt" id="hero-title">Minimal reactivity<br>for HTML/JSX</h1>
-          <p class="hero__sub" :onpointerenter="(saying = pick(), play = 'cycle')" :onpointerleave="(play = '', condense(m => mode = m, v => view = v, f => phase = f))" :fx="play && director(play, m => mode = m, v => view = v, f => phase = f)"><span>Sprinkle <b class="hot"
-                style="--sync: var(--dur-preview); --step: 1.4s" :class="{ on: mode == 'attrs' }" :onpointerenter="play = 'attrs'" :onpointerleave="play = 'cycle'">:attributes</b> on your HTML tree –</span><span>sprae <b class="hot" style="--sync: .8s; --step: 1.8s" :class="{ on: mode == 'evaporate' }"
-                :onpointerenter="play = 'evaporate'" :onpointerleave="play = 'cycle'">evaporates</b> them, <b class="hot" style="--sync: .8s; --step: .9s" :class="{ on: mode == 'type' }" :onpointerenter="(saying = pick(), play = 'type')" :onpointerleave="play = 'cycle'">hydrating</b> the DOM</span></p>
+          <p class="hero__sub" :onpointerenter="e => fine(e) && (saying = pick(), play = 'cycle')" :onpointerleave="e => fine(e) && (play = '', condense(m => mode = m, v => view = v, f => phase = f))"
+            :onpointerup="e => !fine(e) && (play ? (play = '', condense(m => mode = m, v => view = v, f => phase = f)) : (saying = pick(), play = 'cycle'))" :fx="play && director(play, m => mode = m, v => view = v, f => phase = f)"><span>Sprinkle <b class="hot"
+                style="--sync: var(--dur-preview); --step: 1.4s" :class="{ on: mode == 'attrs' }" :onpointerenter="e => fine(e) && (play = 'attrs')" :onpointerleave="e => fine(e) && (play = 'cycle')">:attributes</b> on your HTML tree –</span><span>sprae <b class="hot" style="--sync: .8s; --step: 1.8s" :class="{ on: mode == 'evaporate' }"
+                :onpointerenter="e => fine(e) && (play = 'evaporate')" :onpointerleave="e => fine(e) && (play = 'cycle')">evaporates</b> them, <b class="hot" style="--sync: .8s; --step: .9s" :class="{ on: mode == 'type' }" :onpointerenter="e => fine(e) && (saying = pick(), play = 'type')" :onpointerleave="e => fine(e) && (play = 'cycle')">hydrating</b> the DOM</span></p>
 
           <div class="plate" :fx="mode == 'type' && typewrite(frame, saying)">
             <div class="plate__editor">
@@ -2640,7 +2751,6 @@
             <div class="feature-copy">
               <h2>Open</h2>
               <p>UI state is open to JavaScript.<br> Based on preact-signals, configurable.</p>
-              <div class="feature-links"><a class="text-link" href="https://github.com/tc39/proposal-signals">TC39 Signals <span aria-hidden="true">↗</span></a></div>
             </div>
           </article>
         </div>
@@ -2674,11 +2784,7 @@
         <div class="shell" :scope="{ utab: 'cdn' }">
           <div class="usage-intro">
             <h2 class="sect-h" id="usage-title">Usage</h2>
-            <p><a href="https://unpkg.com/sprae/dist/sprae.umd.js"><code>sprae.umd.js</code></a> – CDN build.<br>
-              <a href="https://unpkg.com/sprae/dist/sprae-csp.umd.js"><code>sprae-csp.umd.js</code></a> – no-eval CSP build.<br>
-              <a href="https://unpkg.com/sprae/dist/sprae-preact.umd.js"><code>sprae-preact.umd.js</code></a> – preact-signals build.<br>
-              <a href="https://unpkg.com/sprae/dist/sprae.js"><code>sprae.js</code></a> – ES module for manual init.
-            </p>
+            <p>Sprae runs as a regular CDN script, locally, or as an ES module for manual init. There are also <a href="https://github.com/dy/sprae#alternative-signals">preact-signals</a> and <a href="./csp">CSP</a> builds.</p>
             <a class="text-link" href="https://github.com/dy/sprae#readme">Read the docs <span aria-hidden="true">↗</span></a>
           </div>
           <article class="usage-panel">
@@ -2751,7 +2857,7 @@
       </section>
 
       <div class="ref-preview" id="ref-preview" popover="auto" role="dialog" aria-labelledby="ref-preview-title">
-        <h3 class="sr-only" id="ref-preview-title">Example</h3><button class="ref-preview__close" type="button" aria-label="Close example">×</button>
+        <h3 class="sr-only" id="ref-preview-title">Example</h3>
         <pre class="ref__ex"><code></code></pre>
       </div>
 
@@ -3150,12 +3256,8 @@ layout: default
           {
             s: '.stop', t: 'stop propagation',
             d: 'Stop event propagation.',
-            x: `<button :onclick.stop="handleClick()">Don't bubble</button>`
-          },
-          {
-            s: '.stop-immediate', t: 'stop sibling listeners',
-            d: 'Stop remaining listeners too.',
-            x: `<!-- stopImmediatePropagation -->
+            x: `<button :onclick.stop="handleClick()">Don't bubble</button>
+<!-- stopImmediatePropagation -->
 <button :onclick.stop-immediate="open()">Open</button>` },
           {
             s: '.passive', t: 'passive listener',
@@ -3174,7 +3276,12 @@ layout: default
 <!-- .esc .tab .space .delete .arrow .digit .letter .char -->
 <input :onkeydown.enter="submit()" />
 <input :onkeydown.ctrl-s.prevent="save()" />
-<input :onkeydown.shift-enter="newLine()" />` }
+<input :onkeydown.shift-enter="newLine()" />` },
+          {
+            s: '.<any>', t: 'no effect',
+            d: 'Any other name is ignored: repeat a directive.',
+            x: `<!-- an attribute occurs once; a spare modifier admits a second -->
+<input :oninput="validate()" :oninput.log="track()" />` }
         ]
       }
 
@@ -3491,18 +3598,13 @@ createRoot(document.getElementById('app')).render(<Filter />)` },
       refList.addEventListener('pointermove', previewRef)
       refList.addEventListener('pointerleave', () => { if (!refPinned) closeRef() })
       refList.addEventListener('focusin', event => { if (event.target.matches('.ref-entry:focus-visible')) openRef(event.target, null, true) })
-      // with a fine pointer the hover preview is the whole interaction; pinning with a close control is for touch and keyboard
+      // with a fine pointer the hover preview is the whole interaction; pinning is for touch and keyboard, dismissed by a tap outside or Escape
       const finePointer = matchMedia('(hover: hover) and (pointer: fine)')
       refList.addEventListener('click', event => {
         const button = event.target.closest('.ref-entry')
         if (!button || finePointer.matches) return
         if (refPinned && refTarget == button && !button.matches(':focus-visible')) closeRef()
         else openRef(button, null, true)
-      })
-      refPreview.querySelector('button').addEventListener('click', () => {
-        const target = refTarget
-        target?.focus({ preventScroll: true })
-        closeRef()
       })
       refPreview.addEventListener('toggle', event => { if (event.newState == 'closed') closeRef() })
       document.querySelector('.ref-kind-tabs').addEventListener('click', closeRef)
@@ -3542,6 +3644,8 @@ createRoot(document.getElementById('app')).render(<Filter />)` },
         const overlap = Math.max(0, heroRect.height - y)
         const heroTop = heroRect.top + scrollY, heroBottom = heroRect.bottom + scrollY
         hero.style.setProperty('--transition-y', y.toFixed(1) + 'px')
+        // where the plate starts: on phones the edge label's foot rests just above it
+        hero.style.setProperty('--plate-y', (document.querySelector('.plate').getBoundingClientRect().top - heroRect.top).toFixed(1) + 'px')
         document.documentElement.style.setProperty('--feature-overlap', overlap.toFixed(1) + 'px')
         // the wash is solid to the divider and gone by the hero's bottom edge
         document.documentElement.style.setProperty('--wash-fade', (heroTop + y).toFixed(1) + 'px')
