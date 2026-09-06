@@ -120,12 +120,12 @@
         .replace(/(<i class=t>&gt;<\/i>)((?:(?!<i class=t>&lt;)[^\n])+)(?=<i class=t>&lt;\/)/g, '$1<i class=w>$2</i>')
       // Types into the live specimen so the count follows keystroke by keystroke.
       // Returns the effect for :fx: sprae calls it, and what it returns is the stop that runs when the mode changes.
-      window.typewrite = frame => () => {
+      window.typewrite = (frame, text) => () => {
         const doc = frame?.contentDocument, ta = doc?.querySelector('textarea')
         if (!ta) return
-        const text = ' Sprinkle, hydrate, evaporate.', fire = () => ['input', 'change'].forEach(t => ta.dispatchEvent(new doc.defaultView.Event(t, { bubbles: true })))
+        const fire = () => ['input', 'change'].forEach(t => ta.dispatchEvent(new doc.defaultView.Event(t, { bubbles: true })))
         let i = 0
-        ta.value = 'Hello.'; fire()
+        ta.value = ''; fire()
         const id = setInterval(() => { i < text.length ? (ta.value += text[i++], fire()) : clearInterval(id) }, 70)
         return () => clearInterval(id)
       }
@@ -152,6 +152,27 @@
     </script>
     <script>
       // Hero demo: one editable specimen.
+      // What the plate types once hydrated: one per load. Sages on work, water, and life, and a few true things about water and trees.
+      window.sayings = [
+        'You have a right to your work, not to its fruits.',
+        'I am the taste of water, the light of the sun.',
+        'Whatever you do, do it as an offering to Me.',
+        'Every endeavor is covered by some fault, as fire by smoke.',
+        'Do not try to see God. Act so that God sees you.',
+        'Perfection is when there is nothing left to take away.',
+        'We prove by logic, but we discover by intuition.',
+        'An equation means nothing to me unless it expresses a thought of God.',
+        'Simple can be harder than complex.',
+        'Nothing is softer than water, yet nothing better overcomes the hard.',
+        'The highest good is like water: it benefits all and does not compete.',
+        'No one steps in the same river twice.',
+        'Do every act of your life as if it were your last.',
+        'Up to half the water on Earth is older than the Sun.',
+        'Every other breath you take comes from the ocean.',
+        'A living tree is about half water. So are you, a little more.',
+        'A mature oak lifts some 400 litres of water a day.',
+        'Tree rings keep the weather of every year the tree lived.'
+      ]
       window.demo = `<div :scope="{ text: 'Hello.' }">
   <textarea :value="text" :change="v => text = v"></textarea>
   <p :text="text.length + ' characters'"></p>
@@ -2465,14 +2486,14 @@
 
     <main id="main">
       <section class="hero" aria-labelledby="hero-title">
-        <div class="shell" :scope="{ src: window.demo, mode: '', done: '', play: '', view: 'src', phase: '' }">
+        <div class="shell" :scope="{ src: window.demo, saying: window.sayings[Math.random() * window.sayings.length | 0], mode: '', done: '', play: '', view: 'src', phase: '' }">
           <p class="hero__word" aria-hidden="true">spræ</p>
           <h1 class="hero__stmt" id="hero-title">Minimal reactivity<br>for HTML/JSX</h1>
           <p class="hero__sub" :onpointerenter="play = 'cycle'" :onpointerleave="(play = '', condense(m => mode = m, v => view = v, f => phase = f))" :fx="play && director(play, m => mode = m, v => view = v, f => phase = f)"><span>Sprinkle <b class="hot"
                 style="--sync: var(--dur-preview); --step: 1.4s" :class="{ on: mode == 'attrs' }" :onpointerenter="play = 'attrs'" :onpointerleave="play = 'cycle'">:attributes</b> on your HTML tree –</span><span>sprae <b class="hot" style="--sync: .8s; --step: 1.8s" :class="{ on: mode == 'evaporate' }"
-                :onpointerenter="play = 'evaporate'" :onpointerleave="play = 'cycle'">evaporates</b> them, <b class="hot" style="--sync: .8s; --step: 3s" :class="{ on: mode == 'type' }" :onpointerenter="play = 'type'" :onpointerleave="play = 'cycle'">hydrating</b> the DOM</span></p>
+                :onpointerenter="play = 'evaporate'" :onpointerleave="play = 'cycle'">evaporates</b> them, <b class="hot" style="--sync: .8s" :style="{ '--step': (0.9 + saying.length * 0.07).toFixed(2) + 's' }" :class="{ on: mode == 'type' }" :onpointerenter="play = 'type'" :onpointerleave="play = 'cycle'">hydrating</b> the DOM</span></p>
 
-          <div class="plate" :fx="mode == 'type' && typewrite(frame)">
+          <div class="plate" :fx="mode == 'type' && typewrite(frame, saying)">
             <div class="plate__editor">
               <pre><code :ref="code" :class="{ lit: mode == 'attrs', evaporating: phase == 'evaporating', done: phase == 'done', condensing: phase == 'condensing', restoring: phase == 'restoring' }" :html="view == 'done' && done ? water(hl(done)) : hl(src)">&lt;div :scope="{ text: 'Hello.' }"&gt;
   &lt;textarea :value="text" :change="v =&gt; text = v"&gt;&lt;/textarea&gt;
