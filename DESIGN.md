@@ -819,7 +819,7 @@ The page should feel like **a contemporary archival poster that happens to be ex
 
 ## Shipping notes
 
-- The page loads sprae from unpkg, pinned to the version the page was made against (`https://unpkg.com/sprae@13.9.1/dist/sprae.umd.js`), never from `dist/`: dist is gitignored, so on GitHub Pages it does not exist and the page would render unhydrated. Bump the pin together with the topbar version label.
+- The page loads sprae from unpkg, pinned to the version the page was made against (`https://unpkg.com/sprae@13.9.1/dist/sprae.umd.js`), and so does the live-result iframe's srcdoc; never from `dist/`: dist is gitignored, so on GitHub Pages it does not exist and the page would render unhydrated. Bump the pin together with the topbar version label.
 - The construction-grid toggle renders only with `?grid` in the URL or once it has been switched on (its state persists in localStorage); visitors never see it.
 - Fonts: Geist (display), IBM Plex Sans (text), and Monaspace Neon (code) are all preloaded. Monaspace ships as a latin subset (basic latin, latin-1, general punctuation, arrows; 86 KiB from 359 KiB) with all three axes; re-subset before adding glyphs outside those ranges to code samples.
 - `assets/` holds only what a page loads: the three fonts and their licences, the logos in use, the OG image, the grain texture, and the markdown layout's stylesheet and tokens. Design experiments (spray, watercolor, shaders, unused logos) are gone; look them up in history.
