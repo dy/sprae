@@ -2831,7 +2831,7 @@
         <div class="shell" :scope="{ utab: 'cdn' }">
           <div class="usage-intro">
             <h2 class="sect-h" id="usage-title">Usage</h2>
-            <p>Sprae runs as a script CDN or locally, or as an ES module (sprae.js) for manual init. There are also <a href="https://github.com/dy/sprae#alternative-signals">preact-signals</a> and <a href="./csp">CSP</a> builds.</p>
+            <p>Sprae runs as a script <a href="https://unpkg.com/sprae/dist/sprae.umd.js">CDN</a> or <a href="https://www.npmjs.com/package/sprae">locally</a>, or as an <a href="https://unpkg.com/sprae/dist/sprae.js">ES module </a> for manual init from JS. There are also <a href="https://unpkg.com/sprae/dist/sprae-preact.umd.js">preact-signals</a> and <a href="https://unpkg.com/sprae/dist/sprae-csp.umd.js">CSP</a> builds.</p>
             <a class="text-link" href="https://github.com/dy/sprae#readme">Read the docs <span aria-hidden="true">↗</span></a>
           </div>
           <article class="usage-panel">
@@ -2957,7 +2957,7 @@
             </div>
             <div class="qa">
               <h3 class="qa__q">Does it have components?</h3>
-              <p class="qa__a">For simpler cases, <a href="https://tailwindcss.com/docs/styling-with-utility-classes#managing-duplication">manage duplication</a> with templates or includes. Otherwise use custom elements, via <a href="https://github.com/dy/define-element">define-element</a> or any CE library: sprae sets their props and stops at their boundary.</p>
+              <p class="qa__a">For simpler cases, <a href="https://tailwindcss.com/docs/styling-with-utility-classes#managing-duplication">manage duplication</a> with templates or includes. Custom elements can be made with <a href="https://github.com/dy/define-element">define-element</a> or any CE library: sprae sets their props and stops at their boundary. Coming from <code>Alpine.data()</code>? See the <a href="./alpine#alpinedata">migration guide</a>.</p>
             </div>
             <div class="qa">
               <h3 class="qa__q">Who is it not for?</h3>

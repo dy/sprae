@@ -1,3 +1,8 @@
+---
+title: Migrating from Alpine to Sprae
+description: Alpine directives, magics, plugins and Alpine.data() with their sprae equivalents, side by side.
+---
+
 # Migrating from Alpine to Sprae
 
 ## Quick Reference
@@ -5,6 +10,7 @@
 | Alpine | Sprae |
 |--------|-------|
 | `x-data="{ count: 0 }"` | `:scope="{ count: 0 }"` |
+| `x-data="dropdown"` | `:scope="dropdown()"` (see [below](#alpinedata)) |
 | `x-text="message"` | `:text="message"` |
 | `x-html="content"` | `:html="content"` |
 | `x-show="open"` | `:hidden="!open"` |
@@ -12,6 +18,7 @@
 | `x-for="item in items"` | `:each="item in items"` |
 | `x-bind:class="..."` | `:class="..."` |
 | `x-bind:disabled="..."` | `:disabled="..."` |
+| `x-bind="obj"` | `:="obj"` for attributes; directives stay inline |
 | `x-on:click="..."` | `:onclick="..."` |
 | `@click="..."` | `:onclick="..."` |
 | `x-model="value"` | `:value="value"` |
@@ -23,7 +30,7 @@
 | `x-transition` | CSS transitions (see [below](#x-transition)) |
 | `$el` | `:ref="el"` (preferred) or `this` |
 | `$root` | Use `:ref` on root element |
-| `$id()` | No equivalent (use native `id` attributes) |
+| `$id('field')` | `:id="'field-' + i"` in `:each` (see [below](#id)) |
 
 ## Directives
 
@@ -282,6 +289,24 @@ No magic property. Use `:ref` on the root element:
 <div :scope :ref="root" :onclick="root.style.color = 'red'">
 ```
 
+### $id
+
+Alpine generates scoped ids to pair `for`/`id` and `aria-*` attributes. In sprae, derive the id from the loop index; a single instance needs no generator:
+
+```html
+<!-- Alpine -->
+<div x-id="['field']">
+  <label :for="$id('field')">Name</label>
+  <input :id="$id('field')">
+</div>
+
+<!-- Sprae -->
+<div :each="f, i in fields">
+  <label :for="'field-' + i" :text="f.label"></label>
+  <input :id="'field-' + i">
+</div>
+```
+
 ### $dispatch
 
 Use native `CustomEvent`:
@@ -343,7 +368,7 @@ For enter + leave animations, use `:hidden` (keeps element in DOM):
 
 ### Alpine.data()
 
-Alpine.data() registers reusable component logic. In sprae, use plain functions:
+Alpine.data() registers reusable component logic. In sprae the function is the component: no registry.
 
 ```js
 // Alpine
@@ -360,16 +385,41 @@ function counter() {
 // <div :scope="counter()">
 ```
 
+`init()` becomes `:scope.once` or `:fx.once`; `destroy()` is the cleanup returned from `:mount`:
+
+```html
+<!-- Alpine: init() and destroy() live inside Alpine.data('clock') -->
+<div x-data="clock">
+
+<!-- Sprae -->
+<div :scope="clock()" :mount="el => { const id = setInterval(tick, 1000); return () => clearInterval(id) }">
+```
+
+### Alpine.bind()
+
+Alpine.bind() bundles directives into an object for `x-bind="name"`. Sprae's spread `:="obj"` sets attributes; directives stay in the markup:
+
+```html
+<!-- Alpine -->
+<button x-bind="trigger">
+<!-- trigger: { ['@click']() { this.open = !this.open }, [':aria-expanded']() { return this.open } } -->
+
+<!-- Sprae -->
+<button :="{ 'aria-expanded': open, 'aria-controls': 'menu' }" :onclick="open = !open">
+```
+
 ### Alpine plugins
 
 | Alpine Plugin | Sprae Equivalent |
 |---------------|------------------|
-| `@alpine/intersect` | `:ref="el => { const io = new IntersectionObserver(cb); io.observe(el); return () => io.disconnect() }"` |
-| `@alpine/persist` | Read/write `localStorage` in `:scope` or `:fx` |
-| `@alpine/collapse` | CSS `transition: height` with `:style="{ height: open ? 'auto' : 0 }"` |
-| `@alpine/mask` | `:oninput="e => e.target.value = mask(e.target.value)"` |
-| `@alpine/sort` | No built-in. Use a sortable library + `:ref` for init. |
-| `@alpine/focus` | `:ref="el => el.focus()"` or native `autofocus` |
+| `@alpinejs/intersect` | `:intersect="..."`, `:intersect.once="..."` |
+| `@alpinejs/resize` | `:resize="..."` |
+| `@alpinejs/persist` | Read/write `localStorage` in `:scope` or `:fx` |
+| `@alpinejs/collapse` | `:class="{ open }"` on a `display: grid` wrapper: `grid-template-rows: 0fr`, `.open { grid-template-rows: 1fr }`, `transition: grid-template-rows`; child `min-height: 0; overflow: hidden` |
+| `@alpinejs/anchor` | CSS [anchor positioning](https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_anchor_positioning), no JS |
+| `@alpinejs/mask` | `:oninput="e => e.target.value = mask(e.target.value)"` |
+| `@alpinejs/sort` | No built-in. Use a sortable library + `:mount` for init. |
+| `@alpinejs/focus` | `:ref="el => el.focus()"` or native `autofocus` |
 
 No plugin system needed — sprae expressions have full JS access, so most Alpine plugins reduce to a few lines.
 

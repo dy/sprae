@@ -1,3 +1,8 @@
+---
+title: Drops
+description: Small working sprae examples, each with its code beside the live result.
+---
+
 <div class="no-toc">
 
 # drops
