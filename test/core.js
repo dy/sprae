@@ -305,6 +305,23 @@ test("core: getters work in inline scope", {skip: isJessie}, async () => {
   is(el.querySelector('span').textContent, '2');
 })
 
+test("core: scope takes a function by name: called with the new scope, fresh state per element", async () => {
+  let el = h`<div><x :scope="counter" :onx="inc" :text="count"></x><x :scope="counter" :onx="inc" :text="count"></x><y :scope="scaled" :text="double"></y></div>`
+  sprae(el, {
+    base: 2,
+    counter: () => ({ count: 0, inc() { this.count++ } }),
+    scaled: s => ({ double: s.base * 2 }),
+  })
+  let [a, b] = el.querySelectorAll('x')
+  is(a.textContent, '0')
+  is(b.textContent, '0')
+  a.dispatchEvent(new window.CustomEvent('x'))
+  await tick()
+  is(a.textContent, '1')
+  is(b.textContent, '0')
+  is(el.querySelector('y').textContent, '4')
+})
+
 test("core: static errors don't break sprae", async () => {
   console.log('---again')
   let el = h`<y><x :text="0.toFixed(2)"></x><x :text="b"></x></y>`

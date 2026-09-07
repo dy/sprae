@@ -10,7 +10,7 @@ description: Alpine directives, magics, plugins and Alpine.data() with their spr
 | Alpine | Sprae |
 |--------|-------|
 | `x-data="{ count: 0 }"` | `:scope="{ count: 0 }"` |
-| `x-data="dropdown"` | `:scope="dropdown()"` (see [below](#alpinedata)) |
+| `x-data="dropdown"` | `:scope="dropdown"` (see [below](#alpinedata)) |
 | `x-text="message"` | `:text="message"` |
 | `x-html="content"` | `:html="content"` |
 | `x-show="open"` | `:hidden="!open"` |
@@ -368,7 +368,7 @@ For enter + leave animations, use `:hidden` (keeps element in DOM):
 
 ### Alpine.data()
 
-Alpine.data() registers reusable component logic. In sprae the function is the component: no registry.
+Alpine.data() registers reusable component logic. In sprae the function is the component: no registry. Pass it by name and sprae calls it with the new scope, parent state included, and merges what it returns. Each element gets fresh state.
 
 ```js
 // Alpine
@@ -378,21 +378,23 @@ Alpine.data('counter', () => ({
 }))
 // <div x-data="counter">
 
-// Sprae: plain function
-function counter() {
-  return { count: 0, increment() { this.count++ } }
-}
-// <div :scope="counter()">
+// Sprae: plain function, passed in state
+const counter = (count=0) => ({ count, increment() { this.count++ } })
+sprae(el, { counter })
+// <div :scope="counter">
+// with arguments: <div :scope="counter(10)">
 ```
 
-`init()` becomes `:scope.once` or `:fx.once`; `destroy()` is the cleanup returned from `:mount`:
+With `data-start` autoinit there is no state to pass: a global function resolves the same way.
+
+`init()` is the function body: it runs once as the scope is created. `destroy()` is the cleanup returned from `:mount`:
 
 ```html
 <!-- Alpine: init() and destroy() live inside Alpine.data('clock') -->
 <div x-data="clock">
 
 <!-- Sprae -->
-<div :scope="clock()" :mount="el => { const id = setInterval(tick, 1000); return () => clearInterval(id) }">
+<div :scope="clock" :mount="el => { const id = setInterval(tick, 1000); return () => clearInterval(id) }">
 ```
 
 ### Alpine.bind()

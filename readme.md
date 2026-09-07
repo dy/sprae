@@ -164,6 +164,9 @@ Create local reactive state. Inherits from parent scope.
 
 <!-- function form -->
 <div :scope="scope => ({ double: scope.value * 2 })">...</div>
+
+<!-- reusable: a function by name is called with the new scope -->
+<div :scope="counter">...</div>
 ```
 
 
@@ -528,7 +531,7 @@ Signals have a [TC39 proposal](https://github.com/tc39/proposal-signals), and sp
 `new Function` executes directive expressions as JavaScript. Use the default build only with trusted markup; under strict CSP, use the [CSP build](https://sprae.js.org/csp).
 
 **Components?**<br>
-Reusable state is a plain function: `<div :scope="dropdown()">`, no registry. For simpler cases, [manage duplication](https://tailwindcss.com/docs/styling-with-utility-classes#managing-duplication) with templates or includes. Otherwise use custom elements, via [define-element](https://github.com/dy/define-element) or any CE library: sprae sets their props and stops at their boundary. Coming from `Alpine.data()`? See the [migration guide](https://sprae.js.org/alpine#alpinedata).
+Reusable state is a plain function: `<div :scope="dropdown">`, no registry. For simpler cases, [manage duplication](https://tailwindcss.com/docs/styling-with-utility-classes#managing-duplication) with templates or includes. Otherwise use custom elements, via [define-element](https://github.com/dy/define-element) or any CE library: sprae sets their props and stops at their boundary. Coming from `Alpine.data()`? See the [migration guide](https://sprae.js.org/alpine#alpinedata).
 
 **TypeScript?**<br>
 Full types included.
