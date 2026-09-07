@@ -626,7 +626,8 @@
       .qa__a a,
       .usage-facts a,
       .usage-intro p a,
-      .aspect__link {
+      .aspect__link,
+      .aspect__table a {
         text-decoration: underline;
         text-decoration-thickness: 1px;
         text-decoration-color: var(--link-rule);
@@ -642,6 +643,7 @@
       .usage-facts a:hover,
       .usage-intro p a:hover,
       .aspect__link:hover,
+      .aspect__table a:hover,
       .topbar nav a:focus-visible,
       .text-link:focus-visible,
       .footer__links a:focus-visible,
@@ -1290,6 +1292,26 @@
         min-height: 0;
         margin-block-start: var(--sp-2);
         font: var(--caption-font)
+      }
+
+      /* alternatives as two columns: the name, a link where there is one, and its size */
+      .aspect__table {
+        margin: var(--sp-3) 0 0;
+        border-collapse: collapse;
+        font: var(--caption-font);
+        font-size: var(--fs-xs);
+      }
+
+      .aspect__table th,
+      .aspect__table td {
+        padding: 0;
+        font-weight: inherit;
+        text-align: left;
+      }
+
+      .aspect__table td {
+        padding-inline-start: var(--sp-3);
+        font-variant-numeric: tabular-nums;
       }
 
       /* fixed construction grid; hidden by default */
@@ -2809,7 +2831,7 @@
         <div class="shell" :scope="{ utab: 'cdn' }">
           <div class="usage-intro">
             <h2 class="sect-h" id="usage-title">Usage</h2>
-            <p>Sprae runs as a regular CDN script, locally, or as an ES module for manual init. There are also <a href="https://github.com/dy/sprae#alternative-signals">preact-signals</a> and <a href="./csp">CSP</a> builds.</p>
+            <p>Sprae runs as a script CDN or locally, or as an ES module (sprae.js) for manual init. There are also <a href="https://github.com/dy/sprae#alternative-signals">preact-signals</a> and <a href="./csp">CSP</a> builds.</p>
             <a class="text-link" href="https://github.com/dy/sprae#readme">Read the docs <span aria-hidden="true">↗</span></a>
           </div>
           <article class="usage-panel">
@@ -2846,6 +2868,9 @@
               <h3 :text="a.title"></h3>
               <p :text="a.description"></p>
               <pre class="code-light" :if="a.code"><code :html="hl(a.code)"></code></pre>
+              <table class="aspect__table" :if="a.rows">
+                <tr :each="r in a.rows"><th scope="row"><a :if="r[2]" :href="r[2]" :text="r[0]"></a><span :else :text="r[0]"></span></th><td :text="r[1]"></td></tr>
+              </table>
               <a class="text-link aspect__link" :if="a.link" :href="a.link?.href"><span :text="a.link?.label"></span> <span aria-hidden="true">↗</span></a>
             </article>
           </div>
@@ -3312,7 +3337,7 @@ layout: default
 
       window.aspects = [
         {
-          title: 'CSP build',
+          title: 'CSP',
           description: 'A build that runs without eval or new Function, for strict CSP.',
           code: `<script src="sprae-csp.umd.js">`
         },
@@ -3349,9 +3374,20 @@ layout: default
         },
         {
           title: 'Pluggable signals',
-          description: 'Swap the built-in signals for preact, ulive, or usignal.',
-          code: `sprae.use(signals)`
+          description: 'Swap the built-in signals for any Preact-compatible library.',
+          rows: [
+            ['Built-in', '~300b'],
+            ['@preact/signals-core', '1.5kb', 'https://github.com/preactjs/signals'],
+            ['ulive', '350b', 'https://github.com/kethan/ulive'],
+            ['signal', '633b', 'https://github.com/WebReflection/signal'],
+            ['usignal', '955b', 'https://github.com/WebReflection/usignal']
+          ]
         },
+        {
+          title: 'Preact-signals',
+          description: 'A build on @preact/signals-core: signals shared with Preact.',
+          code: `<script
+  src="sprae-preact.umd.js">` },
         {
           title: 'Debounce & throttle',
           description: 'Any directive takes a timing modifier, right in its name.',
@@ -3404,8 +3440,20 @@ layout: default
           code: `:scope="{ _raw: [], list: [] }"`
         },
         {
+          title: 'Signals API',
+          description: 'signal, computed, effect and batch are exported for plain JS.',
+          code: `const n = signal(1)
+effect(() => log(n.value))` },
+        {
+          title: 'Signals in state',
+          description: 'Hand a signal into state; the property reads and writes it.',
+          code: `sprae(el, { count: signal(0) })`
+        },
+        {
           title: 'Custom elements',
           description: 'Props flow into custom elements; sprae stops at their boundary.',
+          code: `<user-card :each="u in users"
+  :name="u.name"></user-card>`,
           link: { href: 'https://dy.github.io/define-element/', label: 'define-element' }
         },
         {
