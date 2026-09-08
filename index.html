@@ -900,17 +900,23 @@
         transition-delay: 300ms
       }
 
-      .plate__editor,
-      .plate__demo {
-        transition: opacity .9s var(--ease-out), filter .9s var(--ease-out)
+      /* the plate's contents resolve into focus only: they were never absent, so no fade, and
+         only what sits inside the demo blurs — its dot grid is the plate, and the plate stays put */
+      .plate__editor pre,
+      .plate__out {
+        transition: filter .9s var(--ease-out)
       }
 
-      .plate__editor {
+      .plate__editor pre {
         transition-delay: 420ms
       }
 
-      .plate__demo {
+      .plate__out {
         transition-delay: 540ms
+      }
+
+      .hero__edge {
+        transition: opacity 1s var(--ease-out) 380ms, translate 1s var(--ease-out) 380ms, filter 1s var(--ease-out) 380ms
       }
 
       html.pre .hero__word,
@@ -921,10 +927,15 @@
         filter: blur(6px)
       }
 
-      html.pre .plate__editor,
-      html.pre .plate__demo {
-        opacity: 0;
+      html.pre .plate__editor pre,
+      html.pre .plate__out {
         filter: blur(7px)
+      }
+
+      html.pre .hero__edge {
+        opacity: 0;
+        translate: 0 8px;
+        filter: blur(6px)
       }
 
       .hero__word {
@@ -1007,7 +1018,7 @@
         block-size: var(--selection-rule);
         background: currentColor;
         /* the rule draws out to length; inline-size runs down the page in vertical-rl */
-        transition: inline-size .9s var(--ease-out) 660ms;
+        transition: inline-size .9s var(--ease-out) 780ms;
       }
 
       html.pre .edge span::after {
