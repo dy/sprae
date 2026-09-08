@@ -900,19 +900,11 @@
         transition-delay: 300ms
       }
 
-      /* the plate's contents resolve into focus only: they were never absent, so no fade, and
-         only what sits inside the demo blurs — its dot grid is the plate, and the plate stays put */
+      /* the plate's contents resolve into focus with the wordmark: they were never absent, so no
+         fade and no stagger, and only what sits inside the demo blurs — its dot grid is the plate */
       .plate__editor pre,
       .plate__out {
         transition: filter .9s var(--ease-out)
-      }
-
-      .plate__editor pre {
-        transition-delay: 420ms
-      }
-
-      .plate__out {
-        transition-delay: 540ms
       }
 
       .hero__edge {
@@ -1018,7 +1010,7 @@
         block-size: var(--selection-rule);
         background: currentColor;
         /* the rule draws out to length; inline-size runs down the page in vertical-rl */
-        transition: inline-size .9s var(--ease-out) 780ms;
+        transition: inline-size 1s var(--ease-out) 380ms;
       }
 
       html.pre .edge span::after {
