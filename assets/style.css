@@ -97,6 +97,29 @@ main {
   padding: var(--sp-8) 0 var(--sp-6);
 }
 
+/* Wide enough that the page gutter can hold the contents list: the text column moves onto the
+   shell's own left edge, in line with the wordmark, and the list sits outside it. Below this the
+   gutter is narrower than the list, so the two-column layout above stands. */
+@media (min-width: 90rem) {
+  main {
+    grid-template-columns: minmax(0, var(--content-w));
+  }
+
+  /* both take the single cell; the list is pulled out of it by its own negative margin */
+  .content {
+    grid-column: 1;
+    grid-row: 1;
+  }
+
+  #toc {
+    grid-column: 1;
+    grid-row: 1;
+    width: var(--toc-w, 8rem);
+    margin-inline-start: calc(-1 * (var(--toc-w, 8rem) + var(--sp-4)));
+    padding-inline: 0;
+  }
+}
+
 /* a label attaches to the code block after it, separates from what precedes */
 .content p:has(+ .highlighter-rouge) {
   margin: var(--sp-5) 0 var(--sp-2);
@@ -128,7 +151,7 @@ main {
 
 #toc a {
   display: block;
-  padding: var(--sp-1) var(--sp-2);
+  padding: var(--sp-1) 0;
   color: var(--color-ink);
   text-decoration: none;
   opacity: 0.6;

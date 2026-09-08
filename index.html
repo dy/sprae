@@ -884,7 +884,8 @@
         width: 100%;
       }
 
-      /* the first second: the three texts settle in from a soft blur, top to bottom, once; the plate is simply there */
+      /* the first second: the three texts settle in from a soft blur, top to bottom, once;
+         the plate holds its frame and only its contents resolve, so nothing about the layout moves */
       .hero__word,
       .hero__stmt,
       .hero__sub {
@@ -899,12 +900,31 @@
         transition-delay: 300ms
       }
 
+      .plate__editor,
+      .plate__demo {
+        transition: opacity .9s var(--ease-out), filter .9s var(--ease-out)
+      }
+
+      .plate__editor {
+        transition-delay: 420ms
+      }
+
+      .plate__demo {
+        transition-delay: 540ms
+      }
+
       html.pre .hero__word,
       html.pre .hero__stmt,
       html.pre .hero__sub {
         opacity: 0;
         translate: 0 8px;
         filter: blur(6px)
+      }
+
+      html.pre .plate__editor,
+      html.pre .plate__demo {
+        opacity: 0;
+        filter: blur(7px)
       }
 
       .hero__word {
@@ -986,6 +1006,12 @@
         inline-size: 5rem;
         block-size: var(--selection-rule);
         background: currentColor;
+        /* the rule draws out to length; inline-size runs down the page in vertical-rl */
+        transition: inline-size .9s var(--ease-out) 660ms;
+      }
+
+      html.pre .edge span::after {
+        inline-size: 0;
       }
 
       /* ── code plate: editable live example, spans 7 of 10 cols ── */
@@ -2903,8 +2929,8 @@
             <dd><a class="spec-value" href="./compare#performance" aria-label="2.3 times the speed of Alpine, geometric mean of the js-framework-benchmark CPU benchmarks, measured 2026-07-28">×2.3</a><span class="spec-unit">Alpine<br>speed</span></dd>
           </div>
           <div>
-            <dt class="sr-only">eval</dt>
-            <dd><a class="spec-value" href="./csp/" aria-label="Zero uses of eval: the CSP build runs full JavaScript expressions under a strict Content-Security-Policy">0</a><span class="spec-unit">eval<br>strict CSP</span></dd>
+            <dt class="sr-only">memory</dt>
+            <dd><a class="spec-value" href="./compare#performance" aria-label="0.3 times Alpine's runtime memory after creating 1,000 rows: 5.1MB against 16.6MB, measured 2026-07-28">×0.3</a><span class="spec-unit">Alpine<br>memory</span></dd>
           </div>
           <div>
             <dt class="sr-only">age</dt>
