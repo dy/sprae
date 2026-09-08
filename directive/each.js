@@ -1,7 +1,5 @@
 import sprae, { parse, prefix, _state, _off, effect, untracked, _change, _touch, _signals, frag, throttle, mutate, signal } from "../core.js"
 
-/** Row data fields on scope objects — symbols stay invisible to `with` identifier lookups */
-const _r = Symbol('r'), _c = Symbol('c'), _i = Symbol('i'), _o = Symbol('o'), _is = Symbol('isig')
 
 /** Is name the :text directive (exact, with modifiers, or compound tail) */
 const isText = (name, t = prefix + 'text', c = name[t.length]) =>
@@ -31,6 +29,12 @@ const condense = (node) => {
  * Primitives use positional (index-based) mode.
  */
 export default (tpl, state, expr) => {
+  /** Row data fields on scope objects — symbols stay invisible to `with` identifier lookups.
+   * Per-directive, not module-level: a nested :each chains its row scope onto the outer row
+   * scope, so shared symbols would let the inner rows' data satisfy the outer accessor and the
+   * outer loop variable would read as the inner item (#nested-each) */
+  const _r = Symbol('r'), _c = Symbol('c'), _i = Symbol('i'), _o = Symbol('o'), _is = Symbol('isig')
+
   // first standalone `in`/`of` splits the expression — `\b` on both sides so `includes`, `index`, `typeof` etc. in rhs don't match
   const [, lhs, rhs] = expr.match(/^(.*?)\b(?:in|of)\b(.*)$/s) || []
   let [itemVar, idxVar = "$"] = lhs.trim().replace(/\(|\)/g, '').split(/\s*,\s*/)

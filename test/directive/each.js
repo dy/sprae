@@ -175,6 +175,29 @@ test('each: item var shadows same-named index default', async () => {
   is(el.innerHTML, `<x>7</x><x>8</x>`)
 })
 
+test('each: nested loops keep the outer item and index', async () => {
+  // row scopes chain onto the enclosing row scope; the row-data symbols must be per-directive,
+  // or the inner rows' data satisfies the outer accessor and `r` reads as the inner item
+  let el = h`<div><i :each="r in rows"><b :each="c in cols" :text="c + r"></b></i></div>`
+  sprae(el, { rows: [1, 2], cols: ['A', 'B'] })
+  await tick()
+  is(el.innerHTML, `<i><b>A1</b><b>B1</b></i><i><b>A2</b><b>B2</b></i>`)
+})
+
+test('each: nested loops keep the outer index', async () => {
+  let el = h`<div><i :each="r, ri in rows"><b :each="c, ci in cols" :text="ri + ':' + ci"></b></i></div>`
+  sprae(el, { rows: [1, 2], cols: ['A', 'B'] })
+  await tick()
+  is(el.innerHTML, `<i><b>0:0</b><b>0:1</b></i><i><b>1:0</b><b>1:1</b></i>`)
+})
+
+test('each: three levels of nesting stay distinct', async () => {
+  let el = h`<div><i :each="a in as"><u :each="b in bs"><b :each="c in cs" :text="a + b + c"></b></u></i></div>`
+  sprae(el, { as: ['x'], bs: ['y'], cs: ['z', 'w'] })
+  await tick()
+  is(el.innerHTML, `<i><u><b>xyz</b><b>xyw</b></u></i>`)
+})
+
 test('each: bulk clear/replace preserves non-row siblings', async () => {
   // clear & replace-all take the bulk removal path (replaceChildren) — text and
   // element siblings outside the row run must survive intact
