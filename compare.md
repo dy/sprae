@@ -47,6 +47,23 @@ Median times in ms (lower is better), [js-framework-benchmark](https://krausest.
 | first paint | 75.5 | 106.5 | 1.41× |
 | transferred size (benchmark app) | 10.0kb | 14.7kb | 1.47× |
 
+
+### Against hand-written DOM
+
+The benchmark's own baseline is `vanillajs` — the same app written with direct DOM calls and no library
+at all. That is the number worth knowing, because it is the ceiling, and it does not move when someone
+else ships a release:
+
+| | vanilla | sprae | Alpine |
+|---|---|---|---|
+| first paint (1k rows) | 81.1 | 82.7 | 164.7 |
+| CPU, geometric mean | 1.00× | **1.48×** | 3.02× |
+| memory after 1k rows | 1.87MB | 5.57MB | 16.59MB |
+
+Sprae paints about 2ms behind hand-written DOM. Measured on the keyed suite at sprae 13.3.8 against
+Alpine 3.14.7, a separate run from the table above — the 2026-07-28 run did not carry vanillajs, so the
+two are reported apart rather than mixed.
+
 Run it independently: [krausest/js-framework-benchmark](https://github.com/krausest/js-framework-benchmark) includes both frameworks.
 
 ## When Alpine is the better choice
