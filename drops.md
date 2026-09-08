@@ -1,6 +1,6 @@
 ---
 title: "HTML examples without a framework"
-description: "34 working examples – modal, tabs, dropdown, sortable table, calculators – each built with HTML attributes only, no build step and no component files."
+description: "36 working examples – modal, tabs, dropdown, sortable table, calculators – each built with HTML attributes only, no build step and no component files."
 permalink: /drops/
 ---
 
@@ -11,6 +11,8 @@ permalink: /drops/
 <!-- ## Examples, recipes, patterns -->
 
 ### How much code it would take<br> with other frameworks?
+
+<p class="drops-note">The first seven are the <a href="https://github.com/eugenkiss/7guis">7GUIs</a> tasks, in order.</p>
 
 </div>
 
@@ -24,12 +26,13 @@ permalink: /drops/
 <button data-class="{active: tag === 'layout'}" data-onclick="tag = 'layout'">layout</button>
 <button data-class="{active: tag === 'tool'}" data-onclick="tag = 'tool'">tool</button>
 <button data-class="{active: tag === 'time'}" data-onclick="tag = 'time'">time</button>
+<button data-class="{active: tag === '7guis'}" data-onclick="tag = '7guis'">7&nbsp;GUIs</button>
 </div>
 
 <div class="drops-grid">
 
 
-<div class="drop" data-hidden="tag !== 'all' && tag !== 'interaction'">
+<div class="drop" data-hidden="tag !== 'all' && tag !== 'interaction' && tag !== '7guis'">
 
 ### Counter
 
@@ -52,7 +55,7 @@ permalink: /drops/
 </div>
 
 
-<div class="drop" data-hidden="tag !== 'all' && tag !== 'form'">
+<div class="drop" data-hidden="tag !== 'all' && tag !== 'form' && tag !== '7guis'">
 
 ### Temperature converter
 
@@ -81,7 +84,7 @@ permalink: /drops/
 </div>
 
 
-<div class="drop" data-hidden="tag !== 'all' && tag !== 'form'">
+<div class="drop" data-hidden="tag !== 'all' && tag !== 'form' && tag !== '7guis'">
 
 ### Flight booker
 
@@ -125,7 +128,7 @@ permalink: /drops/
 </div>
 
 
-<div class="drop" data-hidden="tag !== 'all' && tag !== 'interaction'">
+<div class="drop" data-hidden="tag !== 'all' && tag !== 'interaction' && tag !== '7guis'">
 
 ### Timer
 
@@ -162,7 +165,7 @@ permalink: /drops/
 </div>
 
 
-<div class="drop" data-hidden="tag !== 'all' && tag !== 'data'">
+<div class="drop" data-hidden="tag !== 'all' && tag !== 'data' && tag !== '7guis'">
 
 ### CRUD
 
@@ -211,6 +214,125 @@ permalink: /drops/
 <button data-onclick="del()">Delete</button>
 </div>
 </div>
+</div>
+</div>
+
+
+<div class="drop" data-hidden="tag !== 'all' && tag !== 'interaction' && tag !== '7guis'">
+
+### Circle drawer
+
+<div class="drop-row">
+<div class="drop-code">
+
+```html
+<div :scope="{
+  circles: [], draft: null, undone: [],
+  at(e) {
+    let r = e.currentTarget
+      .getBoundingClientRect()
+    return [e.clientX - r.left,
+            e.clientY - r.top]
+  },
+  // down opens the draft, up commits it
+  draw(e) {
+    let [x, y] = at(e)
+    draft = { x, y, d: 0 }
+    return () => {
+      if (draft.d > 6)
+        circles.push(draft), undone = []
+      draft = null
+    }
+  },
+  size(e) {
+    if (!draft) return
+    let [x, y] = at(e)
+    draft.d = 2 * Math.hypot(
+      x - draft.x, y - draft.y)
+  },
+  undo() { if (circles.length)
+    undone.push(circles.pop()) },
+  redo() { if (undone.length)
+    circles.push(undone.pop()) }
+}">
+  <div :onpointerdown..onpointerup="draw"
+    :onpointermove="size">
+    <i :each="c in circles" :style="ring(c)"></i>
+    <i :if="draft" :style="ring(draft)"></i>
+  </div>
+  <button :onclick="undo()">Undo</button>
+  <button :onclick="redo()">Redo</button>
+</div>
+```
+
+</div>
+{::nomarkdown}
+<div class="drop-demo demo bg-graph-paper" data-scope="{ circles: [{ x: 84, y: 60, d: 46 }], draft: null, undone: [], ring(c) { return { left: (c.x - c.d / 2) + 'px', top: (c.y - c.d / 2) + 'px', width: c.d + 'px', height: c.d + 'px' } }, at(e) { let r = e.currentTarget.getBoundingClientRect(); return [e.clientX - r.left, e.clientY - r.top] }, draw(e) { e.currentTarget.setPointerCapture(e.pointerId); let [x, y] = this.at(e); this.draft = { x, y, d: 0 }; return () => { if (this.draft.d > 6) { this.circles.push(this.draft); this.undone = [] } this.draft = null } }, size(e) { if (!this.draft) return; let [x, y] = this.at(e); this.draft.d = 2 * Math.hypot(x - this.draft.x, y - this.draft.y) }, undo() { if (this.circles.length) this.undone.push(this.circles.pop()) }, redo() { if (this.undone.length) this.circles.push(this.undone.pop()) } }">
+<div class="drop-canvas" data-onpointerdown..onpointerup="draw" data-onpointermove="size">
+<i data-each="c in circles" data-style="ring(c)"></i>
+<i data-if="draft" class="draft" data-style="ring(draft)"></i>
+</div>
+<div style="display:flex;gap:var(--sp-2);margin-top:var(--sp-2);align-items:center">
+<button data-onclick="undo()">Undo</button>
+<button data-onclick="redo()">Redo</button>
+<small style="opacity:.7">Drag on the canvas to draw.</small>
+</div>
+</div>
+{:/nomarkdown}
+</div>
+</div>
+
+
+<div class="drop" data-hidden="tag !== 'all' && tag !== 'data' && tag !== '7guis'">
+
+### Cells
+
+<div class="drop-row">
+<div class="drop-code">
+
+```html
+<div :scope="{
+  cells: { A1: '2', A2: '3', B1: '=A1*A2' },
+  keys: ['A1','B1','C1','A2','B2',
+         'C2','A3','B3','C3'],
+  edit: '',
+  show(k) {
+    let v = cells[k] || ''
+    if (v[0] !== '=') return v
+    try {
+      return '' + Function('$', 'return ' +
+        v.slice(1).replace(/[A-C][1-3]/g,
+          m => `(+$('${m}')||0)`))(show)
+    } catch { return '#ERR' }
+  }
+}">
+  <div :each="k in keys">
+    <input :if="edit === k"
+      :ref="el => el.focus()"
+      :value="cells[k]"
+      :change="v => cells[k] = v"
+      :onblur="edit = ''" />
+    <b :else :onclick="edit = k"
+      :text="show(k)"></b>
+  </div>
+</div>
+```
+
+</div>
+{::nomarkdown}
+<div class="drop-demo demo bg-graph-paper" data-scope="{ cells: { A1: '2', A2: '3', B1: '=A1*A2' }, keys: ['A1','B1','C1','A2','B2','C2','A3','B3','C3'], edit: '', show(k) { let v = this.cells[k] || ''; if (v[0] !== '=') return v; try { return '' + Function('$', 'return ' + v.slice(1).replace(/[A-C][1-3]/g, m => '(+$(\'' + m + '\')||0)'))(this.show.bind(this)) } catch (e) { return '#ERR' } } }">
+<div class="drop-cells">
+<b class="drop-cells__head">A</b>
+<b class="drop-cells__head">B</b>
+<b class="drop-cells__head">C</b>
+<div class="drop-cells__cell" data-each="k in keys">
+<input data-if="edit === k" data-ref="el => el.focus()" data-value="cells[k]" data-change="v => cells[k] = v" data-onblur="edit = ''" />
+<b data-else data-onclick="edit = k" data-text="show(k) || ' '"></b>
+</div>
+</div>
+<p style="margin-top:var(--sp-2);font-size:var(--text-sm);opacity:.7">Click a cell to edit. <code>B1</code> holds <code>=A1*A2</code>.</p>
+</div>
+{:/nomarkdown}
 </div>
 </div>
 

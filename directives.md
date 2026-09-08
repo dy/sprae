@@ -96,5 +96,6 @@ Modifiers chain onto a directive name with `.` and apply left to right, so `:onk
 
 - [Examples](/drops/) - 34 working components built from these directives, code beside the live result.
 - [Migrating from Alpine](/alpine/) - every Alpine directive, magic and plugin with its sprae equivalent.
+- [Migrating from petite-vue](/petite-vue/) - every `v-` directive with its sprae equivalent.
 - [Strict CSP](/csp/) - the same directives with no `eval` and no `new Function`.
 - [Comparison](/compare/) - measured size, speed and memory against Alpine and petite-vue.

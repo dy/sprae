@@ -17,6 +17,7 @@ Sprae, [Alpine](https://alpinejs.dev) and [petite-vue](https://github.com/vuejs/
 | Runtime memory (1k rows) | **5.1MB** | 16.6MB | not benchmarked |
 | First paint (1k rows) | **76ms** | 107ms | not benchmarked |
 | Strict CSP / no-eval | [full JS expressions](/csp/) | [restricted subset](/alpine-csp/) | none |
+| Last release | active | active | [Jan 2022](/petite-vue/) |
 | Reactivity | pluggable signals ([TC39-track](https://github.com/tc39/proposal-signals)) | bundled @vue/reactivity | bundled @vue/reactivity |
 | Keyed lists | automatic (by identity) | manual `:key` | manual `:key` |
 | Debounce, throttle, key filters | built-in [modifiers](https://github.com/dy/sprae#modifiers) | plugin packages | none |

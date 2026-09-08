@@ -331,18 +331,20 @@
           <p class="footer__about">Sprae is a lightweight alternative to Alpine.js and petite-vue: reactive HTML attributes with no build step, a CSP-safe build for browser extensions, and the same directives in JSX, Next.js server components, Markdown, and server templates.</p>
           <a class="text-link" href="https://github.com/sponsors/dy">Sponsor <span aria-hidden="true">↗</span></a>
         </div>
+        <nav class="footer__links" aria-label="Footer">
+          <a href="{{ '/#docs' | relative_url }}">Usage</a>
+          <a href="{{ '/directives/' | relative_url }}">Directives</a>
+          <a href="{{ '/drops/' | relative_url }}">Examples</a>
+          <a href="{{ '/#faq' | relative_url }}">FAQ</a>
+          <a href="{{ '/alpine/' | relative_url }}">From Alpine</a>
+          <a href="{{ '/petite-vue/' | relative_url }}">From petite-vue</a>
+          <a href="{{ '/csp/' | relative_url }}">Strict CSP</a>
+          <a href="{{ '/compare/' | relative_url }}">Comparison</a>
+          <a href="https://www.npmjs.com/package/sprae">npm ↗</a>
+          <a href="https://github.com/dy/sprae">GitHub ↗</a>
+        </nav>
         <div class="footer__line">
           <a class="footer__brand" href="{{ '/' | relative_url }}"><img src="{{ '/assets/logo.svg' | relative_url }}" alt="" width="24" height="24"> spræ</a>
-          <nav class="footer__links" aria-label="Footer">
-            <a href="{{ '/#docs' | relative_url }}">Usage</a>
-            <a href="{{ '/directives/' | relative_url }}">Directives</a>
-            <a href="{{ '/drops/' | relative_url }}">Examples</a>
-            <a href="{{ '/#faq' | relative_url }}">FAQ</a>
-            <a href="{{ '/alpine/' | relative_url }}">From Alpine</a>
-            <a href="{{ '/csp/' | relative_url }}">Strict CSP</a>
-            <a href="{{ '/compare/' | relative_url }}">Comparison</a>
-            <a href="https://github.com/dy/sprae">GitHub ↗</a>
-          </nav>
           <small class="footer__license">MIT <a href="https://krishnized.github.io/license" aria-label="Krishnized license">ॐ</a></small>
         </div>
       </div>

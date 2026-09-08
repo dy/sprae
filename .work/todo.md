@@ -274,7 +274,10 @@
   * [ ] **playground**: interactive editor like Alpine's
   * [ ] drops/examples gallery: 7 GUIs, real-world patterns
   * [ ] "Used by" section with logos
-  * [ ] SEO: "alpine alternative", "lightweight vue", "reactive html"
+  * [~] SEO: "alpine alternative", "lightweight vue", "reactive html"
+    -> on-page done 2026-09-08: titles/meta/canonical per page, JSON-LD (SoftwareApplication + FAQPage
+       built from the page's own FAQ), llms.txt, sitemap clean (9 urls), footer links so no page is an orphan.
+       Head terms still belong to listicles — see the caveat below; off-page is the remaining half.
   * [x] Display content from readme
   * [ ] Connect donation links
   * [x] Inverse color render
@@ -292,7 +295,8 @@
   * [x] Drops page
     * [ ] UI randomizer
   * [ ] Examples
-    * [x] 7 GUIs
+    * [x] 7 GUIs -> actually 7/7 now (2026-09-08): circle drawer + cells added, the first seven drops
+      are the tasks in order, `7 GUIs` filter tag on the drops page
     * [ ] Wavearea
     * [ ] Maetr
     * [ ] SVG confetti gen
@@ -339,15 +343,23 @@ Trust patch:
 * [ ] refresh compare.md sizes at next full bench run (13.9.x grew ~0.7kb over 13.8.4)
 
 Wedges (ranked by pain x absence-of-incumbent x unlock size):
-* [ ] CSP/extension wedge: "reactive HTML in browser extensions, no eval" landing from csp.md + sprae-extension-template repo;
+* [~] CSP/extension wedge: "reactive HTML in browser extensions, no eval" landing from csp.md + sprae-extension-template repo;
       answer standing SO/Reddit "alpine csp" threads with it — only segment with pain + budget where alpine structurally can't follow
-* [ ] agent-native: llms.txt + editor skill = full reference + drops + gotchas; whole API fits in one prompt — unclaimed positioning;
+      -> landings shipped 2026-09-08: /alpine-csp/ (what @alpinejs/csp restricts, vs stimulus/lit/preact/sprae — verified
+         against alpine's own docs) and /manifest-v3/ (working popup, content scripts, sandbox escape hatch).
+         Still open: sprae-extension-template repo, and seeding the standing threads (SO, alpine#3537, the gitlab issue)
+* [~] agent-native: llms.txt + editor skill = full reference + drops + gotchas; whole API fits in one prompt — unclaimed positioning;
       makes AI emit correct sprae (today it confidently emits the nested-push bug)
+      -> llms.txt shipped 2026-09-08 (positioning, page map, all 20 directives, install facts). Editor skill still open.
+         Also open: publish docs to context7 so retrieval-based agents get them
 * [ ] playground permalinks: hash-encode editor content + share button (~50 lines, no backend) — every answer/issue/drop becomes a runnable link
 * [ ] drops as tool, not gallery: per-drop URL + OG image, copy button, text search; reuse index playground per drop;
       reframe headline "how much code with other frameworks" -> "copy this"
 * [ ] answer #68 (reusable components) as documented pattern
-* [ ] one distribution act per release — artifact polish doesn't count
+* [~] one distribution act per release — artifact polish doesn't count
+      -> 2026-09-08: PRs to sorrycc/awesome-javascript (35k stars, next to alpine) and rajasegar/awesome-htmx.
+         Skipped on purpose: alpine-collective/awesome (no library section — would read as spam), awesome-web-components
+         (wrong category), every buildless/vanilla list (dead since 2019-2022)
 
 Kill (ego audit):
 * [ ] "Used by" self-citations — cut until one external adopter
@@ -360,6 +372,37 @@ Adjacent (money factored out) — collection direction:
 * [ ] every collected effect gets a control panel (params = state = sprae; settings-panel is prior art) — collections you play, not watch
 * [ ] audio/media UI drops: waveforms, knobs, envelopes, sequencers — unfair authority (wavearea, web-audio-api), zero competition
 * [ ] same corpus feeds three readers: self (reference), humans (gallery), agents (llms.txt)
+
+
+## Session 2026-09-08 (SEO pass + fixes)
+
+Shipped:
+* [x] **nested `:each` regression fixed** — row-data symbols were module-level, so an inner loop's row scope
+      satisfied the outer loop's accessor through the prototype chain: `<i :each="r in rows"><b :each="c in cols" :text="c+r">`
+      rendered `A/A B/B`, not `A/1 B/1`. Outer item AND index were both lost, at any depth. Symbols are now per-directive
+      (`directive/each.js`), + 3 regression tests. 438 pass across base/jessie/preact. Present in shipped 13.9.1 — needs a release
+* [x] og.png regenerated — old one advertised `~8kb` and the retired "Reactive sprinkles for HTML"; new one is the real
+      hero rendered at 1200x630 (real bloom, Geist, live plate), quantized 1MB -> 278kb
+* [x] footer: one flowing link row + npm link, replacing the 4x2 grid
+* [x] canonical/permalink consistency: every page trailing-slash, sitemap and links agree
+* [x] npm + GitHub metadata rewritten (description, 17 keywords, 20 topics, https homepage)
+
+Open, ranked by leverage:
+* [ ] **release 13.9.2** — the nested-each fix is the whole point; the site's own drops load sprae from unpkg
+* [ ] **petite-vue intercept** — verified 2026-09-08: last publish 2022-01-18, still 10,541 dl/mo vs sprae 2,255.
+      Dead upstream, stranded users, no migration path written. Alpine by contrast published yesterday — no opening there
+* [ ] JSR publish (jsr.io/@dy/sprae is 404). vlt/vsr needs nothing: it mirrors npm rather than being a separate publish target
+* [ ] **7GUIs as a citable artifact** — the tasks are implemented but unlabelled outside the drops filter;
+      eugenkiss/7guis (920 stars) is cited in framework comparisons for years
+* [ ] design galleries (godly, land-book, httpster, minimal gallery, one page love, siteinspire) — the site is unusually
+      good for a dev tool and these are high-authority dofollow links aimed at exactly this audience
+* [ ] author's own npm graph: maintainer on color-name (1.29B dl/mo), color-parse (10.6M), color-rgba (5.7M),
+      color-space (3.6M), regl (3.2M), parse-duration (2.9M). A one-line "also by" footer is standard practice and free.
+      Caveat: those downloads are CI machinery, not readers — and never put an ad in color-name
+* [ ] search console + bing webmaster: not analytics, just how the sitemap gets submitted
+* [ ] directories that own the "alternative" SERPs: alternativeto, saashub (absent entirely), stackshare, slant, libhunt
+* [ ] risk: krausest/js-framework-benchmark#2092 "cleaning up and retiring implementations" is open — losing that
+      entry costs the best third-party citation sprae has
 
 
 ## [ ] Indirect proposition / SEO articles (marketing pass 2026-08-21)
@@ -392,10 +435,14 @@ Propositions:
       become their own discovery channel
 
 Article set (in order):
-* [ ] per-drop pages, each drop = one page — long-tail volume, the compounding asset
-* [ ] "Reactive UI in a Manifest V3 extension — no eval, no build" — q: "manifest v3 unsafe-eval", "alpine js csp",
+* [-] per-drop pages, each drop = one page — long-tail volume, the compounding asset
+      -> built then reverted 2026-09-08 by call: 34 template-shaped pages with ~150 words of unique text each sit close to
+         what google calls doorway pages, and the site-wide quality risk outweighed the long-tail upside at this authority.
+         Revisit only if each drop earns genuinely distinct prose someone would read on its own
+* [x] "Reactive UI in a Manifest V3 extension — no eval, no build" — q: "manifest v3 unsafe-eval", "alpine js csp",
       "framework for chrome extension"; flagship for the #1 wedge (big fish small pond: in "reactive HTML under strict CSP"
       sprae is the category leader, not an alternative)
+      -> /manifest-v3/ 2026-09-08. Written but not yet seeded anywhere — seeding is the half that matters
 * [ ] "Client-side sprinkles for HTMX" — q: "htmx alpine", "htmx client side interactivity"
 * [ ] "Sprae vs Alpine.js, measured" — q: "alpine js alternative", "alpine vs"; measured sizes + krausest bench = proof
       alpine content lacks; MUST include where alpine wins (ecosystem, plugins, docs breadth) — the disqualifier is what

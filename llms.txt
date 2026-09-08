@@ -17,6 +17,7 @@ Use it for server-rendered pages, static sites, landing pages, browser extension
 - [Directives reference](https://sprae.js.org/directives/): all 20 directives and 20 modifiers, with their Alpine equivalents.
 - [Examples](https://sprae.js.org/drops/): 34 working components, code beside the live result.
 - [Alpine.js to sprae migration guide](https://sprae.js.org/alpine/): every Alpine directive, magic and plugin mapped.
+- [Migrating from petite-vue](https://sprae.js.org/petite-vue/): every v-directive mapped; petite-vue's last release was January 2022.
 - [Alpine.js vs petite-vue vs sprae, measured](https://sprae.js.org/compare/): size, speed, memory, CSP, maintenance, with methodology.
 - [Strict CSP](https://sprae.js.org/csp/): full JS expressions with no eval, via the jessie interpreter.
 - [Alpine's CSP build and the alternatives](https://sprae.js.org/alpine-csp/): what @alpinejs/csp restricts, compared with Stimulus, Lit, Preact and sprae.

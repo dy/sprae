@@ -1191,13 +1191,13 @@ a:hover { text-decoration-color: currentColor; }
 }
 
 .footer__line {
-  display: grid;
-  grid-template-columns: repeat(10, minmax(0, 1fr));
+  display: flex;
   align-items: center;
+  justify-content: space-between;
+  gap: var(--sp-4);
 }
 
 .footer__brand {
-  grid-column: 1 / span 3;
   display: inline-flex;
   align-items: center;
   gap: var(--sp-2);
@@ -1210,15 +1210,13 @@ a:hover { text-decoration-color: currentColor; }
 .footer__brand img { display: block; width: var(--sp-5); height: var(--sp-5); }
 
 /* one link per column from line 5, where the note above starts */
+/* one flowing row on the note's measure — the count can grow without a rigid grid */
 .footer__links {
-  grid-column: 5 / 9;
-  display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-2) var(--sp-5);
+  margin: 0 0 var(--sp-6);
 }
-
-/* eight links wrap into two rows of four without widening the column */
-.footer__links a:nth-child(n + 5) { grid-row: 2; }
 
 .footer__links a {
   display: inline-flex;
@@ -1229,8 +1227,6 @@ a:hover { text-decoration-color: currentColor; }
 }
 
 .footer__license {
-  grid-column: 10;
-  justify-self: end;
   display: flex;
   align-items: center;
   gap: var(--sp-3);
@@ -1265,22 +1261,11 @@ a:hover { text-decoration-color: currentColor; }
     margin-block-end: var(--sp-5);
   }
 
-  /* the mark on its own row; links and license share the next */
-  .footer__line {
-    grid-template-columns: minmax(0, 1fr) auto;
-    row-gap: var(--sp-2);
-  }
-
-  .footer__brand { grid-column: 1 / -1; }
-
   .footer__links {
-    grid-column: 1;
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0 var(--sp-4);
+    margin-inline-start: 0;
+    margin-block-end: var(--sp-5);
+    gap: var(--sp-1) var(--sp-4);
   }
-
-  .footer__license { grid-column: 2; }
 }
 
 /* phones: four links here, one more than the index, so the version leaves the row to them earlier */
@@ -1294,4 +1279,60 @@ a:hover { text-decoration-color: currentColor; }
   opacity: 0.75;
   margin-top: var(--sp-4);
   text-wrap: pretty;
+}
+
+/* circle drawer: a click surface the circles sit on */
+.drop-canvas {
+  position: relative;
+  height: 150px;
+  border: 1px solid var(--alpha-20);
+  border-radius: var(--radius-sm);
+  background: var(--color-bg-alt);
+  overflow: hidden;
+  cursor: crosshair;
+}
+.drop-canvas i {
+  position: absolute;
+  border: 1px solid var(--color-ink);
+  border-radius: 50%;
+  cursor: pointer;
+}
+.drop-canvas i.draft { border-style: dashed; opacity: .8; }
+
+/* cells: a compact spreadsheet grid */
+.drop-cells {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  border: 1px solid var(--alpha-20);
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+  background: var(--color-bg-alt);
+}
+.drop-cells__head {
+  padding: 0.2em 0.5em;
+  font: var(--weight-medium) var(--text-sm)/1.6 var(--font-mono);
+  text-align: center;
+  background: var(--alpha-20);
+}
+.drop-cells__cell { border-top: 1px solid var(--alpha-20); }
+.drop-cells__cell + .drop-cells__cell { border-left: 1px solid var(--alpha-20); }
+.drop-cells__cell:nth-child(3n + 2) { border-left: 0; }
+.drop-cells__cell b,
+.drop-cells__cell input {
+  display: block;
+  width: 100%;
+  min-height: 2em;
+  padding: 0.2em 0.5em;
+  border: 0;
+  border-radius: 0;
+  background: none;
+  font: var(--weight-normal) var(--text-sm)/1.6 var(--font-mono);
+}
+.drop-cells__cell b { cursor: cell; }
+.drop-cells__cell input { outline: 2px solid var(--color-ink); outline-offset: -2px; }
+
+.drops-note {
+  font-size: var(--text-sm);
+  opacity: 0.7;
+  margin-top: var(--sp-3);
 }
