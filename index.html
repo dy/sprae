@@ -341,6 +341,9 @@
       html {
         overflow-x: clip;
         scroll-behavior: smooth;
+        /* mobile browsers inflate text per block otherwise; code lines came out in different sizes */
+        -webkit-text-size-adjust: 100%;
+        text-size-adjust: 100%;
         background: var(--paper)
       }
 
@@ -626,8 +629,7 @@
       .qa__a a,
       .usage-facts a,
       .usage-intro p a,
-      .aspect__link,
-      .aspect__table a {
+      .aspect__link {
         text-decoration: underline;
         text-decoration-thickness: 1px;
         text-decoration-color: var(--link-rule);
@@ -643,7 +645,6 @@
       .usage-facts a:hover,
       .usage-intro p a:hover,
       .aspect__link:hover,
-      .aspect__table a:hover,
       .topbar nav a:focus-visible,
       .text-link:focus-visible,
       .footer__links a:focus-visible,
@@ -1292,26 +1293,6 @@
         min-height: 0;
         margin-block-start: var(--sp-2);
         font: var(--caption-font)
-      }
-
-      /* alternatives as two columns: the name, a link where there is one, and its size */
-      .aspect__table {
-        margin: var(--sp-3) 0 0;
-        border-collapse: collapse;
-        font: var(--caption-font);
-        font-size: var(--fs-xs);
-      }
-
-      .aspect__table th,
-      .aspect__table td {
-        padding: 0;
-        font-weight: inherit;
-        text-align: left;
-      }
-
-      .aspect__table td {
-        padding-inline-start: var(--sp-3);
-        font-variant-numeric: tabular-nums;
       }
 
       /* fixed construction grid; hidden by default */
@@ -2868,9 +2849,6 @@
               <h3 :text="a.title"></h3>
               <p :text="a.description"></p>
               <pre class="code-light" :if="a.code"><code :html="hl(a.code)"></code></pre>
-              <table class="aspect__table" :if="a.rows">
-                <tr :each="r in a.rows"><th scope="row"><a :if="r[2]" :href="r[2]" :text="r[0]"></a><span :else :text="r[0]"></span></th><td :text="r[1]"></td></tr>
-              </table>
               <a class="text-link aspect__link" :if="a.link" :href="a.link?.href"><span :text="a.link?.label"></span> <span aria-hidden="true">↗</span></a>
             </article>
           </div>
@@ -3343,16 +3321,12 @@ layout: default
         },
         {
           title: 'Browser extensions',
-          description: 'Bundle the CSP build; Manifest V3 allows no eval and no CDN.'
-        },
-        {
-          title: 'Server components',
-          description: 'No \'use client\': the page stays a server component.',
-          code: `<button x-onclick="count++" />`
-        },
+          description: 'Bundle the CSP build; Manifest V3 allows no eval and no CDN.',
+          code: `<!-- popup.html -->
+<script src="sprae-csp.umd.js">` },
         {
           title: 'Fragments',
-          description: 'A template lets :if or :each render several nodes, no wrapper.',
+          description: 'A template renders several nodes, no wrapper.',
           code: `<template :each="it in list">
   <dt :text="it.term"></dt>
   <dd :text="it.defn"></dd>
@@ -3374,49 +3348,16 @@ layout: default
         },
         {
           title: 'Pluggable signals',
-          description: 'Swap the built-in signals for any Preact-compatible library.',
-          rows: [
-            ['Built-in', '~300b'],
-            ['@preact/signals-core', '1.5kb', 'https://github.com/preactjs/signals'],
-            ['ulive', '350b', 'https://github.com/kethan/ulive'],
-            ['signal', '633b', 'https://github.com/WebReflection/signal'],
-            ['usignal', '955b', 'https://github.com/WebReflection/usignal']
-          ]
+          description: 'Swap the built-in signals for any Preact-compatible library.'
         },
         {
           title: 'Preact-signals',
-          description: 'A build on @preact/signals-core: signals shared with Preact.',
-          code: `<script
-  src="sprae-preact.umd.js">` },
-        {
-          title: 'Debounce & throttle',
-          description: 'Any directive takes a timing modifier, right in its name.',
-          code: `:text.debounce-300="query"`
-        },
-        {
-          title: 'Key filters',
-          description: 'Name the key in the modifier, not in the handler.',
-          code: `:onkeydown.ctrl-s="save()"`
-        },
-        {
-          title: 'Mount hooks',
-          description: 'Run once on connect; return a function to run on disconnect.',
-          code: `:mount="el => initChart(el)"`
+          description: 'A build on @preact/signals-core: signals shared with Preact.'
         },
         {
           title: 'Automatic cleanup',
           description: 'What an effect returns runs when the effect is disposed.',
           code: `:fx="() => (on(), off)"`
-        },
-        {
-          title: 'Element refs',
-          description: 'Capture an element into state, or hand it to a callback.',
-          code: `<canvas :ref="canvas"></canvas>`
-        },
-        {
-          title: 'Attribute spread',
-          description: 'One object sets several attributes and keeps them updated.',
-          code: `:="{ type: 'email', required }"`
         },
         {
           title: 'Custom directives',
@@ -3455,21 +3396,6 @@ effect(() => log(n.value))` },
           code: `<user-card :each="u in users"
   :name="u.name"></user-card>`,
           link: { href: 'https://dy.github.io/define-element/', label: 'define-element' }
-        },
-        {
-          title: 'Portals',
-          description: 'Move an element elsewhere in the DOM; its bindings come along.',
-          code: `:portal="'#modals'"`
-        },
-        {
-          title: 'Intersection',
-          description: 'Run something when an element enters the viewport.',
-          code: `:intersect.once="load()"`
-        },
-        {
-          title: 'Resize',
-          description: 'Run something when an element changes size.',
-          code: `:resize="r => w = r.width"`
         },
         {
           title: 'Configurable',

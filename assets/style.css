@@ -8,7 +8,7 @@
 
 * { touch-action: manipulation; box-sizing: border-box; }
 
-html { scroll-behavior: smooth; }
+html { scroll-behavior: smooth; -webkit-text-size-adjust: 100%; text-size-adjust: 100% }
 
 :root {
   font-size: var(--font-base);
