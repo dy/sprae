@@ -2206,7 +2206,7 @@
 
       .footer__note {
         max-width: 30rem;
-        margin: 0 0 var(--sp-16) 40%
+        margin: 0 0 var(--sp-8) 40%
       }
 
       .footer__note p {
@@ -2260,7 +2260,8 @@
       .footer__nav {
         display: grid;
         grid-template-columns: repeat(3, minmax(0, 1fr));
-        gap: var(--sp-5);
+        gap: 0 var(--sp-4);
+        max-width: 30rem;
         margin: 0 0 var(--sp-8) 40%;
       }
 
@@ -2270,18 +2271,10 @@
         align-items: flex-start;
       }
 
-      .footer__nav-h {
-        margin: 0 0 var(--sp-1);
-        font-size: var(--text-xs);
-        letter-spacing: .08em;
-        text-transform: uppercase;
-        opacity: .55;
-      }
-
       .footer__nav a {
         display: inline-flex;
         align-items: center;
-        min-height: var(--tap);
+        min-height: 1.95em;
         font-size: var(--fs-sm);
       }
 
@@ -2626,9 +2619,12 @@
 
         .footer__nav {
           grid-template-columns: repeat(2, minmax(0, 1fr));
+          max-width: none;
           margin-inline-start: 0;
           margin-block-end: var(--sp-5)
         }
+
+        .footer__nav a { min-height: var(--tap) }
       }
 
       /* phones: a stat is wider than two columns here, so two per row, on column lines 0 and 5 */
@@ -3080,21 +3076,18 @@
         </div>
         <nav class="footer__nav" aria-label="Footer">
           <div>
-            <p class="footer__nav-h">Docs</p>
             <a href="#docs">Usage</a>
             <a href="./directives/">Directives</a>
             <a href="./drops/">Examples</a>
             <a href="#faq">FAQ</a>
           </div>
           <div>
-            <p class="footer__nav-h">Guides</p>
             <a href="./alpine/">From Alpine</a>
             <a href="./petite-vue/">From petite-vue</a>
             <a href="./csp/">Strict CSP</a>
             <a href="./compare/">Comparison</a>
           </div>
           <div>
-            <p class="footer__nav-h">Project</p>
             <a href="https://www.npmjs.com/package/sprae">npm ↗</a>
             <a href="https://github.com/dy/sprae">GitHub ↗</a>
           </div>
