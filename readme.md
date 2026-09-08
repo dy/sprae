@@ -5,7 +5,7 @@
 - [Signals](https://github.com/tc39/proposal-signals)-based and pluggable.
 - Full-JS [CSP build](https://sprae.js.org/csp) for strict env and browser extensions.
 
-Use for server-rendered pages, static sites, or prototypes – anywhere a full framework is overkill, with any backend and +JSX.
+Use for server-rendered pages, static sites, or prototypes – anywhere a full framework is overkill, with any backend and +JSX. A lightweight Alpine.js alternative.
 
 <!-- [**website**](https://sprae.js.org) | [bench](https://krausest.github.io/js-framework-benchmark/) -->
 
