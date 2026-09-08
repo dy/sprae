@@ -1,0 +1,24 @@
+{
+  "name": "@dy/sprae",
+  "version": "13.9.2",
+  "license": "MIT",
+  "exports": {
+    ".": "./sprae.js",
+    "./core": "./core.js",
+    "./store": "./store.js",
+    "./signal": "./signal.js"
+  },
+  "publish": {
+    "include": [
+      "sprae.js",
+      "core.js",
+      "store.js",
+      "signal.js",
+      "directive",
+      "types",
+      "readme.md",
+      "license",
+      "jsr.json"
+    ]
+  }
+}

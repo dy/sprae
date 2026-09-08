@@ -1,7 +1,7 @@
 {
   "name": "sprae",
   "description": "Reactive HTML attributes. No build step, signals-based, CSP-safe.",
-  "version": "13.9.1",
+  "version": "13.9.2",
   "main": "./sprae.js",
   "module": "./sprae.js",
   "umd:main": "dist/sprae.umd.js",
