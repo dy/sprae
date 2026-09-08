@@ -1305,14 +1305,6 @@ a:hover { text-decoration-color: currentColor; }
   .topbar__ver { display: none; }
 }
 
-.ref-more,
-.vs-more {
-  font-size: var(--text-sm);
-  opacity: 0.75;
-  margin-top: var(--sp-4);
-  text-wrap: pretty;
-}
-
 /* circle drawer: a click surface the circles sit on */
 .drop-canvas {
   position: relative;

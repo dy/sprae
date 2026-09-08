@@ -13,9 +13,9 @@ Sprae, [Alpine](https://alpinejs.dev) and [petite-vue](https://github.com/vuejs/
 | | sprae | Alpine | petite-vue |
 |---|---|---|---|
 | CDN build, min+gzip | **11.9kb** | 19.9kb | 7.1kb |
-| CPU speed, [geometric mean](#performance) | **2.27× faster** | baseline | not benchmarked |
-| Runtime memory (1k rows) | **5.1MB** | 16.6MB | not benchmarked |
-| First paint (1k rows) | **76ms** | 107ms | not benchmarked |
+| CPU speed, [geometric mean](#performance) | **2.81× faster** | baseline | not benchmarked |
+| Runtime memory (1k rows) | **3.65MB** | 16.56MB | not benchmarked |
+| First paint (1k rows) | **50.6ms** | 71.1ms | not benchmarked |
 | Strict CSP / no-eval | [full JS expressions](/csp/) | [restricted subset](/alpine-csp/) | none |
 | Last release | active | active | [Jan 2022](/petite-vue/) |
 | Reactivity | pluggable signals ([TC39-track](https://github.com/tc39/proposal-signals)) | bundled @vue/reactivity | bundled @vue/reactivity |
@@ -25,44 +25,47 @@ Sprae, [Alpine](https://alpinejs.dev) and [petite-vue](https://github.com/vuejs/
 | Status | active, 0 open issues | active | frozen — last release Jan 2022 |
 | License | MIT | MIT | MIT |
 
-<small>Sizes current as of 2026-07-28 (sprae 13.8.4, Alpine 3.15.12, petite-vue 0.4.1); CPU speed, memory and first paint are from a full benchmark run at sprae 13.8.4 — see [Methodology](#methodology).</small>
+<small>Sizes measured 2026-09-08 (sprae 13.9.2, Alpine 3.17.2, petite-vue 0.4.1); CPU speed, memory and first paint come from the official benchmark's Chrome 152 run at sprae 13.9.1 — see [Methodology](#methodology).</small>
 
 ## Performance
 
-Median times in ms (lower is better), [js-framework-benchmark](https://krausest.github.io/js-framework-benchmark/) keyed suite, full run 2026-07-28 at sprae v13.8.4 vs Alpine v3.14.7, identical machine and Chrome 147:
+Median times in ms (lower is better) from the official [js-framework-benchmark](https://krausest.github.io/js-framework-benchmark/2026/chrome152.html)
+published run, keyed suite, Chrome 152. Sprae v13.9.1 was measured in that run, on the same machine as
+every framework compared here — so these are directly comparable rather than stitched from separate runs:
 
 | benchmark | sprae | Alpine | ratio |
 |---|---|---|---|
-| create 1,000 rows | 29.7 | 67.7 | 2.28× |
-| replace all rows | 32.2 | 83.4 | 2.59× |
-| partial update (every 10th) | 19.8 | 22.4 | 1.13× |
-| select row | 7.4 | 41.4 | 5.59× |
-| swap rows | 20.8 | 38.1 | 1.83× |
-| remove row | 19.0 | 22.0 | 1.16× |
-| create 10,000 rows | 339.8 | 737.5 | 2.17× |
-| append 1,000 rows | 35.1 | 78.5 | 2.24× |
-| clear rows | 15.6 | 64.4 | 4.13× |
-| **geometric mean** | | | **2.27×** |
-| memory after create 1,000 rows | 5.1MB | 16.6MB | 3.27× |
-| first paint | 75.5 | 106.5 | 1.41× |
-| transferred size (benchmark app) | 10.0kb | 14.7kb | 1.47× |
+| create 1,000 rows | 24.0 | 59.6 | 2.48× |
+| replace all rows | 26.3 | 71.5 | 2.72× |
+| partial update (every 10th) | 10.1 | 15.2 | 1.50× |
+| select row | 3.4 | 32.2 | 9.47× |
+| swap rows | 12.5 | 25.4 | 2.03× |
+| remove row | 10.4 | 16.6 | 1.60× |
+| create 10,000 rows | 246.3 | 606.6 | 2.46× |
+| append 1,000 rows | 27.3 | 67.2 | 2.46× |
+| clear rows | 10.6 | 61.8 | 5.83× |
+| **geometric mean** | | | **2.81×** |
+| memory after create 1,000 rows | 3.65MB | 16.56MB | 4.54× |
+| first paint | 50.6 | 71.1 | 1.41× |
+| transferred size (benchmark app) | 10.8kb | 14.7kb | 1.36× |
 
+### The rest of the field
 
-### Against hand-written DOM
+Same run, same machine. CPU is the geometric mean over the nine benchmarks above, expressed as a multiple
+of sprae:
 
-The benchmark's own baseline is `vanillajs` — the same app written with direct DOM calls and no library
-at all. That is the number worth knowing, because it is the ceiling, and it does not move when someone
-else ships a release:
-
-| | vanilla | sprae | Alpine |
+| | CPU | memory after 1k | first paint |
 |---|---|---|---|
-| first paint (1k rows) | 81.1 | 82.7 | 164.7 |
-| CPU, geometric mean | 1.00× | **1.48×** | 3.02× |
-| memory after 1k rows | 1.87MB | 5.57MB | 16.59MB |
+| React 19.2.0 | 1.56× slower | 4.44MB | 221.4ms |
+| Lit 3.2.0 | 1.13× slower | 2.80MB | 64.4ms |
+| Vue 3.5.39 | 1.10× slower | 3.93MB | 93.9ms |
+| Svelte 5.42.1 | 1.01× slower | 2.87MB | 58.4ms |
+| **sprae 13.9.1** | — | **3.65MB** | **50.6ms** |
+| plain DOM (vanillajs) | 1.16× faster | 1.86MB | 52.7ms |
 
-Sprae paints about 2ms behind hand-written DOM. Measured on the keyed suite at sprae 13.3.8 against
-Alpine 3.14.7, a separate run from the table above — the 2026-07-28 run did not carry vanillajs, so the
-two are reported apart rather than mixed.
+Read that last row honestly: hand-written DOM is still faster on CPU, by about 16%. Lit and Svelte hold
+less memory than sprae, and both ship a compiler to do it. First paint against plain DOM is a wash —
+50.6ms against 52.7ms is inside single-run noise, so it means "no measurable cost", not a win.
 
 Run it independently: [krausest/js-framework-benchmark](https://github.com/krausest/js-framework-benchmark) includes both frameworks.
 
@@ -101,4 +104,4 @@ CSP builds are compared separately on the [strict CSP page](/csp/): `@alpinejs/c
 `unpkg.com/@alpinejs/csp` resolves to its CommonJS `main` rather than a browser bundle — compare
 `dist/cdn.min.js` on both sides or the numbers are not like-for-like.
 
-Performance: [js-framework-benchmark](https://github.com/krausest/js-framework-benchmark) official webdriver-ts harness, both frameworks on the same machine, Chrome 147, 15 samples per benchmark, medians reported — full run 2026-07-28 at sprae v13.8.4 vs Alpine v3.14.7 (the Alpine version pinned by the benchmark's own implementation). Memory is the harness's GC'd heap after create-1k; transferred size and first paint are measured by the harness itself.
+Performance: the official [js-framework-benchmark](https://github.com/krausest/js-framework-benchmark) published run for [Chrome 152](https://krausest.github.io/js-framework-benchmark/2026/chrome152.html), keyed suite, medians of 15 samples. Sprae v13.9.1 is in that run, so every framework on this page was measured on one machine in one session — nothing is stitched together from separate runs. Memory is the harness's GC'd heap after create-1k; transferred size and first paint are measured by the harness itself.

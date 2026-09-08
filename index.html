@@ -2221,6 +2221,32 @@
         align-items: center
       }
 
+      /* a quiet pointer out of a section, on the section's own measure */
+      .ref-more {
+        margin-top: var(--sp-4);
+        font-size: var(--fs-sm);
+        opacity: .75;
+        text-wrap: pretty;
+      }
+
+      /* the comparison cycles; the value and its name cross-fade together so the pair never disagrees */
+      .spec-rotate { cursor: pointer; }
+
+      .spec-rotate .spec-value,
+      .spec-rotate .spec-unit {
+        transition: opacity .2s var(--ease-out), filter .2s var(--ease-out);
+      }
+
+      .spec-rotate .fade {
+        opacity: 0;
+        filter: blur(4px);
+      }
+
+      @media (prefers-reduced-motion: reduce) {
+        .spec-rotate .spec-value,
+        .spec-rotate .spec-unit { transition: none; }
+      }
+
       .spec-value {
         font: var(--heading-font);
         font-size: clamp(var(--fs-4), 4vw, var(--fs-5));
@@ -2882,7 +2908,7 @@
             </div>
             <div class="feature-copy">
               <h2>HTML-first</h2>
-              <p>Keep your HTML, JSX, MD or template.<br> No rewrite, no build step.</p>
+              <p>Keep your HTML, JSX, MD or template – no rewrite, no build step. Pure progressive enhancement.</p>
             </div>
           </article>
 
@@ -2897,7 +2923,7 @@
             </div>
             <div class="feature-copy">
               <h2>Light & fast</h2>
-              <p>Faster than React, Vue, Lit, and Alpine.<br> No virtual DOM, no swapping.</p>
+              <p>No virtual DOM, no swapping. Direct DOM updates. Faster than React, Vue, Lit, Alpine.</p>
               <div class="feature-links">
                 <a class="text-link" href="https://krausest.github.io/js-framework-benchmark/current.html">Benchmark <span aria-hidden="true">↗</span></a>
               </div>
@@ -2913,7 +2939,7 @@
             </div>
             <div class="feature-copy">
               <h2>Open</h2>
-              <p>UI state is open to JavaScript.<br> Based on preact-signals, configurable.</p>
+              <p>UI state is open to JavaScript.<br> Built with preact-signals, swappable. Configurable init.</p>
             </div>
           </article>
         </div>
@@ -2923,21 +2949,24 @@
             <dt class="sr-only">size</dt>
             <dd><strong class="spec-value">11.6</strong><span class="spec-unit">KiB<br>gzip</span></dd>
           </div>
-          <div>
-            <dt class="sr-only">dependencies</dt>
-            <dd><strong class="spec-value">0</strong><span class="spec-unit">deps</span></dd>
-          </div>
-          <div>
-            <dt class="sr-only">first paint</dt>
-            <dd><a class="spec-value" href="./compare#performance" aria-label="Two milliseconds behind hand-written DOM code to first paint with 1,000 rows, in the js-framework-benchmark harness">+2</a><span class="spec-unit">ms first paint<br>over plain DOM</span></dd>
+          <div class="spec-rotate" :scope="rotator()" :fx="() => {
+            let id = setInterval(() => advance(), 3000)
+            return () => clearInterval(id)
+          }" :onclick.prevent="advance()">
+            <dt class="sr-only">speed</dt>
+            <dd><a class="spec-value" href="./compare#performance" :aria-label="'sprae runs ' + peers[i].x + ' times the speed of ' + peers[i].n + ', CPU geometric mean of the js-framework-benchmark keyed suite, Chrome 152'" :text="'×' + shown.toFixed(1)">×2.8</a><span class="spec-unit" :class="{ fade }"><span :text="peers[i].n">Alpine</span><br>speed</span></dd>
           </div>
           <div>
             <dt class="sr-only">directives</dt>
-            <dd><a class="spec-value" href="./directives/" aria-label="Twenty directives and twenty modifiers are the whole API">20</a><span class="spec-unit">directives<br>+20 modifiers</span></dd>
+            <dd><a class="spec-value" href="#directives" :onclick="document.getElementById('ref-tab-dir').click()" aria-label="Twenty directives — show them in the reference">20</a><span class="spec-unit">directives</span></dd>
           </div>
           <div>
-            <dt class="sr-only">tests</dt>
-            <dd><a class="spec-value" href="https://github.com/dy/sprae/actions" aria-label="438 tests, run on every commit against both compilers and three signal implementations">438</a><span class="spec-unit">tests<br>every commit</span></dd>
+            <dt class="sr-only">modifiers</dt>
+            <dd><a class="spec-value" href="#directives" :onclick="document.getElementById('ref-tab-mod').click()" aria-label="Twenty modifiers — show them in the reference">20</a><span class="spec-unit">modifiers</span></dd>
+          </div>
+          <div>
+            <dt class="sr-only">dependencies</dt>
+            <dd><strong class="spec-value">0</strong><span class="spec-unit">deps</span></dd>
           </div>
         </dl>
 
@@ -3030,8 +3059,7 @@
         <div class="shell" :scope="{ vtab: 'vanilla' }">
           <div class="section-intro">
             <h2 class="sect-h" id="vs-title">Comparison</h2>
-            <p>How much code that takes with other libraries? Sprae intends to minimize syntax footprint, keeping code elegance and intuitivity.</p>
-            <p class="vs-more"><a class="text-link" href="./drops/">34 working examples</a> – modal, tabs, dropdown, sortable table – code beside the live result.</p>
+            <p>Sprae intends to minimize syntax footprint, keeping code elegance and intuitivity. How much code that takes with other libraries? <a class="text-link" href="./drops/">Examples</a></p>
           </div>
           <div class="vs__compare">
             <article class="vs__side vs__side--framework code-light" id="compare-panel" role="tabpanel" :aria-labelledby="'compare-tab-' + vtab">
@@ -3221,6 +3249,36 @@ layout: default
   data-text="open ? 'Close' : 'Open'"></button>`
         }
       }
+
+      // The speed figure cycles through the field, easing the number itself rather than snapping it.
+      // Ratios are the CPU geometric mean from the Chrome 152 run at sprae 13.9.1.
+      window.rotator = () => ({
+        i: 0, fade: false, shown: 2.8,
+        peers: [
+          { n: 'Alpine', x: 2.8 },
+          { n: 'React', x: 1.6 },
+          { n: 'Lit', x: 1.1 },
+          { n: 'Svelte', x: 1.0 },
+          { n: 'Vue', x: 1.1 }
+        ],
+        advance() {
+          // the name goes out first and only returns once the number has landed, so a stale
+          // pairing is never legible: while the figure travels there is nothing to read it against
+          this.fade = true
+          setTimeout(() => {
+            const from = this.shown
+            this.i = (this.i + 1) % this.peers.length
+            const to = this.peers[this.i].x, t0 = performance.now(), d = 420
+            const step = now => {
+              const p = Math.min(1, (now - t0) / d)
+              this.shown = from + (to - from) * p * p
+              if (p < 1) requestAnimationFrame(step)
+              else this.fade = false
+            }
+            requestAnimationFrame(step)
+          }, 200)
+        }
+      })
 
       window.ref = {
         intro: {
