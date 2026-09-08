@@ -1210,20 +1210,32 @@ a:hover { text-decoration-color: currentColor; }
 .footer__brand img { display: block; width: var(--sp-5); height: var(--sp-5); }
 
 /* one link per column from line 5, where the note above starts */
-/* one flowing row on the note's measure — the count can grow without a rigid grid */
-.footer__links {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--sp-2) var(--sp-5);
-  margin: 0 0 var(--sp-6);
+.footer__nav {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--sp-5);
+  margin: 0 0 var(--sp-8) 40%;
 }
 
-.footer__links a {
+.footer__nav > div {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+.footer__nav-h {
+  margin: 0 0 var(--sp-1);
+  font-size: var(--text-xs);
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  opacity: .55;
+}
+
+.footer__nav a {
   display: inline-flex;
   align-items: center;
   min-height: var(--tap);
   font-size: var(--text-sm);
-  white-space: nowrap;
 }
 
 .footer__license {
@@ -1261,10 +1273,10 @@ a:hover { text-decoration-color: currentColor; }
     margin-block-end: var(--sp-5);
   }
 
-  .footer__links {
+  .footer__nav {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
     margin-inline-start: 0;
     margin-block-end: var(--sp-5);
-    gap: var(--sp-1) var(--sp-4);
   }
 }
 

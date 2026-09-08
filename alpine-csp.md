@@ -53,9 +53,9 @@ There is no single right answer. What follows is the honest shape of each choice
 | `Math.max(a, b)` | no | yes |
 | `` `${count} items` `` | no | yes |
 | `x-html` / `:html` | no | yes |
-| Size, min+gzip | 22.5kb | 20.3kb |
+| Size, min+gzip | 23.0kb | 20.4kb |
 
-Sizes measured for `@alpinejs/csp` 3.16.2 and sprae 13.9.2; reproduce them with the method in the [comparison](/compare/#methodology).
+Sizes measured 2026-09-08 for `@alpinejs/csp` 3.17.2 and sprae 13.9.2; reproduce them with the method in the [comparison](/compare/#methodology).
 
 ## If you switch
 

@@ -12,7 +12,7 @@ Sprae, [Alpine](https://alpinejs.dev) and [petite-vue](https://github.com/vuejs/
 
 | | sprae | Alpine | petite-vue |
 |---|---|---|---|
-| CDN build, min+gzip | **10.9kb** | 16.7kb | 7.1kb |
+| CDN build, min+gzip | **11.9kb** | 19.9kb | 7.1kb |
 | CPU speed, [geometric mean](#performance) | **2.27× faster** | baseline | not benchmarked |
 | Runtime memory (1k rows) | **5.1MB** | 16.6MB | not benchmarked |
 | First paint (1k rows) | **76ms** | 107ms | not benchmarked |
@@ -68,14 +68,20 @@ Honesty over conversion:
 
 ## Methodology
 
-Sizes measured 2026-07-28, unpkg default build of each package (sprae 13.8.4, Alpine 3.15.12, petite-vue 0.4.1):
+Sizes measured 2026-09-08, unpkg default build of each package (sprae 13.9.2, Alpine 3.17.2, petite-vue 0.4.1):
 
 ```sh
-curl -sL https://unpkg.com/sprae      | gzip -9 | wc -c   # 10947
-curl -sL https://unpkg.com/alpinejs   | gzip -9 | wc -c   # 16694
+curl -sL https://unpkg.com/sprae      | gzip -9 | wc -c   # 11932
+curl -sL https://unpkg.com/alpinejs   | gzip -9 | wc -c   # 19865
 curl -sL https://unpkg.com/petite-vue | gzip -9 | wc -c   #  7061
 ```
 
-sprae's ESM build (`sprae.js`) is smaller — 9.9kb gzip, 9.1kb brotli — if you import it directly.
+Both grew since the July run (sprae 10947 → 11932, Alpine 16694 → 19865); Alpine grew faster, so the gap widened.
+
+sprae's ESM build (`sprae.js`) is smaller — 10.9kb gzip, 9.9kb brotli — if you import it directly.
+
+CSP builds are compared separately on the [strict CSP page](/csp/): `@alpinejs/csp` has no `unpkg` field, so
+`unpkg.com/@alpinejs/csp` resolves to its CommonJS `main` rather than a browser bundle — compare
+`dist/cdn.min.js` on both sides or the numbers are not like-for-like.
 
 Performance: [js-framework-benchmark](https://github.com/krausest/js-framework-benchmark) official webdriver-ts harness, both frameworks on the same machine, Chrome 147, 15 samples per benchmark, medians reported — full run 2026-07-28 at sprae v13.8.4 vs Alpine v3.14.7 (the Alpine version pinned by the benchmark's own implementation). Memory is the harness's GC'd heap after create-1k; transferred size and first paint are measured by the harness itself.

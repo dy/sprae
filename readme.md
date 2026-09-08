@@ -519,7 +519,7 @@ Works with [define-element](https://github.com/dy/define-element), Lit, or any C
 ## FAQ
 
 **How does it compare to Alpine?**<br>
-Sprae is ~1.5× smaller, ~2.3× faster, and uses ~3× less runtime memory in [this comparison](https://sprae.js.org/compare). It has pluggable signals, built-in modifiers, event chains, and a full-JS [CSP build](https://sprae.js.org/csp).
+Sprae is ~1.7× smaller, ~2.3× faster, and uses ~3× less runtime memory in [this comparison](https://sprae.js.org/compare). It has pluggable signals, built-in modifiers, event chains, and a full-JS [CSP build](https://sprae.js.org/csp).
 
 **How does it compare to React/Vue?**<br>
 In the official [js-framework-benchmark](https://krausest.github.io/js-framework-benchmark/current.html) (Chrome 150), sprae places ahead of Vue, Preact and React in CPU speed, at 11.6kb compressed, with no build step or virtual DOM. In [JSX](#jsx--nextjs), it adds client-side interactivity without `'use client'`.
