@@ -630,7 +630,7 @@
       .usage-facts a,
       .usage-intro p a,
       .aspect__link,
-      .aspect__table a {
+      .aspect__alts a {
         text-decoration: underline;
         text-decoration-thickness: 1px;
         text-decoration-color: var(--link-rule);
@@ -646,7 +646,7 @@
       .usage-facts a:hover,
       .usage-intro p a:hover,
       .aspect__link:hover,
-      .aspect__table a:hover,
+      .aspect__alts a:hover,
       .topbar nav a:focus-visible,
       .text-link:focus-visible,
       .footer__links a:focus-visible,
@@ -1269,7 +1269,8 @@
         font: 500 var(--fs-0)/1.3 var(--font-display)
       }
 
-      .aspect p {
+      /* the description clamps at two lines; the alternatives line below it is not clamped */
+      .aspect > p:not(.aspect__alts) {
         display: -webkit-box;
         -webkit-box-orient: vertical;
         -webkit-line-clamp: 2;
@@ -1297,23 +1298,18 @@
         font: var(--caption-font)
       }
 
-      /* alternatives as two columns: the name, a link where there is one, and its size */
-      .aspect__table {
-        margin: var(--sp-3) 0 0;
-        border-collapse: collapse;
-        font: var(--caption-font);
-        font-size: var(--fs-xs);
+      /* alternatives as one flowing line: name, a link where there is one, size in parens */
+      .aspect__alts {
+        margin: var(--sp-1) 0 0;
+        font: var(--caption-font)
       }
 
-      .aspect__table th,
-      .aspect__table td {
-        padding: 0;
-        font-weight: inherit;
-        text-align: left;
+      .aspect__alts .alt:not(:last-child)::after {
+        content: ', '
       }
 
-      .aspect__table td {
-        padding-inline-start: var(--sp-3);
+      .aspect__alts .sz {
+        color: var(--code-muted);
         font-variant-numeric: tabular-nums;
       }
 
@@ -2871,9 +2867,7 @@
               <h3 :text="a.title"></h3>
               <p :text="a.description"></p>
               <pre class="code-light" :if="a.code"><code :html="hl(a.code)"></code></pre>
-              <table class="aspect__table" :if="a.rows">
-                <tr :each="r in a.rows"><th scope="row"><a :if="r[2]" :href="r[2]" :text="r[0]"></a><span :else :text="r[0]"></span></th><td :text="r[1]"></td></tr>
-              </table>
+              <p class="aspect__alts" :if="a.rows"><span class="alt" :each="r in a.rows"><a :if="r[2]" :href="r[2]" :text="r[0]"></a><span :else :text="r[0]"></span> <span class="sz" :text="'(' + r[1] + ')'"></span></span></p>
               <a class="text-link aspect__link" :if="a.link" :href="a.link?.href"><span :text="a.link?.label"></span> <span aria-hidden="true">↗</span></a>
             </article>
           </div>
@@ -3341,24 +3335,24 @@ layout: default
       window.aspects = [
         {
           title: 'CSP',
-          description: 'A build that runs without eval or new Function, for strict CSP.',
+          description: 'Safe under a strict CSP: no eval, no new Function.',
           code: `<script src="sprae-csp.umd.js">`
         },
         {
           title: 'Browser extensions',
           description: 'Bundle the CSP build; Manifest V3 allows no eval and no CDN.',
-          code: `<!-- popup.html -->
-<script src="sprae-csp.umd.js">` },
+          code: `// manifest.json
+{ "manifest_version": 3 }` },
         {
           title: 'Fragments',
-          description: 'A template renders several nodes, no wrapper.',
+          description: 'A <template> renders contents unwrapped.',
           code: `<template :each="it in list">
   <dt :text="it.term"></dt>
   <dd :text="it.defn"></dd>
 </template>` },
         {
           title: 'Event chains',
-          description: 'Set up on one event, clean up on its partner, in one handler.',
+          description: 'One handler: set up on the first event, tear down on the second.',
           code: `:onfocus..onblur="e =>
   (on = 1, () => on = 0)"` },
         {
@@ -3368,14 +3362,14 @@ layout: default
         },
         {
           title: 'Non-keyed',
-          description: 'Objects track by identity, primitives by index, with no :key to write.',
+          description: 'No :key to write: objects track by identity, primitives by index.',
           code: `<li :each="item in items"></li>`
         },
         {
           title: 'Pluggable signals',
-          description: 'Swap the built-in signals.',
+          description: 'Swap the built-in signals:',
           rows: [
-            ['Built-in', '~300b'],
+            ['built-in', '~300b'],
             ['@preact/signals-core', '1.5kb', 'https://github.com/preactjs/signals'],
             ['ulive', '350b', 'https://github.com/kethan/ulive'],
             ['signal', '633b', 'https://github.com/WebReflection/signal'],
@@ -3384,9 +3378,9 @@ layout: default
         },
         {
           title: 'Preact-signals',
-          description: 'A build on @preact/signals-core: signals shared with Preact.',
-          code: `<script src="sprae-preact.umd.js">`
-        },
+          description: 'Signals shared with Preact.',
+          code: `<script
+  src="sprae-preact.umd.js">` },
         {
           title: 'Automatic cleanup',
           description: 'What an effect returns runs when the effect is disposed.',
