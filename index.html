@@ -2229,23 +2229,8 @@
         text-wrap: pretty;
       }
 
-      /* the comparison cycles; the value and its name cross-fade together so the pair never disagrees */
+      /* the comparison cycles: the name switches outright, the figure counts across */
       .spec-rotate { cursor: pointer; }
-
-      .spec-rotate .spec-value,
-      .spec-rotate .spec-unit {
-        transition: opacity .2s var(--ease-out), filter .2s var(--ease-out);
-      }
-
-      .spec-rotate .fade {
-        opacity: 0;
-        filter: blur(4px);
-      }
-
-      @media (prefers-reduced-motion: reduce) {
-        .spec-rotate .spec-value,
-        .spec-rotate .spec-unit { transition: none; }
-      }
 
       .spec-value {
         font: var(--heading-font);
@@ -2954,7 +2939,7 @@
             return () => clearInterval(id)
           }" :onclick.prevent="advance()">
             <dt class="sr-only">speed</dt>
-            <dd><a class="spec-value" href="./compare#performance" :aria-label="'sprae runs ' + peers[i].x + ' times the speed of ' + peers[i].n + ', CPU geometric mean of the js-framework-benchmark keyed suite, Chrome 152'" :text="'×' + shown.toFixed(1)">×2.8</a><span class="spec-unit" :class="{ fade }"><span :text="peers[i].n">Alpine</span><br>speed</span></dd>
+            <dd><a class="spec-value" href="./compare#performance" :aria-label="'sprae runs ' + peers[i].x + ' times the speed of ' + peers[i].n + ', CPU geometric mean of the js-framework-benchmark keyed suite, Chrome 152'" :text="'×' + shown.toFixed(1)">×2.8</a><span class="spec-unit"><span :text="peers[i].n">Alpine</span><br>speed</span></dd>
           </div>
           <div>
             <dt class="sr-only">directives</dt>
@@ -3253,7 +3238,7 @@ layout: default
       // The speed figure cycles through the field, easing the number itself rather than snapping it.
       // Ratios are the CPU geometric mean from the Chrome 152 run at sprae 13.9.1.
       window.rotator = () => ({
-        i: 0, fade: false, shown: 2.8,
+        i: 0, shown: 2.8,
         peers: [
           { n: 'Alpine', x: 2.8 },
           { n: 'React', x: 1.6 },
@@ -3262,21 +3247,16 @@ layout: default
           { n: 'Vue', x: 1.1 }
         ],
         advance() {
-          // the name goes out first and only returns once the number has landed, so a stale
-          // pairing is never legible: while the figure travels there is nothing to read it against
-          this.fade = true
-          setTimeout(() => {
-            const from = this.shown
-            this.i = (this.i + 1) % this.peers.length
-            const to = this.peers[this.i].x, t0 = performance.now(), d = 420
-            const step = now => {
-              const p = Math.min(1, (now - t0) / d)
-              this.shown = from + (to - from) * p * p
-              if (p < 1) requestAnimationFrame(step)
-              else this.fade = false
-            }
-            requestAnimationFrame(step)
-          }, 200)
+          // the label switches on the spot; only the figure moves, and it moves quickly
+          const from = this.shown
+          this.i = (this.i + 1) % this.peers.length
+          const to = this.peers[this.i].x, t0 = performance.now(), d = 260
+          const step = now => {
+            const p = Math.min(1, (now - t0) / d)
+            this.shown = from + (to - from) * p * p
+            if (p < 1) requestAnimationFrame(step)
+          }
+          requestAnimationFrame(step)
         }
       })
 
