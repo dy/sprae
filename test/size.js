@@ -7,7 +7,7 @@ const kb = f => gzipSync(readFileSync(new URL('../dist/' + f, import.meta.url)),
 const claims = [
   ['readme.md', /size-([\d.]+)kb-/, 'sprae.umd.js'],
   ['readme.md', /at ([\d.]+)kb compressed/, 'sprae.umd.js'],
-  ['index.md', /\*\*([\d.]+)kb, 0 deps\*\*/, 'sprae.umd.js'],
+  ['index.html', /spec-value">([\d.]+)<\/strong><span class="spec-unit">KiB/, 'sprae.umd.js'],
   ['csp.md', /\| size, min\+gzip \| \*\*([\d.]+)kb\*\*/, 'sprae-csp.umd.js'],
 ]
 
