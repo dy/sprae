@@ -1,6 +1,7 @@
 ---
-title: Drops
-description: Small working sprae examples, each with its code beside the live result.
+title: "HTML examples without a framework"
+description: "34 working examples – modal, tabs, dropdown, sortable table, calculators – each built with HTML attributes only, no build step and no component files."
+permalink: /drops/
 ---
 
 <div class="no-toc">

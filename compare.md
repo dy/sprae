@@ -1,6 +1,7 @@
 ---
-title: Sprae vs Alpine vs petite-vue
-description: Measured comparison of reactive sprinkles libraries — size, performance, CSP support, maintenance. Every number reproducible.
+title: "Alpine.js vs petite-vue vs sprae, measured"
+description: "Size, speed, memory, CSP support and maintenance compared across the three reactive-sprinkles libraries. Every number reproducible, methodology included."
+permalink: /compare/
 ---
 
 # Comparison
@@ -15,7 +16,7 @@ Sprae, [Alpine](https://alpinejs.dev) and [petite-vue](https://github.com/vuejs/
 | CPU speed, [geometric mean](#performance) | **2.27× faster** | baseline | not benchmarked |
 | Runtime memory (1k rows) | **5.1MB** | 16.6MB | not benchmarked |
 | First paint (1k rows) | **76ms** | 107ms | not benchmarked |
-| Strict CSP / no-eval | [full JS expressions](./csp) | [restricted subset](https://alpinejs.dev/advanced/csp) | none |
+| Strict CSP / no-eval | [full JS expressions](/csp/) | [restricted subset](/alpine-csp/) | none |
 | Reactivity | pluggable signals ([TC39-track](https://github.com/tc39/proposal-signals)) | bundled @vue/reactivity | bundled @vue/reactivity |
 | Keyed lists | automatic (by identity) | manual `:key` | manual `:key` |
 | Debounce, throttle, key filters | built-in [modifiers](https://github.com/dy/sprae#modifiers) | plugin packages | none |
@@ -52,7 +53,7 @@ Run it independently: [krausest/js-framework-benchmark](https://github.com/kraus
 Honesty over conversion:
 
 - **Laravel Livewire** — Alpine ships inside it; use what's already there.
-- **Official plugins** — `x-transition` sugar, mask, collapse, sort, persist are packaged and documented. Sprae covers most of this with [modifiers and CSS](./alpine#x-transition), but you assemble it yourself.
+- **Official plugins** — `x-transition` sugar, mask, collapse, sort, persist are packaged and documented. Sprae covers most of this with [modifiers and CSS](/alpine/#x-transition), but you assemble it yourself.
 - **Community volume** — years of StackOverflow answers, recipes, and tutorials. Sprae trades ecosystem size for engine size.
 
 ## When petite-vue is the better choice
@@ -61,7 +62,7 @@ Honesty over conversion:
 
 ## Migrating
 
-- [Alpine → sprae](./alpine) — directive-by-directive mapping.
+- [Alpine → sprae](/alpine/) — directive-by-directive mapping.
 - petite-vue → sprae — mostly rename: `v-scope`→`:scope`, `v-if`→`:if`, `v-for`→`:each`, `@click`→`:onclick`, `v-model`→`:value`.
 
 ## Methodology

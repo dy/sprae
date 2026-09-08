@@ -1,6 +1,7 @@
 ---
-title: Migrating from Alpine to Sprae
-description: Alpine directives, magics, plugins and Alpine.data() with their sprae equivalents, side by side.
+title: "Alpine.js to sprae migration guide"
+description: "Every Alpine directive, magic and plugin with its sprae equivalent, side by side: x-data, x-for, x-model, x-init, x-transition and Alpine.data()."
+permalink: /alpine/
 ---
 
 # Migrating from Alpine to Sprae
@@ -428,6 +429,7 @@ No plugin system needed — sprae expressions have full JS access, so most Alpin
 ## CSP (Content Security Policy)
 
 Alpine's CSP build has limitations (no arrow functions, no nested property assignments).
+Full breakdown, including the non-sprae options: [Alpine's CSP build and the alternatives](/alpine-csp/).
 
 Sprae with jessie supports full CSP compliance with more features:
 

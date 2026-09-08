@@ -1,6 +1,7 @@
 ---
-title: Sprae under strict CSP
-description: Full JS expressions in HTML with no eval and no new Function — strict Content-Security-Policy and Chrome MV3 extensions.
+title: "Reactive HTML attributes under strict CSP, without eval"
+description: "Full JavaScript expressions in HTML with no eval and no new Function. For strict Content-Security-Policy, Chrome MV3 extensions and locked-down environments."
+permalink: /csp/
 ---
 
 # Strict CSP
@@ -82,3 +83,9 @@ Content-Security-Policy: default-src 'self'; script-src 'self'
 ```
 
 No `'unsafe-eval'`, no `'unsafe-inline'` needed — directives are attributes, not inline scripts.
+
+## See also
+
+- [Alpine's CSP build, and the alternatives](/alpine-csp/) – what `@alpinejs/csp` restricts, and how Stimulus, Lit, Preact and sprae compare.
+- [Chrome Manifest V3 extensions](/manifest-v3/) – a complete working popup, content scripts, and the sandboxed-iframe escape hatch.
+- [Alpine to sprae migration guide](/alpine/) – every directive, magic and plugin mapped.

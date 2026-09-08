@@ -1,4 +1,6 @@
 url: https://sprae.js.org
+title: Sprae
+description: Reactive HTML attributes with no build step – a lightweight Alpine.js alternative that runs under strict CSP.
 
 exclude:
   - AGENTS.md

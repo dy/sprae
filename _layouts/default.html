@@ -4,22 +4,41 @@
   <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% if page.title %}{{ page.title }} · Sprae{% else %}Sprae: minimal reactivity for HTML/JSX{% endif %}</title>
-    <meta name="description" content="{{ page.description | default: 'Sprae evaluates :attributes, evaporates them, and hydrates the DOM in place. 11.6 KiB gzip, no build step, works with any backend.' }}">
+    {%- assign fallback_desc = 'Add reactivity to server-rendered HTML with :attributes. 11.6 KiB gzip, no build step, works with any backend and under strict CSP.' -%}
+    {%- assign page_title = page.title | default: 'Sprae: reactive HTML attributes, no build step' -%}
+    {%- assign page_desc = page.description | default: fallback_desc -%}
+    {%- capture full_title %}{% if page.title %}{{ page.title }} · Sprae{% else %}{{ page_title }}{% endif %}{% endcapture -%}
+    {%- assign canonical = page.url | replace: 'index.html', '' | prepend: 'https://sprae.js.org' -%}
+    <title>{{ full_title | escape }}</title>
+    <meta name="description" content="{{ page_desc | escape }}">
     <link rel="icon" href="{{ '/assets/logo.svg' | relative_url }}">
-    <link rel="canonical" href="https://sprae.js.org{{ page.url | replace: 'index.html', '' }}">
-    <meta property="og:title" content="{% if page.title %}{{ page.title }} · Sprae{% else %}Sprae: minimal reactivity for HTML/JSX{% endif %}">
-    <meta property="og:description" content="{{ page.description | default: 'Sprae evaluates :attributes, evaporates them, and hydrates the DOM in place. 11.6 KiB gzip, no build step, works with any backend.' }}">
-    <meta property="og:type" content="website">
-    <meta property="og:url" content="https://sprae.js.org{{ page.url }}">
+    <link rel="canonical" href="{{ canonical }}">
+    <meta property="og:site_name" content="Sprae">
+    <meta property="og:title" content="{{ full_title | escape }}">
+    <meta property="og:description" content="{{ page_desc | escape }}">
+    <meta property="og:type" content="{% if page.collection %}article{% else %}website{% endif %}">
+    <meta property="og:url" content="{{ canonical }}">
     <meta property="og:image" content="https://sprae.js.org/assets/og.png">
     <meta name="twitter:card" content="summary_large_image">
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "TechArticle",
+      "headline": {{ full_title | strip | jsonify }},
+      "description": {{ page_desc | jsonify }},
+      "url": {{ canonical | jsonify }},
+      "isPartOf": { "@type": "WebSite", "name": "Sprae", "url": "https://sprae.js.org/" },
+      "about": { "@type": "SoftwareApplication", "name": "Sprae", "applicationCategory": "DeveloperApplication" },
+      "author": { "@type": "Person", "name": "Dmitry Iv.", "url": "https://github.com/dy" },
+      "license": "https://opensource.org/licenses/MIT"
+    }
+    </script>
     <link rel="stylesheet" href="{{ '/assets/tokens.css' | relative_url }}?{{ site.time | date: '%s' }}" />
     <link rel="stylesheet" href="{{ '/assets/style.css' | relative_url }}?{{ site.time | date: '%s' }}" />
     <script src="https://unpkg.com/sprae" data-prefix="data-" data-start defer></script>
   </head>
 
-  <body id="page-{{ page.name | default: 'index' | split: '.' | first }}"
+  <body id="page-{% if page.collection %}{{ page.collection }}{% else %}{{ page.name | default: 'index' | split: '.' | first }}{% endif %}"
     data-fx.once="document.querySelectorAll(':is(h2, h3, h4, h5, h6)[id]:not(.no-toc *)').forEach(function(h) { var a = document.createElement('a'); a.href = '#' + h.id; a.className = 'anchor'; a.textContent = '#'; h.prepend(a) })">
     <a href="#main-content" class="skip-link">Skip to content</a>
     <!-- Spray effect - cursor cloud with inertia -->
@@ -221,9 +240,9 @@
       </a>
       <nav aria-label="Site">
         <a href="{{ '/#docs' | relative_url }}">Usage</a>
-        <a href="{{ '/#directives' | relative_url }}">Reference</a>
+        <a href="{{ '/directives/' | relative_url }}">Reference</a>
         <a href="{{ '/#faq' | relative_url }}">FAQ</a>
-        <a href="{{ '/drops' | relative_url }}">Drops</a>
+        <a href="{{ '/drops/' | relative_url }}">Drops</a>
       </nav>
       <div class="topbar__end">
         <span class="topbar__ver">v<span data-text="window.sprae?.version || '13.9.1'"></span></span>
@@ -316,8 +335,12 @@
           <a class="footer__brand" href="{{ '/' | relative_url }}"><img src="{{ '/assets/logo.svg' | relative_url }}" alt="" width="24" height="24"> spræ</a>
           <nav class="footer__links" aria-label="Footer">
             <a href="{{ '/#docs' | relative_url }}">Usage</a>
-            <a href="{{ '/#directives' | relative_url }}">Reference</a>
+            <a href="{{ '/directives/' | relative_url }}">Directives</a>
+            <a href="{{ '/drops/' | relative_url }}">Examples</a>
             <a href="{{ '/#faq' | relative_url }}">FAQ</a>
+            <a href="{{ '/alpine/' | relative_url }}">From Alpine</a>
+            <a href="{{ '/csp/' | relative_url }}">Strict CSP</a>
+            <a href="{{ '/compare/' | relative_url }}">Comparison</a>
             <a href="https://github.com/dy/sprae">GitHub ↗</a>
           </nav>
           <small class="footer__license">MIT <a href="https://krishnized.github.io/license" aria-label="Krishnized license">ॐ</a></small>

@@ -1,0 +1,38 @@
+---
+permalink: /llms.txt
+layout: null
+sitemap: false
+---
+# Sprae
+
+> Sprae adds reactivity to server-rendered HTML through `:`-prefixed attributes. 11.6 KiB gzip, zero dependencies, no build step. It is a lighter alternative to Alpine.js and petite-vue, and the only one of the three that runs full JavaScript expressions under a strict Content-Security-Policy with no `eval` and no `new Function`, which also makes it usable in Chrome Manifest V3 extensions.
+
+State is a plain object, expressions are plain JavaScript, and reactivity is signals-based with a pluggable signal implementation (TC39 proposal, Preact signals, or its own). Lists are keyed by identity automatically, so there is no `:key` to write. It works with any backend, Rails, Django, Laravel, PHP, Go, Jekyll, Astro, 11ty, Next.js, and with JSX, Markdown and server templates.
+
+Use it for server-rendered pages, static sites, landing pages, browser extensions and prototypes: anywhere a full framework is overkill. Do not use it for applications that live in client state, routing, deep component trees, offline, where a framework earns its weight.
+
+## Pages
+
+- [Homepage](https://sprae.js.org/): what it is, live demo, usage, FAQ.
+- [Directives reference](https://sprae.js.org/directives/): all 20 directives and 20 modifiers, with their Alpine equivalents.
+- [Examples](https://sprae.js.org/drops/): 34 working components, code beside the live result.
+- [Alpine.js to sprae migration guide](https://sprae.js.org/alpine/): every Alpine directive, magic and plugin mapped.
+- [Alpine.js vs petite-vue vs sprae, measured](https://sprae.js.org/compare/): size, speed, memory, CSP, maintenance, with methodology.
+- [Strict CSP](https://sprae.js.org/csp/): full JS expressions with no eval, via the jessie interpreter.
+- [Alpine's CSP build and the alternatives](https://sprae.js.org/alpine-csp/): what @alpinejs/csp restricts, compared with Stimulus, Lit, Preact and sprae.
+- [Chrome Manifest V3 extensions](https://sprae.js.org/manifest-v3/): a complete working popup, content scripts, and the sandboxed-iframe escape hatch.
+- [TodoMVC](https://sprae.js.org/examples/todomvc/): the reference app in plain HTML attributes.
+- [README](https://github.com/dy/sprae#readme): full API, integration notes, configuration.
+
+## Directives
+
+`:scope` local state · `:if` / `:else` conditional DOM · `:each` lists · `:text` text content · `:html` innerHTML · `:class` classes · `:style` inline styles and CSS variables · `:<attr>` any attribute · `:="{…}"` attribute spread · `:value` input binding · `:change` write-back · `:on<event>` events · `:on<a>..on<b>` event sequence · `:fx` reactive effects · `:ref` element ref · `:hidden` visibility · `:mount` lifecycle · `:intersect` viewport · `:resize` element size · `:portal` teleport
+
+## Facts
+
+- Install: `npm i sprae` or `<script src="https://unpkg.com/sprae" defer></script>`
+- Repository: https://github.com/dy/sprae
+- Package: https://www.npmjs.com/package/sprae
+- License: MIT
+- Author: Dmitry Iv. (https://github.com/dy), maintained since 2022
+- Benchmarked in the official js-framework-benchmark: https://krausest.github.io/js-framework-benchmark/

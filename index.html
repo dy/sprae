@@ -5,18 +5,120 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="theme-color" content="#f0f0ef">
-    <title>Sprae: minimal reactivity for HTML/JSX</title>
-    <meta name="description" content="Sprae evaluates :attributes, evaporates them, and hydrates the DOM in place. 11.6 KiB gzip, no build step, works with any backend.">
+    <title>Sprae – reactive HTML attributes with no build step</title>
+    <meta name="description" content="Add reactivity to server-rendered HTML with :attributes. 11.6 KiB gzip, no build step, works with any backend and under strict CSP.">
     <link rel="icon" href="./assets/logo.svg">
-    <meta property="og:title" content="Sprae: minimal reactivity for HTML/JSX">
-    <meta property="og:description" content="Sprae evaluates :attributes, evaporates them, and hydrates the DOM in place. 11.6 KiB gzip, no build step, works with any backend.">
+    <meta property="og:site_name" content="Sprae">
+    <meta property="og:title" content="Sprae – reactive HTML attributes with no build step">
+    <meta property="og:description" content="Add reactivity to server-rendered HTML with :attributes. 11.6 KiB gzip, no build step, works with any backend and under strict CSP.">
     <meta property="og:type" content="website">
     <meta property="og:url" content="https://sprae.js.org/">
     <meta property="og:image" content="https://sprae.js.org/assets/og.png">
     <meta name="twitter:card" content="summary_large_image">
     <link rel="canonical" href="https://sprae.js.org/">
     <script type="application/ld+json">
-      {"@context":"https://schema.org","@type":"SoftwareSourceCode","name":"Sprae","alternateName":"spræ","description":"Sprae evaluates :attributes, evaporates them, and hydrates the DOM in place. 11.6 KiB gzip, no build step, works with any backend.","url":"https://sprae.js.org/","codeRepository":"https://github.com/dy/sprae","programmingLanguage":"JavaScript","runtimePlatform":"Browser","license":"https://github.com/dy/sprae/blob/main/license","author":{"@type":"Person","name":"Dmitry Iv.","url":"https://github.com/dy"}}
+{
+  "@context": "https://schema.org",
+  "@type": "SoftwareApplication",
+  "name": "Sprae",
+  "alternateName": "sprae.js",
+  "applicationCategory": "DeveloperApplication",
+  "applicationSubCategory": "JavaScript library",
+  "operatingSystem": "Any browser with Proxy support",
+  "description": "Sprae adds reactivity to server-rendered HTML through :attributes. 11.6 KiB gzip, no build step, signals-based, with a CSP build that runs full JavaScript expressions without eval.",
+  "url": "https://sprae.js.org/",
+  "downloadUrl": "https://www.npmjs.com/package/sprae",
+  "codeRepository": "https://github.com/dy/sprae",
+  "programmingLanguage": "JavaScript",
+  "license": "https://opensource.org/licenses/MIT",
+  "isAccessibleForFree": true,
+  "offers": {
+    "@type": "Offer",
+    "price": "0",
+    "priceCurrency": "USD"
+  },
+  "author": {
+    "@type": "Person",
+    "name": "Dmitry Iv.",
+    "url": "https://github.com/dy"
+  },
+  "keywords": "reactive HTML attributes, Alpine.js alternative, petite-vue alternative, no build step, progressive enhancement, signals, CSP, Manifest V3"
+}
+    </script>
+    <script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "mainEntity": [
+    {
+      "@type": "Question",
+      "name": "Why a library, when AI writes the code?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Agents can write sprae code easily. Sprae removes frontend build step from your pipeline – perfect fit for static sites."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Is evaluating attributes safe?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Expressions compile with new Function, same as any inline script. The CSP build provides safe execution without eval."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "What if the script fails to load?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Sprae provides progressive enhancement, so the page falls back to your HTML. To hide FOUC, use [:if],[:each]{visibility:hidden}."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Does it have components?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "For simpler cases, manage duplication with templates or includes. Custom elements can be made with define-element or any CE library: sprae sets their props and stops at their boundary. Coming from Alpine.data()? See the migration guide."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Who is it not for?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Apps that live in client state: routing, deep component trees, offline. Take a framework there. Sprae is for pages where a framework is overkill."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "How do I debug an expression?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Expressions is plain JS, state is plain object. An error names the element and the expression in the console."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Is it production-ready?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "3+ years of releases, no dependencies, tests across both compilers and alternative signals, any browser with Proxy."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Who maintains it?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Dmitry Iv, since 2022, under MIT. Independent, no company behind it."
+      }
+    }
+  ]
+}
+    </script>
+    <script type="application/ld+json">
+      {"@context":"https://schema.org","@type":"SoftwareSourceCode","name":"Sprae","alternateName":"spræ","description":"Sprae adds reactivity to server-rendered HTML through :attributes. 11.6 KiB gzip, no build step, works with any backend and under strict CSP.","url":"https://sprae.js.org/","codeRepository":"https://github.com/dy/sprae","programmingLanguage":"JavaScript","runtimePlatform":"Browser","license":"https://github.com/dy/sprae/blob/main/license","author":{"@type":"Person","name":"Dmitry Iv.","url":"https://github.com/dy"}}
     </script>
     <link rel="preload" href="./assets/ibm-plex-sans-latin-wght-normal.woff2" as="font" type="font/woff2" crossorigin>
     <link rel="preload" href="./assets/geist-latin-wght-normal.woff2" as="font" type="font/woff2" crossorigin>
@@ -2625,6 +2727,7 @@
         <a href="#docs">Usage</a>
         <a href="#directives">Reference</a>
         <a href="#faq">FAQ</a>
+        <a href="./drops/">Drops</a>
       </nav>
       <div class="topbar__end">
         <span class="topbar__ver">v13.9.1</span>
@@ -2900,6 +3003,7 @@
               </button>
             </div>
           </div>
+          <p class="ref-more"><a class="text-link" href="./directives/">Full directives reference</a>, with every modifier and its Alpine equivalent.</p>
         </div>
       </section>
 
@@ -2913,6 +3017,7 @@
           <div class="section-intro">
             <h2 class="sect-h" id="vs-title">Comparison</h2>
             <p>How much code that takes with other libraries? Sprae intends to minimize syntax footprint, keeping code elegance and intuitivity.</p>
+            <p class="vs-more"><a class="text-link" href="./drops/">34 working examples</a> – modal, tabs, dropdown, sortable table – code beside the live result.</p>
           </div>
           <div class="vs__compare">
             <article class="vs__side vs__side--framework code-light" id="compare-panel" role="tabpanel" :aria-labelledby="'compare-tab-' + vtab">
@@ -2988,8 +3093,12 @@
           <a class="footer__brand" href="./"><img src="./assets/logo.svg" alt="" width="24" height="24"> spræ</a>
           <nav class="footer__links" aria-label="Footer">
             <a href="#docs">Usage</a>
-            <a href="#directives">Reference</a>
+            <a href="./directives/">Directives</a>
+            <a href="./drops/">Examples</a>
             <a href="#faq">FAQ</a>
+            <a href="./alpine/">From Alpine</a>
+            <a href="./csp/">Strict CSP</a>
+            <a href="./compare/">Comparison</a>
             <a href="https://github.com/dy/sprae">GitHub ↗</a>
           </nav>
           <small class="footer__license">MIT <a href="https://krishnized.github.io/license" aria-label="Krishnized license">ॐ</a></small>

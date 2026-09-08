@@ -1,6 +1,6 @@
 {
   "name": "sprae",
-  "description": "DOM microhydration",
+  "description": "Reactive HTML attributes. No build step, signals-based, CSP-safe.",
   "version": "13.9.1",
   "main": "./sprae.js",
   "module": "./sprae.js",
@@ -82,13 +82,21 @@
     "url": "git+https://github.com/dy/sprae.git"
   },
   "keywords": [
+    "alpinejs",
+    "alpine-alternative",
+    "petite-vue",
+    "reactive",
+    "reactive-attributes",
+    "html",
+    "directives",
+    "signals",
+    "preact-signals",
+    "no-build",
+    "csp",
+    "manifest-v3",
     "hydration",
     "progressive",
     "progressive enhancement",
-    "signals",
-    "directives",
-    "preact-signals",
-    "reactive",
     "template-parts",
     "templating"
   ],
@@ -97,5 +105,5 @@
   "bugs": {
     "url": "https://github.com/dy/sprae/issues"
   },
-  "homepage": "https://github.com/dy/sprae#readme"
+  "homepage": "https://sprae.js.org"
 }

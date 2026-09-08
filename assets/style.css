@@ -1217,6 +1217,9 @@ a:hover { text-decoration-color: currentColor; }
   align-items: center;
 }
 
+/* eight links wrap into two rows of four without widening the column */
+.footer__links a:nth-child(n + 5) { grid-row: 2; }
+
 .footer__links a {
   display: inline-flex;
   align-items: center;
@@ -1283,4 +1286,12 @@ a:hover { text-decoration-color: currentColor; }
 /* phones: four links here, one more than the index, so the version leaves the row to them earlier */
 @media (max-width: 26rem) {
   .topbar__ver { display: none; }
+}
+
+.ref-more,
+.vs-more {
+  font-size: var(--text-sm);
+  opacity: 0.75;
+  margin-top: var(--sp-4);
+  text-wrap: pretty;
 }
