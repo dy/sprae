@@ -55,7 +55,7 @@
       "name": "Why a library, when AI writes the code?",
       "acceptedAnswer": {
         "@type": "Answer",
-        "text": "To keep frontend simple – keep your pages without introducing some framework's dictate. Sprae doesn't introduce a build step, dependencies or paradigm – less bugs, faster iterations. A perfect fit for static pages, markdown files etc. Agents can write sprae code easily!"
+        "text": "To keep frontend simple, without some framework's dictate. Sprae doesn't introduce a build step, dependencies or rules – less bugs, faster iterations. A perfect fit for static pages, markdown files etc. Agents can write sprae code easily!"
       }
     },
     {
@@ -3074,35 +3074,35 @@
           <div class="faq__list">
             <div class="qa">
               <h3 class="qa__q">Why a library, when AI writes the code?</h3>
-              <p class="qa__a">Agents can write sprae code easily. Sprae removes frontend build step from your pipeline – perfect fit for static sites.</p>
+              <p class="qa__a">To keep frontend simple, without some framework's dictate. Sprae doesn't introduce a build step, dependencies or rules – less bugs, faster iterations. A perfect fit for static pages, markdown files etc. Agents can write sprae code easily!</p>
             </div>
             <div class="qa">
               <h3 class="qa__q">Is evaluating attributes safe?</h3>
-              <p class="qa__a">Expressions compile with <code>new Function</code>, same as any inline script. The <a href="./csp">CSP build</a> provides safe execution without <code>eval</code>.</p>
+              <p class="qa__a">As far as you trust your HTML. Expressions compile with <code>new Function</code>, same as any inline script. For unsafe content, use the <a href="./csp">CSP build</a> which provides safe execution without <code>eval</code>.</p>
             </div>
             <div class="qa">
               <h3 class="qa__q">What if the script fails to load?</h3>
-              <p class="qa__a">Sprae provides progressive enhancement, so the page falls back to your HTML. To hide FOUC, use <code>[\:if],[\:each]{visibility:hidden}</code>.</p>
+              <p class="qa__a">Sprae only progressively enhances your HTML, so it falls back to the original HTML. Note – to hide FOUC, use <code>[\:if],[\:each]{visibility:hidden}</code>.</p>
             </div>
             <div class="qa">
               <h3 class="qa__q">Does it have components?</h3>
-              <p class="qa__a">For simpler cases, <a href="https://tailwindcss.com/docs/styling-with-utility-classes#managing-duplication">manage duplication</a> with templates or includes. Custom elements can be made with <a href="https://github.com/dy/define-element">define-element</a> or any CE library: sprae sets their props and stops at their boundary. Coming from <code>Alpine.data()</code>? See the <a href="./alpine#alpinedata">migration guide</a>.</p>
+              <p class="qa__a">Try to manage duplication with includes or templates, if available in your environment – <a href="https://tailwindcss.com/docs/styling-with-utility-classes#managing-duplication">same what tailwindcss recommends</a>. Custom elements can be made with <a href="https://github.com/dy/define-element">define-element</a> or any CE library. Coming from <code>Alpine.data()</code>? See the <a href="./alpine#alpinedata">migration guide</a>.</p>
             </div>
             <div class="qa">
               <h3 class="qa__q">Who is it not for?</h3>
-              <p class="qa__a">Apps that live in client state: routing, deep component trees, offline. Take a framework there. Sprae is for pages where a framework is overkill.</p>
+              <p class="qa__a">Routing, deep component trees, offline – take a framework there, add sprae for UI effects if needed. Sprae is for pages where a framework is overkill.</p>
             </div>
             <div class="qa">
               <h3 class="qa__q">How do I debug an expression?</h3>
-              <p class="qa__a">Expressions is plain JS, state is plain object. An error names the element and the expression in the console.</p>
+              <p class="qa__a">Error displays the element and the expression in the console. State is plain object, <code>console</code> is available from attributes.</p>
             </div>
             <div class="qa">
               <h3 class="qa__q">Is it production-ready?</h3>
-              <p class="qa__a">3+ years of releases, no dependencies, tests across both compilers and alternative signals, any browser with <code>Proxy</code>.</p>
+              <p class="qa__a">3+ years of releases, no dependencies, tests across both compilers and alternative signals. Multiple websites use it already. Works in any browser with <code>Proxy</code>.</p>
             </div>
             <div class="qa">
               <h3 class="qa__q">Who maintains it?</h3>
-              <p class="qa__a"><a href="https://github.com/dy">Dmitry Iv</a>, since 2022, under MIT. Independent, no company behind it.</p>
+              <p class="qa__a"><a href="https://github.com/dy">Dmitry Iv</a>, since 2022, under MIT. Independent, no company behind it. Please consider <a href="https://github.com/sponsors/dy">sponsoring</a> if you like it.</p>
             </div>
           </div>
         </div>
