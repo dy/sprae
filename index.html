@@ -55,7 +55,7 @@
       "name": "Why a library, when AI writes the code?",
       "acceptedAnswer": {
         "@type": "Answer",
-        "text": "Agents can write sprae code easily. Sprae removes frontend build step from your pipeline – perfect fit for static sites."
+        "text": "To keep frontend simple – keep your pages without introducing some framework's dictate. Sprae doesn't introduce a build step, dependencies or paradigm – less bugs, faster iterations. A perfect fit for static pages, markdown files etc. Agents can write sprae code easily!"
       }
     },
     {
@@ -63,7 +63,7 @@
       "name": "Is evaluating attributes safe?",
       "acceptedAnswer": {
         "@type": "Answer",
-        "text": "Expressions compile with new Function, same as any inline script. The CSP build provides safe execution without eval."
+        "text": "As far as you trust your HTML. Expressions compile with new Function, same as any inline script. For unsafe content, use the CSP build which provides safe execution without eval."
       }
     },
     {
@@ -71,7 +71,7 @@
       "name": "What if the script fails to load?",
       "acceptedAnswer": {
         "@type": "Answer",
-        "text": "Sprae provides progressive enhancement, so the page falls back to your HTML. To hide FOUC, use [:if],[:each]{visibility:hidden}."
+        "text": "Sprae only progressively enhances your HTML, so it falls back to the original HTML. Note - to hide FOUC, use [:if],[:each]{visibility:hidden}."
       }
     },
     {
@@ -79,7 +79,7 @@
       "name": "Does it have components?",
       "acceptedAnswer": {
         "@type": "Answer",
-        "text": "For simpler cases, manage duplication with templates or includes. Custom elements can be made with define-element or any CE library: sprae sets their props and stops at their boundary. Coming from Alpine.data()? See the migration guide."
+        "text": "Try to manage duplication with includes or templates, if available in your environment – same what tailwindcss recommends. Custom elements can be made with define-element or any CE library. Coming from Alpine.data()? See the migration guide."
       }
     },
     {
@@ -87,7 +87,7 @@
       "name": "Who is it not for?",
       "acceptedAnswer": {
         "@type": "Answer",
-        "text": "Apps that live in client state: routing, deep component trees, offline. Take a framework there. Sprae is for pages where a framework is overkill."
+        "text": "Routing, deep component trees, offline – take a framework there, add sprae for UI effects if needed. Sprae is for pages where a framework is overkill."
       }
     },
     {
@@ -95,7 +95,7 @@
       "name": "How do I debug an expression?",
       "acceptedAnswer": {
         "@type": "Answer",
-        "text": "Expressions is plain JS, state is plain object. An error names the element and the expression in the console."
+        "text": "Error displays the element and the expression in the console. State is plain object, console is available from attributes."
       }
     },
     {
@@ -103,7 +103,7 @@
       "name": "Is it production-ready?",
       "acceptedAnswer": {
         "@type": "Answer",
-        "text": "3+ years of releases, no dependencies, tests across both compilers and alternative signals, any browser with Proxy."
+        "text": "3+ years of releases, no dependencies, tests across both compilers and alternative signals. Multiple websites use it already. Works in any browser with Proxy."
       }
     },
     {
@@ -111,7 +111,7 @@
       "name": "Who maintains it?",
       "acceptedAnswer": {
         "@type": "Answer",
-        "text": "Dmitry Iv, since 2022, under MIT. Independent, no company behind it."
+        "text": "Dmitry Iv, since 2022, under MIT. Independent, no company behind it. Please consider sponsoring if you like it."
       }
     }
   ]
@@ -3044,7 +3044,7 @@
         <div class="shell" :scope="{ vtab: 'vanilla' }">
           <div class="section-intro">
             <h2 class="sect-h" id="vs-title">Comparison</h2>
-            <p>Sprae intends to minimize syntax footprint, keeping code elegance and intuitivity. How much code that takes with other libraries? <a class="text-link" href="./drops/">Examples</a></p>
+            <p>Sprae intends to minimize syntax footprint, keeping code elegance and intuitivity. How much code that takes with other libraries? See <a class="text-link" href="./drops/">all examples</a>.</p>
           </div>
           <div class="vs__compare">
             <article class="vs__side vs__side--framework code-light" id="compare-panel" role="tabpanel" :aria-labelledby="'compare-tab-' + vtab">
@@ -3175,7 +3175,10 @@
           ],
           code: `import sprae from 'sprae'
 
-const state = sprae(document.querySelector('#app'), { count: 0 })
+const state = sprae(
+  document.querySelector('#app'),
+  { count: 0 }
+)
 
 state.count++`
         },
@@ -3193,9 +3196,14 @@ export default function Page() {
   return <main x-scope="{ count: 0 }">
     <Script src="https://unpkg.com/sprae"
       data-prefix="x-" data-start />
-    <button x-onclick="count++" x-text="count" />
   </main>
-}`
+}
+
+// component.jsx
+export const Component = () => (
+  <button x-onclick="count++" x-text="count" />
+)
+`
         },
         server: {
           label: 'Templates',
@@ -3262,7 +3270,7 @@ layout: default
 
       window.ref = {
         intro: {
-          dir: 'An element can have multiple directives, initialized in order (<code>:if :each</code> is not <code>:each :if</code>). Combined <code>:id:name="field"</code> uses one expression for both.',
+          dir: 'An element can have multiple directives. Order matters, eg. <code>:if :each</code> is not <code>:each :if</code>. Combined <code>:id:name="field"</code> uses one expression for both.',
           mod: 'Modifiers applied left to right, eg. <code>:onkeydown.ctrl-s.prevent</code> key-gates first, then prevents the default, then runs expression.'
         },
         dir: [
@@ -3504,7 +3512,7 @@ layout: default
       window.aspects = [
         {
           title: 'CSP',
-          description: 'Safe under a strict CSP: no eval, no new Function.',
+          description: 'Safe build for strict CSP: no eval, no new Function.',
           code: `<script src="sprae-csp.umd.js">`
         },
         {
@@ -3531,7 +3539,7 @@ layout: default
         },
         {
           title: 'Non-keyed',
-          description: 'No :key to write: objects track by identity, primitives by index.',
+          description: 'No :key necessary. Objects track by identity, primitives by index.',
           code: `<li :each="item in items"></li>`
         },
         {
@@ -3547,9 +3555,8 @@ layout: default
         },
         {
           title: 'Preact-signals',
-          description: 'Signals shared with Preact.',
-          code: `<script
-  src="sprae-preact.umd.js">` },
+          description: 'Preact-signals based build.',
+          code: `<script src="sprae-preact.umd.js">` },
         {
           title: 'Automatic cleanup',
           description: 'What an effect returns runs when the effect is disposed.',
@@ -3590,8 +3597,7 @@ effect(() => log(n.value))` },
           title: 'Custom elements',
           description: 'Props flow into custom elements; sprae stops at their boundary.',
           code: `<user-card :each="u in users"
-  :name="u.name"></user-card>`,
-          link: { href: 'https://dy.github.io/define-element/', label: 'define-element' }
+  :name="u.name"></user-card>`
         },
         {
           title: 'Configurable',
