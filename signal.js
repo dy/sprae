@@ -93,7 +93,8 @@ export const effect = (fn, _teardown, _fx) => (
 class Computed extends Signal {
   constructor(fn) { super(); this.fn = fn; this.e = null }
   get value() {
-    this.e ||= effect(() => super.value = this.fn())
+    // block body: a function-valued result must not leak out as the effect's teardown
+    this.e ||= effect(() => { super.value = this.fn() })
     return super.value
   }
 }

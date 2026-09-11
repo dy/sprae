@@ -59,6 +59,20 @@ t('store: signal-struct basics', async () => {
   is(s.xy, 6)
 })
 
+t('store: getter returning function', () => {
+  // #77: computed value that is a function must not be called as effect teardown
+  let st = store({
+    q: 'x',
+    get hit() { const q = this.q; return r => r.includes(q) },
+    get n() { return ['xa', 'b'].filter(this.hit).length },
+  })
+  is(st.n, 1)
+  st.q = 'b'
+  is(st.n, 1)
+  st.q = 'z'
+  is(st.n, 0)
+})
+
 t('store: deep props', async () => {
   let s = store({
     z: { r: 2, i: 3 }

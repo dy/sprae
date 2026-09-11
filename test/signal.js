@@ -338,6 +338,14 @@ t('computed: multiple', () => {
   is(v3.value, 4)
 })
 
+t('computed: function value', () => {
+  let q = signal('x'), hit = computed(() => { let v = q.value; return r => r.includes(v) })
+  is(hit.value('xa'), true)
+  q.value = 'b'
+  is(hit.value('xa'), false)
+  is(hit.value('b'), true)
+})
+
 t('computed: chain', () => {
   let a = signal(1),
     b = computed(() => (console.log('b'), a.value + 1)),
