@@ -88,7 +88,9 @@ const dirRun = (target, seg, expr, state) => {
   }))
   if (!(_state in el)) return off
   let _d = 0
-  return () => { if (_d) return; _d = 1; off(); update[_off] ? update[_off]() : el[_dispose]?.() }
+  // an element with own state is a sub-root: dispose it with the directive only for good (final), a temporary :if-style
+  // disable must leave it re-enableable
+  return (final) => { if (_d) return; _d = 1; off(); update[_off] ? update[_off]() : final && el[_dispose]?.() }
 }
 
 // events and observers handle own modifiers, return dispose
@@ -126,7 +128,7 @@ const dirBind = (mel, name, expr) => {
       typeof _out === 'function' ? out ||= () => (typeof _out === 'function' && _out(), _out = null) : void 0))
     if (!(_state in el)) return off
     let _d = 0
-    return () => { if (_d) return; _d = 1; off(); update[_off] ? update[_off]() : el[_dispose]?.() }
+    return (final) => { if (_d) return; _d = 1; off(); update[_off] ? update[_off]() : final && el[_dispose]?.() }
   }
 }
 

@@ -637,3 +637,37 @@ test('if: dispose is null-safe across repeated start() toggles', async () => {
 
   is(el.querySelector('span'), null, 'hidden after 5 cycles — no throw')
 })
+
+test('if: own directives keep reacting across repeated toggles', async () => {
+  // a directive on the :if element itself: its disposer must not dispose the element on a temporary hide
+  let el = document.createElement('div')
+  el.innerHTML = `<b :if="draft" :style="{ width: draft.d + 'px' }"></b>`
+  let s = sprae(el, { draft: null })
+  for (let n = 1; n <= 4; n++) {
+    s.draft = { d: 0 }
+    await tick()
+    s.draft.d = n * 10
+    await tick()
+    is(el.querySelector('b')?.style.width, n * 10 + 'px', `show ${n} follows`)
+    s.draft.d = n * 10 + 5
+    await tick()
+    is(el.querySelector('b')?.style.width, n * 10 + 5 + 'px', `show ${n} keeps following`)
+    s.draft = null
+    await tick()
+    is(el.querySelector('b'), null, `hide ${n}`)
+  }
+})
+
+test('if: nested directives keep reacting across repeated toggles', async () => {
+  let el = document.createElement('div')
+  el.innerHTML = `<div :if="show"><span :text="msg"></span></div>`
+  let s = sprae(el, { show: false, msg: '' })
+  for (let n = 1; n <= 4; n++) {
+    s.show = true
+    s.msg = 'm' + n
+    await tick()
+    is(el.querySelector('span')?.textContent, 'm' + n, `show ${n} follows`)
+    s.show = false
+    await tick()
+  }
+})
