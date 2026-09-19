@@ -139,7 +139,7 @@
                       : '<i class=' + (keyword ? 'k' : number ? 'num' : call ? 'f' : prop ? 'p' : 'o') + '>' + m + '</i>')
       // Crossfade a source swap: a ghost of the old markup blurs out over the new one blurring in, and the box height eases between the two.
       window.swap = async (el, apply) => {
-        const box = el.closest('.usage-code, .vs__side pre, .ref-preview'), r = el.getBoundingClientRect()
+        const box = el.closest('.urow, .vs__side pre, .ref-preview'), r = el.getBoundingClientRect()
         const seen = !matchMedia('(prefers-reduced-motion: reduce)').matches && r.bottom > 0 && r.top < innerHeight
         if (!seen) return apply()
         const h0 = box?.offsetHeight
@@ -157,6 +157,8 @@
         el.getAnimations().forEach(a => a.cancel())
         el.animate([{ opacity: 0, filter: 'blur(6px)' }, { opacity: 1, filter: 'blur(0)' }], { duration: 260, easing: 'ease-out' })
       }
+      // Focus inside the live frame never reaches the page, so the frame's own document reports it: the loop rests while someone types there.
+      window.attend = (frame, set) => ['focusin', 'focusout'].forEach(t => frame.contentDocument.addEventListener(t, () => set(t == 'focusin')))
       // The live frame after Sprae ran: attributes evaporated, values in place. Shown when the hook word is hovered.
       window.evaporated = frame => {
         const body = frame.contentDocument?.body?.cloneNode(true)
@@ -165,26 +167,37 @@
         return body.innerHTML.trim()
       }
       // Runs the hero phrase: highlight the attributes, evaporate them (the attributes alone blur and close up, then
-      // the values condense in), then type into the hydrated specimen. A single word plays only its own step.
-      // Returns the effect for :fx; its return clears the pending steps.
+      // the values condense in), then type a saying into the hydrated specimen. The cycle plays on its own in a loop:
+      // the saying is left to be read, the source condenses back, and after a rest the phrase plays again with a new
+      // saying. A hovered word plays only its own step and holds it. Returns the effect for :fx; its return clears the pending steps.
       // Touch has no hover: its pointerenter and pointerleave fire together on a tap, so only a tap counts there.
       window.fine = e => e.pointerType != 'touch'
+      // the tempo, in ms: how long each step holds, how the typing paces, how long a saying stays readable
+      window.tempo = { attrs: 1400, evaporate: 1800, lead: 2000, key: 70, read: 3000, rest: 2200, back: 1200 }
       let heroPhase = ''
-      window.director = (play, mode, view, phase) => () => {
+      window.director = (play, mode, view, phase, say) => () => {
         const timers = [], later = (fn, ms) => timers.push(setTimeout(fn, ms))
         const setPhase = f => phase(heroPhase = f)
         // evaporate: the attributes close up and stay closed; nothing is inserted
         const evaporate = () => { mode('evaporate'); if (!heroPhase || heroPhase == 'restoring') setPhase('evaporating') }
-        // hydrate: what Sprae produced condenses into the emptied tags, then the phrase is typed
+        // hydrate: what Sprae produced condenses into the emptied tags, then a fresh saying is typed; returns how long the typing takes
         const hydrate = () => {
+          const text = say()
           const go = () => { view('done'); setPhase('done'); mode('type') }
-          if (heroPhase == 'done') return mode('type')
-          if (heroPhase) return go()
-          evaporate(); later(go, 900)
+          if (heroPhase == 'done') mode('type')
+          else if (heroPhase) go()
+          else { evaporate(); later(go, 900) }
+          return tempo.lead + text.length * tempo.key
         }
-        const steps = { attrs: () => mode('attrs'), evaporate, type: hydrate }
-        if (play == 'cycle') { steps.attrs(); later(evaporate, 1400); later(hydrate, 3200) }
-        else steps[play]?.()
+        const cycle = () => {
+          // a hydrated plate first returns to its source
+          let t = heroPhase ? (condense(mode, view, phase), tempo.back) : 0
+          later(() => mode('attrs'), t += tempo.rest)
+          later(evaporate, t += tempo.attrs)
+          later(() => later(cycle, hydrate() + tempo.read), t += tempo.evaporate)
+        }
+        const steps = { attrs: () => mode('attrs'), evaporate, type: hydrate, cycle }
+        steps[play]?.()
         return () => timers.forEach(clearTimeout)
       }
       // Back to the source: what condensed blurs away, then the attributes open up again in place.
@@ -199,7 +212,7 @@
           requestAnimationFrame(() => requestAnimationFrame(() => {
             if (heroPhase != 'evaporating') return
             setPhase('restoring')
-            setTimeout(() => heroPhase == 'restoring' && setPhase(''), 400)
+            setTimeout(() => heroPhase == 'restoring' && setPhase(''), 800)
           }))
         }, 250)
       }
@@ -226,7 +239,8 @@
         .replace(/( value(?:<i class=o>)?=(?:<\/i>)?<i class=v>[^<]*<\/i>)/g, '<i class=w>$1</i>')
         .replace(/(<i class=t>&gt;<\/i>)((?:(?!<i class=t>&lt;)[^\n])+)(?=<i class=t>&lt;\/)/g, '$1<i class=w>$2</i>')
       // Types into the live specimen so the count follows keystroke by keystroke.
-      // Returns the effect for :fx: sprae calls it, and what it returns is the stop that runs when the mode changes.
+      // Returns the effect for :fx: sprae calls it, and what it returns is the stop that runs when the mode changes:
+      // what was typed fades out and the specimen greets again, unless someone has typed there meanwhile.
       window.typewrite = (frame, text) => () => {
         const doc = frame?.contentDocument, ta = doc?.querySelector('textarea')
         if (!ta) return
@@ -235,11 +249,29 @@
         // the hydrated value stays readable for a moment, then someone starts typing
         const wait = setTimeout(() => {
           ta.value = ''; fire()
-          id = setInterval(() => { i < text.length ? (ta.value += text[i++], fire()) : clearInterval(id) }, 70)
-        }, 2000)
-        return () => (clearTimeout(wait), clearInterval(id))
+          id = setInterval(() => { i < text.length ? (ta.value += text[i++], fire()) : clearInterval(id) }, tempo.key)
+        }, tempo.lead)
+        return () => {
+          clearTimeout(wait); clearInterval(id)
+          const typed = ta.value
+          if (typed == hello) return
+          ta.style.color = 'transparent'
+          setTimeout(() => { if (ta.value == typed) { ta.value = hello; fire() } ta.style.color = '' }, 400)
+        }
       }
       // Where the tab strip's ink sits: under the selected tab, found by id from state so it never reads a stale attribute. The last argument only re-runs it on resize and font load.
+      // The edge label letter by letter: each in its own box with its place in the row, the first few bold.
+      window.stack = (text, bold) => {
+        const letters = [...text].map((c, i) => `<i style="--i:${i}">${c == ' ' ? '&nbsp;' : c}</i>`)
+        return '<b>' + letters.slice(0, bold).join('') + '</b>' + letters.slice(bold).join('')
+      }
+      // Where the pointer is between the rules around a stat, 0 at the upper one, 1 at the lower: the glare on each rule follows it.
+      window.glare = e => {
+        const cell = e.target.closest('.spec-strip > div')
+        if (!cell) return
+        const r = cell.getBoundingClientRect()
+        cell.style.setProperty('--y', Math.min(1, Math.max(0, (e.clientY - r.top) / r.height)).toFixed(2))
+      }
       window.ink = (tabs, id) => {
         const tab = document.getElementById(id)
         return tab ? { translate: `${tab.offsetLeft}px ${tab.offsetTop + tab.offsetHeight - tabs.querySelector('.tabs__ink').offsetHeight}px`, width: tab.offsetWidth + 'px' } : { width: 0 }
@@ -284,7 +316,8 @@
       ]
       // A fresh saying each time, never the one just shown.
       window.pick = (last => () => { let s; do s = window.sayings[Math.random() * window.sayings.length | 0]; while (s == last); return last = s })()
-      window.demo = `<div :scope="{ text: 'Hello.' }">
+      window.hello = 'Hello.'
+      window.demo = `<div :scope="{ text: '${window.hello}' }">
   <textarea :value="text" :change="v => text = v"></textarea>
   <p :text="text.length + ' characters'"></p>
 </div>`
@@ -328,7 +361,6 @@
         --paper-veil: rgb(226 226 226 / 0.5);
         --feature-cover: rgb(226 226 226 / 0.64);
         --ground: #f8f8f6;
-        --ground-2: #f0f0ee;
         --surface: #f8f8f9;
         --ink: #233A7E;
         --rule: rgb(12 39 89 / 0.14);
@@ -341,7 +373,7 @@
         --gradient-blue: #1b9ffe;
         --gradient-cyan: #4ac9ff;
         --wash-opacity: 1;
-        --grain-opacity: 0.12;
+        --grain-opacity: 0.2;
         --guide: rgb(196 92 92 / 0.3);
         --plate-solid: #0f1a3e;
         --plate-bg: var(--plate-solid);
@@ -353,7 +385,6 @@
         --plate-hi: #ffffff;
         --plate-btn: rgb(214 226 248 / 0.5);
         --plate-hover: rgb(255 255 255 / 0.08);
-        --plate-glow: rgb(255 255 255 / 0.7);
         --plate-dot: rgb(255 255 255 / 0.06);
         --plate-dot-major: rgb(255 255 255 / 0.13);
         --fig-dim: rgb(35 58 126 / 0.17);
@@ -362,12 +393,18 @@
         --code-expression: #216557;
         --code-muted: #536587;
         --code-accent: #1451ba;
-        --footer-mist: rgb(79 129 222 / 0.22);
+        --mist: rgb(79 129 222 / 0.22);
+        /* the printed ink: multiplies onto the paper to exactly --ink, and deeper where the bloom is */
+        --ink-print: #28418e;
         --control-fill: rgb(223 223 223 / 0.78);
         --control-edge: rgb(35 58 126 / 0.35);
-        --shadow-plate: 0 1.25rem 3.5rem -1rem rgb(54 185 232 / 0.42), 0 2rem 5rem -1.25rem rgb(28 54 122 / 0.38);
-        --shadow-plate-focus: 0 1.25rem 3.5rem -0.75rem rgb(54 185 232 / 0.62), 0 2rem 5rem -1rem rgb(28 54 122 / 0.55);
+        --shadow-plate: 0 1rem 2.5rem -1rem rgb(28 54 122 / 0.35);
+        /* the two bloom blues seen through paper, turned slowly around the code surfaces */
+        --glow-blue: color-mix(in oklch, var(--gradient-blue) 70%, var(--paper));
+        --glow-cyan: color-mix(in oklch, var(--gradient-cyan) 70%, var(--paper));
+        --glow: conic-gradient(from var(--glow-angle), var(--glow-blue), var(--glow-cyan), var(--glow-blue), var(--glow-cyan), var(--glow-blue));
         --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+        --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
         --dur-short: 220ms;
         --dur-preview: 300ms;
         --ease-preview: cubic-bezier(0.4, 0, 0.2, 1);
@@ -514,7 +551,7 @@
 
       #gradient-wash {
         position: absolute;
-        z-index: -2;
+        z-index: -3;
         inset: 0 0 auto;
         width: 100%;
         height: var(--wash-height, 120svh);
@@ -578,6 +615,38 @@
         }
       }
 
+      /* the glow's angle and the mists' centres are registered too, so keyframes turn and drift them */
+      @property --glow-angle {
+        syntax: '<angle>';
+        inherits: false;
+        initial-value: 0deg
+      }
+
+      @keyframes glow-turn {
+        to {
+          --glow-angle: 360deg
+        }
+      }
+
+      @property --mist-x {
+        syntax: '<percentage>';
+        inherits: false;
+        initial-value: 12%
+      }
+
+      @keyframes mist-drift {
+        50% {
+          --mist-x: 28%
+        }
+      }
+
+      /* a damped spring: overshoots by a sixth and settles; browsers without linear() keep the bezier above */
+      @supports (animation-timing-function: linear(0, 1)) {
+        :root {
+          --ease-spring: linear(0, 0.009, 0.035 2.1%, 0.141, 0.281 6.7%, 0.723 12.9%, 0.938 16.7%, 1.017, 1.077, 1.121, 1.149 24.3%, 1.159, 1.163, 1.161, 1.154 29.9%, 1.129 32.8%, 1.051 39.6%, 1.017 43.1%, 0.991, 0.977 51%, 0.974 53.8%, 0.975 57.1%, 0.997 69.8%, 1.003 76.9%, 1)
+        }
+      }
+
       /* edge fades of a horizontal strip: a scroll timeline moves them from the far side to the near one */
       @property --fade-l {
         syntax: '<length>';
@@ -627,7 +696,7 @@
         mix-blend-mode: overlay
       }
 
-      /* printed-into-paper grain over everything, type and plate included */
+      /* printed-into-paper grain over everything below the hero, type and plates included */
       body::after {
         content: '';
         position: absolute;
@@ -636,7 +705,8 @@
         background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='220'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.7' numOctaves='2' seed='3'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3CfeComponentTransfer%3E%3CfeFuncA type='discrete' tableValues='1'/%3E%3C/feComponentTransfer%3E%3C/filter%3E%3Crect width='220' height='220' filter='url(%23n)'/%3E%3C/svg%3E");
         opacity: var(--grain-opacity);
         mask-image: linear-gradient(to bottom, var(--mask-clear) 0 var(--wash-fade, 68svh), var(--mask-solid) var(--wash-height, 120svh));
-        mix-blend-mode: luminosity;
+        /* overlay textures without shifting the mean tone, so the navy surfaces below stay the plate's exact colour */
+        mix-blend-mode: overlay;
         pointer-events: none;
       }
 
@@ -680,22 +750,64 @@
         text-decoration: none;
       }
 
-      .brand__mark,
-      .footer__brand img {
-        animation: turn 40s linear infinite paused
+      /* the mark turns on its own, the tab's icon with it (script). Under a pointer the three dots keep swinging in
+         toward each other and back: the breathing mode of a triatomic molecule. The oscillation (--osc) runs underneath
+         all the time; a pointer springs its amplitude (--amp) up, and leaving springs it down, so nothing ever snaps.
+         The group contracts on --breath while each dot counter-scales and keeps its size */
+      @property --osc {
+        syntax: '<number>';
+        inherits: false;
+        initial-value: 0
+      }
+
+      @property --amp {
+        syntax: '<number>';
+        inherits: false;
+        initial-value: 0
+      }
+
+      @property --breath {
+        syntax: '<number>';
+        inherits: true;
+        initial-value: 1
+      }
+
+      @keyframes oscillate {
+        50% {
+          --osc: 1
+        }
+      }
+
+      .mark {
+        --breath: calc(1 - var(--amp) * var(--osc) * .28);
+        display: block;
+        fill: var(--ink);
+        animation: turn 40s linear infinite, oscillate 1.6s ease-in-out infinite;
+        transition: --amp .7s var(--ease-spring)
+      }
+
+      .mark g {
+        transform-box: view-box;
+        transform-origin: center;
+        scale: var(--breath)
+      }
+
+      .mark circle {
+        transform-box: fill-box;
+        transform-origin: center;
+        scale: calc(1 / var(--breath))
+      }
+
+      .brand:hover .mark,
+      .brand:focus-visible .mark,
+      .footer__brand:hover .mark,
+      .footer__brand:focus-visible .mark {
+        --amp: 1
       }
 
       .brand__mark {
-        display: block;
         width: var(--sp-7);
         height: var(--sp-7)
-      }
-
-      .brand:hover .brand__mark,
-      .brand:focus-visible .brand__mark,
-      .footer__brand:hover img,
-      .footer__brand:focus-visible img {
-        animation-play-state: running
       }
 
       @keyframes turn {
@@ -724,7 +836,7 @@
         white-space: nowrap;
       }
 
-      /* every text link: a half-transparent rule at rest that fills on hover, one token everywhere */
+      /* every text link: one weight step above its text, and a half-transparent rule at rest that fills on hover, one token everywhere */
       .topbar nav a,
       .text-link,
       .footer__nav a,
@@ -733,6 +845,7 @@
       .usage-intro p a,
       .aspect__link,
       .aspect__alts a {
+        font-weight: 500;
         text-decoration: underline;
         text-decoration-thickness: 1px;
         text-decoration-color: var(--link-rule);
@@ -796,7 +909,6 @@
 
       .hero {
         position: relative;
-        z-index: 1;
         display: flex;
         flex-direction: column;
         justify-content: flex-end;
@@ -807,7 +919,6 @@
       }
 
       .hero>.shell {
-        z-index: 3;
         width: var(--shell);
         margin-inline: auto;
       }
@@ -835,7 +946,7 @@
       /* paper bands centred on the divider's ends: the line finishes on paper above and below, never on a wash edge */
       .corner-bands {
         position: absolute;
-        z-index: -1;
+        z-index: -2;
         inset-block-start: calc(var(--wash-fade, 68svh) - var(--hero-corner-fade));
         inset-inline: 0;
         height: calc(2 * var(--hero-corner-fade));
@@ -878,8 +989,8 @@
 
       /* rules run to the screen edge: the hero divider and the aspects rule span the full width; the two around the stats
        come in from opposite edges and stop on the shell; the reference rule runs from the content's left edge to the right screen edge */
+      /* painted before the shell: over the wash and the features' paper, under the plate and its glow */
       .hero__transition {
-        z-index: 2;
         inset-block-start: calc(var(--transition-y, 68%) - var(--rule-size));
         width: 100%;
       }
@@ -907,10 +1018,6 @@
         transition: filter .9s var(--ease-out)
       }
 
-      .hero__edge {
-        transition: opacity 1s var(--ease-out) 380ms, translate 1s var(--ease-out) 380ms, filter 1s var(--ease-out) 380ms
-      }
-
       html.pre .hero__word,
       html.pre .hero__stmt,
       html.pre .hero__sub {
@@ -924,10 +1031,12 @@
         filter: blur(7px)
       }
 
-      html.pre .hero__edge {
-        opacity: 0;
-        translate: 0 8px;
-        filter: blur(6px)
+      /* the three texts are printed into the wash: multiplied, they read as --ink on paper and deepen where the bloom is */
+      .hero__word,
+      .hero__stmt,
+      .hero__sub {
+        color: var(--ink-print);
+        mix-blend-mode: multiply
       }
 
       .hero__word {
@@ -939,7 +1048,6 @@
         font-weight: 620;
         letter-spacing: -0.06em;
         line-height: 0.9;
-        color: var(--ink);
       }
 
       /* statement starts at the axis, may spill past the container */
@@ -954,19 +1062,16 @@
         font-weight: 700;
         letter-spacing: -0.045em;
         line-height: 1.15;
-        color: var(--ink);
       }
 
       /* sub right-aligns to the axis, under the wordmark */
       .hero__sub {
-        cursor: pointer;
         width: fit-content;
         margin: clamp(var(--sp-2), 2svh, var(--sp-8)) calc(100% - var(--axis)) 0 auto;
         text-align: right;
         font-size: var(--fs-2);
         font-weight: 500;
         line-height: 1.55;
-        color: var(--ink);
       }
 
       /* vertical strip at the right boundary of the last column, foot just above the transition rule.
@@ -976,14 +1081,37 @@
         z-index: 1;
         width: fit-content;
         margin: 0;
-        /* fine engraved label: open tracking (2px at this size) */
+        /* fine engraved label: light, open tracking (2px at this size); NOT alone is bold */
         font: var(--tab-font);
+        font-weight: 300;
         letter-spacing: 0.1em;
         color: var(--ink);
       }
 
       .edge b {
         font-weight: 700
+      }
+
+      /* the letters stack: each settles out of a blur onto the ones before it, like the titles, in reading order
+         (stack() sets each letter's place); held back with the rest of the hero until the first frame has painted */
+      .edge i {
+        display: inline-block;
+        font-style: normal;
+        animation: stack .8s var(--ease-out) both;
+        animation-delay: calc(300ms + var(--i) * 60ms);
+      }
+
+      /* the span is turned around, so this is a short drop down the page */
+      @keyframes stack {
+        from {
+          opacity: 0;
+          translate: 0 .35em;
+          filter: blur(6px)
+        }
+      }
+
+      html.pre .edge i {
+        animation-play-state: paused
       }
 
       .edge span {
@@ -1009,8 +1137,8 @@
         inline-size: 5rem;
         block-size: var(--selection-rule);
         background: currentColor;
-        /* the rule draws out to length; inline-size runs down the page in vertical-rl */
-        transition: inline-size 1s var(--ease-out) 380ms;
+        /* the rule draws out to length once the letters have landed; inline-size runs down the page in vertical-rl */
+        transition: inline-size 1s var(--ease-out) 1.4s;
       }
 
       html.pre .edge span::after {
@@ -1019,37 +1147,44 @@
 
       /* ── code plate: editable live example, spans 7 of 10 cols ── */
 
+      /* the plate isolates its layers: the glow behind, the surface in front; the hero itself stays no stacking context, so its type can blend with the wash */
       .plate {
         position: relative;
+        isolation: isolate;
         /* centered over cols 2.5–8.5; inline padding lands content exactly on col lines 3 and 9 */
         width: calc(7 * 100% / 10);
         margin: clamp(var(--sp-6), 4.5svh, var(--sp-12)) 15% clamp(var(--sp-4), 3svh, var(--sp-9)) 15%;
+      }
+
+      .plate__body {
         border: 1px solid var(--plate-edge);
         border-radius: var(--r-3);
         color: var(--plate-ink);
         background: var(--plate-bg);
-        overflow: hidden;
         box-shadow: var(--shadow-plate);
-        transition: box-shadow var(--dur-short) var(--ease-out);
       }
 
-      .plate__live {
-        position: absolute;
-        top: var(--sp-5);
-        right: var(--sp-6);
-        display: inline-flex;
-        align-items: center;
-        gap: var(--sp-2);
-        font-size: var(--fs-xs);
-      }
-
-      .plate__live::before {
+      /* external glow: a blurred ring of the two blues behind each code surface, dropped a step like a shadow and turning
+         once every 24s; it brightens while the surface holds focus. It paints under the surface: the plate isolates, the usage panel does */
+      .plate::before,
+      .usage-code::before {
         content: '';
-        width: var(--sp-2);
-        height: var(--sp-2);
-        border-radius: 50%;
-        background: var(--plate-hi);
-        box-shadow: 0 0 var(--sp-2) var(--plate-glow);
+        position: absolute;
+        z-index: -1;
+        inset: calc(-1 * var(--sp-3));
+        translate: 0 var(--sp-3);
+        border-radius: calc(var(--r-3) + var(--sp-3));
+        background: var(--glow);
+        filter: blur(var(--sp-6));
+        opacity: .32;
+        animation: glow-turn 24s linear infinite;
+        transition: opacity var(--dur-short) var(--ease-out);
+        pointer-events: none;
+      }
+
+      .plate:focus-within::before,
+      .usage-code:focus-within::before {
+        opacity: .6
       }
 
       .plate__editor {
@@ -1066,14 +1201,14 @@
         white-space: nowrap
       }
 
-      /* hook words in the hero line: two underlines. The faint one fills at the plate's own transition speed (--sync), the solid one over the whole step (--step), a progress bar for what the plate is doing */
+      /* hook words in the hero line: one underline that fills from the left at the plate's own transition speed (--sync) and
+         then holds while the step runs */
       .hero__sub .hot {
         position: relative;
         font-weight: 600
       }
 
-      .hero__sub .hot::before,
-      .hero__sub .hot::after {
+      .hero__sub .hot::before {
         content: '';
         position: absolute;
         inset-inline: 0;
@@ -1081,25 +1216,16 @@
         height: var(--selection-rule);
         background: currentColor;
         transform: scaleX(0);
-        transform-origin: left
-      }
-
-      .hero__sub .hot::before {
-        opacity: .28
+        transform-origin: left;
+        opacity: 0;
+        /* once the step hands over, the rule draws back and fades from wherever it got to */
+        transition: opacity .45s var(--ease-out), transform .45s var(--ease-out)
       }
 
       .hero__sub .hot.on::before {
-        animation: fill var(--sync) var(--ease-preview) forwards
-      }
-
-      .hero__sub .hot.on::after {
-        animation: fill var(--step) linear forwards
-      }
-
-      @keyframes fill {
-        to {
-          transform: scaleX(1)
-        }
+        opacity: 1;
+        transform: scaleX(1);
+        transition: transform var(--sync) var(--ease-preview)
       }
 
       .plate code i {
@@ -1128,11 +1254,6 @@
         clip-path: inset(0);
         animation: condense .8s var(--ease-preview) both;
         transition: opacity .5s, filter .5s, max-width .5s
-      }
-
-      /* the reset runs at half the forward pace */
-      .plate code.restoring .a {
-        transition-duration: .35s
       }
 
       .plate code.condensing .w {
@@ -1166,11 +1287,6 @@
         white-space: pre-wrap;
         overflow-wrap: anywhere;
         overflow: hidden;
-      }
-
-      /* focus reads as a denser glow that follows the plate's rounding, with no inset ring */
-      .plate:focus-within {
-        box-shadow: var(--shadow-plate-focus)
       }
 
       .plate code,
@@ -1213,8 +1329,10 @@
         color: var(--plate-lit)
       }
 
-      /* 32px registration dots sit directly over the quieter 8px grid */
+      /* 32px registration dots sit directly over the quieter 8px grid; the demo clips its own bottom corners */
       .plate__demo {
+        border-end-start-radius: calc(var(--r-3) - 1px);
+        border-end-end-radius: calc(var(--r-3) - 1px);
         background-image:
           radial-gradient(circle at 1px 1px, var(--plate-dot-major) 0 1px, transparent 1.25px),
           radial-gradient(circle at 1px 1px, var(--plate-dot) 0 1px, transparent 1.25px);
@@ -1232,9 +1350,8 @@
 
       /* ── features: three propositions, then practical feature explanations ── */
 
+      /* an in-flow block: its paper paints under the hero's positioned plate and rule, and its links stay reachable */
       .feature-stage {
-        position: relative;
-        z-index: 0;
         margin-block-start: calc(0px - var(--feature-overlap, 0px));
         /* the icons start just under the fold: the gap to the plate is the hero's lift, nothing more */
         padding-block-start: calc(var(--feature-overlap, 0px) + var(--sp-3));
@@ -1426,7 +1543,8 @@
       .aspect .aspect__link {
         min-height: 0;
         margin-block-start: var(--sp-2);
-        font: var(--caption-font)
+        font: var(--caption-font);
+        font-weight: 500
       }
 
       /* alternatives as one flowing line: name, a link where there is one, size in parens */
@@ -1498,7 +1616,8 @@
       /* an inline link, so the arrow can be an atomic inline box that the underline does not reach */
       .text-link {
         color: var(--ink);
-        font: inherit
+        font: inherit;
+        font-weight: 500
       }
 
       .text-link span[aria-hidden] {
@@ -1509,10 +1628,19 @@
 
       /* ── usage: context beside one working starting point ── */
 
+      /* a blue mist rises from the bottom-left of the usage block and the footer, and wanders slowly; the footer's fills
+         its corner, the usage block's is bounded so it stays a corner of the taller section */
+      .usage,
+      .footer {
+        --mist-size: farthest-corner;
+        background: radial-gradient(ellipse var(--mist-size) at var(--mist-x) 100%, var(--mist), transparent 65%), var(--paper);
+        animation: mist-drift 30s ease-in-out infinite;
+      }
+
       .usage {
+        --mist-size: 60rem 28rem;
         position: relative;
         padding-block: var(--sp-12) var(--sp-24);
-        background: var(--paper);
       }
 
       .usage .shell,
@@ -1559,11 +1687,13 @@
       }
 
       .usage-panel {
-        /* one inset lines up the code gutter's numbers, the tab labels, and the fact dashes */
+        /* one inset for the source and the copy status under it */
         --usage-inset: var(--sp-6);
         width: 100%;
         min-width: 0;
         margin: 0;
+        /* holds the code box's glow above the section's paper */
+        isolation: isolate;
       }
 
       .usage-tablist {
@@ -1687,28 +1817,29 @@
       }
 
       .usage-code {
+        position: relative;
         min-width: 0;
-        overflow: clip;
         border: 1px solid var(--plate-edge);
         border-radius: var(--r-3);
         color: var(--plate-ink);
         background: var(--plate-bg);
-        box-shadow: none;
+        box-shadow: var(--shadow-plate);
       }
 
+      /* the row clips: a source swap eases its height while a ghost of the old markup fades */
       .urow {
         position: relative;
         margin: 0;
         padding-block: var(--sp-5) var(--sp-6);
         border: 0;
-        border-radius: 0;
+        border-radius: inherit;
+        overflow: clip;
         color: var(--plate-ink);
         background: transparent;
       }
 
       .urow code {
         display: block;
-        counter-reset: usage-line;
         width: 100%;
         min-width: 0;
         overflow: visible;
@@ -1716,23 +1847,16 @@
         font-variant-ligatures: contextual;
       }
 
+      /* no line numbers here, and no gutter left for them: the source sits on the block's own inset */
       .urow__line {
         display: grid;
-        grid-template-columns: var(--code-inset) minmax(0, 1fr);
+        grid-template-columns: minmax(0, 1fr);
         min-height: 1.7em;
-        padding-inline-end: var(--code-inset);
+        padding-inline: var(--usage-inset);
       }
 
       .urow__line:nth-child(-n+2) {
         padding-inline-end: var(--sp-16)
-      }
-
-      .urow__line::before {
-        counter-increment: usage-line;
-        content: counter(usage-line);
-        padding-inline-start: var(--usage-inset);
-        color: var(--plate-faint);
-        user-select: none;
       }
 
       .urow__src {
@@ -1794,36 +1918,45 @@
         display: block
       }
 
-      /* ── reference: paper index with floating code examples ── */
+      /* ── reference: a navy plate, the index on its dot grid, floating code examples ── */
 
+      /* the section's tokens invert to the code surfaces' palette */
       .reference {
-        background: var(--ground-2);
-        padding-block: var(--sp-24);
+        --ref-pad: var(--sp-24);
+        --ink: var(--plate-ink);
+        --rule: var(--plate-edge);
+        --surface: var(--plate-hover);
+        --code-accent: var(--accent-cyan);
+        --focus: var(--focus-dark);
+        color: var(--ink);
+        background: var(--plate-solid);
+        padding-block: var(--ref-pad);
+      }
+
+      .reference .section-intro code,
+      .ref__desc code {
+        color: var(--code-accent);
+        font: var(--inline-code-font)
       }
 
       .ref-box :focus-visible {
         outline-color: var(--focus)
       }
 
-      /* Shared underline tabs, with no enclosing rules. */
+      /* Shared underline tabs, a unit under the intro, a unit above the grid; no rule of their own */
+      .reference .section-intro {
+        margin-block-end: var(--sp-8)
+      }
+
       .ref-kind-tabs {
-        position: sticky;
-        top: 0;
-        z-index: 5;
         display: flex;
         margin-block-end: 0;
-        padding-block: var(--sp-2);
-        background: var(--ground-2);
+        padding-block: var(--sp-2) 0;
       }
 
       .ref-kind-tabs small {
         color: var(--ink);
         font: inherit
-      }
-
-      /* the rule runs from the content's left edge to the right screen edge, a step below the intro text */
-      .reference .section-intro {
-        position: relative
       }
 
       /* both intros share one cell, so the block keeps the taller height and the rule below never moves */
@@ -1839,20 +1972,18 @@
         visibility: hidden
       }
 
-      .reference .section-intro::after {
-        content: '';
-        position: absolute;
-        inset-block-end: calc(-1 * var(--sp-5));
-        inset-inline-start: 0;
-        width: calc(50vw + var(--shell) / 2);
-        height: var(--rule-size);
-        background: var(--rule);
-        pointer-events: none
-      }
-
+      /* the plate's dot grid fills everything under the tabs: from a unit below them to the section's foot and across
+         the screen, registered to the list, so the first dot column sits on the names' left edge and a dot row on every
+         list row (a three-unit pitch). The box bleeds out of the shell and pads back in to it. */
       .ref-box {
-        margin-block-start: var(--sp-6);
+        margin: var(--sp-8) calc(50% - 50vw) calc(-1 * var(--ref-pad));
+        padding: var(--sp-8) calc(50vw - 50%) var(--ref-pad);
         color: var(--ink);
+        background-image:
+          radial-gradient(circle at 1px 1px, var(--plate-dot-major) 0 1px, transparent 1.25px),
+          radial-gradient(circle at 1px 1px, var(--plate-dot) 0 1px, transparent 1.25px);
+        background-size: var(--sp-8) var(--sp-8), var(--sp-2) var(--sp-2);
+        background-position: calc(50vw - var(--shell) / 2) 0;
       }
 
       .code-light {
@@ -1868,11 +1999,13 @@
         color: var(--ink);
       }
 
-      /* a resting place between columns: hovering the gap closes the preview */
+      /* a resting place between columns: hovering the gap closes the preview; rows sit on a three-unit pitch (96px) */
       .ref-list {
         display: grid;
         grid-template-columns: repeat(3, calc(var(--shell) / 4 - var(--sp-10))) calc(var(--shell) / 4);
-        gap: var(--sp-8) var(--sp-10)
+        grid-auto-rows: minmax(calc(3 * var(--sp-8)), auto);
+        align-items: start;
+        column-gap: var(--sp-10)
       }
 
       .ref-entry {
@@ -1901,7 +2034,8 @@
         padding: var(--sp-6);
         color: var(--plate-ink);
         background: var(--plate-bg);
-        box-shadow: var(--shadow-preview);
+        /* a hairline keeps its edge over the reference plate */
+        box-shadow: var(--shadow-preview), 0 0 0 1px var(--plate-edge);
         pointer-events: none;
         opacity: 0;
         scale: .95;
@@ -1942,7 +2076,7 @@
         content: '';
         position: absolute;
         z-index: -1;
-        inset: 0 calc(-1 * var(--sp-3));
+        inset: 0 calc(-1 * var(--sp-4));
         border-radius: inherit;
         background: var(--surface);
         opacity: 0;
@@ -1959,6 +2093,8 @@
         opacity: 1
       }
 
+      /* name and description on the 8px grid: a 24px line, a 4px gap, a 20px line, inside the entry's 8px pads, so
+         the hover card is two major units tall */
       .ref__name {
         width: fit-content;
         padding-block-end: var(--sp-1);
@@ -1966,19 +2102,15 @@
         color: var(--code-accent);
         font: var(--code-font);
         font-size: var(--fs-0);
+        line-height: 1.5;
       }
 
       .ref__desc {
-        margin: 2px 0 0;
+        margin: 0;
         max-width: 38ch;
         color: var(--ink);
         font-size: var(--fs-sm);
-        line-height: 1.4;
-      }
-
-      .ref__desc code {
-        color: var(--ink);
-        font: var(--inline-code-font)
+        line-height: 1.25rem;
       }
 
       .ref__ex {
@@ -2029,7 +2161,7 @@
       }
 
       .tab-icon,
-      .vs__label img {
+      .vs__label svg {
         width: 14px;
         height: 14px;
         opacity: .6;
@@ -2065,7 +2197,8 @@
         font-size: var(--fs-sm);
       }
 
-      .vs__label img {
+      .vs__label svg {
+        fill: currentColor;
         opacity: 1;
         filter: none;
         mix-blend-mode: normal
@@ -2100,6 +2233,7 @@
         overflow-wrap: anywhere;
       }
 
+      /* the comparison counts its lines: that is what it compares */
       .vs__side code {
         counter-reset: usage-line
       }
@@ -2110,8 +2244,10 @@
       }
 
       .vs__side .urow__line::before {
-        display: block;
-        padding-inline: 0
+        counter-increment: usage-line;
+        content: counter(usage-line);
+        color: var(--plate-faint);
+        user-select: none;
       }
 
       /* ── faq: uncollapsed two-column answers ── */
@@ -2164,8 +2300,9 @@
       /* ── horizontal spec strip + quiet footer ── */
 
       .spec-strip {
+        --lift: var(--sp-8);
         position: relative;
-        padding-block-start: var(--sp-8);
+        padding-block-start: var(--lift);
         width: var(--shell);
         display: grid;
         /* five cells of two grid columns each, so every stat starts on a column line */
@@ -2183,12 +2320,54 @@
         margin: 0
       }
 
+      /* a cell reaches from the rule above to the rule below (the strip's lift, the stage's foot), so a pointer anywhere
+         between them is on the stat; the margins give the room back */
       .spec-strip div {
+        position: relative;
+        /* above the section below, whose paper would otherwise cover the glare on its rule */
+        z-index: 1;
         display: flex;
         flex-direction: column-reverse;
         align-items: flex-start;
         gap: var(--sp-1);
-        min-width: 0
+        min-width: 0;
+        margin-block: calc(-1 * var(--lift)) calc(-1 * var(--sp-8));
+        padding-block: var(--lift) var(--sp-8);
+      }
+
+      /* a stat that leads somewhere lights both rules under a pointer: hairlines in the ink centred on the figure,
+         fading out at their ends, the nearer rule's the wider (--y is the pointer's place between the rules, set by glare()) */
+      .spec-strip div:has(a) dd {
+        position: relative
+      }
+
+      .spec-strip div:has(a) dd::before,
+      .spec-strip div:has(a) dd::after {
+        content: '';
+        position: absolute;
+        inset-inline: calc(-1 * var(--sp-8));
+        height: var(--rule-size);
+        background: linear-gradient(to right, transparent, var(--ink), transparent);
+        opacity: 0;
+        transition: opacity var(--dur-preview) var(--ease-preview), scale var(--dur-short) var(--ease-preview);
+        pointer-events: none;
+      }
+
+      .spec-strip div:has(a) dd::before {
+        inset-block-start: calc(-1 * var(--lift));
+        scale: calc(1.4 - var(--y, .5)) 1
+      }
+
+      .spec-strip div:has(a) dd::after {
+        inset-block-end: calc(-1 * var(--sp-8) - var(--rule-size));
+        scale: calc(.4 + var(--y, .5)) 1
+      }
+
+      .spec-strip div:has(a):hover dd::before,
+      .spec-strip div:has(a):hover dd::after,
+      .spec-strip div:has(a:focus-visible) dd::before,
+      .spec-strip div:has(a:focus-visible) dd::after {
+        opacity: 1
       }
 
       .spec-strip dt {
@@ -2208,17 +2387,20 @@
         margin-inline-start: 2px;
         font: var(--caption-font);
         line-height: 1.3em;
-        bottom: -2px;
         position: relative;
       }
 
-      /* a one-line unit sits on the numeral's baseline; a two-line unit centres on it */
+      /* a one-line unit sits on the numeral's baseline; a two-line unit centres on it, dropped a touch to sit optically level */
       .spec-strip dd {
         align-items: baseline
       }
 
       .spec-strip dd:has(.spec-unit br) {
         align-items: center
+      }
+
+      .spec-strip dd:has(.spec-unit br) .spec-unit {
+        bottom: -2px
       }
 
       /* a quiet pointer out of a section, on the section's own measure */
@@ -2240,7 +2422,6 @@
       }
 
       .footer {
-        background: radial-gradient(ellipse at 12% 100%, var(--footer-mist), transparent 65%), var(--paper);
         padding-block: var(--sp-20) var(--sp-8);
       }
 
@@ -2285,8 +2466,7 @@
         text-decoration: none;
       }
 
-      .footer__brand img {
-        display: block;
+      .footer__brand .mark {
         width: var(--sp-6);
         height: var(--sp-6)
       }
@@ -2336,16 +2516,11 @@
         }
 
         .urow__line {
-          grid-template-columns: minmax(0, 1fr);
           padding-inline: var(--sp-5)
         }
 
         .urow__line:nth-child(-n+2) {
           padding-inline-end: var(--sp-16)
-        }
-
-        .urow__line::before {
-          display: none
         }
 
         .usage-panel {
@@ -2513,10 +2688,11 @@
           margin-block-end: 0
         }
 
+        /* the figure keeps its column and a half but never grows past its desktop size (72×64 in a 9:8 box) */
         .feature-fig svg,
         .feature-cell:first-child .feature-fig svg,
         .feature-cell:last-child .feature-fig svg {
-          width: calc(100% - var(--sp-2));
+          width: min(100% - var(--sp-2), var(--sp-16) * 9 / 8);
           height: auto;
           translate: none
         }
@@ -2531,8 +2707,8 @@
 
         /* four stats on the same two-column cells, the age stat left out; units stacked at --fs-xs, one line each */
         .spec-strip {
+          --lift: var(--sp-6);
           margin-block-start: var(--sp-8);
-          padding-block-start: var(--sp-6);
         }
 
         .spec-strip div:last-child {
@@ -2577,7 +2753,10 @@
           padding-block: var(--sp-8) var(--sp-6)
         }
 
-        .reference,
+        .reference {
+          --ref-pad: var(--sp-8)
+        }
+
         .faq {
           padding-block: var(--sp-8)
         }
@@ -2630,6 +2809,7 @@
 
         .ref-list {
           grid-template-columns: repeat(2, minmax(0, 1fr));
+          grid-auto-rows: auto;
           gap: var(--sp-3) var(--sp-4)
         }
 
@@ -2683,12 +2863,6 @@
       }
 
       @media (prefers-reduced-motion: reduce) {
-        .hero__sub .hot.on::before,
-        .hero__sub .hot.on::after {
-          animation: none;
-          transform: scaleX(1)
-        }
-
         .hero__word,
         .hero__stmt,
         .hero__sub,
@@ -2711,7 +2885,13 @@
           translate: none
         }
 
-        .gradient-field {
+        .gradient-field,
+        .mark,
+        .edge i,
+        .plate::before,
+        .usage-code::before,
+        .usage,
+        .footer {
           animation: none
         }
 
@@ -2746,7 +2926,7 @@
 
     <header class="topbar">
       <a class="brand" href="./" aria-label="spræ homepage">
-        <img class="brand__mark" src="./assets/logo.svg" alt="" width="28" height="28">
+        <svg class="mark brand__mark" viewBox="0 0 148 148" width="28" height="28" aria-hidden="true"><g><circle cx="76" cy="36" r="21" /><circle cx="36" cy="110" r="21" /><circle cx="112" cy="112" r="21" /></g></svg>
       </a>
       <nav aria-label="Site">
         <a href="#docs">Usage</a>
@@ -2844,7 +3024,7 @@
     :where(ul, ol) { padding-inline-start: var(--demo-space-6) }
     :where(a) { color: var(--demo-accent); text-underline-offset: 0.2em }
     body > div { grid-template-columns: minmax(0, 1fr); align-content: start; gap: var(--demo-space-2); max-width: 36rem }
-    textarea { width: 100%; height: 4rem; border: 1px solid var(--demo-line); resize: none }
+    textarea { width: 100%; height: 4rem; border: 1px solid var(--demo-line); resize: none; transition: color .4s }
     p { color: var(--demo-muted); font-size: 0.875rem }
     @media (hover: hover) and (pointer: fine) {
       button:hover { background: var(--demo-field-hover) }
@@ -2855,28 +3035,29 @@
 
     <main id="main">
       <section class="hero" aria-labelledby="hero-title">
-        <div class="shell" :scope="{ src: window.demo, saying: window.pick(), mode: '', done: '', play: '', view: 'src', phase: '' }">
+        <hr class="hero__transition" aria-hidden="true">
+        <div class="shell" :scope="{ src: window.demo, saying: window.pick(), mode: '', done: '', play: matchMedia('(prefers-reduced-motion: reduce)').matches ? '' : 'cycle', over: false, focus: false, view: 'src', phase: '' }">
           <p class="hero__word" aria-hidden="true">spræ</p>
           <h1 class="hero__stmt" id="hero-title">Minimal reactivity<br>for HTML/JSX</h1>
-          <p class="hero__sub" :onpointerenter="e => fine(e) && (saying = pick(), play = 'cycle')" :onpointerleave="e => fine(e) && (play = '', condense(m => mode = m, v => view = v, f => phase = f))"
-            :onpointerup="e => !fine(e) && (play ? (play = '', condense(m => mode = m, v => view = v, f => phase = f)) : (saying = pick(), play = 'cycle'))" :fx="play && director(play, m => mode = m, v => view = v, f => phase = f)"><span>Sprinkle <b class="hot"
-                style="--sync: var(--dur-preview); --step: 1.4s" :class="{ on: mode == 'attrs' }" :onpointerenter="e => fine(e) && (play = 'attrs')" :onpointerleave="e => fine(e) && (play = 'cycle')">:attributes</b> on your HTML tree –</span><span>sprae <b class="hot" style="--sync: .8s; --step: 1.8s" :class="{ on: mode == 'evaporate' }"
-                :onpointerenter="e => fine(e) && (play = 'evaporate')" :onpointerleave="e => fine(e) && (play = 'cycle')">evaporates</b> them, <b class="hot" style="--sync: .8s; --step: .9s" :class="{ on: mode == 'type' }" :onpointerenter="e => fine(e) && (saying = pick(), play = 'type')" :onpointerleave="e => fine(e) && (play = 'cycle')">hydrating</b> the DOM</span></p>
+          <p class="hero__sub" :fx="play && !over && !focus && director(play, m => mode = m, v => view = v, f => phase = f, () => saying = pick())"><span>Sprinkle <b class="hot"
+                style="--sync: var(--dur-preview)" :class="{ on: mode == 'attrs' }" :onpointerenter="e => fine(e) && (play = 'attrs')" :onpointerleave="e => fine(e) && (play = 'cycle')">:attributes</b> on your HTML tree –</span><span>sprae <b class="hot" style="--sync: .8s" :class="{ on: mode == 'evaporate' }"
+                :onpointerenter="e => fine(e) && (play = 'evaporate')" :onpointerleave="e => fine(e) && (play = 'cycle')">evaporates</b> them, <b class="hot" style="--sync: .8s" :class="{ on: mode == 'type' }" :onpointerenter="e => fine(e) && (play = 'type')" :onpointerleave="e => fine(e) && (play = 'cycle')">hydrating</b> the DOM</span></p>
 
-          <div class="plate" :fx="mode == 'type' && typewrite(frame, saying)">
-            <div class="plate__editor">
-              <pre><code :ref="code" :class="{ lit: mode == 'attrs', evaporating: phase == 'evaporating', done: phase == 'done', condensing: phase == 'condensing', restoring: phase == 'restoring' }" :html="view == 'done' && done ? water(hl(done)) : hl(src)">&lt;div :scope="{ text: 'Hello.' }"&gt;
+          <div class="plate" :fx="mode == 'type' && typewrite(frame, saying)" :onpointerenter="e => fine(e) && (over = true, mode = '')" :onpointerleave="e => fine(e) && (over = false)">
+            <div class="plate__body">
+              <div class="plate__editor">
+                <pre><code :ref="code" :class="{ lit: mode == 'attrs', evaporating: phase == 'evaporating', done: phase == 'done', condensing: phase == 'condensing', restoring: phase == 'restoring' }" :html="view == 'done' && done ? water(hl(done)) : hl(src)">&lt;div :scope="{ text: 'Hello.' }"&gt;
   &lt;textarea :value="text" :change="v =&gt; text = v"&gt;&lt;/textarea&gt;
   &lt;p :text="text.length + ' characters'"&gt;&lt;/p&gt;
 &lt;/div&gt;</code></pre>
-            </div>
-            <div class="plate__demo">
-              <iframe class="plate__out" title="Live result" :ref="frame" :onload="done = evaporated(this)" :srcdoc="'<style>' + demoCss() + '</style>' + src + '<scr' + 'ipt src=https://unpkg.com/sprae@13.9.2/dist/sprae.umd.js data-start></scr' + 'ipt>'"></iframe>
+              </div>
+              <div class="plate__demo">
+                <iframe class="plate__out" title="Live result" :ref="frame" :onload="(done = evaporated(this), attend(this, f => (focus = f, f && (mode = ''))))" :srcdoc="'<style>' + demoCss() + '</style>' + src + '<scr' + 'ipt src=https://unpkg.com/sprae@13.9.2/dist/sprae.umd.js data-start></scr' + 'ipt>'"></iframe>
+              </div>
             </div>
           </div>
-          <p class="edge hero__edge"><span><b>NOT</b>&nbsp;A&nbsp;FRAMEWORK</span></p>
+          <p class="edge hero__edge"><span :html="stack('NOT A FRAMEWORK', 3)"><b>NOT</b>&nbsp;A&nbsp;FRAMEWORK</span></p>
         </div>
-        <hr class="hero__transition" aria-hidden="true">
       </section>
 
       <section class="feature-stage" id="features" aria-labelledby="features-title" :scope="{ on: false }">
@@ -2929,7 +3110,7 @@
           </article>
         </div>
 
-        <dl class="spec-strip" aria-label="Sprae specification" :class="{ on }">
+        <dl class="spec-strip" aria-label="Sprae specification" :class="{ on }" :onpointermove.throttle-raf="glare">
           <div>
             <dt class="sr-only">size</dt>
             <dd><strong class="spec-value">11.6</strong><span class="spec-unit">KiB<br>gzip</span></dd>
@@ -3059,7 +3240,7 @@
             </article>
             <article class="vs__side vs__side--sprae" aria-labelledby="vs-sprae-title">
               <div class="vs__bar">
-                <p class="vs__label" id="vs-sprae-title"><img src="./assets/logo.svg" alt="" width="14" height="14">Sprae</p>
+                <p class="vs__label" id="vs-sprae-title"><svg viewBox="0 0 148 148" width="14" height="14" aria-hidden="true"><circle cx="76" cy="36" r="21" /><circle cx="36" cy="110" r="21" /><circle cx="112" cy="112" r="21" /></svg>Sprae</p>
               </div>
               <pre><code :html="hlLines(vs.sprae.code.trim())"></code></pre>
             </article>
@@ -3073,23 +3254,23 @@
           <div class="faq__list">
             <div class="qa">
               <h3 class="qa__q">Why a library, when AI writes the code?</h3>
-              <p class="qa__a">To keep frontend simple, without some framework's dictate. Sprae doesn't introduce a build step, dependencies or rules – less bugs, faster iterations. A perfect fit for static pages, markdown files etc. Agents can write sprae code easily!</p>
+              <p class="qa__a">To keep frontend simple. Sprae doesn't add a build step, dependencies or framework rules. Less bugs, faster iterations. A perfect fit for static pages, markdown files etc. Agents can write sprae code easily.</p>
             </div>
             <div class="qa">
               <h3 class="qa__q">Is evaluating attributes safe?</h3>
-              <p class="qa__a">As far as you trust your HTML. Expressions compile with <code>new Function</code>, same as any inline script. For unsafe content, use the <a href="./csp">CSP build</a> which provides safe execution without <code>eval</code>.</p>
+              <p class="qa__a">As far as you trust your HTML. Expressions compile with <code>new Function</code>, same as any inline script. For unsafe content, use the <a href="./csp">CSP build</a> which provides safe execution.</p>
             </div>
             <div class="qa">
               <h3 class="qa__q">What if the script fails to load?</h3>
-              <p class="qa__a">Sprae only progressively enhances your HTML, so it falls back to the original HTML. Note – to hide FOUC, use <code>[\:if],[\:each]{visibility:hidden}</code>.</p>
+              <p class="qa__a">Sprae progressively enhances your markup, so it falls back to the original HTML. To hide FOUC, use <code>[\:if],[\:each]{visibility:hidden}</code>.</p>
             </div>
             <div class="qa">
               <h3 class="qa__q">Does it have components?</h3>
-              <p class="qa__a">Try to manage duplication with includes or templates, if available in your environment – <a href="https://tailwindcss.com/docs/styling-with-utility-classes#managing-duplication">same what tailwindcss recommends</a>. Custom elements can be made with <a href="https://github.com/dy/define-element">define-element</a> or any CE library. Coming from <code>Alpine.data()</code>? See the <a href="./alpine#alpinedata">migration guide</a>.</p>
+              <p class="qa__a">Until <a href="https://github.com/WICG/declarative-partial-updates/blob/main/fragment-include-explainer.md">fragment include</a> landed, manage duplication with includes or templates from your environment (<a href="https://tailwindcss.com/docs/styling-with-utility-classes#managing-duplication">tailwindcss recommendation</a>). Custom elements can be made with <a href="https://github.com/dy/define-element">define-element</a> or any CE library. For <code>Alpine.data()</code> alternative see the <a href="./alpine#alpinedata">migration guide</a>.</p>
             </div>
             <div class="qa">
               <h3 class="qa__q">Who is it not for?</h3>
-              <p class="qa__a">Routing, deep component trees, offline – take a framework there, add sprae for UI effects if needed. Sprae is for pages where a framework is overkill.</p>
+              <p class="qa__a">Routing, deep component trees, server data flows – take a framework there, add sprae for UI effects if needed. Sprae is for pages where a framework is overkill.</p>
             </div>
             <div class="qa">
               <h3 class="qa__q">How do I debug an expression?</h3>
@@ -3097,7 +3278,7 @@
             </div>
             <div class="qa">
               <h3 class="qa__q">Is it production-ready?</h3>
-              <p class="qa__a">3+ years of releases, no dependencies, tests across both compilers and alternative signals. Multiple websites use it already. Works in any browser with <code>Proxy</code>.</p>
+              <p class="qa__a">Yes. Used by many websites. Works in any browser with <code>Proxy</code>. 3+ years of releases, no dependencies, tests across both compilers and alternative signals. </p>
             </div>
             <div class="qa">
               <h3 class="qa__q">Who maintains it?</h3>
@@ -3134,7 +3315,7 @@
           </div>
         </nav>
         <div class="footer__line">
-          <a class="footer__brand" href="./"><img src="./assets/logo.svg" alt="" width="24" height="24"> spræ</a>
+          <a class="footer__brand" href="./"><svg class="mark" viewBox="0 0 148 148" width="24" height="24" aria-hidden="true"><g><circle cx="76" cy="36" r="21" /><circle cx="36" cy="110" r="21" /><circle cx="112" cy="112" r="21" /></g></svg> spræ</a>
           <small class="footer__license">MIT <a href="https://krishnized.github.io/license" aria-label="Krishnized license">ॐ</a></small>
         </div>
       </div>
@@ -3852,6 +4033,35 @@ createRoot(document.getElementById('app')).render(<Filter />)` },
       setTransition()
       addEventListener('resize', setTransition)
       document.fonts?.ready.then(setTransition)
+
+      // The favicon turns with the mark: the same three dots drawn at the mark's own angle, a step every quarter
+      // second (finer is invisible at 16px), only while the tab is on screen. Safari keeps the static icon.
+      const mark = document.querySelector('.brand__mark'), icon = document.querySelector('link[rel="icon"]')
+      const turn = mark?.getAnimations().find(a => a.animationName == 'turn')
+      if (turn && icon && !matchMedia('(prefers-reduced-motion: reduce)').matches) {
+        const tab = document.createElement('canvas'), ctx = tab.getContext('2d')
+        tab.width = tab.height = 64
+        const period = turn.effect.getTiming().duration
+        let last
+        const draw = () => {
+          const step = Math.floor(turn.currentTime / 250)
+          if (step != last) {
+            last = step
+            ctx.setTransform(64 / 148, 0, 0, 64 / 148, 32, 32)
+            ctx.clearRect(-74, -74, 148, 148)
+            ctx.rotate(turn.currentTime / period * 2 * Math.PI)
+            ctx.fillStyle = getComputedStyle(mark).fill
+            for (const dot of mark.querySelectorAll('circle')) {
+              ctx.beginPath()
+              ctx.arc(dot.cx.baseVal.value - 74, dot.cy.baseVal.value - 74, dot.r.baseVal.value, 0, 2 * Math.PI)
+              ctx.fill()
+            }
+            icon.href = tab.toDataURL()
+          }
+          requestAnimationFrame(draw)
+        }
+        draw()
+      }
 
       // Keep the live specimen on the same inset as its editable source.
       const demoFrame = document.querySelector('.plate__out')
