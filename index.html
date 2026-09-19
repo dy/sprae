@@ -218,23 +218,29 @@
           }))
         }, 250)
       }
-      // The aspects drift sideways on their own, slowly, until a pointer or focus rests on them; they turn around at the ends.
+      // The aspects run leftward on their own, slowly, until a pointer or focus rests on them: a marquee that keeps the
+      // native scroll. The strip holds the list twice; wrap() keeps the scroll inside the first copy's span, so the
+      // drift and the visitor's own scrolling go round without an end in either direction.
       window.drift = el => () => {
         if (matchMedia('(prefers-reduced-motion: reduce)').matches) return
-        let id, last = 0, x = el.scrollLeft, dir = el._dir || 1
+        let id, last = 0, x = el.scrollLeft
         const step = t => {
           const dt = last ? Math.min(t - last, 64) : 16
           last = t
           if (Math.abs(el.scrollLeft - x) > 1) x = el.scrollLeft
-          const max = el.scrollWidth - el.clientWidth
-          x += dir * dt * .02
-          if (x >= max) { x = max; dir = -1 } else if (x <= 0) { x = 0; dir = 1 }
-          el._dir = dir
+          x += dt * .02
           el.scrollLeft = x
           id = requestAnimationFrame(step)
         }
         id = requestAnimationFrame(step)
         return () => cancelAnimationFrame(id)
+      }
+      // one span is the distance from an item to its copy; past the first copy the scroll jumps back a span, at the start it
+      // jumps forward one: the same picture either way. Beyond the span strictly, so a jump never lands on the other jump's point.
+      window.wrap = el => {
+        const items = el.children, span = items[items.length / 2].offsetLeft - items[0].offsetLeft
+        if (el.scrollLeft > span) el.scrollLeft -= span
+        else if (el.scrollLeft <= 0) el.scrollLeft += span
       }
       // Marks what hydration added to the evaporated markup, so only those bits condense in.
       window.water = html => html
@@ -782,17 +788,20 @@
         }
       }
 
+      /* the three dots are an equilateral triangle (side 81.4), apex up, its bounding box centred in the 148 box, so the
+         centroid sits at 74 85.75: the mark turns and breathes about that, not the box centre, so nothing wobbles */
       .mark {
         --breath: calc(1 - var(--amp) * var(--osc) * .28);
         display: block;
         fill: var(--ink);
+        transform-origin: 50% calc(100% * 85.75 / 148);
         animation: turn 40s linear infinite, oscillate 1.6s ease-in-out infinite;
         transition: --amp .7s var(--ease-spring)
       }
 
       .mark g {
         transform-box: view-box;
-        transform-origin: center;
+        transform-origin: 74px 85.75px;
         scale: var(--breath)
       }
 
@@ -2930,7 +2939,7 @@
 
     <header class="topbar">
       <a class="brand" href="./" aria-label="spræ homepage">
-        <svg class="mark brand__mark" viewBox="0 0 148 148" width="28" height="28" aria-hidden="true"><g><circle cx="76" cy="36" r="21" /><circle cx="36" cy="110" r="21" /><circle cx="112" cy="112" r="21" /></g></svg>
+        <svg class="mark brand__mark" viewBox="0 0 148 148" width="28" height="28" aria-hidden="true"><g><circle cx="74" cy="38.75" r="21" /><circle cx="33.3" cy="109.25" r="21" /><circle cx="114.7" cy="109.25" r="21" /></g></svg>
       </a>
       <nav aria-label="Site">
         <a href="#docs">Usage</a>
@@ -3178,8 +3187,8 @@
         </div>
         <section class="aspects" aria-labelledby="aspects-title">
           <h2 class="sr-only" id="aspects-title">Aspects</h2>
-          <div class="aspects__viewport" tabindex="0" role="region" aria-label="Aspects, scroll horizontally" :scope="{ still: false }" :onpointerenter="still = true" :onpointerleave="still = false" :onfocusin="still = true" :onfocusout="still = false" :fx="!still && drift(this)">
-            <article class="aspect" :each="a in aspects">
+          <div class="aspects__viewport" tabindex="0" role="region" aria-label="Aspects, scroll horizontally" :scope="{ still: false }" :onpointerenter="still = true" :onpointerleave="still = false" :onfocusin="still = true" :onfocusout="still = false" :fx="!still && drift(this)" :onscroll="wrap(this)">
+            <article class="aspect" :each="a, i in aspects.concat(aspects)" :inert="i >= aspects.length">
               <h3 :text="a.title"></h3>
               <p :text="a.description"></p>
               <pre class="code-light" :if="a.code"><code :html="hl(a.code)"></code></pre>
@@ -3244,7 +3253,7 @@
             </article>
             <article class="vs__side vs__side--sprae" aria-labelledby="vs-sprae-title">
               <div class="vs__bar">
-                <p class="vs__label" id="vs-sprae-title"><svg viewBox="0 0 148 148" width="14" height="14" aria-hidden="true"><circle cx="76" cy="36" r="21" /><circle cx="36" cy="110" r="21" /><circle cx="112" cy="112" r="21" /></svg>Sprae</p>
+                <p class="vs__label" id="vs-sprae-title"><svg viewBox="0 0 148 148" width="14" height="14" aria-hidden="true"><circle cx="74" cy="38.75" r="21" /><circle cx="33.3" cy="109.25" r="21" /><circle cx="114.7" cy="109.25" r="21" /></svg>Sprae</p>
               </div>
               <pre><code :html="hlLines(vs.sprae.code.trim())"></code></pre>
             </article>
@@ -3319,7 +3328,7 @@
           </div>
         </nav>
         <div class="footer__line">
-          <a class="footer__brand" href="./"><svg class="mark" viewBox="0 0 148 148" width="24" height="24" aria-hidden="true"><g><circle cx="76" cy="36" r="21" /><circle cx="36" cy="110" r="21" /><circle cx="112" cy="112" r="21" /></g></svg> spræ</a>
+          <a class="footer__brand" href="./"><svg class="mark" viewBox="0 0 148 148" width="24" height="24" aria-hidden="true"><g><circle cx="74" cy="38.75" r="21" /><circle cx="33.3" cy="109.25" r="21" /><circle cx="114.7" cy="109.25" r="21" /></g></svg> spræ</a>
           <small class="footer__license">MIT <a href="https://krishnized.github.io/license" aria-label="Krishnized license">ॐ</a></small>
         </div>
       </div>
@@ -4061,13 +4070,16 @@ createRoot(document.getElementById('app')).render(<Filter />)` },
           const step = Math.floor(turn.currentTime / 250)
           if (step != last) {
             last = step
+            const dots = [...mark.querySelectorAll('circle')].map(dot => [dot.cx.baseVal.value, dot.cy.baseVal.value, dot.r.baseVal.value])
+            // the dots' centroid at the tab's centre, the turn about it, as on the page
+            const cx = dots.reduce((sum, [x]) => sum + x, 0) / dots.length, cy = dots.reduce((sum, [, y]) => sum + y, 0) / dots.length
             ctx.setTransform(64 / 148, 0, 0, 64 / 148, 32, 32)
-            ctx.clearRect(-74, -74, 148, 148)
+            ctx.clearRect(-148, -148, 296, 296)
             ctx.rotate(turn.currentTime / period * 2 * Math.PI)
             ctx.fillStyle = getComputedStyle(mark).fill
-            for (const dot of mark.querySelectorAll('circle')) {
+            for (const [x, y, r] of dots) {
               ctx.beginPath()
-              ctx.arc(dot.cx.baseVal.value - 74, dot.cy.baseVal.value - 74, dot.r.baseVal.value, 0, 2 * Math.PI)
+              ctx.arc(x - cx, y - cy, r, 0, 2 * Math.PI)
               ctx.fill()
             }
             icon.href = tab.toDataURL()
