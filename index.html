@@ -908,12 +908,19 @@
         color: var(--ink);
       }
 
+      /* the marks: 44px tall, 32px wide targets, so the two sit close */
       .gh {
         display: inline-flex;
         align-items: center;
         justify-content: center;
-        min-width: var(--tap);
+        min-width: var(--sp-8);
         min-height: var(--tap);
+      }
+
+      /* npm's square reads heavier than the octocat's circle at the same size, so it is set a step smaller */
+      .gh--npm svg {
+        width: var(--sp-5);
+        height: var(--sp-5)
       }
 
       .gh:last-child {
@@ -2499,6 +2506,10 @@
         gap: var(--sp-3)
       }
 
+      .footer__license a {
+        text-decoration: none
+      }
+
       .footer__nav {
         display: grid;
         grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -2597,11 +2608,6 @@
           gap: var(--sp-1)
         }
 
-        /* the two marks keep their height but narrow their targets, so the row fits a phone */
-        .gh {
-          min-width: var(--sp-8)
-        }
-
         .hero {
           min-height: 0;
           padding-block: var(--sp-6) var(--sp-4)
@@ -2678,6 +2684,8 @@
           grid-column: 2;
           grid-row: 1 / 4;
           align-self: end;
+          /* the slogan's line box runs below its last letters; the label's foot sits level with the letters */
+          margin-block-end: var(--sp-1);
           font-size: var(--fs-xs);
         }
 
@@ -2971,9 +2979,9 @@
       </nav>
       <div class="topbar__end">
         <a class="topbar__ver" href="https://www.npmjs.com/package/sprae?activeTab=versions" aria-label="Version 13.9.3, release history on npm">v13.9.3</a>
-        <a class="gh" href="https://www.npmjs.com/package/sprae" aria-label="Sprae on npm">
-          <svg viewBox="0 0 16 16" aria-hidden="true">
-            <path d="M0 0h16v16H0zm3 3v10h5V6h2v7h3V3z" />
+        <a class="gh gh--npm" href="https://www.npmjs.com/package/sprae" aria-label="Sprae on npm">
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M1.763 0C.786 0 0 .786 0 1.763v20.474C0 23.214.786 24 1.763 24h20.474c.977 0 1.763-.786 1.763-1.763V1.763C24 .786 23.214 0 22.237 0zM5.13 5.323l13.837.019-.009 13.836h-3.464l.01-10.382h-3.456L12.04 19.17H5.113z" />
           </svg>
         </a>
         <a class="gh" href="https://github.com/dy/sprae" aria-label="Sprae on GitHub">
@@ -3358,7 +3366,7 @@
         </nav>
         <div class="footer__line">
           <a class="footer__brand" href="./"><svg class="mark" viewBox="0 0 148 148" width="24" height="24" aria-hidden="true"><g><circle cx="74" cy="38.75" r="21" /><circle cx="33.3" cy="109.25" r="21" /><circle cx="114.7" cy="109.25" r="21" /></g></svg> spræ</a>
-          <small class="footer__license">MIT <a href="https://krishnized.github.io/license" aria-label="Krishnized license">ॐ</a></small>
+          <small class="footer__license"><a href="./license" aria-label="MIT license">MIT</a> <a href="https://krishnized.github.io/license" aria-label="Krishnized license">ॐ</a></small>
         </div>
       </div>
     </footer>
