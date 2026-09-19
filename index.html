@@ -149,8 +149,10 @@
         el.parentNode.append(ghost)
         apply()
         await new Promise(requestAnimationFrame)
+        // a swap arriving mid-ease starts from the height shown (h0) and must measure the natural height, not the eased one
+        box?._ease?.cancel()
         const h1 = box?.offsetHeight
-        if (box && h0 != h1) box.animate([{ height: h0 + 'px' }, { height: h1 + 'px' }], { duration: 260, easing: 'ease-out' })
+        if (box && h0 != h1) box._ease = box.animate([{ height: h0 + 'px' }, { height: h1 + 'px' }], { duration: 260, easing: 'ease-out' })
         // the ghost holds its faded end state until it is removed, so a late frame can never flash it back
         ghost.animate([{ opacity: 1, filter: 'blur(0)' }, { opacity: 0, filter: 'blur(6px)' }], { duration: 220, easing: 'ease-in', fill: 'forwards' }).finished.then(() => ghost.remove(), () => ghost.remove())
         setTimeout(() => ghost.remove(), 600)
@@ -516,7 +518,9 @@
         translate: 0 1px
       }
 
-      [role="tab"]:active {
+      /* the press nudge is for buttons that act; tabs and reference entries hold still under the pointer */
+      [role="tab"]:active,
+      .ref-entry:active {
         translate: none
       }
 
@@ -3215,7 +3219,7 @@
         </div>
       </section>
 
-      <div class="ref-preview" id="ref-preview" popover="auto" role="dialog" aria-labelledby="ref-preview-title">
+      <div class="ref-preview" id="ref-preview" popover="manual" role="dialog" aria-labelledby="ref-preview-title">
         <h3 class="sr-only" id="ref-preview-title">Example</h3>
         <pre class="ref__ex"><code></code></pre>
       </div>
@@ -3910,11 +3914,15 @@ createRoot(document.getElementById('app')).render(<Filter />)` },
         featureViewport.scrollTo({ left, behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'instant' : 'smooth' })
       })
 
-      // Keep the cursor-following preview above and left of the active directive.
+      // Keep the cursor-following preview above and left of the active directive. One interaction for every pointer:
+      // hovering shows it trailing the pointer, moving on to another entry morphs it there (the code crossfades, the
+      // height eases, the box glides), a click or a tap pins it in place for reading and selecting, a click on the
+      // pinned entry, a click outside, Escape, or a scroll closes it. The popover is manual, so the browser never
+      // dismisses it under a click on an entry.
       const refList = document.querySelector('.ref-list')
       const refPreview = document.querySelector('.ref-preview')
       const refMotion = matchMedia('(prefers-reduced-motion: reduce)')
-      let refTarget, refPinned = false, refDismissed = false, refFrame = 0
+      let refTarget, refPinned = false, refDismissed = false, refFrame = 0, refRest = 0
       let refX = 0, refY = 0, refAimX = 0, refAimY = 0, refLast = 0
       const placeRef = () => {
         refPreview.style.transform = `translate3d(${refX}px, ${refY}px, 0)`
@@ -3939,12 +3947,15 @@ createRoot(document.getElementById('app')).render(<Filter />)` },
       }
       const closeRef = () => {
         cancelAnimationFrame(refFrame); refFrame = 0; refLast = 0
+        clearTimeout(refRest)
         if (refPreview.matches(':popover-open')) refPreview.hidePopover()
+        refPreview.classList.remove('is-pinned')
         refTarget?.setAttribute('aria-expanded', 'false')
         refTarget = null; refPinned = false; refDismissed = true
       }
       const openRef = (button, event, pinned = false) => {
         const initial = !refTarget, changed = refTarget != button
+        clearTimeout(refRest)
         refTarget?.setAttribute('aria-expanded', 'false')
         refTarget = button; refPinned = pinned
         refPreview.classList.toggle('is-pinned', pinned)
@@ -3953,6 +3964,8 @@ createRoot(document.getElementById('app')).render(<Filter />)` },
         if (changed) initial ? code.innerHTML = hl(button.dataset.code) : swap(code, () => code.innerHTML = hl(button.dataset.code))
         button.setAttribute('aria-expanded', 'true')
         if (!refPreview.matches(':popover-open')) refPreview.showPopover()
+        // pinning what is already shown keeps it where it is
+        if (pinned && !changed && !event) return
         const rect = button.getBoundingClientRect()
         // trails the pointer, sitting above and to its right; shifts left when the right edge lacks room, keeping its width
         const top = event && !pinned ? event.clientY : rect.top
@@ -3965,7 +3978,7 @@ createRoot(document.getElementById('app')).render(<Filter />)` },
         const text = [...button.querySelectorAll('.ref__name, .ref__desc')].map(n => n.getBoundingClientRect())
         const textTop = Math.min(...text.map(r => r.top)), textBottom = Math.max(...text.map(r => r.bottom))
         const above = Math.min(top - height - 32, textTop - height - 8)
-        aimRef(left, above >= 16 ? above : Math.max(top + 32, textBottom + 8), pinned || initial)
+        aimRef(left, above >= 16 ? above : Math.max(top + 32, textBottom + 8), initial)
       }
       const previewRef = event => {
         if (event.pointerType == 'touch' || refPinned) return
@@ -3973,22 +3986,23 @@ createRoot(document.getElementById('app')).render(<Filter />)` },
         refDismissed = false
         const button = event.target.closest('.ref-entry')
         if (button) openRef(button, event)
-        else if (refTarget) closeRef()
+        // a pointer resting in the gap between entries closes it; passing through to another entry does not
+        else if (refTarget) { clearTimeout(refRest); refRest = setTimeout(closeRef, 250) }
       }
       refList.addEventListener('pointerover', previewRef)
       refList.addEventListener('pointermove', previewRef)
       refList.addEventListener('pointerleave', () => { if (!refPinned) closeRef() })
       refList.addEventListener('focusin', event => { if (event.target.matches('.ref-entry:focus-visible')) openRef(event.target, null, true) })
-      // with a fine pointer the hover preview is the whole interaction; pinning is for touch and keyboard, dismissed by a tap outside or Escape
-      const finePointer = matchMedia('(hover: hover) and (pointer: fine)')
       refList.addEventListener('click', event => {
         const button = event.target.closest('.ref-entry')
-        if (!button || finePointer.matches) return
+        if (!button) return
         if (refPinned && refTarget == button && !button.matches(':focus-visible')) closeRef()
         else openRef(button, null, true)
       })
       refPreview.addEventListener('toggle', event => { if (event.newState == 'closed') closeRef() })
       document.querySelector('.ref-kind-tabs').addEventListener('click', closeRef)
+      document.addEventListener('pointerdown', event => { if (refTarget && !refList.contains(event.target) && !refPreview.contains(event.target)) closeRef() })
+      document.addEventListener('keydown', event => { if (event.key == 'Escape' && refTarget) closeRef() })
       document.addEventListener('focusin', event => { if (!refList.contains(event.target) && !refPreview.contains(event.target)) closeRef() })
       window.addEventListener('resize', closeRef)
       window.addEventListener('scroll', () => { if (refTarget) closeRef() }, { passive: true })
