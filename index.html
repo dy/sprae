@@ -908,23 +908,22 @@
         color: var(--ink);
       }
 
-      /* the marks: 44px tall, 32px wide targets, so the two sit close */
+      /* the stamp and the marks pad the same on both sides, so the three visible gaps are equal */
+      .topbar__ver,
+      .gh {
+        padding-inline: var(--sp-1)
+      }
+
       .gh {
         display: inline-flex;
         align-items: center;
         justify-content: center;
-        min-width: var(--sp-8);
         min-height: var(--tap);
       }
 
-      /* npm's square reads heavier than the octocat's circle at the same size, so it is set a step smaller */
-      .gh--npm svg {
-        width: var(--sp-5);
-        height: var(--sp-5)
-      }
-
+      /* the last glyph itself on the shell's right edge */
       .gh:last-child {
-        margin-inline-end: calc((var(--sp-6) - var(--tap)) / 2)
+        margin-inline-end: calc(-1 * var(--sp-1))
       }
 
       .gh svg {
@@ -932,6 +931,12 @@
         height: var(--sp-6);
         fill: currentColor;
         fill-rule: evenodd
+      }
+
+      /* npm's square at the octocat's area: a square looks the size of a circle at √(π/4) ≈ 0.89 of its diameter */
+      .gh--npm svg {
+        width: calc(var(--sp-6) * 0.89);
+        height: calc(var(--sp-6) * 0.89)
       }
 
       /* ── hero ───────────────────────────────────────────── */
@@ -2981,7 +2986,7 @@
         <a class="topbar__ver" href="https://www.npmjs.com/package/sprae?activeTab=versions" aria-label="Version 13.9.3, release history on npm">v13.9.3</a>
         <a class="gh gh--npm" href="https://www.npmjs.com/package/sprae" aria-label="Sprae on npm">
           <svg viewBox="0 0 24 24" aria-hidden="true">
-            <path d="M1.763 0C.786 0 0 .786 0 1.763v20.474C0 23.214.786 24 1.763 24h20.474c.977 0 1.763-.786 1.763-1.763V1.763C24 .786 23.214 0 22.237 0zM5.13 5.323l13.837.019-.009 13.836h-3.464l.01-10.382h-3.456L12.04 19.17H5.113z" />
+            <path d="M0 0h24v24H0zM5.13 5.323l13.837.019-.009 13.836h-3.464l.01-10.382h-3.456L12.04 19.17H5.113z" />
           </svg>
         </a>
         <a class="gh" href="https://github.com/dy/sprae" aria-label="Sprae on GitHub">
