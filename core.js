@@ -216,8 +216,9 @@ const compileWalk = (prog) => {
  * @returns {SpraeState & Object} The reactive state object associated with the element.
  */
 const sprae = (root = document.body, state, master) => {
-  // repeated call can be caused by eg. :each with new objects with old keys
-  if (root[_state]) return Object.assign(root[_state], state)
+  // repeated call can be caused by eg. :each with new objects with old keys; the element's own state again (an :if
+  // re-enabled) is nothing new: copying it onto itself would read every getter and write it back
+  if (root[_state]) return root[_state] === state ? state : Object.assign(root[_state], state)
 
   // console.group('sprae', root)
 

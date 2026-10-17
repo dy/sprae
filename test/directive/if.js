@@ -671,3 +671,23 @@ test('if: nested directives keep reacting across repeated toggles', async () => 
     await tick()
   }
 })
+
+// An :if inside an :if, shown again: its state is the element's own, not copied onto itself (which wrote a getter no
+// effect had read yet back as a value, and threw)
+test('if: nested :if shown again keeps a getter unread till then', async () => {
+  let el = document.createElement('div')
+  el.innerHTML = `<p :if="sound"><b :if="depth" :text="depth"></b></p>`
+  let errors = [], error = console.error
+  console.error = e => errors.push(String(e))
+  let s = sprae(el, { sound: null, get depth() { return this.sound && this.sound.bits } })
+  try {
+    for (const bits of [16, 24, 32]) {
+      s.sound = { bits }
+      await tick()
+      is(el.querySelector('b')?.textContent, String(bits), `shown again: ${bits}`)
+      s.sound = null
+      await tick()
+    }
+  } finally { console.error = error }
+  is(errors, [])
+})
