@@ -1,4 +1,4 @@
-# [∴](https://sprae.js.org) sprae [![tests](https://github.com/dy/sprae/actions/workflows/node.js.yml/badge.svg)](https://github.com/dy/sprae/actions/workflows/node.js.yml) ![size](https://img.shields.io/badge/size-11.6kb-white) ![deps](https://img.shields.io/badge/deps-0-white) [![npm](https://img.shields.io/npm/v/sprae?color=white)](https://www.npmjs.com/package/sprae) [![license](https://img.shields.io/npm/l/sprae?color=white)](./license)
+# [∴](https://sprae.js.org) spræ [![tests](https://github.com/dy/sprae/actions/workflows/node.js.yml/badge.svg)](https://github.com/dy/sprae/actions/workflows/node.js.yml) ![size](https://img.shields.io/badge/size-11.6kb-white) ![deps](https://img.shields.io/badge/deps-0-white) [![npm](https://img.shields.io/npm/v/sprae?color=white)](https://www.npmjs.com/package/sprae) [![license](https://img.shields.io/npm/l/sprae?color=white)](./license)
 
 **DOM microhydration**. Add reactivity to the HTML via `:`-attributes.
 - No build step, no new syntax.
